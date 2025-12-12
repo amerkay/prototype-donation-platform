@@ -2,20 +2,21 @@
 import type { SidebarProps } from '@/components/ui/sidebar'
 
 import {
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  LifeBuoy,
-  Map,
-  PieChart,
-  Send,
+  LayoutDashboard,
+  Megaphone,
+  Users,
+  Heart,
+  PoundSterling,
+  CreditCard,
+  FileText,
+  Plug,
   Settings2,
-  SquareTerminal,
+  LifeBuoy,
+  Send,
 } from "lucide-vue-next"
 
 import NavMain from '@/components/NavMain.vue'
-import NavProjects from '@/components/NavProjects.vue'
+import NavCampaigns from '@/components/NavCampaigns.vue'
 import NavSecondary from '@/components/NavSecondary.vue'
 import NavUser from '@/components/NavUser.vue'
 import {
@@ -34,69 +35,83 @@ const props = withDefaults(defineProps<SidebarProps>(), {
 
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    name: "Some User",
+    email: "awesome@charity.co.uk",
+    avatar: "/avatar.png",
   },
   navMain: [
     {
-      title: "Playground",
+      title: "Dashboard",
       url: "#",
-      icon: SquareTerminal,
+      icon: LayoutDashboard,
       isActive: true,
+    },
+    {
+      title: "Campaigns",
+      url: "#",
+      icon: Megaphone,
+    },
+    {
+      title: "Donors",
+      url: "#",
+      icon: Users,
+    },
+    {
+      title: "Donations",
+      url: "#",
+      icon: PoundSterling,
+    },
+    {
+      title: "Subscriptions",
+      url: "#",
+      icon: CreditCard,
+    },
+    {
+      title: "Templates",
+      url: "#",
+      icon: FileText,
       items: [
         {
-          title: "History",
+          title: "Receipts",
           url: "#",
         },
         {
-          title: "Starred",
+          title: "Certificates",
           url: "#",
         },
         {
-          title: "Settings",
+          title: "eCards",
+          url: "#",
+        },
+        {
+          title: "Pages",
           url: "#",
         },
       ],
     },
     {
-      title: "Models",
+      title: "Integrations",
       url: "#",
-      icon: Bot,
+      icon: Plug,
       items: [
         {
-          title: "Genesis",
+          title: "Payments",
           url: "#",
         },
         {
-          title: "Explorer",
+          title: "CRM",
           url: "#",
         },
         {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
+          title: "Email",
           url: "#",
         },
         {
-          title: "Get Started",
+          title: "Automation",
           url: "#",
         },
         {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
+          title: "WordPress",
           url: "#",
         },
       ],
@@ -111,6 +126,10 @@ const data = {
           url: "#",
         },
         {
+          title: "Payment Processors",
+          url: "#",
+        },
+        {
           title: "Team",
           url: "#",
         },
@@ -118,11 +137,24 @@ const data = {
           title: "Billing",
           url: "#",
         },
-        {
-          title: "Limits",
-          url: "#",
-        },
       ],
+    },
+  ],
+  campaigns: [
+    {
+      name: "Save the Rainforest 2024",
+      url: "#",
+      icon: Megaphone,
+    },
+    {
+      name: "Adopt an Orangutan",
+      url: "#",
+      icon: Megaphone,
+    },
+    {
+      name: "Wildlife Rescue Emergency Fund",
+      url: "#",
+      icon: Megaphone,
     },
   ],
   navSecondary: [
@@ -137,23 +169,6 @@ const data = {
       icon: Send,
     },
   ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
 }
 </script>
 
@@ -164,12 +179,13 @@ const data = {
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" as-child>
             <a href="#">
-              <div class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <Command class="size-4" />
+              <div
+                class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <Heart class="size-4" />
               </div>
               <div class="grid flex-1 text-left text-sm leading-tight">
-                <span class="truncate font-medium">Acme Inc</span>
-                <span class="truncate text-xs">Enterprise</span>
+                <span class="truncate font-medium">Borneo Orangutan Survival Foundations</span>
+                <span class="truncate text-xs">Donation Platform</span>
               </div>
             </a>
           </SidebarMenuButton>
@@ -178,7 +194,7 @@ const data = {
     </SidebarHeader>
     <SidebarContent>
       <NavMain :items="data.navMain" />
-      <NavProjects :projects="data.projects" />
+      <NavCampaigns :campaigns="data.campaigns" />
       <NavSecondary :items="data.navSecondary" class="mt-auto" />
     </SidebarContent>
     <SidebarFooter>
