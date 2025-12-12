@@ -5,7 +5,9 @@ import {
   ChevronsUpDown,
   CreditCard,
   LogOut,
+  Moon,
   Sparkles,
+  Sun,
 } from "lucide-vue-next"
 
 import {
@@ -38,6 +40,17 @@ const props = defineProps<{
 }>()
 
 const { isMobile } = useSidebar()
+
+const colorMode = useColorMode()
+const isDark = computed(
+  () =>
+    colorMode.preference === 'dark' ||
+    (colorMode.preference === 'system' && colorMode.value === 'dark')
+)
+
+const toggleTheme = () => {
+  colorMode.preference = isDark.value ? 'light' : 'dark'
+}
 </script>
 
 <template>
@@ -98,6 +111,12 @@ const { isMobile } = useSidebar()
               Notifications
             </DropdownMenuItem> -->
           </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem @click="toggleTheme">
+            <Sun v-if="isDark" />
+            <Moon v-else />
+            {{ isDark ? 'Light Mode' : 'Dark Mode' }}
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
             <LogOut />

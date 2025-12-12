@@ -22,5 +22,5 @@ export default defineNuxtConfig({
 
   css: ['./app/assets/css/main.css'],
   vite: { plugins: [tailwindcss(),], },
-  modules: ['shadcn-nuxt'],
+  modules: ['shadcn-nuxt', '@nuxtjs/color-mode'],
 })
