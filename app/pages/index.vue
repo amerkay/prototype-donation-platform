@@ -5,6 +5,8 @@ export const iframeHeight = "800px"
 
 <script setup lang="ts">
 import AppSidebar from "@/components/AppSidebar.vue"
+import FormSettings from "@/components/FormSettings.vue"
+import FormPreview from "@/components/FormPreview.vue"
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -49,12 +51,21 @@ import {
                 </div>
             </header>
             <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
-                <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                    <div class="bg-muted/50 aspect-video rounded-xl" />
-                    <div class="bg-muted/50 aspect-video rounded-xl" />
-                    <div class="bg-muted/50 aspect-video rounded-xl" />
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div>
+                        <p class="text-muted-foreground text-sm font-semibold mb-2">
+                            Form Settings
+                        </p>
+                        <FormSettings />
+                    </div>
+
+                    <div>
+                        <p class="text-muted-foreground text-sm font-semibold mb-2">
+                            Form Preview
+                        </p>
+                        <FormPreview />
+                    </div>
                 </div>
-                <div class="bg-muted/50 min-h-screen flex-1 rounded-xl md:min-h-min" />
             </div>
         </SidebarInset>
     </SidebarProvider>

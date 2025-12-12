@@ -29,6 +29,7 @@ defineProps<{
         name: string
         url: string
         icon: LucideIcon
+        selected?: boolean
     }[]
 }>()
 
@@ -40,7 +41,7 @@ const { isMobile } = useSidebar()
         <SidebarGroupLabel>Recent Campaigns</SidebarGroupLabel>
         <SidebarMenu>
             <SidebarMenuItem v-for="item in campaigns" :key="item.name">
-                <SidebarMenuButton as-child>
+                <SidebarMenuButton as-child :variant="item.selected ? 'selected' : 'default'">
                     <a :href="item.url">
                         <component :is="item.icon" />
                         <span>{{ item.name }}</span>

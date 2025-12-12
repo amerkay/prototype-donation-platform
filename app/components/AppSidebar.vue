@@ -126,6 +126,10 @@ const data = {
           url: "#",
         },
         {
+          title: "Branding",
+          url: "#",
+        },
+        {
           title: "Payment Processors",
           url: "#",
         },
@@ -137,17 +141,22 @@ const data = {
           title: "Billing",
           url: "#",
         },
+        {
+          title: "API & Webhooks",
+          url: "#",
+        },
       ],
     },
   ],
   campaigns: [
     {
-      name: "Save the Rainforest 2024",
+      name: "Adopt an Orangutan",
       url: "#",
       icon: Megaphone,
+      selected: true,
     },
     {
-      name: "Adopt an Orangutan",
+      name: "Save the Rainforest 2024",
       url: "#",
       icon: Megaphone,
     },
