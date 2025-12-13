@@ -139,30 +139,34 @@ const handleCustomBlur = () => {
 
 <template>
   <div class="space-y-2">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between gap-2">
       <span v-if="!isCustomMode" class="text-sm font-semibold">
         {{ currencySymbol }}{{ modelValue }}
         <span v-if="frequencySuffix" class="text-xs text-muted-foreground">{{
           frequencySuffix
         }}</span>
       </span>
-      <InputGroup v-else class="w-auto">
+      <InputGroup v-else class="flex-1 h-12">
         <InputGroupAddon>
-          <InputGroupText>{{ currencySymbol }}</InputGroupText>
+          <InputGroupText class="text-base">{{ currencySymbol }}</InputGroupText>
         </InputGroupAddon>
         <InputGroupInput
           v-model="customInputValue"
           type="number"
           :min="minPrice"
-          class="w-24"
+          class="text-2xl! font-semibold"
           @input="handleCustomInput"
           @blur="handleCustomBlur"
         />
         <InputGroupAddon v-if="frequencySuffix" align="inline-end">
-          <InputGroupText>{{ frequencySuffix }}</InputGroupText>
+          <InputGroupText class="text-base">{{ frequencySuffix }}</InputGroupText>
         </InputGroupAddon>
       </InputGroup>
-      <button type="button" class="text-xs text-primary hover:underline" @click="toggleCustomMode">
+      <button
+        type="button"
+        class="text-xs text-primary hover:underline whitespace-nowrap"
+        @click="toggleCustomMode"
+      >
         {{ isCustomMode ? 'Use slider' : 'Custom amount' }}
       </button>
     </div>

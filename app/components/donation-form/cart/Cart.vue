@@ -71,6 +71,22 @@ const handleProductSelect = (product: Product) => {
 
 const { getCurrencySymbol } = useCurrency()
 
+const totalLabel = computed(() => {
+  if (props.items.length === 0) return 'Total'
+
+  const frequencies = new Set(props.items.map((item) => item.frequency))
+
+  // All items have the same frequency
+  if (frequencies.size === 1) {
+    const frequency = Array.from(frequencies)[0]
+    if (frequency === 'once') return 'Total (one-time)'
+    if (frequency === 'monthly') return 'Total (monthly)'
+    if (frequency === 'yearly') return 'Total (yearly)'
+  }
+
+  return 'Total'
+})
+
 defineExpose({
   cartItemRefs,
   pulseNewItem,
@@ -126,7 +142,7 @@ defineExpose({
       <!-- Show single line when only one type exists -->
       <template v-else>
         <div class="flex items-center justify-between">
-          <span class="text-sm font-medium">Total</span>
+          <span class="text-sm font-medium">{{ totalLabel }}</span>
           <span class="text-lg font-bold">{{ getCurrencySymbol(currency) }}{{ total }}</span>
         </div>
       </template>
