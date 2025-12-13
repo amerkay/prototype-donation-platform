@@ -7,34 +7,37 @@ import { Button } from '@/components/ui/button'
 import ProductConfigModal from '@/components/donation-form/ProductConfigModal.vue'
 import BonusItemsSection from '@/components/donation-form/BonusItemsSection.vue'
 import DonationAmountSelector from '@/components/donation-form/DonationAmountSelector.vue'
+import ProductCard from '@/components/donation-form/ProductCard.vue'
+import Cart from '@/components/donation-form/Cart.vue'
+import type { Product, CartItem } from '@/composables/useCart'
 
 const { getCurrencySymbol, convertPrice } = useCurrency()
+const {
+    multipleCart,
+    selectedBonusItems,
+    currentCart,
+    cartTotal,
+    recurringTotal,
+    oneTimeTotal,
+    addToCart,
+    removeFromCart,
+    updateCartItemPrice,
+    isInCart,
+    toggleBonusItem,
+} = useCart()
+const {
+    drawerOpen,
+    drawerProduct,
+    drawerMode,
+    drawerInitialPrice,
+    openDrawerForAdd,
+    openDrawerForEdit,
+    handleDrawerConfirm,
+} = useProductConfig()
 
 // Constants
 const ALLOW_MULTIPLE_ITEMS = true
 const INITIAL_PRODUCTS_DISPLAYED = 3
-
-interface Product {
-    id: string
-    name: string
-    description: string
-    price: number
-    minPrice?: number
-    default?: number
-    frequency: 'once' | 'monthly'
-    image: string
-    thumbnail: string
-    icon: string
-    isBonusItem?: boolean
-    bonusThreshold?: {
-        once: number
-        monthly: number
-    }
-}
-
-interface CartItem extends Product {
-    addedAt: number
-}
 
 // Settings
 const currencies = [
@@ -164,20 +167,9 @@ const donationAmounts = ref({
 })
 
 // State - Multiple items
-const onceCart = ref<CartItem[]>([])
-const monthlyCart = ref<CartItem[]>([])
-const multipleCart = ref<CartItem[]>([])
 const searchQuery = ref('')
-const selectedBonusItems = ref<Set<string>>(new Set())
 const productPrices = ref<Record<string, number>>({})
-const drawerOpen = ref(false)
-const drawerProduct = ref<Product | null>(null)
-const drawerMode = ref<'add' | 'edit'>('add')
-const drawerInitialPrice = ref(0)
-const editingItemKey = ref<string | null>(null)
-const cartSection = ref<HTMLElement | null>(null)
-const pulseNewItem = ref<string | null>(null)
-const cartItemRefs = ref<Record<string, HTMLElement>>({})
+const cartRef = ref<InstanceType<typeof Cart> | null>(null)
 const showAllProducts = ref(false)
 
 // Computed
@@ -243,27 +235,8 @@ const hasMoreProducts = computed(() => {
         filteredProducts.value.length > INITIAL_PRODUCTS_DISPLAYED
 })
 
-const currentCart = computed(() => {
-    if (selectedFrequency.value === 'once') return onceCart.value
-    if (selectedFrequency.value === 'monthly') return monthlyCart.value
-    return multipleCart.value
-})
-
-const cartTotal = computed(() => {
-    return currentCart.value.reduce((sum, item) => sum + item.price, 0)
-})
-
-const recurringTotal = computed(() => {
-    return multipleCart.value
-        .filter(item => item.frequency === 'monthly')
-        .reduce((sum, item) => sum + item.price, 0)
-})
-
-const oneTimeTotal = computed(() => {
-    return multipleCart.value
-        .filter(item => item.frequency === 'once')
-        .reduce((sum, item) => sum + item.price, 0)
-})
+const activeCart = computed(() => currentCart(selectedFrequency.value as 'once' | 'monthly' | 'multiple'))
+const activeCartTotal = computed(() => cartTotal(selectedFrequency.value as 'once' | 'monthly' | 'multiple'))
 
 const bonusItems = computed(() => products.filter(p => p.isBonusItem))
 
@@ -285,86 +258,25 @@ const getProductPrice = (productId: string) => {
     return productPrices.value[productId] ?? products.find(p => p.id === productId)?.price ?? 0
 }
 
-const updateCartItemPrice = (itemId: string, addedAt: number, newPrice: number) => {
-    const item = multipleCart.value.find(i => i.id === itemId && i.addedAt === addedAt)
-    if (item) {
-        item.price = newPrice
-    }
+const handleOpenDrawerForAdd = (product: Product) => {
+    openDrawerForAdd(product, getProductPrice(product.id))
 }
 
-const getCartItemKey = (itemId: string, addedAt: number) => `${itemId}___${addedAt}`
-
-const openDrawerForAdd = (product: Product) => {
-    drawerProduct.value = product
-    drawerMode.value = 'add'
-    drawerInitialPrice.value = getProductPrice(product.id)
-    editingItemKey.value = null
-    drawerOpen.value = true
+const handleDrawerConfirmWrapper = (price: number) => {
+    handleDrawerConfirm(
+        price,
+        (product, price) => addToCart(product, price, 'multiple'),
+        (itemId, addedAt, price) => updateCartItemPrice(itemId, addedAt, price, 'multiple'),
+        cartRef
+    )
 }
 
-const openDrawerForEdit = (item: CartItem, itemKey: string) => {
-    drawerProduct.value = item
-    drawerMode.value = 'edit'
-    drawerInitialPrice.value = item.price
-    editingItemKey.value = itemKey
-    drawerOpen.value = true
+const handleRemoveFromCart = (itemId: string, addedAt: number) => {
+    removeFromCart(itemId, addedAt, selectedFrequency.value as 'once' | 'monthly' | 'multiple')
 }
 
-const handleDrawerConfirm = (price: number) => {
-    if (!drawerProduct.value) return
-
-    if (drawerMode.value === 'add') {
-        const cartItem: CartItem = { ...drawerProduct.value, price, addedAt: Date.now() }
-        multipleCart.value.push(cartItem)
-
-        const itemKey = getCartItemKey(cartItem.id, cartItem.addedAt)
-
-        // Pulse animation for new item
-        pulseNewItem.value = itemKey
-        setTimeout(() => {
-            pulseNewItem.value = null
-        }, 2000)
-
-        // Scroll to the specific new item after animation completes
-        setTimeout(() => {
-            const itemElement = cartItemRefs.value[itemKey]
-            if (itemElement) {
-                const elementPosition = itemElement.getBoundingClientRect().top + window.scrollY
-                const offsetPosition = elementPosition - 50
-                window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
-            } else if (cartSection.value) {
-                const elementPosition = cartSection.value.getBoundingClientRect().top + window.scrollY
-                const offsetPosition = elementPosition - 50
-                window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
-            }
-        }, 350)
-    } else if (drawerMode.value === 'edit' && editingItemKey.value) {
-        const parts = editingItemKey.value.split('___')
-        const itemId = parts[0]
-        const addedAtStr = parts[1]
-        if (itemId && addedAtStr) {
-            const addedAt = parseInt(addedAtStr)
-            updateCartItemPrice(itemId, addedAt, price)
-        }
-    }
-}
-
-const removeFromCart = (itemId: string, addedAt: number) => {
-    const cart = selectedFrequency.value === 'once' ? onceCart :
-        selectedFrequency.value === 'monthly' ? monthlyCart : multipleCart
-    cart.value = cart.value.filter(item => !(item.id === itemId && item.addedAt === addedAt))
-}
-
-const isInCart = (productId: string) => {
-    return multipleCart.value.some(item => item.id === productId)
-}
-
-const toggleBonusItem = (itemId: string) => {
-    if (selectedBonusItems.value.has(itemId)) {
-        selectedBonusItems.value.delete(itemId)
-    } else {
-        selectedBonusItems.value.add(itemId)
-    }
+const handleIsInCart = (productId: string) => {
+    return isInCart(productId, 'multiple')
 }
 
 const handleNext = () => {
@@ -372,7 +284,7 @@ const handleNext = () => {
     console.log('Proceeding to next step', {
         frequency: selectedFrequency.value,
         amount: donationAmounts.value[freqKey],
-        cart: currentCart.value,
+        cart: activeCart.value,
         bonusItems: Array.from(selectedBonusItems.value)
     })
 }
@@ -430,46 +342,10 @@ const handleNext = () => {
 
             <!-- Multiple Items Tab -->
             <TabsContent v-if="ALLOW_MULTIPLE_ITEMS" value="multiple" class="mt-2 space-y-4">
-                <!-- Cart Items (if any) -->
-                <TransitionGroup v-if="multipleCart.length > 0" ref="cartSection" name="list" tag="div"
-                    class="space-y-2 scroll-mt-6">
-                    <div v-for="item in multipleCart" :key="`${item.id}-${item.addedAt}`"
-                        :ref="(el) => { if (el) cartItemRefs[getCartItemKey(item.id, item.addedAt)] = el as HTMLElement }"
-                        class="rounded-lg border bg-card p-3 transition-all" :class="{
-                            'pulse-highlight': pulseNewItem === getCartItemKey(item.id, item.addedAt)
-                        }">
-                        <div class="flex items-center gap-3">
-                            <div class="text-2xl">{{ item.thumbnail }}</div>
-                            <div class="flex-1 min-w-0">
-                                <p class="font-medium text-sm truncate">{{ item.name }}</p>
-                                <div class="flex items-center gap-2">
-                                    <p class="text-xs text-muted-foreground">
-                                        {{ currencySymbol }}{{ item.price }}
-                                        <span v-if="item.frequency === 'monthly'">/month</span>
-                                    </p>
-                                    <button v-if="item.frequency === 'monthly' && item.minPrice"
-                                        @click="openDrawerForEdit(item, getCartItemKey(item.id, item.addedAt))"
-                                        class="text-xs text-primary hover:underline">
-                                        Edit
-                                    </button>
-                                </div>
-                            </div>
-                            <Button variant="ghost" size="sm" @click="removeFromCart(item.id, item.addedAt)">
-                                ✕
-                            </Button>
-                        </div>
-                    </div>
-                </TransitionGroup>
+                <!-- Cart Component -->
+                <Cart ref="cartRef" :items="multipleCart" :currency="selectedCurrency" :total="activeCartTotal"
+                    :show-total="true" @edit="openDrawerForEdit" @remove="handleRemoveFromCart" />
 
-                <!-- Cart Total -->
-                <div v-if="multipleCart.length > 0" class="space-y-4">
-                    <div class="rounded-lg bg-muted p-3 flex items-center justify-between">
-                        <span class="text-sm font-medium">Total</span>
-                        <span class="text-lg font-bold">{{ currencySymbol }}{{ cartTotal }}</span>
-                    </div>
-                </div>
-
-                <!-- Bonus Items Section -->
                 <!-- Bonus Items Section -->
                 <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
                     :recurring-total="recurringTotal" :one-time-total="oneTimeTotal" :currency="selectedCurrency"
@@ -487,41 +363,9 @@ const handleNext = () => {
 
                     <!-- Products Grid -->
                     <TransitionGroup name="product-list" tag="div" class="space-y-2">
-                        <button v-for="product in displayedProducts" :key="product.id" type="button"
-                            :disabled="isInCart(product.id)" @click="openDrawerForAdd(product)"
-                            class="w-full rounded-lg border bg-card p-3 transition-all hover:shadow-sm disabled:cursor-not-allowed text-left">
-                            <div class="flex items-center gap-2 sm:gap-3">
-                                <div class="text-2xl sm:text-3xl shrink-0">{{ product.image }}</div>
-                                <div class="flex-1 min-w-0">
-                                    <h3 class="font-semibold text-sm leading-tight truncate">{{ product.name }}</h3>
-                                    <p class="text-xs text-muted-foreground line-clamp-1">{{ product.description }}</p>
-                                    <!-- Price display -->
-                                    <p class="text-xs font-semibold text-foreground mt-0.5">
-                                        <span v-if="product.frequency === 'once'">
-                                            {{ currencySymbol }}{{ product.price }} one-time
-                                        </span>
-                                        <span v-else>
-                                            Monthly
-                                        </span>
-                                    </p>
-                                </div>
-                                <div class="shrink-0 flex items-center justify-center w-8 h-8 rounded-md"
-                                    :class="isInCart(product.id) ? 'bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400' : 'bg-primary text-primary-foreground'">
-                                    <svg v-if="!isInCart(product.id)" xmlns="http://www.w3.org/2000/svg" width="16"
-                                        height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M5 12h14" />
-                                        <path d="M12 5v14" />
-                                    </svg>
-                                    <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M20 6 9 17l-5-5" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </button>
-
+                        <ProductCard v-for="product in displayedProducts" :key="product.id" :product="product"
+                            :currency="selectedCurrency" :is-in-cart="handleIsInCart(product.id)"
+                            @click="handleOpenDrawerForAdd(product)" />
                     </TransitionGroup>
 
                     <!-- Show More Button -->
@@ -543,44 +387,11 @@ const handleNext = () => {
         <!-- Product Configuration Modal (Dialog on desktop, Drawer on mobile) -->
         <ProductConfigModal v-model:open="drawerOpen" :product="drawerProduct" :currency="selectedCurrency"
             :initial-price="drawerInitialPrice" :max-price="sliderMaxPrice" :mode="drawerMode" :amounts="drawerAmounts"
-            @confirm="handleDrawerConfirm" />
+            @confirm="handleDrawerConfirmWrapper" />
     </div>
 </template>
 
 <style scoped>
-.list-enter-active,
-.list-leave-active {
-    transition: all 0.3s ease;
-}
-
-.list-enter-from {
-    opacity: 0;
-    transform: translateY(-10px);
-}
-
-.list-leave-to {
-    opacity: 0;
-    transform: translateX(-10px);
-}
-
-@keyframes pulse-highlight {
-
-    0%,
-    100% {
-        box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
-        border-color: hsl(var(--border));
-    }
-
-    50% {
-        box-shadow: 0 0 0 4px hsl(var(--primary) / 0.2);
-        border-color: hsl(var(--primary));
-    }
-}
-
-.pulse-highlight {
-    animation: pulse-highlight 1.5s ease-in-out 3;
-}
-
 .product-list-enter-active {
     transition: all 0.4s ease-out;
 }
