@@ -12,7 +12,7 @@ interface Props {
   modelValue: number
   minPrice: number
   maxPrice?: number
-  defaultValue?: number
+  defaultValue: number
   currency?: string
   frequency?: 'once' | 'monthly' | 'yearly'
 }

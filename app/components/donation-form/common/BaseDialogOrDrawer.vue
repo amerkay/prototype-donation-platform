@@ -4,18 +4,18 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle,
-  DialogDescription,
+  // DialogTitle,
+  // DialogDescription,
   DialogFooter
 } from '@/components/ui/dialog'
 import {
   Drawer,
   DrawerContent,
   DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerClose
+  // DrawerTitle,
+  // DrawerDescription,
+  DrawerFooter
+  // DrawerClose
 } from '@/components/ui/drawer'
 
 interface Props {
@@ -27,7 +27,7 @@ interface Emits {
   (e: 'update:open', value: boolean): void
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   open: false,
   dismissible: false
 })

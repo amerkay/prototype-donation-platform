@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue'
-import type { Product, CartItem, CartFrequencyType } from '@/lib/common/types'
+import type { Product, CartItem } from '@/lib/common/types'
 
 // Re-export types for backward compatibility
 export type { Product, CartItem }

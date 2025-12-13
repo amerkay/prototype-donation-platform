@@ -87,10 +87,6 @@ const isRecurringOnly = (item: Product) => {
   return hasRecurringThreshold && once === undefined
 }
 
-const hasAnyRecurring = computed(() => {
-  return props.monthlyTotal > 0 || props.yearlyTotal > 0
-})
-
 const getUpsellMessage = (item: Product) => {
   if (!item.bonusThreshold) return ''
   const { once, monthly, yearly } = item.bonusThreshold

@@ -1,14 +1,5 @@
 <script setup lang="ts">
-import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  CreditCard,
-  LogOut,
-  Moon,
-  Sparkles,
-  Sun
-} from 'lucide-vue-next'
+import { BadgeCheck, ChevronsUpDown, CreditCard, LogOut, Moon, Sun } from 'lucide-vue-next'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -27,7 +18,7 @@ import {
   useSidebar
 } from '@/components/ui/sidebar'
 
-const props = defineProps<{
+defineProps<{
   user: {
     name: string
     email: string

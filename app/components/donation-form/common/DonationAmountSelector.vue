@@ -135,6 +135,7 @@ const backToPresets = () => {
         v-model="localAmount"
         :min-price="minPrice"
         :max-price="maxPrice"
+        :default-value="localAmount"
         :currency="currency"
         :frequency="frequency"
       />

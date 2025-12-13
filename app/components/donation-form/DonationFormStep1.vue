@@ -14,7 +14,7 @@ import Cart from '@/components/donation-form/cart/Cart.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
 import type { Product } from '@/lib/common/types'
 
-const { getCurrencySymbol, convertPrice } = useCurrency()
+const { convertPrice } = useCurrency()
 
 // Currency configuration - will come from API
 const CURRENCIES = [
@@ -65,9 +65,7 @@ const {
   addToCart,
   removeFromCart,
   updateCartItemPrice,
-  toggleBonusItem,
-  clearRecurringItems,
-  canAddRecurringFrequency
+  toggleBonusItem
 } = useCart()
 const {
   drawerOpen,
@@ -279,8 +277,6 @@ const showAllProducts = ref(false)
 const adoptionDialogOpen = ref(false)
 
 // Computed
-const currencySymbol = computed(() => getCurrencySymbol(selectedCurrency.value))
-
 const availableAmounts = computed(() => {
   if (selectedFrequency.value === 'multiple') return []
   const config =
@@ -374,6 +370,10 @@ const isFormValid = computed(() => {
   const freqKey = selectedFrequency.value as keyof typeof donationAmounts.value
   return donationAmounts.value[freqKey] > 0
 })
+
+const typedSelectedFrequency = computed(
+  () => selectedFrequency.value as 'once' | 'monthly' | 'multiple'
+)
 
 // Methods - Cart management
 const getProductPrice = (productId: string) => {
@@ -561,7 +561,7 @@ const handleRemoveAdoption = () => {
 
         <!-- Shipping Notice -->
         <ShippingNotice
-          :selected-frequency="selectedFrequency as 'once' | 'monthly' | 'multiple'"
+          :selected-frequency="typedSelectedFrequency"
           :products="products"
           :selected-bonus-items="selectedBonusItems"
           :multiple-cart="multipleCart"
@@ -612,7 +612,7 @@ const handleRemoveAdoption = () => {
 
         <!-- Shipping Notice -->
         <ShippingNotice
-          :selected-frequency="selectedFrequency as 'once' | 'monthly' | 'multiple'"
+          :selected-frequency="typedSelectedFrequency"
           :products="products"
           :selected-bonus-items="selectedBonusItems"
           :multiple-cart="multipleCart"
