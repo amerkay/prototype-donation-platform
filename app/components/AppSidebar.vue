@@ -13,6 +13,7 @@ import {
   Settings2,
   LifeBuoy,
   Send,
+  Box,
 } from "lucide-vue-next"
 
 import NavMain from '@/components/NavMain.vue'
@@ -65,6 +66,11 @@ const data = {
       title: "Subscriptions",
       url: "#",
       icon: CreditCard,
+    },
+    {
+      title: "Products",
+      url: "#",
+      icon: Box,
     },
     {
       title: "Templates",

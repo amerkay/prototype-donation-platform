@@ -37,6 +37,7 @@ interface Props {
     initialPrice?: number
     maxPrice?: number
     mode?: 'add' | 'edit'
+    amounts?: number[]
 }
 
 interface Emits {
@@ -49,7 +50,8 @@ const props = withDefaults(defineProps<Props>(), {
     currency: '$',
     initialPrice: 0,
     maxPrice: 1000,
-    mode: 'add'
+    mode: 'add',
+    amounts: () => []
 })
 
 const emit = defineEmits<Emits>()
@@ -96,7 +98,7 @@ const handleConfirm = () => {
 
             <div class="px-4 pb-4">
                 <ProductConfigForm :product="product" :currency="currency" :initial-price="initialPrice"
-                    :max-price="maxPrice" @update:price="handlePriceUpdate" />
+                    :max-price="maxPrice" :amounts="amounts" @update:price="handlePriceUpdate" />
             </div>
 
             <DrawerFooter>

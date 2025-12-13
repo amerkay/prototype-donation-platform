@@ -28,6 +28,7 @@ interface Props {
     initialPrice?: number
     maxPrice?: number
     mode?: 'add' | 'edit'
+    amounts?: number[]
 }
 
 interface Emits {
@@ -44,9 +45,9 @@ const isDesktop = useMediaQuery('(min-width: 768px)')
 
 <template>
     <ProductConfigDialog v-if="isDesktop" :open="open" :product="product" :currency="currency"
-        :initial-price="initialPrice" :max-price="maxPrice" :mode="mode"
+        :initial-price="initialPrice" :max-price="maxPrice" :mode="mode" :amounts="amounts"
         @update:open="(val) => emit('update:open', val)" @confirm="(price) => emit('confirm', price)" />
     <ProductConfigDrawer v-else :open="open" :product="product" :currency="currency" :initial-price="initialPrice"
-        :max-price="maxPrice" :mode="mode" @update:open="(val) => emit('update:open', val)"
+        :max-price="maxPrice" :mode="mode" :amounts="amounts" @update:open="(val) => emit('update:open', val)"
         @confirm="(price) => emit('confirm', price)" />
 </template>

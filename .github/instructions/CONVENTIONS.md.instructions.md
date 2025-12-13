@@ -8,6 +8,15 @@ applyTo: '**'
 
 Multi-step donation platform with single/recurring donations, multi-item cart system, dynamic pricing sliders, conditional free gifts with upsell messaging, and mobile-first progressive disclosure.
 
+## LLM Instructions that YOU MUST ALWAYS FOLLOW:
+
+- YOU MUST use shadcn-vue components or ask me to install missing ones.
+- You MUST always choose the most elegant minimal edits to the code. Don't write a lot of code if you don't need to.
+- You MUST always prioritize DRY coding and reusable functions and components, never repeat code.
+- YOU MUST remove obsolete code that has been replaced with new code. Less code is better.
+- At the end of a task, your summary of the work done must be short.
+- At the end of a task, you must reply with an absolute minimal short conventional commit about all the work done during the session above.
+
 ## Tech Stack
 
 - **Framework**: Nuxt 4 (Vue 3.5+)
@@ -16,7 +25,6 @@ Multi-step donation platform with single/recurring donations, multi-item cart sy
 - **Validation**: Vee-validate + Zod
 - **Utilities**: VueUse, class-variance-authority, tailwind-merge
 
-YOU MUST use shadcn-vue components or ask me to install missing ones.
 
 ## File Organization
 ```

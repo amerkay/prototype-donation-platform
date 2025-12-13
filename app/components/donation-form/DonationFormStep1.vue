@@ -5,6 +5,9 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import ProductConfigModal from '@/components/donation-form/ProductConfigModal.vue'
+import BonusItemsSection from '@/components/donation-form/BonusItemsSection.vue'
+import DonationAmountSelector from '@/components/donation-form/DonationAmountSelector.vue'
+import LogarithmicPriceSlider from '@/components/donation-form/LogarithmicPriceSlider.vue'
 
 // Constants
 const ALLOW_MULTIPLE_ITEMS = true
@@ -153,9 +156,11 @@ const amounts = {
 // State - Single donation
 const selectedCurrency = ref('USD')
 const selectedFrequency = ref('once')
-const selectedAmount = ref<number | null>(null)
-const customAmount = ref('')
-const isCustom = ref(false)
+const donationAmounts = ref({
+    once: 0,
+    monthly: 0,
+    yearly: 0
+})
 
 // State - Multiple items
 const onceCart = ref<CartItem[]>([])
@@ -184,9 +189,10 @@ const availableAmounts = computed(() => {
     return amounts[selectedCurrency.value as keyof typeof amounts][selectedFrequency.value as keyof typeof amounts.USD]
 })
 
-const displayAmount = computed(() => {
-    const amount = isCustom.value ? customAmount.value : selectedAmount.value
-    return amount ? `${currentCurrency.value?.symbol}${amount}` : ''
+const drawerAmounts = computed(() => {
+    if (!drawerProduct.value) return []
+    const freq = drawerProduct.value.frequency
+    return amounts[selectedCurrency.value as keyof typeof amounts][freq as keyof typeof amounts.USD] || []
 })
 
 const filteredProducts = computed(() => {
@@ -237,62 +243,13 @@ const oneTimeTotal = computed(() => {
 
 const bonusItems = computed(() => products.filter(p => p.isBonusItem))
 
-const eligibleBonusItems = computed(() => {
-    return bonusItems.value.filter(item => {
-        if (!item.bonusThreshold) return false
-        return recurringTotal.value >= item.bonusThreshold.monthly ||
-            oneTimeTotal.value >= item.bonusThreshold.once
-    })
-})
-
-const upsellBonusItems = computed(() => {
-    return bonusItems.value.filter(item => {
-        if (!item.bonusThreshold) return false
-        return recurringTotal.value < item.bonusThreshold.monthly &&
-            oneTimeTotal.value < item.bonusThreshold.once
-    })
-})
-
-const getUpsellMessage = (item: Product) => {
-    if (!item.bonusThreshold) return ''
-    const recurringNeeded = item.bonusThreshold.monthly - recurringTotal.value
-    const oneTimeNeeded = item.bonusThreshold.once - oneTimeTotal.value
-
-    if (recurringNeeded > 0 && oneTimeNeeded > 0) {
-        const minNeeded = Math.min(recurringNeeded, oneTimeNeeded)
-        return `Add ${currentCurrency.value?.symbol}${minNeeded} more to unlock this free gift!`
-    } else if (recurringNeeded > 0) {
-        return `Add ${currentCurrency.value?.symbol}${recurringNeeded} in monthly donations to unlock!`
-    } else if (oneTimeNeeded > 0) {
-        return `Add ${currentCurrency.value?.symbol}${oneTimeNeeded} in one-time donations to unlock!`
-    }
-    return ''
-}
-
 const isFormValid = computed(() => {
     if (selectedFrequency.value === 'multiple') {
         return multipleCart.value.length > 0
     }
-    return (selectedAmount.value !== null && selectedAmount.value > 0) ||
-        (isCustom.value && customAmount.value && parseFloat(customAmount.value) > 0)
+    const freqKey = selectedFrequency.value as keyof typeof donationAmounts.value
+    return donationAmounts.value[freqKey] > 0
 })
-
-// Methods - Single donation
-const selectAmount = (amount: number) => {
-    selectedAmount.value = amount
-    isCustom.value = false
-    customAmount.value = ''
-}
-
-const enableCustomAmount = () => {
-    isCustom.value = true
-    selectedAmount.value = null
-}
-
-const handleCustomAmountInput = (event: Event) => {
-    const value = (event.target as HTMLInputElement).value
-    customAmount.value = value.replace(/[^0-9.]/g, '')
-}
 
 // Initialize product prices
 products.forEach(product => {
@@ -391,9 +348,10 @@ const toggleBonusItem = (itemId: string) => {
 }
 
 const handleNext = () => {
+    const freqKey = selectedFrequency.value as keyof typeof donationAmounts.value
     console.log('Proceeding to next step', {
         frequency: selectedFrequency.value,
-        amount: selectedAmount.value || customAmount.value,
+        amount: donationAmounts.value[freqKey],
         cart: currentCart.value,
         bonusItems: Array.from(selectedBonusItems.value)
     })
@@ -433,36 +391,17 @@ const handleNext = () => {
 
             <!-- Single Donation Tabs (Once/Monthly) -->
             <TabsContent v-for="freq in baseFrequencies" :key="freq.value" :value="freq.value" class="mt-6 space-y-4">
-                <!-- Preset Amounts -->
-                <div class="grid grid-cols-3 gap-3">
-                    <Button v-for="amount in availableAmounts" :key="amount"
-                        :variant="selectedAmount === amount && !isCustom ? 'default' : 'outline'"
-                        class="h-14 text-lg font-semibold" @click="selectAmount(amount)">
-                        {{ currentCurrency?.symbol }}{{ amount }}
-                    </Button>
-                </div>
+                <!-- Donation Amount Selector -->
+                <DonationAmountSelector v-model="donationAmounts[freq.value as keyof typeof donationAmounts]"
+                    :amounts="availableAmounts" :currency="currentCurrency?.symbol"
+                    :min-price="availableAmounts[0] || 5" :max-price="SLIDER_MAX"
+                    :frequency-label="freq.label.toLowerCase() + ' donation'" />
 
-                <!-- Custom Amount -->
-                <div class="space-y-2">
-                    <Button :variant="isCustom ? 'default' : 'outline'" class="h-14 w-full text-lg font-semibold"
-                        @click="enableCustomAmount">
-                        Custom Amount
-                    </Button>
-
-                    <div v-if="isCustom" class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-lg text-muted-foreground">
-                            {{ currentCurrency?.symbol }}
-                        </span>
-                        <Input v-model="customAmount" type="text" inputmode="decimal" placeholder="0.00"
-                            class="h-12 pl-8 text-lg" @input="handleCustomAmountInput" />
-                    </div>
-                </div>
-
-                <!-- Summary -->
-                <div v-if="displayAmount" class="rounded-lg bg-muted p-4 text-center">
-                    <p class="text-sm text-muted-foreground">Your {{ freq.label.toLowerCase() }} donation</p>
-                    <p class="text-3xl font-bold">{{ displayAmount }}</p>
-                </div>
+                <!-- Bonus Items Section -->
+                <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
+                    :recurring-total="freq.value === 'monthly' ? donationAmounts[freq.value as keyof typeof donationAmounts] : 0"
+                    :one-time-total="freq.value === 'once' ? donationAmounts[freq.value as keyof typeof donationAmounts] : 0"
+                    :currency-symbol="currentCurrency?.symbol" @toggle="toggleBonusItem" />
 
                 <!-- Next Button -->
                 <Button :disabled="!isFormValid" class="w-full h-12 text-base" @click="handleNext">
@@ -509,39 +448,12 @@ const handleNext = () => {
                         <span class="text-sm font-medium">Total</span>
                         <span class="text-lg font-bold">{{ currentCurrency?.symbol }}{{ cartTotal }}</span>
                     </div>
-                    <div class="border-b"></div>
                 </div>
 
-                <!-- Eligible Bonus Items (Free Gifts) -->
-                <div v-if="eligibleBonusItems.length > 0" class="space-y-2">
-                    <p class="text-sm font-medium text-muted-foreground">🎁 Free gifts available:</p>
-                    <div v-for="item in eligibleBonusItems" :key="`bonus-${item.id}`"
-                        class="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
-                        <input type="checkbox" :id="`bonus-${item.id}`" :checked="selectedBonusItems.has(item.id)"
-                            @change="toggleBonusItem(item.id)" class="h-4 w-4 rounded border-input" />
-                        <label :for="`bonus-${item.id}`" class="flex items-center gap-3 flex-1 cursor-pointer">
-                            <div class="text-xl">{{ item.thumbnail }}</div>
-                            <div class="flex-1 min-w-0">
-                                <p class="font-medium text-sm truncate">{{ item.name }}</p>
-                                <p class="text-xs text-success font-medium">FREE with your donation!</p>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Upsell for Bonus Items -->
-                <div v-if="upsellBonusItems.length > 0" class="space-y-2">
-                    <div v-for="item in upsellBonusItems" :key="`upsell-${item.id}`"
-                        class="rounded-lg border border-dashed bg-card p-3 space-y-2">
-                        <div class="flex items-start gap-3">
-                            <div class="text-xl opacity-50">{{ item.thumbnail }}</div>
-                            <div class="flex-1 min-w-0">
-                                <p class="font-medium text-sm text-muted-foreground">{{ item.name }}</p>
-                                <p class="text-xs text-primary font-medium">{{ getUpsellMessage(item) }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Bonus Items Section -->
+                <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
+                    :recurring-total="recurringTotal" :one-time-total="oneTimeTotal"
+                    :currency-symbol="currentCurrency?.symbol" @toggle="toggleBonusItem" />
 
                 <!-- Products Section -->
                 <div class="space-y-4">
@@ -610,7 +522,7 @@ const handleNext = () => {
 
         <!-- Product Configuration Modal (Dialog on desktop, Drawer on mobile) -->
         <ProductConfigModal v-model:open="drawerOpen" :product="drawerProduct" :currency="currentCurrency?.symbol"
-            :initial-price="drawerInitialPrice" :max-price="SLIDER_MAX" :mode="drawerMode"
+            :initial-price="drawerInitialPrice" :max-price="SLIDER_MAX" :mode="drawerMode" :amounts="drawerAmounts"
             @confirm="handleDrawerConfirm" />
     </div>
 </template>
