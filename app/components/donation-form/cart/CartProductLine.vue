@@ -66,7 +66,11 @@ const tributeLabel = computed(() => {
 <template>
   <div
     class="rounded-lg border bg-card p-3 transition-all"
-    :class="{ 'pulse-highlight': isPulsing }"
+    :class="{
+      'pulse-highlight': isPulsing,
+      'cursor-pointer hover:bg-accent': hasEditOption
+    }"
+    @click="hasEditOption && emit('edit')"
   >
     <div class="flex items-center gap-3">
       <div class="text-2xl">{{ item.thumbnail }}</div>
@@ -84,8 +88,8 @@ const tributeLabel = computed(() => {
           </p>
           <button
             v-if="hasEditOption"
-            class="text-xs text-primary hover:underline"
-            @click.stop="emit('edit')"
+            class="text-xs text-primary hover:underline pointer-events-none"
+            @click.stop
           >
             Edit
           </button>
