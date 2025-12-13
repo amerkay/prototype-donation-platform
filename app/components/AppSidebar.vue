@@ -36,7 +36,7 @@ const props = withDefaults(defineProps<SidebarProps>(), {
 
 const data = {
   user: {
-    name: "Some User",
+    name: "Wild Amer",
     email: "awesome@charity.co.uk",
     avatar: "/avatar.png",
   },

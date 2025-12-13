@@ -79,8 +79,13 @@ const getUpsellMessage = (item: Product) => {
     if (once !== undefined && monthly !== undefined) {
         const oneTimeNeeded = Math.max(0, once - props.oneTimeTotal)
         const recurringNeeded = Math.max(0, monthly - props.recurringTotal)
-        const minNeeded = Math.min(oneTimeNeeded, recurringNeeded)
-        return `Add ${currencySymbol.value}${minNeeded} more to unlock this free gift!`
+
+        // Both amounts needed
+        if (oneTimeNeeded > 0 && recurringNeeded > 0) {
+            return `Add ${currencySymbol.value}${oneTimeNeeded} one-time or ${currencySymbol.value}${recurringNeeded} monthly to unlock!`
+        }
+        // Already met one threshold
+        return 'Free gift unlocked!'
     } else if (monthly !== undefined) {
         const recurringNeeded = Math.max(0, monthly - props.recurringTotal)
         return `Add ${currencySymbol.value}${recurringNeeded} in monthly donations to unlock!`

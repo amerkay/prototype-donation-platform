@@ -152,12 +152,12 @@ const products: Product[] = [
 // Amounts in base currency (GBP) - will be converted to selected currency
 const amountsInBaseCurrency = {
     once: {
-        amounts: [10, 25, 50, 100, 500, 1000],
+        amounts: [5, 10, 25, 50, 100, 500],
         minPrice: 5,
         maxPrice: 1000
     },
     monthly: {
-        amounts: [10, 25, 50, 75, 100, 300],
+        amounts: [5, 10, 25, 50, 75, 100],
         minPrice: 3,
         maxPrice: 500
     },
