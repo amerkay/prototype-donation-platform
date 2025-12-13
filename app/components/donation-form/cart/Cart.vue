@@ -50,22 +50,29 @@ defineExpose({
         </TransitionGroup>
 
         <div v-if="showTotal" class="rounded-lg bg-muted p-3 space-y-2">
-            <div v-if="recurringTotal !== undefined && recurringTotal > 0" class="flex items-center justify-between">
-                <span class="text-sm font-medium">One-time</span>
-                <span class="text-base font-semibold">{{ getCurrencySymbol(currency) }}{{ total - recurringTotal
-                }}</span>
-            </div>
-            <div v-if="recurringTotal !== undefined && recurringTotal > 0" class="flex items-center justify-between">
-                <span class="text-sm font-medium">Monthly Recurring</span>
-                <span class="text-base font-semibold">{{ getCurrencySymbol(currency) }}{{ recurringTotal }}</span>
-            </div>
-            <div class="flex items-center justify-between"
-                :class="{ 'pt-2 border-t': recurringTotal !== undefined && recurringTotal > 0 }">
-                <span class="text-sm font-medium">
-                    {{ recurringTotal !== undefined && recurringTotal > 0 ? "Today's Total" : "Total" }}
-                </span>
-                <span class="text-lg font-bold">{{ getCurrencySymbol(currency) }}{{ total }}</span>
-            </div>
+            <!-- Show breakdown when both one-time and recurring exist -->
+            <template v-if="recurringTotal !== undefined && recurringTotal > 0 && (total - recurringTotal) > 0">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium">One-time</span>
+                    <span class="text-base font-semibold">{{ getCurrencySymbol(currency) }}{{ total - recurringTotal
+                        }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium">Monthly Recurring</span>
+                    <span class="text-base font-semibold">{{ getCurrencySymbol(currency) }}{{ recurringTotal }}</span>
+                </div>
+                <div class="flex items-center justify-between pt-2 border-t">
+                    <span class="text-sm font-medium">Today's Total</span>
+                    <span class="text-lg font-bold">{{ getCurrencySymbol(currency) }}{{ total }}</span>
+                </div>
+            </template>
+            <!-- Show single line when only one type exists -->
+            <template v-else>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium">Total</span>
+                    <span class="text-lg font-bold">{{ getCurrencySymbol(currency) }}{{ total }}</span>
+                </div>
+            </template>
         </div>
     </div>
 </template>
