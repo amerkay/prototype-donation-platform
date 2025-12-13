@@ -61,10 +61,13 @@ const {
     oneTimeTotal,
     monthlyTotal,
     yearlyTotal,
+    activeRecurringFrequency,
     addToCart,
     removeFromCart,
     updateCartItemPrice,
     toggleBonusItem,
+    clearRecurringItems,
+    canAddRecurringFrequency,
 } = useCart()
 const {
     drawerOpen,
@@ -145,6 +148,21 @@ const frequencies = computed(() => {
     return freqs
 })
 
+const isFrequencyDisabled = (frequency: string) => {
+    const locked = activeRecurringFrequency.value
+    if (!locked) return false
+    // Disable incompatible recurring frequencies when cart is locked
+    return (frequency === 'monthly' || frequency === 'yearly') && frequency !== locked
+}
+
+const isFrequencyLocked = computed(() => activeRecurringFrequency.value !== null)
+const lockedFrequencyLabel = computed(() => {
+    const freq = activeRecurringFrequency.value
+    if (freq === 'monthly') return 'Monthly'
+    if (freq === 'yearly') return 'Yearly'
+    return ''
+})
+
 const enabledFrequencies = computed(() => {
     return BASE_FREQUENCIES.map(f => f.value) as Array<'once' | 'monthly' | 'yearly'>
 })
@@ -154,7 +172,7 @@ const products: Product[] = [
         id: 'adopt-bumi',
         name: 'Adopt Bumi the Orangutan',
         description: 'Monthly sponsorship to support Bumi\'s care and rehabilitation',
-        price: 50,
+        // price: 50,
         minPrice: 3,
         default: 10,
         frequency: 'monthly',
@@ -166,7 +184,7 @@ const products: Product[] = [
         id: 'adopt-maya',
         name: 'Adopt Maya the Orangutan',
         description: 'Monthly sponsorship for Maya\'s ongoing medical care',
-        price: 50,
+        // price: 50,
         minPrice: 3,
         default: 10,
         frequency: 'monthly',
@@ -219,7 +237,7 @@ const products: Product[] = [
         id: 'education-program',
         name: 'Support Education Program',
         description: 'Monthly contribution to local conservation education',
-        price: 25,
+        // price: 25,
         minPrice: 5,
         default: 25,
         frequency: 'monthly',
@@ -231,7 +249,7 @@ const products: Product[] = [
         id: 'adopt-riko',
         name: 'Adopt Riko the Orangutan',
         description: 'Yearly sponsorship to support Riko\'s rehabilitation journey',
-        price: 120,
+        // price: 120,
         minPrice: 50,
         default: 120,
         frequency: 'yearly',
@@ -243,7 +261,7 @@ const products: Product[] = [
         id: 'adopt-sari',
         name: 'Adopt Sari the Orangutan',
         description: 'Yearly sponsorship for Sari\'s long-term care',
-        price: 120,
+        // price: 120,
         minPrice: 50,
         default: 120,
         frequency: 'yearly',
@@ -316,7 +334,16 @@ const drawerAmounts = computed(() => {
 
 const filteredProducts = computed(() => {
     // Filter out bonus items from the main product list
-    const regularProducts = products.filter(p => !p.isBonusItem)
+    let regularProducts = products.filter(p => !p.isBonusItem)
+
+    // When frequency is locked, only show once items and items matching the locked frequency
+    const locked = activeRecurringFrequency.value
+    if (locked) {
+        regularProducts = regularProducts.filter(p =>
+            p.frequency === 'once' || p.frequency === locked
+        )
+    }
+
     if (!searchQuery.value.trim()) return regularProducts
     const query = searchQuery.value.toLowerCase()
     return regularProducts.filter(p =>
@@ -454,10 +481,11 @@ const handleRemoveAdoption = () => {
                 'grid-cols-3': frequencies.length === 3,
                 'grid-cols-4': frequencies.length === 4,
             }">
-                <TabsTrigger v-for="freq in frequencies" :key="freq.value" :value="freq.value" :class="[
-                    frequencies.length === 4 ? 'text-sm font-bold' : 'text-base',
-                    'data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground!'
-                ]">
+                <TabsTrigger v-for="freq in frequencies" :key="freq.value" :value="freq.value"
+                    :disabled="isFrequencyDisabled(freq.value)" :class="[
+                        frequencies.length === 4 ? 'text-sm font-bold' : 'text-base',
+                        'data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground!'
+                    ]">
                     {{ freq.label }}
                 </TabsTrigger>
             </TabsList>
@@ -467,7 +495,8 @@ const handleRemoveAdoption = () => {
                 <!-- Donation Amount Selector -->
                 <DonationAmountSelector v-model="donationAmounts[freq.value as keyof typeof donationAmounts]"
                     :amounts="availableAmounts" :currency="selectedCurrency" :min-price="sliderMinPrice"
-                    :max-price="sliderMaxPrice" :frequency-label="freq.label.toLowerCase() + ' donation'" />
+                    :max-price="sliderMaxPrice" :frequency-label="freq.label.toLowerCase() + ' donation'"
+                    :frequency="freq.value" />
 
                 <!-- Adopt an Orangutan - Show selected adoption or button -->
                 <CartProductLine v-if="selectedAdoptions[freq.value as keyof typeof selectedAdoptions]"

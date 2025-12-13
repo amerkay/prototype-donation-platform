@@ -86,11 +86,12 @@ const handleConfirm = () => {
                 <!-- Recurring with preset amounts -->
                 <DonationAmountSelector v-else-if="hasPresetAmounts" v-model="localPrice" :amounts="amounts"
                     :currency="currency" :min-price="product?.minPrice ?? 0" :max-price="maxPrice"
-                    :frequency-label="frequencyLabel" />
+                    :frequency-label="frequencyLabel" :frequency="product?.frequency ?? 'once'" />
 
                 <!-- Recurring without preset amounts -->
                 <DonationAmountSelector v-else-if="isRecurring" v-model="localPrice" :amounts="[]" :currency="currency"
-                    :min-price="product?.minPrice ?? 0" :max-price="maxPrice" :frequency-label="frequencyLabel" />
+                    :min-price="product?.minPrice ?? 0" :max-price="maxPrice" :frequency-label="frequencyLabel"
+                    :frequency="product?.frequency ?? 'once'" />
             </div>
         </template>
 

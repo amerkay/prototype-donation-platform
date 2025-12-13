@@ -48,6 +48,18 @@ export const useCart = () => {
             .reduce((sum, item) => sum + (item.price || 0), 0)
     })
 
+    const activeRecurringFrequency = computed<'monthly' | 'yearly' | null>(() => {
+        const items = multipleCart.value
+        if (items.some(item => item.frequency === 'monthly')) return 'monthly'
+        if (items.some(item => item.frequency === 'yearly')) return 'yearly'
+        return null
+    })
+
+    const canAddRecurringFrequency = (frequency: 'monthly' | 'yearly') => {
+        const active = activeRecurringFrequency.value
+        return !active || active === frequency
+    }
+
     const addToCart = (product: Product, price: number, frequency: 'once' | 'monthly' | 'multiple' = 'multiple') => {
         const cartItem: CartItem = { ...product, price, addedAt: Date.now() }
         const cart = getCartByFrequency(frequency)
@@ -85,6 +97,10 @@ export const useCart = () => {
         }
     }
 
+    const clearRecurringItems = () => {
+        multipleCart.value = multipleCart.value.filter(item => item.frequency === 'once')
+    }
+
     return {
         // State
         onceCart,
@@ -97,6 +113,7 @@ export const useCart = () => {
         oneTimeTotal,
         monthlyTotal,
         yearlyTotal,
+        activeRecurringFrequency,
 
         // Methods
         currentCart,
@@ -106,5 +123,7 @@ export const useCart = () => {
         updateCartItemPrice,
         toggleBonusItem,
         clearCart,
+        clearRecurringItems,
+        canAddRecurringFrequency,
     }
 }

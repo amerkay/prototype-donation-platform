@@ -27,8 +27,11 @@ const { getCurrencySymbol } = useCurrency()
                     <span v-if="product.frequency === 'once'">
                         {{ getCurrencySymbol(currency) }}{{ product.price }} one-time
                     </span>
-                    <span v-else>
+                    <span v-else-if="product.frequency === 'monthly'">
                         Monthly
+                    </span>
+                    <span v-else-if="product.frequency === 'yearly'">
+                        Yearly
                     </span>
                 </p>
             </div>

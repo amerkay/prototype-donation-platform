@@ -9,15 +9,23 @@ interface Props {
     maxPrice?: number
     defaultValue?: number
     currency?: string
+    frequency?: 'once' | 'monthly' | 'yearly'
 }
 
 const props = withDefaults(defineProps<Props>(), {
     maxPrice: 1000,
-    currency: 'USD'
+    currency: 'USD',
+    frequency: 'once'
 })
 
 const { getCurrencySymbol } = useCurrency()
 const currencySymbol = computed(() => getCurrencySymbol(props.currency))
+
+const frequencySuffix = computed(() => {
+    if (props.frequency === 'monthly') return '/mo'
+    if (props.frequency === 'yearly') return '/yr'
+    return ''
+})
 
 const emit = defineEmits<{
     'update:modelValue': [value: number]
@@ -127,7 +135,7 @@ const handleCustomBlur = () => {
         <div class="flex items-center justify-between">
             <span v-if="!isCustomMode" class="text-sm font-semibold">
                 {{ currencySymbol }}{{ modelValue }}
-                <span class="text-xs text-muted-foreground">/mo</span>
+                <span v-if="frequencySuffix" class="text-xs text-muted-foreground">{{ frequencySuffix }}</span>
             </span>
             <InputGroup v-else class="w-auto">
                 <InputGroupAddon>
@@ -135,8 +143,8 @@ const handleCustomBlur = () => {
                 </InputGroupAddon>
                 <InputGroupInput v-model="customInputValue" type="number" :min="minPrice" class="w-24"
                     @input="handleCustomInput" @blur="handleCustomBlur" />
-                <InputGroupAddon align="inline-end">
-                    <InputGroupText>/mo</InputGroupText>
+                <InputGroupAddon v-if="frequencySuffix" align="inline-end">
+                    <InputGroupText>{{ frequencySuffix }}</InputGroupText>
                 </InputGroupAddon>
             </InputGroup>
             <button type="button" class="text-xs text-primary hover:underline" @click="toggleCustomMode">

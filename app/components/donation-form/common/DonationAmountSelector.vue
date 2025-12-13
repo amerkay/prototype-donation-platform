@@ -10,6 +10,7 @@ interface Props {
     minPrice?: number
     maxPrice?: number
     frequencyLabel?: string
+    frequency?: 'once' | 'monthly' | 'yearly'
 }
 
 interface Emits {
@@ -20,7 +21,8 @@ const props = withDefaults(defineProps<Props>(), {
     currency: 'USD',
     minPrice: 5,
     maxPrice: 1000,
-    frequencyLabel: 'donation'
+    frequencyLabel: 'donation',
+    frequency: 'once'
 })
 
 const { getCurrencySymbol } = useCurrency()
@@ -118,7 +120,7 @@ const backToPresets = () => {
         <!-- Custom Amount Slider -->
         <div v-else class="space-y-3">
             <LogarithmicPriceSlider v-model="localAmount" :min-price="minPrice" :max-price="maxPrice"
-                :currency="currency" />
+                :currency="currency" :frequency="frequency" />
 
             <!-- Back to Preset Amounts Button -->
             <Button variant="outline" class="w-full" @click="backToPresets">
