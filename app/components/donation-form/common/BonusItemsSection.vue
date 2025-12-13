@@ -12,6 +12,7 @@ interface Props {
     oneTimeTotal?: number
     currency?: string
     enabledFrequencies?: Array<'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'>
+    selectedFrequency?: string
 }
 
 interface Emits {
@@ -26,7 +27,8 @@ const props = withDefaults(defineProps<Props>(), {
     quarterlyTotal: 0,
     yearlyTotal: 0,
     oneTimeTotal: 0,
-    enabledFrequencies: () => ['once', 'monthly']
+    enabledFrequencies: () => ['once', 'monthly'],
+    selectedFrequency: 'once'
 })
 
 const { getCurrencySymbol } = useCurrency()
@@ -75,10 +77,6 @@ const isRecurringOnly = (item: Product) => {
 
 const hasAnyRecurring = computed(() => {
     return props.weeklyTotal > 0 || props.monthlyTotal > 0 || props.quarterlyTotal > 0 || props.yearlyTotal > 0
-})
-
-const isOnOneTimeTab = computed(() => {
-    return props.oneTimeTotal > 0 && !hasAnyRecurring.value
 })
 
 const getUpsellMessage = (item: Product) => {
@@ -198,7 +196,7 @@ watch(eligibleBonusItems, (newEligible) => {
                             <p class="font-medium text-sm text-muted-foreground">{{ item.name }}</p>
                             <p class="text-xs text-primary font-medium">
                                 {{ getUpsellMessage(item) }}
-                                <button v-if="isRecurringOnly(item) && isOnOneTimeTab" type="button"
+                                <button v-if="isRecurringOnly(item) && selectedFrequency === 'once'" type="button"
                                     @click="handleSwitchToRecurring(item)"
                                     class="underline hover:no-underline font-semibold">
                                     Switch to {{ getRecurringLabel(item) }}

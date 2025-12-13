@@ -23,7 +23,7 @@ const { getCurrencySymbol } = useCurrency()
             <div class="text-2xl sm:text-3xl shrink-0">{{ product.image }}</div>
             <div class="flex-1 min-w-0">
                 <h3 class="font-semibold text-sm leading-tight truncate">{{ product.name }}</h3>
-                <p class="text-xs text-muted-foreground line-clamp-1">{{ product.description }}</p>
+                <p class="text-xs text-muted-foreground line-clamp-2">{{ product.description }}</p>
                 <p class="text-xs font-semibold text-foreground mt-0.5">
                     <span v-if="product.frequency === 'once'">
                         {{ getCurrencySymbol(currency) }}{{ product.price }} one-time

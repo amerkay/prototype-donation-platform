@@ -322,7 +322,8 @@ const handleSwitchToTab = (tab: 'weekly' | 'monthly' | 'quarterly' | 'yearly') =
                 <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
                     :monthly-total="freq.value === 'monthly' ? donationAmounts[freq.value as keyof typeof donationAmounts] : 0"
                     :one-time-total="freq.value === 'once' ? donationAmounts[freq.value as keyof typeof donationAmounts] : 0"
-                    :enabled-frequencies="enabledFrequencies" :currency="selectedCurrency" @toggle="toggleBonusItem"
+                    :enabled-frequencies="enabledFrequencies" :currency="selectedCurrency"
+                    :selected-frequency="selectedFrequency" @toggle="toggleBonusItem"
                     @switch-to-tab="handleSwitchToTab" />
 
                 <!-- Shipping Notice -->
@@ -345,7 +346,8 @@ const handleSwitchToTab = (tab: 'weekly' | 'monthly' | 'quarterly' | 'yearly') =
                 <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
                     :one-time-total="oneTimeTotal" :weekly-total="weeklyTotal" :monthly-total="monthlyTotal"
                     :quarterly-total="quarterlyTotal" :yearly-total="yearlyTotal"
-                    :enabled-frequencies="enabledFrequencies" :currency="selectedCurrency" @toggle="toggleBonusItem"
+                    :enabled-frequencies="enabledFrequencies" :currency="selectedCurrency"
+                    :selected-frequency="selectedFrequency" @toggle="toggleBonusItem"
                     @switch-to-tab="handleSwitchToTab" />
 
                 <!-- Shipping Notice -->
