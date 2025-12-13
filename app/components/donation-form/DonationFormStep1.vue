@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import ProductOptionsModal from '~/components/donation-form/cart/ProductOptionsModal.vue'
@@ -441,6 +441,24 @@ const handleRemoveAdoption = () => {
   selectedAdoptions.value[freqKey] = null
   donationAmounts.value[freqKey] = 0
 }
+
+// Watch for tab switches to "multiple" - auto-add selected adoption if cart is empty
+watch(selectedFrequency, (newFreq, oldFreq) => {
+  if (newFreq === 'multiple' && (oldFreq === 'monthly' || oldFreq === 'yearly')) {
+    // Check if multiple cart is empty
+    if (multipleCart.value.length === 0) {
+      // Check if there's a selected adoption for the previous tab
+      const previousAdoption = selectedAdoptions.value[oldFreq]
+      if (previousAdoption) {
+        const price =
+          donationAmounts.value[oldFreq] || previousAdoption.default || previousAdoption.price || 0
+        if (price > 0) {
+          addToCart(previousAdoption, price, 'multiple')
+        }
+      }
+    }
+  }
+})
 </script>
 
 <template>
