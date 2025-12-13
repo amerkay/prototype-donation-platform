@@ -4,7 +4,8 @@ import { Minus, Plus } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import BaseDialogOrDrawer from '~/components/donation-form/common/BaseDialogOrDrawer.vue'
 import AmountSelector from '~/components/donation-form/common/AmountSelector.vue'
-import type { Product, CartItem } from '@/lib/common/types'
+import ProductTributeForm from '~/components/donation-form/cart/ProductTributeForm.vue'
+import type { Product, CartItem, TributeData } from '@/lib/common/types'
 
 interface Props {
   currency: string
@@ -31,7 +32,8 @@ const emit = defineEmits<{
     price: number,
     quantity: number,
     mode: 'add' | 'edit',
-    itemKey?: string
+    itemKey?: string,
+    tribute?: TributeData
   ]
 }>()
 
@@ -44,6 +46,7 @@ const mode = ref<'add' | 'edit'>('add')
 const localPrice = ref(0)
 const localQuantity = ref(1)
 const editingItemKey = ref<string | null>(null)
+const tribute = ref<TributeData>({ type: 'none' })
 
 // Computed
 const currencySymbol = computed(() => getCurrencySymbol(props.currency))
@@ -81,6 +84,7 @@ const openForAdd = (prod: Product, initialPrice: number) => {
   localPrice.value = initialPrice
   localQuantity.value = 1
   editingItemKey.value = null
+  tribute.value = { type: 'none' }
   open.value = true
 }
 
@@ -90,6 +94,7 @@ const openForEdit = (item: CartItem, itemKey: string) => {
   localPrice.value = item.price ?? 0
   localQuantity.value = item.quantity ?? 1
   editingItemKey.value = itemKey
+  tribute.value = item.tribute ?? { type: 'none' }
   open.value = true
 }
 
@@ -106,7 +111,8 @@ const handleConfirm = () => {
     localPrice.value,
     localQuantity.value,
     mode.value,
-    editingItemKey.value || undefined
+    editingItemKey.value || undefined,
+    tribute.value
   )
   open.value = false
 }
@@ -183,6 +189,11 @@ defineExpose({
           :frequency-label="frequencyLabel"
           :frequency="product?.frequency ?? 'once'"
         />
+
+        <!-- Tribute Form (only for recurring products) -->
+        <div v-if="isRecurring" class="pt-4 border-t">
+          <ProductTributeForm v-model="tribute" />
+        </div>
       </div>
     </template>
 

@@ -32,6 +32,28 @@ const isOneTime = computed(() => props.item.frequency === 'once')
 const hasEditOption = computed(() => {
   return !!(props.item.minPrice || props.item.default || isOneTime.value)
 })
+
+const hasTribute = computed(() => {
+  const item = props.item as CartItem
+  return item.tribute && item.tribute.type !== 'none'
+})
+
+const tributeLabel = computed(() => {
+  const item = props.item as CartItem
+  if (!item.tribute || item.tribute.type === 'none') return ''
+
+  const honoree = item.tribute.honoree
+  if (!honoree) return ''
+
+  const fullName = [honoree.firstName, honoree.lastName].filter(Boolean).join(' ')
+
+  if (item.tribute.type === 'gift') {
+    return `🎁 Gift to ${fullName}`
+  } else if (item.tribute.type === 'memorial') {
+    return `🕊️ In memory of ${fullName}`
+  }
+  return ''
+})
 </script>
 
 <template>
@@ -61,6 +83,9 @@ const hasEditOption = computed(() => {
             Edit
           </button>
         </div>
+        <p v-if="hasTribute" class="text-xs text-muted-foreground mt-1">
+          {{ tributeLabel }}
+        </p>
       </div>
       <Button variant="ghost" size="sm" @click.stop="emit('remove')"> ✕ </Button>
     </div>

@@ -1,8 +1,8 @@
 import { ref, computed } from 'vue'
-import type { Product, CartItem } from '@/lib/common/types'
+import type { Product, CartItem, TributeData } from '@/lib/common/types'
 
 // Re-export types for backward compatibility
-export type { Product, CartItem }
+export type { Product, CartItem, TributeData }
 
 const onceCart = ref<CartItem[]>([])
 const monthlyCart = ref<CartItem[]>([])
@@ -84,9 +84,10 @@ export const useCart = () => {
     product: Product,
     price: number,
     frequency: 'once' | 'monthly' | 'multiple' = 'multiple',
-    quantity?: number
+    quantity?: number,
+    tribute?: TributeData
   ) => {
-    const cartItem: CartItem = { ...product, price, addedAt: Date.now(), quantity }
+    const cartItem: CartItem = { ...product, price, addedAt: Date.now(), quantity, tribute }
     const cart = getCartByFrequency(frequency)
     cart.value.push(cartItem)
     return cartItem
@@ -122,6 +123,18 @@ export const useCart = () => {
     const item = currentCart(frequency).find((i) => i.id === itemId && i.addedAt === addedAt)
     if (item) {
       item.quantity = newQuantity
+    }
+  }
+
+  const updateCartItemTribute = (
+    itemId: string,
+    addedAt: number,
+    tribute: TributeData,
+    frequency: 'once' | 'monthly' | 'multiple' = 'multiple'
+  ) => {
+    const item = currentCart(frequency).find((i) => i.id === itemId && i.addedAt === addedAt)
+    if (item) {
+      item.tribute = tribute
     }
   }
 
@@ -168,6 +181,7 @@ export const useCart = () => {
     removeFromCart,
     updateCartItemPrice,
     updateCartItemQuantity,
+    updateCartItemTribute,
     toggleBonusItem,
     clearCart,
     clearRecurringItems,

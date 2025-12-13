@@ -10,7 +10,7 @@ import BaseDialogOrDrawer from '~/components/donation-form/common/BaseDialogOrDr
 import CartProductLine from '~/components/donation-form/cart/CartProductLine.vue'
 import Cart from '@/components/donation-form/cart/Cart.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
-import type { Product, CartItem } from '@/lib/common/types'
+import type { Product, CartItem, TributeData } from '@/lib/common/types'
 import { getCartItemKey, parseCartItemKey } from '@/lib/common/cart-utils'
 import ProductCard from './cart/ProductCard.vue'
 
@@ -66,6 +66,7 @@ const {
   removeFromCart,
   updateCartItemPrice,
   updateCartItemQuantity,
+  updateCartItemTribute,
   toggleBonusItem
 } = useCart()
 
@@ -358,10 +359,11 @@ const handleModalConfirm = (
   price: number,
   quantity: number,
   mode: 'add' | 'edit',
-  itemKey?: string
+  itemKey?: string,
+  tribute?: TributeData
 ) => {
   if (mode === 'add') {
-    const cartItem = addToCart(product, price, 'multiple', quantity)
+    const cartItem = addToCart(product, price, 'multiple', quantity, tribute)
     const newItemKey = getCartItemKey(cartItem.id, cartItem.addedAt)
     if (cartRef.value) {
       cartRef.value.triggerPulse(newItemKey)
@@ -371,6 +373,9 @@ const handleModalConfirm = (
     if (parsed) {
       updateCartItemPrice(parsed.itemId, parsed.addedAt, price, 'multiple')
       updateCartItemQuantity(parsed.itemId, parsed.addedAt, quantity, 'multiple')
+      if (tribute) {
+        updateCartItemTribute(parsed.itemId, parsed.addedAt, tribute, 'multiple')
+      }
     }
   }
 }

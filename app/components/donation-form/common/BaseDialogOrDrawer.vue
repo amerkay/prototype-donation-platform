@@ -2,7 +2,7 @@
 import { useMediaQuery } from '@vueuse/core'
 import {
   Dialog,
-  DialogContent,
+  DialogScrollContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
@@ -43,7 +43,7 @@ const handleOpenChange = (value: boolean) => {
 <template>
   <!-- Desktop Dialog -->
   <Dialog v-if="isDesktop" :open="open" @update:open="handleOpenChange">
-    <DialogContent class="sm:max-w-md">
+    <DialogScrollContent class="sm:max-w-md">
       <DialogHeader v-if="$slots.header">
         <DialogTitle><slot name="header" /></DialogTitle>
         <DialogDescription class="sr-only"> Product configuration dialog </DialogDescription>
@@ -52,20 +52,20 @@ const handleOpenChange = (value: boolean) => {
       <DialogFooter v-if="$slots.footer">
         <slot name="footer" />
       </DialogFooter>
-    </DialogContent>
+    </DialogScrollContent>
   </Dialog>
 
   <!-- Mobile Drawer -->
   <Drawer v-else :open="open" :dismissible="dismissible" @update:open="handleOpenChange">
-    <DrawerContent>
-      <DrawerHeader v-if="$slots.header">
+    <DrawerContent class="flex flex-col">
+      <DrawerHeader v-if="$slots.header" class="shrink-0">
         <DrawerTitle><slot name="header" /></DrawerTitle>
         <DrawerDescription class="sr-only"> Product configuration drawer </DrawerDescription>
       </DrawerHeader>
-      <div v-if="$slots.content" class="px-4">
+      <div v-if="$slots.content" class="px-4 overflow-y-auto flex-1">
         <slot name="content" />
       </div>
-      <DrawerFooter v-if="$slots.footer">
+      <DrawerFooter v-if="$slots.footer" class="shrink-0">
         <slot name="footer" />
       </DrawerFooter>
     </DrawerContent>
