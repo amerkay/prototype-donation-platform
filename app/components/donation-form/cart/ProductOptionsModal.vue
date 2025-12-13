@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, type Ref } from 'vue'
+import { ref, computed } from 'vue'
+import { Minus, Plus } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import BaseDialogOrDrawer from '~/components/donation-form/common/BaseDialogOrDrawer.vue'
 import AmountSelector from '~/components/donation-form/common/AmountSelector.vue'
 import type { Product, CartItem } from '@/lib/common/types'
-import { getCartItemKey, parseCartItemKey } from '@/lib/common/cart-utils'
-import type Cart from '@/components/donation-form/cart/Cart.vue'
 
 interface Props {
   currency: string
@@ -27,7 +26,13 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  confirm: [product: Product, price: number, mode: 'add' | 'edit', itemKey?: string]
+  confirm: [
+    product: Product,
+    price: number,
+    quantity: number,
+    mode: 'add' | 'edit',
+    itemKey?: string
+  ]
 }>()
 
 const { getCurrencySymbol, convertPrice } = useCurrency()
@@ -37,6 +42,7 @@ const open = ref(false)
 const product = ref<Product | null>(null)
 const mode = ref<'add' | 'edit'>('add')
 const localPrice = ref(0)
+const localQuantity = ref(1)
 const editingItemKey = ref<string | null>(null)
 
 // Computed
@@ -68,13 +74,12 @@ const maxPrice = computed(() => {
   return convertPrice(config?.maxPrice ?? 1000, props.currency)
 })
 
-const hasPresetAmounts = computed(() => isRecurring.value && amounts.value.length > 0)
-
 // Methods
 const openForAdd = (prod: Product, initialPrice: number) => {
   product.value = prod
   mode.value = 'add'
   localPrice.value = initialPrice
+  localQuantity.value = 1
   editingItemKey.value = null
   open.value = true
 }
@@ -83,6 +88,7 @@ const openForEdit = (item: CartItem, itemKey: string) => {
   product.value = item
   mode.value = 'edit'
   localPrice.value = item.price ?? 0
+  localQuantity.value = item.quantity ?? 1
   editingItemKey.value = itemKey
   open.value = true
 }
@@ -94,7 +100,14 @@ const handleClose = () => {
 const handleConfirm = () => {
   if (!product.value) return
 
-  emit('confirm', product.value, localPrice.value, mode.value, editingItemKey.value || undefined)
+  emit(
+    'confirm',
+    product.value,
+    localPrice.value,
+    localQuantity.value,
+    mode.value,
+    editingItemKey.value || undefined
+  )
   open.value = false
 }
 
@@ -121,10 +134,42 @@ defineExpose({
 
     <template #content>
       <div class="space-y-4">
-        <!-- One-time fixed price display -->
-        <div v-if="!isRecurring" class="rounded-lg bg-muted p-4 text-center">
-          <p class="text-sm text-muted-foreground">One-time donation</p>
-          <p class="text-3xl font-bold">{{ currencySymbol }}{{ product?.price }}</p>
+        <!-- One-time with quantity selector -->
+        <div v-if="!isRecurring" class="space-y-3">
+          <div class="rounded-lg bg-muted p-4 text-center">
+            <p class="text-sm text-muted-foreground">One-time donation</p>
+            <p class="text-3xl font-bold">{{ currencySymbol }}{{ product?.price }}</p>
+          </div>
+          <div class="space-y-3 py-3">
+            <label class="text-sm font-medium text-center block">Quantity</label>
+            <div class="flex items-center justify-center gap-4">
+              <Button
+                variant="outline"
+                size="icon"
+                class="h-12 w-12 shrink-0 rounded-full"
+                :disabled="localQuantity <= 1"
+                @click="localQuantity = Math.max(1, localQuantity - 1)"
+              >
+                <Minus />
+                <span class="sr-only">Decrease</span>
+              </Button>
+              <div class="flex-1 text-center min-w-20">
+                <div class="text-5xl font-bold tracking-tighter">
+                  {{ localQuantity }}
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                class="h-12 w-12 shrink-0 rounded-full"
+                :disabled="localQuantity >= 99"
+                @click="localQuantity = Math.min(99, localQuantity + 1)"
+              >
+                <Plus />
+                <span class="sr-only">Increase</span>
+              </Button>
+            </div>
+          </div>
         </div>
 
         <!-- Recurring with or without preset amounts -->

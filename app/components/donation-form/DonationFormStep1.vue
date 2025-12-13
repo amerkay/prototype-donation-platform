@@ -65,6 +65,7 @@ const {
   addToCart,
   removeFromCart,
   updateCartItemPrice,
+  updateCartItemQuantity,
   toggleBonusItem
 } = useCart()
 
@@ -355,11 +356,12 @@ const handleOpenDrawerForEdit = (item: CartItem, itemKey: string) => {
 const handleModalConfirm = (
   product: Product,
   price: number,
+  quantity: number,
   mode: 'add' | 'edit',
   itemKey?: string
 ) => {
   if (mode === 'add') {
-    const cartItem = addToCart(product, price, 'multiple')
+    const cartItem = addToCart(product, price, 'multiple', quantity)
     const newItemKey = getCartItemKey(cartItem.id, cartItem.addedAt)
 
     // Pulse animation and scroll
@@ -386,6 +388,7 @@ const handleModalConfirm = (
     const parsed = parseCartItemKey(itemKey)
     if (parsed) {
       updateCartItemPrice(parsed.itemId, parsed.addedAt, price, 'multiple')
+      updateCartItemQuantity(parsed.itemId, parsed.addedAt, quantity, 'multiple')
     }
   }
 }

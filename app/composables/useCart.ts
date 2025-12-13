@@ -21,31 +21,51 @@ export const useCart = () => {
   }
 
   const cartTotal = (frequency: 'once' | 'monthly' | 'multiple') => {
-    return currentCart(frequency).reduce((sum, item) => sum + (item.price || 0), 0)
+    return currentCart(frequency).reduce((sum, item) => {
+      const price = item.price || 0
+      const quantity = item.quantity || 1
+      return sum + price * quantity
+    }, 0)
   }
 
   const recurringTotal = computed(() => {
     return multipleCart.value
       .filter((item) => ['monthly', 'yearly'].includes(item.frequency))
-      .reduce((sum, item) => sum + (item.price || 0), 0)
+      .reduce((sum, item) => {
+        const price = item.price || 0
+        const quantity = item.quantity || 1
+        return sum + price * quantity
+      }, 0)
   })
 
   const oneTimeTotal = computed(() => {
     return multipleCart.value
       .filter((item) => item.frequency === 'once')
-      .reduce((sum, item) => sum + (item.price || 0), 0)
+      .reduce((sum, item) => {
+        const price = item.price || 0
+        const quantity = item.quantity || 1
+        return sum + price * quantity
+      }, 0)
   })
 
   const monthlyTotal = computed(() => {
     return multipleCart.value
       .filter((item) => item.frequency === 'monthly')
-      .reduce((sum, item) => sum + (item.price || 0), 0)
+      .reduce((sum, item) => {
+        const price = item.price || 0
+        const quantity = item.quantity || 1
+        return sum + price * quantity
+      }, 0)
   })
 
   const yearlyTotal = computed(() => {
     return multipleCart.value
       .filter((item) => item.frequency === 'yearly')
-      .reduce((sum, item) => sum + (item.price || 0), 0)
+      .reduce((sum, item) => {
+        const price = item.price || 0
+        const quantity = item.quantity || 1
+        return sum + price * quantity
+      }, 0)
   })
 
   const activeRecurringFrequency = computed<'monthly' | 'yearly' | null>(() => {
@@ -63,9 +83,10 @@ export const useCart = () => {
   const addToCart = (
     product: Product,
     price: number,
-    frequency: 'once' | 'monthly' | 'multiple' = 'multiple'
+    frequency: 'once' | 'monthly' | 'multiple' = 'multiple',
+    quantity?: number
   ) => {
-    const cartItem: CartItem = { ...product, price, addedAt: Date.now() }
+    const cartItem: CartItem = { ...product, price, addedAt: Date.now(), quantity }
     const cart = getCartByFrequency(frequency)
     cart.value.push(cartItem)
     return cartItem
@@ -89,6 +110,18 @@ export const useCart = () => {
     const item = currentCart(frequency).find((i) => i.id === itemId && i.addedAt === addedAt)
     if (item) {
       item.price = newPrice
+    }
+  }
+
+  const updateCartItemQuantity = (
+    itemId: string,
+    addedAt: number,
+    newQuantity: number,
+    frequency: 'once' | 'monthly' | 'multiple' = 'multiple'
+  ) => {
+    const item = currentCart(frequency).find((i) => i.id === itemId && i.addedAt === addedAt)
+    if (item) {
+      item.quantity = newQuantity
     }
   }
 
@@ -134,6 +167,7 @@ export const useCart = () => {
     addToCart,
     removeFromCart,
     updateCartItemPrice,
+    updateCartItemQuantity,
     toggleBonusItem,
     clearCart,
     clearRecurringItems,

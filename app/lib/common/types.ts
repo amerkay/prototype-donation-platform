@@ -20,6 +20,7 @@ export interface Product {
 
 export interface CartItem extends Product {
   addedAt: number
+  quantity?: number
 }
 
 export type FrequencyType = 'once' | 'monthly' | 'yearly'

@@ -23,8 +23,14 @@ const displayPrice = computed(() => {
   return props.price ?? (props.item as CartItem).price ?? 0
 })
 
+const displayQuantity = computed(() => {
+  return (props.item as CartItem).quantity ?? 1
+})
+
+const isOneTime = computed(() => props.item.frequency === 'once')
+
 const hasEditOption = computed(() => {
-  return !!(props.item.minPrice || props.item.default)
+  return !!(props.item.minPrice || props.item.default || isOneTime.value)
 })
 </script>
 
@@ -39,9 +45,13 @@ const hasEditOption = computed(() => {
         <p class="font-medium text-sm truncate">{{ item.name }}</p>
         <div class="flex items-center gap-2">
           <p class="text-xs text-muted-foreground">
-            {{ getCurrencySymbol(currency) }}{{ displayPrice }}
+            <span v-if="isOneTime && displayQuantity > 1">{{ displayQuantity }} × </span
+            >{{ getCurrencySymbol(currency) }}{{ displayPrice }}
             <span v-if="item.frequency === 'monthly'">/month</span>
             <span v-else-if="item.frequency === 'yearly'">/year</span>
+            <span v-if="isOneTime && displayQuantity > 1" class="font-medium">
+              = {{ getCurrencySymbol(currency) }}{{ displayPrice * displayQuantity }}</span
+            >
           </p>
           <button
             v-if="hasEditOption"
