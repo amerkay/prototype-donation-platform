@@ -405,7 +405,7 @@ const handleNext = () => {
             </TabsList>
 
             <!-- Single Donation Tabs (Once/Monthly) -->
-            <TabsContent v-for="freq in baseFrequencies" :key="freq.value" :value="freq.value" class="mt-6 space-y-4">
+            <TabsContent v-for="freq in baseFrequencies" :key="freq.value" :value="freq.value" class="mt-2 space-y-4">
                 <!-- Donation Amount Selector -->
                 <DonationAmountSelector v-model="donationAmounts[freq.value as keyof typeof donationAmounts]"
                     :amounts="availableAmounts" :currency="selectedCurrency" :min-price="sliderMinPrice"
@@ -424,7 +424,7 @@ const handleNext = () => {
             </TabsContent>
 
             <!-- Multiple Items Tab -->
-            <TabsContent v-if="ALLOW_MULTIPLE_ITEMS" value="multiple" class="mt-3 space-y-4">
+            <TabsContent v-if="ALLOW_MULTIPLE_ITEMS" value="multiple" class="mt-2 space-y-4">
                 <!-- Cart Items (if any) -->
                 <TransitionGroup v-if="multipleCart.length > 0" ref="cartSection" name="list" tag="div"
                     class="space-y-2 scroll-mt-6">
