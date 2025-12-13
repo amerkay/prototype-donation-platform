@@ -5,7 +5,7 @@ export interface Product {
     price?: number
     minPrice?: number
     default?: number
-    frequency: 'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
+    frequency: 'once' | 'monthly' | 'yearly'
     image: string
     thumbnail: string
     icon: string
@@ -13,9 +13,7 @@ export interface Product {
     isShippingRequired?: boolean
     bonusThreshold?: {
         once?: number
-        weekly?: number
         monthly?: number
-        quarterly?: number
         yearly?: number
     }
 }
@@ -24,5 +22,5 @@ export interface CartItem extends Product {
     addedAt: number
 }
 
-export type FrequencyType = 'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
+export type FrequencyType = 'once' | 'monthly' | 'yearly'
 export type CartFrequencyType = 'once' | 'monthly' | 'multiple'

@@ -26,7 +26,7 @@ export const useCart = () => {
 
     const recurringTotal = computed(() => {
         return multipleCart.value
-            .filter(item => ['weekly', 'monthly', 'quarterly', 'yearly'].includes(item.frequency))
+            .filter(item => ['monthly', 'yearly'].includes(item.frequency))
             .reduce((sum, item) => sum + (item.price || 0), 0)
     })
 
@@ -36,21 +36,9 @@ export const useCart = () => {
             .reduce((sum, item) => sum + (item.price || 0), 0)
     })
 
-    const weeklyTotal = computed(() => {
-        return multipleCart.value
-            .filter(item => item.frequency === 'weekly')
-            .reduce((sum, item) => sum + (item.price || 0), 0)
-    })
-
     const monthlyTotal = computed(() => {
         return multipleCart.value
             .filter(item => item.frequency === 'monthly')
-            .reduce((sum, item) => sum + (item.price || 0), 0)
-    })
-
-    const quarterlyTotal = computed(() => {
-        return multipleCart.value
-            .filter(item => item.frequency === 'quarterly')
             .reduce((sum, item) => sum + (item.price || 0), 0)
     })
 
@@ -107,9 +95,7 @@ export const useCart = () => {
         // Computed
         recurringTotal,
         oneTimeTotal,
-        weeklyTotal,
         monthlyTotal,
-        quarterlyTotal,
         yearlyTotal,
 
         // Methods

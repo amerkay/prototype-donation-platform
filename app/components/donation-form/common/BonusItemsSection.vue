@@ -5,26 +5,22 @@ import type { Product } from '@/lib/common/types'
 interface Props {
     bonusItems: Product[]
     selectedBonusItems: Set<string>
-    weeklyTotal?: number
     monthlyTotal?: number
-    quarterlyTotal?: number
     yearlyTotal?: number
     oneTimeTotal?: number
     currency?: string
-    enabledFrequencies?: Array<'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'>
+    enabledFrequencies?: Array<'once' | 'monthly' | 'yearly'>
     selectedFrequency?: string
 }
 
 interface Emits {
     (e: 'toggle', itemId: string): void
-    (e: 'switchToTab', tab: 'weekly' | 'monthly' | 'quarterly' | 'yearly'): void
+    (e: 'switchToTab', tab: 'monthly' | 'yearly'): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
     currency: 'USD',
-    weeklyTotal: 0,
     monthlyTotal: 0,
-    quarterlyTotal: 0,
     yearlyTotal: 0,
     oneTimeTotal: 0,
     enabledFrequencies: () => ['once', 'monthly'],
@@ -39,13 +35,11 @@ const emit = defineEmits<Emits>()
 const eligibleBonusItems = computed(() => {
     return props.bonusItems.filter(item => {
         if (!item.bonusThreshold) return false
-        const { once, weekly, monthly, quarterly, yearly } = item.bonusThreshold
+        const { once, monthly, yearly } = item.bonusThreshold
 
         // If any threshold is met, the item is eligible
         if (once !== undefined && props.oneTimeTotal >= once) return true
-        if (weekly !== undefined && props.weeklyTotal >= weekly) return true
         if (monthly !== undefined && props.monthlyTotal >= monthly) return true
-        if (quarterly !== undefined && props.quarterlyTotal >= quarterly) return true
         if (yearly !== undefined && props.yearlyTotal >= yearly) return true
 
         return false
@@ -55,33 +49,31 @@ const eligibleBonusItems = computed(() => {
 const upsellBonusItems = computed(() => {
     return props.bonusItems.filter(item => {
         if (!item.bonusThreshold) return false
-        const { once, weekly, monthly, quarterly, yearly } = item.bonusThreshold
+        const { once, monthly, yearly } = item.bonusThreshold
 
         // Show upsell only if NO thresholds are met
         const onceMet = once !== undefined && props.oneTimeTotal >= once
-        const weeklyMet = weekly !== undefined && props.weeklyTotal >= weekly
         const monthlyMet = monthly !== undefined && props.monthlyTotal >= monthly
-        const quarterlyMet = quarterly !== undefined && props.quarterlyTotal >= quarterly
         const yearlyMet = yearly !== undefined && props.yearlyTotal >= yearly
 
-        return !onceMet && !weeklyMet && !monthlyMet && !quarterlyMet && !yearlyMet
+        return !onceMet && !monthlyMet && !yearlyMet
     })
 })
 
 const isRecurringOnly = (item: Product) => {
     if (!item.bonusThreshold) return false
-    const { once, weekly, monthly, quarterly, yearly } = item.bonusThreshold
-    const hasRecurringThreshold = weekly !== undefined || monthly !== undefined || quarterly !== undefined || yearly !== undefined
+    const { once, monthly, yearly } = item.bonusThreshold
+    const hasRecurringThreshold = monthly !== undefined || yearly !== undefined
     return hasRecurringThreshold && once === undefined
 }
 
 const hasAnyRecurring = computed(() => {
-    return props.weeklyTotal > 0 || props.monthlyTotal > 0 || props.quarterlyTotal > 0 || props.yearlyTotal > 0
+    return props.monthlyTotal > 0 || props.yearlyTotal > 0
 })
 
 const getUpsellMessage = (item: Product) => {
     if (!item.bonusThreshold) return ''
-    const { once, weekly, monthly, quarterly, yearly } = item.bonusThreshold
+    const { once, monthly, yearly } = item.bonusThreshold
 
     const options: string[] = []
 
@@ -89,17 +81,9 @@ const getUpsellMessage = (item: Product) => {
         const needed = Math.max(0, once - props.oneTimeTotal)
         if (needed > 0) options.push(`${currencySymbol.value}${needed} one-time`)
     }
-    if (weekly !== undefined && props.enabledFrequencies.includes('weekly')) {
-        const needed = Math.max(0, weekly - props.weeklyTotal)
-        if (needed > 0) options.push(`${currencySymbol.value}${needed} weekly`)
-    }
     if (monthly !== undefined && props.enabledFrequencies.includes('monthly')) {
         const needed = Math.max(0, monthly - props.monthlyTotal)
         if (needed > 0) options.push(`${currencySymbol.value}${needed} monthly`)
-    }
-    if (quarterly !== undefined && props.enabledFrequencies.includes('quarterly')) {
-        const needed = Math.max(0, quarterly - props.quarterlyTotal)
-        if (needed > 0) options.push(`${currencySymbol.value}${needed} quarterly`)
     }
     if (yearly !== undefined && props.enabledFrequencies.includes('yearly')) {
         const needed = Math.max(0, yearly - props.yearlyTotal)
@@ -114,15 +98,13 @@ const getUpsellMessage = (item: Product) => {
     return `Add ${options.join(', ')}, or ${lastOption} to unlock!`
 }
 
-const getFirstRecurringFrequency = (item: Product): 'weekly' | 'monthly' | 'quarterly' | 'yearly' | null => {
+const getFirstRecurringFrequency = (item: Product): 'monthly' | 'yearly' | null => {
     if (!item.bonusThreshold) return null
-    const { weekly, monthly, quarterly, yearly } = item.bonusThreshold
+    const { monthly, yearly } = item.bonusThreshold
 
-    // Check in order of preference: weekly, monthly, quarterly, yearly
+    // Check in order of preference: monthly, yearly
     // Only return if both enabled AND has threshold
-    if (weekly !== undefined && props.enabledFrequencies.includes('weekly')) return 'weekly'
     if (monthly !== undefined && props.enabledFrequencies.includes('monthly')) return 'monthly'
-    if (quarterly !== undefined && props.enabledFrequencies.includes('quarterly')) return 'quarterly'
     if (yearly !== undefined && props.enabledFrequencies.includes('yearly')) return 'yearly'
 
     return null

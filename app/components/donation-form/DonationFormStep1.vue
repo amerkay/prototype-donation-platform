@@ -3,10 +3,11 @@ import { ref, computed } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import ProductConfigModal from '~/components/donation-form/cart/ProductConfigModal.vue'
+import ProductOptionsModal from '~/components/donation-form/cart/ProductOptionsModal.vue'
 import NextButton from '~/components/donation-form/common/NextButton.vue'
 import BonusItemsSection from '~/components/donation-form/common/BonusItemsSection.vue'
 import DonationAmountSelector from '~/components/donation-form/common/DonationAmountSelector.vue'
+import SwitchToRecurringUpsellButtonModal from '~/components/donation-form/common/SwitchToRecurringUpsellButtonModal.vue'
 import ProductCard from '~/components/donation-form/cart/ProductCard.vue'
 import Cart from '@/components/donation-form/cart/Cart.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
@@ -21,9 +22,7 @@ const {
     cartTotal,
     recurringTotal,
     oneTimeTotal,
-    weeklyTotal,
     monthlyTotal,
-    quarterlyTotal,
     yearlyTotal,
     addToCart,
     removeFromCart,
@@ -49,7 +48,13 @@ const frequencies = computed(() => {
 })
 
 const enabledFrequencies = computed(() => {
-    return BASE_FREQUENCIES.map(f => f.value) as Array<'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'>
+    return BASE_FREQUENCIES.map(f => f.value) as Array<'once' | 'monthly' | 'yearly'>
+})
+
+// Get the first enabled recurring frequency (monthly or yearly)
+const firstRecurringFrequency = computed<'monthly' | 'yearly'>(() => {
+    const recurring = enabledFrequencies.value.filter(f => f !== 'once')
+    return (recurring[0] || 'monthly') as 'monthly' | 'yearly'
 })
 
 const products: Product[] = [
@@ -89,9 +94,7 @@ const products: Product[] = [
         isShippingRequired: true,
         bonusThreshold: {
             once: 50,
-            weekly: 15,
             monthly: 25,
-            quarterly: 50,
             yearly: 200
         }
     },
@@ -106,9 +109,7 @@ const products: Product[] = [
         isBonusItem: true,
         isShippingRequired: true,
         bonusThreshold: {
-            weekly: 5,
             monthly: 10,
-            quarterly: 25,
             yearly: 75
         }
     },
@@ -133,6 +134,30 @@ const products: Product[] = [
         image: '📚',
         thumbnail: '📚',
         icon: '📚'
+    },
+    {
+        id: 'adopt-riko',
+        name: 'Adopt Riko the Orangutan',
+        description: 'Yearly sponsorship to support Riko\'s rehabilitation journey',
+        price: 120,
+        minPrice: 50,
+        default: 120,
+        frequency: 'yearly',
+        image: '🦧',
+        thumbnail: '🦧',
+        icon: '🦧'
+    },
+    {
+        id: 'adopt-sari',
+        name: 'Adopt Sari the Orangutan',
+        description: 'Yearly sponsorship for Sari\'s long-term care',
+        price: 120,
+        minPrice: 50,
+        default: 120,
+        frequency: 'yearly',
+        image: '🦧',
+        thumbnail: '🦧',
+        icon: '🦧'
     },
 ]
 
@@ -259,8 +284,12 @@ const handleNext = () => {
     })
 }
 
-const handleSwitchToTab = (tab: 'weekly' | 'monthly' | 'quarterly' | 'yearly') => {
+const handleSwitchToTab = (tab: 'monthly' | 'yearly') => {
     selectedFrequency.value = tab
+}
+
+const handleAdoptProductSelect = (product: Product) => {
+    handleOpenDrawerForAdd(product)
 }
 </script>
 
@@ -289,22 +318,32 @@ const handleSwitchToTab = (tab: 'weekly' | 'monthly' | 'quarterly' | 'yearly') =
                 'grid-cols-1': frequencies.length === 1,
                 'grid-cols-2': frequencies.length === 2,
                 'grid-cols-3': frequencies.length === 3,
+                'grid-cols-4': frequencies.length === 4,
             }">
-                <TabsTrigger v-for="freq in frequencies" :key="freq.value" :value="freq.value" class="text-base">
+                <TabsTrigger v-for="freq in frequencies" :key="freq.value" :value="freq.value" :class="[
+                    frequencies.length === 4 ? 'text-sm font-bold' : 'text-base',
+                    'data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground!'
+                ]">
                     {{ freq.label }}
                 </TabsTrigger>
             </TabsList>
 
-            <!-- Single Donation Tabs (Once/Monthly) -->
+            <!-- Single Donation Tabs (Once/Monthly/Yearly) -->
             <TabsContent v-for="freq in BASE_FREQUENCIES" :key="freq.value" :value="freq.value" class="mt-2 space-y-4">
                 <!-- Donation Amount Selector -->
                 <DonationAmountSelector v-model="donationAmounts[freq.value as keyof typeof donationAmounts]"
                     :amounts="availableAmounts" :currency="selectedCurrency" :min-price="sliderMinPrice"
                     :max-price="sliderMaxPrice" :frequency-label="freq.label.toLowerCase() + ' donation'" />
 
+                <!-- Adopt an Orangutan Button -->
+                <SwitchToRecurringUpsellButtonModal :current-frequency="freq.value as 'once' | 'monthly' | 'yearly'"
+                    :recurring-frequency="firstRecurringFrequency" :products="products" :currency="selectedCurrency"
+                    @switch-to-tab="handleSwitchToTab" @select-product="handleAdoptProductSelect" />
+
                 <!-- Bonus Items Section -->
                 <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
                     :monthly-total="freq.value === 'monthly' ? donationAmounts[freq.value as keyof typeof donationAmounts] : 0"
+                    :yearly-total="freq.value === 'yearly' ? donationAmounts[freq.value as keyof typeof donationAmounts] : 0"
                     :one-time-total="freq.value === 'once' ? donationAmounts[freq.value as keyof typeof donationAmounts] : 0"
                     :enabled-frequencies="enabledFrequencies" :currency="selectedCurrency"
                     :selected-frequency="selectedFrequency" @toggle="toggleBonusItem"
@@ -328,8 +367,7 @@ const handleSwitchToTab = (tab: 'weekly' | 'monthly' | 'quarterly' | 'yearly') =
 
                 <!-- Bonus Items Section -->
                 <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
-                    :one-time-total="oneTimeTotal" :weekly-total="weeklyTotal" :monthly-total="monthlyTotal"
-                    :quarterly-total="quarterlyTotal" :yearly-total="yearlyTotal"
+                    :one-time-total="oneTimeTotal" :monthly-total="monthlyTotal" :yearly-total="yearlyTotal"
                     :enabled-frequencies="enabledFrequencies" :currency="selectedCurrency"
                     :selected-frequency="selectedFrequency" @toggle="toggleBonusItem"
                     @switch-to-tab="handleSwitchToTab" />
@@ -372,7 +410,7 @@ const handleSwitchToTab = (tab: 'weekly' | 'monthly' | 'quarterly' | 'yearly') =
         </Tabs>
 
         <!-- Product Configuration Modal (Dialog on desktop, Drawer on mobile) -->
-        <ProductConfigModal v-model:open="drawerOpen" :product="drawerProduct" :currency="selectedCurrency"
+        <ProductOptionsModal v-model:open="drawerOpen" :product="drawerProduct" :currency="selectedCurrency"
             :initial-price="drawerInitialPrice" :max-price="sliderMaxPrice" :mode="drawerMode" :amounts="drawerAmounts"
             @confirm="handleDrawerConfirmWrapper" />
     </div>

@@ -14,6 +14,7 @@ export const CURRENCIES = [
 export const BASE_FREQUENCIES = [
     { value: 'once' as const, label: 'One-time' },
     { value: 'monthly' as const, label: 'Monthly' },
+    { value: 'yearly' as const, label: 'Yearly' },
 ] as const
 
 // Amounts in base currency (GBP) - will be converted to selected currency
