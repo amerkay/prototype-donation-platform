@@ -28,7 +28,6 @@ const {
     addToCart,
     removeFromCart,
     updateCartItemPrice,
-    isInCart,
     toggleBonusItem,
 } = useCart()
 const {
@@ -122,17 +121,6 @@ const products: Product[] = [
         image: '🌳',
         thumbnail: '🌳',
         icon: '🌳'
-    },
-    {
-        id: 'hoodie',
-        name: 'Orangutan Conservation Hoodie',
-        description: 'Comfortable organic cotton hoodie with embroidered logo',
-        price: 45,
-        frequency: 'once',
-        image: '👕',
-        thumbnail: '👕',
-        icon: '👕',
-        isShippingRequired: true
     },
     {
         id: 'education-program',
@@ -261,10 +249,6 @@ const handleRemoveFromCart = (itemId: string, addedAt: number) => {
     removeFromCart(itemId, addedAt, selectedFrequency.value as 'once' | 'monthly' | 'multiple')
 }
 
-const handleIsInCart = (productId: string) => {
-    return isInCart(productId, 'multiple')
-}
-
 const handleNext = () => {
     const freqKey = selectedFrequency.value as keyof typeof donationAmounts.value
     console.log('Proceeding to next step', {
@@ -368,8 +352,7 @@ const handleSwitchToTab = (tab: 'weekly' | 'monthly' | 'quarterly' | 'yearly') =
                     <!-- Products Grid -->
                     <TransitionGroup name="product-list" tag="div" class="space-y-2">
                         <ProductCard v-for="product in displayedProducts" :key="product.id" :product="product"
-                            :currency="selectedCurrency" :is-in-cart="handleIsInCart(product.id)"
-                            @click="handleOpenDrawerForAdd(product)" />
+                            :currency="selectedCurrency" @click="handleOpenDrawerForAdd(product)" />
                     </TransitionGroup>
 
                     <!-- Show More Button -->

@@ -79,10 +79,6 @@ export const useCart = () => {
         }
     }
 
-    const isInCart = (productId: string, frequency: 'once' | 'monthly' | 'multiple' = 'multiple') => {
-        return currentCart(frequency).some(item => item.id === productId)
-    }
-
     const toggleBonusItem = (itemId: string) => {
         if (selectedBonusItems.value.has(itemId)) {
             selectedBonusItems.value.delete(itemId)
@@ -122,7 +118,6 @@ export const useCart = () => {
         addToCart,
         removeFromCart,
         updateCartItemPrice,
-        isInCart,
         toggleBonusItem,
         clearCart,
     }

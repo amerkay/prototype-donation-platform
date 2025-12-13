@@ -23,9 +23,9 @@ export function useCurrency() {
   }
 
   const smartRound = (value: number): number => {
-    if (value < 10) {
+    if (value < 5) {
       // Round to nearest even number
-      return Math.round(value / 2) * 2
+      return Math.round(value)
     } else if (value < 50) {
       // Round to nearest 5
       return Math.round(value / 5) * 5
