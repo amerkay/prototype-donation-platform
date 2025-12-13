@@ -13,9 +13,45 @@ import ProductCard from '~/components/donation-form/cart/ProductCard.vue'
 import Cart from '@/components/donation-form/cart/Cart.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
 import type { Product } from '@/lib/common/types'
-import { CURRENCIES, BASE_FREQUENCIES, AMOUNTS_IN_BASE_CURRENCY, ALLOW_MULTIPLE_ITEMS, INITIAL_PRODUCTS_DISPLAYED } from '@/lib/common/constants'
 
 const { getCurrencySymbol, convertPrice } = useCurrency()
+
+// Currency configuration - will come from API
+const CURRENCIES = [
+    { value: 'USD', label: 'USD ($)' },
+    { value: 'EUR', label: 'EUR (€)' },
+    { value: 'GBP', label: 'GBP (£)' },
+] as const
+
+// Frequency configuration - will come from API
+const BASE_FREQUENCIES = [
+    { value: 'once' as const, label: 'One-time' },
+    { value: 'monthly' as const, label: 'Monthly' },
+    { value: 'yearly' as const, label: 'Yearly' },
+] as const
+
+// Amounts in base currency (GBP) - will be converted to selected currency - will come from API
+const AMOUNTS_IN_BASE_CURRENCY = {
+    once: {
+        amounts: [10, 25, 50, 100, 250, 500],
+        minPrice: 5,
+        maxPrice: 1000
+    },
+    monthly: {
+        amounts: [5, 10, 25, 50, 75, 100],
+        minPrice: 3,
+        maxPrice: 500
+    },
+    yearly: {
+        amounts: [50, 100, 250, 500, 1000],
+        minPrice: 25,
+        maxPrice: 2000
+    },
+} as const
+
+// Feature flags - will come from API
+const ALLOW_MULTIPLE_ITEMS = true
+const INITIAL_PRODUCTS_DISPLAYED = 3
 const {
     multipleCart,
     selectedBonusItems,
@@ -111,12 +147,6 @@ const frequencies = computed(() => {
 
 const enabledFrequencies = computed(() => {
     return BASE_FREQUENCIES.map(f => f.value) as Array<'once' | 'monthly' | 'yearly'>
-})
-
-// Get the first enabled recurring frequency (monthly or yearly)
-const firstRecurringFrequency = computed<'monthly' | 'yearly'>(() => {
-    const recurring = enabledFrequencies.value.filter(f => f !== 'once')
-    return (recurring[0] || 'monthly') as 'monthly' | 'yearly'
 })
 
 const products: Product[] = [
