@@ -139,14 +139,14 @@ const getUpsellMessage = (item: Product) => {
 const getFirstRecurringFrequency = (item: Product): 'weekly' | 'monthly' | 'quarterly' | 'yearly' | null => {
     if (!item.bonusThreshold) return null
     const { weekly, monthly, quarterly, yearly } = item.bonusThreshold
-    
+
     // Check in order of preference: weekly, monthly, quarterly, yearly
     // Only return if both enabled AND has threshold
     if (weekly !== undefined && props.enabledFrequencies.includes('weekly')) return 'weekly'
     if (monthly !== undefined && props.enabledFrequencies.includes('monthly')) return 'monthly'
     if (quarterly !== undefined && props.enabledFrequencies.includes('quarterly')) return 'quarterly'
     if (yearly !== undefined && props.enabledFrequencies.includes('yearly')) return 'yearly'
-    
+
     return null
 }
 

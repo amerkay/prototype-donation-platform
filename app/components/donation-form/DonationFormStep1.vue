@@ -385,8 +385,8 @@ const handleSwitchToTab = (tab: 'weekly' | 'monthly' | 'quarterly' | 'yearly') =
                 <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
                     :one-time-total="oneTimeTotal" :weekly-total="weeklyTotal" :monthly-total="monthlyTotal"
                     :quarterly-total="quarterlyTotal" :yearly-total="yearlyTotal"
-                    :enabled-frequencies="['once', 'weekly', 'monthly', 'quarterly', 'yearly']" :currency="selectedCurrency"
-                    @toggle="toggleBonusItem" @switch-to-tab="handleSwitchToTab" />
+                    :enabled-frequencies="enabledFrequencies"
+                    :currency="selectedCurrency" @toggle="toggleBonusItem" @switch-to-tab="handleSwitchToTab" />
 
                 <!-- Shipping Notice -->
                 <ShippingNotice :selected-frequency="selectedFrequency as 'once' | 'monthly' | 'multiple'"
