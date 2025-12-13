@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import LogarithmicPriceSlider from '@/components/donation-form/LogarithmicPriceSlider.vue'
+import ProductConfigModal from '@/components/donation-form/ProductConfigModal.vue'
 
 // Constants
 const ALLOW_MULTIPLE_ITEMS = true
@@ -164,7 +164,11 @@ const multipleCart = ref<CartItem[]>([])
 const searchQuery = ref('')
 const selectedBonusItems = ref<Set<string>>(new Set())
 const productPrices = ref<Record<string, number>>({})
-const editingCartItem = ref<string | null>(null)
+const drawerOpen = ref(false)
+const drawerProduct = ref<Product | null>(null)
+const drawerMode = ref<'add' | 'edit'>('add')
+const drawerInitialPrice = ref(0)
+const editingItemKey = ref<string | null>(null)
 const cartSection = ref<HTMLElement | null>(null)
 const pulseNewItem = ref<string | null>(null)
 const cartItemRefs = ref<Record<string, HTMLElement>>({})
@@ -311,43 +315,61 @@ const updateCartItemPrice = (itemId: string, addedAt: number, newPrice: number) 
     }
 }
 
-const toggleEditCartItem = (itemKey: string) => {
-    editingCartItem.value = editingCartItem.value === itemKey ? null : itemKey
+const getCartItemKey = (itemId: string, addedAt: number) => `${itemId}___${addedAt}`
+
+const openDrawerForAdd = (product: Product) => {
+    drawerProduct.value = product
+    drawerMode.value = 'add'
+    drawerInitialPrice.value = getProductPrice(product.id)
+    editingItemKey.value = null
+    drawerOpen.value = true
 }
 
-const getCartItemKey = (itemId: string, addedAt: number) => `${itemId}-${addedAt}`
+const openDrawerForEdit = (item: CartItem, itemKey: string) => {
+    drawerProduct.value = item
+    drawerMode.value = 'edit'
+    drawerInitialPrice.value = item.price
+    editingItemKey.value = itemKey
+    drawerOpen.value = true
+}
 
-const addToCart = (product: Product) => {
-    const currentPrice = getProductPrice(product.id)
-    const cartItem: CartItem = { ...product, price: currentPrice, addedAt: Date.now() }
-    multipleCart.value.push(cartItem)
+const handleDrawerConfirm = (price: number) => {
+    if (!drawerProduct.value) return
 
-    const itemKey = getCartItemKey(cartItem.id, cartItem.addedAt)
+    if (drawerMode.value === 'add') {
+        const cartItem: CartItem = { ...drawerProduct.value, price, addedAt: Date.now() }
+        multipleCart.value.push(cartItem)
 
-    // Auto-expand slider for recurring items immediately
-    if (product.frequency === 'monthly' && product.minPrice) {
-        editingCartItem.value = itemKey
-    }
+        const itemKey = getCartItemKey(cartItem.id, cartItem.addedAt)
 
-    // Pulse animation for new item
-    pulseNewItem.value = itemKey
-    setTimeout(() => {
-        pulseNewItem.value = null
-    }, 2000)
+        // Pulse animation for new item
+        pulseNewItem.value = itemKey
+        setTimeout(() => {
+            pulseNewItem.value = null
+        }, 2000)
 
-    // Scroll to the specific new item after animation completes
-    setTimeout(() => {
-        const itemElement = cartItemRefs.value[itemKey]
-        if (itemElement) {
-            const elementPosition = itemElement.getBoundingClientRect().top + window.scrollY
-            const offsetPosition = elementPosition - 50
-            window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
-        } else if (cartSection.value) {
-            const elementPosition = cartSection.value.getBoundingClientRect().top + window.scrollY
-            const offsetPosition = elementPosition - 50
-            window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
+        // Scroll to the specific new item after animation completes
+        setTimeout(() => {
+            const itemElement = cartItemRefs.value[itemKey]
+            if (itemElement) {
+                const elementPosition = itemElement.getBoundingClientRect().top + window.scrollY
+                const offsetPosition = elementPosition - 50
+                window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
+            } else if (cartSection.value) {
+                const elementPosition = cartSection.value.getBoundingClientRect().top + window.scrollY
+                const offsetPosition = elementPosition - 50
+                window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
+            }
+        }, 350)
+    } else if (drawerMode.value === 'edit' && editingItemKey.value) {
+        const parts = editingItemKey.value.split('___')
+        const itemId = parts[0]
+        const addedAtStr = parts[1]
+        if (itemId && addedAtStr) {
+            const addedAt = parseInt(addedAtStr)
+            updateCartItemPrice(itemId, addedAt, price)
         }
-    }, 350)
+    }
 }
 
 const removeFromCart = (itemId: string, addedAt: number) => {
@@ -456,7 +478,6 @@ const handleNext = () => {
                     <div v-for="item in multipleCart" :key="`${item.id}-${item.addedAt}`"
                         :ref="(el) => { if (el) cartItemRefs[getCartItemKey(item.id, item.addedAt)] = el as HTMLElement }"
                         class="rounded-lg border bg-card p-3 transition-all" :class="{
-                            'space-y-3': editingCartItem === getCartItemKey(item.id, item.addedAt),
                             'pulse-highlight': pulseNewItem === getCartItemKey(item.id, item.addedAt)
                         }">
                         <div class="flex items-center gap-3">
@@ -469,25 +490,15 @@ const handleNext = () => {
                                         <span v-if="item.frequency === 'monthly'">/month</span>
                                     </p>
                                     <button v-if="item.frequency === 'monthly' && item.minPrice"
-                                        @click="toggleEditCartItem(getCartItemKey(item.id, item.addedAt))"
+                                        @click="openDrawerForEdit(item, getCartItemKey(item.id, item.addedAt))"
                                         class="text-xs text-primary hover:underline">
-                                        {{ editingCartItem === getCartItemKey(item.id, item.addedAt) ? 'Done' : 'Edit'
-                                        }}
+                                        Edit
                                     </button>
                                 </div>
                             </div>
                             <Button variant="ghost" size="sm" @click="removeFromCart(item.id, item.addedAt)">
                                 ✕
                             </Button>
-                        </div>
-
-                        <!-- Expanded slider for editing -->
-                        <div
-                            v-if="editingCartItem === getCartItemKey(item.id, item.addedAt) && item.frequency === 'monthly' && item.minPrice">
-                            <LogarithmicPriceSlider :model-value="item.price" :min-price="item.minPrice"
-                                :default-value="item.default" :max-price="SLIDER_MAX"
-                                :currency="currentCurrency?.symbol"
-                                @update:model-value="(price) => updateCartItemPrice(item.id, item.addedAt, price)" />
                         </div>
                     </div>
                 </TransitionGroup>
@@ -545,7 +556,7 @@ const handleNext = () => {
                     <!-- Products Grid -->
                     <TransitionGroup name="product-list" tag="div" class="space-y-2">
                         <button v-for="product in displayedProducts" :key="product.id" type="button"
-                            :disabled="isInCart(product.id)" @click="addToCart(product)"
+                            :disabled="isInCart(product.id)" @click="openDrawerForAdd(product)"
                             class="w-full rounded-lg border bg-card p-3 transition-all hover:shadow-sm disabled:cursor-not-allowed text-left">
                             <div class="flex items-center gap-2 sm:gap-3">
                                 <div class="text-2xl sm:text-3xl shrink-0">{{ product.image }}</div>
@@ -596,6 +607,11 @@ const handleNext = () => {
                 </Button>
             </TabsContent>
         </Tabs>
+
+        <!-- Product Configuration Modal (Dialog on desktop, Drawer on mobile) -->
+        <ProductConfigModal v-model:open="drawerOpen" :product="drawerProduct" :currency="currentCurrency?.symbol"
+            :initial-price="drawerInitialPrice" :max-price="SLIDER_MAX" :mode="drawerMode"
+            @confirm="handleDrawerConfirm" />
     </div>
 </template>
 
