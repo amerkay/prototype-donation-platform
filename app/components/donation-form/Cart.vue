@@ -7,6 +7,7 @@ interface Props {
     items: CartItem[]
     currency: string
     total: number
+    recurringTotal?: number
     showTotal?: boolean
 }
 
@@ -49,9 +50,23 @@ defineExpose({
                 @edit="handleEdit(item)" @remove="handleRemove(item)" />
         </TransitionGroup>
 
-        <div v-if="showTotal" class="rounded-lg bg-muted p-3 flex items-center justify-between">
-            <span class="text-sm font-medium">Total</span>
-            <span class="text-lg font-bold">{{ getCurrencySymbol(currency) }}{{ total }}</span>
+        <div v-if="showTotal" class="rounded-lg bg-muted p-3 space-y-2">
+            <div v-if="recurringTotal !== undefined && recurringTotal > 0" class="flex items-center justify-between">
+                <span class="text-sm font-medium">One-time</span>
+                <span class="text-base font-semibold">{{ getCurrencySymbol(currency) }}{{ total - recurringTotal
+                    }}</span>
+            </div>
+            <div v-if="recurringTotal !== undefined && recurringTotal > 0" class="flex items-center justify-between">
+                <span class="text-sm font-medium">Monthly Recurring</span>
+                <span class="text-base font-semibold">{{ getCurrencySymbol(currency) }}{{ recurringTotal }}</span>
+            </div>
+            <div class="flex items-center justify-between"
+                :class="{ 'pt-2 border-t': recurringTotal !== undefined && recurringTotal > 0 }">
+                <span class="text-sm font-medium">
+                    {{ recurringTotal !== undefined && recurringTotal > 0 ? "Today's Total" : "Total" }}
+                </span>
+                <span class="text-lg font-bold">{{ getCurrencySymbol(currency) }}{{ total }}</span>
+            </div>
         </div>
     </div>
 </template>

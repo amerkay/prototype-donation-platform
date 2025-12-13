@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 
 interface Product {
     id: string
     name: string
     description: string
-    price: number
+    price?: number
     minPrice?: number
     default?: number
     frequency: 'once' | 'monthly'
@@ -14,8 +14,8 @@ interface Product {
     icon: string
     isBonusItem?: boolean
     bonusThreshold?: {
-        once: number
-        monthly: number
+        once?: number
+        monthly?: number
     }
 }
 
@@ -43,32 +43,49 @@ const emit = defineEmits<Emits>()
 const eligibleBonusItems = computed(() => {
     return props.bonusItems.filter(item => {
         if (!item.bonusThreshold) return false
-        return props.recurringTotal >= item.bonusThreshold.monthly ||
-            props.oneTimeTotal >= item.bonusThreshold.once
+        const { once, monthly } = item.bonusThreshold
+
+        // If both thresholds exist, either can unlock the item
+        if (once !== undefined && monthly !== undefined) {
+            return props.oneTimeTotal >= once || props.recurringTotal >= monthly
+        }
+        // If only one threshold exists, check that specific one
+        if (once !== undefined) return props.oneTimeTotal >= once
+        if (monthly !== undefined) return props.recurringTotal >= monthly
+        return false
     })
 })
 
 const upsellBonusItems = computed(() => {
     return props.bonusItems.filter(item => {
         if (!item.bonusThreshold) return false
-        return props.recurringTotal < item.bonusThreshold.monthly &&
-            props.oneTimeTotal < item.bonusThreshold.once
+        const { once, monthly } = item.bonusThreshold
+
+        // If both thresholds exist, show upsell only if both are not met
+        if (once !== undefined && monthly !== undefined) {
+            return props.oneTimeTotal < once && props.recurringTotal < monthly
+        }
+        // If only one threshold exists, show upsell if that one is not met
+        if (once !== undefined) return props.oneTimeTotal < once
+        if (monthly !== undefined) return props.recurringTotal < monthly
+        return false
     })
 })
 
 const getUpsellMessage = (item: Product) => {
     if (!item.bonusThreshold) return ''
-    const recurringNeeded = item.bonusThreshold.monthly - props.recurringTotal
-    const oneTimeNeeded = item.bonusThreshold.once - props.oneTimeTotal
-    const onceThreshold = item.bonusThreshold.once
-    const monthlyThreshold = item.bonusThreshold.monthly
+    const { once, monthly } = item.bonusThreshold
 
-    if (onceThreshold > 0 && monthlyThreshold > 0) {
+    if (once !== undefined && monthly !== undefined) {
+        const oneTimeNeeded = Math.max(0, once - props.oneTimeTotal)
+        const recurringNeeded = Math.max(0, monthly - props.recurringTotal)
         const minNeeded = Math.min(oneTimeNeeded, recurringNeeded)
         return `Add ${currencySymbol.value}${minNeeded} more to unlock this free gift!`
-    } else if (monthlyThreshold > 0) {
+    } else if (monthly !== undefined) {
+        const recurringNeeded = Math.max(0, monthly - props.recurringTotal)
         return `Add ${currencySymbol.value}${recurringNeeded} in monthly donations to unlock!`
-    } else {
+    } else if (once !== undefined) {
+        const oneTimeNeeded = Math.max(0, once - props.oneTimeTotal)
         return `Add ${currencySymbol.value}${oneTimeNeeded} in one-time donations to unlock!`
     }
     return ''
@@ -81,6 +98,19 @@ const toggleBonusItem = (itemId: string) => {
 const hasAnyBonusItems = computed(() => {
     return eligibleBonusItems.value.length > 0 || upsellBonusItems.value.length > 0
 })
+
+// Watch for changes in eligible items and auto-uncheck ineligible ones
+watch(eligibleBonusItems, (newEligible) => {
+    const eligibleIds = new Set(newEligible.map(item => item.id))
+
+    // Find selected items that are no longer eligible
+    Array.from(props.selectedBonusItems).forEach(itemId => {
+        if (!eligibleIds.has(itemId)) {
+            // Auto-uncheck by emitting toggle
+            emit('toggle', itemId)
+        }
+    })
+}, { deep: true })
 </script>
 
 <template>
@@ -107,13 +137,17 @@ const hasAnyBonusItems = computed(() => {
         <!-- Upsell for Bonus Items -->
         <div v-if="upsellBonusItems.length > 0" class="space-y-2">
             <div v-for="item in upsellBonusItems" :key="`upsell-${item.id}`"
-                class="rounded-lg border border-dashed bg-card p-3 space-y-2">
-                <div class="flex items-start gap-3">
-                    <div class="text-xl opacity-50">{{ item.thumbnail }}</div>
-                    <div class="flex-1 min-w-0">
-                        <p class="font-medium text-sm text-muted-foreground">{{ item.name }}</p>
-                        <p class="text-xs text-primary font-medium">{{ getUpsellMessage(item) }}</p>
-                    </div>
+                class="rounded-lg border border-dashed bg-card p-3">
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" :id="`upsell-${item.id}`" disabled
+                        class="h-4 w-4 rounded border-input opacity-50" />
+                    <label :for="`upsell-${item.id}`" class="flex items-center gap-3 flex-1">
+                        <div class="text-xl opacity-50">{{ item.thumbnail }}</div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-sm text-muted-foreground">{{ item.name }}</p>
+                            <p class="text-xs text-primary font-medium">{{ getUpsellMessage(item) }}</p>
+                        </div>
+                    </label>
                 </div>
             </div>
         </div>

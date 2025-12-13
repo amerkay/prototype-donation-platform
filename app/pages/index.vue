@@ -51,16 +51,16 @@ import {
                 </div>
             </header>
             <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
-                <div class="grid gap-4 md:grid-cols-2">
-                    <div>
-                        <p class="text-muted-foreground text-sm font-semibold mb-2">
+                <div class="space-y-4 lg:flex lg:space-x-4">
+                    <div class="grow">
+                        <p class=" text-muted-foreground text-sm font-semibold mb-2">
                             Form Settings
                         </p>
                         <FormSettings />
                     </div>
 
-                    <div>
-                        <p class="text-muted-foreground text-sm font-semibold mb-2">
+                    <div class="sm:mx-auto sm:max-w-sm sm:w-sm">
+                        <p class="text-muted-foreground text-sm font-semibold mb-2 ">
                             Form Preview
                         </p>
                         <FormPreview />

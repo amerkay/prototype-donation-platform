@@ -9,6 +9,7 @@ import BonusItemsSection from '@/components/donation-form/BonusItemsSection.vue'
 import DonationAmountSelector from '@/components/donation-form/DonationAmountSelector.vue'
 import ProductCard from '@/components/donation-form/ProductCard.vue'
 import Cart from '@/components/donation-form/Cart.vue'
+import ShippingNotice from '@/components/donation-form/ShippingNotice.vue'
 import type { Product, CartItem } from '@/composables/useCart'
 
 const { getCurrencySymbol, convertPrice } = useCurrency()
@@ -88,12 +89,12 @@ const products: Product[] = [
         id: 'plush-toy',
         name: 'Plush Baby Orangutan Toy',
         description: 'Adorable plush toy to support our mission',
-        price: 25,
         frequency: 'once',
         image: '🧸',
         thumbnail: '🧸',
         icon: '🧸',
         isBonusItem: true,
+        isShippingRequired: true,
         bonusThreshold: {
             once: 50,
             monthly: 25
@@ -103,14 +104,13 @@ const products: Product[] = [
         id: 'adopt-kit',
         name: 'Adoption Welcome Kit',
         description: 'Certificate, photo, and updates about your adopted orangutan',
-        price: 15,
         frequency: 'once',
         image: '📦',
         thumbnail: '📦',
         icon: '📦',
         isBonusItem: true,
+        isShippingRequired: true,
         bonusThreshold: {
-            once: 50,
             monthly: 10
         }
     },
@@ -123,6 +123,17 @@ const products: Product[] = [
         image: '🌳',
         thumbnail: '🌳',
         icon: '🌳'
+    },
+    {
+        id: 'hoodie',
+        name: 'Orangutan Conservation Hoodie',
+        description: 'Comfortable organic cotton hoodie with embroidered logo',
+        price: 45,
+        frequency: 'once',
+        image: '👕',
+        thumbnail: '👕',
+        icon: '👕',
+        isShippingRequired: true
     },
     {
         id: 'education-program',
@@ -250,7 +261,7 @@ const isFormValid = computed(() => {
 
 // Initialize product prices
 products.forEach(product => {
-    productPrices.value[product.id] = product.default ?? product.price
+    productPrices.value[product.id] = product.default ?? product.price ?? 0
 })
 
 // Methods - Cart management
@@ -299,7 +310,7 @@ const handleNext = () => {
                 <p class="text-sm text-muted-foreground">Choose your donation amount</p>
             </div>
             <div class="flex items-center gap-2 justify-end">
-                <Label for="currency" class="hidden md:inline-block text-sm">Currency</Label>
+                <!-- <Label for="currency" class="hidden md:inline-block text-sm">Currency</Label> -->
                 <select id="currency" v-model="selectedCurrency"
                     class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring">
                     <option v-for="currency in currencies" :key="currency.value" :value="currency.value">
@@ -334,6 +345,11 @@ const handleNext = () => {
                     :one-time-total="freq.value === 'once' ? donationAmounts[freq.value as keyof typeof donationAmounts] : 0"
                     :currency="selectedCurrency" @toggle="toggleBonusItem" />
 
+                <!-- Shipping Notice -->
+                <ShippingNotice :selected-frequency="selectedFrequency as 'once' | 'monthly' | 'multiple'"
+                    :products="products" :selected-bonus-items="selectedBonusItems" :multiple-cart="multipleCart"
+                    :donation-amounts="donationAmounts" />
+
                 <!-- Next Button -->
                 <Button :disabled="!isFormValid" class="w-full h-12 text-base" @click="handleNext">
                     Next
@@ -344,12 +360,18 @@ const handleNext = () => {
             <TabsContent v-if="ALLOW_MULTIPLE_ITEMS" value="multiple" class="mt-2 space-y-4">
                 <!-- Cart Component -->
                 <Cart ref="cartRef" :items="multipleCart" :currency="selectedCurrency" :total="activeCartTotal"
-                    :show-total="true" @edit="openDrawerForEdit" @remove="handleRemoveFromCart" />
+                    :recurring-total="recurringTotal" :show-total="true" @edit="openDrawerForEdit"
+                    @remove="handleRemoveFromCart" />
 
                 <!-- Bonus Items Section -->
                 <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
                     :recurring-total="recurringTotal" :one-time-total="oneTimeTotal" :currency="selectedCurrency"
                     @toggle="toggleBonusItem" />
+
+                <!-- Shipping Notice -->
+                <ShippingNotice :selected-frequency="selectedFrequency as 'once' | 'monthly' | 'multiple'"
+                    :products="products" :selected-bonus-items="selectedBonusItems" :multiple-cart="multipleCart"
+                    :donation-amounts="donationAmounts" />
 
                 <!-- Products Section -->
                 <div class="space-y-4">

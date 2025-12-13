@@ -4,7 +4,7 @@ export interface Product {
     id: string
     name: string
     description: string
-    price: number
+    price?: number
     minPrice?: number
     default?: number
     frequency: 'once' | 'monthly'
@@ -12,9 +12,10 @@ export interface Product {
     thumbnail: string
     icon: string
     isBonusItem?: boolean
+    isShippingRequired?: boolean
     bonusThreshold?: {
-        once: number
-        monthly: number
+        once?: number
+        monthly?: number
     }
 }
 
@@ -39,19 +40,19 @@ export const useCart = () => {
     }
 
     const cartTotal = (frequency: 'once' | 'monthly' | 'multiple') => {
-        return currentCart(frequency).reduce((sum, item) => sum + item.price, 0)
+        return currentCart(frequency).reduce((sum, item) => sum + (item.price || 0), 0)
     }
 
     const recurringTotal = computed(() => {
         return multipleCart.value
             .filter(item => item.frequency === 'monthly')
-            .reduce((sum, item) => sum + item.price, 0)
+            .reduce((sum, item) => sum + (item.price || 0), 0)
     })
 
     const oneTimeTotal = computed(() => {
         return multipleCart.value
             .filter(item => item.frequency === 'once')
-            .reduce((sum, item) => sum + item.price, 0)
+            .reduce((sum, item) => sum + (item.price || 0), 0)
     })
 
     const addToCart = (product: Product, price: number, frequency: 'once' | 'monthly' | 'multiple' = 'multiple') => {

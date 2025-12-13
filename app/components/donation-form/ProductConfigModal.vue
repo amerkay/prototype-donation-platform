@@ -7,7 +7,7 @@ interface Product {
     id: string
     name: string
     description: string
-    price: number
+    price?: number
     minPrice?: number
     default?: number
     frequency: 'once' | 'monthly'
@@ -16,8 +16,8 @@ interface Product {
     icon: string
     isBonusItem?: boolean
     bonusThreshold?: {
-        once: number
-        monthly: number
+        once?: number
+        monthly?: number
     }
 }
 
