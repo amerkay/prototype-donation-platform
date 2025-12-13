@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import ProductConfigModal from '@/components/donation-form/ProductConfigModal.vue'
+import NextButton from '@/components/donation-form/NextButton.vue'
 import BonusItemsSection from '@/components/donation-form/BonusItemsSection.vue'
 import DonationAmountSelector from '@/components/donation-form/DonationAmountSelector.vue'
 import ProductCard from '@/components/donation-form/ProductCard.vue'
@@ -351,9 +352,7 @@ const handleNext = () => {
                     :donation-amounts="donationAmounts" />
 
                 <!-- Next Button -->
-                <Button :disabled="!isFormValid" class="w-full h-12 text-base" @click="handleNext">
-                    Next
-                </Button>
+                <NextButton :disabled="!isFormValid" @click="handleNext" />
             </TabsContent>
 
             <!-- Multiple Items Tab -->
@@ -399,10 +398,10 @@ const handleNext = () => {
                     <div v-if="filteredProducts.length === 0" class="py-12 text-center text-muted-foreground">
                         No items found matching "{{ searchQuery }}"
                     </div>
-                </div> <!-- Next Button -->
-                <Button :disabled="!isFormValid" class="w-full h-12 text-base" @click="handleNext">
-                    Next
-                </Button>
+                </div>
+
+                <!-- Next Button -->
+                <NextButton :disabled="!isFormValid" @click="handleNext" />
             </TabsContent>
         </Tabs>
 
