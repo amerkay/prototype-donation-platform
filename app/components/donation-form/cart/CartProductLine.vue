@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
-import type { CartItem } from '@/composables/useCart'
+import type { CartItem } from '@/lib/common/types'
 
 interface Props {
     item: CartItem

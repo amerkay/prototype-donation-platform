@@ -9,28 +9,8 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import ProductConfigForm from '@/components/donation-form/ProductConfigForm.vue'
-
-interface Product {
-    id: string
-    name: string
-    description: string
-    price?: number
-    minPrice?: number
-    default?: number
-    frequency: 'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
-    image: string
-    thumbnail: string
-    icon: string
-    isBonusItem?: boolean
-    bonusThreshold?: {
-        once?: number
-        weekly?: number
-        monthly?: number
-        quarterly?: number
-        yearly?: number
-    }
-}
+import ProductConfigForm from '~/components/donation-form/cart/ProductConfigForm.vue'
+import type { Product } from '@/lib/common/types'
 
 interface Props {
     open?: boolean

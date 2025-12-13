@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product } from '@/composables/useCart'
+import type { Product } from '@/lib/common/types'
 
 interface Props {
     product: Product

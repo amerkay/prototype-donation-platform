@@ -1,26 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
-
-interface Product {
-    id: string
-    name: string
-    description: string
-    price?: number
-    minPrice?: number
-    default?: number
-    frequency: 'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
-    image: string
-    thumbnail: string
-    icon: string
-    isBonusItem?: boolean
-    bonusThreshold?: {
-        once?: number
-        weekly?: number
-        monthly?: number
-        quarterly?: number
-        yearly?: number
-    }
-}
+import type { Product } from '@/lib/common/types'
 
 interface Props {
     bonusItems: Product[]

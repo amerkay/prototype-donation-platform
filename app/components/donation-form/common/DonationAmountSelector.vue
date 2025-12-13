@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { Button } from '@/components/ui/button'
-import LogarithmicPriceSlider from '@/components/donation-form/LogarithmicPriceSlider.vue'
+import LogarithmicPriceSlider from '~/components/donation-form/common/LogarithmicPriceSlider.vue'
 
 interface Props {
     modelValue: number

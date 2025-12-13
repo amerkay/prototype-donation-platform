@@ -1,6 +1,7 @@
 import { ref, type Ref } from 'vue'
-import type { Product, CartItem } from '@/composables/useCart'
-import type Cart from '@/components/donation-form/Cart.vue'
+import type { Product, CartItem } from '@/lib/common/types'
+import { getCartItemKey, parseCartItemKey } from '@/lib/common/cart-utils'
+import type Cart from '@/components/donation-form/cart/Cart.vue'
 
 export const useProductConfig = () => {
     const drawerOpen = ref(false)
@@ -8,8 +9,6 @@ export const useProductConfig = () => {
     const drawerMode = ref<'add' | 'edit'>('add')
     const drawerInitialPrice = ref(0)
     const editingItemKey = ref<string | null>(null)
-
-    const getCartItemKey = (itemId: string, addedAt: number) => `${itemId}___${addedAt}`
 
     const openDrawerForAdd = (product: Product, initialPrice: number) => {
         drawerProduct.value = product
@@ -61,11 +60,9 @@ export const useProductConfig = () => {
                 }, 350)
             }
         } else if (drawerMode.value === 'edit' && editingItemKey.value) {
-            const parts = editingItemKey.value.split('___')
-            const itemId = parts[0]
-            const addedAtStr = parts[1]
-            if (itemId && addedAtStr) {
-                const addedAt = parseInt(addedAtStr)
+            const parsed = parseCartItemKey(editingItemKey.value)
+            if (parsed) {
+                const { itemId, addedAt } = parsed
                 onEdit(itemId, addedAt, price)
             }
         }

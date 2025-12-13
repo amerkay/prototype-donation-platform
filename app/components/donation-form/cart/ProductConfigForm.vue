@@ -1,27 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import DonationAmountSelector from '@/components/donation-form/DonationAmountSelector.vue'
-
-interface Product {
-    id: string
-    name: string
-    description: string
-    price?: number
-    minPrice?: number
-    default?: number
-    frequency: 'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
-    image: string
-    thumbnail: string
-    icon: string
-    isBonusItem?: boolean
-    bonusThreshold?: {
-        once?: number
-        weekly?: number
-        monthly?: number
-        quarterly?: number
-        yearly?: number
-    }
-}
+import DonationAmountSelector from '~/components/donation-form/common/DonationAmountSelector.vue'
+import type { Product } from '@/lib/common/types'
 
 interface Props {
     product: Product | null

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import CartProductLine from '@/components/donation-form/CartProductLine.vue'
-import type { CartItem } from '@/composables/useCart'
+import { getCartItemKey } from '@/lib/common/cart-utils'
+import type { CartItem } from '@/lib/common/types'
+import CartProductLine from '@/components/donation-form/cart/CartProductLine.vue'
 
 interface Props {
     items: CartItem[]
@@ -20,8 +21,6 @@ const emit = defineEmits<{
 
 const cartItemRefs = ref<Record<string, HTMLElement>>({})
 const pulseNewItem = ref<string | null>(null)
-
-const getCartItemKey = (itemId: string, addedAt: number) => `${itemId}___${addedAt}`
 
 const handleEdit = (item: CartItem) => {
     const itemKey = getCartItemKey(item.id, item.addedAt)
@@ -54,7 +53,7 @@ defineExpose({
             <div v-if="recurringTotal !== undefined && recurringTotal > 0" class="flex items-center justify-between">
                 <span class="text-sm font-medium">One-time</span>
                 <span class="text-base font-semibold">{{ getCurrencySymbol(currency) }}{{ total - recurringTotal
-                    }}</span>
+                }}</span>
             </div>
             <div v-if="recurringTotal !== undefined && recurringTotal > 0" class="flex items-center justify-between">
                 <span class="text-sm font-medium">Monthly Recurring</span>

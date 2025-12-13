@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Product, CartItem } from '@/composables/useCart'
+import type { Product, CartItem } from '@/lib/common/types'
 
 interface Props {
     selectedFrequency: 'once' | 'monthly' | 'multiple'

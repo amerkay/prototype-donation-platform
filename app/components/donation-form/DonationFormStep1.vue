@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import ProductConfigModal from '@/components/donation-form/ProductConfigModal.vue'
-import NextButton from '@/components/donation-form/NextButton.vue'
-import BonusItemsSection from '@/components/donation-form/BonusItemsSection.vue'
-import DonationAmountSelector from '@/components/donation-form/DonationAmountSelector.vue'
-import ProductCard from '@/components/donation-form/ProductCard.vue'
-import Cart from '@/components/donation-form/Cart.vue'
-import ShippingNotice from '@/components/donation-form/ShippingNotice.vue'
-import type { Product, CartItem } from '@/composables/useCart'
+import ProductConfigModal from '~/components/donation-form/cart/ProductConfigModal.vue'
+import NextButton from '~/components/donation-form/common/NextButton.vue'
+import BonusItemsSection from '~/components/donation-form/common/BonusItemsSection.vue'
+import DonationAmountSelector from '~/components/donation-form/common/DonationAmountSelector.vue'
+import ProductCard from '~/components/donation-form/cart/ProductCard.vue'
+import Cart from '@/components/donation-form/cart/Cart.vue'
+import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
+import type { Product } from '@/lib/common/types'
+import { CURRENCIES, BASE_FREQUENCIES, AMOUNTS_IN_BASE_CURRENCY, ALLOW_MULTIPLE_ITEMS, INITIAL_PRODUCTS_DISPLAYED } from '@/lib/common/constants'
 
 const { getCurrencySymbol, convertPrice } = useCurrency()
 const {
@@ -41,24 +41,8 @@ const {
     handleDrawerConfirm,
 } = useProductConfig()
 
-// Constants
-const ALLOW_MULTIPLE_ITEMS = true
-const INITIAL_PRODUCTS_DISPLAYED = 3
-
-// Settings
-const currencies = [
-    { value: 'USD', label: 'USD ($)' },
-    { value: 'EUR', label: 'EUR (€)' },
-    { value: 'GBP', label: 'GBP (£)' },
-]
-
-const baseFrequencies = [
-    { value: 'once', label: 'One-time' },
-    { value: 'monthly', label: 'Monthly' },
-]
-
 const frequencies = computed(() => {
-    const freqs = [...baseFrequencies]
+    const freqs = [...BASE_FREQUENCIES] as Array<{ value: string; label: string }>
     if (ALLOW_MULTIPLE_ITEMS) {
         freqs.push({ value: 'multiple', label: 'Multiple' })
     }
@@ -66,7 +50,7 @@ const frequencies = computed(() => {
 })
 
 const enabledFrequencies = computed(() => {
-    return baseFrequencies.map(f => f.value) as Array<'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'>
+    return BASE_FREQUENCIES.map(f => f.value) as Array<'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'>
 })
 
 const products: Product[] = [
@@ -164,25 +148,6 @@ const products: Product[] = [
     },
 ]
 
-// Amounts in base currency (GBP) - will be converted to selected currency
-const amountsInBaseCurrency = {
-    once: {
-        amounts: [5, 10, 25, 50, 100, 500],
-        minPrice: 5,
-        maxPrice: 1000
-    },
-    monthly: {
-        amounts: [5, 10, 25, 50, 75, 100],
-        minPrice: 3,
-        maxPrice: 500
-    },
-    yearly: {
-        amounts: [50, 100, 250, 500, 1000],
-        minPrice: 25,
-        maxPrice: 2000
-    },
-}
-
 // State - Single donation
 const selectedCurrency = ref('GBP')
 const selectedFrequency = ref('once')
@@ -203,36 +168,36 @@ const currencySymbol = computed(() => getCurrencySymbol(selectedCurrency.value))
 
 const availableAmounts = computed(() => {
     if (selectedFrequency.value === 'multiple') return []
-    const config = amountsInBaseCurrency[selectedFrequency.value as keyof typeof amountsInBaseCurrency]
+    const config = AMOUNTS_IN_BASE_CURRENCY[selectedFrequency.value as keyof typeof AMOUNTS_IN_BASE_CURRENCY]
     return config.amounts.map(amount => convertPrice(amount, selectedCurrency.value))
 })
 
 const sliderMinPrice = computed(() => {
     if (selectedFrequency.value === 'multiple') {
         return Math.min(
-            convertPrice(amountsInBaseCurrency.once.minPrice, selectedCurrency.value),
-            convertPrice(amountsInBaseCurrency.monthly.minPrice, selectedCurrency.value)
+            convertPrice(AMOUNTS_IN_BASE_CURRENCY.once.minPrice, selectedCurrency.value),
+            convertPrice(AMOUNTS_IN_BASE_CURRENCY.monthly.minPrice, selectedCurrency.value)
         )
     }
-    const config = amountsInBaseCurrency[selectedFrequency.value as keyof typeof amountsInBaseCurrency]
+    const config = AMOUNTS_IN_BASE_CURRENCY[selectedFrequency.value as keyof typeof AMOUNTS_IN_BASE_CURRENCY]
     return convertPrice(config.minPrice, selectedCurrency.value)
 })
 
 const sliderMaxPrice = computed(() => {
     if (selectedFrequency.value === 'multiple') {
         return Math.max(
-            convertPrice(amountsInBaseCurrency.once.maxPrice, selectedCurrency.value),
-            convertPrice(amountsInBaseCurrency.monthly.maxPrice, selectedCurrency.value)
+            convertPrice(AMOUNTS_IN_BASE_CURRENCY.once.maxPrice, selectedCurrency.value),
+            convertPrice(AMOUNTS_IN_BASE_CURRENCY.monthly.maxPrice, selectedCurrency.value)
         )
     }
-    const config = amountsInBaseCurrency[selectedFrequency.value as keyof typeof amountsInBaseCurrency]
+    const config = AMOUNTS_IN_BASE_CURRENCY[selectedFrequency.value as keyof typeof AMOUNTS_IN_BASE_CURRENCY]
     return convertPrice(config.maxPrice, selectedCurrency.value)
 })
 
 const drawerAmounts = computed(() => {
     if (!drawerProduct.value) return []
     const freq = drawerProduct.value.frequency
-    const config = amountsInBaseCurrency[freq as keyof typeof amountsInBaseCurrency]
+    const config = AMOUNTS_IN_BASE_CURRENCY[freq as keyof typeof AMOUNTS_IN_BASE_CURRENCY]
     if (!config) return []
     return config.amounts.map(amount => convertPrice(amount, selectedCurrency.value))
 })
@@ -332,7 +297,7 @@ const handleSwitchToTab = (tab: 'weekly' | 'monthly' | 'quarterly' | 'yearly') =
                 <!-- <Label for="currency" class="hidden md:inline-block text-sm">Currency</Label> -->
                 <select id="currency" v-model="selectedCurrency"
                     class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring">
-                    <option v-for="currency in currencies" :key="currency.value" :value="currency.value">
+                    <option v-for="currency in CURRENCIES" :key="currency.value" :value="currency.value">
                         {{ currency.label }}
                     </option>
                 </select>
@@ -352,7 +317,7 @@ const handleSwitchToTab = (tab: 'weekly' | 'monthly' | 'quarterly' | 'yearly') =
             </TabsList>
 
             <!-- Single Donation Tabs (Once/Monthly) -->
-            <TabsContent v-for="freq in baseFrequencies" :key="freq.value" :value="freq.value" class="mt-2 space-y-4">
+            <TabsContent v-for="freq in BASE_FREQUENCIES" :key="freq.value" :value="freq.value" class="mt-2 space-y-4">
                 <!-- Donation Amount Selector -->
                 <DonationAmountSelector v-model="donationAmounts[freq.value as keyof typeof donationAmounts]"
                     :amounts="availableAmounts" :currency="selectedCurrency" :min-price="sliderMinPrice"
@@ -385,8 +350,8 @@ const handleSwitchToTab = (tab: 'weekly' | 'monthly' | 'quarterly' | 'yearly') =
                 <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
                     :one-time-total="oneTimeTotal" :weekly-total="weeklyTotal" :monthly-total="monthlyTotal"
                     :quarterly-total="quarterlyTotal" :yearly-total="yearlyTotal"
-                    :enabled-frequencies="enabledFrequencies"
-                    :currency="selectedCurrency" @toggle="toggleBonusItem" @switch-to-tab="handleSwitchToTab" />
+                    :enabled-frequencies="enabledFrequencies" :currency="selectedCurrency" @toggle="toggleBonusItem"
+                    @switch-to-tab="handleSwitchToTab" />
 
                 <!-- Shipping Notice -->
                 <ShippingNotice :selected-frequency="selectedFrequency as 'once' | 'monthly' | 'multiple'"
