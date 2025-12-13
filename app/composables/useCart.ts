@@ -7,7 +7,7 @@ export interface Product {
     price?: number
     minPrice?: number
     default?: number
-    frequency: 'once' | 'monthly'
+    frequency: 'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
     image: string
     thumbnail: string
     icon: string
@@ -15,7 +15,10 @@ export interface Product {
     isShippingRequired?: boolean
     bonusThreshold?: {
         once?: number
+        weekly?: number
         monthly?: number
+        quarterly?: number
+        yearly?: number
     }
 }
 
@@ -45,13 +48,37 @@ export const useCart = () => {
 
     const recurringTotal = computed(() => {
         return multipleCart.value
-            .filter(item => item.frequency === 'monthly')
+            .filter(item => ['weekly', 'monthly', 'quarterly', 'yearly'].includes(item.frequency))
             .reduce((sum, item) => sum + (item.price || 0), 0)
     })
 
     const oneTimeTotal = computed(() => {
         return multipleCart.value
             .filter(item => item.frequency === 'once')
+            .reduce((sum, item) => sum + (item.price || 0), 0)
+    })
+
+    const weeklyTotal = computed(() => {
+        return multipleCart.value
+            .filter(item => item.frequency === 'weekly')
+            .reduce((sum, item) => sum + (item.price || 0), 0)
+    })
+
+    const monthlyTotal = computed(() => {
+        return multipleCart.value
+            .filter(item => item.frequency === 'monthly')
+            .reduce((sum, item) => sum + (item.price || 0), 0)
+    })
+
+    const quarterlyTotal = computed(() => {
+        return multipleCart.value
+            .filter(item => item.frequency === 'quarterly')
+            .reduce((sum, item) => sum + (item.price || 0), 0)
+    })
+
+    const yearlyTotal = computed(() => {
+        return multipleCart.value
+            .filter(item => item.frequency === 'yearly')
             .reduce((sum, item) => sum + (item.price || 0), 0)
     })
 
@@ -106,6 +133,10 @@ export const useCart = () => {
         // Computed
         recurringTotal,
         oneTimeTotal,
+        weeklyTotal,
+        monthlyTotal,
+        quarterlyTotal,
+        yearlyTotal,
 
         // Methods
         currentCart,

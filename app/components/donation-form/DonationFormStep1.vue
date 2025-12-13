@@ -21,6 +21,10 @@ const {
     cartTotal,
     recurringTotal,
     oneTimeTotal,
+    weeklyTotal,
+    monthlyTotal,
+    quarterlyTotal,
+    yearlyTotal,
     addToCart,
     removeFromCart,
     updateCartItemPrice,
@@ -61,6 +65,10 @@ const frequencies = computed(() => {
     return freqs
 })
 
+const enabledFrequencies = computed(() => {
+    return baseFrequencies.map(f => f.value) as Array<'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'>
+})
+
 const products: Product[] = [
     {
         id: 'adopt-bumi',
@@ -98,7 +106,10 @@ const products: Product[] = [
         isShippingRequired: true,
         bonusThreshold: {
             once: 50,
-            monthly: 25
+            weekly: 15,
+            monthly: 25,
+            quarterly: 50,
+            yearly: 200
         }
     },
     {
@@ -112,7 +123,10 @@ const products: Product[] = [
         isBonusItem: true,
         isShippingRequired: true,
         bonusThreshold: {
-            monthly: 10
+            weekly: 5,
+            monthly: 10,
+            quarterly: 25,
+            yearly: 75
         }
     },
     {
@@ -300,6 +314,10 @@ const handleNext = () => {
         bonusItems: Array.from(selectedBonusItems.value)
     })
 }
+
+const handleSwitchToTab = (tab: 'weekly' | 'monthly' | 'quarterly' | 'yearly') => {
+    selectedFrequency.value = tab
+}
 </script>
 
 <template>
@@ -342,9 +360,10 @@ const handleNext = () => {
 
                 <!-- Bonus Items Section -->
                 <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
-                    :recurring-total="freq.value === 'monthly' ? donationAmounts[freq.value as keyof typeof donationAmounts] : 0"
+                    :monthly-total="freq.value === 'monthly' ? donationAmounts[freq.value as keyof typeof donationAmounts] : 0"
                     :one-time-total="freq.value === 'once' ? donationAmounts[freq.value as keyof typeof donationAmounts] : 0"
-                    :currency="selectedCurrency" @toggle="toggleBonusItem" />
+                    :enabled-frequencies="enabledFrequencies" :currency="selectedCurrency" @toggle="toggleBonusItem"
+                    @switch-to-tab="handleSwitchToTab" />
 
                 <!-- Shipping Notice -->
                 <ShippingNotice :selected-frequency="selectedFrequency as 'once' | 'monthly' | 'multiple'"
@@ -364,8 +383,10 @@ const handleNext = () => {
 
                 <!-- Bonus Items Section -->
                 <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
-                    :recurring-total="recurringTotal" :one-time-total="oneTimeTotal" :currency="selectedCurrency"
-                    @toggle="toggleBonusItem" />
+                    :one-time-total="oneTimeTotal" :weekly-total="weeklyTotal" :monthly-total="monthlyTotal"
+                    :quarterly-total="quarterlyTotal" :yearly-total="yearlyTotal"
+                    :enabled-frequencies="['once', 'weekly', 'monthly', 'quarterly', 'yearly']" :currency="selectedCurrency"
+                    @toggle="toggleBonusItem" @switch-to-tab="handleSwitchToTab" />
 
                 <!-- Shipping Notice -->
                 <ShippingNotice :selected-frequency="selectedFrequency as 'once' | 'monthly' | 'multiple'"

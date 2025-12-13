@@ -18,14 +18,17 @@ interface Product {
     price?: number
     minPrice?: number
     default?: number
-    frequency: 'once' | 'monthly'
+    frequency: 'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
     image: string
     thumbnail: string
     icon: string
     isBonusItem?: boolean
     bonusThreshold?: {
         once?: number
+        weekly?: number
         monthly?: number
+        quarterly?: number
+        yearly?: number
     }
 }
 
