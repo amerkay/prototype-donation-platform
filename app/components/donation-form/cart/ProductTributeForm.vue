@@ -279,8 +279,8 @@ watch(sendECard, (newValue) => {
       <div v-if="showECardForm" ref="eCardRecipientFormRef" class="space-y-3 pl-6 pt-2">
         <Label class="text-sm font-semibold">eCard Recipient</Label>
 
-        <!-- Same as Honoree Toggle -->
-        <div class="flex items-center justify-between py-2">
+        <!-- Same as Honoree Toggle (only for gifts, not memorials) -->
+        <div v-if="tributeType === 'gift'" class="flex items-center justify-between py-2">
           <Label for="same-as-honoree" class="font-normal cursor-pointer text-sm">
             Send to {{ honoreeFullName || 'the honoree' }}
           </Label>

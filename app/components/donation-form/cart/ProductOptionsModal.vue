@@ -125,7 +125,7 @@ defineExpose({
 </script>
 
 <template>
-  <BaseDialogOrDrawer :open="open" @update:open="open = $event">
+  <BaseDialogOrDrawer :open="open" :dismissible="true" @update:open="open = $event">
     <template #header>
       <div class="flex items-center gap-3 mb-2">
         <div class="text-4xl">{{ product?.thumbnail }}</div>

@@ -10,6 +10,8 @@ import BaseDialogOrDrawer from '~/components/donation-form/common/BaseDialogOrDr
 import CartProductLine from '~/components/donation-form/cart/CartProductLine.vue'
 import Cart from '@/components/donation-form/cart/Cart.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
+import ProductTributeForm from '~/components/donation-form/cart/ProductTributeForm.vue'
+import TributeLine from '~/components/donation-form/cart/TributeLine.vue'
 import type { Product, CartItem, TributeData } from '@/lib/common/types'
 import { getCartItemKey, parseCartItemKey } from '@/lib/common/cart-utils'
 import ProductCard from './cart/ProductCard.vue'
@@ -267,6 +269,16 @@ const selectedAdoptions = ref<{
 const cartRef = ref<InstanceType<typeof Cart> | null>(null)
 const productOptionsModalRef = ref<InstanceType<typeof ProductOptionsModal> | null>(null)
 const adoptionDialogOpen = ref(false)
+const tributeDialogOpen = ref(false)
+const tributeData = ref<{
+  once: TributeData | undefined
+  monthly: TributeData | undefined
+  yearly: TributeData | undefined
+}>({
+  once: undefined,
+  monthly: undefined,
+  yearly: undefined
+})
 
 // Computed
 const availableAmounts = computed(() => {
@@ -429,6 +441,29 @@ const handleRemoveAdoption = () => {
   donationAmounts.value[freqKey] = 0
 }
 
+const handleOpenTributeModal = () => {
+  tributeDialogOpen.value = true
+}
+
+const handleTributeUpdate = (data: TributeData) => {
+  const freqKey = selectedFrequency.value as 'once' | 'monthly' | 'yearly'
+  tributeData.value[freqKey] = data
+}
+
+const handleTributeSave = () => {
+  tributeDialogOpen.value = false
+}
+
+const handleTributeCancel = () => {
+  // Revert changes by not saving
+  tributeDialogOpen.value = false
+}
+
+const handleRemoveTribute = () => {
+  const freqKey = selectedFrequency.value as 'once' | 'monthly' | 'yearly'
+  tributeData.value[freqKey] = undefined
+}
+
 // Watch for tab switches to "multiple" - auto-add selected adoption if cart is empty
 watch(selectedFrequency, (newFreq, oldFreq) => {
   if (newFreq === 'multiple' && (oldFreq === 'monthly' || oldFreq === 'yearly')) {
@@ -528,6 +563,26 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           @click="handleEditAdoption"
         >
           {{ freq.value === 'once' ? adoptionButtonTextOnce : adoptionButtonText }}
+        </Button>
+
+        <!-- Gift or In Memory (only for recurring donations) -->
+        <TributeLine
+          v-if="
+            freq.value !== 'once' &&
+            tributeData[freq.value as keyof typeof tributeData]?.type !== 'none' &&
+            tributeData[freq.value as keyof typeof tributeData]
+          "
+          :tribute="tributeData[freq.value as keyof typeof tributeData]!"
+          @edit="handleOpenTributeModal"
+          @remove="handleRemoveTribute"
+        />
+        <Button
+          v-else-if="freq.value !== 'once'"
+          variant="outline"
+          class="w-full h-10 text-sm"
+          @click="handleOpenTributeModal"
+        >
+          💝 Gift or In Memory of (with eCard)
         </Button>
 
         <!-- Bonus Items Section -->
@@ -644,6 +699,28 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
             {{ adoptionNoProductsMessage }}
           </div>
         </div>
+      </template>
+    </BaseDialogOrDrawer>
+
+    <!-- Tribute Form Modal (Gift or In Memory) -->
+    <BaseDialogOrDrawer v-model:open="tributeDialogOpen" :dismissible="true">
+      <template #header>
+        <h2 class="text-2xl font-semibold">Gift or In Memory</h2>
+        <p class="text-sm text-muted-foreground">
+          Make this donation in honor or memory of someone special
+        </p>
+      </template>
+      <template #content>
+        <ProductTributeForm
+          v-model="tributeData[selectedFrequency as keyof typeof tributeData]"
+          @update:model-value="handleTributeUpdate"
+        />
+      </template>
+      <template #footer>
+        <Button class="flex-1 md:flex-1 h-12" @click="handleTributeSave">Save</Button>
+        <Button variant="outline" class="flex-1 md:flex-1 h-12" @click="handleTributeCancel">
+          Cancel
+        </Button>
       </template>
     </BaseDialogOrDrawer>
 
