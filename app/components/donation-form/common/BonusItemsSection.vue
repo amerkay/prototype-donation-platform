@@ -233,7 +233,6 @@ watch(
                   class="underline hover:no-underline font-semibold"
                   @click="handleSwitchToRecurring(item)"
                 >
-                  >
                   {{ switchToTemplate.replace('{frequency}', getRecurringLabel(item)) }}
                 </button>
               </p>
@@ -242,7 +241,5 @@ watch(
         </div>
       </div>
     </div>
-
-    <div class="border-b"></div>
   </div>
 </template>

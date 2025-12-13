@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { ShoppingCart } from 'lucide-vue-next'
 import { getCartItemKey } from '@/lib/common/cart-utils'
-import type { CartItem } from '@/lib/common/types'
+import type { CartItem, Product } from '@/lib/common/types'
 import CartProductLine from '@/components/donation-form/cart/CartProductLine.vue'
+import ProductListContent from '@/components/donation-form/cart/ProductListContent.vue'
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyContent } from '@/components/ui/empty'
+import { Button } from '@/components/ui/button'
 
 interface Props {
   items: CartItem[]
@@ -10,6 +14,17 @@ interface Props {
   total: number
   recurringTotal?: number
   showTotal?: boolean
+  // Product list props
+  products?: Product[]
+  searchQuery?: string
+  showAllProducts?: boolean
+  initialProductsDisplayed?: number
+  productListConfig?: {
+    title: string
+    searchPlaceholder: string
+    showMoreButton: string
+    emptyStateMessage: string
+  }
 }
 
 defineProps<Props>()
@@ -17,6 +32,10 @@ defineProps<Props>()
 const emit = defineEmits<{
   edit: [item: CartItem, itemKey: string]
   remove: [itemId: string, addedAt: number]
+  'add-items': []
+  'update:searchQuery': [value: string]
+  'update:showAllProducts': [value: boolean]
+  'product-select': [product: Product]
 }>()
 
 const cartItemRefs = ref<Record<string, HTMLElement>>({})
@@ -59,6 +78,9 @@ defineExpose({
       />
     </TransitionGroup>
 
+    <!-- Add Items Button -->
+    <Button class="w-full" @click="emit('add-items')"> Add more to cart </Button>
+
     <div v-if="showTotal" class="rounded-lg bg-muted p-3 space-y-2">
       <!-- Show breakdown when both one-time and recurring exist -->
       <template
@@ -90,6 +112,31 @@ defineExpose({
       </template>
     </div>
   </div>
+
+  <ProductListContent
+    v-else-if="products && productListConfig"
+    :products="products"
+    :currency="currency"
+    :search-query="searchQuery || ''"
+    :show-all-products="showAllProducts || false"
+    :initial-products-displayed="initialProductsDisplayed || 3"
+    :config="productListConfig"
+    @update:search-query="emit('update:searchQuery', $event)"
+    @update:show-all-products="emit('update:showAllProducts', $event)"
+    @product-select="emit('product-select', $event)"
+  />
+
+  <Empty v-else class="border">
+    <EmptyHeader>
+      <EmptyMedia variant="icon">
+        <ShoppingCart />
+      </EmptyMedia>
+      <EmptyTitle>Your cart is empty</EmptyTitle>
+    </EmptyHeader>
+    <EmptyContent>
+      <Button class="w-full" @click="emit('add-items')"> Add items to cart </Button>
+    </EmptyContent>
+  </Empty>
 </template>
 
 <style scoped>

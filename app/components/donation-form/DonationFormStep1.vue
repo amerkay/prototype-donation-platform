@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import ProductOptionsModal from '~/components/donation-form/cart/ProductOptionsModal.vue'
 import NextButton from '~/components/donation-form/common/NextButton.vue'
 import BonusItemsSection from '~/components/donation-form/common/BonusItemsSection.vue'
-import DonationAmountSelector from '~/components/donation-form/common/DonationAmountSelector.vue'
+import AmountSelector from '~/components/donation-form/common/AmountSelector.vue'
 import BaseDialogOrDrawer from '~/components/donation-form/common/BaseDialogOrDrawer.vue'
 import CartProductLine from '~/components/donation-form/cart/CartProductLine.vue'
-import ProductCard from '~/components/donation-form/cart/ProductCard.vue'
+import ProductList from '~/components/donation-form/cart/ProductList.vue'
 import Cart from '@/components/donation-form/cart/Cart.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
 import type { Product } from '@/lib/common/types'
+import ProductCard from './cart/ProductCard.vue'
 
 const { convertPrice } = useCurrency()
 
@@ -275,6 +275,7 @@ const searchQuery = ref('')
 const cartRef = ref<InstanceType<typeof Cart> | null>(null)
 const showAllProducts = ref(false)
 const adoptionDialogOpen = ref(false)
+const productListOpen = ref(false)
 
 // Computed
 const availableAmounts = computed(() => {
@@ -335,21 +336,6 @@ const filteredProducts = computed(() => {
   )
 })
 
-const displayedProducts = computed(() => {
-  if (showAllProducts.value || searchQuery.value.trim()) {
-    return filteredProducts.value
-  }
-  return filteredProducts.value.slice(0, INITIAL_PRODUCTS_DISPLAYED)
-})
-
-const hasMoreProducts = computed(() => {
-  return (
-    !showAllProducts.value &&
-    !searchQuery.value.trim() &&
-    filteredProducts.value.length > INITIAL_PRODUCTS_DISPLAYED
-  )
-})
-
 const activeCart = computed(() =>
   currentCart(selectedFrequency.value as 'once' | 'monthly' | 'multiple')
 )
@@ -383,6 +369,7 @@ const getProductPrice = (productId: string) => {
 
 const handleOpenDrawerForAdd = (product: Product) => {
   openDrawerForAdd(product, getProductPrice(product.id))
+  productListOpen.value = false
 }
 
 const handleDrawerConfirmWrapper = (price: number) => {
@@ -498,7 +485,7 @@ const handleRemoveAdoption = () => {
         class="mt-2 space-y-4"
       >
         <!-- Donation Amount Selector -->
-        <DonationAmountSelector
+        <AmountSelector
           v-model="donationAmounts[freq.value as keyof typeof donationAmounts]"
           :amounts="availableAmounts"
           :currency="selectedCurrency"
@@ -583,8 +570,17 @@ const handleRemoveAdoption = () => {
           :total="activeCartTotal"
           :recurring-total="recurringTotal"
           :show-total="true"
+          :products="filteredProducts"
+          :search-query="searchQuery"
+          :show-all-products="showAllProducts"
+          :initial-products-displayed="INITIAL_PRODUCTS_DISPLAYED"
+          :product-list-config="config.multipleItemsSection"
           @edit="openDrawerForEdit"
           @remove="handleRemoveFromCart"
+          @add-items="productListOpen = true"
+          @update:search-query="searchQuery = $event"
+          @update:show-all-products="showAllProducts = $event"
+          @product-select="handleOpenDrawerForAdd"
         />
 
         <!-- Bonus Items Section -->
@@ -619,55 +615,6 @@ const handleRemoveAdoption = () => {
           :donation-amounts="donationAmounts"
           :message="config.shippingNotice.message"
         />
-
-        <!-- Products Section -->
-        <div class="space-y-4">
-          <div class="space-y-2">
-            <h3 class="text-sm font-semibold text-muted-foreground">
-              {{ config.multipleItemsSection.title }}
-            </h3>
-            <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">🔍</span>
-              <Input
-                v-model="searchQuery"
-                type="text"
-                :placeholder="config.multipleItemsSection.searchPlaceholder"
-                class="h-10 pl-10"
-              />
-            </div>
-          </div>
-
-          <!-- Products Grid -->
-          <TransitionGroup name="product-list" tag="div" class="space-y-2">
-            <ProductCard
-              v-for="product in displayedProducts"
-              :key="product.id"
-              :product="product"
-              :currency="selectedCurrency"
-              @click="handleOpenDrawerForAdd(product)"
-            />
-          </TransitionGroup>
-
-          <!-- Show More Button -->
-          <Button
-            v-if="hasMoreProducts"
-            variant="outline"
-            class="w-full"
-            @click="showAllProducts = true"
-          >
-            {{
-              config.multipleItemsSection.showMoreButton.replace(
-                '{count}',
-                String(filteredProducts.length - INITIAL_PRODUCTS_DISPLAYED)
-              )
-            }}
-          </Button>
-
-          <!-- Empty State -->
-          <div v-if="filteredProducts.length === 0" class="py-12 text-center text-muted-foreground">
-            {{ config.multipleItemsSection.emptyStateMessage.replace('{query}', searchQuery) }}
-          </div>
-        </div>
 
         <!-- Next Button -->
         <NextButton :disabled="!isFormValid" @click="handleNext" />
@@ -708,6 +655,18 @@ const handleRemoveAdoption = () => {
       :mode="drawerMode"
       :amounts="drawerAmounts"
       @confirm="handleDrawerConfirmWrapper"
+    />
+
+    <!-- Product List Modal (Dialog on desktop, Drawer on mobile) -->
+    <ProductList
+      v-model:open="productListOpen"
+      v-model:search-query="searchQuery"
+      v-model:show-all-products="showAllProducts"
+      :products="filteredProducts"
+      :currency="selectedCurrency"
+      :initial-products-displayed="INITIAL_PRODUCTS_DISPLAYED"
+      :config="config.multipleItemsSection"
+      @product-select="handleOpenDrawerForAdd"
     />
   </div>
 </template>

@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import BaseDialogOrDrawer from '~/components/donation-form/common/BaseDialogOrDrawer.vue'
-import DonationAmountSelector from '~/components/donation-form/common/DonationAmountSelector.vue'
+import AmountSelector from '~/components/donation-form/common/AmountSelector.vue'
 import type { Product } from '@/lib/common/types'
 
 interface Props {
@@ -90,7 +90,7 @@ const handleConfirm = () => {
         </div>
 
         <!-- Recurring with preset amounts -->
-        <DonationAmountSelector
+        <AmountSelector
           v-else-if="hasPresetAmounts"
           v-model="localPrice"
           :amounts="amounts"
@@ -102,7 +102,7 @@ const handleConfirm = () => {
         />
 
         <!-- Recurring without preset amounts -->
-        <DonationAmountSelector
+        <AmountSelector
           v-else-if="isRecurring"
           v-model="localPrice"
           :amounts="[]"
