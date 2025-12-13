@@ -24,7 +24,7 @@ interface Props {
     selectedBonusItems: Set<string>
     recurringTotal: number
     oneTimeTotal: number
-    currencySymbol?: string
+    currency?: string
 }
 
 interface Emits {
@@ -32,8 +32,11 @@ interface Emits {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    currencySymbol: '$'
+    currency: 'USD'
 })
+
+const { getCurrencySymbol } = useCurrency()
+const currencySymbol = computed(() => getCurrencySymbol(props.currency))
 
 const emit = defineEmits<Emits>()
 
@@ -57,14 +60,16 @@ const getUpsellMessage = (item: Product) => {
     if (!item.bonusThreshold) return ''
     const recurringNeeded = item.bonusThreshold.monthly - props.recurringTotal
     const oneTimeNeeded = item.bonusThreshold.once - props.oneTimeTotal
+    const onceThreshold = item.bonusThreshold.once
+    const monthlyThreshold = item.bonusThreshold.monthly
 
-    if (recurringNeeded > 0 && oneTimeNeeded > 0) {
-        const minNeeded = Math.min(recurringNeeded, oneTimeNeeded)
-        return `Add ${props.currencySymbol}${minNeeded} more to unlock this free gift!`
-    } else if (recurringNeeded > 0) {
-        return `Add ${props.currencySymbol}${recurringNeeded} in monthly donations to unlock!`
-    } else if (oneTimeNeeded > 0) {
-        return `Add ${props.currencySymbol}${oneTimeNeeded} in one-time donations to unlock!`
+    if (onceThreshold > 0 && monthlyThreshold > 0) {
+        const minNeeded = Math.min(oneTimeNeeded, recurringNeeded)
+        return `Add ${currencySymbol.value}${minNeeded} more to unlock this free gift!`
+    } else if (monthlyThreshold > 0) {
+        return `Add ${currencySymbol.value}${recurringNeeded} in monthly donations to unlock!`
+    } else {
+        return `Add ${currencySymbol.value}${oneTimeNeeded} in one-time donations to unlock!`
     }
     return ''
 }

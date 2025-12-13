@@ -9,6 +9,8 @@ import BonusItemsSection from '@/components/donation-form/BonusItemsSection.vue'
 import DonationAmountSelector from '@/components/donation-form/DonationAmountSelector.vue'
 import LogarithmicPriceSlider from '@/components/donation-form/LogarithmicPriceSlider.vue'
 
+const { getCurrencySymbol } = useCurrency()
+
 // Constants
 const ALLOW_MULTIPLE_ITEMS = true
 const SLIDER_MAX = 1000
@@ -38,9 +40,9 @@ interface CartItem extends Product {
 
 // Settings
 const currencies = [
-    { value: 'USD', label: 'USD ($)', symbol: '$' },
-    { value: 'EUR', label: 'EUR (€)', symbol: '€' },
-    { value: 'GBP', label: 'GBP (£)', symbol: '£' },
+    { value: 'USD', label: 'USD ($)' },
+    { value: 'EUR', label: 'EUR (€)' },
+    { value: 'GBP', label: 'GBP (£)' },
 ]
 
 const baseFrequencies = [
@@ -154,7 +156,7 @@ const amounts = {
 }
 
 // State - Single donation
-const selectedCurrency = ref('USD')
+const selectedCurrency = ref('GBP')
 const selectedFrequency = ref('once')
 const donationAmounts = ref({
     once: 0,
@@ -183,6 +185,8 @@ const showAllProducts = ref(false)
 const currentCurrency = computed(() =>
     currencies.find(c => c.value === selectedCurrency.value)
 )
+
+const currencySymbol = computed(() => getCurrencySymbol(selectedCurrency.value))
 
 const availableAmounts = computed(() => {
     if (selectedFrequency.value === 'multiple') return []
@@ -393,15 +397,14 @@ const handleNext = () => {
             <TabsContent v-for="freq in baseFrequencies" :key="freq.value" :value="freq.value" class="mt-6 space-y-4">
                 <!-- Donation Amount Selector -->
                 <DonationAmountSelector v-model="donationAmounts[freq.value as keyof typeof donationAmounts]"
-                    :amounts="availableAmounts" :currency="currentCurrency?.symbol"
-                    :min-price="availableAmounts[0] || 5" :max-price="SLIDER_MAX"
-                    :frequency-label="freq.label.toLowerCase() + ' donation'" />
+                    :amounts="availableAmounts" :currency="selectedCurrency" :min-price="availableAmounts[0] || 5"
+                    :max-price="SLIDER_MAX" :frequency-label="freq.label.toLowerCase() + ' donation'" />
 
                 <!-- Bonus Items Section -->
                 <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
                     :recurring-total="freq.value === 'monthly' ? donationAmounts[freq.value as keyof typeof donationAmounts] : 0"
                     :one-time-total="freq.value === 'once' ? donationAmounts[freq.value as keyof typeof donationAmounts] : 0"
-                    :currency-symbol="currentCurrency?.symbol" @toggle="toggleBonusItem" />
+                    :currency="selectedCurrency" @toggle="toggleBonusItem" />
 
                 <!-- Next Button -->
                 <Button :disabled="!isFormValid" class="w-full h-12 text-base" @click="handleNext">
@@ -425,7 +428,7 @@ const handleNext = () => {
                                 <p class="font-medium text-sm truncate">{{ item.name }}</p>
                                 <div class="flex items-center gap-2">
                                     <p class="text-xs text-muted-foreground">
-                                        {{ currentCurrency?.symbol }}{{ item.price }}
+                                        {{ currencySymbol }}{{ item.price }}
                                         <span v-if="item.frequency === 'monthly'">/month</span>
                                     </p>
                                     <button v-if="item.frequency === 'monthly' && item.minPrice"
@@ -446,14 +449,15 @@ const handleNext = () => {
                 <div v-if="multipleCart.length > 0" class="space-y-4">
                     <div class="rounded-lg bg-muted p-3 flex items-center justify-between">
                         <span class="text-sm font-medium">Total</span>
-                        <span class="text-lg font-bold">{{ currentCurrency?.symbol }}{{ cartTotal }}</span>
+                        <span class="text-lg font-bold">{{ currencySymbol }}{{ cartTotal }}</span>
                     </div>
                 </div>
 
                 <!-- Bonus Items Section -->
+                <!-- Bonus Items Section -->
                 <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
-                    :recurring-total="recurringTotal" :one-time-total="oneTimeTotal"
-                    :currency-symbol="currentCurrency?.symbol" @toggle="toggleBonusItem" />
+                    :recurring-total="recurringTotal" :one-time-total="oneTimeTotal" :currency="selectedCurrency"
+                    @toggle="toggleBonusItem" />
 
                 <!-- Products Section -->
                 <div class="space-y-4">
@@ -478,7 +482,7 @@ const handleNext = () => {
                                     <!-- Price display -->
                                     <p class="text-xs font-semibold text-foreground mt-0.5">
                                         <span v-if="product.frequency === 'once'">
-                                            {{ currentCurrency?.symbol }}{{ product.price }} one-time
+                                            {{ currencySymbol }}{{ product.price }} one-time
                                         </span>
                                         <span v-else>
                                             Monthly
@@ -521,7 +525,7 @@ const handleNext = () => {
         </Tabs>
 
         <!-- Product Configuration Modal (Dialog on desktop, Drawer on mobile) -->
-        <ProductConfigModal v-model:open="drawerOpen" :product="drawerProduct" :currency="currentCurrency?.symbol"
+        <ProductConfigModal v-model:open="drawerOpen" :product="drawerProduct" :currency="selectedCurrency"
             :initial-price="drawerInitialPrice" :max-price="SLIDER_MAX" :mode="drawerMode" :amounts="drawerAmounts"
             @confirm="handleDrawerConfirm" />
     </div>

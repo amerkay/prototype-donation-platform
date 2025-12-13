@@ -17,11 +17,14 @@ interface Emits {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    currency: '$',
+    currency: 'USD',
     minPrice: 5,
     maxPrice: 1000,
     frequencyLabel: 'donation'
 })
+
+const { getCurrencySymbol } = useCurrency()
+const currencySymbol = computed(() => getCurrencySymbol(props.currency))
 
 const emit = defineEmits<Emits>()
 
@@ -95,7 +98,7 @@ const backToPresets = () => {
                 <Button v-for="amount in amounts" :key="amount"
                     :variant="selectedAmount === amount ? 'default' : 'outline'" class="h-14 text-lg font-semibold"
                     @click="selectAmount(amount)">
-                    {{ currency }}{{ amount }}
+                    {{ currencySymbol }}{{ amount }}
                 </Button>
             </div>
 
@@ -107,7 +110,7 @@ const backToPresets = () => {
             <!-- Selected Amount Display -->
             <div v-if="selectedAmount" class="rounded-lg bg-muted p-4 text-center">
                 <p class="text-sm text-muted-foreground">Your {{ frequencyLabel }}</p>
-                <p class="text-3xl font-bold">{{ currency }}{{ selectedAmount }}</p>
+                <p class="text-3xl font-bold">{{ currencySymbol }}{{ selectedAmount }}</p>
             </div>
         </div>
 
@@ -115,7 +118,7 @@ const backToPresets = () => {
         <div v-else class="space-y-3">
             <div class="rounded-lg bg-muted p-3 text-center">
                 <p class="text-sm text-muted-foreground">Your {{ frequencyLabel }}</p>
-                <p class="text-2xl font-bold">{{ currency }}{{ localAmount }}</p>
+                <p class="text-2xl font-bold">{{ currencySymbol }}{{ localAmount }}</p>
             </div>
 
             <LogarithmicPriceSlider v-model="localAmount" :min-price="minPrice" :max-price="maxPrice"

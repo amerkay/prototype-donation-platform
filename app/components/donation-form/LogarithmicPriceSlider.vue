@@ -13,8 +13,11 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
     maxPrice: 1000,
-    currency: '$'
+    currency: 'USD'
 })
+
+const { getCurrencySymbol } = useCurrency()
+const currencySymbol = computed(() => getCurrencySymbol(props.currency))
 
 const emit = defineEmits<{
     'update:modelValue': [value: number]
@@ -123,12 +126,12 @@ const handleCustomBlur = () => {
     <div class="space-y-2">
         <div class="flex items-center justify-between">
             <span v-if="!isCustomMode" class="text-sm font-semibold">
-                {{ currency }}{{ modelValue }}
+                {{ currencySymbol }}{{ modelValue }}
                 <span class="text-xs text-muted-foreground">/mo</span>
             </span>
             <InputGroup v-else class="w-auto">
                 <InputGroupAddon>
-                    <InputGroupText>{{ currency }}</InputGroupText>
+                    <InputGroupText>{{ currencySymbol }}</InputGroupText>
                 </InputGroupAddon>
                 <InputGroupInput v-model="customInputValue" type="number" :min="minPrice" class="w-24"
                     @input="handleCustomInput" @blur="handleCustomBlur" />
@@ -143,11 +146,11 @@ const handleCustomBlur = () => {
         <Slider v-if="!isCustomMode" :model-value="[sliderValue]" :min="0" :max="steps.length - 1" :step="1"
             @update:model-value="handleSliderChange" />
         <div v-if="!isCustomMode" class="flex justify-between text-xs text-muted-foreground">
-            <span>{{ currency }}{{ minPrice }}</span>
-            <span>{{ currency }}{{ maxPrice }}</span>
+            <span>{{ currencySymbol }}{{ minPrice }}</span>
+            <span>{{ currencySymbol }}{{ maxPrice }}</span>
         </div>
         <div v-else class="text-xs text-muted-foreground">
-            Min: {{ currency }}{{ minPrice }}
+            Min: {{ currencySymbol }}{{ minPrice }}
         </div>
     </div>
 </template>

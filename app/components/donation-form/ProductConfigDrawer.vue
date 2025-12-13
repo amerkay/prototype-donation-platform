@@ -47,7 +47,7 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
     open: false,
-    currency: '$',
+    currency: 'USD',
     initialPrice: 0,
     maxPrice: 1000,
     mode: 'add',

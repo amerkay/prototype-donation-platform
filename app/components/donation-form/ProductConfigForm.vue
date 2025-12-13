@@ -34,7 +34,7 @@ interface Emits {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    currency: '$',
+    currency: 'USD',
     initialPrice: 0,
     maxPrice: 1000,
     amounts: () => []
