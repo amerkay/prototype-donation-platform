@@ -12,9 +12,12 @@ interface Props {
         monthly: number
         yearly: number
     }
+    message?: string
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+    message: '📦 Shipping address on next page'
+})
 
 const requiresShipping = computed(() => {
     if (props.selectedFrequency === 'multiple') {
@@ -60,7 +63,7 @@ const requiresShipping = computed(() => {
 <template>
     <Transition name="shipping-notice">
         <div v-if="requiresShipping" class="rounded-lg bg-muted p-3 text-sm text-muted-foreground">
-            📦 Shipping address on next page
+            {{ message }}
         </div>
     </Transition>
 </template>

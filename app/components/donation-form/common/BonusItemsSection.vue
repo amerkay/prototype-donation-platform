@@ -11,6 +11,16 @@ interface Props {
     currency?: string
     enabledFrequencies?: Array<'once' | 'monthly' | 'yearly'>
     selectedFrequency?: string
+    // Configurable wording
+    freeGiftsLabel?: string
+    freeWithDonationLabel?: string
+    oneTimeLabel?: string
+    monthlyLabel?: string
+    yearlyLabel?: string
+    addToUnlockSingleTemplate?: string // e.g., "Add {amount} {frequency} to unlock!"
+    addToUnlockPairTemplate?: string  // e.g., "Add {a} or {b} to unlock!"
+    addToUnlockListTemplate?: string  // e.g., "Add {list}, or {last} to unlock!"
+    switchToTemplate?: string         // e.g., "Switch to {frequency}"
 }
 
 interface Emits {
@@ -24,7 +34,17 @@ const props = withDefaults(defineProps<Props>(), {
     yearlyTotal: 0,
     oneTimeTotal: 0,
     enabledFrequencies: () => ['once', 'monthly'],
-    selectedFrequency: 'once'
+    selectedFrequency: 'once',
+    // Defaults for wording
+    freeGiftsLabel: '🎁 Free gifts available:',
+    freeWithDonationLabel: 'FREE with your donation!',
+    oneTimeLabel: 'one-time',
+    monthlyLabel: 'monthly',
+    yearlyLabel: 'yearly',
+    addToUnlockSingleTemplate: 'Add {amount} {frequency} to unlock!',
+    addToUnlockPairTemplate: 'Add {a} or {b} to unlock!',
+    addToUnlockListTemplate: 'Add {list}, or {last} to unlock!',
+    switchToTemplate: 'Switch to {frequency}'
 })
 
 const { getCurrencySymbol } = useCurrency()
@@ -79,23 +99,39 @@ const getUpsellMessage = (item: Product) => {
 
     if (once !== undefined && props.enabledFrequencies.includes('once')) {
         const needed = Math.max(0, once - props.oneTimeTotal)
-        if (needed > 0) options.push(`${currencySymbol.value}${needed} one-time`)
+        if (needed > 0) options.push(`${currencySymbol.value}${needed} ${props.oneTimeLabel}`)
     }
     if (monthly !== undefined && props.enabledFrequencies.includes('monthly')) {
         const needed = Math.max(0, monthly - props.monthlyTotal)
-        if (needed > 0) options.push(`${currencySymbol.value}${needed} monthly`)
+        if (needed > 0) options.push(`${currencySymbol.value}${needed} ${props.monthlyLabel}`)
     }
     if (yearly !== undefined && props.enabledFrequencies.includes('yearly')) {
         const needed = Math.max(0, yearly - props.yearlyTotal)
-        if (needed > 0) options.push(`${currencySymbol.value}${needed} yearly`)
+        if (needed > 0) options.push(`${currencySymbol.value}${needed} ${props.yearlyLabel}`)
     }
 
     if (options.length === 0) return 'Free gift unlocked!'
-    if (options.length === 1) return `Add ${options[0]} to unlock!`
-    if (options.length === 2) return `Add ${options[0]} or ${options[1]} to unlock!`
+    if (options.length === 1) {
+        const single = options[0]!
+        const parts = single.split(' ')
+        const amountPart = parts[0] ?? ''
+        const freqPart = parts.slice(1).join(' ')
+        return props.addToUnlockSingleTemplate
+            .replace('{amount}', amountPart)
+            .replace('{frequency}', freqPart)
+    }
+    if (options.length === 2) {
+        const a = options[0]!
+        const b = options[1]!
+        return props.addToUnlockPairTemplate
+            .replace('{a}', a)
+            .replace('{b}', b)
+    }
 
-    const lastOption = options.pop()
-    return `Add ${options.join(', ')}, or ${lastOption} to unlock!`
+    const lastOption = options.pop()!
+    return props.addToUnlockListTemplate
+        .replace('{list}', options.join(', '))
+        .replace('{last}', lastOption)
 }
 
 const getFirstRecurringFrequency = (item: Product): 'monthly' | 'yearly' | null => {
@@ -150,7 +186,7 @@ watch(eligibleBonusItems, (newEligible) => {
 
         <!-- Eligible Bonus Items (Free Gifts) -->
         <div v-if="eligibleBonusItems.length > 0" class="space-y-2">
-            <p class="text-sm font-medium text-muted-foreground">🎁 Free gifts available:</p>
+            <p class="text-sm font-medium text-muted-foreground">{{ freeGiftsLabel }}</p>
             <div v-for="item in eligibleBonusItems" :key="`bonus-${item.id}`"
                 class="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
                 <input type="checkbox" :id="`bonus-${item.id}`" :checked="selectedBonusItems.has(item.id)"
@@ -159,7 +195,7 @@ watch(eligibleBonusItems, (newEligible) => {
                     <div class="text-xl">{{ item.thumbnail }}</div>
                     <div class="flex-1 min-w-0">
                         <p class="font-medium text-sm truncate">{{ item.name }}</p>
-                        <p class="text-xs text-success font-medium">FREE with your donation!</p>
+                        <p class="text-xs text-success font-medium">{{ freeWithDonationLabel }}</p>
                     </div>
                 </label>
             </div>
@@ -181,7 +217,7 @@ watch(eligibleBonusItems, (newEligible) => {
                                 <button v-if="isRecurringOnly(item) && selectedFrequency === 'once'" type="button"
                                     @click="handleSwitchToRecurring(item)"
                                     class="underline hover:no-underline font-semibold">
-                                    Switch to {{ getRecurringLabel(item) }}
+                                    {{ switchToTemplate.replace('{frequency}', getRecurringLabel(item)) }}
                                 </button>
                             </p>
                         </div>

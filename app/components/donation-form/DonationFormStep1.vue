@@ -7,7 +7,8 @@ import ProductOptionsModal from '~/components/donation-form/cart/ProductOptionsM
 import NextButton from '~/components/donation-form/common/NextButton.vue'
 import BonusItemsSection from '~/components/donation-form/common/BonusItemsSection.vue'
 import DonationAmountSelector from '~/components/donation-form/common/DonationAmountSelector.vue'
-import SwitchToRecurringUpsellButtonModal from '~/components/donation-form/common/SwitchToRecurringUpsellButtonModal.vue'
+import BaseDialogOrDrawer from '~/components/donation-form/common/BaseDialogOrDrawer.vue'
+import CartProductLine from '~/components/donation-form/cart/CartProductLine.vue'
 import ProductCard from '~/components/donation-form/cart/ProductCard.vue'
 import Cart from '@/components/donation-form/cart/Cart.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
@@ -38,6 +39,67 @@ const {
     openDrawerForEdit,
     handleDrawerConfirm,
 } = useProductConfig()
+
+// Configuration - These will come from API
+const config = {
+    // Form labels and titles
+    formTitle: 'Make a Donation',
+    formSubtitle: 'Choose your donation amount',
+
+    // Adoption feature configuration
+    adoptionFeature: {
+        enabled: true,
+        icon: '🦧',
+        singularName: 'Orangutan', // e.g., "Orangutan", "Tiger", "Child"
+        pluralName: 'Orangutans',
+        actionVerb: 'Adopt', // e.g., "Adopt", "Sponsor", "Support"
+        actionNoun: 'adoption', // e.g., "adoption", "sponsorship", "support"
+
+        // Button text
+        buttonText: '🦧 Adopt an Orangutan',
+        buttonTextOnce: '🦧 Adopt an Orangutan (Monthly)', // Text shown on "once" tab
+
+        // Modal text
+        modalTitle: '🦧 Adopt an Orangutan',
+        modalDescription: 'Choose an orangutan to support with a {frequency} donation', // {frequency} will be replaced
+        noProductsMessage: 'No {frequency} adoption products available', // {frequency} will be replaced
+    },
+    // Bonus items section configuration
+    bonusItemsSection: {
+        freeGiftsLabel: '🎁 Free gifts available:',
+        freeWithDonationLabel: 'FREE with your donation!',
+        oneTimeLabel: 'one-time',
+        monthlyLabel: 'monthly',
+        yearlyLabel: 'yearly',
+        addToUnlockSingleTemplate: 'Add {amount} {frequency} to unlock!',
+        addToUnlockPairTemplate: 'Add {a} or {b} to unlock!',
+        addToUnlockListTemplate: 'Add {list}, or {last} to unlock!',
+        switchToTemplate: 'Switch to {frequency}',
+    },
+    // Shipping notice configuration
+    shippingNotice: {
+        message: '📦 Shipping address on next page'
+    },
+
+    // Multiple items tab configuration
+    multipleItemsSection: {
+        title: 'Add Items to Your Donation',
+        searchPlaceholder: 'Search items...',
+        showMoreButton: 'Show {count} More Items', // {count} will be replaced
+        emptyStateMessage: 'No items found matching "{query}"', // {query} will be replaced
+    },
+}
+
+// Computed configuration values
+const adoptionButtonText = computed(() => config.adoptionFeature.buttonText)
+const adoptionButtonTextOnce = computed(() => config.adoptionFeature.buttonTextOnce)
+const adoptionModalTitle = computed(() => config.adoptionFeature.modalTitle)
+const adoptionModalDescription = computed(() =>
+    config.adoptionFeature.modalDescription.replace('{frequency}', selectedFrequency.value)
+)
+const adoptionNoProductsMessage = computed(() =>
+    config.adoptionFeature.noProductsMessage.replace('{frequency}', selectedFrequency.value)
+)
 
 const frequencies = computed(() => {
     const freqs = [...BASE_FREQUENCIES] as Array<{ value: string; label: string }>
@@ -169,11 +231,19 @@ const donationAmounts = ref({
     monthly: 0,
     yearly: 0
 })
+const selectedAdoptions = ref<{
+    monthly: Product | null
+    yearly: Product | null
+}>({
+    monthly: null,
+    yearly: null
+})
 
 // State - Multiple items
 const searchQuery = ref('')
 const cartRef = ref<InstanceType<typeof Cart> | null>(null)
 const showAllProducts = ref(false)
+const adoptionDialogOpen = ref(false)
 
 // Computed
 const currencySymbol = computed(() => getCurrencySymbol(selectedCurrency.value))
@@ -243,6 +313,13 @@ const activeCartTotal = computed(() => cartTotal(selectedFrequency.value as 'onc
 
 const bonusItems = computed(() => products.filter(p => p.isBonusItem))
 
+const adoptionProducts = computed(() => {
+    return products.filter(p =>
+        !p.isBonusItem &&
+        p.frequency === selectedFrequency.value
+    )
+})
+
 const isFormValid = computed(() => {
     if (selectedFrequency.value === 'multiple') {
         return multipleCart.value.length > 0
@@ -289,7 +366,34 @@ const handleSwitchToTab = (tab: 'monthly' | 'yearly') => {
 }
 
 const handleAdoptProductSelect = (product: Product) => {
-    handleOpenDrawerForAdd(product)
+    // Only monthly and yearly adoptions are supported
+    const freqKey = selectedFrequency.value as 'monthly' | 'yearly'
+    selectedAdoptions.value[freqKey] = product
+
+    // Only set amount if currently 0 (don't replace existing amounts)
+    const currentAmount = donationAmounts.value[freqKey]
+    if (currentAmount === 0) {
+        const amount = product.default ?? product.price ?? 0
+        donationAmounts.value[freqKey] = amount
+    }
+
+    adoptionDialogOpen.value = false
+}
+
+const handleEditAdoption = () => {
+    // If on 'once' tab, switch to monthly first
+    if (selectedFrequency.value === 'once') {
+        handleSwitchToTab('monthly')
+    }
+    // Open modal for the current tab's frequency
+    adoptionDialogOpen.value = true
+}
+
+const handleRemoveAdoption = () => {
+    // Only monthly and yearly adoptions are supported
+    const freqKey = selectedFrequency.value as 'monthly' | 'yearly'
+    selectedAdoptions.value[freqKey] = null
+    donationAmounts.value[freqKey] = 0
 }
 </script>
 
@@ -298,8 +402,8 @@ const handleAdoptProductSelect = (product: Product) => {
         <!-- Header with Currency Selector -->
         <div class="flex items-start justify-between gap-2">
             <div>
-                <h2 class="text-xl font-semibold">Make a Donation</h2>
-                <p class="text-sm text-muted-foreground">Choose your donation amount</p>
+                <h2 class="text-xl font-semibold">{{ config.formTitle }}</h2>
+                <p class="text-sm text-muted-foreground">{{ config.formSubtitle }}</p>
             </div>
             <div class="flex items-center gap-2 justify-end">
                 <!-- <Label for="currency" class="hidden md:inline-block text-sm">Currency</Label> -->
@@ -335,10 +439,16 @@ const handleAdoptProductSelect = (product: Product) => {
                     :amounts="availableAmounts" :currency="selectedCurrency" :min-price="sliderMinPrice"
                     :max-price="sliderMaxPrice" :frequency-label="freq.label.toLowerCase() + ' donation'" />
 
-                <!-- Adopt an Orangutan Button -->
-                <SwitchToRecurringUpsellButtonModal :current-frequency="freq.value as 'once' | 'monthly' | 'yearly'"
-                    :recurring-frequency="firstRecurringFrequency" :products="products" :currency="selectedCurrency"
-                    @switch-to-tab="handleSwitchToTab" @select-product="handleAdoptProductSelect" />
+                <!-- Adopt an Orangutan - Show selected adoption or button -->
+                <CartProductLine v-if="selectedAdoptions[freq.value as keyof typeof selectedAdoptions]"
+                    :item="selectedAdoptions[freq.value as keyof typeof selectedAdoptions]!"
+                    :currency="selectedCurrency" :price="donationAmounts[freq.value as keyof typeof donationAmounts]"
+                    @edit="handleEditAdoption" @remove="handleRemoveAdoption" />
+                <Button v-else variant="outline"
+                    class="w-full h-12 text-sm border-2 border-primary/50 hover:border-primary hover:bg-primary/5 font-bold"
+                    @click="handleEditAdoption">
+                    {{ freq.value === 'once' ? adoptionButtonTextOnce : adoptionButtonText }}
+                </Button>
 
                 <!-- Bonus Items Section -->
                 <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
@@ -346,13 +456,21 @@ const handleAdoptProductSelect = (product: Product) => {
                     :yearly-total="freq.value === 'yearly' ? donationAmounts[freq.value as keyof typeof donationAmounts] : 0"
                     :one-time-total="freq.value === 'once' ? donationAmounts[freq.value as keyof typeof donationAmounts] : 0"
                     :enabled-frequencies="enabledFrequencies" :currency="selectedCurrency"
-                    :selected-frequency="selectedFrequency" @toggle="toggleBonusItem"
-                    @switch-to-tab="handleSwitchToTab" />
+                    :selected-frequency="selectedFrequency" @toggle="toggleBonusItem" @switch-to-tab="handleSwitchToTab"
+                    :free-gifts-label="config.bonusItemsSection.freeGiftsLabel"
+                    :free-with-donation-label="config.bonusItemsSection.freeWithDonationLabel"
+                    :one-time-label="config.bonusItemsSection.oneTimeLabel"
+                    :monthly-label="config.bonusItemsSection.monthlyLabel"
+                    :yearly-label="config.bonusItemsSection.yearlyLabel"
+                    :add-to-unlock-single-template="config.bonusItemsSection.addToUnlockSingleTemplate"
+                    :add-to-unlock-pair-template="config.bonusItemsSection.addToUnlockPairTemplate"
+                    :add-to-unlock-list-template="config.bonusItemsSection.addToUnlockListTemplate"
+                    :switch-to-template="config.bonusItemsSection.switchToTemplate" />
 
                 <!-- Shipping Notice -->
                 <ShippingNotice :selected-frequency="selectedFrequency as 'once' | 'monthly' | 'multiple'"
                     :products="products" :selected-bonus-items="selectedBonusItems" :multiple-cart="multipleCart"
-                    :donation-amounts="donationAmounts" />
+                    :donation-amounts="donationAmounts" :message="config.shippingNotice.message" />
 
                 <!-- Next Button -->
                 <NextButton :disabled="!isFormValid" @click="handleNext" />
@@ -369,21 +487,31 @@ const handleAdoptProductSelect = (product: Product) => {
                 <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
                     :one-time-total="oneTimeTotal" :monthly-total="monthlyTotal" :yearly-total="yearlyTotal"
                     :enabled-frequencies="enabledFrequencies" :currency="selectedCurrency"
-                    :selected-frequency="selectedFrequency" @toggle="toggleBonusItem"
-                    @switch-to-tab="handleSwitchToTab" />
+                    :selected-frequency="selectedFrequency" @toggle="toggleBonusItem" @switch-to-tab="handleSwitchToTab"
+                    :free-gifts-label="config.bonusItemsSection.freeGiftsLabel"
+                    :free-with-donation-label="config.bonusItemsSection.freeWithDonationLabel"
+                    :one-time-label="config.bonusItemsSection.oneTimeLabel"
+                    :monthly-label="config.bonusItemsSection.monthlyLabel"
+                    :yearly-label="config.bonusItemsSection.yearlyLabel"
+                    :add-to-unlock-single-template="config.bonusItemsSection.addToUnlockSingleTemplate"
+                    :add-to-unlock-pair-template="config.bonusItemsSection.addToUnlockPairTemplate"
+                    :add-to-unlock-list-template="config.bonusItemsSection.addToUnlockListTemplate"
+                    :switch-to-template="config.bonusItemsSection.switchToTemplate" />
 
                 <!-- Shipping Notice -->
                 <ShippingNotice :selected-frequency="selectedFrequency as 'once' | 'monthly' | 'multiple'"
                     :products="products" :selected-bonus-items="selectedBonusItems" :multiple-cart="multipleCart"
-                    :donation-amounts="donationAmounts" />
+                    :donation-amounts="donationAmounts" :message="config.shippingNotice.message" />
 
                 <!-- Products Section -->
                 <div class="space-y-4">
                     <div class="space-y-2">
-                        <h3 class="text-sm font-semibold text-muted-foreground">Add Items to Your Donation</h3>
+                        <h3 class="text-sm font-semibold text-muted-foreground">{{ config.multipleItemsSection.title }}
+                        </h3>
                         <div class="relative">
                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">🔍</span>
-                            <Input v-model="searchQuery" type="text" placeholder="Search items..." class="h-10 pl-10" />
+                            <Input v-model="searchQuery" type="text"
+                                :placeholder="config.multipleItemsSection.searchPlaceholder" class="h-10 pl-10" />
                         </div>
                     </div>
 
@@ -395,12 +523,13 @@ const handleAdoptProductSelect = (product: Product) => {
 
                     <!-- Show More Button -->
                     <Button v-if="hasMoreProducts" variant="outline" class="w-full" @click="showAllProducts = true">
-                        Show {{ filteredProducts.length - INITIAL_PRODUCTS_DISPLAYED }} More Items
+                        {{ config.multipleItemsSection.showMoreButton.replace('{count}', String(filteredProducts.length
+                            - INITIAL_PRODUCTS_DISPLAYED)) }}
                     </Button>
 
                     <!-- Empty State -->
                     <div v-if="filteredProducts.length === 0" class="py-12 text-center text-muted-foreground">
-                        No items found matching "{{ searchQuery }}"
+                        {{ config.multipleItemsSection.emptyStateMessage.replace('{query}', searchQuery) }}
                     </div>
                 </div>
 
@@ -408,6 +537,25 @@ const handleAdoptProductSelect = (product: Product) => {
                 <NextButton :disabled="!isFormValid" @click="handleNext" />
             </TabsContent>
         </Tabs>
+
+        <!-- Adoption Selection Modal (outside tabs, controlled by adoptionDialogOpen) -->
+        <BaseDialogOrDrawer v-model:open="adoptionDialogOpen" :dismissible="true">
+            <template #header>
+                <h2 class="text-2xl font-semibold">{{ adoptionModalTitle }}</h2>
+                <p class="text-sm text-muted-foreground">
+                    {{ adoptionModalDescription }}
+                </p>
+            </template>
+            <template #content>
+                <div class="space-y-2 max-h-96 overflow-y-auto">
+                    <ProductCard v-for="product in adoptionProducts" :key="product.id" :product="product"
+                        :currency="selectedCurrency" @click="handleAdoptProductSelect(product)" />
+                    <div v-if="adoptionProducts.length === 0" class="py-12 text-center text-muted-foreground">
+                        {{ adoptionNoProductsMessage }}
+                    </div>
+                </div>
+            </template>
+        </BaseDialogOrDrawer>
 
         <!-- Product Configuration Modal (Dialog on desktop, Drawer on mobile) -->
         <ProductOptionsModal v-model:open="drawerOpen" :product="drawerProduct" :currency="selectedCurrency"

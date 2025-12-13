@@ -1,14 +1,16 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
-import type { CartItem } from '@/lib/common/types'
+import type { CartItem, Product } from '@/lib/common/types'
 
 interface Props {
-    item: CartItem
+    item: CartItem | Product
     currency: string
     isPulsing?: boolean
+    price?: number
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
     edit: []
@@ -16,6 +18,14 @@ const emit = defineEmits<{
 }>()
 
 const { getCurrencySymbol } = useCurrency()
+
+const displayPrice = computed(() => {
+    return props.price ?? (props.item as CartItem).price ?? 0
+})
+
+const hasEditOption = computed(() => {
+    return !!(props.item.minPrice || props.item.default)
+})
 </script>
 
 <template>
@@ -26,16 +36,17 @@ const { getCurrencySymbol } = useCurrency()
                 <p class="font-medium text-sm truncate">{{ item.name }}</p>
                 <div class="flex items-center gap-2">
                     <p class="text-xs text-muted-foreground">
-                        {{ getCurrencySymbol(currency) }}{{ item.price }}
+                        {{ getCurrencySymbol(currency) }}{{ displayPrice }}
                         <span v-if="item.frequency === 'monthly'">/month</span>
+                        <span v-else-if="item.frequency === 'yearly'">/year</span>
                     </p>
-                    <button v-if="item.frequency === 'monthly' && item.minPrice" @click="emit('edit')"
+                    <button v-if="hasEditOption" @click.stop="emit('edit')"
                         class="text-xs text-primary hover:underline">
                         Edit
                     </button>
                 </div>
             </div>
-            <Button variant="ghost" size="sm" @click="emit('remove')">
+            <Button variant="ghost" size="sm" @click.stop="emit('remove')">
                 ✕
             </Button>
         </div>
