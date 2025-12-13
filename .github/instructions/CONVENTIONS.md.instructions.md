@@ -18,6 +18,7 @@ Multi-step donation platform with single/recurring donations, multi-item cart sy
 - At the end of a task, you MUST reply with an absolute minimal short conventional commit about ALL the work done during the session, not just last task, entire session.
 - Whenever possible, do not edit the shadcn files in @/components/ui. Only if needed.
 - YOU MUST write modular vue3 code using components and composables without overcomplicating things.
+- ALWAYS prefer self container logic. You must rewrite confusing logic to be as self-contained as possible.
 
 ## Tech Stack
 

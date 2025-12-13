@@ -8,10 +8,10 @@ import BonusItemsSection from '~/components/donation-form/common/BonusItemsSecti
 import AmountSelector from '~/components/donation-form/common/AmountSelector.vue'
 import BaseDialogOrDrawer from '~/components/donation-form/common/BaseDialogOrDrawer.vue'
 import CartProductLine from '~/components/donation-form/cart/CartProductLine.vue'
-import ProductList from '~/components/donation-form/cart/ProductList.vue'
 import Cart from '@/components/donation-form/cart/Cart.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
-import type { Product } from '@/lib/common/types'
+import type { Product, CartItem } from '@/lib/common/types'
+import { getCartItemKey, parseCartItemKey } from '@/lib/common/cart-utils'
 import ProductCard from './cart/ProductCard.vue'
 
 const { convertPrice } = useCurrency()
@@ -25,9 +25,9 @@ const CURRENCIES = [
 
 // Frequency configuration - will come from API
 const BASE_FREQUENCIES = [
-  { value: 'once' as const, label: 'One-time' },
-  { value: 'monthly' as const, label: 'Monthly' },
-  { value: 'yearly' as const, label: 'Yearly' }
+  { value: 'once', label: 'One-time' },
+  { value: 'monthly', label: 'Monthly' }
+  // { value: 'yearly', label: 'Yearly' }
 ] as const
 
 // Amounts in base currency (GBP) - will be converted to selected currency - will come from API
@@ -67,15 +67,6 @@ const {
   updateCartItemPrice,
   toggleBonusItem
 } = useCart()
-const {
-  drawerOpen,
-  drawerProduct,
-  drawerMode,
-  drawerInitialPrice,
-  openDrawerForAdd,
-  openDrawerForEdit,
-  handleDrawerConfirm
-} = useProductConfig()
 
 // Configuration - These will come from API
 const config = {
@@ -147,7 +138,7 @@ const frequencies = computed(() => {
 })
 
 const enabledFrequencies = computed(() => {
-  return BASE_FREQUENCIES.map((f) => f.value) as Array<'once' | 'monthly' | 'yearly'>
+  return BASE_FREQUENCIES.map((f) => f.value)
 })
 
 const products: Product[] = [
@@ -271,11 +262,9 @@ const selectedAdoptions = ref<{
 })
 
 // State - Multiple items
-const searchQuery = ref('')
 const cartRef = ref<InstanceType<typeof Cart> | null>(null)
-const showAllProducts = ref(false)
+const productOptionsModalRef = ref<InstanceType<typeof ProductOptionsModal> | null>(null)
 const adoptionDialogOpen = ref(false)
-const productListOpen = ref(false)
 
 // Computed
 const availableAmounts = computed(() => {
@@ -309,14 +298,6 @@ const sliderMaxPrice = computed(() => {
   return convertPrice(config.maxPrice, selectedCurrency.value)
 })
 
-const drawerAmounts = computed(() => {
-  if (!drawerProduct.value) return []
-  const freq = drawerProduct.value.frequency
-  const config = AMOUNTS_IN_BASE_CURRENCY[freq as keyof typeof AMOUNTS_IN_BASE_CURRENCY]
-  if (!config) return []
-  return config.amounts.map((amount) => convertPrice(amount, selectedCurrency.value))
-})
-
 const filteredProducts = computed(() => {
   // Filter out bonus items from the main product list
   let regularProducts = products.filter((p) => !p.isBonusItem)
@@ -329,11 +310,7 @@ const filteredProducts = computed(() => {
     )
   }
 
-  if (!searchQuery.value.trim()) return regularProducts
-  const query = searchQuery.value.toLowerCase()
-  return regularProducts.filter(
-    (p) => p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query)
-  )
+  return regularProducts
 })
 
 const activeCart = computed(() =>
@@ -368,17 +345,49 @@ const getProductPrice = (productId: string) => {
 }
 
 const handleOpenDrawerForAdd = (product: Product) => {
-  openDrawerForAdd(product, getProductPrice(product.id))
-  productListOpen.value = false
+  productOptionsModalRef.value?.openForAdd(product, getProductPrice(product.id))
 }
 
-const handleDrawerConfirmWrapper = (price: number) => {
-  handleDrawerConfirm(
-    price,
-    (product, price) => addToCart(product, price, 'multiple'),
-    (itemId, addedAt, price) => updateCartItemPrice(itemId, addedAt, price, 'multiple'),
-    cartRef
-  )
+const handleOpenDrawerForEdit = (item: CartItem, itemKey: string) => {
+  productOptionsModalRef.value?.openForEdit(item, itemKey)
+}
+
+const handleModalConfirm = (
+  product: Product,
+  price: number,
+  mode: 'add' | 'edit',
+  itemKey?: string
+) => {
+  if (mode === 'add') {
+    const cartItem = addToCart(product, price, 'multiple')
+    const newItemKey = getCartItemKey(cartItem.id, cartItem.addedAt)
+
+    // Pulse animation and scroll
+    if (cartRef.value) {
+      cartRef.value.pulseNewItem = newItemKey
+      setTimeout(() => {
+        if (cartRef.value) cartRef.value.pulseNewItem = null
+      }, 2000)
+
+      setTimeout(() => {
+        if (cartRef.value) {
+          const itemElement = cartRef.value.cartItemRefs[newItemKey]
+          if (itemElement) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const domElement = (itemElement as any).$el || itemElement
+            const elementPosition = domElement.getBoundingClientRect().top + window.scrollY
+            const offsetPosition = elementPosition - 50
+            window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
+          }
+        }
+      }, 350)
+    }
+  } else if (mode === 'edit' && itemKey) {
+    const parsed = parseCartItemKey(itemKey)
+    if (parsed) {
+      updateCartItemPrice(parsed.itemId, parsed.addedAt, price, 'multiple')
+    }
+  }
 }
 
 const handleRemoveFromCart = (itemId: string, addedAt: number) => {
@@ -517,19 +526,9 @@ const handleRemoveAdoption = () => {
         <BonusItemsSection
           :bonus-items="bonusItems"
           :selected-bonus-items="selectedBonusItems"
-          :monthly-total="
-            freq.value === 'monthly'
-              ? donationAmounts[freq.value as keyof typeof donationAmounts]
-              : 0
-          "
-          :yearly-total="
-            freq.value === 'yearly'
-              ? donationAmounts[freq.value as keyof typeof donationAmounts]
-              : 0
-          "
-          :one-time-total="
-            freq.value === 'once' ? donationAmounts[freq.value as keyof typeof donationAmounts] : 0
-          "
+          :monthly-total="freq.value === 'monthly' ? donationAmounts.monthly : 0"
+          :yearly-total="0"
+          :one-time-total="freq.value === 'once' ? donationAmounts.once : 0"
           :enabled-frequencies="enabledFrequencies"
           :currency="selectedCurrency"
           :selected-frequency="selectedFrequency"
@@ -571,15 +570,10 @@ const handleRemoveAdoption = () => {
           :recurring-total="recurringTotal"
           :show-total="true"
           :products="filteredProducts"
-          :search-query="searchQuery"
-          :show-all-products="showAllProducts"
           :initial-products-displayed="INITIAL_PRODUCTS_DISPLAYED"
           :product-list-config="config.multipleItemsSection"
-          @edit="openDrawerForEdit"
+          @edit="handleOpenDrawerForEdit"
           @remove="handleRemoveFromCart"
-          @add-items="productListOpen = true"
-          @update:search-query="searchQuery = $event"
-          @update:show-all-products="showAllProducts = $event"
           @product-select="handleOpenDrawerForAdd"
         />
 
@@ -647,26 +641,10 @@ const handleRemoveAdoption = () => {
 
     <!-- Product Configuration Modal (Dialog on desktop, Drawer on mobile) -->
     <ProductOptionsModal
-      v-model:open="drawerOpen"
-      :product="drawerProduct"
+      ref="productOptionsModalRef"
       :currency="selectedCurrency"
-      :initial-price="drawerInitialPrice"
-      :max-price="sliderMaxPrice"
-      :mode="drawerMode"
-      :amounts="drawerAmounts"
-      @confirm="handleDrawerConfirmWrapper"
-    />
-
-    <!-- Product List Modal (Dialog on desktop, Drawer on mobile) -->
-    <ProductList
-      v-model:open="productListOpen"
-      v-model:search-query="searchQuery"
-      v-model:show-all-products="showAllProducts"
-      :products="filteredProducts"
-      :currency="selectedCurrency"
-      :initial-products-displayed="INITIAL_PRODUCTS_DISPLAYED"
-      :config="config.multipleItemsSection"
-      @product-select="handleOpenDrawerForAdd"
+      :amounts-config="AMOUNTS_IN_BASE_CURRENCY"
+      @confirm="handleModalConfirm"
     />
   </div>
 </template>

@@ -4,18 +4,17 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  // DialogTitle,
-  // DialogDescription,
+  DialogTitle,
+  DialogDescription,
   DialogFooter
 } from '@/components/ui/dialog'
 import {
   Drawer,
   DrawerContent,
   DrawerHeader,
-  // DrawerTitle,
-  // DrawerDescription,
+  DrawerTitle,
+  DrawerDescription,
   DrawerFooter
-  // DrawerClose
 } from '@/components/ui/drawer'
 
 interface Props {
@@ -46,7 +45,8 @@ const handleOpenChange = (value: boolean) => {
   <Dialog v-if="isDesktop" :open="open" @update:open="handleOpenChange">
     <DialogContent class="sm:max-w-md">
       <DialogHeader v-if="$slots.header">
-        <slot name="header" />
+        <DialogTitle><slot name="header" /></DialogTitle>
+        <DialogDescription class="sr-only"> Product configuration dialog </DialogDescription>
       </DialogHeader>
       <slot name="content" />
       <DialogFooter v-if="$slots.footer">
@@ -59,7 +59,8 @@ const handleOpenChange = (value: boolean) => {
   <Drawer v-else :open="open" :dismissible="dismissible" @update:open="handleOpenChange">
     <DrawerContent>
       <DrawerHeader v-if="$slots.header">
-        <slot name="header" />
+        <DrawerTitle><slot name="header" /></DrawerTitle>
+        <DrawerDescription class="sr-only"> Product configuration drawer </DrawerDescription>
       </DrawerHeader>
       <div v-if="$slots.content" class="px-4">
         <slot name="content" />
