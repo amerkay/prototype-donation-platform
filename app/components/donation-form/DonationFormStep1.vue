@@ -363,26 +363,8 @@ const handleModalConfirm = (
   if (mode === 'add') {
     const cartItem = addToCart(product, price, 'multiple', quantity)
     const newItemKey = getCartItemKey(cartItem.id, cartItem.addedAt)
-
-    // Pulse animation and scroll
     if (cartRef.value) {
-      cartRef.value.pulseNewItem = newItemKey
-      setTimeout(() => {
-        if (cartRef.value) cartRef.value.pulseNewItem = null
-      }, 2000)
-
-      setTimeout(() => {
-        if (cartRef.value) {
-          const itemElement = cartRef.value.cartItemRefs[newItemKey]
-          if (itemElement) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const domElement = (itemElement as any).$el || itemElement
-            const elementPosition = domElement.getBoundingClientRect().top + window.scrollY
-            const offsetPosition = elementPosition - 50
-            window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
-          }
-        }
-      }, 350)
+      cartRef.value.triggerPulse(newItemKey)
     }
   } else if (mode === 'edit' && itemKey) {
     const parsed = parseCartItemKey(itemKey)
@@ -500,7 +482,7 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           :value="freq.value"
           :class="[
             frequencies.length === 4 ? 'text-sm font-bold' : 'text-base',
-            'data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground!'
+            'data-[state=active]:bg-secondary! data-[state=active]:text-secondary-foreground!'
           ]"
         >
           {{ freq.label }}

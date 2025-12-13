@@ -82,6 +82,6 @@ const hasEditOption = computed(() => {
 }
 
 .pulse-highlight {
-  animation: pulse-highlight 1.5s ease-in-out 3;
+  animation: pulse-highlight 0.333s ease-in-out 3;
 }
 </style>

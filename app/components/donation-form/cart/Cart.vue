@@ -40,6 +40,13 @@ const productListOpen = ref(false)
 const searchQuery = ref('')
 const showAllProducts = ref(false)
 
+const triggerPulse = (itemKey: string) => {
+  pulseNewItem.value = itemKey
+  setTimeout(() => {
+    pulseNewItem.value = null
+  }, 1000)
+}
+
 const filteredProducts = computed(() => {
   if (!searchQuery.value.trim() || !props.products) return props.products || []
   const query = searchQuery.value.toLowerCase()
@@ -67,7 +74,8 @@ const { getCurrencySymbol } = useCurrency()
 defineExpose({
   cartItemRefs,
   pulseNewItem,
-  getCartItemKey
+  getCartItemKey,
+  triggerPulse
 })
 </script>
 
