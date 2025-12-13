@@ -26,8 +26,8 @@ Multi-step donation platform with single/recurring donations, multi-item cart sy
 - **Validation**: Vee-validate + Zod
 - **Utilities**: VueUse, class-variance-authority, tailwind-merge
 
-
 ## File Organization
+
 ```
 app/
 ├── components/
@@ -41,6 +41,7 @@ app/
 ## Component Structure
 
 Use Composition API with `<script setup lang="ts">`:
+
 ```vue
 <script setup lang="ts">
 // 1. Imports
@@ -52,10 +53,13 @@ Use Composition API with `<script setup lang="ts">`:
 </script>
 
 <template><!-- Single root --></template>
-<style scoped>/* Prefer Tailwind */</style>
+<style scoped>
+/* Prefer Tailwind */
+</style>
 ```
 
 **TypeScript**: Strict typing, no `any`
+
 - Define interfaces for data structures
 - Type emits: `defineEmits<{ 'update:modelValue': [value: T] }>()`
 
@@ -64,17 +68,16 @@ Use Composition API with `<script setup lang="ts">`:
 ## Styling
 
 **Tailwind**:
+
 - Never concatenate classes dynamically
 - Use explicit conditionals for dynamic grids
 - Merge classes with `cn()` from `@/lib/utils`
 - Use `class-variance-authority` for complex variants
 
 **Dynamic Grid Example**:
+
 ```vue
-:class="{
-  'grid-cols-1': items.length === 1,
-  'grid-cols-2': items.length === 2,
-}"
+:class="{ 'grid-cols-1': items.length === 1, 'grid-cols-2': items.length === 2, }"
 ```
 
 ## Patterns
@@ -98,6 +101,7 @@ Use Composition API with `<script setup lang="ts">`:
 **Bonus Items**: Mark with `isBonusItem` + `bonusThreshold`, filter from product list, show as checkboxes when eligible or upsell messages when not
 
 ## Code Quality
+
 - Extract repeated logic to composables/components
 - One component = one responsibility
 - No `any` types
@@ -105,6 +109,7 @@ Use Composition API with `<script setup lang="ts">`:
 - Remove console logs before committing
 
 ## shadcn-nuxt
+
 Install: `pnpm dlx shadcn-nuxt@latest add [component]`  
 Location: `app/components/ui/[component]/`  
 Customize directly in component files

@@ -34,10 +34,14 @@ const handleClick = () => {
     <!-- Spacer to prevent layout shift when button becomes fixed -->
     <div v-if="shouldFloat" class="h-18" />
 
-    <div :class="[
-      'transition-opacity duration-150',
-      shouldFloat ? 'fixed bottom-0 left-0 right-0 z-50 p-4 bg-background border-t shadow-lg' : 'relative'
-    ]">
+    <div
+      :class="[
+        'transition-opacity duration-150',
+        shouldFloat
+          ? 'fixed bottom-0 left-0 right-0 z-50 p-4 bg-background border-t shadow-lg'
+          : 'relative'
+      ]"
+    >
       <Button :disabled="disabled" class="w-full h-12 text-base" @click="handleClick">
         <slot>Next</slot>
       </Button>

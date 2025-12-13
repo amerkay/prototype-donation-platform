@@ -8,14 +8,14 @@ export function useCurrency() {
     GBP: '£',
     CAD: 'CA$',
     AUD: 'AU$',
-    INR: '₹',
+    INR: '₹'
   }
 
   // Exchange rates relative to USD
   const exchangeRates: Record<string, number> = {
     USD: 1,
     EUR: 0.92,
-    GBP: 0.79,
+    GBP: 0.79
   }
 
   const getCurrencySymbol = (currencyCode: string): string => {
@@ -61,6 +61,6 @@ export function useCurrency() {
 
   return {
     getCurrencySymbol,
-    convertPrice,
+    convertPrice
   }
 }
