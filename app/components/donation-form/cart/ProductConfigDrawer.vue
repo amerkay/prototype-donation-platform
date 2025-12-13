@@ -80,7 +80,7 @@ const handleConfirm = () => {
             </DrawerHeader>
 
             <div class="px-4 pb-4">
-                <ProductConfigForm :product="product" :currency="currency" :initial-price="initialPrice"
+                <ProductConfigForm :product="product" :currency="currency" :initial-price="localPrice"
                     :max-price="maxPrice" :amounts="amounts" @update:price="handlePriceUpdate" />
             </div>
 

@@ -159,7 +159,6 @@ const donationAmounts = ref({
 
 // State - Multiple items
 const searchQuery = ref('')
-const productPrices = ref<Record<string, number>>({})
 const cartRef = ref<InstanceType<typeof Cart> | null>(null)
 const showAllProducts = ref(false)
 
@@ -239,14 +238,10 @@ const isFormValid = computed(() => {
     return donationAmounts.value[freqKey] > 0
 })
 
-// Initialize product prices
-products.forEach(product => {
-    productPrices.value[product.id] = product.default ?? product.price ?? 0
-})
-
 // Methods - Cart management
 const getProductPrice = (productId: string) => {
-    return productPrices.value[productId] ?? products.find(p => p.id === productId)?.price ?? 0
+    const product = products.find(p => p.id === productId)
+    return product?.default ?? product?.price ?? 0
 }
 
 const handleOpenDrawerForAdd = (product: Product) => {

@@ -78,8 +78,8 @@ const handleConfirm = () => {
                 </div>
             </DialogHeader>
 
-            <ProductConfigForm :product="product" :currency="currency" :initial-price="initialPrice"
-                :max-price="maxPrice" :amounts="amounts" @update:price="handlePriceUpdate" />
+            <ProductConfigForm :product="product" :currency="currency" :initial-price="localPrice" :max-price="maxPrice"
+                :amounts="amounts" @update:price="handlePriceUpdate" />
 
             <DialogFooter class="sm:justify-start">
                 <Button @click="handleConfirm" class="flex-1 h-12">
