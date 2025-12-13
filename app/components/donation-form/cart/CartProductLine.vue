@@ -47,12 +47,19 @@ const tributeLabel = computed(() => {
 
   const fullName = [honoree.firstName, honoree.lastName].filter(Boolean).join(' ')
 
+  let label = ''
   if (item.tribute.type === 'gift') {
-    return `🎁 Gift to ${fullName}`
+    label = `🎁 Gift to ${fullName}`
   } else if (item.tribute.type === 'memorial') {
-    return `🕊️ In memory of ${fullName}`
+    label = `🕊️ In memory of ${fullName}`
   }
-  return ''
+
+  // Add eCard recipient if sending
+  if (item.tribute.eCard?.send && item.tribute.eCard.recipient?.email) {
+    label += ` • eCard to ${item.tribute.eCard.recipient.email}`
+  }
+
+  return label
 })
 </script>
 
