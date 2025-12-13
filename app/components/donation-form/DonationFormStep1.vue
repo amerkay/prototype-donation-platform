@@ -12,7 +12,6 @@ const { getCurrencySymbol, convertPrice } = useCurrency()
 
 // Constants
 const ALLOW_MULTIPLE_ITEMS = true
-const SLIDER_MAX = 1000
 const INITIAL_PRODUCTS_DISPLAYED = 3
 
 interface Product {
@@ -191,13 +190,23 @@ const availableAmounts = computed(() => {
 })
 
 const sliderMinPrice = computed(() => {
-    if (selectedFrequency.value === 'multiple') return 5
+    if (selectedFrequency.value === 'multiple') {
+        return Math.min(
+            convertPrice(amountsInBaseCurrency.once.minPrice, selectedCurrency.value),
+            convertPrice(amountsInBaseCurrency.monthly.minPrice, selectedCurrency.value)
+        )
+    }
     const config = amountsInBaseCurrency[selectedFrequency.value as keyof typeof amountsInBaseCurrency]
     return convertPrice(config.minPrice, selectedCurrency.value)
 })
 
 const sliderMaxPrice = computed(() => {
-    if (selectedFrequency.value === 'multiple') return SLIDER_MAX
+    if (selectedFrequency.value === 'multiple') {
+        return Math.max(
+            convertPrice(amountsInBaseCurrency.once.maxPrice, selectedCurrency.value),
+            convertPrice(amountsInBaseCurrency.monthly.maxPrice, selectedCurrency.value)
+        )
+    }
     const config = amountsInBaseCurrency[selectedFrequency.value as keyof typeof amountsInBaseCurrency]
     return convertPrice(config.maxPrice, selectedCurrency.value)
 })
@@ -274,10 +283,6 @@ products.forEach(product => {
 // Methods - Cart management
 const getProductPrice = (productId: string) => {
     return productPrices.value[productId] ?? products.find(p => p.id === productId)?.price ?? 0
-}
-
-const updateProductPrice = (productId: string, price: number) => {
-    productPrices.value[productId] = price
 }
 
 const updateCartItemPrice = (itemId: string, addedAt: number, newPrice: number) => {
@@ -537,7 +542,7 @@ const handleNext = () => {
 
         <!-- Product Configuration Modal (Dialog on desktop, Drawer on mobile) -->
         <ProductConfigModal v-model:open="drawerOpen" :product="drawerProduct" :currency="selectedCurrency"
-            :initial-price="drawerInitialPrice" :max-price="SLIDER_MAX" :mode="drawerMode" :amounts="drawerAmounts"
+            :initial-price="drawerInitialPrice" :max-price="sliderMaxPrice" :mode="drawerMode" :amounts="drawerAmounts"
             @confirm="handleDrawerConfirm" />
     </div>
 </template>
