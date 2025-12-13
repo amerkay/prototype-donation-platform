@@ -138,9 +138,21 @@ const products: Product[] = [
 
 // Amounts in base currency (GBP) - will be converted to selected currency
 const amountsInBaseCurrency = {
-    once: [25, 50, 100, 250, 500, 1000],
-    monthly: [10, 25, 50, 100, 200, 300],
-    yearly: [100, 250, 500, 1000, 2500],
+    once: {
+        amounts: [10, 25, 50, 100, 500, 1000],
+        minPrice: 5,
+        maxPrice: 1000
+    },
+    monthly: {
+        amounts: [10, 25, 50, 75, 100, 300],
+        minPrice: 3,
+        maxPrice: 500
+    },
+    yearly: {
+        amounts: [50, 100, 250, 500, 1000],
+        minPrice: 25,
+        maxPrice: 2000
+    },
 }
 
 // State - Single donation
@@ -174,15 +186,28 @@ const currencySymbol = computed(() => getCurrencySymbol(selectedCurrency.value))
 
 const availableAmounts = computed(() => {
     if (selectedFrequency.value === 'multiple') return []
-    const baseList = amountsInBaseCurrency[selectedFrequency.value as keyof typeof amountsInBaseCurrency]
-    return baseList.map(amount => convertPrice(amount, selectedCurrency.value))
+    const config = amountsInBaseCurrency[selectedFrequency.value as keyof typeof amountsInBaseCurrency]
+    return config.amounts.map(amount => convertPrice(amount, selectedCurrency.value))
+})
+
+const sliderMinPrice = computed(() => {
+    if (selectedFrequency.value === 'multiple') return 5
+    const config = amountsInBaseCurrency[selectedFrequency.value as keyof typeof amountsInBaseCurrency]
+    return convertPrice(config.minPrice, selectedCurrency.value)
+})
+
+const sliderMaxPrice = computed(() => {
+    if (selectedFrequency.value === 'multiple') return SLIDER_MAX
+    const config = amountsInBaseCurrency[selectedFrequency.value as keyof typeof amountsInBaseCurrency]
+    return convertPrice(config.maxPrice, selectedCurrency.value)
 })
 
 const drawerAmounts = computed(() => {
     if (!drawerProduct.value) return []
     const freq = drawerProduct.value.frequency
-    const baseList = amountsInBaseCurrency[freq as keyof typeof amountsInBaseCurrency] || []
-    return baseList.map(amount => convertPrice(amount, selectedCurrency.value))
+    const config = amountsInBaseCurrency[freq as keyof typeof amountsInBaseCurrency]
+    if (!config) return []
+    return config.amounts.map(amount => convertPrice(amount, selectedCurrency.value))
 })
 
 const filteredProducts = computed(() => {
@@ -383,8 +408,8 @@ const handleNext = () => {
             <TabsContent v-for="freq in baseFrequencies" :key="freq.value" :value="freq.value" class="mt-6 space-y-4">
                 <!-- Donation Amount Selector -->
                 <DonationAmountSelector v-model="donationAmounts[freq.value as keyof typeof donationAmounts]"
-                    :amounts="availableAmounts" :currency="selectedCurrency" :min-price="availableAmounts[0] || 5"
-                    :max-price="SLIDER_MAX" :frequency-label="freq.label.toLowerCase() + ' donation'" />
+                    :amounts="availableAmounts" :currency="selectedCurrency" :min-price="sliderMinPrice"
+                    :max-price="sliderMaxPrice" :frequency-label="freq.label.toLowerCase() + ' donation'" />
 
                 <!-- Bonus Items Section -->
                 <BonusItemsSection :bonus-items="bonusItems" :selected-bonus-items="selectedBonusItems"
