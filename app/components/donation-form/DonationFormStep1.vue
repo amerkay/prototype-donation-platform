@@ -7,9 +7,8 @@ import { Button } from '@/components/ui/button'
 import ProductConfigModal from '@/components/donation-form/ProductConfigModal.vue'
 import BonusItemsSection from '@/components/donation-form/BonusItemsSection.vue'
 import DonationAmountSelector from '@/components/donation-form/DonationAmountSelector.vue'
-import LogarithmicPriceSlider from '@/components/donation-form/LogarithmicPriceSlider.vue'
 
-const { getCurrencySymbol } = useCurrency()
+const { getCurrencySymbol, convertPrice } = useCurrency()
 
 // Constants
 const ALLOW_MULTIPLE_ITEMS = true
@@ -137,22 +136,11 @@ const products: Product[] = [
     },
 ]
 
-const amounts = {
-    USD: {
-        once: [25, 50, 100, 250, 500, 1000],
-        monthly: [10, 25, 50, 100, 200, 300],
-        yearly: [100, 250, 500, 1000, 2500],
-    },
-    EUR: {
-        once: [20, 45, 90, 225, 450, 900],
-        monthly: [9, 22, 45, 90, 180, 250],
-        yearly: [90, 225, 450, 900, 2250],
-    },
-    GBP: {
-        once: [20, 40, 80, 200, 400, 800],
-        monthly: [8, 20, 40, 80, 160, 250],
-        yearly: [80, 200, 400, 800, 2000],
-    },
+// Amounts in base currency (GBP) - will be converted to selected currency
+const amountsInBaseCurrency = {
+    once: [25, 50, 100, 250, 500, 1000],
+    monthly: [10, 25, 50, 100, 200, 300],
+    yearly: [100, 250, 500, 1000, 2500],
 }
 
 // State - Single donation
@@ -190,13 +178,15 @@ const currencySymbol = computed(() => getCurrencySymbol(selectedCurrency.value))
 
 const availableAmounts = computed(() => {
     if (selectedFrequency.value === 'multiple') return []
-    return amounts[selectedCurrency.value as keyof typeof amounts][selectedFrequency.value as keyof typeof amounts.USD]
+    const baseList = amountsInBaseCurrency[selectedFrequency.value as keyof typeof amountsInBaseCurrency]
+    return baseList.map(amount => convertPrice(amount, selectedCurrency.value))
 })
 
 const drawerAmounts = computed(() => {
     if (!drawerProduct.value) return []
     const freq = drawerProduct.value.frequency
-    return amounts[selectedCurrency.value as keyof typeof amounts][freq as keyof typeof amounts.USD] || []
+    const baseList = amountsInBaseCurrency[freq as keyof typeof amountsInBaseCurrency] || []
+    return baseList.map(amount => convertPrice(amount, selectedCurrency.value))
 })
 
 const filteredProducts = computed(() => {

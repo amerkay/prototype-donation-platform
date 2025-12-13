@@ -42,6 +42,9 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
+const { getCurrencySymbol } = useCurrency()
+const currencySymbol = computed(() => getCurrencySymbol(props.currency))
+
 const localPrice = ref(props.initialPrice)
 const showSlider = ref(false)
 const selectedAmount = ref<number | null>(null)
@@ -85,7 +88,7 @@ const enableCustomAmount = () => {
         <!-- One-time price display -->
         <div v-if="!isRecurring" class="rounded-lg bg-muted p-4 text-center">
             <p class="text-sm text-muted-foreground">One-time donation</p>
-            <p class="text-3xl font-bold">{{ currency }}{{ product?.price }}</p>
+            <p class="text-3xl font-bold">{{ currencySymbol }}{{ product?.price }}</p>
         </div>
 
         <!-- Recurring price with preset amounts -->
@@ -96,7 +99,7 @@ const enableCustomAmount = () => {
                     <Button v-for="amount in amounts" :key="amount"
                         :variant="selectedAmount === amount ? 'default' : 'outline'" class="h-14 text-lg font-semibold"
                         @click="selectAmount(amount)">
-                        {{ currency }}{{ amount }}
+                        {{ currencySymbol }}{{ amount }}
                     </Button>
                 </div>
 
@@ -108,7 +111,7 @@ const enableCustomAmount = () => {
                 <!-- Selected Amount Display -->
                 <div v-if="selectedAmount" class="rounded-lg bg-muted p-3 text-center">
                     <p class="text-sm text-muted-foreground">Monthly donation</p>
-                    <p class="text-2xl font-bold">{{ currency }}{{ selectedAmount }}/month</p>
+                    <p class="text-2xl font-bold">{{ currencySymbol }}{{ selectedAmount }}/month</p>
                 </div>
             </div>
 
@@ -116,7 +119,7 @@ const enableCustomAmount = () => {
             <div v-else class="space-y-3">
                 <div class="rounded-lg bg-muted p-3 text-center">
                     <p class="text-sm text-muted-foreground">Monthly donation</p>
-                    <p class="text-2xl font-bold">{{ currency }}{{ localPrice }}/month</p>
+                    <p class="text-2xl font-bold">{{ currencySymbol }}{{ localPrice }}/month</p>
                 </div>
 
                 <LogarithmicPriceSlider v-model="localPrice" :min-price="product?.minPrice ?? 0"
@@ -133,7 +136,7 @@ const enableCustomAmount = () => {
         <div v-else-if="isRecurring" class="space-y-3">
             <div class="rounded-lg bg-muted p-3 text-center">
                 <p class="text-sm text-muted-foreground">Monthly donation</p>
-                <p class="text-2xl font-bold">{{ currency }}{{ localPrice }}/month</p>
+                <p class="text-2xl font-bold">{{ currencySymbol }}{{ localPrice }}/month</p>
             </div>
 
             <LogarithmicPriceSlider v-model="localPrice" :min-price="product?.minPrice ?? 0"

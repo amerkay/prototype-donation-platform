@@ -15,7 +15,7 @@ Multi-step donation platform with single/recurring donations, multi-item cart sy
 - You MUST always prioritize DRY coding and reusable functions and components, never repeat code.
 - YOU MUST remove obsolete code that has been replaced with new code. Less code is better.
 - At the end of a task, your summary of the work done must be short.
-- At the end of a task, you must reply with an absolute minimal short conventional commit about all the work done during the session above.
+- At the end of a task, you MUST reply with an absolute minimal short conventional commit about ALL the work done during the session, not just last task, entire session.
 
 ## Tech Stack
 
