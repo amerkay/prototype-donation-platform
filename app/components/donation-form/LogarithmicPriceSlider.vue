@@ -144,7 +144,8 @@ const handleCustomBlur = () => {
             </button>
         </div>
         <Slider v-if="!isCustomMode" :model-value="[sliderValue]" :min="0" :max="steps.length - 1" :step="1"
-            @update:model-value="handleSliderChange" />
+            @update:model-value="handleSliderChange" 
+            class="**:data-[slot=slider-track]:h-2.5 **:data-[slot=slider-thumb]:size-6" />
         <div v-if="!isCustomMode" class="flex justify-between text-xs text-muted-foreground">
             <span>{{ currencySymbol }}{{ minPrice }}</span>
             <span>{{ currencySymbol }}{{ maxPrice }}</span>

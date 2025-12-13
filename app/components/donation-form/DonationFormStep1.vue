@@ -170,10 +170,6 @@ const cartItemRefs = ref<Record<string, HTMLElement>>({})
 const showAllProducts = ref(false)
 
 // Computed
-const currentCurrency = computed(() =>
-    currencies.find(c => c.value === selectedCurrency.value)
-)
-
 const currencySymbol = computed(() => getCurrencySymbol(selectedCurrency.value))
 
 const availableAmounts = computed(() => {
