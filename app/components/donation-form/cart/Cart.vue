@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { ShoppingCart } from 'lucide-vue-next'
 import { getCartItemKey } from '@/lib/common/cart-utils'
-import type { CartItem, Product } from '@/lib/common/types'
+import type { CartItem, Product, FormConfig } from '@/lib/common/types'
 import CartProductLine from '@/components/donation-form/cart/CartProductLine.vue'
 import ProductListContent from '~/components/donation-form/product/ProductListContent.vue'
 import BaseDialogOrDrawer from '@/components/donation-form/common/BaseDialogOrDrawer.vue'
@@ -18,12 +18,7 @@ interface Props {
   // Product list props
   products?: Product[]
   initialProductsDisplayed?: number
-  productListConfig?: {
-    title: string
-    searchPlaceholder: string
-    showMoreButton: string
-    emptyStateMessage: string
-  }
+  productListConfig?: FormConfig['features']['multipleItems']['ui']
 }
 
 const props = defineProps<Props>()

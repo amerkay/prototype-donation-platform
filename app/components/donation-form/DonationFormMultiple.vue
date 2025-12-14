@@ -5,7 +5,7 @@ import NextButton from '~/components/donation-form/common/NextButton.vue'
 import BonusItemsSection from '~/components/donation-form/common/BonusItemsSection.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
 import ProductOptionsModal from '~/components/donation-form/product/ProductOptionsModal.vue'
-import type { Product, CartItem, TributeData } from '@/lib/common/types'
+import type { Product, CartItem, TributeData, FormConfig } from '@/lib/common/types'
 import { getCartItemKey, parseCartItemKey } from '@/lib/common/cart-utils'
 
 const {
@@ -31,8 +31,7 @@ interface Props {
   products: Product[]
   enabledFrequencies: Array<'once' | 'monthly' | 'yearly'>
   initialProductsDisplayed: number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  config: any
+  formConfig: FormConfig
 }
 
 const props = defineProps<Props>()
@@ -122,7 +121,7 @@ defineExpose({
       :show-total="true"
       :products="filteredProducts"
       :initial-products-displayed="initialProductsDisplayed"
-      :product-list-config="config.multipleItemsSection"
+      :product-list-config="formConfig.features.multipleItems.ui"
       @edit="handleEditCartItem"
       @remove="handleRemoveCartItem"
       @product-select="handleProductSelect"
@@ -138,15 +137,7 @@ defineExpose({
       :enabled-frequencies="enabledFrequencies"
       :currency="currency"
       selected-frequency="multiple"
-      :free-gifts-label="config.bonusItemsSection.freeGiftsLabel"
-      :free-with-donation-label="config.bonusItemsSection.freeWithDonationLabel"
-      :one-time-label="config.bonusItemsSection.oneTimeLabel"
-      :monthly-label="config.bonusItemsSection.monthlyLabel"
-      :yearly-label="config.bonusItemsSection.yearlyLabel"
-      :add-to-unlock-single-template="config.bonusItemsSection.addToUnlockSingleTemplate"
-      :add-to-unlock-pair-template="config.bonusItemsSection.addToUnlockPairTemplate"
-      :add-to-unlock-list-template="config.bonusItemsSection.addToUnlockListTemplate"
-      :switch-to-template="config.bonusItemsSection.switchToTemplate"
+      :bonus-config="formConfig.features.bonusItems"
       @toggle="toggleBonusItem"
       @switch-to-tab="handleSwitchToTab"
     />
@@ -158,7 +149,7 @@ defineExpose({
       :selected-bonus-items="selectedBonusItems"
       :multiple-cart="multipleCart"
       :donation-amounts="{ once: oneTimeTotal, monthly: monthlyTotal, yearly: yearlyTotal }"
-      :message="config.shippingNotice.message"
+      :shipping-config="formConfig.features.shipping"
     />
 
     <!-- Next Button -->
@@ -168,7 +159,7 @@ defineExpose({
     <ProductOptionsModal
       ref="productOptionsModalRef"
       :currency="currency"
-      :pricing-config="config.pricingConfig"
+      :pricing-config="formConfig.pricing.frequencies"
       @confirm="handleProductModalConfirm"
     />
   </div>

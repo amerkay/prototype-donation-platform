@@ -9,7 +9,7 @@ import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue
 import TributeCard from '~/components/donation-form/tribute/TributeCard.vue'
 import TributeModal from '~/components/donation-form/tribute/TributeModal.vue'
 import ProductSelectModal from '~/components/donation-form/product/ProductSelectModal.vue'
-import type { Product, TributeData } from '@/lib/common/types'
+import type { Product, TributeData, FormConfig } from '@/lib/common/types'
 
 const { selectedBonusItems, toggleBonusItem } = useCart()
 
@@ -26,8 +26,7 @@ interface Props {
   minPrice: number
   maxPrice: number
   enabledFrequencies: Array<'once' | 'monthly' | 'yearly'>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  config: any
+  formConfig: FormConfig
 }
 
 const props = defineProps<Props>()
@@ -49,8 +48,8 @@ const tributeModalRef = ref<InstanceType<typeof TributeModal> | null>(null)
 // Computed
 const adoptionButtonText = computed(() =>
   props.frequency === 'once'
-    ? (props.config.adoptionFeature?.ui?.buttonTextOnce ?? '')
-    : (props.config.adoptionFeature?.ui?.buttonText ?? '')
+    ? props.formConfig.features.adoption.config.ui.buttonTextOnce
+    : props.formConfig.features.adoption.config.ui.buttonText
 )
 
 const showTributeSection = computed(() => props.frequency !== 'once')
@@ -69,20 +68,20 @@ const adoptionProducts = computed(() => {
   return props.products.filter((p) => !p.isBonusItem && p.frequency === props.frequency)
 })
 
-const adoptionModalTitle = computed(() => props.config.adoptionFeature?.ui?.modalTitle ?? '')
+const adoptionModalTitle = computed(() => props.formConfig.features.adoption.config.ui.modalTitle)
 
-const adoptionModalDescription = computed(
-  () =>
-    props.config.adoptionFeature?.ui?.modalDescriptionTemplate?.replace(
-      '{frequency}',
-      props.frequency
-    ) ?? ''
+const adoptionModalDescription = computed(() =>
+  props.formConfig.features.adoption.config.ui.modalDescriptionTemplate.replace(
+    '{frequency}',
+    props.frequency
+  )
 )
 
-const adoptionNoProductsMessage = computed(
-  () =>
-    props.config.adoptionFeature?.ui?.noProductsTemplate?.replace('{frequency}', props.frequency) ??
-    ''
+const adoptionNoProductsMessage = computed(() =>
+  props.formConfig.features.adoption.config.ui.noProductsTemplate.replace(
+    '{frequency}',
+    props.frequency
+  )
 )
 
 // Methods
@@ -173,7 +172,6 @@ defineExpose({
     </Button>
 
     <!-- Bonus Items Section -->
-    <!-- Bonus Items Section -->
     <BonusItemsSection
       :bonus-items="bonusItems"
       :selected-bonus-items="selectedBonusItems"
@@ -183,15 +181,7 @@ defineExpose({
       :enabled-frequencies="enabledFrequencies"
       :currency="currency"
       :selected-frequency="frequency === 'yearly' ? 'monthly' : frequency"
-      :free-gifts-label="config.bonusItemsSection.freeGiftsLabel"
-      :free-with-donation-label="config.bonusItemsSection.freeWithDonationLabel"
-      :one-time-label="config.bonusItemsSection.oneTimeLabel"
-      :monthly-label="config.bonusItemsSection.monthlyLabel"
-      :yearly-label="config.bonusItemsSection.yearlyLabel"
-      :add-to-unlock-single-template="config.bonusItemsSection.addToUnlockSingleTemplate"
-      :add-to-unlock-pair-template="config.bonusItemsSection.addToUnlockPairTemplate"
-      :add-to-unlock-list-template="config.bonusItemsSection.addToUnlockListTemplate"
-      :switch-to-template="config.bonusItemsSection.switchToTemplate"
+      :bonus-config="formConfig.features.bonusItems"
       @toggle="toggleBonusItem"
       @switch-to-tab="handleSwitchToTab"
     />
@@ -203,7 +193,7 @@ defineExpose({
       :selected-bonus-items="selectedBonusItems"
       :multiple-cart="[]"
       :donation-amounts="{ once: oneTimeTotal, monthly: monthlyTotal, yearly: yearlyTotal }"
-      :message="config.shippingNotice.message"
+      :shipping-config="formConfig.features.shipping"
     />
 
     <!-- Next Button -->

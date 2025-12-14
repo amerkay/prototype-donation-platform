@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
-import type { Product } from '@/lib/common/types'
+import type { Product, FormConfig } from '@/lib/common/types'
 
 interface Props {
   bonusItems: Product[]
@@ -11,16 +11,7 @@ interface Props {
   currency?: string
   enabledFrequencies?: Array<'once' | 'monthly' | 'yearly'>
   selectedFrequency?: string
-  // Configurable wording
-  freeGiftsLabel?: string
-  freeWithDonationLabel?: string
-  oneTimeLabel?: string
-  monthlyLabel?: string
-  yearlyLabel?: string
-  addToUnlockSingleTemplate?: string // e.g., "Add {amount} {frequency} to unlock!"
-  addToUnlockPairTemplate?: string // e.g., "Add {a} or {b} to unlock!"
-  addToUnlockListTemplate?: string // e.g., "Add {list}, or {last} to unlock!"
-  switchToTemplate?: string // e.g., "Switch to {frequency}"
+  bonusConfig: FormConfig['features']['bonusItems']
 }
 
 interface Emits {
@@ -34,17 +25,7 @@ const props = withDefaults(defineProps<Props>(), {
   yearlyTotal: 0,
   oneTimeTotal: 0,
   enabledFrequencies: () => ['once', 'monthly'],
-  selectedFrequency: 'once',
-  // Defaults for wording
-  freeGiftsLabel: '🎁 Free gifts available:',
-  freeWithDonationLabel: 'FREE with your donation!',
-  oneTimeLabel: 'one-time',
-  monthlyLabel: 'monthly',
-  yearlyLabel: 'yearly',
-  addToUnlockSingleTemplate: 'Add {amount} {frequency} to unlock!',
-  addToUnlockPairTemplate: 'Add {a} or {b} to unlock!',
-  addToUnlockListTemplate: 'Add {list}, or {last} to unlock!',
-  switchToTemplate: 'Switch to {frequency}'
+  selectedFrequency: 'once'
 })
 
 const { getCurrencySymbol } = useCurrency()
@@ -95,15 +76,24 @@ const getUpsellMessage = (item: Product) => {
 
   if (once !== undefined && props.enabledFrequencies.includes('once')) {
     const needed = Math.max(0, once - props.oneTimeTotal)
-    if (needed > 0) options.push(`${currencySymbol.value}${needed} ${props.oneTimeLabel}`)
+    if (needed > 0)
+      options.push(
+        `${currencySymbol.value}${needed} ${props.bonusConfig.ui.labels.frequencies.once}`
+      )
   }
   if (monthly !== undefined && props.enabledFrequencies.includes('monthly')) {
     const needed = Math.max(0, monthly - props.monthlyTotal)
-    if (needed > 0) options.push(`${currencySymbol.value}${needed} ${props.monthlyLabel}`)
+    if (needed > 0)
+      options.push(
+        `${currencySymbol.value}${needed} ${props.bonusConfig.ui.labels.frequencies.monthly}`
+      )
   }
   if (yearly !== undefined && props.enabledFrequencies.includes('yearly')) {
     const needed = Math.max(0, yearly - props.yearlyTotal)
-    if (needed > 0) options.push(`${currencySymbol.value}${needed} ${props.yearlyLabel}`)
+    if (needed > 0)
+      options.push(
+        `${currencySymbol.value}${needed} ${props.bonusConfig.ui.labels.frequencies.yearly}`
+      )
   }
 
   if (options.length === 0) return 'Free gift unlocked!'
@@ -112,18 +102,18 @@ const getUpsellMessage = (item: Product) => {
     const parts = single.split(' ')
     const amountPart = parts[0] ?? ''
     const freqPart = parts.slice(1).join(' ')
-    return props.addToUnlockSingleTemplate
+    return props.bonusConfig.ui.templates.unlockSingle
       .replace('{amount}', amountPart)
       .replace('{frequency}', freqPart)
   }
   if (options.length === 2) {
     const a = options[0]!
     const b = options[1]!
-    return props.addToUnlockPairTemplate.replace('{a}', a).replace('{b}', b)
+    return props.bonusConfig.ui.templates.unlockPair.replace('{a}', a).replace('{b}', b)
   }
 
   const lastOption = options.pop()!
-  return props.addToUnlockListTemplate
+  return props.bonusConfig.ui.templates.unlockList
     .replace('{list}', options.join(', '))
     .replace('{last}', lastOption)
 }
@@ -184,7 +174,7 @@ watch(
 
     <!-- Eligible Bonus Items (Free Gifts) -->
     <div v-if="eligibleBonusItems.length > 0" class="space-y-2">
-      <p class="text-sm font-medium text-muted-foreground">{{ freeGiftsLabel }}</p>
+      <p class="text-sm font-medium text-muted-foreground">{{ bonusConfig.ui.labels.freeGifts }}</p>
       <div
         v-for="item in eligibleBonusItems"
         :key="`bonus-${item.id}`"
@@ -201,7 +191,9 @@ watch(
           <div class="text-xl">{{ item.thumbnail }}</div>
           <div class="flex-1 min-w-0">
             <p class="font-medium text-sm truncate">{{ item.name }}</p>
-            <p class="text-xs text-success font-medium">{{ freeWithDonationLabel }}</p>
+            <p class="text-xs text-success font-medium">
+              {{ bonusConfig.ui.labels.freeWithDonation }}
+            </p>
           </div>
         </label>
       </div>
@@ -233,7 +225,12 @@ watch(
                   class="underline hover:no-underline font-semibold"
                   @click="handleSwitchToRecurring(item)"
                 >
-                  {{ switchToTemplate.replace('{frequency}', getRecurringLabel(item)) }}
+                  {{
+                    bonusConfig.ui.templates.switchFrequency.replace(
+                      '{frequency}',
+                      getRecurringLabel(item)
+                    )
+                  }}
                 </button>
               </p>
             </div>

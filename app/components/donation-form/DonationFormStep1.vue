@@ -21,32 +21,6 @@ const BASE_FREQUENCIES = formConfig.pricing.frequencies.map((f) => ({
 }))
 const ALLOW_MULTIPLE_ITEMS = formConfig.features.multipleItems.enabled
 const INITIAL_PRODUCTS_DISPLAYED = formConfig.features.multipleItems.initialDisplay
-const config = {
-  formTitle: formConfig.form.title,
-  formSubtitle: formConfig.form.subtitle,
-  adoptionFeature: formConfig.features.adoption.config,
-  bonusItemsSection: {
-    freeGiftsLabel: formConfig.features.bonusItems.ui.labels.freeGifts,
-    freeWithDonationLabel: formConfig.features.bonusItems.ui.labels.freeWithDonation,
-    oneTimeLabel: formConfig.features.bonusItems.ui.labels.frequencies.once,
-    monthlyLabel: formConfig.features.bonusItems.ui.labels.frequencies.monthly,
-    yearlyLabel: formConfig.features.bonusItems.ui.labels.frequencies.yearly,
-    addToUnlockSingleTemplate: formConfig.features.bonusItems.ui.templates.unlockSingle,
-    addToUnlockPairTemplate: formConfig.features.bonusItems.ui.templates.unlockPair,
-    addToUnlockListTemplate: formConfig.features.bonusItems.ui.templates.unlockList,
-    switchToTemplate: formConfig.features.bonusItems.ui.templates.switchFrequency
-  },
-  shippingNotice: {
-    message: formConfig.features.shipping.noticeText
-  },
-  multipleItemsSection: {
-    title: formConfig.features.multipleItems.ui.title,
-    searchPlaceholder: formConfig.features.multipleItems.ui.searchPlaceholder,
-    showMoreButton: formConfig.features.multipleItems.ui.showMoreButtonTemplate,
-    emptyStateMessage: formConfig.features.multipleItems.ui.emptyStateTemplate
-  },
-  pricingConfig: formConfig.pricing.frequencies
-}
 
 // State
 const selectedCurrency = ref(formConfig.localization.defaultCurrency)
@@ -178,8 +152,8 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
     <!-- Header with Currency Selector -->
     <div class="flex items-start justify-between gap-2">
       <div>
-        <h2 class="text-xl font-semibold">{{ config.formTitle }}</h2>
-        <p class="text-sm text-muted-foreground">{{ config.formSubtitle }}</p>
+        <h2 class="text-xl font-semibold">{{ formConfig.form.title }}</h2>
+        <p class="text-sm text-muted-foreground">{{ formConfig.form.subtitle }}</p>
       </div>
       <select
         id="currency"
@@ -239,7 +213,7 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           :min-price="sliderMinPrice"
           :max-price="sliderMaxPrice"
           :enabled-frequencies="enabledFrequencies"
-          :config="config"
+          :form-config="formConfig"
           @update:donation-amount="
             (val) => (donationAmounts[freq.value as keyof typeof donationAmounts] = val)
           "
@@ -261,7 +235,7 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           :products="products"
           :enabled-frequencies="enabledFrequencies"
           :initial-products-displayed="INITIAL_PRODUCTS_DISPLAYED"
-          :config="config"
+          :form-config="formConfig"
           @next="handleNext"
           @switch-to-tab="handleSwitchToTab"
         />

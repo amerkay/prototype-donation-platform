@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product } from '@/lib/common/types'
+import type { Product, FormConfig } from '@/lib/common/types'
 import ProductCard from '@/components/donation-form/product/ProductCard.vue'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -12,12 +12,7 @@ interface Props {
   searchQuery: string
   showAllProducts: boolean
   initialProductsDisplayed: number
-  config: {
-    title: string
-    searchPlaceholder: string
-    showMoreButton: string
-    emptyStateMessage: string
-  }
+  config: FormConfig['features']['multipleItems']['ui']
 }
 
 const props = defineProps<Props>()
@@ -94,22 +89,25 @@ const handleSearchUpdate = (value: string | number) => {
     </TransitionGroup>
 
     <!-- Empty State -->
-    <Empty v-else class="border">
+    <Empty v-if="products.length === 0" class="py-6">
       <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <Search />
+        <EmptyMedia>
+          <Search class="size-8 text-muted-foreground" />
         </EmptyMedia>
-        <EmptyTitle>No products found</EmptyTitle>
+        <EmptyTitle>No Results</EmptyTitle>
         <EmptyDescription>
-          {{ config.emptyStateMessage.replace('{query}', searchQuery) }}
+          {{ config.emptyStateTemplate.replace('{query}', searchQuery) }}
         </EmptyDescription>
       </EmptyHeader>
     </Empty>
-
+    <!-- Show More Button -->
     <!-- Show More Button -->
     <Button v-if="hasMoreProducts" variant="outline" class="w-full" @click="handleShowMore">
       {{
-        config.showMoreButton.replace('{count}', String(products.length - initialProductsDisplayed))
+        config.showMoreButtonTemplate.replace(
+          '{count}',
+          String(products.length - initialProductsDisplayed)
+        )
       }}
     </Button>
   </div>

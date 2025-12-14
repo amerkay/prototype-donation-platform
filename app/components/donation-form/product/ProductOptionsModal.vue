@@ -5,17 +5,12 @@ import { Button } from '@/components/ui/button'
 import BaseDialogOrDrawer from '~/components/donation-form/common/BaseDialogOrDrawer.vue'
 import AmountSelector from '~/components/donation-form/common/AmountSelector.vue'
 import ProductTributeForm from '~/components/donation-form/tribute/ProductTributeForm.vue'
-import type { Product, CartItem, TributeData } from '@/lib/common/types'
+import type { Product, CartItem, TributeData, FormConfig } from '@/lib/common/types'
 
 interface Props {
   currency: string
   baseCurrency?: string
-  pricingConfig?: Array<{
-    readonly value: 'once' | 'monthly' | 'yearly'
-    readonly label: string
-    readonly presetAmounts: readonly number[]
-    readonly customAmount: { readonly min: number; readonly max: number }
-  }>
+  pricingConfig?: FormConfig['pricing']['frequencies']
 }
 
 const props = withDefaults(defineProps<Props>(), {

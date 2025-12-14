@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Product, CartItem } from '@/lib/common/types'
+import type { Product, CartItem, FormConfig } from '@/lib/common/types'
 
 interface Props {
   selectedFrequency: 'once' | 'monthly' | 'multiple'
@@ -12,12 +12,10 @@ interface Props {
     monthly: number
     yearly: number
   }
-  message?: string
+  shippingConfig: FormConfig['features']['shipping']
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  message: '📦 Shipping address on next page'
-})
+const props = defineProps<Props>()
 
 const requiresShipping = computed(() => {
   if (props.selectedFrequency === 'multiple') {
@@ -65,7 +63,7 @@ const requiresShipping = computed(() => {
 <template>
   <Transition name="shipping-notice">
     <div v-if="requiresShipping" class="rounded-lg bg-muted p-3 text-sm text-muted-foreground">
-      {{ message }}
+      {{ shippingConfig.noticeText }}
     </div>
   </Transition>
 </template>
