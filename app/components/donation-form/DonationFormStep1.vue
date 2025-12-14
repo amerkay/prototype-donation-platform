@@ -268,6 +268,7 @@ const selectedAdoptions = ref<{
 // State - Multiple items
 const cartRef = ref<InstanceType<typeof Cart> | null>(null)
 const productOptionsModalRef = ref<InstanceType<typeof ProductOptionsModal> | null>(null)
+const tributeFormRef = ref<InstanceType<typeof ProductTributeForm> | null>(null)
 const adoptionDialogOpen = ref(false)
 const tributeDialogOpen = ref(false)
 const tributeData = ref<{
@@ -278,6 +279,14 @@ const tributeData = ref<{
   once: undefined,
   monthly: undefined,
   yearly: undefined
+})
+
+// Temporary tribute state for editing (only saved on confirm)
+const tempTributeData = ref<TributeData | undefined>(undefined)
+
+const isTributeFormValid = computed(() => {
+  if (!tributeFormRef.value) return true
+  return tributeFormRef.value.isValid
 })
 
 // Computed
@@ -442,20 +451,24 @@ const handleRemoveAdoption = () => {
 }
 
 const handleOpenTributeModal = () => {
+  const freqKey = selectedFrequency.value as 'once' | 'monthly' | 'yearly'
+  // Initialize temp state with current saved data (deep copy)
+  tempTributeData.value = tributeData.value[freqKey]
+    ? JSON.parse(JSON.stringify(tributeData.value[freqKey]))
+    : undefined
   tributeDialogOpen.value = true
 }
 
-const handleTributeUpdate = (data: TributeData) => {
-  const freqKey = selectedFrequency.value as 'once' | 'monthly' | 'yearly'
-  tributeData.value[freqKey] = data
-}
-
 const handleTributeSave = () => {
+  // Save temp data to actual tribute data
+  const freqKey = selectedFrequency.value as 'once' | 'monthly' | 'yearly'
+  tributeData.value[freqKey] = tempTributeData.value
   tributeDialogOpen.value = false
 }
 
 const handleTributeCancel = () => {
-  // Revert changes by not saving
+  // Discard temp changes
+  tempTributeData.value = undefined
   tributeDialogOpen.value = false
 }
 
@@ -712,12 +725,19 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
       </template>
       <template #content>
         <ProductTributeForm
-          v-model="tributeData[selectedFrequency as keyof typeof tributeData]"
-          @update:model-value="handleTributeUpdate"
+          ref="tributeFormRef"
+          v-model="tempTributeData"
+          @submit="handleTributeSave"
         />
       </template>
       <template #footer>
-        <Button class="flex-1 md:flex-1 h-12" @click="handleTributeSave">Save</Button>
+        <Button
+          class="flex-1 md:flex-1 h-12"
+          :disabled="!isTributeFormValid"
+          @click="handleTributeSave"
+        >
+          Save
+        </Button>
         <Button variant="outline" class="flex-1 md:flex-1 h-12" @click="handleTributeCancel">
           Cancel
         </Button>

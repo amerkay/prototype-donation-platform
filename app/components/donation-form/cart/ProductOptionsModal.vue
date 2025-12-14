@@ -47,9 +47,20 @@ const localPrice = ref(0)
 const localQuantity = ref(1)
 const editingItemKey = ref<string | null>(null)
 const tribute = ref<TributeData>({ type: 'none' })
+const tributeFormRef = ref<InstanceType<typeof ProductTributeForm> | null>(null)
+const tributeFormKey = ref(0) // Key to force remount of tribute form
 
 // Computed
 const currencySymbol = computed(() => getCurrencySymbol(props.currency))
+
+const isTributeFormValid = computed(() => {
+  // If not recurring, tribute form doesn't apply
+  if (!isRecurring.value) return true
+  // If no tribute form ref yet, consider valid (initial state)
+  if (!tributeFormRef.value) return true
+  // Otherwise check the form's validity
+  return tributeFormRef.value.isValid
+})
 
 const isRecurring = computed(
   () => product.value?.frequency === 'monthly' || product.value?.frequency === 'yearly'
@@ -85,6 +96,7 @@ const openForAdd = (prod: Product, initialPrice: number) => {
   localQuantity.value = 1
   editingItemKey.value = null
   tribute.value = { type: 'none' }
+  tributeFormKey.value++ // Force remount
   open.value = true
 }
 
@@ -94,7 +106,8 @@ const openForEdit = (item: CartItem, itemKey: string) => {
   localPrice.value = item.price ?? 0
   localQuantity.value = item.quantity ?? 1
   editingItemKey.value = itemKey
-  tribute.value = item.tribute ?? { type: 'none' }
+  tribute.value = item.tribute ? JSON.parse(JSON.stringify(item.tribute)) : { type: 'none' }
+  tributeFormKey.value++
   open.value = true
 }
 
@@ -192,13 +205,18 @@ defineExpose({
 
         <!-- Tribute Form (only for recurring products) -->
         <div v-if="isRecurring" class="pt-4 border-t">
-          <ProductTributeForm v-model="tribute" />
+          <ProductTributeForm
+            :key="tributeFormKey"
+            ref="tributeFormRef"
+            v-model="tribute"
+            @submit="handleConfirm"
+          />
         </div>
       </div>
     </template>
 
     <template #footer>
-      <Button class="flex-1 md:flex-1 h-12" @click="handleConfirm">
+      <Button class="flex-1 md:flex-1 h-12" :disabled="!isTributeFormValid" @click="handleConfirm">
         {{ mode === 'edit' ? 'Update' : 'Add to Cart' }}
       </Button>
       <Button variant="outline" class="flex-1 md:flex-1 h-12" @click="handleClose"> Cancel </Button>
