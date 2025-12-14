@@ -4,7 +4,9 @@ import Cart from '@/components/donation-form/cart/Cart.vue'
 import NextButton from '~/components/donation-form/common/NextButton.vue'
 import BonusItemsSection from '~/components/donation-form/common/BonusItemsSection.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
-import type { Product, CartItem } from '@/lib/common/types'
+import ProductOptionsModal from '~/components/donation-form/product/ProductOptionsModal.vue'
+import type { Product, CartItem, TributeData } from '@/lib/common/types'
+import { getCartItemKey, parseCartItemKey } from '@/lib/common/cart-utils'
 
 const {
   multipleCart,
@@ -15,7 +17,12 @@ const {
   monthlyTotal,
   yearlyTotal,
   activeRecurringFrequency,
-  toggleBonusItem
+  toggleBonusItem,
+  addToCart,
+  updateCartItemPrice,
+  updateCartItemQuantity,
+  updateCartItemTribute,
+  removeFromCart
 } = useCart()
 
 interface Props {
@@ -25,20 +32,20 @@ interface Props {
   enabledFrequencies: Array<'once' | 'monthly' | 'yearly'>
   initialProductsDisplayed: number
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  amountsConfig: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config: any
 }
 
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  'edit-cart-item': [item: CartItem, itemKey: string]
-  'remove-cart-item': [itemId: string, addedAt: number]
-  'product-select': [product: Product]
   next: []
   'switch-to-tab': [tab: 'monthly' | 'yearly']
 }>()
 
 const cartRef = ref<InstanceType<typeof Cart> | null>(null)
+const productOptionsModalRef = ref<InstanceType<typeof ProductOptionsModal> | null>(null)
 
 // Computed
 const filteredProducts = computed(() => {
@@ -58,6 +65,43 @@ const isFormValid = computed(() => multipleCart.value.length > 0)
 // Methods
 const handleSwitchToTab = (tab: 'monthly' | 'yearly') => {
   emit('switch-to-tab', tab)
+}
+
+const handleEditCartItem = (item: CartItem, itemKey: string) => {
+  productOptionsModalRef.value?.openForEdit(item, itemKey)
+}
+
+const handleRemoveCartItem = (itemId: string, addedAt: number) => {
+  removeFromCart(itemId, addedAt, 'multiple')
+}
+
+const handleProductSelect = (product: Product) => {
+  const price = product.default ?? product.price ?? 0
+  productOptionsModalRef.value?.openForAdd(product, price)
+}
+
+const handleProductModalConfirm = (
+  product: Product,
+  price: number,
+  quantity: number,
+  mode: 'add' | 'edit',
+  itemKey?: string,
+  tribute?: TributeData
+) => {
+  if (mode === 'add') {
+    const cartItem = addToCart(product, price, 'multiple', quantity, tribute)
+    const newItemKey = getCartItemKey(cartItem.id, cartItem.addedAt)
+    cartRef.value?.triggerPulse(newItemKey)
+  } else if (mode === 'edit' && itemKey) {
+    const parsed = parseCartItemKey(itemKey)
+    if (parsed) {
+      updateCartItemPrice(parsed.itemId, parsed.addedAt, price, 'multiple')
+      updateCartItemQuantity(parsed.itemId, parsed.addedAt, quantity, 'multiple')
+      if (tribute) {
+        updateCartItemTribute(parsed.itemId, parsed.addedAt, tribute, 'multiple')
+      }
+    }
+  }
 }
 
 // Expose cartRef method for parent to trigger pulse
@@ -81,9 +125,9 @@ defineExpose({
       :products="filteredProducts"
       :initial-products-displayed="initialProductsDisplayed"
       :product-list-config="config.multipleItemsSection"
-      @edit="(item, itemKey) => emit('edit-cart-item', item, itemKey)"
-      @remove="(itemId, addedAt) => emit('remove-cart-item', itemId, addedAt)"
-      @product-select="(product) => emit('product-select', product)"
+      @edit="handleEditCartItem"
+      @remove="handleRemoveCartItem"
+      @product-select="handleProductSelect"
     />
 
     <!-- Bonus Items Section -->
@@ -121,5 +165,13 @@ defineExpose({
 
     <!-- Next Button -->
     <NextButton :disabled="!isFormValid" @click="emit('next')" />
+
+    <!-- Product Configuration Modal -->
+    <ProductOptionsModal
+      ref="productOptionsModalRef"
+      :currency="currency"
+      :amounts-config="amountsConfig"
+      @confirm="handleProductModalConfirm"
+    />
   </div>
 </template>

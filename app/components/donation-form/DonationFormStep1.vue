@@ -3,19 +3,10 @@ import { ref, computed, watch } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import DonationFormSingle from './DonationFormSingle.vue'
 import DonationFormMultiple from './DonationFormMultiple.vue'
-import DonationFormModals from './DonationFormModals.vue'
-import type { Product, CartItem, TributeData } from '@/lib/common/types'
-import { parseCartItemKey } from '@/lib/common/cart-utils'
+import type { Product, TributeData } from '@/lib/common/types'
 
 const { convertPrice } = useCurrency()
-const {
-  multipleCart,
-  addToCart,
-  removeFromCart,
-  updateCartItemPrice,
-  updateCartItemQuantity,
-  updateCartItemTribute
-} = useCart()
+const { multipleCart, addToCart } = useCart()
 
 // Currency configuration - will come from API
 const CURRENCIES = [
@@ -178,8 +169,14 @@ const tributeData = ref<{
 }>({ once: undefined, monthly: undefined, yearly: undefined })
 
 // Refs
-const modalsRef = ref<InstanceType<typeof DonationFormModals> | null>(null)
 const multipleFormRef = ref<InstanceType<typeof DonationFormMultiple> | null>(null)
+const singleFormRefs = new Map<string, InstanceType<typeof DonationFormSingle>>()
+
+const setSingleFormRef = (freq: string) => (el: unknown) => {
+  if (el && (freq === 'monthly' || freq === 'yearly')) {
+    singleFormRefs.set(freq, el as InstanceType<typeof DonationFormSingle>)
+  }
+}
 
 // Computed
 const frequencies = computed(() => {
@@ -230,13 +227,15 @@ const handleNext = () => {
   })
 }
 
-const handleSwitchToTab = (tab: 'monthly' | 'yearly') => {
+const handleSwitchToTab = (tab: 'monthly' | 'yearly', openModal?: boolean) => {
   selectedFrequency.value = tab
-}
-
-const handleEditAdoption = () => {
-  if (selectedFrequency.value === 'once') handleSwitchToTab('monthly')
-  modalsRef.value?.openAdoptionModal()
+  if (openModal) {
+    // Wait for next tick to ensure the new tab component is rendered
+    setTimeout(() => {
+      const formRef = singleFormRefs.get(tab)
+      formRef?.openAdoptionModal()
+    }, 100)
+  }
 }
 
 const handleRemoveAdoption = () => {
@@ -253,11 +252,6 @@ const handleAdoptionSelect = (product: Product) => {
   }
 }
 
-const handleOpenTributeModal = () => {
-  const freqKey = selectedFrequency.value as 'once' | 'monthly' | 'yearly'
-  modalsRef.value?.openTributeModal(tributeData.value[freqKey])
-}
-
 const handleTributeSave = (data: TributeData | undefined) => {
   const freqKey = selectedFrequency.value as 'once' | 'monthly' | 'yearly'
   tributeData.value[freqKey] = data
@@ -266,41 +260,6 @@ const handleTributeSave = (data: TributeData | undefined) => {
 const handleRemoveTribute = () => {
   const freqKey = selectedFrequency.value as 'once' | 'monthly' | 'yearly'
   tributeData.value[freqKey] = undefined
-}
-
-const handleProductModalConfirm = (
-  product: Product,
-  price: number,
-  quantity: number,
-  mode: 'add' | 'edit',
-  itemKey?: string,
-  tribute?: TributeData
-) => {
-  if (mode === 'add') {
-    addToCart(product, price, 'multiple', quantity, tribute)
-  } else if (mode === 'edit' && itemKey) {
-    const parsed = parseCartItemKey(itemKey)
-    if (parsed) {
-      updateCartItemPrice(parsed.itemId, parsed.addedAt, price, 'multiple')
-      updateCartItemQuantity(parsed.itemId, parsed.addedAt, quantity, 'multiple')
-      if (tribute) {
-        updateCartItemTribute(parsed.itemId, parsed.addedAt, tribute, 'multiple')
-      }
-    }
-  }
-}
-
-const handleEditCartItem = (item: CartItem, itemKey: string) => {
-  modalsRef.value?.openProductModalForEdit(item, itemKey)
-}
-
-const handleRemoveCartItem = (itemId: string, addedAt: number) => {
-  removeFromCart(itemId, addedAt, 'multiple')
-}
-
-const handleProductSelect = (product: Product) => {
-  const price = product.default ?? product.price ?? 0
-  modalsRef.value?.openProductModalForAdd(product, price)
 }
 
 // Watch for tab switches to "multiple" - auto-add selected adoption if cart is empty
@@ -371,6 +330,7 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
         class="mt-2"
       >
         <DonationFormSingle
+          :ref="setSingleFormRef(freq.value)"
           :frequency="castFrequency(freq.value)"
           :frequency-label="freq.label"
           :currency="selectedCurrency"
@@ -389,9 +349,9 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           @update:donation-amount="
             (val) => (donationAmounts[freq.value as keyof typeof donationAmounts] = val)
           "
-          @edit-adoption="handleEditAdoption"
+          @adoption-select="handleAdoptionSelect"
           @remove-adoption="handleRemoveAdoption"
-          @open-tribute="handleOpenTributeModal"
+          @tribute-save="handleTributeSave"
           @remove-tribute="handleRemoveTribute"
           @next="handleNext"
           @switch-to-tab="handleSwitchToTab"
@@ -407,27 +367,12 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           :products="products"
           :enabled-frequencies="enabledFrequencies"
           :initial-products-displayed="INITIAL_PRODUCTS_DISPLAYED"
+          :amounts-config="AMOUNTS_IN_BASE_CURRENCY"
           :config="config"
-          @edit-cart-item="handleEditCartItem"
-          @remove-cart-item="handleRemoveCartItem"
-          @product-select="handleProductSelect"
           @next="handleNext"
           @switch-to-tab="handleSwitchToTab"
         />
       </TabsContent>
     </Tabs>
-
-    <!-- All Modals -->
-    <DonationFormModals
-      ref="modalsRef"
-      :currency="selectedCurrency"
-      :current-frequency="selectedFrequency"
-      :products="products"
-      :amounts-config="AMOUNTS_IN_BASE_CURRENCY"
-      :config="config"
-      @adoption-select="handleAdoptionSelect"
-      @tribute-save="handleTributeSave"
-      @product-modal-confirm="handleProductModalConfirm"
-    />
   </div>
 </template>

@@ -1,0 +1,61 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { Button } from '@/components/ui/button'
+import BaseDialogOrDrawer from '~/components/donation-form/common/BaseDialogOrDrawer.vue'
+import ProductTributeForm from '~/components/donation-form/tribute/ProductTributeForm.vue'
+import type { TributeData } from '@/lib/common/types'
+
+const emit = defineEmits<{
+  save: [tributeData: TributeData | undefined]
+}>()
+
+const isOpen = ref(false)
+const tributeFormRef = ref<InstanceType<typeof ProductTributeForm> | null>(null)
+const tempTributeData = ref<TributeData | undefined>(undefined)
+
+const isTributeFormValid = computed(() => {
+  if (!tributeFormRef.value) return true
+  return tributeFormRef.value.isValid
+})
+
+const handleSave = () => {
+  emit('save', tempTributeData.value)
+  isOpen.value = false
+}
+
+const handleCancel = () => {
+  tempTributeData.value = undefined
+  isOpen.value = false
+}
+
+defineExpose({
+  open: (currentTributeData?: TributeData) => {
+    tempTributeData.value = currentTributeData
+      ? JSON.parse(JSON.stringify(currentTributeData))
+      : undefined
+    isOpen.value = true
+  }
+})
+</script>
+
+<template>
+  <BaseDialogOrDrawer v-model:open="isOpen" :dismissible="true">
+    <template #header>
+      <h2 class="text-2xl font-semibold">Gift or In Memory</h2>
+      <p class="text-sm text-muted-foreground">
+        Make this donation in honor or memory of someone special
+      </p>
+    </template>
+    <template #content>
+      <ProductTributeForm ref="tributeFormRef" v-model="tempTributeData" @submit="handleSave" />
+    </template>
+    <template #footer>
+      <Button class="flex-1 md:flex-1 h-12" :disabled="!isTributeFormValid" @click="handleSave">
+        Save
+      </Button>
+      <Button variant="outline" class="flex-1 md:flex-1 h-12" @click="handleCancel">
+        Cancel
+      </Button>
+    </template>
+  </BaseDialogOrDrawer>
+</template>

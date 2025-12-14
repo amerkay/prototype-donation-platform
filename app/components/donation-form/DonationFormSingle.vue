@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import AmountSelector from '~/components/donation-form/common/AmountSelector.vue'
 import CartProductLine from '~/components/donation-form/cart/CartProductLine.vue'
@@ -7,6 +7,8 @@ import NextButton from '~/components/donation-form/common/NextButton.vue'
 import BonusItemsSection from '~/components/donation-form/common/BonusItemsSection.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
 import TributeCard from '~/components/donation-form/tribute/TributeCard.vue'
+import TributeModal from '~/components/donation-form/tribute/TributeModal.vue'
+import ProductSelectModal from '~/components/donation-form/product/ProductSelectModal.vue'
 import type { Product, TributeData } from '@/lib/common/types'
 
 const { selectedBonusItems, toggleBonusItem } = useCart()
@@ -32,13 +34,17 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:donationAmount': [value: number]
-  'edit-adoption': []
+  'adoption-select': [product: Product]
   'remove-adoption': []
-  'open-tribute': []
+  'tribute-save': [tributeData: TributeData | undefined]
   'remove-tribute': []
   next: []
-  'switch-to-tab': [tab: 'monthly' | 'yearly']
+  'switch-to-tab': [tab: 'monthly' | 'yearly', openModal?: boolean]
 }>()
+
+// Refs
+const adoptionModalRef = ref<InstanceType<typeof ProductSelectModal> | null>(null)
+const tributeModalRef = ref<InstanceType<typeof TributeModal> | null>(null)
 
 // Computed
 const adoptionButtonText = computed(() =>
@@ -59,6 +65,20 @@ const oneTimeTotal = computed(() => (props.frequency === 'once' ? props.donation
 const monthlyTotal = computed(() => (props.frequency === 'monthly' ? props.donationAmount : 0))
 const yearlyTotal = computed(() => (props.frequency === 'yearly' ? props.donationAmount : 0))
 
+const adoptionProducts = computed(() => {
+  return props.products.filter((p) => !p.isBonusItem && p.frequency === props.frequency)
+})
+
+const adoptionModalTitle = computed(() => props.config.adoptionFeature.modalTitle)
+
+const adoptionModalDescription = computed(() =>
+  props.config.adoptionFeature.modalDescription.replace('{frequency}', props.frequency)
+)
+
+const adoptionNoProductsMessage = computed(() =>
+  props.config.adoptionFeature.noProductsMessage.replace('{frequency}', props.frequency)
+)
+
 // Methods
 const handleAmountUpdate = (value: number) => {
   emit('update:donationAmount', value)
@@ -67,6 +87,35 @@ const handleAmountUpdate = (value: number) => {
 const handleSwitchToTab = (tab: 'monthly' | 'yearly') => {
   emit('switch-to-tab', tab)
 }
+
+const handleEditAdoption = () => {
+  // If on "once" tab and button text mentions "Monthly", switch to monthly tab first
+  if (props.frequency === 'once' && adoptionButtonText.value.includes('Monthly')) {
+    emit('switch-to-tab', 'monthly', true)
+  } else {
+    adoptionModalRef.value?.open()
+  }
+}
+
+const handleAdoptionSelect = (product: Product) => {
+  emit('adoption-select', product)
+}
+
+const handleOpenTributeModal = () => {
+  tributeModalRef.value?.open(props.tributeData)
+}
+
+const handleTributeSave = (data: TributeData | undefined) => {
+  emit('tribute-save', data)
+}
+
+const openAdoptionModal = () => {
+  adoptionModalRef.value?.open()
+}
+
+defineExpose({
+  openAdoptionModal
+})
 </script>
 
 <template>
@@ -89,14 +138,14 @@ const handleSwitchToTab = (tab: 'monthly' | 'yearly') => {
       :item="selectedAdoption"
       :currency="currency"
       :price="donationAmount"
-      @edit="emit('edit-adoption')"
+      @edit="handleEditAdoption"
       @remove="emit('remove-adoption')"
     />
     <Button
       v-else
       variant="outline"
       class="w-full h-12 text-sm border-2 border-primary/50 hover:border-primary hover:bg-primary/5 font-bold"
-      @click="emit('edit-adoption')"
+      @click="handleEditAdoption"
     >
       {{ adoptionButtonText }}
     </Button>
@@ -105,14 +154,14 @@ const handleSwitchToTab = (tab: 'monthly' | 'yearly') => {
     <TributeCard
       v-if="showTributeSection && hasTribute"
       :tribute="tributeData!"
-      @edit="emit('open-tribute')"
+      @edit="handleOpenTributeModal"
       @remove="emit('remove-tribute')"
     />
     <Button
       v-else-if="showTributeSection"
       variant="outline"
       class="w-full h-10 text-sm"
-      @click="emit('open-tribute')"
+      @click="handleOpenTributeModal"
     >
       💝 Gift or In Memory of (with eCard)
     </Button>
@@ -153,5 +202,18 @@ const handleSwitchToTab = (tab: 'monthly' | 'yearly') => {
 
     <!-- Next Button -->
     <NextButton :disabled="!isFormValid" @click="emit('next')" />
+
+    <!-- Modals -->
+    <ProductSelectModal
+      ref="adoptionModalRef"
+      :currency="currency"
+      :products="adoptionProducts"
+      :title="adoptionModalTitle"
+      :description="adoptionModalDescription"
+      :no-products-message="adoptionNoProductsMessage"
+      @select="handleAdoptionSelect"
+    />
+
+    <TributeModal ref="tributeModalRef" @save="handleTributeSave" />
   </div>
 </template>
