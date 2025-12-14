@@ -49,8 +49,8 @@ const tributeModalRef = ref<InstanceType<typeof TributeModal> | null>(null)
 // Computed
 const adoptionButtonText = computed(() =>
   props.frequency === 'once'
-    ? props.config.adoptionFeature.buttonTextOnce
-    : props.config.adoptionFeature.buttonText
+    ? (props.config.adoptionFeature?.ui?.buttonTextOnce ?? '')
+    : (props.config.adoptionFeature?.ui?.buttonText ?? '')
 )
 
 const showTributeSection = computed(() => props.frequency !== 'once')
@@ -69,14 +69,20 @@ const adoptionProducts = computed(() => {
   return props.products.filter((p) => !p.isBonusItem && p.frequency === props.frequency)
 })
 
-const adoptionModalTitle = computed(() => props.config.adoptionFeature.modalTitle)
+const adoptionModalTitle = computed(() => props.config.adoptionFeature?.ui?.modalTitle ?? '')
 
-const adoptionModalDescription = computed(() =>
-  props.config.adoptionFeature.modalDescription.replace('{frequency}', props.frequency)
+const adoptionModalDescription = computed(
+  () =>
+    props.config.adoptionFeature?.ui?.modalDescriptionTemplate?.replace(
+      '{frequency}',
+      props.frequency
+    ) ?? ''
 )
 
-const adoptionNoProductsMessage = computed(() =>
-  props.config.adoptionFeature.noProductsMessage.replace('{frequency}', props.frequency)
+const adoptionNoProductsMessage = computed(
+  () =>
+    props.config.adoptionFeature?.ui?.noProductsTemplate?.replace('{frequency}', props.frequency) ??
+    ''
 )
 
 // Methods

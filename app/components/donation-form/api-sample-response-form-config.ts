@@ -1,78 +1,85 @@
 export const formConfig = {
-  formTitle: 'Make a Donation',
-  formSubtitle: 'Choose your donation amount',
-
-  currencies: [
-    { value: 'USD', label: 'USD ($)' },
-    { value: 'EUR', label: 'EUR (€)' },
-    { value: 'GBP', label: 'GBP (£)' }
-  ] as const,
-
-  defaultCurrency: 'GBP',
-
-  frequencies: [
-    { value: 'once', label: 'One-time' },
-    { value: 'monthly', label: 'Monthly' }
-    // { value: 'yearly', label: 'Yearly' }
-  ] as const,
-
-  // Amounts in base currency (GBP) - will be converted to selected currency
-  amountsInBaseCurrency: {
-    once: {
-      amounts: [10, 25, 50, 100, 250, 500],
-      minPrice: 5,
-      maxPrice: 1000
+  version: '1.0',
+  form: {
+    title: 'Make a Donation',
+    subtitle: 'Choose your donation amount'
+  },
+  localization: {
+    defaultCurrency: 'GBP',
+    supportedCurrencies: [
+      { code: 'USD', label: 'USD ($)', symbol: '$' },
+      { code: 'EUR', label: 'EUR (€)', symbol: '€' },
+      { code: 'GBP', label: 'GBP (£)', symbol: '£' }
+    ] as const
+  },
+  pricing: {
+    baseCurrency: 'GBP',
+    frequencies: [
+      {
+        value: 'once',
+        label: 'One-time',
+        presetAmounts: [10, 25, 50, 100, 250, 500],
+        customAmount: { min: 5, max: 1000 }
+      },
+      {
+        value: 'monthly',
+        label: 'Monthly',
+        presetAmounts: [5, 10, 25, 50, 75, 100],
+        customAmount: { min: 3, max: 500 }
+      },
+      {
+        value: 'yearly',
+        label: 'Yearly',
+        presetAmounts: [50, 100, 250, 500, 1000],
+        customAmount: { min: 25, max: 2000 }
+      }
+    ] as const
+  },
+  features: {
+    multipleItems: {
+      enabled: true,
+      initialDisplay: 3,
+      ui: {
+        title: 'Add Items to Your Donation',
+        searchPlaceholder: 'Search items...',
+        showMoreButtonTemplate: 'Show {count} More Items',
+        emptyStateTemplate: 'No items found matching "{query}"'
+      }
     },
-    monthly: {
-      amounts: [5, 10, 25, 50, 75, 100],
-      minPrice: 3,
-      maxPrice: 500
+    adoption: {
+      enabled: true,
+      config: {
+        icon: '🦧',
+        entity: { singular: 'Orangutan', plural: 'Orangutans' },
+        action: { verb: 'Adopt', noun: 'adoption' },
+        ui: {
+          buttonText: '🦧 Adopt an Orangutan',
+          buttonTextOnce: '🦧 Adopt an Orangutan (Monthly)',
+          modalTitle: '🦧 Adopt an Orangutan',
+          modalDescriptionTemplate: 'Choose an orangutan to support with a {frequency} donation',
+          noProductsTemplate: 'No {frequency} adoption products available'
+        }
+      }
     },
-    yearly: {
-      amounts: [50, 100, 250, 500, 1000],
-      minPrice: 25,
-      maxPrice: 2000
+    bonusItems: {
+      enabled: true,
+      ui: {
+        labels: {
+          freeGifts: '🎁 Free gifts available:',
+          freeWithDonation: 'FREE with your donation!',
+          frequencies: { once: 'one-time', monthly: 'monthly', yearly: 'yearly' }
+        },
+        templates: {
+          unlockSingle: 'Add {amount} {frequency} to unlock!',
+          unlockPair: 'Add {a} or {b} to unlock!',
+          unlockList: 'Add {list}, or {last} to unlock!',
+          switchFrequency: 'Switch to {frequency}'
+        }
+      }
+    },
+    shipping: {
+      showNotice: true,
+      noticeText: '📦 Shipping address on next page'
     }
-  } as const,
-
-  // Feature flags
-  allowMultipleItems: true,
-  initialProductsDisplayed: 3,
-
-  adoptionFeature: {
-    enabled: true,
-    icon: '🦧',
-    singularName: 'Orangutan',
-    pluralName: 'Orangutans',
-    actionVerb: 'Adopt',
-    actionNoun: 'adoption',
-    buttonText: '🦧 Adopt an Orangutan',
-    buttonTextOnce: '🦧 Adopt an Orangutan (Monthly)',
-    modalTitle: '🦧 Adopt an Orangutan',
-    modalDescription: 'Choose an orangutan to support with a {frequency} donation',
-    noProductsMessage: 'No {frequency} adoption products available'
-  },
-
-  bonusItemsSection: {
-    freeGiftsLabel: '🎁 Free gifts available:',
-    freeWithDonationLabel: 'FREE with your donation!',
-    oneTimeLabel: 'one-time',
-    monthlyLabel: 'monthly',
-    yearlyLabel: 'yearly',
-    addToUnlockSingleTemplate: 'Add {amount} {frequency} to unlock!',
-    addToUnlockPairTemplate: 'Add {a} or {b} to unlock!',
-    addToUnlockListTemplate: 'Add {list}, or {last} to unlock!',
-    switchToTemplate: 'Switch to {frequency}'
-  },
-
-  shippingNotice: {
-    message: '📦 Shipping address on next page'
-  },
-
-  multipleItemsSection: {
-    title: 'Add Items to Your Donation',
-    searchPlaceholder: 'Search items...',
-    showMoreButton: 'Show {count} More Items',
-    emptyStateMessage: 'No items found matching "{query}"'
   }
-}
+} as const

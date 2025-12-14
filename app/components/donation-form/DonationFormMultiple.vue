@@ -32,8 +32,6 @@ interface Props {
   enabledFrequencies: Array<'once' | 'monthly' | 'yearly'>
   initialProductsDisplayed: number
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  amountsConfig: any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config: any
 }
 
@@ -170,7 +168,7 @@ defineExpose({
     <ProductOptionsModal
       ref="productOptionsModalRef"
       :currency="currency"
-      :amounts-config="amountsConfig"
+      :pricing-config="config.pricingConfig"
       @confirm="handleProductModalConfirm"
     />
   </div>

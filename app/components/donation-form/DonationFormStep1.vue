@@ -11,22 +11,45 @@ const { convertPrice } = useCurrency()
 const { multipleCart, addToCart } = useCart()
 
 // Extract config values
-const CURRENCIES = formConfig.currencies
-const BASE_FREQUENCIES = formConfig.frequencies
-const AMOUNTS_IN_BASE_CURRENCY = formConfig.amountsInBaseCurrency
-const ALLOW_MULTIPLE_ITEMS = formConfig.allowMultipleItems
-const INITIAL_PRODUCTS_DISPLAYED = formConfig.initialProductsDisplayed
+const CURRENCIES = formConfig.localization.supportedCurrencies.map((c) => ({
+  value: c.code,
+  label: c.label
+}))
+const BASE_FREQUENCIES = formConfig.pricing.frequencies.map((f) => ({
+  value: f.value,
+  label: f.label
+}))
+const ALLOW_MULTIPLE_ITEMS = formConfig.features.multipleItems.enabled
+const INITIAL_PRODUCTS_DISPLAYED = formConfig.features.multipleItems.initialDisplay
 const config = {
-  formTitle: formConfig.formTitle,
-  formSubtitle: formConfig.formSubtitle,
-  adoptionFeature: formConfig.adoptionFeature,
-  bonusItemsSection: formConfig.bonusItemsSection,
-  shippingNotice: formConfig.shippingNotice,
-  multipleItemsSection: formConfig.multipleItemsSection
+  formTitle: formConfig.form.title,
+  formSubtitle: formConfig.form.subtitle,
+  adoptionFeature: formConfig.features.adoption.config,
+  bonusItemsSection: {
+    freeGiftsLabel: formConfig.features.bonusItems.ui.labels.freeGifts,
+    freeWithDonationLabel: formConfig.features.bonusItems.ui.labels.freeWithDonation,
+    oneTimeLabel: formConfig.features.bonusItems.ui.labels.frequencies.once,
+    monthlyLabel: formConfig.features.bonusItems.ui.labels.frequencies.monthly,
+    yearlyLabel: formConfig.features.bonusItems.ui.labels.frequencies.yearly,
+    addToUnlockSingleTemplate: formConfig.features.bonusItems.ui.templates.unlockSingle,
+    addToUnlockPairTemplate: formConfig.features.bonusItems.ui.templates.unlockPair,
+    addToUnlockListTemplate: formConfig.features.bonusItems.ui.templates.unlockList,
+    switchToTemplate: formConfig.features.bonusItems.ui.templates.switchFrequency
+  },
+  shippingNotice: {
+    message: formConfig.features.shipping.noticeText
+  },
+  multipleItemsSection: {
+    title: formConfig.features.multipleItems.ui.title,
+    searchPlaceholder: formConfig.features.multipleItems.ui.searchPlaceholder,
+    showMoreButton: formConfig.features.multipleItems.ui.showMoreButtonTemplate,
+    emptyStateMessage: formConfig.features.multipleItems.ui.emptyStateTemplate
+  },
+  pricingConfig: formConfig.pricing.frequencies
 }
 
 // State
-const selectedCurrency = ref(formConfig.defaultCurrency)
+const selectedCurrency = ref(formConfig.localization.defaultCurrency)
 const selectedFrequency = ref('once')
 const donationAmounts = ref({ once: 0, monthly: 0, yearly: 0 })
 const selectedAdoptions = ref<{ monthly: Product | null; yearly: Product | null }>({
@@ -62,23 +85,23 @@ const enabledFrequencies = computed(
 
 const availableAmounts = computed(() => {
   if (selectedFrequency.value === 'multiple') return []
-  const cfg =
-    AMOUNTS_IN_BASE_CURRENCY[selectedFrequency.value as keyof typeof AMOUNTS_IN_BASE_CURRENCY]
-  return cfg.amounts.map((amt) => convertPrice(amt, selectedCurrency.value))
+  const cfg = formConfig.pricing.frequencies.find((f) => f.value === selectedFrequency.value)
+  if (!cfg) return []
+  return cfg.presetAmounts.map((amt) => convertPrice(amt, selectedCurrency.value))
 })
 
 const sliderMinPrice = computed(() => {
   if (selectedFrequency.value === 'multiple') return 0
-  const cfg =
-    AMOUNTS_IN_BASE_CURRENCY[selectedFrequency.value as keyof typeof AMOUNTS_IN_BASE_CURRENCY]
-  return convertPrice(cfg.minPrice, selectedCurrency.value)
+  const cfg = formConfig.pricing.frequencies.find((f) => f.value === selectedFrequency.value)
+  if (!cfg) return 0
+  return convertPrice(cfg.customAmount.min, selectedCurrency.value)
 })
 
 const sliderMaxPrice = computed(() => {
   if (selectedFrequency.value === 'multiple') return 0
-  const cfg =
-    AMOUNTS_IN_BASE_CURRENCY[selectedFrequency.value as keyof typeof AMOUNTS_IN_BASE_CURRENCY]
-  return convertPrice(cfg.maxPrice, selectedCurrency.value)
+  const cfg = formConfig.pricing.frequencies.find((f) => f.value === selectedFrequency.value)
+  if (!cfg) return 0
+  return convertPrice(cfg.customAmount.max, selectedCurrency.value)
 })
 
 const bonusItems = computed(() => products.filter((p) => p.isBonusItem))
@@ -238,7 +261,6 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           :products="products"
           :enabled-frequencies="enabledFrequencies"
           :initial-products-displayed="INITIAL_PRODUCTS_DISPLAYED"
-          :amounts-config="AMOUNTS_IN_BASE_CURRENCY"
           :config="config"
           @next="handleNext"
           @switch-to-tab="handleSwitchToTab"

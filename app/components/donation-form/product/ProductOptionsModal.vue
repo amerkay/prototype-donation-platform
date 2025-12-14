@@ -10,20 +10,36 @@ import type { Product, CartItem, TributeData } from '@/lib/common/types'
 interface Props {
   currency: string
   baseCurrency?: string
-  amountsConfig?: {
-    once: { amounts: readonly number[]; minPrice: number; maxPrice: number }
-    monthly: { amounts: readonly number[]; minPrice: number; maxPrice: number }
-    yearly: { amounts: readonly number[]; minPrice: number; maxPrice: number }
-  }
+  pricingConfig?: Array<{
+    readonly value: 'once' | 'monthly' | 'yearly'
+    readonly label: string
+    readonly presetAmounts: readonly number[]
+    readonly customAmount: { readonly min: number; readonly max: number }
+  }>
 }
 
 const props = withDefaults(defineProps<Props>(), {
   baseCurrency: 'GBP',
-  amountsConfig: () => ({
-    once: { amounts: [10, 25, 50, 100, 250, 500], minPrice: 5, maxPrice: 1000 },
-    monthly: { amounts: [5, 10, 25, 50, 75, 100], minPrice: 3, maxPrice: 500 },
-    yearly: { amounts: [50, 100, 250, 500, 1000], minPrice: 25, maxPrice: 2000 }
-  })
+  pricingConfig: () => [
+    {
+      value: 'once',
+      label: 'One-time',
+      presetAmounts: [10, 25, 50, 100, 250, 500],
+      customAmount: { min: 5, max: 1000 }
+    },
+    {
+      value: 'monthly',
+      label: 'Monthly',
+      presetAmounts: [5, 10, 25, 50, 75, 100],
+      customAmount: { min: 3, max: 500 }
+    },
+    {
+      value: 'yearly',
+      label: 'Yearly',
+      presetAmounts: [50, 100, 250, 500, 1000],
+      customAmount: { min: 25, max: 2000 }
+    }
+  ]
 })
 
 const emit = defineEmits<{
@@ -75,17 +91,15 @@ const frequencyLabel = computed(() => {
 
 const amounts = computed(() => {
   if (!product.value || !isRecurring.value) return []
-  const freq = product.value.frequency as keyof typeof props.amountsConfig
-  const config = props.amountsConfig[freq]
+  const config = props.pricingConfig?.find((f) => f.value === product.value?.frequency)
   if (!config) return []
-  return config.amounts.map((amount) => convertPrice(amount, props.currency))
+  return config.presetAmounts.map((amount) => convertPrice(amount, props.currency))
 })
 
 const maxPrice = computed(() => {
   if (!product.value) return 1000
-  const freq = product.value.frequency as keyof typeof props.amountsConfig
-  const config = props.amountsConfig[freq]
-  return convertPrice(config?.maxPrice ?? 1000, props.currency)
+  const config = props.pricingConfig?.find((f) => f.value === product.value?.frequency)
+  return convertPrice(config?.customAmount.max ?? 1000, props.currency)
 })
 
 // Methods
