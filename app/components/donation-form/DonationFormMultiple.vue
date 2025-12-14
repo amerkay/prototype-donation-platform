@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import Cart from '@/components/donation-form/cart/Cart.vue'
 import NextButton from '~/components/donation-form/common/NextButton.vue'
-import BonusItemsSection from '~/components/donation-form/common/BonusItemsSection.vue'
+import RewardsSection from '~/components/donation-form/common/RewardsSection.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
 import ProductOptionsModal from '~/components/donation-form/product/ProductOptionsModal.vue'
 import type { Product, CartItem, TributeData, FormConfig } from '@/lib/common/types'
@@ -10,14 +10,14 @@ import { getCartItemKey, parseCartItemKey } from '@/lib/common/cart-utils'
 
 const {
   multipleCart,
-  selectedBonusItems,
+  selectedRewards,
   cartTotal,
   recurringTotal,
   oneTimeTotal,
   monthlyTotal,
   yearlyTotal,
   activeRecurringFrequency,
-  toggleBonusItem,
+  toggleReward,
   addToCart,
   updateCartItemPrice,
   updateCartItemQuantity,
@@ -27,7 +27,7 @@ const {
 
 interface Props {
   currency: string
-  bonusItems: Product[]
+  rewards: Product[]
   products: Product[]
   enabledFrequencies: Array<'once' | 'monthly' | 'yearly'>
   initialProductsDisplayed: number
@@ -46,7 +46,7 @@ const productOptionsModalRef = ref<InstanceType<typeof ProductOptionsModal> | nu
 
 // Computed
 const filteredProducts = computed(() => {
-  let regularProducts = props.products.filter((p) => !p.isBonusItem)
+  let regularProducts = props.products.filter((p) => !p.isReward)
   const locked = activeRecurringFrequency.value
   if (locked) {
     regularProducts = regularProducts.filter(
@@ -121,24 +121,24 @@ defineExpose({
       :show-total="true"
       :products="filteredProducts"
       :initial-products-displayed="initialProductsDisplayed"
-      :product-list-config="formConfig.features.multipleItems.ui"
+      :product-list-config="formConfig.features.multipleProducts.ui"
       @edit="handleEditCartItem"
       @remove="handleRemoveCartItem"
       @product-select="handleProductSelect"
     />
 
-    <!-- Bonus Items Section -->
-    <BonusItemsSection
-      :bonus-items="bonusItems"
-      :selected-bonus-items="selectedBonusItems"
+    <!-- Rewards Section -->
+    <RewardsSection
+      :rewards="rewards"
+      :selected-rewards="selectedRewards"
       :one-time-total="oneTimeTotal"
       :monthly-total="monthlyTotal"
       :yearly-total="yearlyTotal"
       :enabled-frequencies="enabledFrequencies"
       :currency="currency"
       selected-frequency="multiple"
-      :bonus-config="formConfig.features.bonusItems"
-      @toggle="toggleBonusItem"
+      :rewards-config="formConfig.features.rewards"
+      @toggle="toggleReward"
       @switch-to-tab="handleSwitchToTab"
     />
 
@@ -146,10 +146,10 @@ defineExpose({
     <ShippingNotice
       selected-frequency="multiple"
       :products="products"
-      :selected-bonus-items="selectedBonusItems"
+      :selected-rewards="selectedRewards"
       :multiple-cart="multipleCart"
       :donation-amounts="{ once: oneTimeTotal, monthly: monthlyTotal, yearly: yearlyTotal }"
-      :shipping-config="formConfig.features.shipping"
+      :shipping-notice-config="formConfig.features.shippingNotice"
     />
 
     <!-- Next Button -->

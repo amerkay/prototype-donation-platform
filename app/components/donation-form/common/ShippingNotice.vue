@@ -5,37 +5,37 @@ import type { Product, CartItem, FormConfig } from '@/lib/common/types'
 interface Props {
   selectedFrequency: 'once' | 'monthly' | 'multiple'
   products: Product[]
-  selectedBonusItems: Set<string>
+  selectedRewards: Set<string>
   multipleCart: CartItem[]
   donationAmounts: {
     once: number
     monthly: number
     yearly: number
   }
-  shippingConfig: FormConfig['features']['shipping']
+  shippingNoticeConfig: FormConfig['features']['shippingNotice']
 }
 
 const props = defineProps<Props>()
 
 const requiresShipping = computed(() => {
   if (props.selectedFrequency === 'multiple') {
-    // For multiple tab: check cart items and selected bonus items
+    // For multiple tab: check cart items and selected rewards
     const cartRequiresShipping = props.multipleCart.some((item) => item.isShippingRequired)
-    const selectedBonusRequireShipping = Array.from(props.selectedBonusItems).some(
+    const selectedRewardsRequireShipping = Array.from(props.selectedRewards).some(
       (itemId) => props.products.find((p) => p.id === itemId)?.isShippingRequired
     )
-    return cartRequiresShipping || selectedBonusRequireShipping
+    return cartRequiresShipping || selectedRewardsRequireShipping
   } else {
-    // For once/monthly tabs: only check bonus items that are currently eligible on this tab
+    // For once/monthly tabs: only check rewards that are currently eligible on this tab
     const currentTotal =
       props.selectedFrequency === 'once'
         ? props.donationAmounts.once
         : props.donationAmounts.monthly
 
-    // Get eligible bonus items for current tab only
+    // Get eligible rewards for current tab only
     const eligibleItemsOnCurrentTab = props.products.filter((item) => {
-      if (!item.isBonusItem || !item.bonusThreshold) return false
-      const { once, monthly } = item.bonusThreshold
+      if (!item.isReward || !item.rewardThreshold) return false
+      const { once, monthly } = item.rewardThreshold
 
       if (props.selectedFrequency === 'once') {
         // For once tab: only items with 'once' threshold that are met
@@ -52,7 +52,7 @@ const requiresShipping = computed(() => {
     })
 
     // Check if any eligible AND selected items require shipping
-    return Array.from(props.selectedBonusItems).some((itemId) => {
+    return Array.from(props.selectedRewards).some((itemId) => {
       const item = eligibleItemsOnCurrentTab.find((p) => p.id === itemId)
       return item?.isShippingRequired
     })
@@ -63,7 +63,7 @@ const requiresShipping = computed(() => {
 <template>
   <Transition name="shipping-notice">
     <div v-if="requiresShipping" class="rounded-lg bg-muted p-3 text-sm text-muted-foreground">
-      {{ shippingConfig.noticeText }}
+      {{ shippingNoticeConfig.noticeText }}
     </div>
   </Transition>
 </template>

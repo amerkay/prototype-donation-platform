@@ -3,15 +3,15 @@ import { computed, watch } from 'vue'
 import type { Product, FormConfig } from '@/lib/common/types'
 
 interface Props {
-  bonusItems: Product[]
-  selectedBonusItems: Set<string>
+  rewards: Product[]
+  selectedRewards: Set<string>
   monthlyTotal?: number
   yearlyTotal?: number
   oneTimeTotal?: number
   currency?: string
   enabledFrequencies?: Array<'once' | 'monthly' | 'yearly'>
   selectedFrequency?: string
-  bonusConfig: FormConfig['features']['bonusItems']
+  rewardsConfig: FormConfig['features']['rewards']
 }
 
 interface Emits {
@@ -33,10 +33,10 @@ const currencySymbol = computed(() => getCurrencySymbol(props.currency))
 
 const emit = defineEmits<Emits>()
 
-const eligibleBonusItems = computed(() => {
-  return props.bonusItems.filter((item) => {
-    if (!item.bonusThreshold) return false
-    const { once, monthly, yearly } = item.bonusThreshold
+const eligibleRewards = computed(() => {
+  return props.rewards.filter((item) => {
+    if (!item.rewardThreshold) return false
+    const { once, monthly, yearly } = item.rewardThreshold
 
     // If any threshold is met, the item is eligible
     if (once !== undefined && props.oneTimeTotal >= once) return true
@@ -47,10 +47,10 @@ const eligibleBonusItems = computed(() => {
   })
 })
 
-const upsellBonusItems = computed(() => {
-  return props.bonusItems.filter((item) => {
-    if (!item.bonusThreshold) return false
-    const { once, monthly, yearly } = item.bonusThreshold
+const upsellRewards = computed(() => {
+  return props.rewards.filter((item) => {
+    if (!item.rewardThreshold) return false
+    const { once, monthly, yearly } = item.rewardThreshold
 
     // Show upsell only if NO thresholds are met
     const onceMet = once !== undefined && props.oneTimeTotal >= once
@@ -62,15 +62,15 @@ const upsellBonusItems = computed(() => {
 })
 
 const isRecurringOnly = (item: Product) => {
-  if (!item.bonusThreshold) return false
-  const { once, monthly, yearly } = item.bonusThreshold
+  if (!item.rewardThreshold) return false
+  const { once, monthly, yearly } = item.rewardThreshold
   const hasRecurringThreshold = monthly !== undefined || yearly !== undefined
   return hasRecurringThreshold && once === undefined
 }
 
 const getUpsellMessage = (item: Product) => {
-  if (!item.bonusThreshold) return ''
-  const { once, monthly, yearly } = item.bonusThreshold
+  if (!item.rewardThreshold) return ''
+  const { once, monthly, yearly } = item.rewardThreshold
 
   const options: string[] = []
 
@@ -78,21 +78,21 @@ const getUpsellMessage = (item: Product) => {
     const needed = Math.max(0, once - props.oneTimeTotal)
     if (needed > 0)
       options.push(
-        `${currencySymbol.value}${needed} ${props.bonusConfig.ui.labels.frequencies.once}`
+        `${currencySymbol.value}${needed} ${props.rewardsConfig.ui.labels.frequencies.once}`
       )
   }
   if (monthly !== undefined && props.enabledFrequencies.includes('monthly')) {
     const needed = Math.max(0, monthly - props.monthlyTotal)
     if (needed > 0)
       options.push(
-        `${currencySymbol.value}${needed} ${props.bonusConfig.ui.labels.frequencies.monthly}`
+        `${currencySymbol.value}${needed} ${props.rewardsConfig.ui.labels.frequencies.monthly}`
       )
   }
   if (yearly !== undefined && props.enabledFrequencies.includes('yearly')) {
     const needed = Math.max(0, yearly - props.yearlyTotal)
     if (needed > 0)
       options.push(
-        `${currencySymbol.value}${needed} ${props.bonusConfig.ui.labels.frequencies.yearly}`
+        `${currencySymbol.value}${needed} ${props.rewardsConfig.ui.labels.frequencies.yearly}`
       )
   }
 
@@ -102,25 +102,25 @@ const getUpsellMessage = (item: Product) => {
     const parts = single.split(' ')
     const amountPart = parts[0] ?? ''
     const freqPart = parts.slice(1).join(' ')
-    return props.bonusConfig.ui.templates.unlockSingle
+    return props.rewardsConfig.ui.templates.unlockSingle
       .replace('{amount}', amountPart)
       .replace('{frequency}', freqPart)
   }
   if (options.length === 2) {
     const a = options[0]!
     const b = options[1]!
-    return props.bonusConfig.ui.templates.unlockPair.replace('{a}', a).replace('{b}', b)
+    return props.rewardsConfig.ui.templates.unlockPair.replace('{a}', a).replace('{b}', b)
   }
 
   const lastOption = options.pop()!
-  return props.bonusConfig.ui.templates.unlockList
+  return props.rewardsConfig.ui.templates.unlockList
     .replace('{list}', options.join(', '))
     .replace('{last}', lastOption)
 }
 
 const getFirstRecurringFrequency = (item: Product): 'monthly' | 'yearly' | null => {
-  if (!item.bonusThreshold) return null
-  const { monthly, yearly } = item.bonusThreshold
+  if (!item.rewardThreshold) return null
+  const { monthly, yearly } = item.rewardThreshold
 
   // Check in order of preference: monthly, yearly
   // Only return if both enabled AND has threshold
@@ -142,22 +142,22 @@ const getRecurringLabel = (item: Product): string => {
   return frequency || 'monthly'
 }
 
-const toggleBonusItem = (itemId: string) => {
+const toggleReward = (itemId: string) => {
   emit('toggle', itemId)
 }
 
-const hasAnyBonusItems = computed(() => {
-  return eligibleBonusItems.value.length > 0 || upsellBonusItems.value.length > 0
+const hasAnyRewards = computed(() => {
+  return eligibleRewards.value.length > 0 || upsellRewards.value.length > 0
 })
 
 // Watch for changes in eligible items and auto-uncheck ineligible ones
 watch(
-  eligibleBonusItems,
+  eligibleRewards,
   (newEligible) => {
     const eligibleIds = new Set(newEligible.map((item) => item.id))
 
     // Find selected items that are no longer eligible
-    Array.from(props.selectedBonusItems).forEach((itemId) => {
+    Array.from(props.selectedRewards).forEach((itemId) => {
       if (!eligibleIds.has(itemId)) {
         // Auto-uncheck by emitting toggle
         emit('toggle', itemId)
@@ -169,40 +169,42 @@ watch(
 </script>
 
 <template>
-  <div v-if="hasAnyBonusItems" class="space-y-4">
+  <div v-if="hasAnyRewards" class="space-y-4">
     <div class="border-b"></div>
 
-    <!-- Eligible Bonus Items (Free Gifts) -->
-    <div v-if="eligibleBonusItems.length > 0" class="space-y-2">
-      <p class="text-sm font-medium text-muted-foreground">{{ bonusConfig.ui.labels.freeGifts }}</p>
+    <!-- Eligible Rewards (Free Gifts) -->
+    <div v-if="eligibleRewards.length > 0" class="space-y-2">
+      <p class="text-sm font-medium text-muted-foreground">
+        {{ rewardsConfig.ui.labels.freeGifts }}
+      </p>
       <div
-        v-for="item in eligibleBonusItems"
-        :key="`bonus-${item.id}`"
+        v-for="item in eligibleRewards"
+        :key="`reward-${item.id}`"
         class="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3"
       >
         <input
-          :id="`bonus-${item.id}`"
+          :id="`reward-${item.id}`"
           type="checkbox"
-          :checked="selectedBonusItems.has(item.id)"
+          :checked="selectedRewards.has(item.id)"
           class="h-4 w-4 rounded border-input"
-          @change="toggleBonusItem(item.id)"
+          @change="toggleReward(item.id)"
         />
-        <label :for="`bonus-${item.id}`" class="flex items-center gap-3 flex-1 cursor-pointer">
+        <label :for="`reward-${item.id}`" class="flex items-center gap-3 flex-1 cursor-pointer">
           <div class="text-xl">{{ item.thumbnail }}</div>
           <div class="flex-1 min-w-0">
             <p class="font-medium text-sm truncate">{{ item.name }}</p>
             <p class="text-xs text-success font-medium">
-              {{ bonusConfig.ui.labels.freeWithDonation }}
+              {{ rewardsConfig.ui.labels.freeWithDonation }}
             </p>
           </div>
         </label>
       </div>
     </div>
 
-    <!-- Upsell for Bonus Items -->
-    <div v-if="upsellBonusItems.length > 0" class="space-y-2">
+    <!-- Upsell for Rewards -->
+    <div v-if="upsellRewards.length > 0" class="space-y-2">
       <div
-        v-for="item in upsellBonusItems"
+        v-for="item in upsellRewards"
         :key="`upsell-${item.id}`"
         class="rounded-lg border border-dashed bg-card p-3"
       >
@@ -226,7 +228,7 @@ watch(
                   @click="handleSwitchToRecurring(item)"
                 >
                   {{
-                    bonusConfig.ui.templates.switchFrequency.replace(
+                    rewardsConfig.ui.templates.switchFrequency.replace(
                       '{frequency}',
                       getRecurringLabel(item)
                     )

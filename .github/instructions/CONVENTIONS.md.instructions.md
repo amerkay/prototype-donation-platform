@@ -19,6 +19,7 @@ Multi-step donation platform with single/recurring donations, multi-item cart sy
 - Whenever possible, do not edit the shadcn files in @/components/ui. Only if needed.
 - YOU MUST write modular vue3 code using components and composables without overcomplicating things.
 - ALWAYS prefer self container logic. You must rewrite confusing logic to be as self-contained as possible.
+- You MUST define TypeScript interfaces that exactly mirror API response structures and pass config objects directly to components using typed sections (e.g., FormConfig['features']['rewards']) rather than restructuring or mapping data in parent components.
 
 ## Tech Stack
 
@@ -93,14 +94,6 @@ Use Composition API with `<script setup lang="ts">`:
 **State**: Local `ref()`/`computed()` in components, composables for shared state
 
 **Performance**: Use computed for derived state, unique stable keys in lists
-
-## Business Logic
-
-**Cart System**: Separate carts per frequency, track items with `id` + `addedAt` for uniqueness, support editing recurring amounts
-
-**Pricing**: Logarithmic sliders (5-100 by 5, 100-500 by 50, 500-1000 by 100), store custom prices separately
-
-**Bonus Items**: Mark with `isBonusItem` + `bonusThreshold`, filter from product list, show as checkboxes when eligible or upsell messages when not
 
 ## Code Quality
 

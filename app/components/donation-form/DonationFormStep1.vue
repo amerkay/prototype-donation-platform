@@ -19,14 +19,14 @@ const BASE_FREQUENCIES = formConfig.pricing.frequencies.map((f) => ({
   value: f.value,
   label: f.label
 }))
-const ALLOW_MULTIPLE_ITEMS = formConfig.features.multipleItems.enabled
-const INITIAL_PRODUCTS_DISPLAYED = formConfig.features.multipleItems.initialDisplay
+const ALLOW_MULTIPLE_ITEMS = formConfig.features.multipleProducts.enabled
+const INITIAL_PRODUCTS_DISPLAYED = formConfig.features.multipleProducts.initialDisplay
 
 // State
 const selectedCurrency = ref(formConfig.localization.defaultCurrency)
 const selectedFrequency = ref('once')
 const donationAmounts = ref({ once: 0, monthly: 0, yearly: 0 })
-const selectedAdoptions = ref<{ monthly: Product | null; yearly: Product | null }>({
+const selectedProducts = ref<{ monthly: Product | null; yearly: Product | null }>({
   monthly: null,
   yearly: null
 })
@@ -78,7 +78,7 @@ const sliderMaxPrice = computed(() => {
   return convertPrice(cfg.customAmount.max, selectedCurrency.value)
 })
 
-const bonusItems = computed(() => products.filter((p) => p.isBonusItem))
+const rewards = computed(() => products.filter((p) => p.isReward))
 
 // Helper to cast frequency type safely
 const castFrequency = (freq: string): 'once' | 'monthly' | 'yearly' => {
@@ -90,7 +90,7 @@ const handleNext = () => {
   console.log('Proceeding to next step', {
     frequency: selectedFrequency.value,
     donationAmounts: donationAmounts.value,
-    selectedAdoptions: selectedAdoptions.value,
+    selectedProducts: selectedProducts.value,
     multipleCart: multipleCart.value
   })
 }
@@ -101,20 +101,20 @@ const handleSwitchToTab = (tab: 'monthly' | 'yearly', openModal?: boolean) => {
     // Wait for next tick to ensure the new tab component is rendered
     setTimeout(() => {
       const formRef = singleFormRefs.get(tab)
-      formRef?.openAdoptionModal()
+      formRef?.openProductModal()
     }, 100)
   }
 }
 
-const handleRemoveAdoption = () => {
+const handleRemoveProduct = () => {
   const freqKey = selectedFrequency.value as 'monthly' | 'yearly'
-  selectedAdoptions.value[freqKey] = null
+  selectedProducts.value[freqKey] = null
   donationAmounts.value[freqKey] = 0
 }
 
-const handleAdoptionSelect = (product: Product) => {
+const handleProductSelect = (product: Product) => {
   const freqKey = selectedFrequency.value as 'monthly' | 'yearly'
-  selectedAdoptions.value[freqKey] = product
+  selectedProducts.value[freqKey] = product
   if (donationAmounts.value[freqKey] === 0) {
     donationAmounts.value[freqKey] = product.default ?? product.price ?? 0
   }
@@ -130,16 +130,16 @@ const handleRemoveTribute = () => {
   tributeData.value[freqKey] = undefined
 }
 
-// Watch for tab switches to "multiple" - auto-add selected adoption if cart is empty
+// Watch for tab switches to "multiple" - auto-add selected product if cart is empty
 watch(selectedFrequency, (newFreq, oldFreq) => {
   if (newFreq === 'multiple' && (oldFreq === 'monthly' || oldFreq === 'yearly')) {
     if (multipleCart.value.length === 0) {
-      const previousAdoption = selectedAdoptions.value[oldFreq]
-      if (previousAdoption) {
+      const previousProduct = selectedProducts.value[oldFreq]
+      if (previousProduct) {
         const price =
-          donationAmounts.value[oldFreq] || previousAdoption.default || previousAdoption.price || 0
+          donationAmounts.value[oldFreq] || previousProduct.default || previousProduct.price || 0
         if (price > 0) {
-          addToCart(previousAdoption, price, 'multiple', undefined, tributeData.value[oldFreq])
+          addToCart(previousProduct, price, 'multiple', undefined, tributeData.value[oldFreq])
         }
       }
     }
@@ -203,11 +203,9 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           :frequency-label="freq.label"
           :currency="selectedCurrency"
           :donation-amount="donationAmounts[freq.value as keyof typeof donationAmounts]"
-          :selected-adoption="
-            selectedAdoptions[freq.value as keyof typeof selectedAdoptions] ?? null
-          "
+          :selected-product="selectedProducts[freq.value as keyof typeof selectedProducts] ?? null"
           :tribute-data="tributeData[freq.value as keyof typeof tributeData]"
-          :bonus-items="bonusItems"
+          :rewards="rewards"
           :products="products"
           :available-amounts="availableAmounts"
           :min-price="sliderMinPrice"
@@ -217,8 +215,8 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           @update:donation-amount="
             (val) => (donationAmounts[freq.value as keyof typeof donationAmounts] = val)
           "
-          @adoption-select="handleAdoptionSelect"
-          @remove-adoption="handleRemoveAdoption"
+          @product-select="handleProductSelect"
+          @remove-product="handleRemoveProduct"
           @tribute-save="handleTributeSave"
           @remove-tribute="handleRemoveTribute"
           @next="handleNext"
@@ -231,7 +229,7 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
         <DonationFormMultiple
           ref="multipleFormRef"
           :currency="selectedCurrency"
-          :bonus-items="bonusItems"
+          :rewards="rewards"
           :products="products"
           :enabled-frequencies="enabledFrequencies"
           :initial-products-displayed="INITIAL_PRODUCTS_DISPLAYED"

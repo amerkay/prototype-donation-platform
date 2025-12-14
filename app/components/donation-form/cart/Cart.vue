@@ -18,7 +18,7 @@ interface Props {
   // Product list props
   products?: Product[]
   initialProductsDisplayed?: number
-  productListConfig?: FormConfig['features']['multipleItems']['ui']
+  productListConfig?: FormConfig['features']['multipleProducts']['ui']
 }
 
 const props = defineProps<Props>()

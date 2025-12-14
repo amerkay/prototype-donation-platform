@@ -9,9 +9,9 @@ export interface Product {
   image: string
   thumbnail: string
   icon: string
-  isBonusItem?: boolean
+  isReward?: boolean
   isShippingRequired?: boolean
-  bonusThreshold?: {
+  rewardThreshold?: {
     once?: number
     monthly?: number
     yearly?: number
@@ -69,7 +69,7 @@ export interface FormConfig {
     }>
   }
   features: {
-    multipleItems: {
+    multipleProducts: {
       enabled: boolean
       initialDisplay: number
       ui: {
@@ -79,7 +79,7 @@ export interface FormConfig {
         emptyStateTemplate: string
       }
     }
-    adoption: {
+    productSelector: {
       enabled: boolean
       config: {
         icon: string
@@ -94,7 +94,7 @@ export interface FormConfig {
         }
       }
     }
-    bonusItems: {
+    rewards: {
       enabled: boolean
       ui: {
         labels: {
@@ -110,7 +110,7 @@ export interface FormConfig {
         }
       }
     }
-    shipping: {
+    shippingNotice: {
       showNotice: boolean
       noticeText: string
     }

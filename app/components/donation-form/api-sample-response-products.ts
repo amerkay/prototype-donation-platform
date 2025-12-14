@@ -31,9 +31,9 @@ export const products: Product[] = [
     image: '🧸',
     thumbnail: '🧸',
     icon: '🧸',
-    isBonusItem: true,
+    isReward: true,
     isShippingRequired: true,
-    bonusThreshold: { once: 50, monthly: 25, yearly: 200 }
+    rewardThreshold: { once: 50, monthly: 25, yearly: 200 }
   },
   {
     id: 'adopt-kit',
@@ -43,9 +43,9 @@ export const products: Product[] = [
     image: '📦',
     thumbnail: '📦',
     icon: '📦',
-    isBonusItem: true,
+    isReward: true,
     isShippingRequired: true,
-    bonusThreshold: { monthly: 10, yearly: 75 }
+    rewardThreshold: { monthly: 10, yearly: 75 }
   },
   {
     id: 'tree-planting',

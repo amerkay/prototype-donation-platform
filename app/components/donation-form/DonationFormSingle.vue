@@ -4,23 +4,23 @@ import { Button } from '@/components/ui/button'
 import AmountSelector from '~/components/donation-form/common/AmountSelector.vue'
 import CartProductLine from '~/components/donation-form/cart/CartProductLine.vue'
 import NextButton from '~/components/donation-form/common/NextButton.vue'
-import BonusItemsSection from '~/components/donation-form/common/BonusItemsSection.vue'
+import RewardsSection from '~/components/donation-form/common/RewardsSection.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
 import TributeCard from '~/components/donation-form/tribute/TributeCard.vue'
 import TributeModal from '~/components/donation-form/tribute/TributeModal.vue'
 import ProductSelectModal from '~/components/donation-form/product/ProductSelectModal.vue'
 import type { Product, TributeData, FormConfig } from '@/lib/common/types'
 
-const { selectedBonusItems, toggleBonusItem } = useCart()
+const { selectedRewards, toggleReward } = useCart()
 
 interface Props {
   frequency: 'once' | 'monthly' | 'yearly'
   frequencyLabel: string
   currency: string
   donationAmount: number
-  selectedAdoption: Product | null
+  selectedProduct: Product | null
   tributeData: TributeData | undefined
-  bonusItems: Product[]
+  rewards: Product[]
   products: Product[]
   availableAmounts: number[]
   minPrice: number
@@ -33,8 +33,8 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:donationAmount': [value: number]
-  'adoption-select': [product: Product]
-  'remove-adoption': []
+  'product-select': [product: Product]
+  'remove-product': []
   'tribute-save': [tributeData: TributeData | undefined]
   'remove-tribute': []
   next: []
@@ -42,14 +42,14 @@ const emit = defineEmits<{
 }>()
 
 // Refs
-const adoptionModalRef = ref<InstanceType<typeof ProductSelectModal> | null>(null)
+const productModalRef = ref<InstanceType<typeof ProductSelectModal> | null>(null)
 const tributeModalRef = ref<InstanceType<typeof TributeModal> | null>(null)
 
 // Computed
-const adoptionButtonText = computed(() =>
+const productButtonText = computed(() =>
   props.frequency === 'once'
-    ? props.formConfig.features.adoption.config.ui.buttonTextOnce
-    : props.formConfig.features.adoption.config.ui.buttonText
+    ? props.formConfig.features.productSelector.config.ui.buttonTextOnce
+    : props.formConfig.features.productSelector.config.ui.buttonText
 )
 
 const showTributeSection = computed(() => props.frequency !== 'once')
@@ -64,21 +64,23 @@ const oneTimeTotal = computed(() => (props.frequency === 'once' ? props.donation
 const monthlyTotal = computed(() => (props.frequency === 'monthly' ? props.donationAmount : 0))
 const yearlyTotal = computed(() => (props.frequency === 'yearly' ? props.donationAmount : 0))
 
-const adoptionProducts = computed(() => {
-  return props.products.filter((p) => !p.isBonusItem && p.frequency === props.frequency)
+const selectorProducts = computed(() => {
+  return props.products.filter((p) => !p.isReward && p.frequency === props.frequency)
 })
 
-const adoptionModalTitle = computed(() => props.formConfig.features.adoption.config.ui.modalTitle)
+const productModalTitle = computed(
+  () => props.formConfig.features.productSelector.config.ui.modalTitle
+)
 
-const adoptionModalDescription = computed(() =>
-  props.formConfig.features.adoption.config.ui.modalDescriptionTemplate.replace(
+const productModalDescription = computed(() =>
+  props.formConfig.features.productSelector.config.ui.modalDescriptionTemplate.replace(
     '{frequency}',
     props.frequency
   )
 )
 
-const adoptionNoProductsMessage = computed(() =>
-  props.formConfig.features.adoption.config.ui.noProductsTemplate.replace(
+const productNoProductsMessage = computed(() =>
+  props.formConfig.features.productSelector.config.ui.noProductsTemplate.replace(
     '{frequency}',
     props.frequency
   )
@@ -93,17 +95,17 @@ const handleSwitchToTab = (tab: 'monthly' | 'yearly') => {
   emit('switch-to-tab', tab)
 }
 
-const handleEditAdoption = () => {
+const handleEditProduct = () => {
   // If on "once" tab and button text mentions "Monthly", switch to monthly tab first
-  if (props.frequency === 'once' && adoptionButtonText.value.includes('Monthly')) {
+  if (props.frequency === 'once' && productButtonText.value.includes('Monthly')) {
     emit('switch-to-tab', 'monthly', true)
   } else {
-    adoptionModalRef.value?.open()
+    productModalRef.value?.open()
   }
 }
 
-const handleAdoptionSelect = (product: Product) => {
-  emit('adoption-select', product)
+const handleProductSelect = (product: Product) => {
+  emit('product-select', product)
 }
 
 const handleOpenTributeModal = () => {
@@ -114,12 +116,12 @@ const handleTributeSave = (data: TributeData | undefined) => {
   emit('tribute-save', data)
 }
 
-const openAdoptionModal = () => {
-  adoptionModalRef.value?.open()
+const openProductModal = () => {
+  productModalRef.value?.open()
 }
 
 defineExpose({
-  openAdoptionModal
+  openProductModal
 })
 </script>
 
@@ -137,22 +139,22 @@ defineExpose({
       @update:model-value="handleAmountUpdate"
     />
 
-    <!-- Adopt an Orangutan - Show selected adoption or button -->
+    <!-- Product Selector - Show selected product or button -->
     <CartProductLine
-      v-if="selectedAdoption"
-      :item="selectedAdoption"
+      v-if="selectedProduct"
+      :item="selectedProduct"
       :currency="currency"
       :price="donationAmount"
-      @edit="handleEditAdoption"
-      @remove="emit('remove-adoption')"
+      @edit="handleEditProduct"
+      @remove="emit('remove-product')"
     />
     <Button
       v-else
       variant="outline"
       class="w-full h-12 text-sm border-2 border-primary/50 hover:border-primary hover:bg-primary/5 font-bold"
-      @click="handleEditAdoption"
+      @click="handleEditProduct"
     >
-      {{ adoptionButtonText }}
+      {{ productButtonText }}
     </Button>
 
     <!-- Gift or In Memory (only for recurring donations) -->
@@ -171,18 +173,18 @@ defineExpose({
       💝 Gift or In Memory of (with eCard)
     </Button>
 
-    <!-- Bonus Items Section -->
-    <BonusItemsSection
-      :bonus-items="bonusItems"
-      :selected-bonus-items="selectedBonusItems"
+    <!-- Rewards Section -->
+    <RewardsSection
+      :rewards="rewards"
+      :selected-rewards="selectedRewards"
       :one-time-total="oneTimeTotal"
       :monthly-total="monthlyTotal"
       :yearly-total="yearlyTotal"
       :enabled-frequencies="enabledFrequencies"
       :currency="currency"
       :selected-frequency="frequency === 'yearly' ? 'monthly' : frequency"
-      :bonus-config="formConfig.features.bonusItems"
-      @toggle="toggleBonusItem"
+      :rewards-config="formConfig.features.rewards"
+      @toggle="toggleReward"
       @switch-to-tab="handleSwitchToTab"
     />
 
@@ -190,10 +192,10 @@ defineExpose({
     <ShippingNotice
       :selected-frequency="frequency === 'yearly' ? 'monthly' : frequency"
       :products="products"
-      :selected-bonus-items="selectedBonusItems"
+      :selected-rewards="selectedRewards"
       :multiple-cart="[]"
       :donation-amounts="{ once: oneTimeTotal, monthly: monthlyTotal, yearly: yearlyTotal }"
-      :shipping-config="formConfig.features.shipping"
+      :shipping-notice-config="formConfig.features.shippingNotice"
     />
 
     <!-- Next Button -->
@@ -201,13 +203,13 @@ defineExpose({
 
     <!-- Modals -->
     <ProductSelectModal
-      ref="adoptionModalRef"
+      ref="productModalRef"
       :currency="currency"
-      :products="adoptionProducts"
-      :title="adoptionModalTitle"
-      :description="adoptionModalDescription"
-      :no-products-message="adoptionNoProductsMessage"
-      @select="handleAdoptionSelect"
+      :products="selectorProducts"
+      :title="productModalTitle"
+      :description="productModalDescription"
+      :no-products-message="productNoProductsMessage"
+      @select="handleProductSelect"
     />
 
     <TributeModal ref="tributeModalRef" @save="handleTributeSave" />

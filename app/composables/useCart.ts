@@ -7,7 +7,7 @@ export type { Product, CartItem, TributeData }
 const onceCart = ref<CartItem[]>([])
 const monthlyCart = ref<CartItem[]>([])
 const multipleCart = ref<CartItem[]>([])
-const selectedBonusItems = ref<Set<string>>(new Set())
+const selectedRewards = ref<Set<string>>(new Set())
 
 export const useCart = () => {
   const getCartByFrequency = (frequency: 'once' | 'monthly' | 'multiple') => {
@@ -138,11 +138,11 @@ export const useCart = () => {
     }
   }
 
-  const toggleBonusItem = (itemId: string) => {
-    if (selectedBonusItems.value.has(itemId)) {
-      selectedBonusItems.value.delete(itemId)
+  const toggleReward = (itemId: string) => {
+    if (selectedRewards.value.has(itemId)) {
+      selectedRewards.value.delete(itemId)
     } else {
-      selectedBonusItems.value.add(itemId)
+      selectedRewards.value.add(itemId)
     }
   }
 
@@ -165,7 +165,7 @@ export const useCart = () => {
     onceCart,
     monthlyCart,
     multipleCart,
-    selectedBonusItems,
+    selectedRewards,
 
     // Computed
     recurringTotal,
@@ -182,7 +182,7 @@ export const useCart = () => {
     updateCartItemPrice,
     updateCartItemQuantity,
     updateCartItemTribute,
-    toggleBonusItem,
+    toggleReward,
     clearCart,
     clearRecurringItems,
     canAddRecurringFrequency

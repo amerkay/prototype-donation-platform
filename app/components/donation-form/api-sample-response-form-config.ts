@@ -26,17 +26,17 @@ export const formConfig = {
         label: 'Monthly',
         presetAmounts: [5, 10, 25, 50, 75, 100],
         customAmount: { min: 3, max: 500 }
-      },
-      {
-        value: 'yearly',
-        label: 'Yearly',
-        presetAmounts: [50, 100, 250, 500, 1000],
-        customAmount: { min: 25, max: 2000 }
       }
+      // {
+      //   value: 'yearly',
+      //   label: 'Yearly',
+      //   presetAmounts: [50, 100, 250, 500, 1000],
+      //   customAmount: { min: 25, max: 2000 }
+      // }
     ] as const
   },
   features: {
-    multipleItems: {
+    multipleProducts: {
       enabled: true,
       initialDisplay: 3,
       ui: {
@@ -46,7 +46,7 @@ export const formConfig = {
         emptyStateTemplate: 'No items found matching "{query}"'
       }
     },
-    adoption: {
+    productSelector: {
       enabled: true,
       config: {
         icon: '🦧',
@@ -61,7 +61,7 @@ export const formConfig = {
         }
       }
     },
-    bonusItems: {
+    rewards: {
       enabled: true,
       ui: {
         labels: {
@@ -77,7 +77,7 @@ export const formConfig = {
         }
       }
     },
-    shipping: {
+    shippingNotice: {
       showNotice: true,
       noticeText: '📦 Shipping address on next page'
     }

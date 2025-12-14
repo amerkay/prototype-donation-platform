@@ -12,7 +12,7 @@ interface Props {
   searchQuery: string
   showAllProducts: boolean
   initialProductsDisplayed: number
-  config: FormConfig['features']['multipleItems']['ui']
+  config: FormConfig['features']['multipleProducts']['ui']
 }
 
 const props = defineProps<Props>()
