@@ -3,159 +3,30 @@ import { ref, computed, watch } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import DonationFormSingle from './DonationFormSingle.vue'
 import DonationFormMultiple from './DonationFormMultiple.vue'
-import type { Product, TributeData } from '@/lib/common/types'
+import type { TributeData } from '@/lib/common/types'
+import { formConfig } from './api-sample-response-form-config'
+import { products } from './api-sample-response-products'
 
 const { convertPrice } = useCurrency()
 const { multipleCart, addToCart } = useCart()
 
-// Currency configuration - will come from API
-const CURRENCIES = [
-  { value: 'USD', label: 'USD ($)' },
-  { value: 'EUR', label: 'EUR (€)' },
-  { value: 'GBP', label: 'GBP (£)' }
-] as const
-
-// Frequency configuration - will come from API
-const BASE_FREQUENCIES = [
-  { value: 'once', label: 'One-time' },
-  { value: 'monthly', label: 'Monthly' }
-  // { value: 'yearly', label: 'Yearly' }
-] as const
-
-// Amounts in base currency (GBP) - will be converted to selected currency - will come from API
-const AMOUNTS_IN_BASE_CURRENCY = {
-  once: {
-    amounts: [10, 25, 50, 100, 250, 500],
-    minPrice: 5,
-    maxPrice: 1000
-  },
-  monthly: {
-    amounts: [5, 10, 25, 50, 75, 100],
-    minPrice: 3,
-    maxPrice: 500
-  },
-  yearly: {
-    amounts: [50, 100, 250, 500, 1000],
-    minPrice: 25,
-    maxPrice: 2000
-  }
-} as const
-
-// Feature flags - will come from API
-const ALLOW_MULTIPLE_ITEMS = true
-const INITIAL_PRODUCTS_DISPLAYED = 3
-
-// Configuration - These will come from API
+// Extract config values
+const CURRENCIES = formConfig.currencies
+const BASE_FREQUENCIES = formConfig.frequencies
+const AMOUNTS_IN_BASE_CURRENCY = formConfig.amountsInBaseCurrency
+const ALLOW_MULTIPLE_ITEMS = formConfig.allowMultipleItems
+const INITIAL_PRODUCTS_DISPLAYED = formConfig.initialProductsDisplayed
 const config = {
-  formTitle: 'Make a Donation',
-  formSubtitle: 'Choose your donation amount',
-  adoptionFeature: {
-    enabled: true,
-    icon: '🦧',
-    singularName: 'Orangutan',
-    pluralName: 'Orangutans',
-    actionVerb: 'Adopt',
-    actionNoun: 'adoption',
-    buttonText: '🦧 Adopt an Orangutan',
-    buttonTextOnce: '🦧 Adopt an Orangutan (Monthly)',
-    modalTitle: '🦧 Adopt an Orangutan',
-    modalDescription: 'Choose an orangutan to support with a {frequency} donation',
-    noProductsMessage: 'No {frequency} adoption products available'
-  },
-  bonusItemsSection: {
-    freeGiftsLabel: '🎁 Free gifts available:',
-    freeWithDonationLabel: 'FREE with your donation!',
-    oneTimeLabel: 'one-time',
-    monthlyLabel: 'monthly',
-    yearlyLabel: 'yearly',
-    addToUnlockSingleTemplate: 'Add {amount} {frequency} to unlock!',
-    addToUnlockPairTemplate: 'Add {a} or {b} to unlock!',
-    addToUnlockListTemplate: 'Add {list}, or {last} to unlock!',
-    switchToTemplate: 'Switch to {frequency}'
-  },
-  shippingNotice: {
-    message: '📦 Shipping address on next page'
-  },
-  multipleItemsSection: {
-    title: 'Add Items to Your Donation',
-    searchPlaceholder: 'Search items...',
-    showMoreButton: 'Show {count} More Items',
-    emptyStateMessage: 'No items found matching "{query}"'
-  }
+  formTitle: formConfig.formTitle,
+  formSubtitle: formConfig.formSubtitle,
+  adoptionFeature: formConfig.adoptionFeature,
+  bonusItemsSection: formConfig.bonusItemsSection,
+  shippingNotice: formConfig.shippingNotice,
+  multipleItemsSection: formConfig.multipleItemsSection
 }
 
-const products: Product[] = [
-  {
-    id: 'adopt-bumi',
-    name: 'Adopt Bumi the Orangutan',
-    description: "Monthly sponsorship to support Bumi's care and rehabilitation",
-    minPrice: 3,
-    default: 10,
-    frequency: 'monthly',
-    image: '🦧',
-    thumbnail: '🦧',
-    icon: '🦧'
-  },
-  {
-    id: 'adopt-maya',
-    name: 'Adopt Maya the Orangutan',
-    description: "Monthly sponsorship for Maya's ongoing medical care",
-    minPrice: 3,
-    default: 10,
-    frequency: 'monthly',
-    image: '🦧',
-    thumbnail: '🦧',
-    icon: '🦧'
-  },
-  {
-    id: 'plush-toy',
-    name: 'Plush Baby Orangutan Toy',
-    description: 'Adorable plush toy to support our mission',
-    frequency: 'once',
-    image: '🧸',
-    thumbnail: '🧸',
-    icon: '🧸',
-    isBonusItem: true,
-    isShippingRequired: true,
-    bonusThreshold: { once: 50, monthly: 25, yearly: 200 }
-  },
-  {
-    id: 'adopt-kit',
-    name: 'Adoption Welcome Kit',
-    description: 'Certificate, photo, and updates about your adopted orangutan',
-    frequency: 'once',
-    image: '📦',
-    thumbnail: '📦',
-    icon: '📦',
-    isBonusItem: true,
-    isShippingRequired: true,
-    bonusThreshold: { monthly: 10, yearly: 75 }
-  },
-  {
-    id: 'tree-planting',
-    name: 'Plant 10 Trees',
-    description: 'Help restore orangutan habitat with native tree planting',
-    price: 30,
-    frequency: 'once',
-    image: '🌳',
-    thumbnail: '🌳',
-    icon: '🌳'
-  },
-  {
-    id: 'education-program',
-    name: 'Support Education Program',
-    description: 'Monthly contribution to local conservation education',
-    minPrice: 5,
-    default: 25,
-    frequency: 'monthly',
-    image: '📚',
-    thumbnail: '📚',
-    icon: '📚'
-  }
-]
-
 // State
-const selectedCurrency = ref('GBP')
+const selectedCurrency = ref(formConfig.defaultCurrency)
 const selectedFrequency = ref('once')
 const donationAmounts = ref({ once: 0, monthly: 0, yearly: 0 })
 const selectedAdoptions = ref<{ monthly: Product | null; yearly: Product | null }>({
