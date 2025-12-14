@@ -2,13 +2,12 @@
 import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import AmountSelector from '~/components/donation-form/common/AmountSelector.vue'
-import CartProductLine from '~/components/donation-form/cart/CartProductLine.vue'
 import NextButton from '~/components/donation-form/common/NextButton.vue'
 import RewardsSection from '~/components/donation-form/common/RewardsSection.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
 import TributeCard from '~/components/donation-form/tribute/TributeCard.vue'
 import TributeModal from '~/components/donation-form/tribute/TributeModal.vue'
-import ProductSelectModal from '~/components/donation-form/product/ProductSelectModal.vue'
+import ProductSelectorButton from '~/components/donation-form/product-selector/ProductSelectorButton.vue'
 import type { Product, TributeData, FormConfig } from '@/lib/common/types'
 
 const { selectedRewards, toggleReward } = useCart()
@@ -42,16 +41,10 @@ const emit = defineEmits<{
 }>()
 
 // Refs
-const productModalRef = ref<InstanceType<typeof ProductSelectModal> | null>(null)
+const productSelectorRef = ref<InstanceType<typeof ProductSelectorButton> | null>(null)
 const tributeModalRef = ref<InstanceType<typeof TributeModal> | null>(null)
 
 // Computed
-const productButtonText = computed(() =>
-  props.frequency === 'once'
-    ? props.formConfig.features.productSelector.config.ui.buttonTextOnce
-    : props.formConfig.features.productSelector.config.ui.buttonText
-)
-
 const showTributeSection = computed(() => props.frequency !== 'once')
 
 const hasTribute = computed(
@@ -64,28 +57,6 @@ const oneTimeTotal = computed(() => (props.frequency === 'once' ? props.donation
 const monthlyTotal = computed(() => (props.frequency === 'monthly' ? props.donationAmount : 0))
 const yearlyTotal = computed(() => (props.frequency === 'yearly' ? props.donationAmount : 0))
 
-const selectorProducts = computed(() => {
-  return props.products.filter((p) => !p.isReward && p.frequency === props.frequency)
-})
-
-const productModalTitle = computed(
-  () => props.formConfig.features.productSelector.config.ui.modalTitle
-)
-
-const productModalDescription = computed(() =>
-  props.formConfig.features.productSelector.config.ui.modalDescriptionTemplate.replace(
-    '{frequency}',
-    props.frequency
-  )
-)
-
-const productNoProductsMessage = computed(() =>
-  props.formConfig.features.productSelector.config.ui.noProductsTemplate.replace(
-    '{frequency}',
-    props.frequency
-  )
-)
-
 // Methods
 const handleAmountUpdate = (value: number) => {
   emit('update:donationAmount', value)
@@ -93,19 +64,6 @@ const handleAmountUpdate = (value: number) => {
 
 const handleSwitchToTab = (tab: 'monthly' | 'yearly') => {
   emit('switch-to-tab', tab)
-}
-
-const handleEditProduct = () => {
-  // If on "once" tab and button text mentions "Monthly", switch to monthly tab first
-  if (props.frequency === 'once' && productButtonText.value.includes('Monthly')) {
-    emit('switch-to-tab', 'monthly', true)
-  } else {
-    productModalRef.value?.open()
-  }
-}
-
-const handleProductSelect = (product: Product) => {
-  emit('product-select', product)
 }
 
 const handleOpenTributeModal = () => {
@@ -117,7 +75,7 @@ const handleTributeSave = (data: TributeData | undefined) => {
 }
 
 const openProductModal = () => {
-  productModalRef.value?.open()
+  productSelectorRef.value?.openProductModal()
 }
 
 defineExpose({
@@ -139,24 +97,20 @@ defineExpose({
       @update:model-value="handleAmountUpdate"
     />
 
-    <!-- Product Selector - Show selected product or button -->
-    <CartProductLine
-      v-if="selectedProduct"
-      :item="selectedProduct"
+    <!-- Product Selector -->
+    <ProductSelectorButton
+      ref="productSelectorRef"
+      :frequency="frequency"
       :currency="currency"
       :price="donationAmount"
+      :selected-product="selectedProduct"
+      :products="products"
+      :selector-config="formConfig.features.productSelector"
       :tribute-config="formConfig.features.tribute"
-      @edit="handleEditProduct"
-      @remove="emit('remove-product')"
+      @product-select="emit('product-select', $event)"
+      @remove-product="emit('remove-product')"
+      @switch-to-tab="emit('switch-to-tab', $event)"
     />
-    <Button
-      v-else
-      variant="outline"
-      class="w-full h-12 text-sm border-2 border-primary/50 hover:border-primary hover:bg-primary/5 font-bold"
-      @click="handleEditProduct"
-    >
-      {{ productButtonText }}
-    </Button>
 
     <!-- Gift or In Memory (only for recurring donations) -->
     <TributeCard
@@ -204,16 +158,6 @@ defineExpose({
     <NextButton :disabled="!isFormValid" @click="emit('next')" />
 
     <!-- Modals -->
-    <ProductSelectModal
-      ref="productModalRef"
-      :currency="currency"
-      :products="selectorProducts"
-      :title="productModalTitle"
-      :description="productModalDescription"
-      :no-products-message="productNoProductsMessage"
-      @select="handleProductSelect"
-    />
-
     <TributeModal
       ref="tributeModalRef"
       :config="formConfig.features.tribute"

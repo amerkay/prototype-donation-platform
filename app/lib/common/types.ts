@@ -73,7 +73,7 @@ export interface FormConfig {
       enabled: boolean
       initialDisplay: number
       ui: {
-        label: string
+        tabLabel: string
         title: string
         searchPlaceholder: string
         showMoreButtonTemplate: string

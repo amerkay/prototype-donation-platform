@@ -40,7 +40,7 @@ export const formConfig = {
       enabled: true,
       initialDisplay: 3,
       ui: {
-        label: 'Multiple ✨',
+        tabLabel: 'Multiple ✨',
         title: 'Add Items to Your Donation',
         searchPlaceholder: 'Search items...',
         showMoreButtonTemplate: 'Show {count} More Items',
@@ -48,7 +48,7 @@ export const formConfig = {
       }
     },
     productSelector: {
-      enabled: true,
+      enabled: false,
       config: {
         icon: '🦧',
         entity: { singular: 'Orangutan', plural: 'Orangutans' },
