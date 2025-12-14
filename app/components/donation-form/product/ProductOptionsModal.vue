@@ -67,6 +67,8 @@ const tributeFormKey = ref(0) // Key to force remount of tribute form
 const currencySymbol = computed(() => getCurrencySymbol(props.currency))
 
 const isTributeFormValid = computed(() => {
+  // If tribute feature is disabled, always valid
+  if (!props.tributeConfig?.enabled) return true
   // If not recurring, tribute form doesn't apply
   if (!isRecurring.value) return true
   // If no tribute form ref yet, consider valid (initial state)
@@ -215,7 +217,10 @@ defineExpose({
         />
 
         <!-- Tribute Form (only for recurring products) -->
-        <div v-if="isRecurring && props.tributeConfig" class="pt-4 border-t">
+        <div
+          v-if="isRecurring && props.tributeConfig?.enabled"
+          class="pt-4 border-t"
+        >
           <ProductTributeForm
             :key="tributeFormKey"
             ref="tributeFormRef"

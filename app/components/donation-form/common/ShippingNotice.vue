@@ -62,7 +62,10 @@ const requiresShipping = computed(() => {
 
 <template>
   <Transition name="shipping-notice">
-    <div v-if="requiresShipping" class="rounded-lg bg-muted p-3 text-sm text-muted-foreground">
+    <div
+      v-if="shippingNoticeConfig.showNotice && requiresShipping"
+      class="rounded-lg bg-muted p-3 text-sm text-muted-foreground"
+    >
       {{ shippingNoticeConfig.noticeText }}
     </div>
   </Transition>

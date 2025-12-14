@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import Cart from '@/components/donation-form/cart/Cart.vue'
 import NextButton from '~/components/donation-form/common/NextButton.vue'
-import RewardsSection from '~/components/donation-form/common/RewardsSection.vue'
+import RewardsSection from '~/components/donation-form/rewards/RewardsSection.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
 import ProductOptionsModal from '~/components/donation-form/product/ProductOptionsModal.vue'
 import type { Product, CartItem, TributeData, FormConfig } from '@/lib/common/types'

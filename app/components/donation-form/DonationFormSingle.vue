@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import AmountSelector from '~/components/donation-form/common/AmountSelector.vue'
 import NextButton from '~/components/donation-form/common/NextButton.vue'
-import RewardsSection from '~/components/donation-form/common/RewardsSection.vue'
+import RewardsSection from '~/components/donation-form/rewards/RewardsSection.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
 import TributeCard from '~/components/donation-form/tribute/TributeCard.vue'
 import TributeModal from '~/components/donation-form/tribute/TributeModal.vue'
@@ -113,21 +113,18 @@ defineExpose({
     />
 
     <!-- Gift or In Memory (only for recurring donations) -->
-    <TributeCard
-      v-if="showTributeSection && hasTribute"
-      :tribute="tributeData!"
-      :config="formConfig.features.tribute"
-      @edit="handleOpenTributeModal"
-      @remove="emit('remove-tribute')"
-    />
-    <Button
-      v-else-if="showTributeSection"
-      variant="outline"
-      class="w-full h-10 text-sm"
-      @click="handleOpenTributeModal"
-    >
-      💝 Gift or In Memory of (with eCard)
-    </Button>
+    <template v-if="formConfig.features.tribute.enabled && showTributeSection">
+      <TributeCard
+        v-if="hasTribute"
+        :tribute="tributeData!"
+        :config="formConfig.features.tribute"
+        @edit="handleOpenTributeModal"
+        @remove="emit('remove-tribute')"
+      />
+      <Button v-else variant="outline" class="w-full h-10 text-sm" @click="handleOpenTributeModal">
+        💝 Gift or In Memory of (with eCard)
+      </Button>
+    </template>
 
     <!-- Rewards Section -->
     <RewardsSection

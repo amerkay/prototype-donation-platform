@@ -48,7 +48,7 @@ export const formConfig = {
       }
     },
     productSelector: {
-      enabled: false,
+      enabled: true,
       config: {
         icon: '🦧',
         entity: { singular: 'Orangutan', plural: 'Orangutans' },
@@ -79,7 +79,7 @@ export const formConfig = {
       }
     },
     shippingNotice: {
-      showNotice: true,
+      showNotice: false,
       noticeText: '📦 Shipping address on next page'
     },
     tribute: {

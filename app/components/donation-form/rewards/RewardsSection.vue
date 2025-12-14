@@ -169,7 +169,7 @@ watch(
 </script>
 
 <template>
-  <div v-if="hasAnyRewards" class="space-y-4">
+  <div v-if="rewardsConfig.enabled && hasAnyRewards" class="space-y-4">
     <div class="border-b"></div>
 
     <!-- Eligible Rewards (Free Gifts) -->
