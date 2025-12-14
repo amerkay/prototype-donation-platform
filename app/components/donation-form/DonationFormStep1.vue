@@ -488,7 +488,9 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
         const price =
           donationAmounts.value[oldFreq] || previousAdoption.default || previousAdoption.price || 0
         if (price > 0) {
-          addToCart(previousAdoption, price, 'multiple')
+          // Also copy tribute data if it exists
+          const previousTribute = tributeData.value[oldFreq]
+          addToCart(previousAdoption, price, 'multiple', undefined, previousTribute)
         }
       }
     }

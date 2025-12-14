@@ -165,7 +165,6 @@ const relationships = [
 ]
 
 // Refs for scroll targets
-const honoreeFormRef = ref<HTMLElement | null>(null)
 const eCardFormRef = ref<HTMLElement | null>(null)
 const eCardRecipientFormRef = ref<HTMLElement | null>(null)
 
