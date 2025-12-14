@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Product } from '@/lib/common/types'
-import ProductCard from '@/components/donation-form/cart/ProductCard.vue'
+import ProductCard from '@/components/donation-form/product/ProductCard.vue'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty'

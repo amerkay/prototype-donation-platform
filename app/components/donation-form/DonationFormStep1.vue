@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import ProductOptionsModal from '~/components/donation-form/cart/ProductOptionsModal.vue'
+import ProductOptionsModal from '~/components/donation-form/product/ProductOptionsModal.vue'
 import NextButton from '~/components/donation-form/common/NextButton.vue'
 import BonusItemsSection from '~/components/donation-form/common/BonusItemsSection.vue'
 import AmountSelector from '~/components/donation-form/common/AmountSelector.vue'
@@ -14,7 +14,7 @@ import ProductTributeForm from '~/components/donation-form/tribute/ProductTribut
 import TributeCard from '~/components/donation-form/tribute/TributeCard.vue'
 import type { Product, CartItem, TributeData } from '@/lib/common/types'
 import { getCartItemKey, parseCartItemKey } from '@/lib/common/cart-utils'
-import ProductCard from './cart/ProductCard.vue'
+import ProductCard from './product/ProductCard.vue'
 
 const { convertPrice } = useCurrency()
 
