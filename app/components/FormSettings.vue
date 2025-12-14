@@ -20,7 +20,7 @@ function handleConfigUpdate(value: FormConfig) {
 </script>
 
 <template>
-  <div class="bg-muted/50 rounded-xl p-6">
-    <AdminDonationFormConfig :config="formConfig" @update:config="handleConfigUpdate" />
-  </div>
+  <!-- <div class="bg-muted/50 rounded-xl p-6"> -->
+  <AdminDonationFormConfig :config="formConfig" @update:config="handleConfigUpdate" />
+  <!-- </div> -->
 </template>
