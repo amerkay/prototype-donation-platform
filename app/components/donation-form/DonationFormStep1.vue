@@ -3,27 +3,42 @@ import { ref, computed, watch } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import DonationFormSingle from './DonationFormSingle.vue'
 import DonationFormMultiple from './DonationFormMultiple.vue'
-import type { TributeData } from '@/lib/common/types'
-import { formConfig } from './api-sample-response-form-config'
+import type { TributeData, FormConfig } from '@/lib/common/types'
+import { formConfig as defaultConfig } from './api-sample-response-form-config'
 import { products } from './api-sample-response-products'
+
+interface Props {
+  config?: FormConfig
+}
+
+const props = defineProps<Props>()
+
+// Use provided config or fall back to default
+const formConfig = computed(() => props.config ?? defaultConfig)
 
 const { convertPrice } = useCurrency()
 const { multipleCart, addToCart } = useCart()
 
-// Extract config values
-const CURRENCIES = formConfig.localization.supportedCurrencies.map((c) => ({
-  value: c.code,
-  label: c.label
-}))
-const BASE_FREQUENCIES = formConfig.pricing.frequencies.map((f) => ({
-  value: f.value,
-  label: f.label
-}))
-const ALLOW_MULTIPLE_ITEMS = formConfig.features.multipleProducts.enabled
-const INITIAL_PRODUCTS_DISPLAYED = formConfig.features.multipleProducts.initialDisplay
+// Extract config values - now reactive to config changes
+const CURRENCIES = computed(() =>
+  formConfig.value.localization.supportedCurrencies.map((c) => ({
+    value: c.code,
+    label: c.label
+  }))
+)
+const BASE_FREQUENCIES = computed(() =>
+  formConfig.value.pricing.frequencies.map((f) => ({
+    value: f.value,
+    label: f.label
+  }))
+)
+const ALLOW_MULTIPLE_ITEMS = computed(() => formConfig.value.features.multipleProducts.enabled)
+const INITIAL_PRODUCTS_DISPLAYED = computed(
+  () => formConfig.value.features.multipleProducts.initialDisplay
+)
 
 // State
-const selectedCurrency = ref(formConfig.localization.defaultCurrency)
+const selectedCurrency = ref(formConfig.value.localization.defaultCurrency)
 const selectedFrequency = ref('once')
 const donationAmounts = ref({ once: 0, monthly: 0, yearly: 0 })
 const selectedProducts = ref<{ monthly: Product | null; yearly: Product | null }>({
@@ -48,33 +63,37 @@ const setSingleFormRef = (freq: string) => (el: unknown) => {
 
 // Computed
 const frequencies = computed(() => {
-  const freqs = [...BASE_FREQUENCIES] as Array<{ value: string; label: string }>
-  if (ALLOW_MULTIPLE_ITEMS)
-    freqs.push({ value: 'multiple', label: formConfig.features.multipleProducts.ui.tabLabel })
+  const freqs = [...BASE_FREQUENCIES.value] as Array<{ value: string; label: string }>
+  if (ALLOW_MULTIPLE_ITEMS.value) {
+    freqs.push({ value: 'multiple', label: formConfig.value.features.multipleProducts.ui.tabLabel })
+  }
   return freqs
 })
 
-const enabledFrequencies = computed(
-  () => BASE_FREQUENCIES.map((f) => f.value) as Array<'once' | 'monthly' | 'yearly'>
+const allFrequencies = computed(
+  () => BASE_FREQUENCIES.value.map((f) => f.value) as Array<'once' | 'monthly' | 'yearly'>
 )
+
+// Alias for backward compatibility
+const enabledFrequencies = allFrequencies
 
 const availableAmounts = computed(() => {
   if (selectedFrequency.value === 'multiple') return []
-  const cfg = formConfig.pricing.frequencies.find((f) => f.value === selectedFrequency.value)
+  const cfg = formConfig.value.pricing.frequencies.find((f) => f.value === selectedFrequency.value)
   if (!cfg) return []
   return cfg.presetAmounts.map((amt) => convertPrice(amt, selectedCurrency.value))
 })
 
 const sliderMinPrice = computed(() => {
   if (selectedFrequency.value === 'multiple') return 0
-  const cfg = formConfig.pricing.frequencies.find((f) => f.value === selectedFrequency.value)
+  const cfg = formConfig.value.pricing.frequencies.find((f) => f.value === selectedFrequency.value)
   if (!cfg) return 0
   return convertPrice(cfg.customAmount.min, selectedCurrency.value)
 })
 
 const sliderMaxPrice = computed(() => {
   if (selectedFrequency.value === 'multiple') return 0
-  const cfg = formConfig.pricing.frequencies.find((f) => f.value === selectedFrequency.value)
+  const cfg = formConfig.value.pricing.frequencies.find((f) => f.value === selectedFrequency.value)
   if (!cfg) return 0
   return convertPrice(cfg.customAmount.max, selectedCurrency.value)
 })

@@ -217,10 +217,7 @@ defineExpose({
         />
 
         <!-- Tribute Form (only for recurring products) -->
-        <div
-          v-if="isRecurring && props.tributeConfig?.enabled"
-          class="pt-4 border-t"
-        >
+        <div v-if="isRecurring && props.tributeConfig?.enabled" class="pt-4 border-t">
           <ProductTributeForm
             :key="tributeFormKey"
             ref="tributeFormRef"

@@ -1,6 +1,7 @@
 <script lang="ts"></script>
 
 <script setup lang="ts">
+import { ref, provide } from 'vue'
 import AppSidebar from '@/components/AppSidebar.vue'
 import FormSettings from '@/components/FormSettings.vue'
 import FormPreview from '@/components/FormPreview.vue'
@@ -14,6 +15,14 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { formConfig as sampleConfig } from '@/components/donation-form/api-sample-response-form-config'
+import type { FormConfig } from '@/lib/common/types'
+
+// Create reactive config that both FormSettings and FormPreview will share
+const formConfig = ref<FormConfig>(structuredClone(sampleConfig))
+
+// Provide config to all child components
+provide('formConfig', formConfig)
 </script>
 
 <template>
@@ -43,7 +52,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/s
       </header>
       <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
         <div class="space-y-4 lg:flex lg:space-x-4">
-          <div class="grow">
+          <div class="grow max-w-[45vw]">
             <p class="text-muted-foreground text-sm font-semibold mb-2">Form Settings</p>
             <FormSettings />
           </div>

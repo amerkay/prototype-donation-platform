@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import BaseDialogOrDrawer from '~/components/donation-form/common/BaseDialogOrDrawer.vue'
-import ProductTributeForm from '~/components/donation-form/tribute/ProductTributeForm.vue'
+import ProductTributeFormGenerated from '~/components/donation-form/tribute/ProductTributeFormGenerated.vue'
 import type { TributeData, FormConfig } from '@/lib/common/types'
 
 interface Props {
@@ -16,7 +16,7 @@ const emit = defineEmits<{
 }>()
 
 const isOpen = ref(false)
-const tributeFormRef = ref<InstanceType<typeof ProductTributeForm> | null>(null)
+const tributeFormRef = ref<InstanceType<typeof ProductTributeFormGenerated> | null>(null)
 const tempTributeData = ref<TributeData | undefined>(undefined)
 
 const isTributeFormValid = computed(() => {
@@ -53,7 +53,7 @@ defineExpose({
       </p>
     </template>
     <template #content>
-      <ProductTributeForm
+      <ProductTributeFormGenerated
         ref="tributeFormRef"
         v-model="tempTributeData"
         :config="config"
