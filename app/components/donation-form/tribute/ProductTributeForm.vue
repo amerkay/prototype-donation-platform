@@ -325,7 +325,7 @@ defineExpose({
             <Field orientation="horizontal" :data-invalid="!!errors.length">
               <FieldContent>
                 <FieldTitle>No, thank you</FieldTitle>
-                <FieldDescription>Continue without making this a tribute</FieldDescription>
+                <!-- <FieldDescription>Continue without making this a tribute</FieldDescription> -->
               </FieldContent>
               <RadioGroupItem id="tribute-none" value="none" :aria-invalid="!!errors.length" />
             </Field>
@@ -335,7 +335,7 @@ defineExpose({
             <Field orientation="horizontal" :data-invalid="!!errors.length">
               <FieldContent>
                 <FieldTitle>🎁 Gift to someone</FieldTitle>
-                <FieldDescription>Give this donation as a gift to honor someone</FieldDescription>
+                <!-- <FieldDescription>Give this donation as a gift to honor someone</FieldDescription> -->
               </FieldContent>
               <RadioGroupItem id="tribute-gift" value="gift" :aria-invalid="!!errors.length" />
             </Field>
@@ -345,9 +345,9 @@ defineExpose({
             <Field orientation="horizontal" :data-invalid="!!errors.length">
               <FieldContent>
                 <FieldTitle>🕊️ In memory of someone</FieldTitle>
-                <FieldDescription>
+                <!-- <FieldDescription>
                   Dedicate this donation in memory of a loved one
-                </FieldDescription>
+                </FieldDescription> -->
               </FieldContent>
               <RadioGroupItem
                 id="tribute-memorial"
