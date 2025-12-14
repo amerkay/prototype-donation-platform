@@ -73,6 +73,7 @@ export interface FormConfig {
       enabled: boolean
       initialDisplay: number
       ui: {
+        label: string
         title: string
         searchPlaceholder: string
         showMoreButtonTemplate: string
@@ -113,6 +114,90 @@ export interface FormConfig {
     shippingNotice: {
       showNotice: boolean
       noticeText: string
+    }
+    tribute: {
+      enabled: boolean
+      icons: {
+        gift: string
+        memorial: string
+        tribute: string
+      }
+      types: {
+        none: { label: string }
+        gift: { label: string }
+        memorial: { label: string }
+      }
+      form: {
+        tributeTypeSection: {
+          legend: string
+          description: string
+        }
+        honoreeSection: {
+          legendGift: string
+          legendMemorial: string
+          legendDefault: string
+          description: string
+          fields: {
+            firstName: { label: string; placeholder: string }
+            lastName: { label: string; placeholder: string; optional: string }
+            relationship: {
+              label: string
+              placeholder: string
+              optional: string
+              searchPlaceholder: string
+              notFound: string
+            }
+          }
+        }
+        eCardSection: {
+          toggle: { title: string; description: string }
+          recipientSection: {
+            legend: string
+            description: string
+          }
+          sameAsHonoree: {
+            titleTemplate: string
+            description: string
+          }
+          fields: {
+            firstName: { label: string; placeholder: string }
+            lastName: { label: string; placeholder: string; optional: string }
+            email: { label: string; placeholder: string }
+          }
+        }
+      }
+      relationships: ReadonlyArray<{
+        value: string
+        label: string
+      }>
+      validation: {
+        honoreeFirstName: {
+          required: string
+          minLength: string
+        }
+        recipientFirstName: {
+          required: string
+          minLength: string
+        }
+        recipientEmail: {
+          required: string
+          invalid: string
+        }
+      }
+      modal: {
+        title: string
+        subtitle: string
+        saveButton: string
+        cancelButton: string
+      }
+      card: {
+        editButton: string
+        removeButton: string
+      }
+      line: {
+        relationshipTemplate: string
+        eCardTemplate: string
+      }
     }
   }
 }

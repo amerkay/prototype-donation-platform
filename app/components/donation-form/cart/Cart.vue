@@ -19,6 +19,7 @@ interface Props {
   products?: Product[]
   initialProductsDisplayed?: number
   productListConfig?: FormConfig['features']['multipleProducts']['ui']
+  tributeConfig: FormConfig['features']['tribute']
 }
 
 const props = defineProps<Props>()
@@ -103,6 +104,7 @@ defineExpose({
         "
         :item="item"
         :currency="currency"
+        :tribute-config="tributeConfig"
         :is-pulsing="pulseNewItem === getCartItemKey(item.id, item.addedAt)"
         @edit="handleEdit(item)"
         @remove="handleRemove(item)"

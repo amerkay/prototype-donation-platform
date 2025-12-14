@@ -11,6 +11,8 @@ interface Props {
   currency: string
   baseCurrency?: string
   pricingConfig?: FormConfig['pricing']['frequencies']
+  // eslint-disable-next-line vue/require-default-prop
+  tributeConfig?: FormConfig['features']['tribute']
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -213,11 +215,12 @@ defineExpose({
         />
 
         <!-- Tribute Form (only for recurring products) -->
-        <div v-if="isRecurring" class="pt-4 border-t">
+        <div v-if="isRecurring && props.tributeConfig" class="pt-4 border-t">
           <ProductTributeForm
             :key="tributeFormKey"
             ref="tributeFormRef"
             v-model="tribute"
+            :config="props.tributeConfig"
             @submit="handleConfirm"
           />
         </div>

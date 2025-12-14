@@ -40,6 +40,7 @@ export const formConfig = {
       enabled: true,
       initialDisplay: 3,
       ui: {
+        label: 'Multiple ✨',
         title: 'Add Items to Your Donation',
         searchPlaceholder: 'Search items...',
         showMoreButtonTemplate: 'Show {count} More Items',
@@ -80,6 +81,122 @@ export const formConfig = {
     shippingNotice: {
       showNotice: true,
       noticeText: '📦 Shipping address on next page'
+    },
+    tribute: {
+      enabled: true,
+      icons: {
+        gift: '🎁',
+        memorial: '🕊️',
+        tribute: '💝'
+      },
+      types: {
+        none: { label: 'No, thank you' },
+        gift: { label: '🎁 Gift to someone' },
+        memorial: { label: '🕊️ In memory of someone' }
+      },
+      form: {
+        tributeTypeSection: {
+          legend: 'Tribute Type',
+          description: 'Make this donation a tribute to someone special'
+        },
+        honoreeSection: {
+          legendGift: 'Gift to',
+          legendMemorial: 'In Memory of',
+          legendDefault: 'Honoree',
+          description: 'Provide details about the person being honored',
+          fields: {
+            firstName: {
+              label: 'First Name',
+              placeholder: 'First name'
+            },
+            lastName: {
+              label: 'Last Name',
+              placeholder: 'Last name',
+              optional: '(optional)'
+            },
+            relationship: {
+              label: 'Relationship',
+              placeholder: 'Select relationship...',
+              optional: '(optional)',
+              searchPlaceholder: 'Search relationship...',
+              notFound: 'No relationship found.'
+            }
+          }
+        },
+        eCardSection: {
+          toggle: {
+            title: '📧 Send an eCard notification',
+            description: 'Notify the recipient via email about this tribute donation'
+          },
+          recipientSection: {
+            legend: 'eCard Recipient',
+            description: 'Who should receive the notification email?'
+          },
+          sameAsHonoree: {
+            titleTemplate: 'Send to {honoree}',
+            description: 'Send the eCard directly to the gift recipient'
+          },
+          fields: {
+            firstName: {
+              label: 'First Name',
+              placeholder: 'First name'
+            },
+            lastName: {
+              label: 'Last Name',
+              placeholder: 'Last name',
+              optional: '(optional)'
+            },
+            email: {
+              label: 'Email Address',
+              placeholder: 'name@example.com'
+            }
+          }
+        }
+      },
+      relationships: [
+        { value: 'mother', label: 'Mother' },
+        { value: 'father', label: 'Father' },
+        { value: 'parent', label: 'Parent' },
+        { value: 'spouse', label: 'Spouse' },
+        { value: 'partner', label: 'Partner' },
+        { value: 'sibling', label: 'Sibling' },
+        { value: 'child', label: 'Child' },
+        { value: 'grandparent', label: 'Grandparent' },
+        { value: 'grandchild', label: 'Grandchild' },
+        { value: 'friend', label: 'Friend' },
+        { value: 'colleague', label: 'Colleague' },
+        { value: 'teacher', label: 'Teacher' },
+        { value: 'mentor', label: 'Mentor' },
+        { value: 'other', label: 'Other' }
+      ] as const,
+      validation: {
+        honoreeFirstName: {
+          required: 'First name is required',
+          minLength: 'First name must be at least 2 characters'
+        },
+        recipientFirstName: {
+          required: 'First name is required',
+          minLength: 'First name must be at least 2 characters'
+        },
+        recipientEmail: {
+          required: 'Email is required',
+          invalid: 'Enter a valid email address'
+        }
+      },
+      modal: {
+        title: 'Gift or In Memory',
+        subtitle: 'Make this donation in honor or memory of someone special',
+        saveButton: 'Save',
+        cancelButton: 'Cancel'
+      },
+      card: {
+        editButton: 'Edit',
+        removeButton: '✕'
+      },
+      line: {
+        relationshipTemplate: '({relationship})',
+        eCardTemplate: '📧 eCard to {recipient}'
+      }
     }
   }
 } as const

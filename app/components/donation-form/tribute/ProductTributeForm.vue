@@ -29,10 +29,11 @@ import {
   FieldTitle
 } from '@/components/ui/field'
 import { cn } from '@/lib/utils'
-import type { TributeData } from '@/lib/common/types'
+import type { TributeData, FormConfig } from '@/lib/common/types'
 
 interface Props {
   modelValue?: TributeData
+  config: FormConfig['features']['tribute']
 }
 
 const props = defineProps<Props>()
@@ -61,7 +62,7 @@ const formSchema = z
       if (!data.honoreeFirstName || data.honoreeFirstName.length < 2) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'First name must be at least 2 characters',
+          message: props.config.validation.honoreeFirstName.minLength,
           path: ['honoreeFirstName']
         })
       }
@@ -79,7 +80,7 @@ const formSchema = z
           if (!data.recipientFirstName || data.recipientFirstName.length < 2) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              message: 'First name must be at least 2 characters',
+              message: props.config.validation.recipientFirstName.minLength,
               path: ['recipientFirstName']
             })
           }
@@ -90,13 +91,13 @@ const formSchema = z
         if (!data.recipientEmail) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: 'Email is required',
+            message: props.config.validation.recipientEmail.required,
             path: ['recipientEmail']
           })
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.recipientEmail)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: 'Enter a valid email address',
+            message: props.config.validation.recipientEmail.invalid,
             path: ['recipientEmail']
           })
         }
@@ -146,23 +147,8 @@ const isValid = computed(() => {
   return meta.value.valid
 })
 
-// Relationship options
-const relationships = [
-  { value: 'mother', label: 'Mother' },
-  { value: 'father', label: 'Father' },
-  { value: 'parent', label: 'Parent' },
-  { value: 'spouse', label: 'Spouse' },
-  { value: 'partner', label: 'Partner' },
-  { value: 'sibling', label: 'Sibling' },
-  { value: 'child', label: 'Child' },
-  { value: 'grandparent', label: 'Grandparent' },
-  { value: 'grandchild', label: 'Grandchild' },
-  { value: 'friend', label: 'Friend' },
-  { value: 'colleague', label: 'Colleague' },
-  { value: 'teacher', label: 'Teacher' },
-  { value: 'mentor', label: 'Mentor' },
-  { value: 'other', label: 'Other' }
-]
+// Relationship options from config
+const relationships = computed(() => props.config.relationships)
 
 // Refs for scroll targets
 const eCardFormRef = ref<HTMLElement | null>(null)
@@ -174,9 +160,9 @@ const showECardOption = computed(() => values.type !== 'none')
 const showECardForm = computed(() => values.sendECard && values.type !== 'none')
 
 const honoreeLabel = computed(() => {
-  if (values.type === 'gift') return 'Gift to'
-  if (values.type === 'memorial') return 'In Memory of'
-  return 'Honoree'
+  if (values.type === 'gift') return props.config.form.honoreeSection.legendGift
+  if (values.type === 'memorial') return props.config.form.honoreeSection.legendMemorial
+  return props.config.form.honoreeSection.legendDefault
 })
 
 const honoreeFullName = computed(() => {
@@ -184,8 +170,8 @@ const honoreeFullName = computed(() => {
 })
 
 const relationshipLabel = computed(() => {
-  const selected = relationships.find((r) => r.value === values.relationship)
-  return selected?.label || 'Select relationship...'
+  const selected = relationships.value.find((r) => r.value === values.relationship)
+  return selected?.label || props.config.form.honoreeSection.fields.relationship.placeholder
 })
 
 function selectRelationship(selectedValue: string) {
@@ -312,8 +298,8 @@ defineExpose({
     <!-- Tribute Type Selection -->
     <VeeField v-slot="{ field, errors }" name="type">
       <FieldSet :data-invalid="!!errors.length">
-        <FieldLegend>Tribute Type</FieldLegend>
-        <FieldDescription>Make this donation a tribute to someone special</FieldDescription>
+        <FieldLegend>{{ config.form.tributeTypeSection.legend }}</FieldLegend>
+        <FieldDescription>{{ config.form.tributeTypeSection.description }}</FieldDescription>
         <RadioGroup
           :name="field.name"
           :model-value="field.value"
@@ -324,8 +310,7 @@ defineExpose({
           <FieldLabel for="tribute-none">
             <Field orientation="horizontal" :data-invalid="!!errors.length">
               <FieldContent>
-                <FieldTitle>No, thank you</FieldTitle>
-                <!-- <FieldDescription>Continue without making this a tribute</FieldDescription> -->
+                <FieldTitle>{{ config.types.none.label }}</FieldTitle>
               </FieldContent>
               <RadioGroupItem id="tribute-none" value="none" :aria-invalid="!!errors.length" />
             </Field>
@@ -334,8 +319,7 @@ defineExpose({
           <FieldLabel for="tribute-gift">
             <Field orientation="horizontal" :data-invalid="!!errors.length">
               <FieldContent>
-                <FieldTitle>🎁 Gift to someone</FieldTitle>
-                <!-- <FieldDescription>Give this donation as a gift to honor someone</FieldDescription> -->
+                <FieldTitle>{{ config.types.gift.label }}</FieldTitle>
               </FieldContent>
               <RadioGroupItem id="tribute-gift" value="gift" :aria-invalid="!!errors.length" />
             </Field>
@@ -344,10 +328,7 @@ defineExpose({
           <FieldLabel for="tribute-memorial">
             <Field orientation="horizontal" :data-invalid="!!errors.length">
               <FieldContent>
-                <FieldTitle>🕊️ In memory of someone</FieldTitle>
-                <!-- <FieldDescription>
-                  Dedicate this donation in memory of a loved one
-                </FieldDescription> -->
+                <FieldTitle>{{ config.types.memorial.label }}</FieldTitle>
               </FieldContent>
               <RadioGroupItem
                 id="tribute-memorial"
@@ -365,16 +346,18 @@ defineExpose({
     <div v-if="showHonoreeForm" ref="honoreeFormRef">
       <FieldSet class="gap-4">
         <FieldLegend>{{ honoreeLabel }}</FieldLegend>
-        <FieldDescription>Provide details about the person being honored</FieldDescription>
+        <FieldDescription>{{ config.form.honoreeSection.description }}</FieldDescription>
         <FieldGroup class="gap-4">
           <div class="grid grid-cols-2 gap-3">
             <VeeField v-slot="{ field, errors }" name="honoreeFirstName">
               <Field :data-invalid="!!errors.length">
-                <FieldLabel for="honoree-first-name">First Name</FieldLabel>
+                <FieldLabel for="honoree-first-name">{{
+                  config.form.honoreeSection.fields.firstName.label
+                }}</FieldLabel>
                 <Input
                   id="honoree-first-name"
                   :model-value="field.value"
-                  placeholder="First name"
+                  :placeholder="config.form.honoreeSection.fields.firstName.placeholder"
                   autocomplete="off"
                   :aria-invalid="!!errors.length"
                   @update:model-value="field.onChange"
@@ -388,13 +371,15 @@ defineExpose({
             <VeeField v-slot="{ field, errors }" name="honoreeLastName">
               <Field :data-invalid="!!errors.length">
                 <FieldLabel for="honoree-last-name"
-                  >Last Name
-                  <span class="text-muted-foreground font-normal">(optional)</span></FieldLabel
+                  >{{ config.form.honoreeSection.fields.lastName.label }}
+                  <span class="text-muted-foreground font-normal">{{
+                    config.form.honoreeSection.fields.lastName.optional
+                  }}</span></FieldLabel
                 >
                 <Input
                   id="honoree-last-name"
                   :model-value="field.value"
-                  placeholder="Last name"
+                  :placeholder="config.form.honoreeSection.fields.lastName.placeholder"
                   autocomplete="off"
                   :aria-invalid="!!errors.length"
                   @update:model-value="field.onChange"
@@ -409,8 +394,10 @@ defineExpose({
           <VeeField v-slot="{ field, errors }" name="relationship">
             <Field :data-invalid="!!errors.length">
               <FieldLabel
-                >Relationship
-                <span class="text-muted-foreground font-normal">(optional)</span></FieldLabel
+                >{{ config.form.honoreeSection.fields.relationship.label }}
+                <span class="text-muted-foreground font-normal">{{
+                  config.form.honoreeSection.fields.relationship.optional
+                }}</span></FieldLabel
               >
               <Popover v-model:open="relationshipOpen">
                 <PopoverTrigger as-child>
@@ -429,9 +416,16 @@ defineExpose({
                 </PopoverTrigger>
                 <PopoverContent class="w-full p-0" align="start">
                   <Command>
-                    <CommandInput class="h-9" placeholder="Search relationship..." />
+                    <CommandInput
+                      class="h-9"
+                      :placeholder="
+                        config.form.honoreeSection.fields.relationship.searchPlaceholder
+                      "
+                    />
                     <CommandList>
-                      <CommandEmpty>No relationship found.</CommandEmpty>
+                      <CommandEmpty>{{
+                        config.form.honoreeSection.fields.relationship.notFound
+                      }}</CommandEmpty>
                       <CommandGroup>
                         <CommandItem
                           v-for="rel in relationships"
@@ -471,9 +465,9 @@ defineExpose({
         <VeeField v-slot="{ field }" name="sendECard">
           <Field orientation="horizontal">
             <FieldContent>
-              <FieldTitle>📧 Send an eCard notification</FieldTitle>
+              <FieldTitle>{{ config.form.eCardSection.toggle.title }}</FieldTitle>
               <FieldDescription>
-                Notify the recipient via email about this tribute donation
+                {{ config.form.eCardSection.toggle.description }}
               </FieldDescription>
             </FieldContent>
             <Switch
@@ -487,14 +481,23 @@ defineExpose({
         <!-- eCard Recipient Form -->
         <div v-if="showECardForm" ref="eCardRecipientFormRef">
           <FieldSet class="gap-4">
-            <FieldLegend>eCard Recipient</FieldLegend>
-            <FieldDescription>Who should receive the notification email?</FieldDescription>
+            <FieldLegend>{{ config.form.eCardSection.recipientSection.legend }}</FieldLegend>
+            <FieldDescription>{{
+              config.form.eCardSection.recipientSection.description
+            }}</FieldDescription>
 
             <!-- Same as Honoree Toggle (only for gifts, not memorials) -->
             <Field v-if="values.type === 'gift'" orientation="horizontal">
               <FieldContent>
-                <FieldTitle>Send to {{ honoreeFullName || 'the honoree' }}</FieldTitle>
-                <FieldDescription>Send the eCard directly to the gift recipient</FieldDescription>
+                <FieldTitle>{{
+                  config.form.eCardSection.sameAsHonoree.titleTemplate.replace(
+                    '{honoree}',
+                    honoreeFullName || 'the honoree'
+                  )
+                }}</FieldTitle>
+                <FieldDescription>{{
+                  config.form.eCardSection.sameAsHonoree.description
+                }}</FieldDescription>
               </FieldContent>
               <Switch id="same-as-honoree" v-model="sameAsHonoree" />
             </Field>
@@ -511,11 +514,13 @@ defineExpose({
                 <div class="grid grid-cols-2 gap-3">
                   <VeeField v-slot="{ field, errors }" name="recipientFirstName">
                     <Field :data-invalid="!!errors.length">
-                      <FieldLabel for="recipient-first-name">First Name</FieldLabel>
+                      <FieldLabel for="recipient-first-name">{{
+                        config.form.eCardSection.fields.firstName.label
+                      }}</FieldLabel>
                       <Input
                         id="recipient-first-name"
                         :model-value="field.value"
-                        placeholder="First name"
+                        :placeholder="config.form.eCardSection.fields.firstName.placeholder"
                         autocomplete="off"
                         :aria-invalid="!!errors.length"
                         @update:model-value="field.onChange"
@@ -529,15 +534,15 @@ defineExpose({
                   <VeeField v-slot="{ field, errors }" name="recipientLastName">
                     <Field :data-invalid="!!errors.length">
                       <FieldLabel for="recipient-last-name"
-                        >Last Name
-                        <span class="text-muted-foreground font-normal"
-                          >(optional)</span
-                        ></FieldLabel
+                        >{{ config.form.eCardSection.fields.lastName.label }}
+                        <span class="text-muted-foreground font-normal">{{
+                          config.form.eCardSection.fields.lastName.optional
+                        }}</span></FieldLabel
                       >
                       <Input
                         id="recipient-last-name"
                         :model-value="field.value"
-                        placeholder="Last name"
+                        :placeholder="config.form.eCardSection.fields.lastName.placeholder"
                         autocomplete="off"
                         :aria-invalid="!!errors.length"
                         @update:model-value="field.onChange"
@@ -553,12 +558,14 @@ defineExpose({
 
             <VeeField v-slot="{ field, errors }" name="recipientEmail">
               <Field :data-invalid="!!errors.length">
-                <FieldLabel for="recipient-email">Email Address</FieldLabel>
+                <FieldLabel for="recipient-email">{{
+                  config.form.eCardSection.fields.email.label
+                }}</FieldLabel>
                 <Input
                   id="recipient-email"
                   :model-value="field.value"
                   type="email"
-                  placeholder="name@example.com"
+                  :placeholder="config.form.eCardSection.fields.email.placeholder"
                   autocomplete="email"
                   :aria-invalid="!!errors.length"
                   @update:model-value="field.onChange"

@@ -49,7 +49,8 @@ const setSingleFormRef = (freq: string) => (el: unknown) => {
 // Computed
 const frequencies = computed(() => {
   const freqs = [...BASE_FREQUENCIES] as Array<{ value: string; label: string }>
-  if (ALLOW_MULTIPLE_ITEMS) freqs.push({ value: 'multiple', label: 'Multiple' })
+  if (ALLOW_MULTIPLE_ITEMS)
+    freqs.push({ value: 'multiple', label: formConfig.features.multipleProducts.ui.label })
   return freqs
 })
 

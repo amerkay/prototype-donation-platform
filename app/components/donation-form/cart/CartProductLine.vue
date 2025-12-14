@@ -2,13 +2,14 @@
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import TributeLine from '../tribute/TributeLine.vue'
-import type { CartItem, Product } from '@/lib/common/types'
+import type { CartItem, Product, FormConfig } from '@/lib/common/types'
 
 interface Props {
   item: CartItem | Product
   currency: string
   isPulsing?: boolean
   price?: number
+  tributeConfig: FormConfig['features']['tribute']
 }
 
 const props = defineProps<Props>()
@@ -72,7 +73,12 @@ const hasTribute = computed(() => {
           </button>
         </div>
 
-        <TributeLine v-if="hasTribute" class="mt-2" :tribute="(item as CartItem).tribute!" />
+        <TributeLine
+          v-if="hasTribute"
+          class="mt-2"
+          :tribute="(item as CartItem).tribute!"
+          :config="tributeConfig"
+        />
       </div>
       <Button variant="ghost" size="sm" @click.stop="emit('remove')"> ✕ </Button>
     </div>

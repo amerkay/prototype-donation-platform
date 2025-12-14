@@ -3,7 +3,13 @@ import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import BaseDialogOrDrawer from '~/components/donation-form/common/BaseDialogOrDrawer.vue'
 import ProductTributeForm from '~/components/donation-form/tribute/ProductTributeForm.vue'
-import type { TributeData } from '@/lib/common/types'
+import type { TributeData, FormConfig } from '@/lib/common/types'
+
+interface Props {
+  config: FormConfig['features']['tribute']
+}
+
+defineProps<Props>()
 
 const emit = defineEmits<{
   save: [tributeData: TributeData | undefined]
@@ -41,20 +47,25 @@ defineExpose({
 <template>
   <BaseDialogOrDrawer v-model:open="isOpen" :dismissible="true">
     <template #header>
-      <h2 class="text-2xl font-semibold">Gift or In Memory</h2>
+      <h2 class="text-2xl font-semibold">{{ config.modal.title }}</h2>
       <p class="text-sm text-muted-foreground">
-        Make this donation in honor or memory of someone special
+        {{ config.modal.subtitle }}
       </p>
     </template>
     <template #content>
-      <ProductTributeForm ref="tributeFormRef" v-model="tempTributeData" @submit="handleSave" />
+      <ProductTributeForm
+        ref="tributeFormRef"
+        v-model="tempTributeData"
+        :config="config"
+        @submit="handleSave"
+      />
     </template>
     <template #footer>
       <Button class="flex-1 md:flex-1 h-12" :disabled="!isTributeFormValid" @click="handleSave">
-        Save
+        {{ config.modal.saveButton }}
       </Button>
       <Button variant="outline" class="flex-1 md:flex-1 h-12" @click="handleCancel">
-        Cancel
+        {{ config.modal.cancelButton }}
       </Button>
     </template>
   </BaseDialogOrDrawer>

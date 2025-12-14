@@ -1,35 +1,34 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { TributeData } from '@/lib/common/types'
+import type { TributeData, FormConfig } from '@/lib/common/types'
 
 interface Props {
   tribute: TributeData
+  config: FormConfig['features']['tribute']
 }
 
 const props = defineProps<Props>()
 
 const tributeIcon = computed(() => {
-  if (props.tribute.type === 'gift') return '🎁'
-  if (props.tribute.type === 'memorial') return '🕊️'
-  return '💝'
+  if (props.tribute.type === 'gift') return props.config.icons.gift
+  if (props.tribute.type === 'memorial') return props.config.icons.memorial
+  return props.config.icons.tribute
 })
 
 const tributeTitle = computed(() => {
-  if (props.tribute.type === 'gift') return 'Gift'
-  if (props.tribute.type === 'memorial') return 'In Memory'
-  return 'Tribute'
+  if (props.tribute.type === 'gift') {
+    return props.config.form.honoreeSection.legendGift
+  }
+  if (props.tribute.type === 'memorial') {
+    return props.config.form.honoreeSection.legendMemorial
+  }
+  return props.config.form.honoreeSection.legendDefault
 })
 
 const honoreeName = computed(() => {
   const honoree = props.tribute.honoree
   if (!honoree) return ''
   return [honoree.firstName, honoree.lastName].filter(Boolean).join(' ')
-})
-
-const relationshipLabel = computed(() => {
-  const relationship = props.tribute.honoree?.relationship
-  if (!relationship) return ''
-  return relationship.charAt(0).toUpperCase() + relationship.slice(1)
 })
 
 const eCardRecipient = computed(() => {
@@ -48,11 +47,15 @@ const eCardRecipient = computed(() => {
 <template>
   <div>
     <p class="text-xs text-muted-foreground truncate">
-      {{ tributeIcon }} {{ tributeTitle }} to {{ honoreeName
-      }}<span v-if="relationshipLabel"> ({{ relationshipLabel }})</span>
+      {{ tributeIcon }} {{ tributeTitle }} {{ honoreeName }}
     </p>
     <p v-if="eCardRecipient" class="text-xs text-muted-foreground mt-0.5 truncate">
-      📧 eCard to {{ eCardRecipient.name || eCardRecipient.email }}
+      {{
+        config.line.eCardTemplate.replace(
+          '{recipient}',
+          eCardRecipient.name || eCardRecipient.email
+        )
+      }}
     </p>
   </div>
 </template>

@@ -122,6 +122,7 @@ defineExpose({
       :products="filteredProducts"
       :initial-products-displayed="initialProductsDisplayed"
       :product-list-config="formConfig.features.multipleProducts.ui"
+      :tribute-config="formConfig.features.tribute"
       @edit="handleEditCartItem"
       @remove="handleRemoveCartItem"
       @product-select="handleProductSelect"
@@ -160,6 +161,7 @@ defineExpose({
       ref="productOptionsModalRef"
       :currency="currency"
       :pricing-config="formConfig.pricing.frequencies"
+      :tribute-config="formConfig.features.tribute"
       @confirm="handleProductModalConfirm"
     />
   </div>

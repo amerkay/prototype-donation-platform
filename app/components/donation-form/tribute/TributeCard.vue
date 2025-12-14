@@ -2,10 +2,11 @@
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import TributeLine from '../tribute/TributeLine.vue'
-import type { TributeData } from '@/lib/common/types'
+import type { TributeData, FormConfig } from '@/lib/common/types'
 
 interface Props {
   tribute: TributeData
+  config: FormConfig['features']['tribute']
 }
 
 const props = defineProps<Props>()
@@ -16,14 +17,18 @@ const emit = defineEmits<{
 }>()
 
 const tributeIcon = computed(() => {
-  if (props.tribute.type === 'gift') return '🎁'
-  if (props.tribute.type === 'memorial') return '🕊️'
-  return '💝'
+  if (props.tribute.type === 'gift') return props.config.icons.gift
+  if (props.tribute.type === 'memorial') return props.config.icons.memorial
+  return props.config.icons.tribute
 })
 
 const tributeTitle = computed(() => {
-  if (props.tribute.type === 'gift') return 'Gift'
-  if (props.tribute.type === 'memorial') return 'In Memory'
+  if (props.tribute.type === 'gift') {
+    return props.config.types.gift.label.replace(props.config.icons.gift + ' ', '')
+  }
+  if (props.tribute.type === 'memorial') {
+    return props.config.types.memorial.label.replace(props.config.icons.memorial + ' ', '')
+  }
   return 'Tribute'
 })
 </script>
@@ -39,12 +44,14 @@ const tributeTitle = computed(() => {
         <div class="flex items-center gap-2">
           <p class="font-medium text-sm">{{ tributeTitle }}</p>
           <button class="text-xs text-primary hover:underline pointer-events-none" @click.stop>
-            Edit
+            {{ config.card.editButton }}
           </button>
         </div>
-        <TributeLine :tribute="tribute" class="mt-1" />
+        <TributeLine :tribute="tribute" :config="config" class="mt-1" />
       </div>
-      <Button variant="ghost" size="sm" @click.stop="emit('remove')"> ✕ </Button>
+      <Button variant="ghost" size="sm" @click.stop="emit('remove')">
+        {{ config.card.removeButton }}
+      </Button>
     </div>
   </div>
 </template>

@@ -145,6 +145,7 @@ defineExpose({
       :item="selectedProduct"
       :currency="currency"
       :price="donationAmount"
+      :tribute-config="formConfig.features.tribute"
       @edit="handleEditProduct"
       @remove="emit('remove-product')"
     />
@@ -161,6 +162,7 @@ defineExpose({
     <TributeCard
       v-if="showTributeSection && hasTribute"
       :tribute="tributeData!"
+      :config="formConfig.features.tribute"
       @edit="handleOpenTributeModal"
       @remove="emit('remove-tribute')"
     />
@@ -212,6 +214,10 @@ defineExpose({
       @select="handleProductSelect"
     />
 
-    <TributeModal ref="tributeModalRef" @save="handleTributeSave" />
+    <TributeModal
+      ref="tributeModalRef"
+      :config="formConfig.features.tribute"
+      @save="handleTributeSave"
+    />
   </div>
 </template>
