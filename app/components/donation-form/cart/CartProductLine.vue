@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
+import TributeLine from '../tribute/TributeLine.vue'
 import type { CartItem, Product } from '@/lib/common/types'
 
 interface Props {
@@ -37,30 +38,6 @@ const hasTribute = computed(() => {
   const item = props.item as CartItem
   return item.tribute && item.tribute.type !== 'none'
 })
-
-const tributeLabel = computed(() => {
-  const item = props.item as CartItem
-  if (!item.tribute || item.tribute.type === 'none') return ''
-
-  const honoree = item.tribute.honoree
-  if (!honoree) return ''
-
-  const fullName = [honoree.firstName, honoree.lastName].filter(Boolean).join(' ')
-
-  let label = ''
-  if (item.tribute.type === 'gift') {
-    label = `🎁 Gift to ${fullName}`
-  } else if (item.tribute.type === 'memorial') {
-    label = `🕊️ In memory of ${fullName}`
-  }
-
-  // Add eCard recipient if sending
-  if (item.tribute.eCard?.send && item.tribute.eCard.recipient?.email) {
-    label += ` • eCard to ${item.tribute.eCard.recipient.email}`
-  }
-
-  return label
-})
 </script>
 
 <template>
@@ -94,9 +71,8 @@ const tributeLabel = computed(() => {
             Edit
           </button>
         </div>
-        <p v-if="hasTribute" class="text-xs text-muted-foreground mt-1">
-          {{ tributeLabel }}
-        </p>
+
+        <TributeLine v-if="hasTribute" class="mt-2" :tribute="(item as CartItem).tribute!" />
       </div>
       <Button variant="ghost" size="sm" @click.stop="emit('remove')"> ✕ </Button>
     </div>

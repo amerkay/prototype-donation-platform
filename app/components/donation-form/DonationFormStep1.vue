@@ -10,8 +10,8 @@ import BaseDialogOrDrawer from '~/components/donation-form/common/BaseDialogOrDr
 import CartProductLine from '~/components/donation-form/cart/CartProductLine.vue'
 import Cart from '@/components/donation-form/cart/Cart.vue'
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
-import ProductTributeForm from '~/components/donation-form/cart/ProductTributeForm.vue'
-import TributeLine from '~/components/donation-form/cart/TributeLine.vue'
+import ProductTributeForm from '~/components/donation-form/tribute/ProductTributeForm.vue'
+import TributeCard from '~/components/donation-form/tribute/TributeCard.vue'
 import type { Product, CartItem, TributeData } from '@/lib/common/types'
 import { getCartItemKey, parseCartItemKey } from '@/lib/common/cart-utils'
 import ProductCard from './cart/ProductCard.vue'
@@ -579,7 +579,7 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
         </Button>
 
         <!-- Gift or In Memory (only for recurring donations) -->
-        <TributeLine
+        <TributeCard
           v-if="
             freq.value !== 'once' &&
             tributeData[freq.value as keyof typeof tributeData]?.type !== 'none' &&

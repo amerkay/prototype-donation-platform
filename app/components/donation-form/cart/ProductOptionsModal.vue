@@ -4,7 +4,7 @@ import { Minus, Plus } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import BaseDialogOrDrawer from '~/components/donation-form/common/BaseDialogOrDrawer.vue'
 import AmountSelector from '~/components/donation-form/common/AmountSelector.vue'
-import ProductTributeForm from '~/components/donation-form/cart/ProductTributeForm.vue'
+import ProductTributeForm from '~/components/donation-form/tribute/ProductTributeForm.vue'
 import type { Product, CartItem, TributeData } from '@/lib/common/types'
 
 interface Props {
