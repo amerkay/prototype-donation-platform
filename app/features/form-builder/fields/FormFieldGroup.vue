@@ -89,10 +89,13 @@ watch(isOpen, (newIsOpen) => {
     <!-- Accordion Item version -->
     <template v-if="meta.collapsible">
       <AccordionItem :ref="(el: any) => setElementRef(collapsibleKey, el)" :value="name">
-        <AccordionTrigger class="hover:no-underline">
+        <AccordionTrigger class="hover:no-underline group">
           <div class="flex items-center justify-between w-full">
             <div class="flex-1 text-left">
-              <h3 v-if="meta.legend || meta.label" class="font-medium text-sm">
+              <h3
+                v-if="meta.legend || meta.label"
+                class="font-medium text-sm group-hover:underline"
+              >
                 {{ meta.legend || meta.label }}
               </h3>
               <p v-if="meta.description" class="text-muted-foreground text-xs mt-0.5">
@@ -106,7 +109,7 @@ watch(isOpen, (newIsOpen) => {
           </div>
         </AccordionTrigger>
         <AccordionContent>
-          <div :class="[meta.class, '']">
+          <div :class="[meta.class, 'space-y-6']">
             <template v-for="(group, groupIndex) in fieldGroups" :key="`group-${groupIndex}`">
               <div v-show="group.isGrid" class="contents">
                 <FormField

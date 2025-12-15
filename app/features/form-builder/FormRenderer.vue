@@ -115,11 +115,12 @@ defineExpose({
         <FormField :name="String(fieldKey)" :meta="fieldMeta" />
       </div>
     </Accordion>
-    <div v-else>
+    <div v-else class="space-y-4">
       <div
         v-for="([fieldKey, fieldMeta], index) in allFields"
         :key="`${fieldKey}-${index}`"
         :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)"
+        class=""
       >
         <FormField :name="String(fieldKey)" :meta="fieldMeta" />
       </div>

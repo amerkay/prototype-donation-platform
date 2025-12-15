@@ -28,6 +28,7 @@ function handleTributeConfigUpdate(value: FormConfig['features']['tribute']) {
   <div class="max-w-4xl mx-auto space-y-6">
     <AdminTributeConfigBuilder
       :model-value="config.features.tribute"
+      class="bg-muted/50 rounded-xl p-6"
       @update:model-value="handleTributeConfigUpdate"
     />
 

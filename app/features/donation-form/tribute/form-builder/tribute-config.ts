@@ -14,36 +14,8 @@ export function createTributeConfigSection(): ConfigSectionDef {
       enabled: {
         type: 'toggle',
         label: 'Enable Tribute Feature',
-        description: 'Allow donors to dedicate donations as gifts or memorials'
-      },
-      icons: {
-        type: 'field-group',
-        label: 'Icons',
-        description: 'Emoji icons for different tribute types',
-        visibleWhen: (values) => values.enabled === true,
-        collapsible: true,
-        collapsibleDefaultOpen: false,
-        class: 'sm:grid sm:grid-cols-3 sm:gap-3 space-y-3',
-        fields: {
-          gift: {
-            type: 'emoji',
-            label: 'Gift Icon',
-            placeholder: '🎁',
-            rules: z.string().min(1, 'Required').max(2, 'Must be a single emoji')
-          },
-          memorial: {
-            type: 'emoji',
-            label: 'Memorial Icon',
-            placeholder: '🕊️',
-            rules: z.string().min(1, 'Required').max(2, 'Must be a single emoji')
-          },
-          tribute: {
-            type: 'emoji',
-            label: 'Tribute Icon',
-            placeholder: '💝',
-            rules: z.string().min(1, 'Required').max(2, 'Must be a single emoji')
-          }
-        }
+        description: 'Allow donors to dedicate donations as gifts or memorials',
+        classLabel: 'font-bold'
       },
       types: {
         type: 'field-group',
@@ -135,6 +107,35 @@ export function createTributeConfigSection(): ConfigSectionDef {
             type: 'text',
             label: 'Modal Subtitle',
             placeholder: 'Make this donation in honor or memory of someone special'
+          }
+        }
+      },
+      icons: {
+        type: 'field-group',
+        label: 'Icons',
+        description: 'Emoji icons for different tribute types',
+        visibleWhen: (values) => values.enabled === true,
+        collapsible: true,
+        collapsibleDefaultOpen: false,
+        class: 'sm:grid sm:grid-cols-3 sm:gap-3 space-y-3',
+        fields: {
+          gift: {
+            type: 'emoji',
+            label: 'Gift Icon',
+            placeholder: '🎁',
+            rules: z.string().min(1, 'Required').max(2, 'Must be a single emoji')
+          },
+          memorial: {
+            type: 'emoji',
+            label: 'Memorial Icon',
+            placeholder: '🕊️',
+            rules: z.string().min(1, 'Required').max(2, 'Must be a single emoji')
+          },
+          tribute: {
+            type: 'emoji',
+            label: 'Tribute Icon',
+            placeholder: '💝',
+            rules: z.string().min(1, 'Required').max(2, 'Must be a single emoji')
           }
         }
       }

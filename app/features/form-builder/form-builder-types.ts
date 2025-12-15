@@ -25,6 +25,8 @@ export interface BaseFieldMeta {
   optional?: boolean
   visibleWhen?: (values: Record<string, unknown>) => boolean
   class?: string
+  classLabel?: string
+  classDescription?: string
   rules?: z.ZodTypeAny | ((values: Record<string, unknown>) => z.ZodTypeAny)
 }
 
