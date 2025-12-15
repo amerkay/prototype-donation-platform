@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, watchEffect, provide } from 'vue'
+import { computed, watch, provide, nextTick } from 'vue'
 import { useForm } from 'vee-validate'
 import FormField from './FormField.vue'
 import type { ConfigSectionDef, FieldMeta } from '~/features/form-builder/form-builder-types'
@@ -50,19 +50,29 @@ const { setElementRef } = useScrollOnVisible(allFields, {
 })
 
 // Watch for external changes to modelValue
+let isUpdatingFromProp = false
 watch(
   () => props.modelValue,
   (newValue) => {
+    isUpdatingFromProp = true
     setValues(newValue)
+    nextTick(() => {
+      isUpdatingFromProp = false
+    })
   },
   { deep: true }
 )
 
 // Emit changes when form values update
-watchEffect(() => {
-  const currentValues = values as Record<string, unknown>
-  emit('update:modelValue', currentValues)
-})
+watch(
+  values,
+  (newValues) => {
+    if (!isUpdatingFromProp) {
+      emit('update:modelValue', newValues as Record<string, unknown>)
+    }
+  },
+  { deep: true }
+)
 
 // Handle form submission
 const onSubmit = handleSubmit((submittedValues) => {

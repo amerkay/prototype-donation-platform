@@ -9,6 +9,15 @@ import type { FormConfig } from '@/lib/common/types'
 export function createTributeFormSection(
   config: FormConfig['features']['tribute']
 ): ConfigSectionDef {
+  // Build options based on enabled flags
+  const options = [{ value: 'none', label: config.types.none.label }]
+  if (config.types.gift.enabled) {
+    options.push({ value: 'gift', label: config.types.gift.label })
+  }
+  if (config.types.memorial.enabled) {
+    options.push({ value: 'memorial', label: config.types.memorial.label })
+  }
+
   return {
     id: 'tribute-form',
     title: config.modal.title,
@@ -18,11 +27,7 @@ export function createTributeFormSection(
         type: 'radio-group',
         label: config.form.tributeTypeSection.legend,
         description: config.form.tributeTypeSection.description,
-        options: [
-          { value: 'none', label: config.types.none.label },
-          { value: 'gift', label: config.types.gift.label },
-          { value: 'memorial', label: config.types.memorial.label }
-        ]
+        options
       },
       // Honoree section - visible when type is not 'none'
       honoreeFirstName: {

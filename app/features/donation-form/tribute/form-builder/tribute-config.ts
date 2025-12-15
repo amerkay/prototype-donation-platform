@@ -2,131 +2,124 @@ import * as z from 'zod'
 import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
 
 /**
- * Tribute feature configuration schema
+ * Create tribute config section definition
+ * Returns the form configuration for editing tribute settings in admin
  */
-export const tributeConfigSchema = z.object({
-  enabled: z.boolean(),
-  icons: z.object({
-    gift: z.string().min(1, 'Gift icon is required'),
-    memorial: z.string().min(1, 'Memorial icon is required'),
-    tribute: z.string().min(1, 'Tribute icon is required')
-  }),
-  types: z.object({
-    none: z.object({
-      label: z.string().min(1, 'Label is required')
-    }),
-    gift: z.object({
-      label: z.string().min(1, 'Label is required')
-    }),
-    memorial: z.object({
-      label: z.string().min(1, 'Label is required')
-    })
-  }),
-  modal: z.object({
-    title: z.string().min(1, 'Title is required'),
-    subtitle: z.string().min(1, 'Subtitle is required'),
-    saveButton: z.string().min(1, 'Save button text is required'),
-    cancelButton: z.string().min(1, 'Cancel button text is required')
-  })
-})
-
-/**
- * Tribute config section definition with field metadata
- */
-export const tributeConfigSection: ConfigSectionDef<typeof tributeConfigSchema> = {
-  id: 'tribute',
-  title: 'Tribute Settings',
-  description: 'Configure tribute, gift, and memorial donation options',
-  schema: tributeConfigSchema,
-  fields: {
-    enabled: {
-      type: 'toggle',
-      label: 'Enable Tribute Feature',
-      description: 'Allow donors to dedicate donations as gifts or memorials'
-    },
-    icons: {
-      type: 'object',
-      label: 'Icons',
-      description: 'Emoji icons for different tribute types',
-      fields: {
-        gift: {
-          type: 'text',
-          label: 'Gift Icon',
-          placeholder: '🎁'
-        },
-        memorial: {
-          type: 'text',
-          label: 'Memorial Icon',
-          placeholder: '🕊️'
-        },
-        tribute: {
-          type: 'text',
-          label: 'Generic Tribute Icon',
-          placeholder: '💝'
-        }
-      }
-    },
-    types: {
-      type: 'object',
-      label: 'Type Labels',
-      description: 'Labels for each tribute type option',
-      fields: {
-        none: {
-          type: 'object',
-          fields: {
-            label: {
-              type: 'text',
-              label: 'None Option Label',
-              placeholder: 'No, thank you'
-            }
-          }
-        },
-        gift: {
-          type: 'object',
-          fields: {
-            label: {
-              type: 'text',
-              label: 'Gift Option Label',
-              placeholder: '🎁 Gift to someone'
-            }
-          }
-        },
-        memorial: {
-          type: 'object',
-          fields: {
-            label: {
-              type: 'text',
-              label: 'Memorial Option Label',
-              placeholder: '🕊️ In memory of someone'
-            }
+export function createTributeConfigSection(): ConfigSectionDef {
+  return {
+    id: 'tribute',
+    title: 'Tribute Settings',
+    description: 'Configure tribute, gift, and memorial donation options',
+    fields: {
+      enabled: {
+        type: 'toggle',
+        label: 'Enable Tribute Feature',
+        description: 'Allow donors to dedicate donations as gifts or memorials'
+      },
+      icons: {
+        type: 'field-group',
+        label: 'Icons',
+        description: 'Emoji icons for different tribute types',
+        visibleWhen: (values) => values.enabled === true,
+        fields: {
+          gift: {
+            type: 'emoji',
+            label: 'Gift Icon',
+            placeholder: '🎁',
+            rules: z.string().min(1, 'Required').max(2, 'Must be a single emoji')
+          },
+          memorial: {
+            type: 'emoji',
+            label: 'Memorial Icon',
+            placeholder: '🕊️',
+            rules: z.string().min(1, 'Required').max(2, 'Must be a single emoji')
+          },
+          tribute: {
+            type: 'emoji',
+            label: 'Tribute Icon',
+            placeholder: '💝',
+            rules: z.string().min(1, 'Required').max(2, 'Must be a single emoji')
           }
         }
-      }
-    },
-    modal: {
-      type: 'object',
-      label: 'Modal Settings',
-      description: 'Text content for the tribute modal',
-      fields: {
-        title: {
-          type: 'text',
-          label: 'Modal Title',
-          placeholder: 'Gift or In Memory'
-        },
-        subtitle: {
-          type: 'text',
-          label: 'Modal Subtitle',
-          placeholder: 'Make this donation in honor or memory of someone special'
-        },
-        saveButton: {
-          type: 'text',
-          label: 'Save Button Text',
-          placeholder: 'Save'
-        },
-        cancelButton: {
-          type: 'text',
-          label: 'Cancel Button Text',
-          placeholder: 'Cancel'
+      },
+      types: {
+        type: 'object',
+        label: 'Type Options',
+        description: 'Configure available tribute types and their labels',
+        visibleWhen: (values) => values.enabled === true,
+        fields: {
+          none: {
+            type: 'object',
+            fields: {
+              label: {
+                type: 'text',
+                label: 'None Option Label',
+                placeholder: 'No, thank you'
+              }
+            }
+          },
+          gift: {
+            type: 'object',
+            legend: 'Gift Option',
+            showBorder: true,
+            fields: {
+              enabled: {
+                type: 'toggle',
+                label: 'Enable Gift Option',
+                description: 'Allow donors to make gifts to someone'
+              },
+              label: {
+                type: 'text',
+                label: 'Gift Option Label',
+                placeholder: '🎁 Gift to someone',
+                visibleWhen: (values) => {
+                  const types = values.types as Record<string, unknown>
+                  const gift = types?.gift as Record<string, unknown> | undefined
+                  return gift?.enabled === true
+                }
+              }
+            }
+          },
+          memorial: {
+            type: 'object',
+            legend: 'Memorial Option',
+            showBorder: true,
+            fields: {
+              enabled: {
+                type: 'toggle',
+                label: 'Enable Memorial Option',
+                description: 'Allow donors to make donations in memory of someone'
+              },
+              label: {
+                type: 'text',
+                label: 'Memorial Option Label',
+                placeholder: '🕊️ In memory of someone',
+                visibleWhen: (values) => {
+                  const types = values.types as Record<string, unknown>
+                  const memorial = types?.memorial as Record<string, unknown> | undefined
+                  return memorial?.enabled === true
+                }
+              }
+            }
+          }
+        }
+      },
+      modal: {
+        type: 'object',
+        label: 'Modal Settings',
+        description: 'Text content for the tribute modal',
+        visibleWhen: (values) => values.enabled === true,
+        fields: {
+          title: {
+            type: 'text',
+            label: 'Modal Title',
+            placeholder: 'Gift or In Memory'
+          },
+          subtitle: {
+            type: 'text',
+            label: 'Modal Subtitle',
+            placeholder: 'Make this donation in honor or memory of someone special'
+          }
         }
       }
     }

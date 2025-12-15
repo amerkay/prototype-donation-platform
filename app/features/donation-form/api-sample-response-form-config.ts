@@ -91,8 +91,8 @@ export const formConfig = {
       },
       types: {
         none: { label: 'No, thank you' },
-        gift: { label: '🎁 Gift to someone' },
-        memorial: { label: '🕊️ In memory of someone' }
+        gift: { enabled: true, label: '🎁 Gift to someone' },
+        memorial: { enabled: true, label: '🕊️ In memory of someone' }
       },
       form: {
         tributeTypeSection: {
@@ -185,9 +185,7 @@ export const formConfig = {
       },
       modal: {
         title: 'Gift or In Memory',
-        subtitle: 'Make this donation in honor or memory of someone special',
-        saveButton: 'Save',
-        cancelButton: 'Cancel'
+        subtitle: 'Make this donation in honor or memory of someone special'
       },
       card: {
         editButton: 'Edit',

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import ConfigSection from '@/features/form-builder/ConfigSection.vue'
-import { tributeConfigSection } from '~/features/donation-form/tribute/form-builder/tribute-config'
+import { computed } from 'vue'
+import FormRenderer from '@/features/form-builder/FormRenderer.vue'
+import { createTributeConfigSection } from '~/features/donation-form/tribute/form-builder/tribute-config'
 import type { FormConfig } from '@/lib/common/types'
 
 interface Props {
@@ -14,7 +14,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: FormConfig['features']['tribute']]
 }>()
 
-const openSection = ref<string | null>('tribute')
+// Create the tribute config section
+const tributeConfigSection = createTributeConfigSection()
 
 // Extract the subset of tribute config that matches our schema
 const tributeConfig = computed(() => ({
@@ -24,28 +25,21 @@ const tributeConfig = computed(() => ({
   modal: props.modelValue.modal
 }))
 
-// Handle updates from ConfigSection
-function handleTributeUpdate(value: typeof tributeConfig.value) {
+// Handle updates from FormRenderer
+function handleTributeUpdate(value: Record<string, unknown>) {
   emit('update:modelValue', {
     ...props.modelValue,
-    ...value
+    ...(value as typeof tributeConfig.value)
   })
-}
-
-// Watch for section open state
-function handleOpenChange(sectionId: string, isOpen: boolean) {
-  openSection.value = isOpen ? sectionId : null
 }
 </script>
 
 <template>
   <div class="space-y-2">
-    <ConfigSection
+    <FormRenderer
       :section="tributeConfigSection"
       :model-value="tributeConfig"
-      :open="openSection === 'tribute'"
       @update:model-value="handleTributeUpdate"
-      @update:open="(v) => handleOpenChange('tribute', v)"
     />
   </div>
 </template>

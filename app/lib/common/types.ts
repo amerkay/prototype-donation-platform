@@ -124,8 +124,8 @@ export interface FormConfig {
       }
       types: {
         none: { label: string }
-        gift: { label: string }
-        memorial: { label: string }
+        gift: { enabled: boolean; label: string }
+        memorial: { enabled: boolean; label: string }
       }
       form: {
         tributeTypeSection: {
@@ -187,8 +187,6 @@ export interface FormConfig {
       modal: {
         title: string
         subtitle: string
-        saveButton: string
-        cancelButton: string
       }
       card: {
         editButton: string

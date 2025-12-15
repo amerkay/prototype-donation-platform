@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, watch } from 'vue'
+import { computed, inject } from 'vue'
 import { Field as VeeField, useField } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
@@ -11,6 +11,8 @@ import FormFieldToggle from './fields/FormFieldToggle.vue'
 import FormFieldSelect from './fields/FormFieldSelect.vue'
 import FormFieldRadioGroup from './fields/FormFieldRadioGroup.vue'
 import FormFieldObject from './fields/FormFieldObject.vue'
+import FormFieldEmoji from './fields/FormFieldEmoji.vue'
+import FormFieldGroup from './fields/FormFieldGroup.vue'
 
 interface Props {
   name: string
@@ -46,73 +48,81 @@ const fieldRules = computed(() => {
 })
 
 // Use useField to get direct access to field state
-const { resetField } = useField(props.name, fieldRules, {
+useField(props.name, fieldRules, {
   syncVModel: false
 })
 
-// Clear errors when field becomes hidden
-watch(isVisible, (visible) => {
-  if (!visible) {
-    // Reset validation state when hidden
-    resetField({ value: undefined })
-  }
-})
+// Note: We don't reset field values when they become hidden
+// This preserves user input when toggling visibility on/off
 </script>
 
 <template>
   <VeeField v-slot="{ field, errors, meta: fieldMeta }" :name="name" :rules="fieldRules">
-    <template v-if="!isVisible">
-      <!-- Field is registered but renders nothing when hidden -->
-    </template>
-    <FormFieldText
-      v-else-if="meta.type === 'text'"
-      :field="field"
-      :errors="fieldMeta.touched ? errors : []"
-      :meta="meta"
-      :name="name"
-    />
-    <FormFieldTextarea
-      v-else-if="meta.type === 'textarea'"
-      :field="field"
-      :errors="fieldMeta.touched ? errors : []"
-      :meta="meta"
-      :name="name"
-    />
-    <FormFieldNumber
-      v-else-if="meta.type === 'number'"
-      :field="field"
-      :errors="fieldMeta.touched ? errors : []"
-      :meta="meta"
-      :name="name"
-    />
-    <FormFieldToggle
-      v-else-if="meta.type === 'toggle'"
-      :field="field"
-      :errors="fieldMeta.touched ? errors : []"
-      :meta="meta"
-      :name="name"
-    />
-    <FormFieldSelect
-      v-else-if="meta.type === 'select'"
-      :field="field"
-      :errors="fieldMeta.touched ? errors : []"
-      :meta="meta"
-      :name="name"
-    />
-    <FormFieldRadioGroup
-      v-else-if="meta.type === 'radio-group'"
-      :field="field"
-      :errors="fieldMeta.touched ? errors : []"
-      :meta="meta"
-      :name="name"
-    />
-    <FormFieldObject
-      v-else-if="meta.type === 'object'"
-      :field="field"
-      :errors="fieldMeta.touched ? errors : []"
-      :meta="meta"
-      :name="name"
-    />
-    <div v-else class="text-destructive text-sm">Unknown field type: {{ meta.type }}</div>
+    <div v-show="isVisible">
+      <FormFieldText
+        v-if="meta.type === 'text'"
+        :field="field"
+        :errors="fieldMeta.touched ? errors : []"
+        :meta="meta"
+        :name="name"
+      />
+      <FormFieldTextarea
+        v-else-if="meta.type === 'textarea'"
+        :field="field"
+        :errors="fieldMeta.touched ? errors : []"
+        :meta="meta"
+        :name="name"
+      />
+      <FormFieldNumber
+        v-else-if="meta.type === 'number'"
+        :field="field"
+        :errors="fieldMeta.touched ? errors : []"
+        :meta="meta"
+        :name="name"
+      />
+      <FormFieldToggle
+        v-else-if="meta.type === 'toggle'"
+        :field="field"
+        :errors="fieldMeta.touched ? errors : []"
+        :meta="meta"
+        :name="name"
+      />
+      <FormFieldSelect
+        v-else-if="meta.type === 'select'"
+        :field="field"
+        :errors="fieldMeta.touched ? errors : []"
+        :meta="meta"
+        :name="name"
+      />
+      <FormFieldRadioGroup
+        v-else-if="meta.type === 'radio-group'"
+        :field="field"
+        :errors="fieldMeta.touched ? errors : []"
+        :meta="meta"
+        :name="name"
+      />
+      <FormFieldObject
+        v-else-if="meta.type === 'object'"
+        :field="field"
+        :errors="fieldMeta.touched ? errors : []"
+        :meta="meta"
+        :name="name"
+      />
+      <FormFieldEmoji
+        v-else-if="meta.type === 'emoji'"
+        :field="field"
+        :errors="fieldMeta.touched ? errors : []"
+        :meta="meta"
+        :name="name"
+      />
+      <FormFieldGroup
+        v-else-if="meta.type === 'field-group'"
+        :field="field"
+        :errors="fieldMeta.touched ? errors : []"
+        :meta="meta"
+        :name="name"
+      />
+      <div v-else class="text-destructive text-sm">Unknown field type: {{ meta.type }}</div>
+    </div>
   </VeeField>
 </template>

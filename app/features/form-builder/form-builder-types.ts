@@ -12,6 +12,8 @@ export type FieldType =
   | 'radio-group'
   | 'object'
   | 'array'
+  | 'emoji'
+  | 'field-group'
 
 /**
  * Base field metadata
@@ -99,6 +101,23 @@ export interface ArrayFieldMeta extends BaseFieldMeta {
 }
 
 /**
+ * Emoji field metadata - single emoji input
+ */
+export interface EmojiFieldMeta extends BaseFieldMeta {
+  type: 'emoji'
+  maxLength?: number
+}
+
+/**
+ * Field group metadata - horizontal grouping of fields
+ */
+export interface FieldGroupMeta extends BaseFieldMeta {
+  type: 'field-group'
+  fields: FieldMetaMap
+  legend?: string
+}
+
+/**
  * Union of all field metadata types
  */
 export type FieldMeta =
@@ -110,6 +129,8 @@ export type FieldMeta =
   | RadioGroupFieldMeta
   | ObjectFieldMeta
   | ArrayFieldMeta
+  | EmojiFieldMeta
+  | FieldGroupMeta
 
 /**
  * Map of field paths to their metadata

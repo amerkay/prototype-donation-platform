@@ -32,9 +32,9 @@ function handleTributeConfigUpdate(value: FormConfig['features']['tribute']) {
     />
 
     <!-- Debug output -->
-    <div class="mt-8 p-4 bg-muted rounded-lg">
+    <!-- <div class="mt-8 p-4 bg-muted rounded-lg">
       <h3 class="text-sm font-semibold mb-2">Current Config (Debug)</h3>
       <pre class="text-xs overflow-auto max-h-96">{{ JSON.stringify(config, null, 2) }}</pre>
-    </div>
+    </div> -->
   </div>
 </template>

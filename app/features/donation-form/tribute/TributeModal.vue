@@ -62,10 +62,10 @@ defineExpose({
     </template>
     <template #footer>
       <Button class="flex-1 md:flex-1 h-12" :disabled="!isTributeFormValid" @click="handleSave">
-        {{ config.modal.saveButton }}
+        Save
       </Button>
       <Button variant="outline" class="flex-1 md:flex-1 h-12" @click="handleCancel">
-        {{ config.modal.cancelButton }}
+        Cancel
       </Button>
     </template>
   </BaseDialogOrDrawer>
