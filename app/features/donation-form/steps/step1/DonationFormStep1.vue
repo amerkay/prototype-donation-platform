@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
+import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
 import DonationFormSingle from './DonationFormSingle.vue'
 import DonationFormMultiple from './DonationFormMultiple.vue'
-import type { TributeData, FormConfig, Product } from '@/lib/common/types'
+import type { FormConfig, Product, TributeData } from '@/lib/common/types'
 import { formConfig as defaultConfig } from '@/features/donation-form/api-sample-response-form-config'
 import { products } from '@/features/donation-form/api-sample-response-products'
 import { useImpactCart } from '~/features/donation-form/impact-cart/useImpactCart'
@@ -19,7 +20,64 @@ const props = defineProps<Props>()
 const formConfig = computed(() => props.config ?? defaultConfig)
 
 const { convertPrice } = useCurrency()
-const { multipleCart, addToCart } = useImpactCart()
+const { multipleCart, selectedRewards, addToCart, clearCart } = useImpactCart()
+
+// Use new donation form state composable
+const {
+  activeTab: selectedFrequency,
+  selectedCurrency,
+  donationAmounts,
+  selectedProducts,
+  tributeData,
+  setupSync,
+  triggerSync,
+  restoreFromSession,
+  clearSession
+} = useDonationFormState(formConfig.value.localization.defaultCurrency)
+
+// Setup sync between state and sessionStorage
+setupSync(
+  () => multipleCart.value,
+  () => selectedRewards.value
+)
+
+// Watch multipleCart for changes and trigger immediate sync when in multiple tab
+watch(
+  multipleCart,
+  () => {
+    if (selectedFrequency.value === 'multiple') {
+      triggerSync(multipleCart.value, selectedRewards.value)
+    }
+  },
+  { deep: true }
+)
+
+// Watch selectedRewards for changes and trigger immediate sync
+watch(
+  selectedRewards,
+  () => {
+    triggerSync(multipleCart.value, selectedRewards.value)
+  },
+  { deep: true }
+)
+
+// Restore session on mount
+onMounted(() => {
+  const restored = restoreFromSession()
+  if (restored) {
+    // Clear existing cart first
+    clearCart()
+
+    // Restore multiple cart items
+    restored.multipleCart.forEach((item) => {
+      addToCart(item, item.price || 0, 'multiple', item.quantity, item.tribute)
+    })
+
+    // Restore selected rewards
+    selectedRewards.value.clear()
+    restored.selectedRewards.forEach((id) => selectedRewards.value.add(id))
+  }
+})
 
 // Extract config values - now reactive to config changes
 const CURRENCIES = computed(() =>
@@ -38,20 +96,6 @@ const ALLOW_MULTIPLE_ITEMS = computed(() => formConfig.value.features.impactCart
 const INITIAL_PRODUCTS_DISPLAYED = computed(
   () => formConfig.value.features.impactCart.initialDisplay
 )
-
-// State
-const selectedCurrency = ref(formConfig.value.localization.defaultCurrency)
-const selectedFrequency = ref('once')
-const donationAmounts = ref({ once: 0, monthly: 0, yearly: 0 })
-const selectedProducts = ref<{ monthly: Product | null; yearly: Product | null }>({
-  monthly: null,
-  yearly: null
-})
-const tributeData = ref<{
-  once: TributeData | undefined
-  monthly: TributeData | undefined
-  yearly: TributeData | undefined
-}>({ once: undefined, monthly: undefined, yearly: undefined })
 
 // Refs
 const multipleFormRef = ref<InstanceType<typeof DonationFormMultiple> | null>(null)
@@ -115,6 +159,9 @@ const handleNext = () => {
     selectedProducts: selectedProducts.value,
     multipleCart: multipleCart.value
   })
+
+  // TODO: When implementing actual form submission, call clearSession() on success
+  // clearSession()
 }
 
 const handleSwitchToTab = (tab: 'monthly' | 'yearly', openModal?: boolean) => {
@@ -151,6 +198,11 @@ const handleRemoveTribute = () => {
   const freqKey = selectedFrequency.value as 'once' | 'monthly' | 'yearly'
   tributeData.value[freqKey] = undefined
 }
+
+// Expose clearSession for parent components (e.g., after successful form submission)
+defineExpose({
+  clearSession
+})
 
 // Watch for tab switches to "multiple" - auto-add selected product if cart is empty
 watch(selectedFrequency, (newFreq, oldFreq) => {

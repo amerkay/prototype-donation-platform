@@ -17,6 +17,15 @@ export function createRewardsConfigSection(): ConfigSectionDef {
         description: 'Show free gift rewards when donation meets threshold',
         classLabel: 'font-bold'
       },
+      chooseProducts: {
+        type: 'field-group',
+        label: 'Branding',
+        collapsible: true,
+        collapsibleDefaultOpen: false,
+        badgeLabel: 'On my TODO list',
+        badgeVariant: 'secondary',
+        isDisabled: true
+      },
       ui: {
         type: 'field-group',
         label: 'UI Labels',
