@@ -3,8 +3,8 @@
 <script setup lang="ts">
 import { ref, provide } from 'vue'
 import AppSidebar from '~/features/admin/sidebar/AppSidebar.vue'
-import FormSettings from '~/features/admin/FormSettings.vue'
-import FormPreview from '~/features/admin/FormPreview.vue'
+import DonationFormSettings from '~/features/admin/DonationFormSettings.vue'
+import DonationFormPreview from '~/features/admin/DonationFormPreview.vue'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,7 +18,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/s
 import { formConfig as sampleConfig } from '~/features/donation-form/api-sample-response-form-config'
 import type { FormConfig } from '@/lib/common/types'
 
-// Create reactive config that both FormSettings and FormPreview will share
+// Create reactive config that both DonationFormSettings and DonationFormPreview will share
 const formConfig = ref<FormConfig>(structuredClone(sampleConfig))
 
 // Provide config to all child components
@@ -54,12 +54,12 @@ provide('formConfig', formConfig)
         <div class="space-y-4 lg:flex lg:space-x-4">
           <div class="grow sm:max-w-[45vw]">
             <p class="text-muted-foreground text-sm font-semibold mb-2">Form Settings</p>
-            <FormSettings />
+            <DonationFormSettings />
           </div>
 
           <div class="sm:mx-auto sm:max-w-sm sm:w-sm">
             <p class="text-muted-foreground text-sm font-semibold mb-2">Form Preview</p>
-            <FormPreview />
+            <DonationFormPreview />
           </div>
         </div>
       </div>
