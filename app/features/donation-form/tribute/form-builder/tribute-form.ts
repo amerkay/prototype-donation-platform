@@ -30,21 +30,26 @@ export function createTributeFormSection(
         options
       },
       // Honoree section - visible when type is not 'none'
-      honoreeFirstName: {
-        type: 'text',
+      honoreeName: {
+        type: 'field-group',
         label: config.form.honoreeSection.fields.firstName.label,
-        placeholder: config.form.honoreeSection.fields.firstName.placeholder,
         visibleWhen: (values) => values.type !== 'none',
-        class: 'col-span-1',
-        rules: z.string().min(2, config.validation.honoreeFirstName.minLength)
-      },
-      honoreeLastName: {
-        type: 'text',
-        label: config.form.honoreeSection.fields.lastName.label,
-        placeholder: config.form.honoreeSection.fields.lastName.placeholder,
-        optional: true,
-        visibleWhen: (values) => values.type !== 'none',
-        class: 'col-span-1'
+        fields: {
+          honoreeFirstName: {
+            type: 'text',
+            label: config.form.honoreeSection.fields.firstName.label,
+            placeholder: config.form.honoreeSection.fields.firstName.placeholder,
+            class: 'col-span-1',
+            rules: z.string().min(2, config.validation.honoreeFirstName.minLength)
+          },
+          honoreeLastName: {
+            type: 'text',
+            label: config.form.honoreeSection.fields.lastName.label,
+            placeholder: config.form.honoreeSection.fields.lastName.placeholder,
+            optional: true,
+            class: 'col-span-1'
+          }
+        }
       },
       relationship: {
         type: 'select',
@@ -71,23 +76,27 @@ export function createTributeFormSection(
         visibleWhen: (values) => values.type === 'gift' && values.sendECard === true
       },
       // Recipient name fields - visible when sendECard is true and NOT sameAsHonoree
-      recipientFirstName: {
-        type: 'text',
+      recipientName: {
+        type: 'field-group',
         label: config.form.eCardSection.fields.firstName.label,
-        placeholder: config.form.eCardSection.fields.firstName.placeholder,
         visibleWhen: (values) =>
           values.type !== 'none' && values.sendECard === true && values.sameAsHonoree !== true,
-        class: 'col-span-1',
-        rules: z.string().min(2, config.validation.recipientFirstName.minLength)
-      },
-      recipientLastName: {
-        type: 'text',
-        label: config.form.eCardSection.fields.lastName.label,
-        placeholder: config.form.eCardSection.fields.lastName.placeholder,
-        optional: true,
-        visibleWhen: (values) =>
-          values.type !== 'none' && values.sendECard === true && values.sameAsHonoree !== true,
-        class: 'col-span-1'
+        fields: {
+          recipientFirstName: {
+            type: 'text',
+            label: config.form.eCardSection.fields.firstName.label,
+            placeholder: config.form.eCardSection.fields.firstName.placeholder,
+            class: 'col-span-1',
+            rules: z.string().min(2, config.validation.recipientFirstName.minLength)
+          },
+          recipientLastName: {
+            type: 'text',
+            label: config.form.eCardSection.fields.lastName.label,
+            placeholder: config.form.eCardSection.fields.lastName.placeholder,
+            optional: true,
+            class: 'col-span-1'
+          }
+        }
       },
       // Email - visible when sendECard is true
       recipientEmail: {

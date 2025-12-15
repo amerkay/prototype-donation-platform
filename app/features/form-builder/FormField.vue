@@ -23,8 +23,15 @@ const props = defineProps<Props>()
 // Inject form values for conditional visibility
 const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
 
+// Inject parent group visibility (if this field is inside a field-group)
+const parentGroupVisible = inject<() => boolean>('parentGroupVisible', () => true)
+
 // Check if field should be visible
 const isVisible = computed(() => {
+  // First check if parent group is visible
+  if (!parentGroupVisible()) return false
+
+  // Then check this field's own visibility
   if (!props.meta.visibleWhen) return true
   return props.meta.visibleWhen(formValues())
 })

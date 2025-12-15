@@ -28,13 +28,17 @@ const isSameAsHonoree =
 
 const formValues = ref({
   type: props.modelValue?.type ?? 'none',
-  honoreeFirstName: props.modelValue?.honoree?.firstName ?? '',
-  honoreeLastName: props.modelValue?.honoree?.lastName ?? '',
+  honoreeName: {
+    honoreeFirstName: props.modelValue?.honoree?.firstName ?? '',
+    honoreeLastName: props.modelValue?.honoree?.lastName ?? ''
+  },
   relationship: props.modelValue?.honoree?.relationship ?? '',
   sendECard: props.modelValue?.eCard?.send ?? false,
   sameAsHonoree: isSameAsHonoree ?? false,
-  recipientFirstName: props.modelValue?.eCard?.recipient?.firstName ?? '',
-  recipientLastName: props.modelValue?.eCard?.recipient?.lastName ?? '',
+  recipientName: {
+    recipientFirstName: props.modelValue?.eCard?.recipient?.firstName ?? '',
+    recipientLastName: props.modelValue?.eCard?.recipient?.lastName ?? ''
+  },
   recipientEmail: props.modelValue?.eCard?.recipient?.email ?? ''
 })
 
@@ -48,8 +52,8 @@ watch(
 
     if (current.type !== 'none') {
       data.honoree = {
-        firstName: current.honoreeFirstName ?? '',
-        lastName: current.honoreeLastName ?? '',
+        firstName: current.honoreeName?.honoreeFirstName ?? '',
+        lastName: current.honoreeName?.honoreeLastName ?? '',
         relationship: current.relationship ?? ''
       }
 
@@ -60,8 +64,12 @@ watch(
       if (current.sendECard) {
         // Use honoree name if sameAsHonoree is true
         data.eCard.recipient = {
-          firstName: current.sameAsHonoree ? current.honoreeFirstName : current.recipientFirstName,
-          lastName: current.sameAsHonoree ? current.honoreeLastName : current.recipientLastName,
+          firstName: current.sameAsHonoree
+            ? current.honoreeName?.honoreeFirstName
+            : current.recipientName?.recipientFirstName,
+          lastName: current.sameAsHonoree
+            ? current.honoreeName?.honoreeLastName
+            : current.recipientName?.recipientLastName,
           email: current.recipientEmail ?? ''
         }
       }
