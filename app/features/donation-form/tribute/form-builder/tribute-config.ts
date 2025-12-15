@@ -53,6 +53,14 @@ export function createTributeConfigSection(): ConfigSectionDef {
         collapsible: true,
         collapsibleDefaultOpen: false,
         class: 'gap-4',
+        rules: z
+          .object({
+            gift: z.object({ enabled: z.boolean() }),
+            memorial: z.object({ enabled: z.boolean() })
+          })
+          .refine((data) => data.gift.enabled || data.memorial.enabled, {
+            message: 'At least one of Gift or Memorial options must be enabled'
+          }),
         fields: {
           none: {
             type: 'field-group',

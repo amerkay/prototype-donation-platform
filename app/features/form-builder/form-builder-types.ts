@@ -106,6 +106,7 @@ export interface FieldGroupMeta extends BaseFieldMeta {
   legend?: string
   collapsible?: boolean
   collapsibleDefaultOpen?: boolean
+  rules?: z.ZodTypeAny | ((values: Record<string, unknown>) => z.ZodTypeAny)
 }
 
 /**

@@ -110,7 +110,7 @@ useField(props.name, fieldRules, {
       <FormFieldGroup
         v-else-if="meta.type === 'field-group'"
         :field="field"
-        :errors="fieldMeta.touched ? errors : []"
+        :errors="meta.rules && errors.length > 0 ? errors : fieldMeta.touched ? errors : []"
         :meta="meta"
         :name="name"
       />
