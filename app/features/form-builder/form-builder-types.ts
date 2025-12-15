@@ -13,6 +13,7 @@ export type FieldType =
   | 'array'
   | 'emoji'
   | 'field-group'
+  | 'card'
 
 /**
  * Base field metadata
@@ -101,6 +102,13 @@ export interface EmojiFieldMeta extends BaseFieldMeta {
 }
 
 /**
+ * Card field metadata - informational display card
+ */
+export interface CardFieldMeta extends BaseFieldMeta {
+  type: 'card'
+}
+
+/**
  * Field group metadata - horizontal grouping of fields
  */
 export interface FieldGroupMeta extends BaseFieldMeta {
@@ -124,6 +132,7 @@ export type FieldMeta =
   | RadioGroupFieldMeta
   | ArrayFieldMeta
   | EmojiFieldMeta
+  | CardFieldMeta
   | FieldGroupMeta
 
 /**

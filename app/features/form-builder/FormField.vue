@@ -11,6 +11,7 @@ import FormFieldToggle from './fields/FormFieldToggle.vue'
 import FormFieldSelect from './fields/FormFieldSelect.vue'
 import FormFieldRadioGroup from './fields/FormFieldRadioGroup.vue'
 import FormFieldEmoji from './fields/FormFieldEmoji.vue'
+import FormFieldCard from './fields/FormFieldCard.vue'
 import FormFieldGroup from './fields/FormFieldGroup.vue'
 import FormFieldArray from './fields/FormFieldArray.vue'
 
@@ -117,6 +118,7 @@ useField(props.name, fieldRules, {
         :meta="meta"
         :name="name"
       />
+      <FormFieldCard v-else-if="meta.type === 'card'" :meta="meta" />
       <FormFieldGroup
         v-else-if="meta.type === 'field-group'"
         :field="field"

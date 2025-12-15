@@ -39,6 +39,28 @@ export function createFormConfigSection(): ConfigSectionDef {
         collapsibleDefaultOpen: false,
         class: 'space-y-3',
         fields: {
+          comingSoon: {
+            type: 'card',
+            label: 'Coming Soon',
+            description: 'Currency and localization configuration will be available soon'
+          }
+        }
+      },
+      /* COMMENTED OUT - Full configuration
+      localization: {
+        type: 'field-group',
+        label: 'Currency Settings',
+        collapsible: true,
+        collapsibleDefaultOpen: false,
+        class: 'space-y-3',
+        fields: {
+      localization: {
+        type: 'field-group',
+        label: 'Currency Settings',
+        collapsible: true,
+        collapsibleDefaultOpen: false,
+        class: 'space-y-3',
+        fields: {
           defaultCurrency: {
             type: 'select',
             label: 'Default Currency',
@@ -93,6 +115,29 @@ export function createFormConfigSection(): ConfigSectionDef {
           }
         }
       },
+      */
+      pricing: {
+        type: 'field-group',
+        label: 'Pricing Configuration',
+        collapsible: true,
+        collapsibleDefaultOpen: false,
+        class: 'space-y-3',
+        fields: {
+          comingSoon: {
+            type: 'card',
+            label: 'Coming Soon',
+            description: 'Pricing and frequency configuration will be available soon'
+          }
+        }
+      }
+      /* COMMENTED OUT - Full configuration
+      pricing: {
+        type: 'field-group',
+        label: 'Pricing Configuration',
+        collapsible: true,
+        collapsibleDefaultOpen: false,
+        class: 'space-y-3',
+        fields: {
       pricing: {
         type: 'field-group',
         label: 'Pricing Configuration',
@@ -186,6 +231,7 @@ export function createFormConfigSection(): ConfigSectionDef {
           }
         }
       }
+      */
     }
   }
 }
