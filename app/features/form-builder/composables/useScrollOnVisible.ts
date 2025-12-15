@@ -88,12 +88,16 @@ export function useScrollOnVisible<T>(items: Ref<T[]>, options: ScrollOnVisibleO
   )
 
   return {
-    setElementRef: (key: string, el: HTMLElement | null) => {
-      elementRefs.value[key] = el
+    setElementRef: (key: string, el: any) => {
+      // Extract HTMLElement from component instance or use directly
+      const htmlElement = el?.$el || el
+      elementRefs.value[key] = htmlElement instanceof HTMLElement ? htmlElement : null
     },
     scrollToElement: (key: string, customOffset?: number) => {
       const element = elementRefs.value[key]
-      if (element) scrollToElement(element, customOffset ?? scrollOffset)
+      if (element instanceof HTMLElement) {
+        scrollToElement(element, customOffset ?? scrollOffset)
+      }
     }
   }
 }

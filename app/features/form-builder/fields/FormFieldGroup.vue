@@ -86,7 +86,7 @@ watch(isOpen, (newIsOpen) => {
     <!-- Collapsible version -->
     <Collapsible
       v-if="meta.collapsible"
-      :ref="(el) => setElementRef(collapsibleKey, el as HTMLElement | null)"
+      :ref="(el) => setElementRef(collapsibleKey, el)"
       v-model:open="isOpen"
       class="border rounded-lg"
     >
