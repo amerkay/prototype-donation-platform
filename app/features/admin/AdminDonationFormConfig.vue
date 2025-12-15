@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AdminConfigBuilder from './AdminConfigBuilder.vue'
+import FormRenderer from '@/features/form-builder/FormRenderer.vue'
 import { createFormConfigSection } from '../donation-form/form-builder/form-config'
 import { createMultipleProductsConfigSection } from '../donation-form/impact-cart/form-builder/impact-cart-config'
 import { createProductSelectorConfigSection } from '../donation-form/product-selector/form-builder/product-selector-config'
@@ -102,62 +102,68 @@ function handleTributeUpdate(value: Record<string, unknown>) {
 <template>
   <div class="max-w-4xl mx-auto space-y-6">
     <!-- Form Settings (includes form, localization, pricing) -->
-    <AdminConfigBuilder
-      :section="formSection"
-      :model-value="{
-        form: config.form,
-        localization: config.localization,
-        pricing: config.pricing
-      }"
-      class="bg-muted/50 rounded-xl"
-      @update:model-value="handleFormUpdate"
-    />
+    <div class="px-6 py-2 bg-muted/50 rounded-xl">
+      <FormRenderer
+        :section="formSection"
+        :model-value="{
+          form: config.form,
+          localization: config.localization,
+          pricing: config.pricing
+        }"
+        @update:model-value="handleFormUpdate"
+      />
+    </div>
 
     <!-- Multiple Products -->
-    <AdminConfigBuilder
-      :section="impactCartSection"
-      :model-value="{
-        enabled: config.features.impactCart.enabled,
-        settings: { initialDisplay: config.features.impactCart.initialDisplay }
-      }"
-      class="bg-muted/50 rounded-xl"
-      @update:model-value="handleMultipleProductsUpdate"
-    />
+    <div class="px-6 py-2 bg-muted/50 rounded-xl">
+      <FormRenderer
+        :section="impactCartSection"
+        :model-value="{
+          enabled: config.features.impactCart.enabled,
+          settings: { initialDisplay: config.features.impactCart.initialDisplay }
+        }"
+        @update:model-value="handleMultipleProductsUpdate"
+      />
+    </div>
 
     <!-- Product Selector -->
-    <AdminConfigBuilder
-      :section="productSelectorSection"
-      :model-value="config.features.productSelector"
-      class="bg-muted/50 rounded-xl"
-      @update:model-value="handleProductSelectorUpdate"
-    />
+    <div class="px-6 py-2 bg-muted/50 rounded-xl">
+      <FormRenderer
+        :section="productSelectorSection"
+        :model-value="config.features.productSelector"
+        @update:model-value="handleProductSelectorUpdate"
+      />
+    </div>
 
     <!-- Rewards -->
-    <AdminConfigBuilder
-      :section="rewardsSection"
-      :model-value="config.features.rewards"
-      class="bg-muted/50 rounded-xl"
-      @update:model-value="handleRewardsUpdate"
-    />
+    <div class="px-6 py-2 bg-muted/50 rounded-xl">
+      <FormRenderer
+        :section="rewardsSection"
+        :model-value="config.features.rewards"
+        @update:model-value="handleRewardsUpdate"
+      />
+    </div>
 
     <!-- Shipping Notice -->
-    <AdminConfigBuilder
-      :section="shippingNoticeSection"
-      :model-value="{
-        showNotice: config.features.shippingNotice.showNotice,
-        settings: { noticeText: config.features.shippingNotice.noticeText }
-      }"
-      class="bg-muted/50 rounded-xl"
-      @update:model-value="handleShippingNoticeUpdate"
-    />
+    <div class="px-6 py-2 bg-muted/50 rounded-xl">
+      <FormRenderer
+        :section="shippingNoticeSection"
+        :model-value="{
+          showNotice: config.features.shippingNotice.showNotice,
+          settings: { noticeText: config.features.shippingNotice.noticeText }
+        }"
+        @update:model-value="handleShippingNoticeUpdate"
+      />
+    </div>
 
     <!-- Tribute Settings -->
-    <AdminConfigBuilder
-      :section="tributeSection"
-      :model-value="config.features.tribute"
-      class="bg-muted/50 rounded-xl"
-      @update:model-value="handleTributeUpdate"
-    />
+    <div class="px-6 py-2 bg-muted/50 rounded-xl">
+      <FormRenderer
+        :section="tributeSection"
+        :model-value="config.features.tribute"
+        @update:model-value="handleTributeUpdate"
+      />
+    </div>
 
     <!-- Debug output -->
     <!-- <div class="mt-8 p-4 bg-muted rounded-lg">
