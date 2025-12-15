@@ -29,26 +29,6 @@ interface DonationFormSession {
   lastSyncedAt: number
 }
 
-// Helper to serialize/deserialize session
-const serializeSession = (session: DonationFormSession): string => {
-  return JSON.stringify({
-    ...session,
-    selectedRewardsSnapshot: Array.from(session.selectedRewardsSnapshot)
-  })
-}
-
-const deserializeSession = (json: string): DonationFormSession | null => {
-  try {
-    const parsed = JSON.parse(json)
-    return {
-      ...parsed,
-      selectedRewardsSnapshot: parsed.selectedRewardsSnapshot || []
-    }
-  } catch {
-    return null
-  }
-}
-
 export function useDonationFormState(defaultCurrency: string) {
   // Nuxt useState for reactive in-memory state
   const activeTab = useState<'once' | 'monthly' | 'yearly' | 'multiple'>(
@@ -88,13 +68,13 @@ export function useDonationFormState(defaultCurrency: string) {
       donationAmounts: { ...donationAmounts.value },
       selectedProducts: { ...selectedProducts.value },
       tributeData: { ...tributeData.value },
-      multipleCartSnapshot: activeTab.value === 'multiple' ? [...multipleCart] : [],
+      multipleCartSnapshot: [...multipleCart],
       selectedRewardsSnapshot: Array.from(selectedRewards),
       lastSyncedAt: Date.now()
     }
 
     try {
-      sessionStorage.setItem(SESSION_KEY, serializeSession(session))
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(session))
     } catch (error) {
       console.warn('Failed to sync donation form to session storage:', error)
     }
@@ -110,8 +90,7 @@ export function useDonationFormState(defaultCurrency: string) {
       const stored = sessionStorage.getItem(SESSION_KEY)
       if (!stored) return null
 
-      const session = deserializeSession(stored)
-      if (!session) return null
+      const session: DonationFormSession = JSON.parse(stored)
 
       // Restore state
       activeTab.value = session.activeTab

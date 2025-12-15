@@ -21,7 +21,7 @@ The donation form uses a hybrid approach combining **Nuxt `useState`** for react
 │  useDonationFormState (State Manager)                   │
 │  ├─ useState: Reactive, SSR-safe, DevTools-visible      │
 │  ├─ Watches: Debounced sync (500ms) on state changes    │
-│  ├─ Tab Isolation: Only active tab data is synced       │
+│  ├─ Syncs all tab data + cart to session                │
 │  └─ Session Sync: Periodic write to sessionStorage      │
 └────────────────┬────────────────────────────────────────┘
                  │
@@ -30,7 +30,7 @@ The donation form uses a hybrid approach combining **Nuxt `useState`** for react
 │  sessionStorage: 'donation-form:session'                │
 │  ├─ Persists across page refreshes                      │
 │  ├─ Cleared on tab close                                │
-│  └─ Contains only active tab's state + global data      │
+│  └─ Contains all form state (all tabs + cart)           │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -39,11 +39,10 @@ The donation form uses a hybrid approach combining **Nuxt `useState`** for react
 ### `useDonationFormState.ts`
 
 Main state management composable that:
-
 - Creates Nuxt `useState` refs for all form data
 - Watches state changes and syncs to sessionStorage (debounced)
 - Provides restore/clear methods for session management
-- Only syncs the **currently active tab's data**
+- Syncs **all tab data** to session for complete state preservation
 
 ### `useImpactCart.ts`
 
@@ -128,18 +127,16 @@ interface DonationFormSession {
 ### What Gets Synced?
 
 ```typescript
-// Active tab: 'once' → Only once data
-{ activeTab: 'once', donationAmounts: { once: 25 }, ... }
-
-// Active tab: 'monthly' → Only monthly data
-{ activeTab: 'monthly', donationAmounts: { monthly: 10 },
-  selectedProducts: { monthly: {...} }, ... }
-
-// Active tab: 'multiple' → Full cart
-{ activeTab: 'multiple', multipleCartSnapshot: [...], ... }
-```
-
-## Usage Example
+// All tabs' data is always synced
+{ 
+  activeTab: 'once',
+  donationAmounts: { once: 25, monthly: 0, yearly: 0 },
+  selectedProducts: { monthly: null, yearly: null },
+  tributeData: { once: undefined, monthly: undefined, yearly: undefined },
+  multipleCartSnapshot: [...],
+  selectedRewardsSnapshot: [...]
+}
+```## Usage Example
 
 ### In DonationFormStep1.vue
 
