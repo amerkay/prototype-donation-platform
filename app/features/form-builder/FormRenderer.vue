@@ -19,14 +19,23 @@ const emit = defineEmits<{
   submit: []
 }>()
 
+// Transform initial values to nest under section ID for unique field names
+const initialFormValues = computed(() => ({
+  [props.section.id]: props.modelValue
+}))
+
 // Use the composition API to access form context
 const { values, meta, setValues, handleSubmit } = useForm({
-  initialValues: props.modelValue,
+  initialValues: initialFormValues.value,
   validateOnMount: false
 })
 
 // Provide form values to child fields for conditional visibility
-provide('formValues', () => values as Record<string, unknown>)
+// Unwrap from section ID prefix to match expected structure
+provide('formValues', () => {
+  const sectionValues = (values as Record<string, unknown>)[props.section.id]
+  return (sectionValues as Record<string, unknown>) || {}
+})
 
 // Provide submit function for Enter key handling in text fields
 provide('submitForm', () => {
@@ -53,7 +62,8 @@ const allFields = computed(() => {
 const { setElementRef } = useScrollOnVisible(allFields, {
   isVisible: ([, fieldMeta]) => {
     if (!fieldMeta.visibleWhen) return true
-    return fieldMeta.visibleWhen(values as Record<string, unknown>)
+    const sectionValues = (values as Record<string, unknown>)[props.section.id]
+    return fieldMeta.visibleWhen((sectionValues as Record<string, unknown>) || {})
   },
   getKey: ([key]) => key
 })
@@ -64,7 +74,7 @@ watch(
   () => props.modelValue,
   (newValue) => {
     isUpdatingFromProp = true
-    setValues(newValue)
+    setValues({ [props.section.id]: newValue } as any)
     nextTick(() => {
       isUpdatingFromProp = false
     })
@@ -77,7 +87,8 @@ watch(
   values,
   (newValues) => {
     if (!isUpdatingFromProp) {
-      emit('update:modelValue', newValues as Record<string, unknown>)
+      const sectionValues = (newValues as Record<string, unknown>)[props.section.id]
+      emit('update:modelValue', (sectionValues as Record<string, unknown>) || {})
     }
   },
   { deep: true }
@@ -85,7 +96,8 @@ watch(
 
 // Handle form submission
 const onSubmit = handleSubmit((submittedValues) => {
-  emit('update:modelValue', submittedValues)
+  const sectionValues = (submittedValues as Record<string, unknown>)[props.section.id]
+  emit('update:modelValue', (sectionValues as Record<string, unknown>) || {})
   emit('submit')
 })
 
@@ -112,7 +124,7 @@ defineExpose({
         :key="`${fieldKey}-${index}`"
         :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)"
       >
-        <FormField :name="String(fieldKey)" :meta="fieldMeta" />
+        <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" />
       </div>
     </Accordion>
     <div v-else class="space-y-4">
@@ -122,7 +134,7 @@ defineExpose({
         :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)"
         class=""
       >
-        <FormField :name="String(fieldKey)" :meta="fieldMeta" />
+        <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" />
       </div>
     </div>
   </form>

@@ -12,6 +12,7 @@ import FormFieldSelect from './fields/FormFieldSelect.vue'
 import FormFieldRadioGroup from './fields/FormFieldRadioGroup.vue'
 import FormFieldEmoji from './fields/FormFieldEmoji.vue'
 import FormFieldGroup from './fields/FormFieldGroup.vue'
+import FormFieldArray from './fields/FormFieldArray.vue'
 
 interface Props {
   name: string
@@ -123,7 +124,16 @@ useField(props.name, fieldRules, {
         :meta="meta"
         :name="name"
       />
-      <div v-else class="text-destructive text-sm">Unknown field type: {{ meta.type }}</div>
+      <FormFieldArray
+        v-else-if="meta.type === 'array'"
+        :field="field"
+        :errors="fieldMeta.touched ? errors : []"
+        :meta="meta"
+        :name="name"
+      />
+      <div v-else class="text-destructive text-sm">
+        Unknown field type: {{ (meta as { type: string }).type }}
+      </div>
     </div>
   </VeeField>
 </template>

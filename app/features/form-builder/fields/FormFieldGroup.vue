@@ -90,7 +90,7 @@ watch(isOpen, (newIsOpen) => {
     <template v-if="meta.collapsible">
       <AccordionItem :ref="(el: any) => setElementRef(collapsibleKey, el)" :value="name">
         <AccordionTrigger class="hover:no-underline group">
-          <div class="flex items-center justify-between w-full">
+          <div class="flex items-start justify-between w-full">
             <div class="flex-1 text-left">
               <h3
                 v-if="meta.legend || meta.label"
@@ -103,9 +103,7 @@ watch(isOpen, (newIsOpen) => {
               </p>
               <FieldError v-if="errors.length > 0" :errors="errors" class="mt-1" />
             </div>
-            <span class="text-sm text-muted-foreground inline-block -mt-5">{{
-              isOpen ? '' : 'Edit'
-            }}</span>
+            <span class="text-sm text-muted-foreground">{{ isOpen ? '' : 'Edit' }}</span>
           </div>
         </AccordionTrigger>
         <AccordionContent>
