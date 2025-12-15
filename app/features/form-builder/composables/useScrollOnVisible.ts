@@ -8,28 +8,8 @@ interface ScrollOnVisibleOptions<T> {
 }
 
 /**
- * Calculate scroll amount needed to bring element into view
- */
-function calculateScrollAmount(
-  elementTop: number,
-  elementBottom: number,
-  viewportHeight: number,
-  offset: number
-): number {
-  if (elementTop >= offset && elementBottom <= viewportHeight - offset) {
-    return 0 // Already visible
-  }
-  if (elementBottom > viewportHeight - offset) {
-    return elementBottom - viewportHeight + offset // Scroll down
-  }
-  if (elementTop < offset) {
-    return elementTop - offset // Scroll up
-  }
-  return 0
-}
-
-/**
- * Scroll element into view with minimal movement
+ * Scroll element into view, keeping the top (trigger) visible
+ * Always scrolls to show the top of the element with offset from viewport top
  */
 function scrollToElement(element: HTMLElement, offset: number = 20) {
   const rect = element.getBoundingClientRect()
@@ -39,22 +19,22 @@ function scrollToElement(element: HTMLElement, offset: number = 20) {
 
   if (scrollContainer) {
     const containerRect = scrollContainer.getBoundingClientRect()
-    const scrollAmount = calculateScrollAmount(
-      rect.top - containerRect.top,
-      rect.bottom - containerRect.top,
-      containerRect.height,
-      offset
-    )
-    if (scrollAmount !== 0) {
+    const elementTopRelativeToContainer = rect.top - containerRect.top
+    const targetPosition = elementTopRelativeToContainer - offset
+
+    // Only scroll if the element top is not already at the desired position
+    if (Math.abs(targetPosition) > 1) {
       scrollContainer.scrollTo({
-        top: scrollContainer.scrollTop + scrollAmount,
+        top: scrollContainer.scrollTop + targetPosition,
         behavior: 'smooth'
       })
     }
   } else {
-    const scrollAmount = calculateScrollAmount(rect.top, rect.bottom, window.innerHeight, offset)
-    if (scrollAmount !== 0) {
-      window.scrollTo({ top: window.scrollY + scrollAmount, behavior: 'smooth' })
+    const targetPosition = rect.top - offset
+
+    // Only scroll if the element top is not already at the desired position
+    if (Math.abs(targetPosition) > 1) {
+      window.scrollTo({ top: window.scrollY + targetPosition, behavior: 'smooth' })
     }
   }
 }
@@ -88,9 +68,9 @@ export function useScrollOnVisible<T>(items: Ref<T[]>, options: ScrollOnVisibleO
   )
 
   return {
-    setElementRef: (key: string, el: any) => {
+    setElementRef: (key: string, el: HTMLElement | { $el: HTMLElement } | null) => {
       // Extract HTMLElement from component instance or use directly
-      const htmlElement = el?.$el || el
+      const htmlElement = el && typeof el === 'object' && '$el' in el ? el.$el : el
       elementRefs.value[key] = htmlElement instanceof HTMLElement ? htmlElement : null
     },
     scrollToElement: (key: string, customOffset?: number) => {
