@@ -32,6 +32,20 @@ export function createFormConfigSection(): ConfigSectionDef {
           }
         }
       },
+      branding: {
+        type: 'field-group',
+        label: 'Branding',
+        collapsible: true,
+        collapsibleDefaultOpen: false,
+        class: 'space-y-3',
+        fields: {
+          comingSoon: {
+            type: 'card',
+            label: 'TODO',
+            description: 'Branding configuration are a work in progress'
+          }
+        }
+      },
       localization: {
         type: 'field-group',
         label: 'Currency Settings',
