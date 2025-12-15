@@ -55,7 +55,9 @@ const fieldRules = computed(() => {
 
 // Use useField to get direct access to field state
 useField(props.name, fieldRules, {
-  syncVModel: false
+  syncVModel: false,
+  // Keep field value even when component unmounts (accordion closes)
+  keepValueOnUnmount: true
 })
 
 // Note: We don't reset field values when they become hidden

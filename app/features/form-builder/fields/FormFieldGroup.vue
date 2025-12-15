@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, watch, computed, inject, provide } from 'vue'
+import { ref, watch, computed, inject, provide, type Ref } from 'vue'
 import { FieldSet, FieldLegend, FieldDescription, FieldError } from '@/components/ui/field'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { Button } from '@/components/ui/button'
+import { AccordionItem, AccordionContent, AccordionTrigger } from '@/components/ui/accordion'
+import { Separator } from '@/components/ui/separator'
 import type {
   FieldGroupMeta,
   VeeFieldContext,
@@ -20,7 +20,14 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const isOpen = ref(props.meta.collapsibleDefaultOpen ?? false)
+// Get accordion state from parent (FormRenderer)
+const accordionValue = inject<Ref<string | undefined>>('accordionValue', ref(undefined))
+const isOpen = computed(() => accordionValue.value === props.name)
+
+// Set default open on mount if specified
+if (props.meta.collapsibleDefaultOpen && !accordionValue.value) {
+  accordionValue.value = props.name
+}
 
 // Setup scroll tracking for collapsible
 const collapsibleKey = computed(() => props.name)
@@ -79,52 +86,50 @@ watch(isOpen, (newIsOpen) => {
 
 <template>
   <div v-show="isGroupVisible">
-    <!-- Collapsible version -->
-    <Collapsible
-      v-if="meta.collapsible"
-      :ref="(el) => setElementRef(collapsibleKey, el)"
-      v-model:open="isOpen"
-      class="border rounded-lg"
-    >
-      <div class="flex items-center justify-between px-4 py-3 border-b">
-        <div class="flex-1">
-          <h3 v-if="meta.legend || meta.label" class="font-medium text-sm">
-            {{ meta.legend || meta.label }}
-          </h3>
-          <p v-if="meta.description" class="text-muted-foreground text-xs mt-0.5">
-            {{ meta.description }}
-          </p>
-          <FieldError v-if="errors.length > 0" :errors="errors" class="mt-1" />
-        </div>
-        <CollapsibleTrigger as-child>
-          <Button variant="ghost" size="sm" class="ml-4">
-            {{ isOpen ? 'Close' : 'Edit' }}
-          </Button>
-        </CollapsibleTrigger>
-      </div>
-      <CollapsibleContent force-mount>
-        <div v-show="isOpen" :class="[meta.class || 'space-y-6', 'p-4']">
-          <template v-for="(group, groupIndex) in fieldGroups" :key="`group-${groupIndex}`">
-            <div v-show="group.isGrid" class="contents">
-              <FormField
-                v-for="([fieldKey, fieldMeta], index) in group.fields"
-                :key="`${fieldKey}-${index}`"
-                :name="`${name}.${fieldKey}`"
-                :meta="fieldMeta"
-              />
+    <!-- Accordion Item version -->
+    <template v-if="meta.collapsible">
+      <AccordionItem :ref="(el: any) => setElementRef(collapsibleKey, el)" :value="name">
+        <AccordionTrigger class="hover:no-underline">
+          <div class="flex items-center justify-between w-full">
+            <div class="flex-1 text-left">
+              <h3 v-if="meta.legend || meta.label" class="font-medium text-sm">
+                {{ meta.legend || meta.label }}
+              </h3>
+              <p v-if="meta.description" class="text-muted-foreground text-xs mt-0.5">
+                {{ meta.description }}
+              </p>
+              <FieldError v-if="errors.length > 0" :errors="errors" class="mt-1" />
             </div>
-            <template v-if="!group.isGrid">
-              <FormField
-                v-for="([fieldKey, fieldMeta], index) in group.fields"
-                :key="`${fieldKey}-${index}`"
-                :name="`${name}.${fieldKey}`"
-                :meta="fieldMeta"
-              />
+            <span class="text-sm text-muted-foreground inline-block -mt-5">{{
+              isOpen ? '' : 'Edit'
+            }}</span>
+          </div>
+        </AccordionTrigger>
+        <AccordionContent>
+          <div :class="[meta.class, '']">
+            <template v-for="(group, groupIndex) in fieldGroups" :key="`group-${groupIndex}`">
+              <div v-show="group.isGrid" class="contents">
+                <FormField
+                  v-for="([fieldKey, fieldMeta], index) in group.fields"
+                  :key="`${fieldKey}-${index}`"
+                  :name="`${name}.${fieldKey}`"
+                  :meta="fieldMeta"
+                />
+              </div>
+              <template v-if="!group.isGrid">
+                <FormField
+                  v-for="([fieldKey, fieldMeta], index) in group.fields"
+                  :key="`${fieldKey}-${index}`"
+                  :name="`${name}.${fieldKey}`"
+                  :meta="fieldMeta"
+                />
+              </template>
             </template>
-          </template>
-        </div>
-      </CollapsibleContent>
-    </Collapsible>
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+      <Separator class="my-0" />
+    </template>
 
     <!-- Non-collapsible version -->
     <FieldSet v-else>

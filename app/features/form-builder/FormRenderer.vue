@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, watch, provide, nextTick } from 'vue'
+import { ref, computed, watch, provide, nextTick } from 'vue'
 import { useForm } from 'vee-validate'
+import { Accordion } from '@/components/ui/accordion'
 import FormField from './FormField.vue'
 import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
 import { useScrollOnVisible } from './composables/useScrollOnVisible'
@@ -30,6 +31,17 @@ provide('formValues', () => values as Record<string, unknown>)
 // Provide submit function for Enter key handling in text fields
 provide('submitForm', () => {
   onSubmit()
+})
+
+// Accordion state for collapsible field groups
+const accordionValue = ref<string | undefined>(undefined)
+provide('accordionValue', accordionValue)
+
+// Check if we have any collapsible field groups
+const hasCollapsibleGroups = computed(() => {
+  return allFields.value.some(([, fieldMeta]) => {
+    return fieldMeta.type === 'field-group' && fieldMeta.collapsible
+  })
 })
 
 // All fields - we render all of them, visibility is handled by FormField
@@ -87,13 +99,30 @@ defineExpose({
 </script>
 
 <template>
-  <form :class="['space-y-6', props.class]" @submit.prevent="onSubmit">
-    <div
-      v-for="([fieldKey, fieldMeta], index) in allFields"
-      :key="`${fieldKey}-${index}`"
-      :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)"
+  <form :class="props.class" @submit.prevent="onSubmit">
+    <Accordion
+      v-if="hasCollapsibleGroups"
+      v-model="accordionValue"
+      type="single"
+      collapsible
+      class="w-full"
     >
-      <FormField :name="String(fieldKey)" :meta="fieldMeta" />
+      <div
+        v-for="([fieldKey, fieldMeta], index) in allFields"
+        :key="`${fieldKey}-${index}`"
+        :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)"
+      >
+        <FormField :name="String(fieldKey)" :meta="fieldMeta" />
+      </div>
+    </Accordion>
+    <div v-else>
+      <div
+        v-for="([fieldKey, fieldMeta], index) in allFields"
+        :key="`${fieldKey}-${index}`"
+        :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)"
+      >
+        <FormField :name="String(fieldKey)" :meta="fieldMeta" />
+      </div>
     </div>
   </form>
 </template>
