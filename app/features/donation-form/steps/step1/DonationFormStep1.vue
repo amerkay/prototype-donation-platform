@@ -6,7 +6,7 @@ import DonationFormMultiple from './DonationFormMultiple.vue'
 import type { TributeData, FormConfig, Product } from '@/lib/common/types'
 import { formConfig as defaultConfig } from '@/features/donation-form/api-sample-response-form-config'
 import { products } from '@/features/donation-form/api-sample-response-products'
-import { useImpactCart } from '~/features/donation-form/cart/useImpactCart'
+import { useImpactCart } from '~/features/donation-form/impact-cart/useImpactCart'
 
 interface Props {
   config?: FormConfig

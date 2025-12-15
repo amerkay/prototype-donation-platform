@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ShoppingCart } from 'lucide-vue-next'
-import { getCartItemKey } from '~/features/donation-form/cart/cart-utils'
+import { getCartItemKey } from '~/features/donation-form/impact-cart/cart-utils'
 import type { CartItem, Product, FormConfig } from '@/lib/common/types'
-import CartProductLine from '~/features/donation-form/cart/ImpactCartProductLine.vue'
+import CartProductLine from '~/features/donation-form/impact-cart/ImpactCartProductLine.vue'
 import ProductListContent from '~/features/donation-form/product/ProductListContent.vue'
 import BaseDialogOrDrawer from '@/features/donation-form/common/BaseDialogOrDrawer.vue'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyContent } from '@/components/ui/empty'

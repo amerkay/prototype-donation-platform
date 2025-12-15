@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import Cart from '~/features/donation-form/cart/ImpactCart.vue'
+import Cart from '~/features/donation-form/impact-cart/ImpactCart.vue'
 import NextButton from '~/features/donation-form/common/NextButton.vue'
 import RewardsSection from '~/features/donation-form/rewards/RewardsSection.vue'
 import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNotice.vue'
 import ProductOptionsModal from '~/features/donation-form/product/ProductOptionsModal.vue'
 import type { Product, CartItem, TributeData, FormConfig } from '@/lib/common/types'
-import { getCartItemKey, parseCartItemKey } from '~/features/donation-form/cart/cart-utils'
-import { useImpactCart } from '~/features/donation-form/cart/useImpactCart'
+import { getCartItemKey, parseCartItemKey } from '~/features/donation-form/impact-cart/cart-utils'
+import { useImpactCart } from '~/features/donation-form/impact-cart/useImpactCart'
 
 const {
   multipleCart,

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AdminConfigBuilder from './AdminConfigBuilder.vue'
 import { createFormConfigSection } from '../donation-form/form-builder/form-config'
-import { createMultipleProductsConfigSection } from '../donation-form/cart/form-builder/impact-cart-config'
+import { createMultipleProductsConfigSection } from '../donation-form/impact-cart/form-builder/impact-cart-config'
 import { createProductSelectorConfigSection } from '../donation-form/product-selector/form-builder/product-selector-config'
 import { createRewardsConfigSection } from '../donation-form/rewards/form-builder/rewards-config'
 import { createShippingNoticeConfigSection } from '../donation-form/shipping-notice/form-builder/shipping-notice-config'
