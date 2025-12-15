@@ -32,22 +32,21 @@ export function createTributeFormSection(
       // Honoree section - visible when type is not 'none'
       honoreeName: {
         type: 'field-group',
-        label: config.form.honoreeSection.fields.firstName.label,
+        label: 'Honoree',
+        class: 'grid grid-cols-2 gap-4',
         visibleWhen: (values) => values.type !== 'none',
         fields: {
           honoreeFirstName: {
             type: 'text',
             label: config.form.honoreeSection.fields.firstName.label,
             placeholder: config.form.honoreeSection.fields.firstName.placeholder,
-            class: 'col-span-1',
             rules: z.string().min(2, config.validation.honoreeFirstName.minLength)
           },
           honoreeLastName: {
             type: 'text',
             label: config.form.honoreeSection.fields.lastName.label,
             placeholder: config.form.honoreeSection.fields.lastName.placeholder,
-            optional: true,
-            class: 'col-span-1'
+            optional: true
           }
         }
       },
@@ -71,14 +70,15 @@ export function createTributeFormSection(
       // Same as honoree toggle - visible when sendECard is true and type is 'gift'
       sameAsHonoree: {
         type: 'toggle',
-        label: 'Send to the gift recipient',
-        description: config.form.eCardSection.sameAsHonoree.description,
+        label: 'Same Name as Honoree',
+        // description: config.form.eCardSection.sameAsHonoree.description,
         visibleWhen: (values) => values.type === 'gift' && values.sendECard === true
       },
       // Recipient name fields - visible when sendECard is true and NOT sameAsHonoree
       recipientName: {
         type: 'field-group',
-        label: config.form.eCardSection.fields.firstName.label,
+        // label: 'eCard Recipient',
+        class: 'grid grid-cols-2 gap-4',
         visibleWhen: (values) =>
           values.type !== 'none' && values.sendECard === true && values.sameAsHonoree !== true,
         fields: {
@@ -86,15 +86,13 @@ export function createTributeFormSection(
             type: 'text',
             label: config.form.eCardSection.fields.firstName.label,
             placeholder: config.form.eCardSection.fields.firstName.placeholder,
-            class: 'col-span-1',
             rules: z.string().min(2, config.validation.recipientFirstName.minLength)
           },
           recipientLastName: {
             type: 'text',
             label: config.form.eCardSection.fields.lastName.label,
             placeholder: config.form.eCardSection.fields.lastName.placeholder,
-            optional: true,
-            class: 'col-span-1'
+            optional: true
           }
         }
       },

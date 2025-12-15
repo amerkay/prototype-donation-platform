@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, nextTick, inject, provide } from 'vue'
+import { ref, watch, computed, inject, provide } from 'vue'
 import { FieldSet, FieldLegend, FieldDescription, FieldError } from '@/components/ui/field'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Button } from '@/components/ui/button'
@@ -72,11 +72,7 @@ const fieldGroups = computed(() => {
 // Scroll to collapsible when opened
 watch(isOpen, (newIsOpen) => {
   if (newIsOpen) {
-    setTimeout(() => {
-      nextTick(() => {
-        scrollToElement(collapsibleKey.value)
-      })
-    }, 150)
+    scrollToElement(collapsibleKey.value)
   }
 })
 </script>
@@ -107,9 +103,9 @@ watch(isOpen, (newIsOpen) => {
         </CollapsibleTrigger>
       </div>
       <CollapsibleContent force-mount>
-        <div v-show="isOpen" class="p-4 space-y-6">
+        <div v-show="isOpen" :class="[meta.class || 'space-y-6', 'p-4']">
           <template v-for="(group, groupIndex) in fieldGroups" :key="`group-${groupIndex}`">
-            <div v-show="group.isGrid" class="grid grid-cols-2 gap-3">
+            <div v-show="group.isGrid" class="contents">
               <FormField
                 v-for="([fieldKey, fieldMeta], index) in group.fields"
                 :key="`${fieldKey}-${index}`"
@@ -135,9 +131,9 @@ watch(isOpen, (newIsOpen) => {
       <FieldLegend v-if="meta.legend || meta.label">{{ meta.legend || meta.label }}</FieldLegend>
       <FieldDescription v-if="meta.description">{{ meta.description }}</FieldDescription>
       <FieldError v-if="errors.length > 0" :errors="errors" class="mb-3" />
-      <div class="space-y-6">
+      <div :class="meta.class || 'space-y-6'">
         <template v-for="(group, groupIndex) in fieldGroups" :key="`group-${groupIndex}`">
-          <div v-show="group.isGrid" class="grid grid-cols-2 gap-3">
+          <div v-show="group.isGrid" class="contents">
             <FormField
               v-for="([fieldKey, fieldMeta], index) in group.fields"
               :key="`${fieldKey}-${index}`"
