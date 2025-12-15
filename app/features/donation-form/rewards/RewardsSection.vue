@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
+import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import type { Product, FormConfig } from '@/lib/common/types'
 
 interface Props {

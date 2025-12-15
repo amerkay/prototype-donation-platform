@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { Minus, Plus } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
+import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import BaseDialogOrDrawer from '~/features/donation-form/common/BaseDialogOrDrawer.vue'
 import AmountSelector from '~/features/donation-form/common/AmountSelector.vue'
 import ProductTributeFormGenerated from '~/features/donation-form/tribute/ProductTributeFormGenerated.vue'

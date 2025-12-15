@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
+import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import TributeLine from '../tribute/TributeLine.vue'
 import type { CartItem, Product, FormConfig } from '@/lib/common/types'
 

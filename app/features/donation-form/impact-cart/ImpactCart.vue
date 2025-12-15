@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ShoppingCart } from 'lucide-vue-next'
+import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import { getCartItemKey } from '~/features/donation-form/impact-cart/cart-utils'
 import type { CartItem, Product, FormConfig } from '@/lib/common/types'
 import CartProductLine from '~/features/donation-form/impact-cart/ImpactCartProductLine.vue'
