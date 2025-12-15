@@ -4,8 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import DonationFormSingle from './DonationFormSingle.vue'
 import DonationFormMultiple from './DonationFormMultiple.vue'
 import type { TributeData, FormConfig, Product } from '@/lib/common/types'
-import { formConfig as defaultConfig } from './api-sample-response-form-config'
-import { products } from './api-sample-response-products'
+import { formConfig as defaultConfig } from '@/features/donation-form/api-sample-response-form-config'
+import { products } from '@/features/donation-form/api-sample-response-products'
 import { useCart } from '~/features/donation-form/cart/useCart'
 
 interface Props {
