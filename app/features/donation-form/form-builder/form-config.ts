@@ -37,28 +37,18 @@ export function createFormConfigSection(): ConfigSectionDef {
         label: 'Branding',
         collapsible: true,
         collapsibleDefaultOpen: false,
-        class: 'space-y-3',
-        fields: {
-          comingSoon: {
-            type: 'card',
-            label: 'TODO',
-            description: 'Branding configuration are a work in progress'
-          }
-        }
+        badgeLabel: 'On my TODO list',
+        badgeVariant: 'secondary',
+        isDisabled: true
       },
       localization: {
         type: 'field-group',
         label: 'Currency Settings',
         collapsible: true,
         collapsibleDefaultOpen: false,
-        class: 'space-y-3',
-        fields: {
-          comingSoon: {
-            type: 'card',
-            label: 'TODO',
-            description: 'Currency and localization configuration are a work in progress'
-          }
-        }
+        badgeLabel: 'On my TODO list',
+        badgeVariant: 'secondary',
+        isDisabled: true
       },
       /* COMMENTED OUT - Full configuration
       localization: {
@@ -135,14 +125,9 @@ export function createFormConfigSection(): ConfigSectionDef {
         label: 'Pricing Configuration',
         collapsible: true,
         collapsibleDefaultOpen: false,
-        class: 'space-y-3',
-        fields: {
-          comingSoon: {
-            type: 'card',
-            label: 'TODO',
-            description: 'Pricing and frequency configuration are a work in progress'
-          }
-        }
+        badgeLabel: 'On my TODO list',
+        badgeVariant: 'secondary',
+        isDisabled: true
       }
       /* COMMENTED OUT - Full configuration
       pricing: {

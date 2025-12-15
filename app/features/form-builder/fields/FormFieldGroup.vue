@@ -2,6 +2,7 @@
 import { ref, watch, computed, inject, provide, type Ref } from 'vue'
 import { FieldSet, FieldLegend, FieldDescription, FieldError } from '@/components/ui/field'
 import { AccordionItem, AccordionContent, AccordionTrigger } from '@/components/ui/accordion'
+import { Badge } from '@/components/ui/badge'
 import type {
   FieldGroupMeta,
   VeeFieldContext,
@@ -56,6 +57,10 @@ const fieldGroups = computed(() => {
   let currentGroup: Array<[string, FieldMeta]> = []
   let isCurrentGroupGrid = false
 
+  if (!props.meta.fields) {
+    return groups
+  }
+
   Object.entries(props.meta.fields).forEach(([key, fieldMeta]) => {
     const isGridField = fieldMeta.class?.includes('col-span-1')
 
@@ -87,22 +92,41 @@ watch(isOpen, (newIsOpen) => {
   <div v-show="isGroupVisible">
     <!-- Accordion Item version -->
     <template v-if="meta.collapsible">
-      <AccordionItem :ref="(el: any) => setElementRef(collapsibleKey, el)" :value="name">
-        <AccordionTrigger class="hover:no-underline group py-4">
+      <AccordionItem
+        :ref="(el: any) => setElementRef(collapsibleKey, el)"
+        :value="name"
+        :disabled="meta.isDisabled"
+      >
+        <AccordionTrigger
+          class="hover:no-underline group py-4"
+          :class="{ 'cursor-not-allowed opacity-60': meta.isDisabled }"
+        >
           <div class="flex items-start justify-between w-full">
             <div class="flex-1 text-left">
-              <h3
-                v-if="meta.legend || meta.label"
-                class="font-medium text-sm group-hover:underline"
-              >
-                {{ meta.legend || meta.label }}
-              </h3>
+              <div class="flex items-center gap-2">
+                <h3
+                  v-if="meta.legend || meta.label"
+                  class="font-medium text-sm"
+                  :class="{ 'group-hover:underline': !meta.isDisabled }"
+                >
+                  {{ meta.legend || meta.label }}
+                </h3>
+                <Badge
+                  v-if="meta.badgeLabel"
+                  :variant="meta.badgeVariant || 'secondary'"
+                  class="text-xs"
+                >
+                  {{ meta.badgeLabel }}
+                </Badge>
+              </div>
               <p v-if="meta.description" class="text-muted-foreground text-xs mt-0.5">
                 {{ meta.description }}
               </p>
               <FieldError v-if="errors.length > 0" :errors="errors" class="mt-1" />
             </div>
-            <span class="text-sm text-muted-foreground">{{ isOpen ? '' : 'Edit' }}</span>
+            <span v-if="!meta.isDisabled" class="text-sm text-muted-foreground">{{
+              isOpen ? '' : 'Edit'
+            }}</span>
           </div>
         </AccordionTrigger>
         <AccordionContent>

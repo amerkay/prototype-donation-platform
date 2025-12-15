@@ -113,10 +113,13 @@ export interface CardFieldMeta extends BaseFieldMeta {
  */
 export interface FieldGroupMeta extends BaseFieldMeta {
   type: 'field-group'
-  fields: FieldMetaMap
+  fields?: FieldMetaMap
   legend?: string
   collapsible?: boolean
   collapsibleDefaultOpen?: boolean
+  badgeLabel?: string
+  badgeVariant?: 'default' | 'outline' | 'secondary' | 'destructive'
+  isDisabled?: boolean
   rules?: z.ZodTypeAny | ((values: Record<string, unknown>) => z.ZodTypeAny)
 }
 
