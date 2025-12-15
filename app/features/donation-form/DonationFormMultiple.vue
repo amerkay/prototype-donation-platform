@@ -122,7 +122,6 @@ defineExpose({
       :show-total="true"
       :products="filteredProducts"
       :initial-products-displayed="initialProductsDisplayed"
-      :product-list-config="formConfig.features.multipleProducts.ui"
       :tribute-config="formConfig.features.tribute"
       @edit="handleEditCartItem"
       @remove="handleRemoveCartItem"

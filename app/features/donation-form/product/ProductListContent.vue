@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product, FormConfig } from '@/lib/common/types'
+import type { Product } from '@/lib/common/types'
 import ProductCard from '@/features/donation-form/product/ProductCard.vue'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -12,7 +12,6 @@ interface Props {
   searchQuery: string
   showAllProducts: boolean
   initialProductsDisplayed: number
-  config: FormConfig['features']['multipleProducts']['ui']
 }
 
 const props = defineProps<Props>()
@@ -53,11 +52,6 @@ const handleSearchUpdate = (value: string | number) => {
 
 <template>
   <div class="space-y-4">
-    <!-- Title -->
-    <h3 class="text-sm font-semibold text-muted-foreground">
-      {{ config.title }}
-    </h3>
-
     <!-- Search Input -->
     <div class="relative">
       <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -66,7 +60,7 @@ const handleSearchUpdate = (value: string | number) => {
       <Input
         :model-value="searchQuery"
         type="text"
-        :placeholder="config.searchPlaceholder"
+        placeholder="Search items..."
         class="h-10 pl-10"
         @update:model-value="handleSearchUpdate"
       />
@@ -95,20 +89,12 @@ const handleSearchUpdate = (value: string | number) => {
           <Search class="size-8 text-muted-foreground" />
         </EmptyMedia>
         <EmptyTitle>No Results</EmptyTitle>
-        <EmptyDescription>
-          {{ config.emptyStateTemplate.replace('{query}', searchQuery) }}
-        </EmptyDescription>
+        <EmptyDescription> No items found matching "{{ searchQuery }}" </EmptyDescription>
       </EmptyHeader>
     </Empty>
     <!-- Show More Button -->
-    <!-- Show More Button -->
     <Button v-if="hasMoreProducts" variant="outline" class="w-full" @click="handleShowMore">
-      {{
-        config.showMoreButtonTemplate.replace(
-          '{count}',
-          String(products.length - initialProductsDisplayed)
-        )
-      }}
+      Show {{ products.length - initialProductsDisplayed }} More Items
     </Button>
   </div>
 </template>

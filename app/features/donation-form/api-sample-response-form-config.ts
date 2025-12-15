@@ -38,28 +38,14 @@ export const formConfig = {
   features: {
     multipleProducts: {
       enabled: true,
-      initialDisplay: 3,
-      ui: {
-        tabLabel: 'Multiple ✨',
-        title: 'Add Items to Your Donation',
-        searchPlaceholder: 'Search items...',
-        showMoreButtonTemplate: 'Show {count} More Items',
-        emptyStateTemplate: 'No items found matching "{query}"'
-      }
+      initialDisplay: 3
     },
     productSelector: {
       enabled: true,
       config: {
         icon: '🦧',
         entity: { singular: 'Orangutan', plural: 'Orangutans' },
-        action: { verb: 'Adopt', noun: 'adoption' },
-        ui: {
-          buttonText: '🦧 Adopt an Orangutan',
-          buttonTextOnce: '🦧 Adopt (Switch to Monthly)',
-          modalTitle: '🦧 Adopt an Orangutan',
-          modalDescriptionTemplate: 'Choose an orangutan to support with a {frequency} donation',
-          noProductsTemplate: 'No {frequency} adoption products available'
-        }
+        action: { verb: 'Adopt', noun: 'adoption' }
       }
     },
     rewards: {
@@ -67,19 +53,12 @@ export const formConfig = {
       ui: {
         labels: {
           freeGifts: '🎁 Free gifts available:',
-          freeWithDonation: 'FREE with your donation!',
-          frequencies: { once: 'one-time', monthly: 'monthly', yearly: 'yearly' }
-        },
-        templates: {
-          unlockSingle: 'Add {amount} {frequency} to unlock!',
-          unlockPair: 'Add {a} or {b} to unlock!',
-          unlockList: 'Add {list}, or {last} to unlock!',
-          switchFrequency: 'Switch to {frequency}'
+          freeWithDonation: 'FREE with your donation!'
         }
       }
     },
     shippingNotice: {
-      showNotice: false,
+      showNotice: true,
       noticeText: '📦 Shipping address on next page'
     },
     tribute: {
@@ -93,65 +72,6 @@ export const formConfig = {
         none: { label: 'No, thank you' },
         gift: { enabled: true, label: '🎁 Gift to someone' },
         memorial: { enabled: true, label: '🕊️ In memory of someone' }
-      },
-      form: {
-        tributeTypeSection: {
-          legend: 'Tribute Type',
-          description: 'Make this donation a tribute to someone special'
-        },
-        honoreeSection: {
-          legendGift: 'Gift to',
-          legendMemorial: 'In Memory of',
-          legendDefault: 'Honoree',
-          description: 'Provide details about the person being honored',
-          fields: {
-            firstName: {
-              label: 'First Name',
-              placeholder: 'First name'
-            },
-            lastName: {
-              label: 'Last Name',
-              placeholder: 'Last name',
-              optional: '(optional)'
-            },
-            relationship: {
-              label: 'Relationship',
-              placeholder: 'Select relationship...',
-              optional: '(optional)',
-              searchPlaceholder: 'Search relationship...',
-              notFound: 'No relationship found.'
-            }
-          }
-        },
-        eCardSection: {
-          toggle: {
-            title: '📧 Send an eCard notification',
-            description: 'Notify the recipient via email about this tribute donation'
-          },
-          recipientSection: {
-            legend: 'eCard Recipient',
-            description: 'Who should receive the notification email?'
-          },
-          sameAsHonoree: {
-            titleTemplate: 'Send to {honoree}',
-            description: 'Send the eCard directly to the gift recipient'
-          },
-          fields: {
-            firstName: {
-              label: 'First Name',
-              placeholder: 'First name'
-            },
-            lastName: {
-              label: 'Last Name',
-              placeholder: 'Last name',
-              optional: '(optional)'
-            },
-            email: {
-              label: 'Email Address',
-              placeholder: 'name@example.com'
-            }
-          }
-        }
       },
       relationships: [
         { value: 'mother', label: 'Mother' },
@@ -169,31 +89,9 @@ export const formConfig = {
         { value: 'mentor', label: 'Mentor' },
         { value: 'other', label: 'Other' }
       ] as const,
-      validation: {
-        honoreeFirstName: {
-          required: 'First name is required',
-          minLength: 'First name must be at least 2 characters'
-        },
-        recipientFirstName: {
-          required: 'First name is required',
-          minLength: 'First name must be at least 2 characters'
-        },
-        recipientEmail: {
-          required: 'Email is required',
-          invalid: 'Enter a valid email address'
-        }
-      },
       modal: {
         title: 'Gift or In Memory',
         subtitle: 'Make this donation in honor or memory of someone special'
-      },
-      card: {
-        editButton: 'Edit',
-        removeButton: '✕'
-      },
-      line: {
-        relationshipTemplate: '({relationship})',
-        eCardTemplate: '📧 eCard to {recipient}'
       }
     }
   }

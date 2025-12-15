@@ -27,25 +27,31 @@ const emit = defineEmits<{
 const productModalRef = ref<InstanceType<typeof ProductSelectModal> | null>(null)
 
 // Computed
-const productButtonText = computed(() =>
-  props.frequency === 'once'
-    ? props.selectorConfig.config.ui.buttonTextOnce
-    : props.selectorConfig.config.ui.buttonText
-)
+const productButtonText = computed(() => {
+  const { icon, entity, action } = props.selectorConfig.config
+  if (props.frequency === 'once') {
+    return `${icon} ${action.verb} (Switch to Monthly)`
+  }
+  return `${icon} ${action.verb} ${entity.singular === entity.plural ? entity.singular : 'an ' + entity.singular}`
+})
 
 const selectorProducts = computed(() => {
   return props.products.filter((p) => !p.isReward && p.frequency === props.frequency)
 })
 
-const productModalTitle = computed(() => props.selectorConfig.config.ui.modalTitle)
+const productModalTitle = computed(() => {
+  const { icon, entity, action } = props.selectorConfig.config
+  return `${icon} ${action.verb} ${entity.singular === entity.plural ? entity.singular : 'an ' + entity.singular}`
+})
 
-const productModalDescription = computed(() =>
-  props.selectorConfig.config.ui.modalDescriptionTemplate.replace('{frequency}', props.frequency)
-)
+const productModalDescription = computed(() => {
+  const { entity, action } = props.selectorConfig.config
+  return `Choose ${entity.singular === entity.plural ? entity.singular.toLowerCase() : 'an ' + entity.singular.toLowerCase()} to support with a ${props.frequency} donation`
+})
 
-const productNoProductsMessage = computed(() =>
-  props.selectorConfig.config.ui.noProductsTemplate.replace('{frequency}', props.frequency)
-)
+const productNoProductsMessage = computed(() => {
+  return `No ${props.frequency} ${props.selectorConfig.config.action.noun} products available`
+})
 
 // Methods
 const handleEditProduct = () => {

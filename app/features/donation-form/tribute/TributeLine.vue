@@ -17,12 +17,12 @@ const tributeIcon = computed(() => {
 
 const tributeTitle = computed(() => {
   if (props.tribute.type === 'gift') {
-    return props.config.form.honoreeSection.legendGift
+    return 'Gift to'
   }
   if (props.tribute.type === 'memorial') {
-    return props.config.form.honoreeSection.legendMemorial
+    return 'In Memory of'
   }
-  return props.config.form.honoreeSection.legendDefault
+  return 'Honoree'
 })
 
 const honoreeName = computed(() => {
@@ -50,12 +50,7 @@ const eCardRecipient = computed(() => {
       {{ tributeIcon }} {{ tributeTitle }} {{ honoreeName }}
     </p>
     <p v-if="eCardRecipient" class="text-xs text-muted-foreground mt-0.5 truncate">
-      {{
-        config.line.eCardTemplate.replace(
-          '{recipient}',
-          eCardRecipient.name || eCardRecipient.email
-        )
-      }}
+      📧 eCard to {{ eCardRecipient.name || eCardRecipient.email }}
     </p>
   </div>
 </template>

@@ -76,24 +76,15 @@ const getUpsellMessage = (item: Product) => {
 
   if (once !== undefined && props.enabledFrequencies.includes('once')) {
     const needed = Math.max(0, once - props.oneTimeTotal)
-    if (needed > 0)
-      options.push(
-        `${currencySymbol.value}${needed} ${props.rewardsConfig.ui.labels.frequencies.once}`
-      )
+    if (needed > 0) options.push(`${currencySymbol.value}${needed} one-time`)
   }
   if (monthly !== undefined && props.enabledFrequencies.includes('monthly')) {
     const needed = Math.max(0, monthly - props.monthlyTotal)
-    if (needed > 0)
-      options.push(
-        `${currencySymbol.value}${needed} ${props.rewardsConfig.ui.labels.frequencies.monthly}`
-      )
+    if (needed > 0) options.push(`${currencySymbol.value}${needed} monthly`)
   }
   if (yearly !== undefined && props.enabledFrequencies.includes('yearly')) {
     const needed = Math.max(0, yearly - props.yearlyTotal)
-    if (needed > 0)
-      options.push(
-        `${currencySymbol.value}${needed} ${props.rewardsConfig.ui.labels.frequencies.yearly}`
-      )
+    if (needed > 0) options.push(`${currencySymbol.value}${needed} yearly`)
   }
 
   if (options.length === 0) return 'Free gift unlocked!'
@@ -102,20 +93,16 @@ const getUpsellMessage = (item: Product) => {
     const parts = single.split(' ')
     const amountPart = parts[0] ?? ''
     const freqPart = parts.slice(1).join(' ')
-    return props.rewardsConfig.ui.templates.unlockSingle
-      .replace('{amount}', amountPart)
-      .replace('{frequency}', freqPart)
+    return `Add ${amountPart} ${freqPart} to unlock!`
   }
   if (options.length === 2) {
     const a = options[0]!
     const b = options[1]!
-    return props.rewardsConfig.ui.templates.unlockPair.replace('{a}', a).replace('{b}', b)
+    return `Add ${a} or ${b} to unlock!`
   }
 
   const lastOption = options.pop()!
-  return props.rewardsConfig.ui.templates.unlockList
-    .replace('{list}', options.join(', '))
-    .replace('{last}', lastOption)
+  return `Add ${options.join(', ')}, or ${lastOption} to unlock!`
 }
 
 const getFirstRecurringFrequency = (item: Product): 'monthly' | 'yearly' | null => {
@@ -227,12 +214,7 @@ watch(
                   class="underline hover:no-underline font-semibold"
                   @click="handleSwitchToRecurring(item)"
                 >
-                  {{
-                    rewardsConfig.ui.templates.switchFrequency.replace(
-                      '{frequency}',
-                      getRecurringLabel(item)
-                    )
-                  }}
+                  Switch to {{ getRecurringLabel(item) }}
                 </button>
               </p>
             </div>

@@ -18,7 +18,6 @@ interface Props {
   // Product list props
   products?: Product[]
   initialProductsDisplayed?: number
-  productListConfig?: FormConfig['features']['multipleProducts']['ui']
   tributeConfig: FormConfig['features']['tribute']
 }
 
@@ -150,13 +149,12 @@ defineExpose({
   <div v-else>
     <!-- Inline ProductListContent (shown when cart is empty) -->
     <ProductListContent
-      v-if="products && productListConfig"
+      v-if="products"
       :products="filteredProducts"
       :currency="currency"
       :search-query="searchQuery"
       :show-all-products="showAllProducts"
       :initial-products-displayed="initialProductsDisplayed || 3"
-      :config="productListConfig"
       @update:search-query="searchQuery = $event"
       @update:show-all-products="showAllProducts = $event"
       @product-select="handleProductSelect"
@@ -179,17 +177,16 @@ defineExpose({
   <!-- Modal with ProductListContent (when Add Items is clicked from button) -->
   <BaseDialogOrDrawer v-if="productListOpen" v-model:open="productListOpen" :dismissible="true">
     <template #header>
-      <h2 class="text-2xl font-semibold">{{ productListConfig?.title }}</h2>
+      <h2 class="text-2xl font-semibold">Add Items to Your Donation</h2>
     </template>
     <template #content>
       <ProductListContent
-        v-if="products && productListConfig"
+        v-if="products"
         :products="filteredProducts"
         :currency="currency"
         :search-query="searchQuery"
         :show-all-products="showAllProducts"
         :initial-products-displayed="initialProductsDisplayed || 3"
-        :config="productListConfig"
         @update:search-query="searchQuery = $event"
         @update:show-all-products="showAllProducts = $event"
         @product-select="handleProductSelect"

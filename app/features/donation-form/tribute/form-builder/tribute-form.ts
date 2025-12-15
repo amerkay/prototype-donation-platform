@@ -4,7 +4,8 @@ import type { FormConfig } from '@/lib/common/types'
 
 /**
  * Create tribute form section definition
- * Uses field-level validation only to avoid Zod refine issues with dynamic forms
+ * Form fields, labels, placeholders, and validation are hardcoded here.
+ * Only display config (icons, labels, modal title) comes from API config.
  */
 export function createTributeFormSection(
   config: FormConfig['features']['tribute']
@@ -25,8 +26,8 @@ export function createTributeFormSection(
     fields: {
       type: {
         type: 'radio-group',
-        label: config.form.tributeTypeSection.legend,
-        description: config.form.tributeTypeSection.description,
+        label: 'Tribute Type',
+        description: 'Make this donation a tribute to someone special',
         options
       },
       // Honoree section - visible when type is not 'none'
@@ -38,60 +39,60 @@ export function createTributeFormSection(
         fields: {
           honoreeFirstName: {
             type: 'text',
-            label: config.form.honoreeSection.fields.firstName.label,
-            placeholder: config.form.honoreeSection.fields.firstName.placeholder,
-            rules: z.string().min(2, config.validation.honoreeFirstName.minLength)
+            label: 'First Name',
+            placeholder: 'First name',
+            rules: z.string().min(2, 'First name must be at least 2 characters')
           },
           honoreeLastName: {
             type: 'text',
-            label: config.form.honoreeSection.fields.lastName.label,
-            placeholder: config.form.honoreeSection.fields.lastName.placeholder,
+            label: 'Last Name',
+            placeholder: 'Last name',
             optional: true
           }
         }
       },
       relationship: {
         type: 'select',
-        label: config.form.honoreeSection.fields.relationship.label,
-        placeholder: config.form.honoreeSection.fields.relationship.placeholder,
+        label: 'Relationship',
+        placeholder: 'Select relationship...',
         optional: true,
         options: config.relationships.map((r) => ({ value: r.value, label: r.label })),
-        searchPlaceholder: config.form.honoreeSection.fields.relationship.searchPlaceholder,
-        notFoundText: config.form.honoreeSection.fields.relationship.notFound,
+        searchPlaceholder: 'Search relationship...',
+        notFoundText: 'No relationship found.',
         visibleWhen: (values) => values.type !== 'none'
       },
       // eCard toggle - visible when type is not 'none'
       sendECard: {
         type: 'toggle',
-        label: config.form.eCardSection.toggle.title,
-        description: config.form.eCardSection.toggle.description,
+        label: '📧 Send an eCard notification',
+        description: 'Notify the recipient via email about this tribute donation',
         visibleWhen: (values) => values.type !== 'none'
       },
       // Same as honoree toggle - visible when sendECard is true and type is 'gift'
       sameAsHonoree: {
         type: 'toggle',
         label: 'Same Name as Honoree',
-        // description: config.form.eCardSection.sameAsHonoree.description,
+        description: 'Send the eCard directly to the gift recipient',
         visibleWhen: (values) => values.type === 'gift' && values.sendECard === true
       },
       // Recipient name fields - visible when sendECard is true and NOT sameAsHonoree
       recipientName: {
         type: 'field-group',
-        // label: 'eCard Recipient',
+        label: 'eCard Recipient',
         class: 'grid grid-cols-2 gap-4',
         visibleWhen: (values) =>
           values.type !== 'none' && values.sendECard === true && values.sameAsHonoree !== true,
         fields: {
           recipientFirstName: {
             type: 'text',
-            label: config.form.eCardSection.fields.firstName.label,
-            placeholder: config.form.eCardSection.fields.firstName.placeholder,
-            rules: z.string().min(2, config.validation.recipientFirstName.minLength)
+            label: 'First Name',
+            placeholder: 'First name',
+            rules: z.string().min(2, 'First name must be at least 2 characters')
           },
           recipientLastName: {
             type: 'text',
-            label: config.form.eCardSection.fields.lastName.label,
-            placeholder: config.form.eCardSection.fields.lastName.placeholder,
+            label: 'Last Name',
+            placeholder: 'Last name',
             optional: true
           }
         }
@@ -99,13 +100,13 @@ export function createTributeFormSection(
       // Email - visible when sendECard is true
       recipientEmail: {
         type: 'text',
-        label: config.form.eCardSection.fields.email.label,
-        placeholder: config.form.eCardSection.fields.email.placeholder,
+        label: 'Email Address',
+        placeholder: 'name@example.com',
         visibleWhen: (values) => values.type !== 'none' && values.sendECard === true,
         rules: z
-          .string({ required_error: config.validation.recipientEmail.required })
-          .min(1, config.validation.recipientEmail.required)
-          .email(config.validation.recipientEmail.invalid)
+          .string({ required_error: 'Email is required' })
+          .min(1, 'Email is required')
+          .email('Enter a valid email address')
       }
     }
   }

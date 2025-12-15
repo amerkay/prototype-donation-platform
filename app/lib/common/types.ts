@@ -72,13 +72,6 @@ export interface FormConfig {
     multipleProducts: {
       enabled: boolean
       initialDisplay: number
-      ui: {
-        tabLabel: string
-        title: string
-        searchPlaceholder: string
-        showMoreButtonTemplate: string
-        emptyStateTemplate: string
-      }
     }
     productSelector: {
       enabled: boolean
@@ -86,13 +79,6 @@ export interface FormConfig {
         icon: string
         entity: { singular: string; plural: string }
         action: { verb: string; noun: string }
-        ui: {
-          buttonText: string
-          buttonTextOnce: string
-          modalTitle: string
-          modalDescriptionTemplate: string
-          noProductsTemplate: string
-        }
       }
     }
     rewards: {
@@ -101,13 +87,6 @@ export interface FormConfig {
         labels: {
           freeGifts: string
           freeWithDonation: string
-          frequencies: { once: string; monthly: string; yearly: string }
-        }
-        templates: {
-          unlockSingle: string
-          unlockPair: string
-          unlockList: string
-          switchFrequency: string
         }
       }
     }
@@ -127,74 +106,13 @@ export interface FormConfig {
         gift: { enabled: boolean; label: string }
         memorial: { enabled: boolean; label: string }
       }
-      form: {
-        tributeTypeSection: {
-          legend: string
-          description: string
-        }
-        honoreeSection: {
-          legendGift: string
-          legendMemorial: string
-          legendDefault: string
-          description: string
-          fields: {
-            firstName: { label: string; placeholder: string }
-            lastName: { label: string; placeholder: string; optional: string }
-            relationship: {
-              label: string
-              placeholder: string
-              optional: string
-              searchPlaceholder: string
-              notFound: string
-            }
-          }
-        }
-        eCardSection: {
-          toggle: { title: string; description: string }
-          recipientSection: {
-            legend: string
-            description: string
-          }
-          sameAsHonoree: {
-            titleTemplate: string
-            description: string
-          }
-          fields: {
-            firstName: { label: string; placeholder: string }
-            lastName: { label: string; placeholder: string; optional: string }
-            email: { label: string; placeholder: string }
-          }
-        }
-      }
       relationships: ReadonlyArray<{
         value: string
         label: string
       }>
-      validation: {
-        honoreeFirstName: {
-          required: string
-          minLength: string
-        }
-        recipientFirstName: {
-          required: string
-          minLength: string
-        }
-        recipientEmail: {
-          required: string
-          invalid: string
-        }
-      }
       modal: {
         title: string
         subtitle: string
-      }
-      card: {
-        editButton: string
-        removeButton: string
-      }
-      line: {
-        relationshipTemplate: string
-        eCardTemplate: string
       }
     }
   }

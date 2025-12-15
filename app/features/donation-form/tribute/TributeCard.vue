@@ -44,14 +44,12 @@ const tributeTitle = computed(() => {
         <div class="flex items-center gap-2">
           <p class="font-medium text-sm">{{ tributeTitle }}</p>
           <button class="text-xs text-primary hover:underline pointer-events-none" @click.stop>
-            {{ config.card.editButton }}
+            Edit
           </button>
         </div>
         <TributeLine :tribute="tribute" :config="config" class="mt-1" />
       </div>
-      <Button variant="ghost" size="sm" @click.stop="emit('remove')">
-        {{ config.card.removeButton }}
-      </Button>
+      <Button variant="ghost" size="sm" @click.stop="emit('remove')"> ✕ </Button>
     </div>
   </div>
 </template>
