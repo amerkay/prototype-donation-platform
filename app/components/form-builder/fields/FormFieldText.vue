@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { inject, computed } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import type { TextFieldMeta } from '@/lib/form-builder/types'
@@ -11,7 +12,16 @@ interface Props {
   name: string
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+const submitForm = inject<() => void>('submitForm', () => {})
+
+const inputValue = computed(() => props.field.value as string | number | undefined)
+
+const handleEnterKey = (event: KeyboardEvent) => {
+  event.preventDefault()
+  submitForm()
+}
 </script>
 
 <template>
@@ -22,11 +32,12 @@ defineProps<Props>()
     </FieldLabel>
     <Input
       :id="name"
-      :model-value="field.value"
+      :model-value="inputValue"
       :placeholder="meta.placeholder"
       :aria-invalid="!!errors.length"
       @update:model-value="field.onChange"
       @blur="field.onBlur"
+      @keydown.enter="handleEnterKey"
     />
     <FieldError v-if="errors.length" :errors="errors" />
   </Field>

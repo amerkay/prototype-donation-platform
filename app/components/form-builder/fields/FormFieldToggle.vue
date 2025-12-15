@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Switch } from '@/components/ui/switch'
 import { Field, FieldContent, FieldTitle, FieldDescription } from '@/components/ui/field'
 import type { ToggleFieldMeta } from '@/lib/form-builder/types'
@@ -11,7 +12,9 @@ interface Props {
   name: string
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+const switchValue = computed(() => props.field.value as boolean | undefined)
 </script>
 
 <template>
@@ -20,6 +23,6 @@ defineProps<Props>()
       <FieldTitle v-if="meta.label">{{ meta.label }}</FieldTitle>
       <FieldDescription v-if="meta.description">{{ meta.description }}</FieldDescription>
     </FieldContent>
-    <Switch :id="name" :model-value="field.value" @update:model-value="field.onChange" />
+    <Switch :id="name" :model-value="switchValue" @update:model-value="field.onChange" />
   </Field>
 </template>

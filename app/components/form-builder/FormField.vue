@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue'
-import { Field as VeeField } from 'vee-validate'
+import { computed, inject, watch } from 'vue'
+import { Field as VeeField, useField } from 'vee-validate'
+import { toTypedSchema } from '@vee-validate/zod'
+import * as z from 'zod'
 import type { FieldMeta } from '@/lib/form-builder/types'
 import FormFieldText from './fields/FormFieldText.vue'
 import FormFieldTextarea from './fields/FormFieldTextarea.vue'
@@ -25,56 +27,89 @@ const isVisible = computed(() => {
   if (!props.meta.visibleWhen) return true
   return props.meta.visibleWhen(formValues())
 })
+
+// Convert Zod rules to typed schema for vee-validate
+// When field is hidden, always return optional schema to skip validation
+const fieldRules = computed(() => {
+  // If field is hidden, no validation needed
+  if (!isVisible.value) {
+    return toTypedSchema(z.any().optional())
+  }
+
+  if (!props.meta.rules) return undefined
+
+  // If rules is a function, call it with current form values
+  const rules =
+    typeof props.meta.rules === 'function' ? props.meta.rules(formValues()) : props.meta.rules
+
+  return toTypedSchema(rules)
+})
+
+// Use useField to get direct access to field state
+const { resetField } = useField(props.name, fieldRules, {
+  syncVModel: false
+})
+
+// Clear errors when field becomes hidden
+watch(isVisible, (visible) => {
+  if (!visible) {
+    // Reset validation state when hidden
+    resetField({ value: undefined })
+  }
+})
 </script>
 
 <template>
-  <VeeField v-if="isVisible" v-slot="{ field, errors }" :name="name">
+  <VeeField v-slot="{ field, errors, meta: fieldMeta }" :name="name" :rules="fieldRules">
+    <template v-if="!isVisible">
+      <!-- Field is registered but renders nothing when hidden -->
+    </template>
     <FormFieldText
-      v-if="meta.type === 'text'"
+      v-else-if="meta.type === 'text'"
       :field="field"
-      :errors="errors"
+      :errors="fieldMeta.touched ? errors : []"
       :meta="meta"
       :name="name"
     />
     <FormFieldTextarea
       v-else-if="meta.type === 'textarea'"
       :field="field"
-      :errors="errors"
+      :errors="fieldMeta.touched ? errors : []"
       :meta="meta"
       :name="name"
     />
     <FormFieldNumber
       v-else-if="meta.type === 'number'"
       :field="field"
-      :errors="errors"
+      :errors="fieldMeta.touched ? errors : []"
       :meta="meta"
       :name="name"
     />
     <FormFieldToggle
       v-else-if="meta.type === 'toggle'"
       :field="field"
-      :errors="errors"
+      :errors="fieldMeta.touched ? errors : []"
       :meta="meta"
       :name="name"
     />
     <FormFieldSelect
       v-else-if="meta.type === 'select'"
       :field="field"
-      :errors="errors"
+      :errors="fieldMeta.touched ? errors : []"
       :meta="meta"
       :name="name"
     />
     <FormFieldRadioGroup
       v-else-if="meta.type === 'radio-group'"
       :field="field"
-      :errors="errors"
+      :errors="fieldMeta.touched ? errors : []"
       :meta="meta"
       :name="name"
     />
     <FormFieldObject
       v-else-if="meta.type === 'object'"
       :field="field"
-      :errors="errors"
+      :errors="fieldMeta.touched ? errors : []"
       :meta="meta"
       :name="name"
     />

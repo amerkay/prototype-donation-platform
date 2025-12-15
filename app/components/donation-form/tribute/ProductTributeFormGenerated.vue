@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import FormRenderer from '@/components/form-builder/FormRenderer.vue'
 import { createTributeFormSection } from '@/lib/form-builder/sections/tribute-form'
 import type { TributeData, FormConfig } from '@/lib/common/types'
@@ -26,26 +26,11 @@ const formValues = ref({
   honoreeLastName: props.modelValue?.honoree?.lastName ?? '',
   relationship: props.modelValue?.honoree?.relationship ?? '',
   sendECard: props.modelValue?.eCard?.send ?? false,
-  sameAsHonoree: detectSameAsHonoree(),
+  sameAsHonoree: false,
   recipientFirstName: props.modelValue?.eCard?.recipient?.firstName ?? '',
   recipientLastName: props.modelValue?.eCard?.recipient?.lastName ?? '',
   recipientEmail: props.modelValue?.eCard?.recipient?.email ?? ''
 })
-
-// Detect if recipient is same as honoree (when editing)
-function detectSameAsHonoree() {
-  if (props.modelValue?.type === 'gift' && props.modelValue?.eCard?.send) {
-    const recipient = props.modelValue.eCard.recipient
-    const honoree = props.modelValue.honoree
-    return !!(
-      recipient?.firstName === honoree?.firstName &&
-      recipient?.lastName === honoree?.lastName &&
-      recipient?.firstName &&
-      recipient?.lastName
-    )
-  }
-  return false
-}
 
 // Watch form values and convert back to TributeData
 watch(
@@ -90,7 +75,7 @@ function handleSubmit() {
 const formRenderer = ref<InstanceType<typeof FormRenderer>>()
 
 defineExpose({
-  isValid: computed(() => formRenderer.value?.isValid ?? false)
+  formRenderer
 })
 </script>
 

@@ -23,13 +23,20 @@ const emit = defineEmits<{
 }>()
 
 // Setup form with validation
-const { values, setValues, meta } = useForm({
+const { values, setValues, meta, setFieldValue } = useForm({
   validationSchema: toTypedSchema(props.section.schema),
-  initialValues: props.modelValue
+  initialValues: props.modelValue,
+  validateOnMount: false
 })
 
 // Provide form values to child fields for conditional visibility
 provide('formValues', () => values as Record<string, unknown>)
+
+// Provide setFieldValue for child components
+provide('setFieldValue', setFieldValue)
+
+// Provide submit handler for Enter key (no-op for config sections)
+provide('submitForm', () => {})
 
 // Watch for external changes to modelValue
 watch(
@@ -66,9 +73,12 @@ const hasErrors = computed(() => !meta.value.valid && meta.value.touched)
         class="w-full justify-between p-4 h-auto hover:bg-accent"
         :class="{ 'border-l-4 border-l-destructive': hasErrors }"
       >
-        <div class="text-left">
+        <div class="text-left flex-1 min-w-0 pr-4">
           <div class="font-semibold">{{ section.title }}</div>
-          <div v-if="section.description" class="text-sm text-muted-foreground font-normal">
+          <div
+            v-if="section.description"
+            class="text-sm text-muted-foreground font-normal whitespace-normal"
+          >
             {{ section.description }}
           </div>
         </div>

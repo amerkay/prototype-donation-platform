@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { inject } from 'vue'
 import {
   NumberField,
   NumberFieldContent,
@@ -18,6 +19,13 @@ interface Props {
 }
 
 defineProps<Props>()
+
+const submitForm = inject<() => void>('submitForm', () => {})
+
+const handleEnterKey = (event: KeyboardEvent) => {
+  event.preventDefault()
+  submitForm()
+}
 </script>
 
 <template>
@@ -37,7 +45,7 @@ defineProps<Props>()
     >
       <NumberFieldContent>
         <NumberFieldDecrement />
-        <NumberFieldInput :aria-invalid="!!errors.length" />
+        <NumberFieldInput :aria-invalid="!!errors.length" @keydown.enter="handleEnterKey" />
         <NumberFieldIncrement />
       </NumberFieldContent>
     </NumberField>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Textarea } from '@/components/ui/textarea'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import type { TextareaFieldMeta } from '@/lib/form-builder/types'
@@ -11,7 +12,9 @@ interface Props {
   name: string
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+const textareaValue = computed(() => props.field.value as string | number | undefined)
 </script>
 
 <template>
@@ -22,7 +25,7 @@ defineProps<Props>()
     </FieldLabel>
     <Textarea
       :id="name"
-      :model-value="field.value"
+      :model-value="textareaValue"
       :placeholder="meta.placeholder"
       :rows="meta.rows"
       :aria-invalid="!!errors.length"

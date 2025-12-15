@@ -10,6 +10,7 @@ Multi-step donation platform with single/recurring donations, multi-item cart sy
 
 ## LLM Instructions that YOU MUST ALWAYS FOLLOW:
 
+- YOU MUST ALWAYS think, then create a detailed plan, then work. For example, if we're fixing a bug, think of 7 possible root causes of a bug, pick the most probable then apply the absolute minimum edits to fix the issue. Another example: If we're building a feature, find similar files to learn existing patterns, think 5 methods to build that feature, then pick the most maintainable, elegant, DRY, reusable, best-practices method.
 - YOU MUST use shadcn-vue components or ask me to install missing ones.
 - You MUST always choose the most elegant minimal edits to the code. Don't write a lot of code if you don't need to.
 - You MUST always prioritize DRY coding and reusable functions and components, never repeat code.

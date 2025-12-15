@@ -20,8 +20,8 @@ const tributeFormRef = ref<InstanceType<typeof ProductTributeFormGenerated> | nu
 const tempTributeData = ref<TributeData | undefined>(undefined)
 
 const isTributeFormValid = computed(() => {
-  if (!tributeFormRef.value) return true
-  return tributeFormRef.value.isValid
+  if (!tributeFormRef.value?.formRenderer) return true
+  return tributeFormRef.value.formRenderer.isValid ?? false
 })
 
 const handleSave = () => {

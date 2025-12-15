@@ -5,7 +5,7 @@ import {
   DialogScrollContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
+  // DialogDescription,
   DialogFooter
 } from '@/components/ui/dialog'
 import {
@@ -13,7 +13,7 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-  DrawerDescription,
+  // DrawerDescription,
   DrawerFooter
 } from '@/components/ui/drawer'
 
@@ -46,7 +46,6 @@ const handleOpenChange = (value: boolean) => {
     <DialogScrollContent class="sm:max-w-md">
       <DialogHeader v-if="$slots.header">
         <DialogTitle><slot name="header" /></DialogTitle>
-        <DialogDescription class="sr-only"> Product configuration dialog </DialogDescription>
       </DialogHeader>
       <slot name="content" />
       <DialogFooter v-if="$slots.footer">
@@ -60,7 +59,6 @@ const handleOpenChange = (value: boolean) => {
     <DrawerContent class="flex flex-col">
       <DrawerHeader v-if="$slots.header" class="shrink-0">
         <DrawerTitle><slot name="header" /></DrawerTitle>
-        <DrawerDescription class="sr-only"> Product configuration drawer </DrawerDescription>
       </DrawerHeader>
       <div v-if="$slots.content" class="px-4 overflow-y-auto flex-1">
         <slot name="content" />

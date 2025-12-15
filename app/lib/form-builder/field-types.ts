@@ -2,8 +2,8 @@
  * Common field props interface for vee-validate field components
  */
 export interface VeeFieldContext {
-  value: unknown
+  value?: unknown
   onChange: (value: unknown) => void
-  onBlur?: () => void
+  onBlur?: (e: Event) => void
   name: string
 }

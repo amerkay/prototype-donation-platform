@@ -4,7 +4,7 @@ import { Minus, Plus } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import BaseDialogOrDrawer from '~/components/donation-form/common/BaseDialogOrDrawer.vue'
 import AmountSelector from '~/components/donation-form/common/AmountSelector.vue'
-import ProductTributeForm from '~/components/donation-form/tribute/ProductTributeForm.vue'
+import ProductTributeFormGenerated from '~/components/donation-form/tribute/ProductTributeFormGenerated.vue'
 import type { Product, CartItem, TributeData, FormConfig } from '@/lib/common/types'
 
 interface Props {
@@ -60,7 +60,7 @@ const localPrice = ref(0)
 const localQuantity = ref(1)
 const editingItemKey = ref<string | null>(null)
 const tribute = ref<TributeData>({ type: 'none' })
-const tributeFormRef = ref<InstanceType<typeof ProductTributeForm> | null>(null)
+const tributeFormRef = ref<InstanceType<typeof ProductTributeFormGenerated> | null>(null)
 const tributeFormKey = ref(0) // Key to force remount of tribute form
 
 // Computed
@@ -72,9 +72,9 @@ const isTributeFormValid = computed(() => {
   // If not recurring, tribute form doesn't apply
   if (!isRecurring.value) return true
   // If no tribute form ref yet, consider valid (initial state)
-  if (!tributeFormRef.value) return true
+  if (!tributeFormRef.value?.formRenderer) return true
   // Otherwise check the form's validity
-  return tributeFormRef.value.isValid
+  return tributeFormRef.value.formRenderer.isValid ?? false
 })
 
 const isRecurring = computed(
@@ -218,7 +218,7 @@ defineExpose({
 
         <!-- Tribute Form (only for recurring products) -->
         <div v-if="isRecurring && props.tributeConfig?.enabled" class="pt-4 border-t">
-          <ProductTributeForm
+          <ProductTributeFormGenerated
             :key="tributeFormKey"
             ref="tributeFormRef"
             v-model="tribute"

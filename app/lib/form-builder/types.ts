@@ -24,6 +24,7 @@ export interface BaseFieldMeta {
   optional?: boolean
   visibleWhen?: (values: Record<string, unknown>) => boolean
   class?: string
+  rules?: z.ZodTypeAny | ((values: Record<string, unknown>) => z.ZodTypeAny)
 }
 
 /**
@@ -122,7 +123,7 @@ export interface ConfigSectionDef<T extends z.ZodTypeAny = z.ZodTypeAny> {
   id: string
   title: string
   description?: string
-  schema: T
+  schema?: T
   fields: FieldMetaMap
   defaultValue?: z.infer<T>
 }
