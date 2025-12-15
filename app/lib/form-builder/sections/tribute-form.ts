@@ -3,20 +3,6 @@ import type { ConfigSectionDef } from '@/lib/form-builder/types'
 import type { FormConfig } from '@/lib/common/types'
 
 /**
- * Visibility functions - single source of truth for field visibility
- */
-const visibilityRules = {
-  honoreeFields: (values: Record<string, unknown>) => values.type !== 'none',
-  eCardToggle: (values: Record<string, unknown>) => values.type !== 'none',
-  sameAsHonoree: (values: Record<string, unknown>) =>
-    values.type === 'gift' && values.sendECard === true,
-  recipientNameFields: (values: Record<string, unknown>) =>
-    values.type !== 'none' && values.sendECard === true && values.sameAsHonoree !== true,
-  recipientEmail: (values: Record<string, unknown>) =>
-    values.type !== 'none' && values.sendECard === true
-}
-
-/**
  * Create tribute form section definition
  * Uses field-level validation only to avoid Zod refine issues with dynamic forms
  */
@@ -43,7 +29,7 @@ export function createTributeFormSection(
         type: 'text',
         label: config.form.honoreeSection.fields.firstName.label,
         placeholder: config.form.honoreeSection.fields.firstName.placeholder,
-        visibleWhen: visibilityRules.honoreeFields,
+        visibleWhen: (values) => values.type !== 'none',
         class: 'col-span-1',
         rules: z.string().min(2, config.validation.honoreeFirstName.minLength)
       },
@@ -52,7 +38,7 @@ export function createTributeFormSection(
         label: config.form.honoreeSection.fields.lastName.label,
         placeholder: config.form.honoreeSection.fields.lastName.placeholder,
         optional: true,
-        visibleWhen: visibilityRules.honoreeFields,
+        visibleWhen: (values) => values.type !== 'none',
         class: 'col-span-1'
       },
       relationship: {
@@ -63,28 +49,29 @@ export function createTributeFormSection(
         options: config.relationships.map((r) => ({ value: r.value, label: r.label })),
         searchPlaceholder: config.form.honoreeSection.fields.relationship.searchPlaceholder,
         notFoundText: config.form.honoreeSection.fields.relationship.notFound,
-        visibleWhen: visibilityRules.honoreeFields
+        visibleWhen: (values) => values.type !== 'none'
       },
       // eCard toggle - visible when type is not 'none'
       sendECard: {
         type: 'toggle',
         label: config.form.eCardSection.toggle.title,
         description: config.form.eCardSection.toggle.description,
-        visibleWhen: visibilityRules.eCardToggle
+        visibleWhen: (values) => values.type !== 'none'
       },
       // Same as honoree toggle - visible when sendECard is true and type is 'gift'
       sameAsHonoree: {
         type: 'toggle',
         label: 'Send to the gift recipient',
         description: config.form.eCardSection.sameAsHonoree.description,
-        visibleWhen: visibilityRules.sameAsHonoree
+        visibleWhen: (values) => values.type === 'gift' && values.sendECard === true
       },
       // Recipient name fields - visible when sendECard is true and NOT sameAsHonoree
       recipientFirstName: {
         type: 'text',
         label: config.form.eCardSection.fields.firstName.label,
         placeholder: config.form.eCardSection.fields.firstName.placeholder,
-        visibleWhen: visibilityRules.recipientNameFields,
+        visibleWhen: (values) =>
+          values.type !== 'none' && values.sendECard === true && values.sameAsHonoree !== true,
         class: 'col-span-1',
         rules: z.string().min(2, config.validation.recipientFirstName.minLength)
       },
@@ -93,7 +80,8 @@ export function createTributeFormSection(
         label: config.form.eCardSection.fields.lastName.label,
         placeholder: config.form.eCardSection.fields.lastName.placeholder,
         optional: true,
-        visibleWhen: visibilityRules.recipientNameFields,
+        visibleWhen: (values) =>
+          values.type !== 'none' && values.sendECard === true && values.sameAsHonoree !== true,
         class: 'col-span-1'
       },
       // Email - visible when sendECard is true
@@ -101,7 +89,7 @@ export function createTributeFormSection(
         type: 'text',
         label: config.form.eCardSection.fields.email.label,
         placeholder: config.form.eCardSection.fields.email.placeholder,
-        visibleWhen: visibilityRules.recipientEmail,
+        visibleWhen: (values) => values.type !== 'none' && values.sendECard === true,
         rules: z
           .string({ required_error: config.validation.recipientEmail.required })
           .min(1, config.validation.recipientEmail.required)
