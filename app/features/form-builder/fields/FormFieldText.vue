@@ -2,8 +2,7 @@
 import { inject, computed } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
-import type { TextFieldMeta } from '~/features/form-builder/form-builder-types'
-import type { VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import type { TextFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 
 interface Props {
   field: VeeFieldContext

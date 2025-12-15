@@ -13,8 +13,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { cn } from '@/lib/utils'
-import type { SelectFieldMeta } from '~/features/form-builder/form-builder-types'
-import type { VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import type { SelectFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 
 interface Props {
   field: VeeFieldContext

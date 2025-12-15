@@ -23,6 +23,7 @@ export function createTributeConfigSection(): ConfigSectionDef {
         visibleWhen: (values) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
+        class: 'sm:grid sm:grid-cols-3 sm:gap-3',
         fields: {
           gift: {
             type: 'emoji',
@@ -66,8 +67,7 @@ export function createTributeConfigSection(): ConfigSectionDef {
           },
           gift: {
             type: 'field-group',
-            legend: 'Gift Option',
-            class: 'border p-4 rounded-lg gap-4',
+            class: 'gap-4',
             fields: {
               enabled: {
                 type: 'toggle',
@@ -88,8 +88,7 @@ export function createTributeConfigSection(): ConfigSectionDef {
           },
           memorial: {
             type: 'field-group',
-            legend: 'Memorial Option',
-            class: 'border p-4 rounded-lg gap-4',
+            class: 'gap-4',
             fields: {
               enabled: {
                 type: 'toggle',

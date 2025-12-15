@@ -24,7 +24,7 @@ const elementRef = ref<HTMLElement | null>(null)
 // Determine layout class based on meta.class or use default grid layout
 const layoutClass = computed(() => {
   // If custom class is provided, use it; otherwise default to grid layout
-  return props.meta.class || 'grid grid-cols-3 gap-3'
+  return props.meta.class || 'grid grid-cols-2 gap-3'
 })
 
 // Watch for when collapsible opens and scroll into view

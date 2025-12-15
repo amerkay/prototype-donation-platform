@@ -2,8 +2,7 @@
 import { computed } from 'vue'
 import { Switch } from '@/components/ui/switch'
 import { Field, FieldContent, FieldTitle, FieldDescription } from '@/components/ui/field'
-import type { ToggleFieldMeta } from '~/features/form-builder/form-builder-types'
-import type { VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import type { ToggleFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 
 interface Props {
   field: VeeFieldContext
