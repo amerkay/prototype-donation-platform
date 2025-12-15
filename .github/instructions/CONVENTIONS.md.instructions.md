@@ -58,7 +58,7 @@ app/
 **Examples**:
 
 - `app/features/donation-form/` - All donation form logic, components, types
-- `app/features/cart/` - Cart functionality with `useCart` composable, `CartItem` component
+- `app/features/cart/` - Cart functionality with `useImpactCart` composable, `CartItem` component
 - `app/features/form-builder/` - Form builder system with fields, config types
 - `app/components/` - Only `Button`, `Card`, `BaseDialogOrDrawer`, etc.
 - `app/composables/` - Only `useAuth`, `useApi`, `useCurrency`, etc.

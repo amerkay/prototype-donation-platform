@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import AdminConfigBuilder from './AdminConfigBuilder.vue'
-import { createFormConfigSection } from './configs/form-config'
-import { createMultipleProductsConfigSection } from './configs/multiple-products-config'
-import { createProductSelectorConfigSection } from './configs/product-selector-config'
-import { createRewardsConfigSection } from './configs/rewards-config'
-import { createShippingNoticeConfigSection } from './configs/shipping-notice-config'
-import { createTributeConfigSection } from './configs/tribute-config'
+import { createFormConfigSection } from '../donation-form/form-builder/form-config'
+import { createMultipleProductsConfigSection } from '../donation-form/cart/form-builder/impact-cart-config'
+import { createProductSelectorConfigSection } from '../donation-form/product-selector/form-builder/product-selector-config'
+import { createRewardsConfigSection } from '../donation-form/rewards/form-builder/rewards-config'
+import { createShippingNoticeConfigSection } from '../donation-form/shipping-notice/form-builder/shipping-notice-config'
+import { createTributeConfigSection } from '../donation-form/tribute/form-builder/tribute-config'
 import type { FormConfig } from '@/lib/common/types'
 
 interface Props {
@@ -20,7 +20,7 @@ const emit = defineEmits<{
 
 // Create all config sections
 const formSection = createFormConfigSection()
-const multipleProductsSection = createMultipleProductsConfigSection()
+const impactCartSection = createMultipleProductsConfigSection()
 const productSelectorSection = createProductSelectorConfigSection()
 const rewardsSection = createRewardsConfigSection()
 const shippingNoticeSection = createShippingNoticeConfigSection()
@@ -46,10 +46,10 @@ function handleMultipleProductsUpdate(value: Record<string, unknown>) {
     ...props.config,
     features: {
       ...props.config.features,
-      multipleProducts: {
+      impactCart: {
         ...rest,
         ...(settings as Record<string, unknown>)
-      } as FormConfig['features']['multipleProducts']
+      } as FormConfig['features']['impactCart']
     }
   })
 }
@@ -115,10 +115,10 @@ function handleTributeUpdate(value: Record<string, unknown>) {
 
     <!-- Multiple Products -->
     <AdminConfigBuilder
-      :section="multipleProductsSection"
+      :section="impactCartSection"
       :model-value="{
-        enabled: config.features.multipleProducts.enabled,
-        settings: { initialDisplay: config.features.multipleProducts.initialDisplay }
+        enabled: config.features.impactCart.enabled,
+        settings: { initialDisplay: config.features.impactCart.initialDisplay }
       }"
       class="bg-muted/50 rounded-xl"
       @update:model-value="handleMultipleProductsUpdate"

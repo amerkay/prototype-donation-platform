@@ -7,7 +7,7 @@ import type { ConfigSectionDef } from '~/features/form-builder/form-builder-type
  */
 export function createMultipleProductsConfigSection(): ConfigSectionDef {
   return {
-    id: 'multipleProducts',
+    id: 'impactCart',
     title: 'Multiple Products',
     description: 'Configure support for adding multiple products to cart',
     fields: {

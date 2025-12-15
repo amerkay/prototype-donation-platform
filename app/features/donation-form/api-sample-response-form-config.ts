@@ -36,7 +36,7 @@ export const formConfig = {
     ] as const
   },
   features: {
-    multipleProducts: {
+    impactCart: {
       enabled: true,
       initialDisplay: 3
     },

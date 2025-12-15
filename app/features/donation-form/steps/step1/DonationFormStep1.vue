@@ -6,7 +6,7 @@ import DonationFormMultiple from './DonationFormMultiple.vue'
 import type { TributeData, FormConfig, Product } from '@/lib/common/types'
 import { formConfig as defaultConfig } from '@/features/donation-form/api-sample-response-form-config'
 import { products } from '@/features/donation-form/api-sample-response-products'
-import { useCart } from '~/features/donation-form/cart/useCart'
+import { useImpactCart } from '~/features/donation-form/cart/useImpactCart'
 
 interface Props {
   config?: FormConfig
@@ -18,7 +18,7 @@ const props = defineProps<Props>()
 const formConfig = computed(() => props.config ?? defaultConfig)
 
 const { convertPrice } = useCurrency()
-const { multipleCart, addToCart } = useCart()
+const { multipleCart, addToCart } = useImpactCart()
 
 // Extract config values - now reactive to config changes
 const CURRENCIES = computed(() =>
@@ -33,9 +33,9 @@ const BASE_FREQUENCIES = computed(() =>
     label: f.label
   }))
 )
-const ALLOW_MULTIPLE_ITEMS = computed(() => formConfig.value.features.multipleProducts.enabled)
+const ALLOW_MULTIPLE_ITEMS = computed(() => formConfig.value.features.impactCart.enabled)
 const INITIAL_PRODUCTS_DISPLAYED = computed(
-  () => formConfig.value.features.multipleProducts.initialDisplay
+  () => formConfig.value.features.impactCart.initialDisplay
 )
 
 // State

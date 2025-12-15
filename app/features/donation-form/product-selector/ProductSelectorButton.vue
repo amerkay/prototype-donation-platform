@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
-import CartProductLine from '~/features/donation-form/cart/CartProductLine.vue'
+import CartProductLine from '~/features/donation-form/cart/ImpactCartProductLine.vue'
 import ProductSelectModal from '~/features/donation-form/product/ProductSelectModal.vue'
 import type { Product, FormConfig } from '@/lib/common/types'
 

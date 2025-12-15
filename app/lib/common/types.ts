@@ -69,7 +69,7 @@ export interface FormConfig {
     }>
   }
   features: {
-    multipleProducts: {
+    impactCart: {
       enabled: boolean
       initialDisplay: number
     }

@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button'
 import AmountSelector from '~/features/donation-form/common/AmountSelector.vue'
 import NextButton from '~/features/donation-form/common/NextButton.vue'
 import RewardsSection from '~/features/donation-form/rewards/RewardsSection.vue'
-import ShippingNotice from '~/features/donation-form/common/ShippingNotice.vue'
+import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNotice.vue'
 import TributeCard from '~/features/donation-form/tribute/TributeCard.vue'
 import TributeModal from '~/features/donation-form/tribute/TributeModal.vue'
 import ProductSelectorButton from '~/features/donation-form/product-selector/ProductSelectorButton.vue'
 import type { Product, TributeData, FormConfig } from '@/lib/common/types'
-import { useCart } from '~/features/donation-form/cart/useCart'
+import { useImpactCart } from '~/features/donation-form/cart/useImpactCart'
 
-const { selectedRewards, toggleReward } = useCart()
+const { selectedRewards, toggleReward } = useImpactCart()
 
 interface Props {
   frequency: 'once' | 'monthly' | 'yearly'

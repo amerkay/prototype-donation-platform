@@ -9,7 +9,7 @@ const monthlyCart = ref<CartItem[]>([])
 const multipleCart = ref<CartItem[]>([])
 const selectedRewards = ref<Set<string>>(new Set())
 
-export const useCart = () => {
+export const useImpactCart = () => {
   const getCartByFrequency = (frequency: 'once' | 'monthly' | 'multiple') => {
     if (frequency === 'once') return onceCart
     if (frequency === 'monthly') return monthlyCart

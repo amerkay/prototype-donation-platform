@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import Cart from '@/features/donation-form/cart/Cart.vue'
+import Cart from '~/features/donation-form/cart/ImpactCart.vue'
 import NextButton from '~/features/donation-form/common/NextButton.vue'
 import RewardsSection from '~/features/donation-form/rewards/RewardsSection.vue'
-import ShippingNotice from '~/features/donation-form/common/ShippingNotice.vue'
+import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNotice.vue'
 import ProductOptionsModal from '~/features/donation-form/product/ProductOptionsModal.vue'
 import type { Product, CartItem, TributeData, FormConfig } from '@/lib/common/types'
 import { getCartItemKey, parseCartItemKey } from '~/features/donation-form/cart/cart-utils'
-import { useCart } from '~/features/donation-form/cart/useCart'
+import { useImpactCart } from '~/features/donation-form/cart/useImpactCart'
 
 const {
   multipleCart,
@@ -24,7 +24,7 @@ const {
   updateCartItemQuantity,
   updateCartItemTribute,
   removeFromCart
-} = useCart()
+} = useImpactCart()
 
 interface Props {
   currency: string
