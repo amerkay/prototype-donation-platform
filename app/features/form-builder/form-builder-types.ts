@@ -10,7 +10,6 @@ export type FieldType =
   | 'toggle'
   | 'select'
   | 'radio-group'
-  | 'object'
   | 'array'
   | 'emoji'
   | 'field-group'
@@ -81,16 +80,6 @@ export interface RadioGroupFieldMeta extends BaseFieldMeta {
 }
 
 /**
- * Object field metadata (nested fields)
- */
-export interface ObjectFieldMeta extends BaseFieldMeta {
-  type: 'object'
-  fields: FieldMetaMap
-  legend?: string
-  showBorder?: boolean
-}
-
-/**
  * Array field metadata
  */
 export interface ArrayFieldMeta extends BaseFieldMeta {
@@ -115,6 +104,8 @@ export interface FieldGroupMeta extends BaseFieldMeta {
   type: 'field-group'
   fields: FieldMetaMap
   legend?: string
+  collapsible?: boolean
+  collapsibleDefaultOpen?: boolean
 }
 
 /**
@@ -127,7 +118,6 @@ export type FieldMeta =
   | ToggleFieldMeta
   | SelectFieldMeta
   | RadioGroupFieldMeta
-  | ObjectFieldMeta
   | ArrayFieldMeta
   | EmojiFieldMeta
   | FieldGroupMeta

@@ -10,7 +10,6 @@ import FormFieldNumber from './fields/FormFieldNumber.vue'
 import FormFieldToggle from './fields/FormFieldToggle.vue'
 import FormFieldSelect from './fields/FormFieldSelect.vue'
 import FormFieldRadioGroup from './fields/FormFieldRadioGroup.vue'
-import FormFieldObject from './fields/FormFieldObject.vue'
 import FormFieldEmoji from './fields/FormFieldEmoji.vue'
 import FormFieldGroup from './fields/FormFieldGroup.vue'
 
@@ -96,13 +95,6 @@ useField(props.name, fieldRules, {
       />
       <FormFieldRadioGroup
         v-else-if="meta.type === 'radio-group'"
-        :field="field"
-        :errors="fieldMeta.touched ? errors : []"
-        :meta="meta"
-        :name="name"
-      />
-      <FormFieldObject
-        v-else-if="meta.type === 'object'"
         :field="field"
         :errors="fieldMeta.touched ? errors : []"
         :meta="meta"

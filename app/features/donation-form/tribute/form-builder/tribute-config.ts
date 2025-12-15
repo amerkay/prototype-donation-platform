@@ -21,6 +21,8 @@ export function createTributeConfigSection(): ConfigSectionDef {
         label: 'Icons',
         description: 'Emoji icons for different tribute types',
         visibleWhen: (values) => values.enabled === true,
+        collapsible: true,
+        collapsibleDefaultOpen: false,
         fields: {
           gift: {
             type: 'emoji',
@@ -43,13 +45,17 @@ export function createTributeConfigSection(): ConfigSectionDef {
         }
       },
       types: {
-        type: 'object',
+        type: 'field-group',
         label: 'Type Options',
         description: 'Configure available tribute types and their labels',
         visibleWhen: (values) => values.enabled === true,
+        collapsible: true,
+        collapsibleDefaultOpen: false,
+        class: 'gap-4',
         fields: {
           none: {
-            type: 'object',
+            type: 'field-group',
+            class: 'gap-4',
             fields: {
               label: {
                 type: 'text',
@@ -59,9 +65,9 @@ export function createTributeConfigSection(): ConfigSectionDef {
             }
           },
           gift: {
-            type: 'object',
+            type: 'field-group',
             legend: 'Gift Option',
-            showBorder: true,
+            class: 'border p-4 rounded-lg gap-4',
             fields: {
               enabled: {
                 type: 'toggle',
@@ -81,9 +87,9 @@ export function createTributeConfigSection(): ConfigSectionDef {
             }
           },
           memorial: {
-            type: 'object',
+            type: 'field-group',
             legend: 'Memorial Option',
-            showBorder: true,
+            class: 'border p-4 rounded-lg gap-4',
             fields: {
               enabled: {
                 type: 'toggle',
@@ -105,10 +111,13 @@ export function createTributeConfigSection(): ConfigSectionDef {
         }
       },
       modal: {
-        type: 'object',
+        type: 'field-group',
         label: 'Modal Settings',
         description: 'Text content for the tribute modal',
         visibleWhen: (values) => values.enabled === true,
+        collapsible: true,
+        collapsibleDefaultOpen: false,
+        class: 'gap-4',
         fields: {
           title: {
             type: 'text',
