@@ -26,6 +26,11 @@ const { values, meta, setValues, handleSubmit } = useForm({
 // Provide form values to child fields for conditional visibility
 provide('formValues', () => values as Record<string, unknown>)
 
+// Provide submit function for Enter key handling in text fields
+provide('submitForm', () => {
+  onSubmit()
+})
+
 // Track field refs for auto-scroll functionality
 const fieldRefs = ref<Record<string, HTMLElement | null>>({})
 
@@ -91,7 +96,15 @@ watch(
           nextTick(() => {
             const fieldElement = fieldRefs.value[lastFieldKey]
             if (fieldElement) {
-              fieldElement.scrollIntoView({ behavior: 'smooth', block: 'end' })
+              const rect = fieldElement.getBoundingClientRect()
+              const scrollContainer = fieldElement.closest(
+                '[data-radix-scroll-area-viewport], .overflow-y-auto, .overflow-auto'
+              )
+              if (scrollContainer) {
+                const containerRect = scrollContainer.getBoundingClientRect()
+                const scrollTop = scrollContainer.scrollTop + rect.bottom - containerRect.top + 75
+                scrollContainer.scrollTo({ top: scrollTop, behavior: 'smooth' })
+              }
             }
           })
         }, 300)

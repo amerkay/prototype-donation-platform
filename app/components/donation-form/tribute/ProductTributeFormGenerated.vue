@@ -20,13 +20,19 @@ const emit = defineEmits<{
 const formSection = computed(() => createTributeFormSection(props.config))
 
 // Convert TributeData to flat form values
+// Calculate sameAsHonoree by checking if recipient matches honoree
+const isSameAsHonoree =
+  props.modelValue?.eCard?.send &&
+  props.modelValue?.eCard?.recipient?.firstName === props.modelValue?.honoree?.firstName &&
+  props.modelValue?.eCard?.recipient?.lastName === props.modelValue?.honoree?.lastName
+
 const formValues = ref({
   type: props.modelValue?.type ?? 'none',
   honoreeFirstName: props.modelValue?.honoree?.firstName ?? '',
   honoreeLastName: props.modelValue?.honoree?.lastName ?? '',
   relationship: props.modelValue?.honoree?.relationship ?? '',
   sendECard: props.modelValue?.eCard?.send ?? false,
-  sameAsHonoree: false,
+  sameAsHonoree: isSameAsHonoree ?? false,
   recipientFirstName: props.modelValue?.eCard?.recipient?.firstName ?? '',
   recipientLastName: props.modelValue?.eCard?.recipient?.lastName ?? '',
   recipientEmail: props.modelValue?.eCard?.recipient?.email ?? ''
