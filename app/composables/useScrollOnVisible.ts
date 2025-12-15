@@ -11,7 +11,7 @@ interface ScrollOnVisibleOptions<T> {
   getKey: (item: T) => string
   /**
    * Delay before scrolling (ms)
-   * @default 300
+   * @default 150
    */
   scrollDelay?: number
   /**
@@ -32,7 +32,7 @@ interface ScrollOnVisibleOptions<T> {
  * })
  */
 export function useScrollOnVisible<T>(items: Ref<T[]>, options: ScrollOnVisibleOptions<T>) {
-  const { isVisible, getKey, scrollDelay = 300, scrollOffset = 75 } = options
+  const { isVisible, getKey, scrollDelay = 150, scrollOffset = 75 } = options
 
   // Track element refs for auto-scroll functionality
   const elementRefs = ref<Record<string, HTMLElement | null>>({})
