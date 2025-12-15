@@ -16,10 +16,10 @@ import {
   Box
 } from 'lucide-vue-next'
 
-import NavMain from '@/components/NavMain.vue'
-import NavCampaigns from '@/components/NavCampaigns.vue'
-import NavSecondary from '@/components/NavSecondary.vue'
-import NavUser from '@/components/NavUser.vue'
+import NavMain from '~/features/admin/sidebar/NavMain.vue'
+import NavCampaigns from '~/features/admin/sidebar/NavCampaigns.vue'
+import NavSecondary from '~/features/admin/sidebar/NavSecondary.vue'
+import NavUser from '~/features/admin/sidebar/NavUser.vue'
 import {
   Sidebar,
   SidebarContent,

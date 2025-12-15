@@ -2,9 +2,9 @@
 
 <script setup lang="ts">
 import { ref, provide } from 'vue'
-import AppSidebar from '@/components/AppSidebar.vue'
-import FormSettings from '@/components/FormSettings.vue'
-import FormPreview from '@/components/FormPreview.vue'
+import AppSidebar from '~/features/admin/sidebar/AppSidebar.vue'
+import FormSettings from '~/features/admin/FormSettings.vue'
+import FormPreview from '~/features/admin/FormPreview.vue'
 import {
   Breadcrumb,
   BreadcrumbItem,

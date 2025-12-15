@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { inject } from 'vue'
 import type { Ref } from 'vue'
-import AdminDonationFormConfig from '@/components/admin/AdminDonationFormConfig.vue'
+import AdminDonationFormConfig from '@/features/admin/AdminDonationFormConfig.vue'
 import type { FormConfig } from '@/lib/common/types'
 
 // Inject the shared form config from parent
