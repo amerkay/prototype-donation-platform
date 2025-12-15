@@ -43,7 +43,7 @@ const isFieldVisible = (fieldMeta: FieldMeta) => {
   return fieldMeta.visibleWhen(values as Record<string, unknown>)
 }
 
-// Auto-scroll to newly visible fields
+// Auto-scroll to newly visible fields (scroll to top of element)
 const { setElementRef } = useScrollOnVisible(allFields, {
   isVisible: ([, fieldMeta]) => isFieldVisible(fieldMeta),
   getKey: ([key]) => key

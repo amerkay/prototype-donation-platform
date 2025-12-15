@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, computed } from 'vue'
+import { ref, watch, computed, nextTick } from 'vue'
 import { FieldSet, FieldLegend, FieldDescription, FieldGroup } from '@/components/ui/field'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Button } from '@/components/ui/button'
 import type { FieldGroupMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 import FormField from '../FormField.vue'
+import { scrollToElement } from '../composables/useScrollOnVisible'
 
 interface Props {
   field: VeeFieldContext
@@ -18,48 +19,40 @@ const props = defineProps<Props>()
 // Track open state for collapsible
 const isOpen = ref(props.meta.collapsibleDefaultOpen ?? false)
 
-// Track element ref for auto-scroll
-const elementRef = ref<HTMLElement | null>(null)
-
 // Determine layout class based on meta.class or use default grid layout
 const layoutClass = computed(() => {
   // If custom class is provided, use it; otherwise default to grid layout
   return props.meta.class || 'grid grid-cols-2 gap-3'
 })
 
-// Watch for when collapsible opens and scroll into view
-watch(isOpen, async (newIsOpen) => {
-  if (newIsOpen && elementRef.value) {
-    // Wait for content to render
-    await nextTick()
+// Track collapsible container ref for scrolling
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const collapsibleRef = ref<any>(null)
+
+// Watch for when collapsible opens and scroll to show entire expanded content
+watch(isOpen, (newIsOpen) => {
+  if (newIsOpen && collapsibleRef.value) {
     setTimeout(() => {
-      if (elementRef.value) {
-        scrollToElement(elementRef.value)
-      }
+      nextTick(() => {
+        // Get the actual DOM element from the component ref
+        const element = collapsibleRef.value?.$el || collapsibleRef.value
+        if (element instanceof HTMLElement) {
+          scrollToElement(element, 20)
+        }
+      })
     }, 150)
   }
 })
-
-/**
- * Scrolls to an element within its scroll container
- */
-function scrollToElement(element: HTMLElement, offset: number = 75) {
-  const rect = element.getBoundingClientRect()
-  const scrollContainer = element.closest(
-    '[data-radix-scroll-area-viewport], .overflow-y-auto, .overflow-auto'
-  )
-
-  if (scrollContainer) {
-    const containerRect = scrollContainer.getBoundingClientRect()
-    const scrollTop = scrollContainer.scrollTop + rect.bottom - containerRect.top + offset
-    scrollContainer.scrollTo({ top: scrollTop, behavior: 'smooth' })
-  }
-}
 </script>
 
 <template>
   <!-- Collapsible version -->
-  <Collapsible v-if="meta.collapsible" v-model:open="isOpen" class="border rounded-lg">
+  <Collapsible
+    v-if="meta.collapsible"
+    ref="collapsibleRef"
+    v-model:open="isOpen"
+    class="border rounded-lg"
+  >
     <div class="flex items-center justify-between px-4 py-3 border-b">
       <div class="flex-1">
         <h3 v-if="meta.legend || meta.label" class="font-medium text-sm">
@@ -75,7 +68,7 @@ function scrollToElement(element: HTMLElement, offset: number = 75) {
         </Button>
       </CollapsibleTrigger>
     </div>
-    <CollapsibleContent ref="elementRef" force-mount>
+    <CollapsibleContent force-mount>
       <div v-show="isOpen" class="p-4">
         <FieldGroup :class="layoutClass">
           <FormField

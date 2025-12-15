@@ -34,6 +34,7 @@ const handleEnterKey = (event: KeyboardEvent) => {
       :model-value="inputValue"
       :placeholder="meta.placeholder"
       :aria-invalid="!!errors.length"
+      class="text-sm"
       @update:model-value="field.onChange"
       @blur="field.onBlur"
       @keydown.enter="handleEnterKey"
