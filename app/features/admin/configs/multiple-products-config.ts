@@ -26,13 +26,16 @@ export function createMultipleProductsConfigSection(): ConfigSectionDef {
         class: 'space-y-3',
         fields: {
           initialDisplay: {
-            type: 'number',
+            type: 'select',
             label: 'Initial Products Displayed',
             description: 'Number of products shown initially before "Show More"',
-            placeholder: '3',
-            min: 1,
-            max: 20,
-            rules: z.number().min(1, 'Must be at least 1').max(20, 'Cannot exceed 20')
+            options: [
+              { value: 2, label: '2' },
+              { value: 3, label: '3' },
+              { value: 4, label: '4' },
+              { value: 5, label: '5' }
+            ] as const,
+            rules: z.number().min(2).max(5)
           }
         }
       }

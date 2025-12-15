@@ -13,9 +13,7 @@ interface ScrollOnVisibleOptions<T> {
  */
 function scrollToElement(element: HTMLElement, offset: number = 20) {
   const rect = element.getBoundingClientRect()
-  const scrollContainer = element.closest(
-    '[data-radix-scroll-area-viewport], .overflow-y-auto, .overflow-auto'
-  ) as HTMLElement | null
+  const scrollContainer = element.closest('.overflow-y-auto, .overflow-auto') as HTMLElement | null
 
   if (scrollContainer) {
     const containerRect = scrollContainer.getBoundingClientRect()

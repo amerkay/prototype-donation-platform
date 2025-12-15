@@ -28,8 +28,12 @@ const open = ref(false)
 
 function selectOption(value: string | number | bigint | Record<string, unknown>) {
   if (typeof value === 'string' || typeof value === 'number') {
-    props.field.onChange(value === props.field.value ? '' : value)
-    open.value = false
+    // Find the original option to get the correct typed value
+    const option = props.meta.options.find((o) => String(o.value) === String(value))
+    if (option) {
+      props.field.onChange(option.value)
+      open.value = false
+    }
   }
 }
 
@@ -60,7 +64,7 @@ function getLabel(value: string | number) {
           <ChevronsUpDownIcon class="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent class="w-full p-0" align="start">
+      <PopoverContent class="w-(--reka-popover-trigger-width) p-0" align="start">
         <Command>
           <CommandInput
             v-if="meta.searchPlaceholder"
