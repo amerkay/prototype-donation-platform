@@ -24,7 +24,7 @@ const emit = defineEmits<{
 
 // Setup form with validation
 const { values, setValues, meta, setFieldValue } = useForm({
-  validationSchema: toTypedSchema(props.section.schema),
+  validationSchema: props.section.schema ? toTypedSchema(props.section.schema) : undefined,
   initialValues: props.modelValue,
   validateOnMount: false
 })

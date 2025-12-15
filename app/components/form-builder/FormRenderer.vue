@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, watchEffect, provide, ref, nextTick } from 'vue'
+import { computed, watch, watchEffect, provide } from 'vue'
 import { useForm } from 'vee-validate'
 import FormField from './FormField.vue'
 import type { ConfigSectionDef, FieldMeta } from '@/lib/form-builder/types'
@@ -31,12 +31,22 @@ provide('submitForm', () => {
   onSubmit()
 })
 
-// Track field refs for auto-scroll functionality
-const fieldRefs = ref<Record<string, HTMLElement | null>>({})
+// All fields - we render all of them, visibility is handled by FormField
+const allFields = computed(() => {
+  return Object.entries(props.section.fields)
+})
 
-const setFieldRef = (fieldKey: string, el: HTMLElement | null) => {
-  fieldRefs.value[fieldKey] = el
+// Helper to check if a field is visible
+const isFieldVisible = (fieldMeta: FieldMeta) => {
+  if (!fieldMeta.visibleWhen) return true
+  return fieldMeta.visibleWhen(values as Record<string, unknown>)
 }
+
+// Auto-scroll to newly visible fields
+const { setElementRef } = useScrollOnVisible(allFields, {
+  isVisible: ([, fieldMeta]) => isFieldVisible(fieldMeta),
+  getKey: ([key]) => key
+})
 
 // Watch for external changes to modelValue
 watch(
@@ -61,58 +71,6 @@ const onSubmit = handleSubmit((submittedValues) => {
 
 // Expose validation state
 const isValid = computed(() => meta.value.valid)
-
-// All fields - we render all of them, visibility is handled by FormField
-const allFields = computed(() => {
-  return Object.entries(props.section.fields)
-})
-
-// Helper to check if a field is visible
-const isFieldVisible = (fieldMeta: FieldMeta) => {
-  if (!fieldMeta.visibleWhen) return true
-  return fieldMeta.visibleWhen(values as Record<string, unknown>)
-}
-
-// Track which fields are currently visible for auto-scroll
-const visibleFieldKeys = computed(() => {
-  return Object.entries(props.section.fields)
-    .filter(([, fieldMeta]) => isFieldVisible(fieldMeta))
-    .map(([key]) => key)
-})
-
-// Auto-scroll when new fields become visible
-watch(
-  visibleFieldKeys,
-  async (newKeys, oldKeys) => {
-    // Find newly visible fields for auto-scroll
-    const oldKeySet = new Set(oldKeys || [])
-    const newlyVisible = newKeys.filter((key) => !oldKeySet.has(key))
-
-    if (newlyVisible.length > 0) {
-      // Scroll to the last newly visible field after a delay
-      const lastFieldKey = newlyVisible[newlyVisible.length - 1]
-      if (lastFieldKey) {
-        setTimeout(() => {
-          nextTick(() => {
-            const fieldElement = fieldRefs.value[lastFieldKey]
-            if (fieldElement) {
-              const rect = fieldElement.getBoundingClientRect()
-              const scrollContainer = fieldElement.closest(
-                '[data-radix-scroll-area-viewport], .overflow-y-auto, .overflow-auto'
-              )
-              if (scrollContainer) {
-                const containerRect = scrollContainer.getBoundingClientRect()
-                const scrollTop = scrollContainer.scrollTop + rect.bottom - containerRect.top + 75
-                scrollContainer.scrollTo({ top: scrollTop, behavior: 'smooth' })
-              }
-            }
-          })
-        }, 300)
-      }
-    }
-  },
-  { deep: true }
-)
 
 // Group consecutive col-span-1 fields together
 const fieldGroups = computed(() => {
@@ -182,7 +140,7 @@ defineExpose({
           v-for="([fieldKey, fieldMeta], index) in group.fields"
           v-show="isFieldVisible(fieldMeta)"
           :key="`${fieldKey}-${index}`"
-          :ref="(el) => setFieldRef(String(fieldKey), el as HTMLElement | null)"
+          :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)"
         >
           <FormField :name="String(fieldKey)" :meta="fieldMeta" />
         </div>
@@ -192,7 +150,7 @@ defineExpose({
           v-for="([fieldKey, fieldMeta], index) in group.fields"
           v-show="isFieldVisible(fieldMeta)"
           :key="`${fieldKey}-${index}`"
-          :ref="(el) => setFieldRef(String(fieldKey), el as HTMLElement | null)"
+          :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)"
         >
           <FormField :name="String(fieldKey)" :meta="fieldMeta" />
         </div>

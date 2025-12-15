@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject } from 'vue'
+import { inject, computed } from 'vue'
 import {
   NumberField,
   NumberFieldContent,
@@ -18,7 +18,7 @@ interface Props {
   name: string
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const submitForm = inject<() => void>('submitForm', () => {})
 
@@ -26,6 +26,8 @@ const handleEnterKey = (event: KeyboardEvent) => {
   event.preventDefault()
   submitForm()
 }
+
+const numberValue = computed(() => props.field.value as number | null | undefined)
 </script>
 
 <template>
@@ -37,7 +39,7 @@ const handleEnterKey = (event: KeyboardEvent) => {
     <FieldDescription v-if="meta.description">{{ meta.description }}</FieldDescription>
     <NumberField
       :id="name"
-      :model-value="field.value"
+      :model-value="numberValue"
       :min="meta.min"
       :max="meta.max"
       :step="meta.step"
