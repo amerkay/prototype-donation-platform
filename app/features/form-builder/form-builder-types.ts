@@ -24,6 +24,7 @@ export interface BaseFieldMeta {
   placeholder?: string
   optional?: boolean
   visibleWhen?: (values: Record<string, unknown>) => boolean
+  isNoSeparatorAfter?: boolean
   class?: string
   classLabel?: string
   classDescription?: string

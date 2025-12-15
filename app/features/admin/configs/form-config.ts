@@ -58,7 +58,7 @@ export function createFormConfigSection(): ConfigSectionDef {
             description: 'List of currencies available to donors',
             itemField: {
               type: 'field-group',
-              class: 'grid grid-cols-3 gap-3',
+              class: 'grid grid-cols-3 gap-4',
               fields: {
                 code: {
                   type: 'text',
@@ -149,7 +149,7 @@ export function createFormConfigSection(): ConfigSectionDef {
                 customAmount: {
                   type: 'field-group',
                   label: 'Custom Amount Range',
-                  class: 'grid grid-cols-2 gap-3',
+                  class: 'grid grid-cols-2 gap-4',
                   fields: {
                     min: {
                       type: 'number',

@@ -33,8 +33,8 @@ export function createProductSelectorConfigSection(): ConfigSectionDef {
           },
           entity: {
             type: 'field-group',
-            label: 'Entity Labels',
-            class: 'grid grid-cols-2 gap-3',
+            // label: 'Entity Labels',
+            class: 'grid grid-cols-2 gap-4',
             fields: {
               singular: {
                 type: 'text',
@@ -52,8 +52,8 @@ export function createProductSelectorConfigSection(): ConfigSectionDef {
           },
           action: {
             type: 'field-group',
-            label: 'Action Labels',
-            class: 'grid grid-cols-2 gap-3',
+            // label: 'Action Labels',
+            class: 'grid grid-cols-2 gap-4',
             fields: {
               verb: {
                 type: 'text',

@@ -2,7 +2,6 @@
 import { ref, watch, computed, inject, provide, type Ref } from 'vue'
 import { FieldSet, FieldLegend, FieldDescription, FieldError } from '@/components/ui/field'
 import { AccordionItem, AccordionContent, AccordionTrigger } from '@/components/ui/accordion'
-import { Separator } from '@/components/ui/separator'
 import type {
   FieldGroupMeta,
   VeeFieldContext,
@@ -89,7 +88,7 @@ watch(isOpen, (newIsOpen) => {
     <!-- Accordion Item version -->
     <template v-if="meta.collapsible">
       <AccordionItem :ref="(el: any) => setElementRef(collapsibleKey, el)" :value="name">
-        <AccordionTrigger class="hover:no-underline group">
+        <AccordionTrigger class="hover:no-underline group py-4">
           <div class="flex items-start justify-between w-full">
             <div class="flex-1 text-left">
               <h3
@@ -107,7 +106,7 @@ watch(isOpen, (newIsOpen) => {
           </div>
         </AccordionTrigger>
         <AccordionContent>
-          <div :class="[meta.class, 'space-y-6']">
+          <div :class="[meta.class, 'space-y-3']">
             <template v-for="(group, groupIndex) in fieldGroups" :key="`group-${groupIndex}`">
               <div v-show="group.isGrid" class="contents">
                 <FormField
@@ -129,7 +128,6 @@ watch(isOpen, (newIsOpen) => {
           </div>
         </AccordionContent>
       </AccordionItem>
-      <Separator class="my-0" />
     </template>
 
     <!-- Non-collapsible version -->
@@ -137,7 +135,7 @@ watch(isOpen, (newIsOpen) => {
       <FieldLegend v-if="meta.legend || meta.label">{{ meta.legend || meta.label }}</FieldLegend>
       <FieldDescription v-if="meta.description">{{ meta.description }}</FieldDescription>
       <FieldError v-if="errors.length > 0" :errors="errors" class="mb-3" />
-      <div :class="meta.class || 'space-y-6'">
+      <div :class="meta.class">
         <template v-for="(group, groupIndex) in fieldGroups" :key="`group-${groupIndex}`">
           <div v-show="group.isGrid" class="contents">
             <FormField

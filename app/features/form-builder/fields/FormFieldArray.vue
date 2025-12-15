@@ -58,9 +58,9 @@ function removeItem(index: number) {
       <div
         v-for="(_, index) in items"
         :key="index"
-        class="relative rounded-lg border bg-card p-4 transition-colors hover:bg-accent/5"
+        class="relative rounded-lg border bg-card p-2 transition-colors hover:bg-accent/5"
       >
-        <div class="flex gap-3">
+        <div class="flex gap-4">
           <div class="flex-1 min-w-0">
             <FormField :name="`${name}.${index}`" :meta="meta.itemField" />
           </div>

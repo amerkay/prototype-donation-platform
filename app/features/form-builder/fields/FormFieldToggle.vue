@@ -17,7 +17,7 @@ const switchValue = computed(() => props.field.value as boolean | undefined)
 </script>
 
 <template>
-  <Field orientation="horizontal">
+  <Field orientation="horizontal" class="my-4">
     <FieldContent>
       <FieldLabel v-if="meta.label" :for="name" :class="meta.classLabel">
         {{ meta.label }}

@@ -28,7 +28,7 @@ export function createRewardsConfigSection(): ConfigSectionDef {
         fields: {
           labels: {
             type: 'field-group',
-            class: 'grid grid-cols-2 gap-3',
+            class: 'grid grid-cols-2 gap-4',
             fields: {
               freeGifts: {
                 type: 'text',

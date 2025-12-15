@@ -2,6 +2,7 @@
 import { ref, computed, watch, provide, nextTick } from 'vue'
 import { useForm } from 'vee-validate'
 import { Accordion } from '@/components/ui/accordion'
+import { Separator } from '@/components/ui/separator'
 import FormField from './FormField.vue'
 import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
 import { useScrollOnVisible } from './composables/useScrollOnVisible'
@@ -58,6 +59,34 @@ const allFields = computed(() => {
   return Object.entries(props.section.fields)
 })
 
+// Track which fields are visible for separator logic
+const isFieldVisible = (fieldMeta: (typeof props.section.fields)[string]) => {
+  if (!fieldMeta.visibleWhen) return true
+  const sectionValues = (values as Record<string, unknown>)[props.section.id]
+  return fieldMeta.visibleWhen((sectionValues as Record<string, unknown>) || {})
+}
+
+// Check if there's any visible field before the current index
+const shouldShowSeparator = (
+  currentIndex: number,
+  currentFieldMeta: (typeof props.section.fields)[string]
+) => {
+  if (!isFieldVisible(currentFieldMeta)) return false
+
+  // Find the last visible field before current
+  const visibleFieldsBefore = allFields.value
+    .slice(0, currentIndex)
+    .filter(([, fieldMeta]) => isFieldVisible(fieldMeta))
+
+  if (visibleFieldsBefore.length === 0) return false
+
+  // Check if the previous visible field has isNoSeparatorAfter flag
+  const lastVisibleField = visibleFieldsBefore[visibleFieldsBefore.length - 1]
+  if (!lastVisibleField) return false
+
+  return !lastVisibleField[1].isNoSeparatorAfter
+}
+
 // Auto-scroll to newly visible fields (scroll to top of element)
 const { setElementRef } = useScrollOnVisible(allFields, {
   isVisible: ([, fieldMeta]) => {
@@ -74,7 +103,7 @@ watch(
   () => props.modelValue,
   (newValue) => {
     isUpdatingFromProp = true
-    setValues({ [props.section.id]: newValue } as any)
+    setValues({ [props.section.id]: newValue })
     nextTick(() => {
       isUpdatingFromProp = false
     })
@@ -119,23 +148,20 @@ defineExpose({
       collapsible
       class="w-full"
     >
-      <div
-        v-for="([fieldKey, fieldMeta], index) in allFields"
-        :key="`${fieldKey}-${index}`"
-        :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)"
-      >
-        <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" />
-      </div>
+      <template v-for="([fieldKey, fieldMeta], index) in allFields" :key="`${fieldKey}-${index}`">
+        <Separator v-if="shouldShowSeparator(index, fieldMeta)" />
+        <div :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)">
+          <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" />
+        </div>
+      </template>
     </Accordion>
-    <div v-else class="space-y-4">
-      <div
-        v-for="([fieldKey, fieldMeta], index) in allFields"
-        :key="`${fieldKey}-${index}`"
-        :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)"
-        class=""
-      >
-        <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" />
-      </div>
+    <div v-else class="space-y-3">
+      <template v-for="([fieldKey, fieldMeta], index) in allFields" :key="`${fieldKey}-${index}`">
+        <Separator v-if="shouldShowSeparator(index, fieldMeta)" class="my-4" />
+        <div :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)">
+          <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" class="my-3" />
+        </div>
+      </template>
     </div>
   </form>
 </template>

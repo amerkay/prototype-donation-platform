@@ -52,7 +52,7 @@ provide('formConfig', formConfig)
       </header>
       <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
         <div class="space-y-4 lg:flex lg:space-x-4">
-          <div class="grow sm:max-w-[45vw]">
+          <div class="grow lg:max-w-[45vw]">
             <p class="text-muted-foreground text-sm font-semibold mb-2">Form Settings</p>
             <DonationFormSettings />
           </div>

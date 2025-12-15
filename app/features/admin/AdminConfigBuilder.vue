@@ -19,7 +19,7 @@ function handleUpdate(value: Record<string, unknown>) {
 </script>
 
 <template>
-  <div class="space-y-2">
+  <div class="px-6 py-2">
     <FormRenderer :section="section" :model-value="modelValue" @update:model-value="handleUpdate" />
   </div>
 </template>

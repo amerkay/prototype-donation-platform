@@ -34,8 +34,9 @@ export function createTributeFormSection(
       honoreeName: {
         type: 'field-group',
         label: 'Honoree',
-        class: 'grid grid-cols-2 gap-4',
+        class: 'grid grid-cols-2 gap-x-3',
         visibleWhen: (values) => values.type !== 'none',
+        isNoSeparatorAfter: true,
         fields: {
           honoreeFirstName: {
             type: 'text',
@@ -66,26 +67,22 @@ export function createTributeFormSection(
         type: 'toggle',
         label: '📧 Send an eCard notification',
         description: 'Notify the recipient via email about this tribute donation',
-        visibleWhen: (values) => values.type !== 'none'
+        visibleWhen: (values) => values.type !== 'none',
+        isNoSeparatorAfter: true
       },
-      // Same as honoree toggle - visible when sendECard is true and type is 'gift'
-      sameAsHonoree: {
-        type: 'toggle',
-        label: 'Same Name as Honoree',
-        description: 'Send the eCard directly to the gift recipient',
-        visibleWhen: (values) => values.type === 'gift' && values.sendECard === true
-      },
+
       // Recipient name fields - visible when sendECard is true and NOT sameAsHonoree
       recipientName: {
         type: 'field-group',
         label: 'eCard Recipient',
-        class: 'grid grid-cols-2 gap-4',
+        class: 'grid grid-cols-2 gap-x-3',
+        isNoSeparatorAfter: true,
         visibleWhen: (values) =>
           values.type !== 'none' && values.sendECard === true && values.sameAsHonoree !== true,
         fields: {
           recipientFirstName: {
             type: 'text',
-            label: 'First Name',
+            label: 'Recipient First Name',
             placeholder: 'First name',
             rules: z.string().min(2, 'First name must be at least 2 characters')
           },
@@ -96,6 +93,14 @@ export function createTributeFormSection(
             optional: true
           }
         }
+      },
+      // Same as honoree toggle - visible when sendECard is true and type is 'gift'
+      sameAsHonoree: {
+        type: 'toggle',
+        label: 'Same Name as Honoree',
+        description: 'The recipient is the same as the honoree',
+        visibleWhen: (values) => values.type === 'gift' && values.sendECard === true,
+        isNoSeparatorAfter: true
       },
       // Email - visible when sendECard is true
       recipientEmail: {

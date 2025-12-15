@@ -36,7 +36,7 @@ const fieldValue = computed(() => props.field.value as string | number | undefin
       :name="field.name"
       :model-value="fieldValue"
       :aria-invalid="!!errors.length"
-      class="gap-3"
+      class="gap-4"
       @update:model-value="field.onChange"
     >
       <FieldLabel

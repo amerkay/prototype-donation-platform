@@ -109,7 +109,7 @@ function handleTributeUpdate(value: Record<string, unknown>) {
         localization: config.localization,
         pricing: config.pricing
       }"
-      class="bg-muted/50 rounded-xl p-6"
+      class="bg-muted/50 rounded-xl"
       @update:model-value="handleFormUpdate"
     />
 
@@ -120,7 +120,7 @@ function handleTributeUpdate(value: Record<string, unknown>) {
         enabled: config.features.multipleProducts.enabled,
         settings: { initialDisplay: config.features.multipleProducts.initialDisplay }
       }"
-      class="bg-muted/50 rounded-xl p-6"
+      class="bg-muted/50 rounded-xl"
       @update:model-value="handleMultipleProductsUpdate"
     />
 
@@ -128,7 +128,7 @@ function handleTributeUpdate(value: Record<string, unknown>) {
     <AdminConfigBuilder
       :section="productSelectorSection"
       :model-value="config.features.productSelector"
-      class="bg-muted/50 rounded-xl p-6"
+      class="bg-muted/50 rounded-xl"
       @update:model-value="handleProductSelectorUpdate"
     />
 
@@ -136,7 +136,7 @@ function handleTributeUpdate(value: Record<string, unknown>) {
     <AdminConfigBuilder
       :section="rewardsSection"
       :model-value="config.features.rewards"
-      class="bg-muted/50 rounded-xl p-6"
+      class="bg-muted/50 rounded-xl"
       @update:model-value="handleRewardsUpdate"
     />
 
@@ -147,7 +147,7 @@ function handleTributeUpdate(value: Record<string, unknown>) {
         showNotice: config.features.shippingNotice.showNotice,
         settings: { noticeText: config.features.shippingNotice.noticeText }
       }"
-      class="bg-muted/50 rounded-xl p-6"
+      class="bg-muted/50 rounded-xl"
       @update:model-value="handleShippingNoticeUpdate"
     />
 
@@ -155,7 +155,7 @@ function handleTributeUpdate(value: Record<string, unknown>) {
     <AdminConfigBuilder
       :section="tributeSection"
       :model-value="config.features.tribute"
-      class="bg-muted/50 rounded-xl p-6"
+      class="bg-muted/50 rounded-xl"
       @update:model-value="handleTributeUpdate"
     />
 
