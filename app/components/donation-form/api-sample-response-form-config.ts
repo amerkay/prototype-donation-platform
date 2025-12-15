@@ -55,7 +55,7 @@ export const formConfig = {
         action: { verb: 'Adopt', noun: 'adoption' },
         ui: {
           buttonText: '🦧 Adopt an Orangutan',
-          buttonTextOnce: '🦧 Adopt an Orangutan (Monthly)',
+          buttonTextOnce: '🦧 Adopt (Switch to Monthly)',
           modalTitle: '🦧 Adopt an Orangutan',
           modalDescriptionTemplate: 'Choose an orangutan to support with a {frequency} donation',
           noProductsTemplate: 'No {frequency} adoption products available'

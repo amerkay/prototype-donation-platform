@@ -109,7 +109,7 @@ defineExpose({
       :tribute-config="formConfig.features.tribute"
       @product-select="emit('product-select', $event)"
       @remove-product="emit('remove-product')"
-      @switch-to-tab="emit('switch-to-tab', $event)"
+      @switch-to-tab="(tab, openModal) => emit('switch-to-tab', tab, openModal)"
     />
 
     <!-- Gift or In Memory (only for recurring donations) -->

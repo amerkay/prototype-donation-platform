@@ -49,8 +49,7 @@ const productNoProductsMessage = computed(() =>
 
 // Methods
 const handleEditProduct = () => {
-  // If on "once" tab and button text mentions "Monthly", switch to monthly tab first
-  if (props.frequency === 'once' && productButtonText.value.includes('Monthly')) {
+  if (props.frequency === 'once') {
     emit('switch-to-tab', 'monthly', true)
   } else {
     productModalRef.value?.open()
