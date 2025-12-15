@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
-import { formConfig as sampleConfig } from '@/components/donation-form/api-sample-response-form-config'
+import { formConfig as sampleConfig } from '~/features/donation-form/api-sample-response-form-config'
 import type { FormConfig } from '@/lib/common/types'
 
 // Create reactive config that both FormSettings and FormPreview will share
