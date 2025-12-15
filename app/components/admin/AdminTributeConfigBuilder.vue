@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import ConfigSection from '@/components/form-builder/ConfigSection.vue'
-import { tributeConfigSection } from '@/lib/form-builder/sections/tribute-config'
+import { tributeConfigSection } from '~/components/donation-form/tribute/form-builder/tribute-config'
 import type { FormConfig } from '@/lib/common/types'
 
 interface Props {

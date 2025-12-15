@@ -21,6 +21,7 @@ Multi-step donation platform with single/recurring donations, multi-item cart sy
 - YOU MUST write modular vue3 code using components and composables without overcomplicating things.
 - ALWAYS prefer self container logic. You must rewrite confusing logic to be as self-contained as possible.
 - You MUST define TypeScript interfaces that exactly mirror API response structures and pass config objects directly to components using typed sections (e.g., FormConfig['features']['rewards']) rather than restructuring or mapping data in parent components.
+- YOU MUST follow Feature-Based Architecture: place all feature-specific code (components, composables, types, utils) in `app/features/[feature-name]/`. Only truly shared/reusable UI components belong in `app/components/`, and only system-wide composables belong in `app/composables/`.
 
 ## Tech Stack
 
@@ -32,15 +33,35 @@ Multi-step donation platform with single/recurring donations, multi-item cart sy
 
 ## File Organization
 
+**Feature-Based Architecture**: Organize code by business domain, not technical layer. Each feature is self-contained with its own components, composables, types, and utilities.
+
 ```
 app/
-├── components/
+├── components/          # Shared UI components only
 │   ├── ui/              # shadcn components
-│   ├── [feature]/       # Feature components
-│   └── [Global].vue     # Layout components
+│   └── [Global].vue     # Layout components (AppHeader, AppFooter, etc.)
+├── composables/         # System-wide composables only (useAuth, useApi, etc.)
+├── features/            # Feature modules (business domains)
+│   └── [feature-name]/
+│       ├── components/  # Feature-specific components
+│       ├── composables/ # Feature-specific composables
+│       ├── types.ts     # Feature-specific types/interfaces
+│       └── utils.ts     # Feature-specific utilities
+├── lib/                 # Global utilities and shared types
+│   ├── utils.ts         # General utility functions
+│   └── common/
+│       └── types.ts     # Shared types across features
 ├── pages/               # File-based routing
 └── plugins/
 ```
+
+**Examples**:
+
+- `app/features/donation-form/` - All donation form logic, components, types
+- `app/features/cart/` - Cart functionality with `useCart` composable, `CartItem` component
+- `app/features/form-builder/` - Form builder system with fields, config types
+- `app/components/` - Only `Button`, `Card`, `BaseDialogOrDrawer`, etc.
+- `app/composables/` - Only `useAuth`, `useApi`, `useCurrency`, etc.
 
 ## Component Structure
 

@@ -2,7 +2,8 @@
 import { computed, watch, watchEffect, provide } from 'vue'
 import { useForm } from 'vee-validate'
 import FormField from './FormField.vue'
-import type { ConfigSectionDef, FieldMeta } from '@/lib/form-builder/types'
+import type { ConfigSectionDef, FieldMeta } from '~/components/form-builder/form-builder-types'
+import { useScrollOnVisible } from './composables/useScrollOnVisible'
 
 interface Props {
   section: ConfigSectionDef

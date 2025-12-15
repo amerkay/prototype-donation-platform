@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import type { ConfigSectionDef } from '@/lib/form-builder/types'
+import type { ConfigSectionDef } from '~/components/form-builder/form-builder-types'
 import type { FormConfig } from '@/lib/common/types'
 
 /**

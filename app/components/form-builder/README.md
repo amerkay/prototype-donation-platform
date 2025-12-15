@@ -42,7 +42,7 @@ app/
     └── useScrollOnVisible.ts        # Auto-scroll to newly visible fields
     └── form-builder/
         ├── types.ts              # Field metadata types
-        ├── field-types.ts        # Common vee-validate types
+        ├── types.ts        # Common vee-validate types
         └── sections/
             └── tribute-config.ts # Tribute section schema + metadata
 ```

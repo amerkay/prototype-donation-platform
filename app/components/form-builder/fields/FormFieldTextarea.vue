@@ -2,8 +2,8 @@
 import { computed } from 'vue'
 import { Textarea } from '@/components/ui/textarea'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
-import type { TextareaFieldMeta } from '@/lib/form-builder/types'
-import type { VeeFieldContext } from '@/lib/form-builder/field-types'
+import type { TextareaFieldMeta } from '~/components/form-builder/form-builder-types'
+import type { VeeFieldContext } from '~/components/form-builder/form-builder-types'
 
 interface Props {
   field: VeeFieldContext

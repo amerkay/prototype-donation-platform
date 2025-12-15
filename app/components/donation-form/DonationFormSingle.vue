@@ -9,6 +9,7 @@ import TributeCard from '~/components/donation-form/tribute/TributeCard.vue'
 import TributeModal from '~/components/donation-form/tribute/TributeModal.vue'
 import ProductSelectorButton from '~/components/donation-form/product-selector/ProductSelectorButton.vue'
 import type { Product, TributeData, FormConfig } from '@/lib/common/types'
+import { useCart } from '@/components/donation-form/cart/useCart'
 
 const { selectedRewards, toggleReward } = useCart()
 

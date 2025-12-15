@@ -6,7 +6,8 @@ import RewardsSection from '~/components/donation-form/rewards/RewardsSection.vu
 import ShippingNotice from '~/components/donation-form/common/ShippingNotice.vue'
 import ProductOptionsModal from '~/components/donation-form/product/ProductOptionsModal.vue'
 import type { Product, CartItem, TributeData, FormConfig } from '@/lib/common/types'
-import { getCartItemKey, parseCartItemKey } from '@/lib/common/cart-utils'
+import { getCartItemKey, parseCartItemKey } from '~/components/donation-form/cart/cart-utils'
+import { useCart } from '@/components/donation-form/cart/useCart'
 
 const {
   multipleCart,

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { FieldSet, FieldLegend, FieldDescription, FieldGroup } from '@/components/ui/field'
-import type { ObjectFieldMeta } from '@/lib/form-builder/types'
-import type { VeeFieldContext } from '@/lib/form-builder/field-types'
+import type { ObjectFieldMeta } from '~/components/form-builder/form-builder-types'
+import type { VeeFieldContext } from '~/components/form-builder/form-builder-types'
 import FormField from '../FormField.vue'
 
 interface Props {

@@ -8,8 +8,8 @@ import {
   NumberFieldInput
 } from '@/components/ui/number-field'
 import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/field'
-import type { NumberFieldMeta } from '@/lib/form-builder/types'
-import type { VeeFieldContext } from '@/lib/form-builder/field-types'
+import type { NumberFieldMeta } from '~/components/form-builder/form-builder-types'
+import type { VeeFieldContext } from '~/components/form-builder/form-builder-types'
 
 interface Props {
   field: VeeFieldContext

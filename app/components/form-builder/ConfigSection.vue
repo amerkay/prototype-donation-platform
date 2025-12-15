@@ -7,7 +7,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Button } from '@/components/ui/button'
 import { ChevronRightIcon } from 'lucide-vue-next'
 import FormField from './FormField.vue'
-import type { ConfigSectionDef } from '@/lib/form-builder/types'
+import type { ConfigSectionDef } from '~/components/form-builder/form-builder-types'
 
 interface Props {
   section: ConfigSectionDef<T>
