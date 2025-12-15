@@ -41,8 +41,8 @@ export function createFormConfigSection(): ConfigSectionDef {
         fields: {
           comingSoon: {
             type: 'card',
-            label: 'Coming Soon',
-            description: 'Currency and localization configuration will be available soon'
+            label: 'TODO',
+            description: 'Currency and localization configuration are a work in progress'
           }
         }
       },
@@ -125,8 +125,8 @@ export function createFormConfigSection(): ConfigSectionDef {
         fields: {
           comingSoon: {
             type: 'card',
-            label: 'Coming Soon',
-            description: 'Pricing and frequency configuration will be available soon'
+            label: 'TODO',
+            description: 'Pricing and frequency configuration are a work in progress'
           }
         }
       }

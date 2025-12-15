@@ -8,31 +8,40 @@ interface ScrollOnVisibleOptions<T> {
 }
 
 /**
- * Scroll element into view, keeping the top (trigger) visible
- * Always scrolls to show the top of the element with offset from viewport top
+ * Scroll element into view with minimal movement
+ * Only scrolls if not fully visible, maintains 50px margin
  */
-function scrollToElement(element: HTMLElement, offset: number = 20) {
+function scrollToElement(element: HTMLElement, offset: number = 50) {
   const rect = element.getBoundingClientRect()
   const scrollContainer = element.closest('.overflow-y-auto, .overflow-auto') as HTMLElement | null
 
   if (scrollContainer) {
     const containerRect = scrollContainer.getBoundingClientRect()
-    const elementTopRelativeToContainer = rect.top - containerRect.top
-    const targetPosition = elementTopRelativeToContainer - offset
+    const topIsVisible = rect.top >= containerRect.top + offset
+    const bottomIsVisible = rect.bottom <= containerRect.bottom - offset
 
-    // Only scroll if the element top is not already at the desired position
-    if (Math.abs(targetPosition) > 1) {
-      scrollContainer.scrollTo({
-        top: scrollContainer.scrollTop + targetPosition,
-        behavior: 'smooth'
-      })
+    if (!topIsVisible) {
+      // Scroll up to show top with margin
+      const targetPosition = scrollContainer.scrollTop + (rect.top - containerRect.top) - offset
+      scrollContainer.scrollTo({ top: targetPosition, behavior: 'smooth' })
+    } else if (!bottomIsVisible) {
+      // Scroll down to show bottom with margin
+      const targetPosition =
+        scrollContainer.scrollTop + (rect.bottom - containerRect.bottom) + offset
+      scrollContainer.scrollTo({ top: targetPosition, behavior: 'smooth' })
     }
   } else {
-    const targetPosition = rect.top - offset
+    const topIsVisible = rect.top >= offset
+    const bottomIsVisible = rect.bottom <= window.innerHeight - offset
 
-    // Only scroll if the element top is not already at the desired position
-    if (Math.abs(targetPosition) > 1) {
-      window.scrollTo({ top: window.scrollY + targetPosition, behavior: 'smooth' })
+    if (!topIsVisible) {
+      // Scroll up to show top with margin
+      const targetPosition = window.scrollY + rect.top - offset
+      window.scrollTo({ top: targetPosition, behavior: 'smooth' })
+    } else if (!bottomIsVisible) {
+      // Scroll down to show bottom with margin
+      const targetPosition = window.scrollY + (rect.bottom - window.innerHeight) + offset
+      window.scrollTo({ top: targetPosition, behavior: 'smooth' })
     }
   }
 }
@@ -41,7 +50,7 @@ function scrollToElement(element: HTMLElement, offset: number = 20) {
  * Auto-scroll to newly visible items with ref tracking
  */
 export function useScrollOnVisible<T>(items: Ref<T[]>, options: ScrollOnVisibleOptions<T>) {
-  const { isVisible, getKey, scrollDelay = 150, scrollOffset = 20 } = options
+  const { isVisible, getKey, scrollDelay = 250, scrollOffset = 50 } = options
   const elementRefs = ref<Record<string, HTMLElement | null>>({})
 
   const visibleKeys = computed(() => items.value.filter(isVisible).map(getKey))
