@@ -9,7 +9,7 @@ import type {
   FieldMeta
 } from '~/features/form-builder/form-builder-types'
 import FormField from '../FormField.vue'
-import { scrollToElement } from '../composables/useScrollOnVisible'
+import { useScrollOnVisible } from '../composables/useScrollOnVisible'
 
 interface Props {
   field: VeeFieldContext
@@ -21,7 +21,16 @@ interface Props {
 const props = defineProps<Props>()
 
 const isOpen = ref(props.meta.collapsibleDefaultOpen ?? false)
-const collapsibleRef = ref<HTMLElement | null>(null)
+
+// Setup scroll tracking for collapsible
+const collapsibleKey = computed(() => props.name)
+const { setElementRef, scrollToElement } = useScrollOnVisible(
+  computed(() => (isOpen.value ? [collapsibleKey.value] : [])),
+  {
+    isVisible: () => true,
+    getKey: (key) => key
+  }
+)
 
 // Visibility management
 const getFormValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
@@ -62,13 +71,10 @@ const fieldGroups = computed(() => {
 
 // Scroll to collapsible when opened
 watch(isOpen, (newIsOpen) => {
-  if (newIsOpen && collapsibleRef.value) {
+  if (newIsOpen) {
     setTimeout(() => {
       nextTick(() => {
-        const element = collapsibleRef.value
-        if (element instanceof HTMLElement) {
-          scrollToElement(element, 20)
-        }
+        scrollToElement(collapsibleKey.value)
       })
     }, 150)
   }
@@ -80,7 +86,7 @@ watch(isOpen, (newIsOpen) => {
     <!-- Collapsible version -->
     <Collapsible
       v-if="meta.collapsible"
-      ref="collapsibleRef"
+      :ref="(el) => setElementRef(collapsibleKey, el as HTMLElement | null)"
       v-model:open="isOpen"
       class="border rounded-lg"
     >
