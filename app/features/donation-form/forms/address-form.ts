@@ -6,7 +6,7 @@ import type { ConfigSectionDef } from '~/features/form-builder/form-builder-type
  * Collects standard mailing address information
  */
 export const addressFormSection: ConfigSectionDef = {
-  id: 'shipping-address',
+  id: 'address',
   title: 'Address',
   fields: {
     address1: {
