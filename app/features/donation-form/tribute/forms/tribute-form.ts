@@ -3,6 +3,25 @@ import type { ConfigSectionDef } from '~/features/form-builder/form-builder-type
 import type { FormConfig } from '@/lib/common/types'
 
 /**
+ * Determine if sameAsHonoree should default to true
+ * Returns true if recipient name is empty OR matches honoree name exactly
+ */
+function shouldDefaultSameAsHonoree(allValues: Record<string, unknown>): boolean {
+  const honoreeName = (allValues.honoreeName as Record<string, unknown>) || {}
+  const recipientName = (allValues.recipientName as Record<string, unknown>) || {}
+
+  const honoreeFirst = ((honoreeName.honoreeFirstName as string | undefined) || '').trim()
+  const honoreeLast = ((honoreeName.honoreeLastName as string | undefined) || '').trim()
+  const recipientFirst = ((recipientName.recipientFirstName as string | undefined) || '').trim()
+  const recipientLast = ((recipientName.recipientLastName as string | undefined) || '').trim()
+
+  const hasRecipientName = recipientFirst !== '' || recipientLast !== ''
+  const namesDiffer = recipientFirst !== honoreeFirst || recipientLast !== honoreeLast
+
+  return !hasRecipientName || !namesDiffer
+}
+
+/**
  * Create tribute form section definition
  * Form fields, labels, placeholders, and validation are hardcoded here.
  * Only display config (icons, labels, modal title) comes from API config.
@@ -33,38 +52,8 @@ export function createTributeFormSection(
           // When switching to gift with eCard enabled, default sameAsHonoree to true
           // BUT only if recipient name is empty or matches honoree
           if (value === 'gift' && allValues.sendECard === true) {
-            // Access nested field-group values correctly
-            const honoreeName = (allValues.honoreeName as Record<string, unknown>) || {}
-            const recipientName = (allValues.recipientName as Record<string, unknown>) || {}
-
-            const recipientFirst = (recipientName.recipientFirstName as string | undefined) || ''
-            const recipientLast = (recipientName.recipientLastName as string | undefined) || ''
-            const honoreeFirst = (honoreeName.honoreeFirstName as string | undefined) || ''
-            const honoreeLast = (honoreeName.honoreeLastName as string | undefined) || ''
-
-            // Check if user has entered a different recipient name
-            const hasRecipientName = recipientFirst.trim() !== '' || recipientLast.trim() !== ''
-            const namesDiffer =
-              recipientFirst.trim() !== honoreeFirst.trim() ||
-              recipientLast.trim() !== honoreeLast.trim()
-
-            console.log('[Tribute] Type onChange:', {
-              recipientFirst,
-              recipientLast,
-              honoreeFirst,
-              honoreeLast,
-              hasRecipientName,
-              namesDiffer
-            })
-
-            // Only set to true if no recipient name entered OR names match exactly
-            if (!hasRecipientName || !namesDiffer) {
-              console.log('[Tribute] Setting sameAsHonoree to true')
+            if (shouldDefaultSameAsHonoree(allValues)) {
               setValue('sameAsHonoree', true)
-            } else {
-              console.log(
-                '[Tribute] Preserving different recipient name, NOT setting sameAsHonoree'
-              )
             }
           }
           // When switching to memorial, clear sameAsHonoree (field is hidden)
@@ -117,38 +106,8 @@ export function createTributeFormSection(
           // When enabling eCard for gift, default sameAsHonoree to true
           // BUT only if recipient name is empty or matches honoree
           if (value === true && allValues.type === 'gift') {
-            // Access nested field-group values correctly
-            const honoreeName = (allValues.honoreeName as Record<string, unknown>) || {}
-            const recipientName = (allValues.recipientName as Record<string, unknown>) || {}
-
-            const recipientFirst = (recipientName.recipientFirstName as string | undefined) || ''
-            const recipientLast = (recipientName.recipientLastName as string | undefined) || ''
-            const honoreeFirst = (honoreeName.honoreeFirstName as string | undefined) || ''
-            const honoreeLast = (honoreeName.honoreeLastName as string | undefined) || ''
-
-            // Check if user has entered a different recipient name
-            const hasRecipientName = recipientFirst.trim() !== '' || recipientLast.trim() !== ''
-            const namesDiffer =
-              recipientFirst.trim() !== honoreeFirst.trim() ||
-              recipientLast.trim() !== honoreeLast.trim()
-
-            console.log('[Tribute] sendECard onChange:', {
-              recipientFirst,
-              recipientLast,
-              honoreeFirst,
-              honoreeLast,
-              hasRecipientName,
-              namesDiffer
-            })
-
-            // Only set to true if no recipient name entered OR names match exactly
-            if (!hasRecipientName || !namesDiffer) {
-              console.log('[Tribute] Setting sameAsHonoree to true')
+            if (shouldDefaultSameAsHonoree(allValues)) {
               setValue('sameAsHonoree', true)
-            } else {
-              console.log(
-                '[Tribute] Preserving different recipient name, NOT setting sameAsHonoree'
-              )
             }
           }
           // When disabling eCard, clear sameAsHonoree

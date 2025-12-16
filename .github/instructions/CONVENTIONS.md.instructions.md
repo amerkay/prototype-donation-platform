@@ -16,7 +16,7 @@ Multi-step donation platform with single/recurring donations, multi-item cart sy
 - You MUST always prioritize DRY coding and reusable functions and components, never repeat code.
 - YOU MUST remove obsolete code that has been replaced with new code. Less code is better.
 - At the end of a task, your summary of the work done must be short.
-- At the end of a task, you MUST reply with an absolute minimal short conventional commit about ALL the work done during the session, not just last task, entire session.
+- IMPORTANT! YOU MUST ALWAYS, at the end of a task, you MUST reply with an absolute minimal short conventional commit about ALL the work done during the chat session, entire session.
 - Whenever possible, do not edit the shadcn files in @/components/ui. Only if needed.
 - YOU MUST write modular vue3 code using components and composables without overcomplicating things.
 - ALWAYS prefer self container logic. You must rewrite confusing logic to be as self-contained as possible.
