@@ -100,9 +100,9 @@ function handleTributeUpdate(value: Record<string, unknown>) {
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto space-y-6">
+  <div class="w-full mx-auto space-y-6">
     <!-- Form Settings (includes form, localization, pricing) -->
-    <div class="px-6 py-2 bg-muted/50 rounded-xl">
+    <div class="config-section">
       <FormRenderer
         :section="formSection"
         :model-value="{
@@ -115,7 +115,7 @@ function handleTributeUpdate(value: Record<string, unknown>) {
     </div>
 
     <!-- Multiple Products -->
-    <div class="px-6 py-2 bg-muted/50 rounded-xl">
+    <div class="config-section">
       <FormRenderer
         :section="impactCartSection"
         :model-value="{
@@ -127,7 +127,7 @@ function handleTributeUpdate(value: Record<string, unknown>) {
     </div>
 
     <!-- Product Selector -->
-    <div class="px-6 py-2 bg-muted/50 rounded-xl">
+    <div class="config-section">
       <FormRenderer
         :section="productSelectorSection"
         :model-value="config.features.productSelector"
@@ -136,7 +136,7 @@ function handleTributeUpdate(value: Record<string, unknown>) {
     </div>
 
     <!-- Rewards -->
-    <div class="px-6 py-2 bg-muted/50 rounded-xl">
+    <div class="config-section">
       <FormRenderer
         :section="rewardsSection"
         :model-value="config.features.rewards"
@@ -145,7 +145,7 @@ function handleTributeUpdate(value: Record<string, unknown>) {
     </div>
 
     <!-- Shipping Notice -->
-    <div class="px-6 py-2 bg-muted/50 rounded-xl">
+    <div class="config-section">
       <FormRenderer
         :section="shippingNoticeSection"
         :model-value="{
@@ -157,7 +157,7 @@ function handleTributeUpdate(value: Record<string, unknown>) {
     </div>
 
     <!-- Tribute Settings -->
-    <div class="px-6 py-2 bg-muted/50 rounded-xl">
+    <div class="config-section">
       <FormRenderer
         :section="tributeSection"
         :model-value="config.features.tribute"
@@ -172,3 +172,11 @@ function handleTributeUpdate(value: Record<string, unknown>) {
     </div> -->
   </div>
 </template>
+
+<style scoped>
+@reference "@/assets/css/main.css";
+
+.config-section {
+  @apply px-6 py-2 bg-muted/50 rounded-xl border;
+}
+</style>

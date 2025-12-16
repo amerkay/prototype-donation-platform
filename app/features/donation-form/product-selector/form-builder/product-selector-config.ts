@@ -8,14 +8,23 @@ import type { ConfigSectionDef } from '~/features/form-builder/form-builder-type
 export function createProductSelectorConfigSection(): ConfigSectionDef {
   return {
     id: 'productSelector',
-    title: 'Product Selector',
-    description: 'Configure the product selection interface and terminology',
+    // title: 'Product Selector',
+    // description: 'Configure the product selection interface and terminology',
     fields: {
       enabled: {
         type: 'toggle',
         label: 'Enable Product Selector',
         description: 'Show product selector interface to donors',
         classLabel: 'font-bold'
+      },
+      productList: {
+        type: 'field-group',
+        label: 'Products Available',
+        collapsible: true,
+        collapsibleDefaultOpen: false,
+        badgeLabel: 'On my TODO list',
+        badgeVariant: 'secondary',
+        isDisabled: true
       },
       config: {
         type: 'field-group',

@@ -6,8 +6,26 @@ import type { Product, TributeData, CartItem } from '@/lib/common/types'
 const SESSION_KEY = 'donation-form:session'
 const SYNC_DEBOUNCE_MS = 500
 
+// Donor info types
+export interface DonorInfo {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+}
+
+export interface ShippingAddress {
+  address1: string
+  address2: string
+  city: string
+  state: string
+  postalCode: string
+  country: string
+}
+
 // Session storage structure
 interface DonationFormSession {
+  currentStep: number
   activeTab: 'once' | 'monthly' | 'yearly' | 'multiple'
   currency: string
   donationAmounts: {
@@ -24,6 +42,8 @@ interface DonationFormSession {
     monthly: TributeData | undefined
     yearly: TributeData | undefined
   }
+  donorInfo: DonorInfo
+  shippingAddress: ShippingAddress
   multipleCartSnapshot: CartItem[]
   selectedRewardsSnapshot: string[]
   lastSyncedAt: number
@@ -31,6 +51,7 @@ interface DonationFormSession {
 
 export function useDonationFormState(defaultCurrency: string) {
   // Nuxt useState for reactive in-memory state
+  const currentStep = useState<number>('donation-form:current-step', () => 1)
   const activeTab = useState<'once' | 'monthly' | 'yearly' | 'multiple'>(
     'donation-form:active-tab',
     () => 'once'
@@ -57,17 +78,34 @@ export function useDonationFormState(defaultCurrency: string) {
     monthly: undefined,
     yearly: undefined
   }))
+  const donorInfo = useState<DonorInfo>('donation-form:donor-info', () => ({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: ''
+  }))
+  const shippingAddress = useState<ShippingAddress>('donation-form:shipping-address', () => ({
+    address1: '',
+    address2: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: ''
+  }))
 
   // Session storage sync - only runs on client
   const syncToSession = (multipleCart: CartItem[], selectedRewards: Set<string>) => {
     if (import.meta.server) return
 
     const session: DonationFormSession = {
+      currentStep: currentStep.value,
       activeTab: activeTab.value,
       currency: selectedCurrency.value,
       donationAmounts: { ...donationAmounts.value },
       selectedProducts: { ...selectedProducts.value },
       tributeData: { ...tributeData.value },
+      donorInfo: { ...donorInfo.value },
+      shippingAddress: { ...shippingAddress.value },
       multipleCartSnapshot: [...multipleCart],
       selectedRewardsSnapshot: Array.from(selectedRewards),
       lastSyncedAt: Date.now()
@@ -93,11 +131,21 @@ export function useDonationFormState(defaultCurrency: string) {
       const session: DonationFormSession = JSON.parse(stored)
 
       // Restore state
+      currentStep.value = session.currentStep ?? 1
       activeTab.value = session.activeTab
       selectedCurrency.value = session.currency
       donationAmounts.value = { ...session.donationAmounts }
       selectedProducts.value = { ...session.selectedProducts }
       tributeData.value = { ...session.tributeData }
+      donorInfo.value = session.donorInfo ?? { firstName: '', lastName: '', email: '', phone: '' }
+      shippingAddress.value = session.shippingAddress ?? {
+        address1: '',
+        address2: '',
+        city: '',
+        state: '',
+        postalCode: '',
+        country: ''
+      }
 
       // Return cart/rewards data for caller to restore into useImpactCart
       return {
@@ -125,15 +173,24 @@ export function useDonationFormState(defaultCurrency: string) {
 
     // Watch all state and sync to session storage (debounced)
     watchDebounced(
-      [activeTab, selectedCurrency, donationAmounts, selectedProducts, tributeData],
+      [
+        currentStep,
+        activeTab,
+        selectedCurrency,
+        donationAmounts,
+        selectedProducts,
+        tributeData,
+        donorInfo,
+        shippingAddress
+      ],
       () => {
         syncToSession(getMultipleCart(), getSelectedRewards())
       },
       { debounce: SYNC_DEBOUNCE_MS, deep: true }
     )
 
-    // Also watch for tab changes and sync immediately (no debounce)
-    watch(activeTab, () => {
+    // Also watch for step/tab changes and sync immediately (no debounce)
+    watch([currentStep, activeTab], () => {
       syncToSession(getMultipleCart(), getSelectedRewards())
     })
   }
@@ -144,15 +201,36 @@ export function useDonationFormState(defaultCurrency: string) {
     syncToSession(multipleCart, selectedRewards)
   }
 
+  // Step navigation
+  const goToStep = (step: number) => {
+    currentStep.value = step
+  }
+
+  const nextStep = () => {
+    currentStep.value++
+  }
+
+  const previousStep = () => {
+    if (currentStep.value > 1) {
+      currentStep.value--
+    }
+  }
+
   return {
     // State
+    currentStep,
     activeTab,
     selectedCurrency,
     donationAmounts,
     selectedProducts,
     tributeData,
+    donorInfo,
+    shippingAddress,
 
     // Methods
+    goToStep,
+    nextStep,
+    previousStep,
     setupSync,
     triggerSync,
     restoreFromSession,

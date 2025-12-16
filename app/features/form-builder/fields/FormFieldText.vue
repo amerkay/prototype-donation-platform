@@ -39,6 +39,6 @@ const handleEnterKey = (event: KeyboardEvent) => {
       @blur="field.onBlur"
       @keydown.enter="handleEnterKey"
     />
-    <FieldError v-if="errors.length" :errors="errors" />
+    <FieldError v-if="errors.length" :errors="errors.slice(0, 1)" />
   </Field>
 </template>

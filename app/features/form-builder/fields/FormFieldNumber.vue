@@ -50,6 +50,6 @@ const numberValue = computed(() => props.field.value as number | null | undefine
         <NumberFieldIncrement />
       </NumberFieldContent>
     </NumberField>
-    <FieldError v-if="errors.length" :errors="errors" />
+    <FieldError v-if="errors.length" :errors="errors.slice(0, 1)" />
   </Field>
 </template>

@@ -109,7 +109,7 @@ export function createTributeFormSection(
         placeholder: 'name@example.com',
         visibleWhen: (values) => values.type !== 'none' && values.sendECard === true,
         rules: z
-          .string({ required_error: 'Email is required' })
+          .string({ error: 'Email is required' })
           .min(1, 'Email is required')
           .email('Enter a valid email address')
       }

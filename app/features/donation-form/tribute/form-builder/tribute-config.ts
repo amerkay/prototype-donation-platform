@@ -8,14 +8,23 @@ import type { ConfigSectionDef } from '~/features/form-builder/form-builder-type
 export function createTributeConfigSection(): ConfigSectionDef {
   return {
     id: 'tribute',
-    title: 'Tribute Settings',
-    description: 'Configure tribute, gift, and memorial donation options',
+    // title: 'Tribute Settings',
+    // description: 'Configure tribute, gift, and memorial donation options',
     fields: {
       enabled: {
         type: 'toggle',
         label: 'Enable Tribute Feature',
         description: 'Allow donors to dedicate donations as gifts or memorials',
         classLabel: 'font-bold'
+      },
+      ecardTemplate: {
+        type: 'field-group',
+        label: 'eCard Template',
+        collapsible: true,
+        collapsibleDefaultOpen: false,
+        badgeLabel: 'On my TODO list',
+        badgeVariant: 'secondary',
+        isDisabled: true
       },
       types: {
         type: 'field-group',

@@ -68,74 +68,83 @@ useField(props.name, fieldRules, {
 
 <template>
   <VeeField v-slot="{ field, errors, meta: fieldMeta }" :name="name" :rules="fieldRules">
-    <div v-show="isVisible">
-      <FormFieldText
-        v-if="meta.type === 'text'"
-        :field="field"
-        :errors="fieldMeta.touched ? errors : []"
-        :meta="meta"
-        :name="name"
-      />
-      <FormFieldTextarea
-        v-else-if="meta.type === 'textarea'"
-        :field="field"
-        :errors="fieldMeta.touched ? errors : []"
-        :meta="meta"
-        :name="name"
-      />
-      <FormFieldNumber
-        v-else-if="meta.type === 'number'"
-        :field="field"
-        :errors="fieldMeta.touched ? errors : []"
-        :meta="meta"
-        :name="name"
-      />
-      <FormFieldToggle
-        v-else-if="meta.type === 'toggle'"
-        :field="field"
-        :errors="fieldMeta.touched ? errors : []"
-        :meta="meta"
-        :name="name"
-      />
-      <FormFieldSelect
-        v-else-if="meta.type === 'select'"
-        :field="field"
-        :errors="fieldMeta.touched ? errors : []"
-        :meta="meta"
-        :name="name"
-      />
-      <FormFieldRadioGroup
-        v-else-if="meta.type === 'radio-group'"
-        :field="field"
-        :errors="fieldMeta.touched ? errors : []"
-        :meta="meta"
-        :name="name"
-      />
-      <FormFieldEmoji
-        v-else-if="meta.type === 'emoji'"
-        :field="field"
-        :errors="fieldMeta.touched ? errors : []"
-        :meta="meta"
-        :name="name"
-      />
-      <FormFieldCard v-else-if="meta.type === 'card'" :meta="meta" />
-      <FormFieldGroup
-        v-else-if="meta.type === 'field-group'"
-        :field="field"
-        :errors="meta.rules && errors.length > 0 ? errors : fieldMeta.touched ? errors : []"
-        :meta="meta"
-        :name="name"
-      />
-      <FormFieldArray
-        v-else-if="meta.type === 'array'"
-        :field="field"
-        :errors="fieldMeta.touched ? errors : []"
-        :meta="meta"
-        :name="name"
-      />
-      <div v-else class="text-destructive text-sm">
-        Unknown field type: {{ (meta as { type: string }).type }}
+    <Transition
+      enter-active-class="transition-all duration-300 ease-out"
+      leave-active-class="transition-all duration-200 ease-in"
+      enter-from-class="opacity-0 -translate-y-2"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 -translate-y-2"
+    >
+      <div v-if="isVisible">
+        <FormFieldText
+          v-if="meta.type === 'text'"
+          :field="field"
+          :errors="fieldMeta.touched ? errors : []"
+          :meta="meta"
+          :name="name"
+        />
+        <FormFieldTextarea
+          v-else-if="meta.type === 'textarea'"
+          :field="field"
+          :errors="fieldMeta.touched ? errors : []"
+          :meta="meta"
+          :name="name"
+        />
+        <FormFieldNumber
+          v-else-if="meta.type === 'number'"
+          :field="field"
+          :errors="fieldMeta.touched ? errors : []"
+          :meta="meta"
+          :name="name"
+        />
+        <FormFieldToggle
+          v-else-if="meta.type === 'toggle'"
+          :field="field"
+          :errors="fieldMeta.touched ? errors : []"
+          :meta="meta"
+          :name="name"
+        />
+        <FormFieldSelect
+          v-else-if="meta.type === 'select'"
+          :field="field"
+          :errors="fieldMeta.touched ? errors : []"
+          :meta="meta"
+          :name="name"
+        />
+        <FormFieldRadioGroup
+          v-else-if="meta.type === 'radio-group'"
+          :field="field"
+          :errors="fieldMeta.touched ? errors : []"
+          :meta="meta"
+          :name="name"
+        />
+        <FormFieldEmoji
+          v-else-if="meta.type === 'emoji'"
+          :field="field"
+          :errors="fieldMeta.touched ? errors : []"
+          :meta="meta"
+          :name="name"
+        />
+        <FormFieldCard v-else-if="meta.type === 'card'" :meta="meta" />
+        <FormFieldGroup
+          v-else-if="meta.type === 'field-group'"
+          :field="field"
+          :errors="meta.rules && errors.length > 0 ? errors : fieldMeta.touched ? errors : []"
+          :meta="meta"
+          :name="name"
+        />
+        <FormFieldArray
+          v-else-if="meta.type === 'array'"
+          :field="field"
+          :errors="fieldMeta.touched ? errors : []"
+          :meta="meta"
+          :name="name"
+        />
+        <div v-else class="text-destructive text-sm">
+          Unknown field type: {{ (meta as { type: string }).type }}
+        </div>
       </div>
-    </div>
+    </Transition>
   </VeeField>
 </template>

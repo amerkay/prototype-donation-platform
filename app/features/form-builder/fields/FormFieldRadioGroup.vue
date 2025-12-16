@@ -57,6 +57,6 @@ const fieldValue = computed(() => props.field.value as string | number | undefin
         </Field>
       </FieldLabel>
     </RadioGroup>
-    <FieldError v-if="errors.length" :errors="errors" />
+    <FieldError v-if="errors.length" :errors="errors.slice(0, 1)" />
   </FieldSet>
 </template>

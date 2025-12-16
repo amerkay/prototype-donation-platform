@@ -31,6 +31,6 @@ const textareaValue = computed(() => props.field.value as string | number | unde
       @update:model-value="field.onChange"
       @blur="field.onBlur"
     />
-    <FieldError v-if="errors.length" :errors="errors" />
+    <FieldError v-if="errors.length" :errors="errors.slice(0, 1)" />
   </Field>
 </template>

@@ -8,8 +8,8 @@ import type { ConfigSectionDef } from '~/features/form-builder/form-builder-type
 export function createRewardsConfigSection(): ConfigSectionDef {
   return {
     id: 'rewards',
-    title: 'Rewards & Gifts',
-    description: 'Configure free gift rewards based on donation thresholds',
+    // title: 'Rewards & Gifts',
+    // description: 'Configure free gift rewards based on donation thresholds',
     fields: {
       enabled: {
         type: 'toggle',

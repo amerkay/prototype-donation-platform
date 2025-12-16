@@ -160,6 +160,11 @@ export const useImpactCart = () => {
     multipleCart.value = multipleCart.value.filter((item) => item.frequency === 'once')
   }
 
+  const restoreState = (cartItems: CartItem[], rewards: string[]) => {
+    multipleCart.value = cartItems
+    selectedRewards.value = new Set(rewards)
+  }
+
   return {
     // State
     onceCart,
@@ -185,6 +190,7 @@ export const useImpactCart = () => {
     toggleReward,
     clearCart,
     clearRecurringItems,
-    canAddRecurringFrequency
+    canAddRecurringFrequency,
+    restoreState
   }
 }

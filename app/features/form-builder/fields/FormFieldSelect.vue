@@ -99,6 +99,6 @@ function getLabel(value: string | number) {
         </Command>
       </PopoverContent>
     </Popover>
-    <FieldError v-if="errors.length" :errors="errors" />
+    <FieldError v-if="errors.length" :errors="errors.slice(0, 1)" />
   </Field>
 </template>

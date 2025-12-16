@@ -86,6 +86,6 @@ function removeItem(index: number) {
       </Button>
     </div>
 
-    <FieldError v-if="errors.length" :errors="errors" />
+    <FieldError v-if="errors.length" :errors="errors.slice(0, 1)" />
   </Field>
 </template>

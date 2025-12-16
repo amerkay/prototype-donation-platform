@@ -8,8 +8,8 @@ import type { ConfigSectionDef } from '~/features/form-builder/form-builder-type
 export function createShippingNoticeConfigSection(): ConfigSectionDef {
   return {
     id: 'shippingNotice',
-    title: 'Shipping Notice',
-    description: 'Configure shipping notice displayed for physical rewards',
+    // title: 'Shipping Notice',
+    // description: 'Configure shipping notice displayed for physical rewards',
     fields: {
       showNotice: {
         type: 'toggle',

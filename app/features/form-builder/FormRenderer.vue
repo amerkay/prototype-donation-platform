@@ -141,6 +141,13 @@ defineExpose({
 
 <template>
   <form :class="props.class" @submit.prevent="onSubmit">
+    <div class="space-y-1 mt-4 mb-2">
+      <h2 v-if="section.title" class="text-sm font-semibold">{{ section.title }}</h2>
+      <p v-if="section.description" class="text-muted-foreground text-sm mb-4">
+        {{ section.description }}
+      </p>
+    </div>
+
     <Accordion
       v-if="hasCollapsibleGroups"
       v-model="accordionValue"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, onMounted } from 'vue'
+import { computed, watch } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
@@ -19,8 +19,12 @@ const props = defineProps<Props>()
 // Use provided config or fall back to default
 const formConfig = computed(() => props.config ?? defaultConfig)
 
+const emit = defineEmits<{
+  complete: []
+}>()
+
 const { convertPrice } = useCurrency()
-const { multipleCart, selectedRewards, addToCart, clearCart } = useImpactCart()
+const { multipleCart, addToCart } = useImpactCart()
 
 // Use new donation form state composable
 const {
@@ -29,55 +33,8 @@ const {
   donationAmounts,
   selectedProducts,
   tributeData,
-  setupSync,
-  triggerSync,
-  restoreFromSession,
   clearSession
 } = useDonationFormState(formConfig.value.localization.defaultCurrency)
-
-// Setup sync between state and sessionStorage
-setupSync(
-  () => multipleCart.value,
-  () => selectedRewards.value
-)
-
-// Watch multipleCart for changes and trigger immediate sync when in multiple tab
-watch(
-  multipleCart,
-  () => {
-    if (selectedFrequency.value === 'multiple') {
-      triggerSync(multipleCart.value, selectedRewards.value)
-    }
-  },
-  { deep: true }
-)
-
-// Watch selectedRewards for changes and trigger immediate sync
-watch(
-  selectedRewards,
-  () => {
-    triggerSync(multipleCart.value, selectedRewards.value)
-  },
-  { deep: true }
-)
-
-// Restore session on mount
-onMounted(() => {
-  const restored = restoreFromSession()
-  if (restored) {
-    // Clear existing cart first
-    clearCart()
-
-    // Restore multiple cart items
-    restored.multipleCart.forEach((item) => {
-      addToCart(item, item.price || 0, 'multiple', item.quantity, item.tribute)
-    })
-
-    // Restore selected rewards
-    selectedRewards.value.clear()
-    restored.selectedRewards.forEach((id) => selectedRewards.value.add(id))
-  }
-})
 
 // Extract config values - now reactive to config changes
 const CURRENCIES = computed(() =>
@@ -158,6 +115,9 @@ const handleNext = () => {
     selectedProducts: selectedProducts.value,
     multipleCart: multipleCart.value
   })
+
+  // Emit complete event to parent wizard
+  emit('complete')
 
   // TODO: When implementing actual form submission, call clearSession() on success
   // clearSession()

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { inject } from 'vue'
 import type { Ref } from 'vue'
-import DonationFormStep1 from '@/features/donation-form/steps/step1/DonationFormStep1.vue'
+import DonationFlowWizard from '~/features/donation-form/DonationFlowWizard.vue'
 import type { FormConfig } from '@/lib/common/types'
 
 // Inject the shared form config from parent
@@ -13,7 +13,7 @@ if (!formConfig) {
 </script>
 
 <template>
-  <div class="bg-muted/50 rounded-xl p-4 sm:p-6">
-    <DonationFormStep1 :config="formConfig" />
+  <div class="bg-muted/50 rounded-xl overflow-hidden">
+    <DonationFlowWizard :config="formConfig" />
   </div>
 </template>
