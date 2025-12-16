@@ -79,6 +79,13 @@ const handleStep2Complete = () => {
 const handleEdit = () => {
   goToStep(1)
 }
+
+// Back handler
+const handleBack = () => {
+  if (currentStep.value > 1) {
+    goToStep(currentStep.value - 1)
+  }
+}
 </script>
 
 <template>
@@ -88,7 +95,13 @@ const handleEdit = () => {
 
     <div class="p-4 sm:p-6">
       <!-- Order Summary (shown from step 2 onwards) -->
-      <OrderSummary v-if="currentStep >= 2" :products="products" class="mb-4" @edit="handleEdit" />
+      <OrderSummary
+        v-if="currentStep >= 2"
+        :products="products"
+        class="mb-4"
+        @back="handleBack"
+        @edit="handleEdit"
+      />
 
       <!-- Step 1: Donation Selection -->
       <DonationFormStep1
