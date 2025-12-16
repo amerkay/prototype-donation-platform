@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, watch, ref, nextTick } from 'vue'
 import StepperProgress from '~/features/donation-form/common/ProgressBar.vue'
+import OrderSummary from '~/features/donation-form/common/OrderSummary.vue'
 import DonationFormStep1 from '~/features/donation-form/steps/step1/DonationFormStep1.vue'
 import DonationFormStep2 from '~/features/donation-form/steps/step2/DonationFormStep2.vue'
 import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
@@ -86,6 +87,9 @@ const handleEdit = () => {
     <StepperProgress :current-step="currentStep" :total-steps="TOTAL_STEPS" />
 
     <div class="p-4 sm:p-6">
+      <!-- Order Summary (shown from step 2 onwards) -->
+      <OrderSummary v-if="currentStep >= 2" :products="products" class="mb-4" @edit="handleEdit" />
+
       <!-- Step 1: Donation Selection -->
       <DonationFormStep1
         v-if="currentStep === 1"
@@ -98,7 +102,6 @@ const handleEdit = () => {
         v-if="currentStep === 2"
         :products="products"
         @complete="handleStep2Complete"
-        @edit="handleEdit"
       />
 
       <!-- Step 3: Gift Aid / Cover Fees (TODO) -->

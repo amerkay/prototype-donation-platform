@@ -18,8 +18,8 @@ export interface ShippingAddress {
   address1: string
   address2: string
   city: string
-  state: string
-  postalCode: string
+  county: string
+  postcode: string
   country: string
 }
 
@@ -88,8 +88,8 @@ export function useDonationFormState(defaultCurrency: string) {
     address1: '',
     address2: '',
     city: '',
-    state: '',
-    postalCode: '',
+    county: '',
+    postcode: '',
     country: ''
   }))
 
@@ -142,8 +142,8 @@ export function useDonationFormState(defaultCurrency: string) {
         address1: '',
         address2: '',
         city: '',
-        state: '',
-        postalCode: '',
+        county: '',
+        postcode: '',
         country: ''
       }
 

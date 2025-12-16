@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import FormRenderer from '@/features/form-builder/FormRenderer.vue'
-import { createFormConfigSection } from '../donation-form/form-builder/form-config'
-import { createMultipleProductsConfigSection } from '../donation-form/impact-cart/form-builder/impact-cart-config'
-import { createProductSelectorConfigSection } from '../donation-form/product-selector/form-builder/product-selector-config'
-import { createRewardsConfigSection } from '../donation-form/rewards/form-builder/rewards-config'
-import { createShippingNoticeConfigSection } from '../donation-form/shipping-notice/form-builder/shipping-notice-config'
-import { createTributeConfigSection } from '../donation-form/tribute/form-builder/tribute-config'
+import { createFormConfigSection } from '../donation-form/forms/form-config'
+import { createMultipleProductsConfigSection } from '../donation-form/impact-cart/forms/impact-cart-config'
+import { createProductSelectorConfigSection } from '../donation-form/product-selector/forms/product-selector-config'
+import { createRewardsConfigSection } from '../donation-form/rewards/forms/rewards-config'
+import { createShippingNoticeConfigSection } from '../donation-form/shipping-notice/forms/shipping-notice-config'
+import { createTributeConfigSection } from '../donation-form/tribute/forms/tribute-config'
 import type { FormConfig } from '@/lib/common/types'
 
 interface Props {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import FormRenderer from '@/features/form-builder/FormRenderer.vue'
-import { createTributeFormSection } from '~/features/donation-form/tribute/form-builder/tribute-form'
+import { createTributeFormSection } from '~/features/donation-form/tribute/forms/tribute-form'
 import type { TributeData, FormConfig } from '@/lib/common/types'
 
 interface Props {

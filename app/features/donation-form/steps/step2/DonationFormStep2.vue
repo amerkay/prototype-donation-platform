@@ -2,9 +2,8 @@
 import { ref, computed } from 'vue'
 import { Button } from '~/components/ui/button'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
-import OrderSummary from '~/features/donation-form/common/OrderSummary.vue'
-import { donorInfoFormSection } from './form-builder/donor-info-form'
-import { shippingAddressFormSection } from './form-builder/shipping-address-form'
+import { donorInfoFormSection } from './forms/donor-info-form'
+import { addressFormSection } from '../../forms/address-form'
 import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
 import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
 import type { Product } from '~/lib/common/types'
@@ -17,7 +16,6 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   complete: []
-  edit: []
 }>()
 
 const { donorInfo, shippingAddress, activeTab, selectedProducts } = useDonationFormState('')
@@ -26,6 +24,8 @@ const { multipleCart, selectedRewards } = useImpactCart()
 // Form refs
 const donorFormRef = ref<InstanceType<typeof FormRenderer>>()
 const shippingFormRef = ref<InstanceType<typeof FormRenderer>>()
+
+addressFormSection.title = 'Shipping Address'
 
 // Check if shipping is needed
 const needsShipping = computed(() => {
@@ -68,22 +68,20 @@ const shippingFormValues = computed({
   get: () => ({
     address1: shippingAddress.value.address1,
     address2: shippingAddress.value.address2,
-    cityStatePostal: {
-      city: shippingAddress.value.city,
-      state: shippingAddress.value.state
+    city: shippingAddress.value.city,
+    countyPostcode: {
+      county: shippingAddress.value.county,
+      postcode: shippingAddress.value.postcode
     },
-    postalCountry: {
-      postalCode: shippingAddress.value.postalCode,
-      country: shippingAddress.value.country
-    }
+    country: shippingAddress.value.country
   }),
   set: (value) => {
     shippingAddress.value.address1 = value.address1 || ''
     shippingAddress.value.address2 = value.address2 || ''
-    shippingAddress.value.city = value.cityStatePostal?.city || ''
-    shippingAddress.value.state = value.cityStatePostal?.state || ''
-    shippingAddress.value.postalCode = value.postalCountry?.postalCode || ''
-    shippingAddress.value.country = value.postalCountry?.country || ''
+    shippingAddress.value.city = value.city || ''
+    shippingAddress.value.county = value.countyPostcode?.county || ''
+    shippingAddress.value.postcode = value.countyPostcode?.postcode || ''
+    shippingAddress.value.country = value.country || ''
   }
 })
 
@@ -113,9 +111,6 @@ const handleNext = async () => {
 
 <template>
   <div class="space-y-4">
-    <!-- Order Summary -->
-    <OrderSummary :products="products" @edit="emit('edit')" />
-
     <!-- Donor Information Form -->
     <div class="rounded-lg border px-4 bg-background/80">
       <FormRenderer
@@ -131,7 +126,7 @@ const handleNext = async () => {
       <FormRenderer
         ref="shippingFormRef"
         v-model="shippingFormValues"
-        :section="shippingAddressFormSection"
+        :section="addressFormSection"
         @submit="handleNext"
       />
     </div>
