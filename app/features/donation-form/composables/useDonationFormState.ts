@@ -12,6 +12,7 @@ export interface DonorInfo {
   lastName: string
   email: string
   phone: string
+  anonymous: boolean
 }
 
 export interface ShippingAddress {
@@ -82,7 +83,8 @@ export function useDonationFormState(defaultCurrency: string) {
     firstName: '',
     lastName: '',
     email: '',
-    phone: ''
+    phone: '',
+    anonymous: false
   }))
   const shippingAddress = useState<ShippingAddress>('donation-form:shipping-address', () => ({
     address1: '',
@@ -137,7 +139,13 @@ export function useDonationFormState(defaultCurrency: string) {
       donationAmounts.value = { ...session.donationAmounts }
       selectedProducts.value = { ...session.selectedProducts }
       tributeData.value = { ...session.tributeData }
-      donorInfo.value = session.donorInfo ?? { firstName: '', lastName: '', email: '', phone: '' }
+      donorInfo.value = session.donorInfo ?? {
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        anonymous: false
+      }
       shippingAddress.value = session.shippingAddress ?? {
         address1: '',
         address2: '',

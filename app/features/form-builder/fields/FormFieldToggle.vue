@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import { Switch } from '@/components/ui/switch'
 import { Field, FieldContent, FieldLabel, FieldDescription } from '@/components/ui/field'
 import type { ToggleFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
@@ -13,7 +13,19 @@ interface Props {
 
 const props = defineProps<Props>()
 
+// Inject form values for dynamic descriptions
+const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
+
 const switchValue = computed(() => props.field.value as boolean | undefined)
+
+// Resolve description (static string or dynamic function)
+const resolvedDescription = computed(() => {
+  if (!props.meta.description) return undefined
+  if (typeof props.meta.description === 'function') {
+    return props.meta.description(formValues())
+  }
+  return props.meta.description
+})
 </script>
 
 <template>
@@ -22,8 +34,8 @@ const switchValue = computed(() => props.field.value as boolean | undefined)
       <FieldLabel v-if="meta.label" :for="name" :class="meta.classLabel">
         {{ meta.label }}
       </FieldLabel>
-      <FieldDescription v-if="meta.description" :class="meta.classDescription">
-        {{ meta.description }}
+      <FieldDescription v-if="resolvedDescription" :class="meta.classDescription">
+        {{ resolvedDescription }}
       </FieldDescription>
     </FieldContent>
     <Switch :id="name" :model-value="switchValue" @update:model-value="field.onChange" />

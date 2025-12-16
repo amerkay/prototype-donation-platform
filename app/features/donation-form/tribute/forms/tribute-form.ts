@@ -66,15 +66,25 @@ export function createTributeFormSection(
       sendECard: {
         type: 'toggle',
         label: '📧 Send an eCard notification',
+        classLabel: 'font-semibold',
         description: 'Notify the recipient via email about this tribute donation',
         visibleWhen: (values) => values.type !== 'none',
+        isNoSeparatorAfter: true
+      },
+
+      // Same as honoree toggle - visible when sendECard is true and type is 'gift'
+      sameAsHonoree: {
+        type: 'toggle',
+        label: 'Same Name as Honoree',
+        description: 'The recipient is the same as the honoree',
+        visibleWhen: (values) => values.type === 'gift' && values.sendECard === true,
         isNoSeparatorAfter: true
       },
 
       // Recipient name fields - visible when sendECard is true and NOT sameAsHonoree
       recipientName: {
         type: 'field-group',
-        label: 'eCard Recipient',
+        // label: 'eCard Reci pient',
         class: 'grid grid-cols-2 gap-x-3',
         isNoSeparatorAfter: true,
         visibleWhen: (values) =>
@@ -94,14 +104,7 @@ export function createTributeFormSection(
           }
         }
       },
-      // Same as honoree toggle - visible when sendECard is true and type is 'gift'
-      sameAsHonoree: {
-        type: 'toggle',
-        label: 'Same Name as Honoree',
-        description: 'The recipient is the same as the honoree',
-        visibleWhen: (values) => values.type === 'gift' && values.sendECard === true,
-        isNoSeparatorAfter: true
-      },
+
       // Email - visible when sendECard is true
       recipientEmail: {
         type: 'text',

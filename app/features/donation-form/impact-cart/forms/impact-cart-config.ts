@@ -17,6 +17,16 @@ export function createMultipleProductsConfigSection(): ConfigSectionDef {
         description: 'Allow donors to add multiple products to their cart',
         classLabel: 'font-bold'
       },
+      productList: {
+        type: 'field-group',
+        label: 'Products Available',
+        description: 'Define the products that donors can add to their cart',
+        collapsible: true,
+        collapsibleDefaultOpen: false,
+        badgeLabel: 'On my TODO list',
+        badgeVariant: 'secondary',
+        isDisabled: true
+      },
       settings: {
         type: 'field-group',
         label: 'Display Settings',

@@ -48,6 +48,17 @@ export const donorInfoFormSection: ConfigSectionDef = {
         return z.string().email().safeParse(values.email).success
       },
       rules: z.string().optional()
+    },
+    anonymous: {
+      type: 'toggle',
+      label: 'Donate Anonymously',
+      description: (values) => {
+        const isAnonymous = values.anonymous === true
+        return isAnonymous
+          ? 'Your name will show as "Anonymous" on our crowdfunding pages'
+          : 'Your first name and last initial will be displayed on our crowdfunding pages'
+      },
+      optional: true
     }
   }
 }

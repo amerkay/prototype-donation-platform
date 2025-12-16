@@ -21,7 +21,7 @@ export type FieldType =
 export interface BaseFieldMeta {
   type: FieldType
   label?: string
-  description?: string
+  description?: string | ((values: Record<string, unknown>) => string)
   placeholder?: string
   optional?: boolean
   visibleWhen?: (values: Record<string, unknown>) => boolean

@@ -54,13 +54,15 @@ const donorFormValues = computed({
       lastName: donorInfo.value.lastName
     },
     email: donorInfo.value.email,
-    phone: donorInfo.value.phone
+    phone: donorInfo.value.phone,
+    anonymous: donorInfo.value.anonymous
   }),
   set: (value) => {
     donorInfo.value.firstName = value.name?.firstName || ''
     donorInfo.value.lastName = value.name?.lastName || ''
     donorInfo.value.email = value.email || ''
     donorInfo.value.phone = value.phone || ''
+    donorInfo.value.anonymous = value.anonymous ?? false
   }
 })
 
