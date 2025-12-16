@@ -96,17 +96,15 @@ const descriptionText = computed(() => {
           <div class="flex items-top gap-3">
             <!-- Back Button -->
             <Button variant="outline" size="icon" class="h-11 w-11 shrink-0" @click="emit('back')">
-              <Icon name="lucide:chevron-left" class="h-5 w-5" />
+              <Icon name="lucide:chevron-left" class="size-4!" />
             </Button>
             <div class="min-w-0 flex-1">
               <div class="flex gap-2">
-                <!-- <Icon
-                  name="lucide:shopping-cart"
-                  class="mt-1 h-4 w-4 shrink-0 text-muted-foreground"
-                /> -->
                 <p class="text-xl font-bold leading-tight">
                   {{ formattedAmount }}
-                  <small class="text-muted-foreground text-sm font-normal">today</small>
+                  <small v-if="itemCount > 1" class="text-muted-foreground text-xs font-normal"
+                    >today</small
+                  >
                 </p>
               </div>
               <p class="text-xs text-muted-foreground">{{ descriptionText }}</p>
@@ -114,12 +112,21 @@ const descriptionText = computed(() => {
           </div>
         </div>
         <div class="flex shrink-0 items-center gap-2">
-          <Badge v-if="needsShipping" variant="secondary" class="text-xs">
+          <!-- <Badge v-if="needsShipping" variant="secondary" class="text-xs">
             <Icon name="lucide:package" class="mr-1 h-3 w-3" />
             Ship
-          </Badge>
-          <Button variant="ghost" size="sm" class="h-7 text-xs" @click="emit('edit')">
-            Edit
+          </Badge> -->
+          <Button
+            variant="ghost"
+            size="sm"
+            class="h-7 text-xs flex items-center"
+            @click="emit('edit')"
+          >
+            <Icon
+              name="lucide:shopping-cart"
+              class="-mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+            />
+            <span>Edit</span>
           </Button>
         </div>
       </div>
