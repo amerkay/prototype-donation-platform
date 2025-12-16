@@ -1,5 +1,6 @@
 import * as z from 'zod'
 import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
+import { createMessageFields } from '~/features/donation-form/forms/message-fields'
 
 /**
  * Donor information form section
@@ -60,26 +61,8 @@ export const donorInfoFormSection: ConfigSectionDef = {
       },
       optional: true
     },
-    isIncludeMessage: {
-      type: 'toggle',
-      label: 'Include a Message',
-      optional: true,
-      isNoSeparatorAfter: true
-    },
-    message: {
-      type: 'textarea',
-      label: 'Your Message',
-      placeholder: 'Enter your message (max 250 characters)',
-      maxLength: 250,
-      description: (values) => {
-        const msgLength = ((values.message as string) || '').length
-        return `${msgLength}/250 characters`
-      },
-      visibleWhen: (values) => values.isIncludeMessage === true,
-      rules: (values) =>
-        values.isIncludeMessage === true
-          ? z.string().max(250, 'Message must be 250 characters or less')
-          : z.string().optional()
-    }
+
+    // Message fields (toggle + textarea)
+    ...createMessageFields()
   }
 }

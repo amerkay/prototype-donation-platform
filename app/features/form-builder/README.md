@@ -34,27 +34,23 @@ const formSection: ConfigSectionDef = {
 Render with `FormRenderer`:
 
 ```vue
-<FormRenderer 
-  :section="formSection" 
-  v-model="formData"
-  @submit="handleSubmit"
-/>
+<FormRenderer :section="formSection" v-model="formData" @submit="handleSubmit" />
 ```
 
 ## Field Types
 
-| Type | Purpose | Key Props |
-|------|---------|-----------|
-| `text` | Single-line text input | `placeholder` |
-| `textarea` | Multi-line text | `rows` |
-| `number` | Number input with +/- buttons | `min`, `max`, `step` |
-| `toggle` | Boolean switch | - |
-| `select` | Dropdown with search | `options`, `searchPlaceholder` |
-| `radio-group` | Radio button group | `options`, `orientation` |
-| `emoji` | Emoji input (validated) | `maxLength` |
+| Type          | Purpose                          | Key Props                        |
+| ------------- | -------------------------------- | -------------------------------- |
+| `text`        | Single-line text input           | `placeholder`                    |
+| `textarea`    | Multi-line text                  | `rows`                           |
+| `number`      | Number input with +/- buttons    | `min`, `max`, `step`             |
+| `toggle`      | Boolean switch                   | -                                |
+| `select`      | Dropdown with search             | `options`, `searchPlaceholder`   |
+| `radio-group` | Radio button group               | `options`, `orientation`         |
+| `emoji`       | Emoji input (validated)          | `maxLength`                      |
 | `field-group` | Groups fields (supports nesting) | `fields`, `class`, `collapsible` |
-| `array` | Dynamic list of items | `itemField`, `addButtonText` |
-| `card` | Info display (non-input) | - |
+| `array`       | Dynamic list of items            | `itemField`, `addButtonText`     |
+| `card`        | Info display (non-input)         | -                                |
 
 ## Common Field Properties
 
@@ -140,7 +136,7 @@ address: {
 onChange: (value, allValues, setValue) => {
   const address = allValues.address as Record<string, unknown>
   const city = address?.city as string
-  
+
   // Set nested value
   setValue('address.city', 'New York')
 }
@@ -186,9 +182,9 @@ Validation rules and descriptions can be functions:
 phone: {
   type: 'text',
   label: 'Phone',
-  description: (values) => 
-    values.country === 'US' 
-      ? 'Format: (555) 123-4567' 
+  description: (values) =>
+    values.country === 'US'
+      ? 'Format: (555) 123-4567'
       : 'Include country code',
   rules: (values) =>
     values.country === 'US'
@@ -211,6 +207,49 @@ email: {
 }
 ```
 
+### 8. Reusable Field Sets
+
+Extract repeated fields into factory functions that return `FieldMetaMap`:
+
+```typescript
+// app/features/donation-form/forms/message-fields.ts
+import type { FieldMetaMap } from '~/features/form-builder/form-builder-types'
+
+export function createMessageFields(
+  visibilityCondition?: (values: Record<string, unknown>) => boolean
+): FieldMetaMap {
+  return {
+    isIncludeMessage: {
+      type: 'toggle',
+      label: 'Include a Message',
+      optional: true,
+      visibleWhen: visibilityCondition,
+      isNoSeparatorAfter: true
+    },
+    message: {
+      type: 'textarea',
+      label: 'Your Message',
+      maxLength: 250,
+      visibleWhen: (values: Record<string, unknown>) => {
+        if (visibilityCondition && !visibilityCondition(values)) return false
+        return values.isIncludeMessage === true
+      },
+      rules: (values: Record<string, unknown>) =>
+        values.isIncludeMessage === true ? z.string().max(250) : z.string().optional()
+    }
+  }
+}
+```
+
+Usage - spread into fields:
+
+```typescript
+fields: {
+  email: { type: 'text', label: 'Email' },
+  ...createMessageFields((values) => values.sendEmail === true)
+}
+```
+
 ## Complete Example
 
 ```typescript
@@ -220,7 +259,7 @@ import type { ConfigSectionDef } from '~/features/form-builder/form-builder-type
 export const contactFormSection: ConfigSectionDef = {
   id: 'contact-form',
   title: 'Contact Us',
-  description: 'We\'ll get back to you within 24 hours',
+  description: "We'll get back to you within 24 hours",
   fields: {
     contactType: {
       type: 'radio-group',
@@ -231,7 +270,7 @@ export const contactFormSection: ConfigSectionDef = {
         { value: 'other', label: 'Other' }
       ]
     },
-    
+
     personalInfo: {
       type: 'field-group',
       class: 'grid grid-cols-2 gap-3',
@@ -248,20 +287,20 @@ export const contactFormSection: ConfigSectionDef = {
         }
       }
     },
-    
+
     email: {
       type: 'text',
       label: 'Email',
       rules: z.string().email()
     },
-    
+
     message: {
       type: 'textarea',
       label: 'Message',
       rows: 5,
       rules: z.string().min(10, 'Please provide more details')
     },
-    
+
     subscribe: {
       type: 'toggle',
       label: 'Subscribe to updates',
@@ -289,26 +328,25 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <FormRenderer
-    :section="contactFormSection"
-    v-model="formData"
-    @submit="handleSubmit"
-  />
+  <FormRenderer :section="contactFormSection" v-model="formData" @submit="handleSubmit" />
 </template>
 ```
 
 ## FormRenderer Props & Events
 
 **Props:**
+
 - `section: ConfigSectionDef` - Form configuration
 - `modelValue: Record<string, unknown>` - Form values (v-model)
 - `class?: string` - Form element classes
 
 **Events:**
+
 - `update:modelValue` - Emitted on any field change
 - `submit` - Emitted on form submission (Enter key or explicit call)
 
 **Exposed:**
+
 - `isValid: boolean` - Current validation state
 - `onSubmit: () => void` - Trigger form submission
 
@@ -320,3 +358,4 @@ async function handleSubmit() {
 4. **Use onChange sparingly** - Only for cross-field logic, not simple state changes
 5. **Leverage field-groups for layout** - Apply grid classes to `class` prop
 6. **Add isNoSeparatorAfter for tight spacing** - Remove separator between related fields
+7. **Extract reusable field sets** - Use factory functions for repeated patterns (see Key Features #8)

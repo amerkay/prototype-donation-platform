@@ -1,6 +1,7 @@
 import * as z from 'zod'
 import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
 import type { FormConfig } from '@/lib/common/types'
+import { createMessageFields } from '~/features/donation-form/forms/message-fields'
 
 /**
  * Determine if sameAsHonoree should default to true
@@ -162,31 +163,9 @@ export function createTributeFormSection(
           .min(1, 'Email is required')
           .email('Enter a valid email address')
       },
-      // Include message toggle - visible when sendECard is true
-      isIncludeMessage: {
-        type: 'toggle',
-        label: 'Include a Message',
-        optional: true,
-        visibleWhen: (values) => values.type !== 'none' && values.sendECard === true,
-        isNoSeparatorAfter: true
-      },
-      // Message field - visible when isIncludeMessage is true
-      message: {
-        type: 'textarea',
-        label: 'Your Message',
-        placeholder: 'Enter your message (max 250 characters)',
-        maxLength: 250,
-        description: (values) => {
-          const msgLength = ((values.message as string) || '').length
-          return `${msgLength}/250 characters`
-        },
-        visibleWhen: (values) =>
-          values.type !== 'none' && values.sendECard === true && values.isIncludeMessage === true,
-        rules: (values) =>
-          values.isIncludeMessage === true
-            ? z.string().max(250, 'Message must be 250 characters or less')
-            : z.string().optional()
-      }
+
+      // Message fields - visible when sendECard is true
+      ...createMessageFields((values) => values.type !== 'none' && values.sendECard === true)
     }
   }
 }
