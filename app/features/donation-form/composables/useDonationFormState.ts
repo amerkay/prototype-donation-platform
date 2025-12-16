@@ -13,6 +13,8 @@ export interface DonorInfo {
   email: string
   phone: string
   anonymous: boolean
+  isIncludeMessage: boolean
+  message: string
 }
 
 export interface ShippingAddress {
@@ -84,7 +86,9 @@ export function useDonationFormState(defaultCurrency: string) {
     lastName: '',
     email: '',
     phone: '',
-    anonymous: false
+    anonymous: false,
+    isIncludeMessage: false,
+    message: ''
   }))
   const shippingAddress = useState<ShippingAddress>('donation-form:shipping-address', () => ({
     address1: '',
@@ -144,7 +148,9 @@ export function useDonationFormState(defaultCurrency: string) {
         lastName: '',
         email: '',
         phone: '',
-        anonymous: false
+        anonymous: false,
+        isIncludeMessage: false,
+        message: ''
       }
       shippingAddress.value = session.shippingAddress ?? {
         address1: '',

@@ -28,6 +28,7 @@ const textareaValue = computed(() => props.field.value as string | number | unde
       :model-value="textareaValue"
       :placeholder="meta.placeholder"
       :rows="meta.rows"
+      :maxlength="meta.maxLength"
       :aria-invalid="!!errors.length"
       :class="meta.class"
       @update:model-value="

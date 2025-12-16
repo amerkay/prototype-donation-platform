@@ -55,7 +55,9 @@ const donorFormValues = computed({
     },
     email: donorInfo.value.email,
     phone: donorInfo.value.phone,
-    anonymous: donorInfo.value.anonymous
+    anonymous: donorInfo.value.anonymous,
+    isIncludeMessage: donorInfo.value.isIncludeMessage,
+    message: donorInfo.value.message
   }),
   set: (value) => {
     donorInfo.value.firstName = value.name?.firstName || ''
@@ -63,6 +65,8 @@ const donorFormValues = computed({
     donorInfo.value.email = value.email || ''
     donorInfo.value.phone = value.phone || ''
     donorInfo.value.anonymous = value.anonymous ?? false
+    donorInfo.value.isIncludeMessage = value.isIncludeMessage ?? false
+    donorInfo.value.message = value.message || ''
   }
 })
 

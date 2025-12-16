@@ -50,6 +50,7 @@ export interface TextFieldMeta extends BaseFieldMeta {
 export interface TextareaFieldMeta extends BaseFieldMeta {
   type: 'textarea'
   rows?: number
+  maxLength?: number
 }
 
 /**

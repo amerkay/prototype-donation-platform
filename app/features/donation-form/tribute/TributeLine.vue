@@ -42,6 +42,10 @@ const eCardRecipient = computed(() => {
     email: recipient.email
   }
 })
+
+const hasMessage = computed(() => {
+  return props.tribute.eCard?.isIncludeMessage && props.tribute.eCard?.message
+})
 </script>
 
 <template>
@@ -51,6 +55,9 @@ const eCardRecipient = computed(() => {
     </p>
     <p v-if="eCardRecipient" class="text-xs text-muted-foreground mt-0.5 truncate">
       📧 eCard to {{ eCardRecipient.name || eCardRecipient.email }}
+    </p>
+    <p v-if="hasMessage" class="text-xs text-muted-foreground mt-0.5 truncate">
+      💬 "{{ tribute.eCard?.message }}"
     </p>
   </div>
 </template>

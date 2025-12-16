@@ -32,6 +32,8 @@ export interface TributeData {
       lastName: string
       email: string
     }
+    isIncludeMessage?: boolean
+    message?: string
   }
 }
 

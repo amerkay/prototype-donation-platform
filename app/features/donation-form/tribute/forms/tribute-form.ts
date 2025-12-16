@@ -99,7 +99,7 @@ export function createTributeFormSection(
         type: 'toggle',
         label: '📧 Send an eCard notification',
         labelClass: 'font-semibold',
-        description: 'Notify the recipient via email about this tribute donation',
+        description: 'Send an eCard about your donation',
         visibleWhen: (values) => values.type !== 'none',
         isNoSeparatorAfter: true,
         onChange: (value, allValues, setValue) => {
@@ -156,10 +156,36 @@ export function createTributeFormSection(
         label: 'Email Address',
         placeholder: 'name@example.com',
         visibleWhen: (values) => values.type !== 'none' && values.sendECard === true,
+        isNoSeparatorAfter: true,
         rules: z
           .string({ error: 'Email is required' })
           .min(1, 'Email is required')
           .email('Enter a valid email address')
+      },
+      // Include message toggle - visible when sendECard is true
+      isIncludeMessage: {
+        type: 'toggle',
+        label: 'Include a Message',
+        optional: true,
+        visibleWhen: (values) => values.type !== 'none' && values.sendECard === true,
+        isNoSeparatorAfter: true
+      },
+      // Message field - visible when isIncludeMessage is true
+      message: {
+        type: 'textarea',
+        label: 'Your Message',
+        placeholder: 'Enter your message (max 250 characters)',
+        maxLength: 250,
+        description: (values) => {
+          const msgLength = ((values.message as string) || '').length
+          return `${msgLength}/250 characters`
+        },
+        visibleWhen: (values) =>
+          values.type !== 'none' && values.sendECard === true && values.isIncludeMessage === true,
+        rules: (values) =>
+          values.isIncludeMessage === true
+            ? z.string().max(250, 'Message must be 250 characters or less')
+            : z.string().optional()
       }
     }
   }

@@ -39,7 +39,9 @@ const formValues = ref({
     recipientFirstName: props.modelValue?.eCard?.recipient?.firstName ?? '',
     recipientLastName: props.modelValue?.eCard?.recipient?.lastName ?? ''
   },
-  recipientEmail: props.modelValue?.eCard?.recipient?.email ?? ''
+  recipientEmail: props.modelValue?.eCard?.recipient?.email ?? '',
+  isIncludeMessage: props.modelValue?.eCard?.isIncludeMessage ?? false,
+  message: props.modelValue?.eCard?.message ?? ''
 })
 
 // Watch form values and convert back to TributeData
@@ -72,6 +74,8 @@ watch(
             : current.recipientName?.recipientLastName,
           email: current.recipientEmail ?? ''
         }
+        data.eCard.isIncludeMessage = current.isIncludeMessage ?? false
+        data.eCard.message = current.message ?? ''
       }
     }
 
