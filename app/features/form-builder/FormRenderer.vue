@@ -26,7 +26,7 @@ const initialFormValues = computed(() => ({
 }))
 
 // Use the composition API to access form context
-const { values, meta, setValues, handleSubmit } = useForm({
+const { values, meta, setValues, handleSubmit, setFieldValue } = useForm({
   initialValues: initialFormValues.value,
   validateOnMount: false
 })
@@ -36,6 +36,12 @@ const { values, meta, setValues, handleSubmit } = useForm({
 provide('formValues', () => {
   const sectionValues = (values as Record<string, unknown>)[props.section.id]
   return (sectionValues as Record<string, unknown>) || {}
+})
+
+// Provide setFieldValue for onChange callbacks
+// Wrap to add section ID prefix
+provide('setFieldValue', (path: string, value: unknown) => {
+  setFieldValue(`${props.section.id}.${path}`, value)
 })
 
 // Provide submit function for Enter key handling in text fields

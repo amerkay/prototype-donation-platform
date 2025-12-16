@@ -21,6 +21,7 @@ interface Props {
   errors: string[]
   meta: RadioGroupFieldMeta
   name: string
+  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
 }
 
 const props = defineProps<Props>()
@@ -37,7 +38,9 @@ const fieldValue = computed(() => props.field.value as string | number | undefin
       :model-value="fieldValue"
       :aria-invalid="!!errors.length"
       class="gap-4"
-      @update:model-value="field.onChange"
+      @update:model-value="
+        (value) => (onFieldChange ? onFieldChange(value, field.onChange) : field.onChange(value))
+      "
     >
       <FieldLabel
         v-for="option in meta.options"

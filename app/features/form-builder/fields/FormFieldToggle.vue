@@ -9,6 +9,7 @@ interface Props {
   errors: string[]
   meta: ToggleFieldMeta
   name: string
+  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
 }
 
 const props = defineProps<Props>()
@@ -38,6 +39,12 @@ const resolvedDescription = computed(() => {
         {{ resolvedDescription }}
       </FieldDescription>
     </FieldContent>
-    <Switch :id="name" :model-value="switchValue" @update:model-value="field.onChange" />
+    <Switch
+      :id="name"
+      :model-value="switchValue"
+      @update:model-value="
+        (value) => (onFieldChange ? onFieldChange(value, field.onChange) : field.onChange(value))
+      "
+    />
   </Field>
 </template>

@@ -25,6 +25,9 @@ const props = defineProps<Props>()
 // Inject form values for conditional visibility
 const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
 
+// Inject setFieldValue function from FormRenderer
+const setFieldValue = inject<(path: string, value: unknown) => void>('setFieldValue', () => {})
+
 // Inject parent group visibility (if this field is inside a field-group)
 const parentGroupVisible = inject<() => boolean>('parentGroupVisible', () => true)
 
@@ -61,6 +64,17 @@ useField(props.name, fieldRules, {
   // Keep field value even when component unmounts (accordion closes)
   keepValueOnUnmount: true
 })
+
+// Handle field changes and call onChange callback if provided
+const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => void) => {
+  // First update the field value
+  fieldOnChange(value)
+
+  // Then call the onChange callback if provided
+  if (props.meta.onChange) {
+    props.meta.onChange(value, formValues(), setFieldValue)
+  }
+}
 
 // Note: We don't reset field values when they become hidden
 // This preserves user input when toggling visibility on/off
@@ -104,6 +118,7 @@ useField(props.name, fieldRules, {
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
+          :on-field-change="handleFieldChange"
         />
         <FormFieldSelect
           v-else-if="meta.type === 'select'"
@@ -118,6 +133,7 @@ useField(props.name, fieldRules, {
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
+          :on-field-change="handleFieldChange"
         />
         <FormFieldEmoji
           v-else-if="meta.type === 'emoji'"

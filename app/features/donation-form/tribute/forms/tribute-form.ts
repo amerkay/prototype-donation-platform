@@ -28,19 +28,29 @@ export function createTributeFormSection(
         type: 'radio-group',
         label: 'Tribute Type',
         description: 'Make this donation a tribute to someone special',
-        options
+        options,
+        onChange: (value, allValues, setValue) => {
+          // When switching to gift with eCard enabled, default sameAsHonoree to true
+          if (value === 'gift' && allValues.sendECard === true) {
+            setValue('sameAsHonoree', true)
+          }
+          // When switching to memorial, clear sameAsHonoree (field is hidden)
+          else if (value === 'memorial') {
+            setValue('sameAsHonoree', false)
+          }
+        }
       },
       // Honoree section - visible when type is not 'none'
       honoreeName: {
         type: 'field-group',
-        label: 'Honoree',
+        // label: 'Honoree',
         class: 'grid grid-cols-2 gap-x-3',
         visibleWhen: (values) => values.type !== 'none',
         isNoSeparatorAfter: true,
         fields: {
           honoreeFirstName: {
             type: 'text',
-            label: 'First Name',
+            label: 'Honoree First Name',
             placeholder: 'First name',
             rules: z.string().min(2, 'First name must be at least 2 characters')
           },
@@ -69,7 +79,17 @@ export function createTributeFormSection(
         classLabel: 'font-semibold',
         description: 'Notify the recipient via email about this tribute donation',
         visibleWhen: (values) => values.type !== 'none',
-        isNoSeparatorAfter: true
+        isNoSeparatorAfter: true,
+        onChange: (value, allValues, setValue) => {
+          // When enabling eCard for gift, default sameAsHonoree to true
+          if (value === true && allValues.type === 'gift') {
+            setValue('sameAsHonoree', true)
+          }
+          // When disabling eCard, clear sameAsHonoree
+          else if (value === false) {
+            setValue('sameAsHonoree', false)
+          }
+        }
       },
 
       // Same as honoree toggle - visible when sendECard is true and type is 'gift' only

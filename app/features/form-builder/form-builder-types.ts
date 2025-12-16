@@ -30,6 +30,11 @@ export interface BaseFieldMeta {
   classLabel?: string
   classDescription?: string
   rules?: z.ZodTypeAny | ((values: Record<string, unknown>) => z.ZodTypeAny)
+  onChange?: (
+    value: unknown,
+    allValues: Record<string, unknown>,
+    setValue: (path: string, value: unknown) => void
+  ) => void
 }
 
 /**
