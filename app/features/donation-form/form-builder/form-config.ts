@@ -16,7 +16,7 @@ export function createFormConfigSection(): ConfigSectionDef {
         label: 'Basic Settings',
         collapsible: true,
         collapsibleDefaultOpen: false,
-        class: 'space-y-3',
+
         fields: {
           title: {
             type: 'text',
@@ -56,14 +56,14 @@ export function createFormConfigSection(): ConfigSectionDef {
         label: 'Currency Settings',
         collapsible: true,
         collapsibleDefaultOpen: false,
-        class: 'space-y-3',
+        
         fields: {
       localization: {
         type: 'field-group',
         label: 'Currency Settings',
         collapsible: true,
         collapsibleDefaultOpen: false,
-        class: 'space-y-3',
+        
         fields: {
           defaultCurrency: {
             type: 'select',
@@ -84,7 +84,7 @@ export function createFormConfigSection(): ConfigSectionDef {
             description: 'List of currencies available to donors',
             itemField: {
               type: 'field-group',
-              class: 'grid grid-cols-3 gap-4',
+              class: 'grid grid-cols-3 gap-3',
               fields: {
                 code: {
                   type: 'text',
@@ -135,14 +135,14 @@ export function createFormConfigSection(): ConfigSectionDef {
         label: 'Pricing Configuration',
         collapsible: true,
         collapsibleDefaultOpen: false,
-        class: 'space-y-3',
+        
         fields: {
       pricing: {
         type: 'field-group',
         label: 'Pricing Configuration',
         collapsible: true,
         collapsibleDefaultOpen: false,
-        class: 'space-y-3',
+        
         fields: {
           baseCurrency: {
             type: 'text',
@@ -157,7 +157,7 @@ export function createFormConfigSection(): ConfigSectionDef {
             description: 'Configure available donation frequencies and their preset amounts',
             itemField: {
               type: 'field-group',
-              class: 'space-y-3',
+              
               fields: {
                 value: {
                   type: 'select',
@@ -193,7 +193,7 @@ export function createFormConfigSection(): ConfigSectionDef {
                 customAmount: {
                   type: 'field-group',
                   label: 'Custom Amount Range',
-                  class: 'grid grid-cols-2 gap-4',
+                  class: 'grid grid-cols-2 gap-3',
                   fields: {
                     min: {
                       type: 'number',

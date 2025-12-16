@@ -23,7 +23,7 @@ export function createShippingNoticeConfigSection(): ConfigSectionDef {
         visibleWhen: (values) => values.showNotice === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
-        class: 'space-y-3',
+
         fields: {
           noticeText: {
             type: 'text',

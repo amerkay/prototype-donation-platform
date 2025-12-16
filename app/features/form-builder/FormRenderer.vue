@@ -162,7 +162,7 @@ defineExpose({
         </div>
       </template>
     </Accordion>
-    <div v-else class="space-y-3">
+    <div v-else class="space-y-3 mb-4">
       <template v-for="([fieldKey, fieldMeta], index) in allFields" :key="`${fieldKey}-${index}`">
         <Separator v-if="shouldShowSeparator(index, fieldMeta)" class="my-4" />
         <div :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)">

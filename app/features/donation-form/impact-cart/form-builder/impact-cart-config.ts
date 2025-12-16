@@ -23,7 +23,7 @@ export function createMultipleProductsConfigSection(): ConfigSectionDef {
         visibleWhen: (values) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
-        class: 'space-y-3',
+
         fields: {
           initialDisplay: {
             type: 'select',

@@ -33,7 +33,7 @@ export function createTributeConfigSection(): ConfigSectionDef {
         visibleWhen: (values) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
-        class: 'space-y-3 gap-3',
+
         rules: z
           .object({
             gift: z.object({ enabled: z.boolean() }),
@@ -45,7 +45,7 @@ export function createTributeConfigSection(): ConfigSectionDef {
         fields: {
           none: {
             type: 'field-group',
-            class: 'space-y-3 gap-3',
+
             fields: {
               label: {
                 type: 'text',
@@ -56,7 +56,7 @@ export function createTributeConfigSection(): ConfigSectionDef {
           },
           gift: {
             type: 'field-group',
-            class: 'space-y-3 gap-3',
+
             fields: {
               enabled: {
                 type: 'toggle',
@@ -77,7 +77,7 @@ export function createTributeConfigSection(): ConfigSectionDef {
           },
           memorial: {
             type: 'field-group',
-            class: 'space-y-3 gap-3',
+
             fields: {
               enabled: {
                 type: 'toggle',
@@ -105,7 +105,7 @@ export function createTributeConfigSection(): ConfigSectionDef {
         visibleWhen: (values) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
-        class: 'space-y-3 gap-3',
+
         fields: {
           title: {
             type: 'text',
@@ -126,7 +126,7 @@ export function createTributeConfigSection(): ConfigSectionDef {
         visibleWhen: (values) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
-        class: 'sm:grid sm:grid-cols-3 sm:gap-3 space-y-3',
+        class: 'sm:grid sm:grid-cols-3 sm:gap-3',
         fields: {
           gift: {
             type: 'emoji',

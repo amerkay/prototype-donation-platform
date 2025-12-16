@@ -32,7 +32,7 @@ export function createProductSelectorConfigSection(): ConfigSectionDef {
         visibleWhen: (values) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
-        class: 'space-y-3',
+
         fields: {
           icon: {
             type: 'emoji',
@@ -43,7 +43,7 @@ export function createProductSelectorConfigSection(): ConfigSectionDef {
           entity: {
             type: 'field-group',
             // label: 'Entity Labels',
-            class: 'grid grid-cols-2 gap-4',
+            class: 'grid grid-cols-2 gap-3',
             fields: {
               singular: {
                 type: 'text',
@@ -62,7 +62,7 @@ export function createProductSelectorConfigSection(): ConfigSectionDef {
           action: {
             type: 'field-group',
             // label: 'Action Labels',
-            class: 'grid grid-cols-2 gap-4',
+            class: 'grid grid-cols-2 gap-3',
             fields: {
               verb: {
                 type: 'text',

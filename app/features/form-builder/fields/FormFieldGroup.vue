@@ -3,11 +3,7 @@ import { ref, watch, computed, inject, provide, type Ref } from 'vue'
 import { FieldSet, FieldLegend, FieldDescription, FieldError } from '@/components/ui/field'
 import { AccordionItem, AccordionContent, AccordionTrigger } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
-import type {
-  FieldGroupMeta,
-  VeeFieldContext,
-  FieldMeta
-} from '~/features/form-builder/form-builder-types'
+import type { FieldGroupMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 import FormField from '../FormField.vue'
 import { useScrollOnVisible } from '../composables/useScrollOnVisible'
 
@@ -50,35 +46,6 @@ const isGroupVisible = computed(() => {
 })
 
 provide('parentGroupVisible', () => isGroupVisible.value)
-
-// Group consecutive col-span-1 fields for grid layout
-const fieldGroups = computed(() => {
-  const groups: Array<{ isGrid: boolean; fields: Array<[string, FieldMeta]> }> = []
-  let currentGroup: Array<[string, FieldMeta]> = []
-  let isCurrentGroupGrid = false
-
-  if (!props.meta.fields) {
-    return groups
-  }
-
-  Object.entries(props.meta.fields).forEach(([key, fieldMeta]) => {
-    const isGridField = fieldMeta.class?.includes('col-span-1')
-
-    if (isGridField !== isCurrentGroupGrid && currentGroup.length > 0) {
-      groups.push({ isGrid: isCurrentGroupGrid, fields: currentGroup })
-      currentGroup = []
-    }
-
-    isCurrentGroupGrid = isGridField ?? false
-    currentGroup.push([key, fieldMeta])
-  })
-
-  if (currentGroup.length > 0) {
-    groups.push({ isGrid: isCurrentGroupGrid, fields: currentGroup })
-  }
-
-  return groups
-})
 
 // Scroll to collapsible when opened
 watch(isOpen, (newIsOpen) => {
@@ -130,25 +97,13 @@ watch(isOpen, (newIsOpen) => {
           </div>
         </AccordionTrigger>
         <AccordionContent>
-          <div :class="[meta.class, 'space-y-3']">
-            <template v-for="(group, groupIndex) in fieldGroups" :key="`group-${groupIndex}`">
-              <div v-show="group.isGrid" class="contents">
-                <FormField
-                  v-for="([fieldKey, fieldMeta], index) in group.fields"
-                  :key="`${fieldKey}-${index}`"
-                  :name="`${name}.${fieldKey}`"
-                  :meta="fieldMeta"
-                />
-              </div>
-              <template v-if="!group.isGrid">
-                <FormField
-                  v-for="([fieldKey, fieldMeta], index) in group.fields"
-                  :key="`${fieldKey}-${index}`"
-                  :name="`${name}.${fieldKey}`"
-                  :meta="fieldMeta"
-                />
-              </template>
-            </template>
+          <div :class="[meta.class, 'space-y-3 mb-4']">
+            <FormField
+              v-for="([fieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
+              :key="`${fieldKey}-${index}`"
+              :name="`${name}.${fieldKey}`"
+              :meta="fieldMeta"
+            />
           </div>
         </AccordionContent>
       </AccordionItem>
@@ -159,25 +114,13 @@ watch(isOpen, (newIsOpen) => {
       <FieldLegend v-if="meta.legend || meta.label">{{ meta.legend || meta.label }}</FieldLegend>
       <FieldDescription v-if="meta.description">{{ meta.description }}</FieldDescription>
       <FieldError v-if="errors.length > 0" :errors="errors" class="mb-3" />
-      <div :class="meta.class">
-        <template v-for="(group, groupIndex) in fieldGroups" :key="`group-${groupIndex}`">
-          <div v-show="group.isGrid" class="contents">
-            <FormField
-              v-for="([fieldKey, fieldMeta], index) in group.fields"
-              :key="`${fieldKey}-${index}`"
-              :name="`${name}.${fieldKey}`"
-              :meta="fieldMeta"
-            />
-          </div>
-          <template v-if="!group.isGrid">
-            <FormField
-              v-for="([fieldKey, fieldMeta], index) in group.fields"
-              :key="`${fieldKey}-${index}`"
-              :name="`${name}.${fieldKey}`"
-              :meta="fieldMeta"
-            />
-          </template>
-        </template>
+      <div :class="[meta.class]">
+        <FormField
+          v-for="([fieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
+          :key="`${fieldKey}-${index}`"
+          :name="`${name}.${fieldKey}`"
+          :meta="fieldMeta"
+        />
       </div>
     </FieldSet>
   </div>

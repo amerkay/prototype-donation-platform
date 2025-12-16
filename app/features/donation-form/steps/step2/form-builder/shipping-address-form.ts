@@ -47,7 +47,7 @@ export const shippingAddressFormSection: ConfigSectionDef = {
     postalCountry: {
       type: 'field-group',
       // label: 'Region',
-      class: 'grid grid-cols-2 gap-x-3 mb-4',
+      class: 'grid grid-cols-2 gap-x-3',
       fields: {
         postalCode: {
           type: 'text',

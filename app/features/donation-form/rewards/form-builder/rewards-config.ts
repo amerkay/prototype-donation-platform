@@ -33,11 +33,11 @@ export function createRewardsConfigSection(): ConfigSectionDef {
         visibleWhen: (values) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
-        class: 'space-y-3',
+
         fields: {
           labels: {
             type: 'field-group',
-            class: 'grid grid-cols-2 gap-4',
+            class: 'grid grid-cols-2 gap-3',
             fields: {
               freeGifts: {
                 type: 'text',
