@@ -31,8 +31,41 @@ export function createTributeFormSection(
         options,
         onChange: (value, allValues, setValue) => {
           // When switching to gift with eCard enabled, default sameAsHonoree to true
+          // BUT only if recipient name is empty or matches honoree
           if (value === 'gift' && allValues.sendECard === true) {
-            setValue('sameAsHonoree', true)
+            // Access nested field-group values correctly
+            const honoreeName = (allValues.honoreeName as Record<string, unknown>) || {}
+            const recipientName = (allValues.recipientName as Record<string, unknown>) || {}
+
+            const recipientFirst = (recipientName.recipientFirstName as string | undefined) || ''
+            const recipientLast = (recipientName.recipientLastName as string | undefined) || ''
+            const honoreeFirst = (honoreeName.honoreeFirstName as string | undefined) || ''
+            const honoreeLast = (honoreeName.honoreeLastName as string | undefined) || ''
+
+            // Check if user has entered a different recipient name
+            const hasRecipientName = recipientFirst.trim() !== '' || recipientLast.trim() !== ''
+            const namesDiffer =
+              recipientFirst.trim() !== honoreeFirst.trim() ||
+              recipientLast.trim() !== honoreeLast.trim()
+
+            console.log('[Tribute] Type onChange:', {
+              recipientFirst,
+              recipientLast,
+              honoreeFirst,
+              honoreeLast,
+              hasRecipientName,
+              namesDiffer
+            })
+
+            // Only set to true if no recipient name entered OR names match exactly
+            if (!hasRecipientName || !namesDiffer) {
+              console.log('[Tribute] Setting sameAsHonoree to true')
+              setValue('sameAsHonoree', true)
+            } else {
+              console.log(
+                '[Tribute] Preserving different recipient name, NOT setting sameAsHonoree'
+              )
+            }
           }
           // When switching to memorial, clear sameAsHonoree (field is hidden)
           else if (value === 'memorial') {
@@ -82,8 +115,41 @@ export function createTributeFormSection(
         isNoSeparatorAfter: true,
         onChange: (value, allValues, setValue) => {
           // When enabling eCard for gift, default sameAsHonoree to true
+          // BUT only if recipient name is empty or matches honoree
           if (value === true && allValues.type === 'gift') {
-            setValue('sameAsHonoree', true)
+            // Access nested field-group values correctly
+            const honoreeName = (allValues.honoreeName as Record<string, unknown>) || {}
+            const recipientName = (allValues.recipientName as Record<string, unknown>) || {}
+
+            const recipientFirst = (recipientName.recipientFirstName as string | undefined) || ''
+            const recipientLast = (recipientName.recipientLastName as string | undefined) || ''
+            const honoreeFirst = (honoreeName.honoreeFirstName as string | undefined) || ''
+            const honoreeLast = (honoreeName.honoreeLastName as string | undefined) || ''
+
+            // Check if user has entered a different recipient name
+            const hasRecipientName = recipientFirst.trim() !== '' || recipientLast.trim() !== ''
+            const namesDiffer =
+              recipientFirst.trim() !== honoreeFirst.trim() ||
+              recipientLast.trim() !== honoreeLast.trim()
+
+            console.log('[Tribute] sendECard onChange:', {
+              recipientFirst,
+              recipientLast,
+              honoreeFirst,
+              honoreeLast,
+              hasRecipientName,
+              namesDiffer
+            })
+
+            // Only set to true if no recipient name entered OR names match exactly
+            if (!hasRecipientName || !namesDiffer) {
+              console.log('[Tribute] Setting sameAsHonoree to true')
+              setValue('sameAsHonoree', true)
+            } else {
+              console.log(
+                '[Tribute] Preserving different recipient name, NOT setting sameAsHonoree'
+              )
+            }
           }
           // When disabling eCard, clear sameAsHonoree
           else if (value === false) {
