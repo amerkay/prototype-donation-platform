@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
-import AmountSelector from '~/features/donation-form/common/AmountSelector.vue'
-import NextButton from '~/features/donation-form/common/NextButton.vue'
+import AmountSelector from '~/features/donation-form/components/AmountSelector.vue'
+import NextButton from '~/features/donation-form/components/NextButton.vue'
 import RewardsSection from '~/features/donation-form/rewards/RewardsSection.vue'
 import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNotice.vue'
 import TributeCard from '~/features/donation-form/tribute/TributeCard.vue'

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, watch, ref, nextTick } from 'vue'
-import StepperProgress from '~/features/donation-form/common/ProgressBar.vue'
-import OrderSummary from '~/features/donation-form/common/OrderSummary.vue'
+import StepperProgress from '~/features/donation-form/components/ProgressBar.vue'
+import OrderSummary from '~/features/donation-form/components/OrderSummary.vue'
 import DonationFormStep1 from '~/features/donation-form/steps/step1/DonationFormStep1.vue'
 import DonationFormStep2 from '~/features/donation-form/steps/step2/DonationFormStep2.vue'
 import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'

@@ -2,7 +2,7 @@
 import { ref, watch, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
-import LogarithmicPriceSlider from '~/features/donation-form/common/LogarithmicPriceSlider.vue'
+import LogarithmicPriceSlider from '@/features/donation-form/components/LogarithmicPriceSlider.vue'
 
 interface Props {
   modelValue: number

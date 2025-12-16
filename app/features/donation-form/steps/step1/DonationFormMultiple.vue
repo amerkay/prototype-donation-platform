@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import ImpactCart from '~/features/donation-form/impact-cart/ImpactCart.vue'
-import NextButton from '~/features/donation-form/common/NextButton.vue'
+import NextButton from '~/features/donation-form/components/NextButton.vue'
 import RewardsSection from '~/features/donation-form/rewards/RewardsSection.vue'
 import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNotice.vue'
 import ProductOptionsModal from '~/features/donation-form/product/ProductOptionsModal.vue'

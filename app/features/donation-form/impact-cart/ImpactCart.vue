@@ -6,7 +6,7 @@ import { getCartItemKey } from '~/features/donation-form/impact-cart/cart-utils'
 import type { CartItem, Product, FormConfig } from '@/lib/common/types'
 import CartProductLine from '~/features/donation-form/impact-cart/ImpactCartProductLine.vue'
 import ProductListContent from '~/features/donation-form/product/ProductListContent.vue'
-import BaseDialogOrDrawer from '@/features/donation-form/common/BaseDialogOrDrawer.vue'
+import BaseDialogOrDrawer from '~/features/donation-form/components/BaseDialogOrDrawer.vue'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyContent } from '@/components/ui/empty'
 import { Button } from '@/components/ui/button'
 
