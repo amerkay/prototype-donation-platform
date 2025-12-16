@@ -39,6 +39,7 @@ The donation form uses a hybrid approach combining **Nuxt `useState`** for react
 ### `useDonationFormState.ts`
 
 Main state management composable that:
+
 - Creates Nuxt `useState` refs for all form data
 - Watches state changes and syncs to sessionStorage (debounced)
 - Provides restore/clear methods for session management
@@ -126,9 +127,9 @@ interface DonationFormSession {
 
 ### What Gets Synced?
 
-```typescript
+````typescript
 // All tabs' data is always synced
-{ 
+{
   activeTab: 'once',
   donationAmounts: { once: 25, monthly: 0, yearly: 0 },
   selectedProducts: { monthly: null, yearly: null },
@@ -178,7 +179,7 @@ const handleSubmit = async () => {
   await submitDonation()
   clearSession() // Clear after success
 }
-```
+````
 
 ## Testing the Implementation
 

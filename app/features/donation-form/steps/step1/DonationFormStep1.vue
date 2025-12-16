@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { computed, watch, onMounted } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
@@ -8,7 +8,7 @@ import DonationFormMultiple from './DonationFormMultiple.vue'
 import type { FormConfig, Product, TributeData } from '@/lib/common/types'
 import { formConfig as defaultConfig } from '@/features/donation-form/api-sample-response-form-config'
 import { products } from '@/features/donation-form/api-sample-response-products'
-import { useImpactCart } from '~/features/donation-form/impact-cart/useImpactCart'
+import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
 
 interface Props {
   config?: FormConfig
@@ -98,7 +98,6 @@ const INITIAL_PRODUCTS_DISPLAYED = computed(
 )
 
 // Refs
-const multipleFormRef = ref<InstanceType<typeof DonationFormMultiple> | null>(null)
 const singleFormRefs = new Map<string, InstanceType<typeof DonationFormSingle>>()
 
 const setSingleFormRef = (freq: string) => (el: unknown) => {

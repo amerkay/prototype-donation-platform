@@ -19,7 +19,7 @@ export function createRewardsConfigSection(): ConfigSectionDef {
       },
       chooseProducts: {
         type: 'field-group',
-        label: 'Branding',
+        label: 'Choose gift products',
         collapsible: true,
         collapsibleDefaultOpen: false,
         badgeLabel: 'On my TODO list',

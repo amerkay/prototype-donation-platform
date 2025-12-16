@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import Cart from '~/features/donation-form/impact-cart/ImpactCart.vue'
+import ImpactCart from '~/features/donation-form/impact-cart/ImpactCart.vue'
 import NextButton from '~/features/donation-form/common/NextButton.vue'
 import RewardsSection from '~/features/donation-form/rewards/RewardsSection.vue'
 import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNotice.vue'
 import ProductOptionsModal from '~/features/donation-form/product/ProductOptionsModal.vue'
 import type { Product, CartItem, TributeData, FormConfig } from '@/lib/common/types'
 import { getCartItemKey, parseCartItemKey } from '~/features/donation-form/impact-cart/cart-utils'
-import { useImpactCart } from '~/features/donation-form/impact-cart/useImpactCart'
+import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
 
 const {
   multipleCart,
@@ -42,7 +42,7 @@ const emit = defineEmits<{
   'switch-to-tab': [tab: 'monthly' | 'yearly']
 }>()
 
-const cartRef = ref<InstanceType<typeof Cart> | null>(null)
+const cartRef = ref<InstanceType<typeof ImpactCart> | null>(null)
 const productOptionsModalRef = ref<InstanceType<typeof ProductOptionsModal> | null>(null)
 
 // Computed
@@ -112,8 +112,8 @@ defineExpose({
 
 <template>
   <div class="space-y-4">
-    <!-- Cart Component -->
-    <Cart
+    <!-- ImpactCart Component -->
+    <ImpactCart
       ref="cartRef"
       :items="multipleCart"
       :currency="currency"
