@@ -15,7 +15,7 @@ export function createProductSelectorConfigSection(): ConfigSectionDef {
         type: 'toggle',
         label: 'Enable Product Selector',
         description: 'Show product selector interface to donors',
-        classLabel: 'font-bold'
+        labelClass: 'font-bold'
       },
       productList: {
         type: 'field-group',

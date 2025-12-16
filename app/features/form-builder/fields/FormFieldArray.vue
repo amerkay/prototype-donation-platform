@@ -10,6 +10,7 @@ interface Props {
   errors: string[]
   meta: ArrayFieldMeta
   name: string
+  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
 }
 
 const props = defineProps<Props>()
@@ -34,18 +35,26 @@ function addItem() {
   }
 
   newItems.push(defaultValue)
-  props.field.onChange(newItems)
+  if (props.onFieldChange) {
+    props.onFieldChange(newItems, props.field.onChange)
+  } else {
+    props.field.onChange(newItems)
+  }
 }
 
 function removeItem(index: number) {
   const newItems = items.value.filter((_, i) => i !== index)
-  props.field.onChange(newItems)
+  if (props.onFieldChange) {
+    props.onFieldChange(newItems, props.field.onChange)
+  } else {
+    props.field.onChange(newItems)
+  }
 }
 </script>
 
 <template>
-  <Field :data-invalid="!!errors.length" class="space-y-3">
-    <FieldLabel v-if="meta.label">
+  <Field :data-invalid="!!errors.length" :class="[meta.class, 'space-y-3']">
+    <FieldLabel v-if="meta.label" :class="meta.labelClass">
       {{ meta.label }}
       <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
     </FieldLabel>

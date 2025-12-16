@@ -15,7 +15,7 @@ export function createRewardsConfigSection(): ConfigSectionDef {
         type: 'toggle',
         label: 'Enable Rewards',
         description: 'Show free gift rewards when donation meets threshold',
-        classLabel: 'font-bold'
+        labelClass: 'font-bold'
       },
       chooseProducts: {
         type: 'field-group',

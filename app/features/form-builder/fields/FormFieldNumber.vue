@@ -15,6 +15,7 @@ interface Props {
   errors: string[]
   meta: NumberFieldMeta
   name: string
+  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
 }
 
 const props = defineProps<Props>()
@@ -31,7 +32,7 @@ const numberValue = computed(() => props.field.value as number | null | undefine
 
 <template>
   <Field :data-invalid="!!errors.length">
-    <FieldLabel v-if="meta.label" :for="name">
+    <FieldLabel v-if="meta.label" :for="name" :class="meta.labelClass">
       {{ meta.label }}
       <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
     </FieldLabel>
@@ -42,11 +43,17 @@ const numberValue = computed(() => props.field.value as number | null | undefine
       :min="meta.min"
       :max="meta.max"
       :step="meta.step"
-      @update:model-value="field.onChange"
+      @update:model-value="
+        (value) => (onFieldChange ? onFieldChange(value, field.onChange) : field.onChange(value))
+      "
     >
       <NumberFieldContent>
         <NumberFieldDecrement />
-        <NumberFieldInput :aria-invalid="!!errors.length" @keydown.enter="handleEnterKey" />
+        <NumberFieldInput
+          :aria-invalid="!!errors.length"
+          :class="meta.class"
+          @keydown.enter="handleEnterKey"
+        />
         <NumberFieldIncrement />
       </NumberFieldContent>
     </NumberField>

@@ -9,6 +9,7 @@ interface Props {
   errors: string[]
   meta: TextFieldMeta
   name: string
+  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
 }
 
 const props = defineProps<Props>()
@@ -25,7 +26,7 @@ const handleEnterKey = (event: KeyboardEvent) => {
 
 <template>
   <Field :data-invalid="!!errors.length">
-    <FieldLabel v-if="meta.label" :for="name">
+    <FieldLabel v-if="meta.label" :for="name" :class="meta.labelClass">
       {{ meta.label }}
       <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
     </FieldLabel>
@@ -34,8 +35,10 @@ const handleEnterKey = (event: KeyboardEvent) => {
       :model-value="inputValue"
       :placeholder="meta.placeholder"
       :aria-invalid="!!errors.length"
-      class="text-sm"
-      @update:model-value="field.onChange"
+      :class="[meta.class, 'text-sm']"
+      @update:model-value="
+        (value) => (onFieldChange ? onFieldChange(value, field.onChange) : field.onChange(value))
+      "
       @blur="field.onBlur"
       @keydown.enter="handleEnterKey"
     />

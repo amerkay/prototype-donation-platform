@@ -9,6 +9,7 @@ interface Props {
   errors: string[]
   meta: TextareaFieldMeta
   name: string
+  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
 }
 
 const props = defineProps<Props>()
@@ -18,7 +19,7 @@ const textareaValue = computed(() => props.field.value as string | number | unde
 
 <template>
   <Field :data-invalid="!!errors.length">
-    <FieldLabel v-if="meta.label" :for="name">
+    <FieldLabel v-if="meta.label" :for="name" :class="meta.labelClass">
       {{ meta.label }}
       <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
     </FieldLabel>
@@ -28,7 +29,10 @@ const textareaValue = computed(() => props.field.value as string | number | unde
       :placeholder="meta.placeholder"
       :rows="meta.rows"
       :aria-invalid="!!errors.length"
-      @update:model-value="field.onChange"
+      :class="meta.class"
+      @update:model-value="
+        (value) => (onFieldChange ? onFieldChange(value, field.onChange) : field.onChange(value))
+      "
       @blur="field.onBlur"
     />
     <FieldError v-if="errors.length" :errors="errors.slice(0, 1)" />

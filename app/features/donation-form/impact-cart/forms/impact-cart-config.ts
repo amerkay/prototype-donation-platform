@@ -15,7 +15,7 @@ export function createMultipleProductsConfigSection(): ConfigSectionDef {
         type: 'toggle',
         label: 'Enable Multiple Products',
         description: 'Allow donors to add multiple products to their cart',
-        classLabel: 'font-bold'
+        labelClass: 'font-bold'
       },
       productList: {
         type: 'field-group',

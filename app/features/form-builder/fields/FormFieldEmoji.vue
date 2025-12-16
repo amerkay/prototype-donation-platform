@@ -9,6 +9,7 @@ interface Props {
   errors: string[]
   meta: EmojiFieldMeta
   name: string
+  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
 }
 
 const props = defineProps<Props>()
@@ -28,7 +29,11 @@ const handleInput = (value: string | number) => {
   if (stringValue === '' || EMOJI_REGEX.test(stringValue)) {
     // Limit length
     const truncated = stringValue.slice(0, maxLength.value)
-    props.field.onChange(truncated)
+    if (props.onFieldChange) {
+      props.onFieldChange(truncated, props.field.onChange)
+    } else {
+      props.field.onChange(truncated)
+    }
   }
 }
 
@@ -40,7 +45,7 @@ const handleEnterKey = (event: KeyboardEvent) => {
 
 <template>
   <Field :data-invalid="!!errors.length">
-    <FieldLabel v-if="meta.label" :for="name">
+    <FieldLabel v-if="meta.label" :for="name" :class="meta.labelClass">
       {{ meta.label }}
       <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
     </FieldLabel>
@@ -50,7 +55,7 @@ const handleEnterKey = (event: KeyboardEvent) => {
       :model-value="inputValue"
       :placeholder="meta.placeholder"
       :aria-invalid="!!errors.length"
-      class="text-2xl text-center"
+      :class="[meta.class, 'text-2xl text-center']"
       :maxlength="maxLength"
       @update:model-value="handleInput"
       @blur="field.onBlur"

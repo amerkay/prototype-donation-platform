@@ -31,13 +31,13 @@ const fieldValue = computed(() => props.field.value as string | number | undefin
 
 <template>
   <FieldSet :data-invalid="!!errors.length">
-    <FieldLegend v-if="meta.label">{{ meta.label }}</FieldLegend>
+    <FieldLegend v-if="meta.label" :class="meta.labelClass">{{ meta.label }}</FieldLegend>
     <FieldDescription v-if="meta.description">{{ meta.description }}</FieldDescription>
     <RadioGroup
       :name="field.name"
       :model-value="fieldValue"
       :aria-invalid="!!errors.length"
-      class="gap-4"
+      :class="[meta.class, 'gap-4']"
       @update:model-value="
         (value) => (onFieldChange ? onFieldChange(value, field.onChange) : field.onChange(value))
       "

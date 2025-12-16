@@ -27,7 +27,7 @@ export interface BaseFieldMeta {
   visibleWhen?: (values: Record<string, unknown>) => boolean
   isNoSeparatorAfter?: boolean
   class?: string
-  classLabel?: string
+  labelClass?: string
   classDescription?: string
   rules?: z.ZodTypeAny | ((values: Record<string, unknown>) => z.ZodTypeAny)
   onChange?: (

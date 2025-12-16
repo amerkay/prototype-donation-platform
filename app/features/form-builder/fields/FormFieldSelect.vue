@@ -20,6 +20,7 @@ interface Props {
   errors: string[]
   meta: SelectFieldMeta
   name: string
+  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
 }
 
 const props = defineProps<Props>()
@@ -31,7 +32,11 @@ function selectOption(value: string | number | bigint | Record<string, unknown>)
     // Find the original option to get the correct typed value
     const option = props.meta.options.find((o) => String(o.value) === String(value))
     if (option) {
-      props.field.onChange(option.value)
+      if (props.onFieldChange) {
+        props.onFieldChange(option.value, props.field.onChange)
+      } else {
+        props.field.onChange(option.value)
+      }
       open.value = false
     }
   }
@@ -45,7 +50,7 @@ function getLabel(value: string | number) {
 
 <template>
   <Field :data-invalid="!!errors.length">
-    <FieldLabel v-if="meta.label" :for="name">
+    <FieldLabel v-if="meta.label" :for="name" :class="meta.labelClass">
       {{ meta.label }}
       <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
     </FieldLabel>
@@ -56,7 +61,7 @@ function getLabel(value: string | number) {
           role="combobox"
           :aria-expanded="open"
           :aria-invalid="!!errors.length"
-          class="w-full justify-between font-normal"
+          :class="[meta.class, 'w-full justify-between font-normal']"
         >
           <span :class="field.value ? '' : 'text-muted-foreground'">
             {{ getLabel(field.value as string | number) }}

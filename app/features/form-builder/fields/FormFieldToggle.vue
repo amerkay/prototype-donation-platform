@@ -32,7 +32,7 @@ const resolvedDescription = computed(() => {
 <template>
   <Field orientation="horizontal" class="my-4">
     <FieldContent>
-      <FieldLabel v-if="meta.label" :for="name" :class="meta.classLabel">
+      <FieldLabel v-if="meta.label" :for="name" :class="meta.labelClass">
         {{ meta.label }}
       </FieldLabel>
       <FieldDescription v-if="resolvedDescription" :class="meta.classDescription">
@@ -42,6 +42,7 @@ const resolvedDescription = computed(() => {
     <Switch
       :id="name"
       :model-value="switchValue"
+      :class="meta.class"
       @update:model-value="
         (value) => (onFieldChange ? onFieldChange(value, field.onChange) : field.onChange(value))
       "

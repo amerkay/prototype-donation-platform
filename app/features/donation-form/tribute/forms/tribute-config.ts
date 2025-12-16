@@ -15,7 +15,7 @@ export function createTributeConfigSection(): ConfigSectionDef {
         type: 'toggle',
         label: 'Enable Tribute Feature',
         description: 'Allow donors to dedicate donations as gifts or memorials',
-        classLabel: 'font-bold'
+        labelClass: 'font-bold'
       },
       ecardTemplate: {
         type: 'field-group',

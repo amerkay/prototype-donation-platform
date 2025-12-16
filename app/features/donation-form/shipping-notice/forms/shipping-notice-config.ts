@@ -15,7 +15,7 @@ export function createShippingNoticeConfigSection(): ConfigSectionDef {
         type: 'toggle',
         label: 'Show Shipping Notice',
         description: 'Display shipping information notice to donors',
-        classLabel: 'font-bold'
+        labelClass: 'font-bold'
       },
       settings: {
         type: 'field-group',

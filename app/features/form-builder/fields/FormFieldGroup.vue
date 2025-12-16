@@ -12,6 +12,7 @@ interface Props {
   errors: string[]
   meta: FieldGroupMeta
   name: string
+  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
 }
 
 const props = defineProps<Props>()
@@ -47,6 +48,16 @@ const isGroupVisible = computed(() => {
 
 provide('parentGroupVisible', () => isGroupVisible.value)
 
+// Watch for field value changes and call onChange if provided
+watch(
+  () => props.field.value,
+  (newValue) => {
+    if (props.meta.onChange && props.onFieldChange) {
+      props.onFieldChange(newValue, props.field.onChange)
+    }
+  }
+)
+
 // Scroll to collapsible when opened
 watch(isOpen, (newIsOpen) => {
   if (newIsOpen) {
@@ -73,8 +84,11 @@ watch(isOpen, (newIsOpen) => {
               <div class="flex items-center gap-2">
                 <h3
                   v-if="meta.legend || meta.label"
-                  class="font-medium text-sm"
-                  :class="{ 'group-hover:underline': !meta.isDisabled }"
+                  :class="[
+                    meta.labelClass,
+                    'font-medium text-sm',
+                    { 'group-hover:underline': !meta.isDisabled }
+                  ]"
                 >
                   {{ meta.legend || meta.label }}
                 </h3>
@@ -111,7 +125,9 @@ watch(isOpen, (newIsOpen) => {
 
     <!-- Non-collapsible version -->
     <FieldSet v-else>
-      <FieldLegend v-if="meta.legend || meta.label">{{ meta.legend || meta.label }}</FieldLegend>
+      <FieldLegend v-if="meta.legend || meta.label" :class="meta.labelClass">{{
+        meta.legend || meta.label
+      }}</FieldLegend>
       <FieldDescription v-if="meta.description">{{ meta.description }}</FieldDescription>
       <FieldError v-if="errors.length > 0" :errors="errors" class="mb-3" />
       <div :class="[meta.class]">

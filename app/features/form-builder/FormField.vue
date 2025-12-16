@@ -97,6 +97,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
+          :on-field-change="handleFieldChange"
         />
         <FormFieldTextarea
           v-else-if="meta.type === 'textarea'"
@@ -104,6 +105,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
+          :on-field-change="handleFieldChange"
         />
         <FormFieldNumber
           v-else-if="meta.type === 'number'"
@@ -111,6 +113,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
+          :on-field-change="handleFieldChange"
         />
         <FormFieldToggle
           v-else-if="meta.type === 'toggle'"
@@ -126,6 +129,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
+          :on-field-change="handleFieldChange"
         />
         <FormFieldRadioGroup
           v-else-if="meta.type === 'radio-group'"
@@ -141,6 +145,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
+          :on-field-change="handleFieldChange"
         />
         <FormFieldCard v-else-if="meta.type === 'card'" :meta="meta" />
         <FormFieldGroup
@@ -149,6 +154,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="meta.rules && errors.length > 0 ? errors : fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
+          :on-field-change="handleFieldChange"
         />
         <FormFieldArray
           v-else-if="meta.type === 'array'"
@@ -156,6 +162,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
+          :on-field-change="handleFieldChange"
         />
         <div v-else class="text-destructive text-sm">
           Unknown field type: {{ (meta as { type: string }).type }}

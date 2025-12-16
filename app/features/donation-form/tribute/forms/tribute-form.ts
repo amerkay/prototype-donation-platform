@@ -76,7 +76,7 @@ export function createTributeFormSection(
       sendECard: {
         type: 'toggle',
         label: '📧 Send an eCard notification',
-        classLabel: 'font-semibold',
+        labelClass: 'font-semibold',
         description: 'Notify the recipient via email about this tribute donation',
         visibleWhen: (values) => values.type !== 'none',
         isNoSeparatorAfter: true,
