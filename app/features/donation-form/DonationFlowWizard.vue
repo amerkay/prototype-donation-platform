@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, watch } from 'vue'
+import { onMounted, watch, ref, nextTick } from 'vue'
 import StepperProgress from '~/features/donation-form/common/ProgressBar.vue'
 import DonationFormStep1 from '~/features/donation-form/steps/step1/DonationFormStep1.vue'
 import DonationFormStep2 from '~/features/donation-form/steps/step2/DonationFormStep2.vue'
@@ -21,6 +21,9 @@ const { currentStep, nextStep, restoreFromSession, goToStep, setupSync, triggerS
 
 const { multipleCart, selectedRewards, restoreState } = useImpactCart()
 
+// Ref for the container element
+const wizardContainer = ref<HTMLElement | null>(null)
+
 // Setup sync between state and sessionStorage
 setupSync(
   () => multipleCart.value,
@@ -41,6 +44,15 @@ watch(
 // Watch selectedRewards for changes and trigger immediate sync
 watch(selectedRewards, () => {
   triggerSync(multipleCart.value, selectedRewards.value)
+})
+
+// Scroll to top when step changes
+watch(currentStep, () => {
+  nextTick(() => {
+    if (wizardContainer.value) {
+      wizardContainer.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  })
 })
 
 // Restore session on mount
@@ -69,7 +81,7 @@ const handleEdit = () => {
 </script>
 
 <template>
-  <div class="relative w-full">
+  <div ref="wizardContainer" class="relative w-full">
     <!-- Progress Bar -->
     <StepperProgress :current-step="currentStep" :total-steps="TOTAL_STEPS" />
 

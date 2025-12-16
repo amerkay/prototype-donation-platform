@@ -117,7 +117,7 @@ const handleNext = async () => {
     <OrderSummary :products="products" @edit="emit('edit')" />
 
     <!-- Donor Information Form -->
-    <div class="rounded-lg border px-4">
+    <div class="rounded-lg border px-4 bg-background/80">
       <FormRenderer
         ref="donorFormRef"
         v-model="donorFormValues"
@@ -127,7 +127,7 @@ const handleNext = async () => {
     </div>
 
     <!-- Shipping Address Form (conditional) -->
-    <div v-if="needsShipping" class="rounded-lg border px-4">
+    <div v-if="needsShipping" class="rounded-lg border px-4 bg-background/80">
       <FormRenderer
         ref="shippingFormRef"
         v-model="shippingFormValues"
