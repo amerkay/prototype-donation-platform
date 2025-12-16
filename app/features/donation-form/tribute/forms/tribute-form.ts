@@ -72,7 +72,7 @@ export function createTributeFormSection(
         isNoSeparatorAfter: true
       },
 
-      // Same as honoree toggle - visible when sendECard is true and type is 'gift'
+      // Same as honoree toggle - visible when sendECard is true and type is 'gift' only
       sameAsHonoree: {
         type: 'toggle',
         label: 'Same Name as Honoree',

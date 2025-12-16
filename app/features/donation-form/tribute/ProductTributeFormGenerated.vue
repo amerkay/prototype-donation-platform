@@ -42,6 +42,22 @@ const formValues = ref({
   recipientEmail: props.modelValue?.eCard?.recipient?.email ?? ''
 })
 
+// Auto-manage sameAsHonoree based on type and sendECard
+watch(
+  formValues,
+  (current) => {
+    // Auto-set sameAsHonoree to true for gift with eCard
+    if (current.type === 'gift' && current.sendECard === true && current.sameAsHonoree !== true) {
+      formValues.value = { ...current, sameAsHonoree: true }
+    }
+    // Clear sameAsHonoree for memorial (field is hidden anyway)
+    else if (current.type === 'memorial' && current.sameAsHonoree !== false) {
+      formValues.value = { ...current, sameAsHonoree: false }
+    }
+  },
+  { deep: true, immediate: true }
+)
+
 // Watch form values and convert back to TributeData
 watch(
   formValues,
