@@ -94,6 +94,76 @@ function populateAddressFields(
 }
 
 /**
+ * Fetch address suggestions from LocationIQ API
+ */
+async function fetchAddressSuggestions(
+  query: string,
+  formValues: Record<string, unknown>
+): Promise<
+  Array<{ value: string; label: string; description?: string; data?: LocationIQAddress }>
+> {
+  // Get selected country for filtering results
+  const countryValue = formValues.country as { value: string; label: string } | string | undefined
+
+  let countryCode = 'gb' // Default fallback
+
+  if (typeof countryValue === 'object' && countryValue?.value) {
+    countryCode = String(countryValue.value).toLowerCase()
+  } else if (typeof countryValue === 'string') {
+    countryCode = countryValue.toLowerCase()
+  }
+
+  try {
+    const response = await fetch(
+      `/api/locationiq/autocomplete?q=${encodeURIComponent(query)}&country=${countryCode}`
+    )
+
+    if (!response.ok) {
+      console.error('LocationIQ API error:', response.statusText)
+      return []
+    }
+
+    const results = (await response.json()) as Array<{
+      place_id?: string
+      display_place?: string
+      display_address?: string
+      address?: LocationIQAddress
+    }>
+
+    return results.map((item) => ({
+      value: item.place_id || '',
+      label: item.display_place || '',
+      description: item.display_address,
+      data: item.address // Full address object for parsing
+    }))
+  } catch (error) {
+    console.error('Error fetching address suggestions:', error)
+    return []
+  }
+}
+
+/**
+ * Handle address selection from autocomplete
+ */
+function handleAddressSelection(
+  value: unknown,
+  _allValues: Record<string, unknown>,
+  setValue: (field: string, value: unknown) => void
+) {
+  const option = value as { data?: LocationIQAddress }
+  const addr = option?.data
+
+  if (!addr) return
+
+  const parsed = parseLocationIQAddress(addr)
+
+  // Validate we have minimum required data
+  if (!parsed.line1 && !parsed.city) return
+
+  populateAddressFields(parsed, setValue)
+}
+
+/**
  * Address form section
  * Features LocationIQ autocomplete with progressive disclosure
  * 1. Country selection (prefilled from IP)
@@ -152,62 +222,8 @@ export const addressFormSection: ConfigSectionDef = {
         // Show when country is selected and manual entry is not enabled
         return !!values.country && values.enterManually !== true
       },
-      fetchOptions: async (query: string, formValues: Record<string, unknown>) => {
-        // Get selected country for filtering results
-        // The country field value is a ComboboxOption object
-        const countryValue = formValues.country as
-          | { value: string; label: string }
-          | string
-          | undefined
-
-        let countryCode = 'gb' // Default fallback
-
-        if (typeof countryValue === 'object' && countryValue?.value) {
-          countryCode = String(countryValue.value).toLowerCase()
-        } else if (typeof countryValue === 'string') {
-          countryCode = countryValue.toLowerCase()
-        }
-
-        try {
-          const response = await fetch(
-            `/api/locationiq/autocomplete?q=${encodeURIComponent(query)}&country=${countryCode}`
-          )
-
-          if (!response.ok) {
-            console.error('LocationIQ API error:', response.statusText)
-            return []
-          }
-
-          const results = (await response.json()) as Array<{
-            display_place?: string
-            display_address?: string
-            address?: LocationIQAddress
-          }>
-
-          return results.map((item) => ({
-            value: item.display_place || item.display_address || '',
-            label: item.display_place || '',
-            description: item.display_address,
-            data: item.address // Full address object for parsing
-          }))
-        } catch (error) {
-          console.error('Error fetching address suggestions:', error)
-          return []
-        }
-      },
-      onChange: (value, _allValues, setValue) => {
-        const option = value as { data?: LocationIQAddress }
-        const addr = option?.data
-
-        if (!addr) return
-
-        const parsed = parseLocationIQAddress(addr)
-
-        // Validate we have minimum required data
-        if (!parsed.line1 && !parsed.city) return
-
-        populateAddressFields(parsed, setValue)
-      },
+      fetchOptions: fetchAddressSuggestions,
+      onChange: handleAddressSelection,
       isNoSeparatorAfter: true
     },
 
