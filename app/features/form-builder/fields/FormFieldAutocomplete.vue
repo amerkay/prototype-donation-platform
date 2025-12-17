@@ -11,7 +11,7 @@ import {
   ComboboxViewport
 } from 'reka-ui'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Spinner } from '@/components/ui/spinner'
 import { Check } from 'lucide-vue-next'
 import type {
   AutocompleteFieldMeta,
@@ -29,7 +29,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Inject form values for fetchOptions callback
+// Inject form values from FormRenderer (generic pattern for all field components)
+// Passed to fetchOptions callback so it can access other field values for conditional logic
 const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
 
 // Component state
@@ -168,19 +169,15 @@ const handleBlur = () => {
           @input="handleInput"
           @blur="handleBlur"
         />
+        <Spinner v-if="isLoading" class="h-4 w-4 text-muted-foreground" />
       </ComboboxAnchor>
 
       <ComboboxContent
         class="absolute z-50 mt-1 w-full rounded-lg border bg-popover shadow-md outline-none will-change-[opacity,transform] data-[side=top]:animate-slideDownAndFade data-[side=bottom]:animate-slideUpAndFade"
       >
         <ComboboxViewport class="max-h-72 overflow-auto p-1">
-          <!-- Loading state -->
-          <div v-if="isLoading" class="p-2">
-            <Skeleton class="h-8 w-full" />
-          </div>
-
           <!-- Options -->
-          <template v-else-if="options.length > 0">
+          <template v-if="options.length > 0">
             <ComboboxItem
               v-for="option in options"
               :key="option.value"
@@ -204,7 +201,7 @@ const handleBlur = () => {
 
           <!-- Empty state -->
           <div
-            v-else-if="!isLoading && searchValue.trim().length >= minQueryLength"
+            v-else-if="searchValue.trim().length >= minQueryLength"
             class="py-6 text-center text-sm text-muted-foreground"
           >
             {{ notFoundText }}
