@@ -104,13 +104,13 @@ export interface ToggleFieldMeta extends BaseFieldMeta {
 }
 
 /**
- * Select/Combobox field metadata
+ * Select field metadata - native HTML select dropdown
  */
 export interface SelectFieldMeta extends BaseFieldMeta {
   type: 'select'
   options: ReadonlyArray<{ value: string | number; label: string }>
-  searchPlaceholder?: string
-  notFoundText?: string
+  searchPlaceholder?: string // Not used in native select, kept for API compatibility
+  notFoundText?: string // Not used in native select, kept for API compatibility
 }
 
 /**

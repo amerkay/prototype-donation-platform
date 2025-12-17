@@ -20,12 +20,14 @@ export const donorInfoFormSection: ConfigSectionDef = {
           type: 'text',
           label: 'First Name',
           placeholder: 'John',
+          autocomplete: 'given-name',
           rules: z.string().min(2, 'First name is required')
         },
         lastName: {
           type: 'text',
           label: 'Last Name',
           placeholder: 'Doe',
+          autocomplete: 'family-name',
           rules: z.string().min(2, 'Last name is required')
         }
       }
@@ -35,6 +37,7 @@ export const donorInfoFormSection: ConfigSectionDef = {
       label: 'Email Address',
       placeholder: 'john@example.com',
       description: "We'll send your donation receipt here",
+      autocomplete: 'email',
       isNoSeparatorAfter: true,
       rules: z.string().min(1, 'Email is required').email('Enter a valid email address')
     },
@@ -43,6 +46,7 @@ export const donorInfoFormSection: ConfigSectionDef = {
       label: 'Phone Number',
       placeholder: '+1 (555) 123-4567',
       description: 'Optional - for order updates',
+      autocomplete: 'tel',
       optional: true,
       visibleWhen: (values) => {
         if (!values.email || typeof values.email !== 'string') return false

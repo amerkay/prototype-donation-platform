@@ -1,18 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { CheckIcon, ChevronsUpDownIcon } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList
-} from '@/components/ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { computed } from 'vue'
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
-import { cn } from '@/lib/utils'
 import type { SelectFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 
 interface Props {
@@ -25,11 +14,10 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const open = ref(false)
-
-function selectOption(value: string | number | bigint | Record<string, unknown>) {
-  if (typeof value === 'string' || typeof value === 'number') {
-    // Find the original option to get the correct typed value
+const selectValue = computed({
+  get: () => props.field.value as string | number | undefined,
+  set: (value) => {
+    // Find the original option to preserve correct type
     const option = props.meta.options.find((o) => String(o.value) === String(value))
     if (option) {
       if (props.onFieldChange) {
@@ -37,15 +25,9 @@ function selectOption(value: string | number | bigint | Record<string, unknown>)
       } else {
         props.field.onChange(option.value)
       }
-      open.value = false
     }
   }
-}
-
-function getLabel(value: string | number) {
-  const option = props.meta.options.find((o) => o.value === value)
-  return option?.label || props.meta.placeholder || 'Select...'
-}
+})
 </script>
 
 <template>
@@ -54,56 +36,25 @@ function getLabel(value: string | number) {
       {{ meta.label }}
       <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
     </FieldLabel>
-    <Popover v-model:open="open">
-      <PopoverTrigger as-child>
-        <Button
-          variant="outline"
-          role="combobox"
-          :aria-expanded="open"
-          :aria-invalid="!!errors.length"
-          :class="[meta.class, 'w-full justify-between font-normal']"
-        >
-          <span :class="field.value ? '' : 'text-muted-foreground'">
-            {{ getLabel(field.value as string | number) }}
-          </span>
-          <ChevronsUpDownIcon class="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent class="w-(--reka-popover-trigger-width) p-0" align="start">
-        <Command>
-          <CommandInput
-            v-if="meta.searchPlaceholder"
-            class="h-9"
-            :placeholder="meta.searchPlaceholder"
-          />
-          <CommandList>
-            <CommandEmpty>{{ meta.notFoundText || 'No options found.' }}</CommandEmpty>
-            <CommandGroup>
-              <CommandItem
-                v-for="option in meta.options"
-                :key="option.value"
-                :value="String(option.value)"
-                @select="
-                  (ev) => {
-                    if (ev.detail.value) selectOption(ev.detail.value)
-                  }
-                "
-              >
-                {{ option.label }}
-                <CheckIcon
-                  :class="
-                    cn(
-                      'ml-auto h-4 w-4',
-                      field.value === option.value ? 'opacity-100' : 'opacity-0'
-                    )
-                  "
-                />
-              </CommandItem>
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <NativeSelect
+      :id="name"
+      v-model="selectValue"
+      :autocomplete="meta.autocomplete"
+      :aria-invalid="!!errors.length"
+      :class="meta.class"
+      @blur="field.onBlur"
+    >
+      <NativeSelectOption v-if="meta.placeholder" value="">
+        {{ meta.placeholder }}
+      </NativeSelectOption>
+      <NativeSelectOption
+        v-for="option in meta.options"
+        :key="option.value"
+        :value="String(option.value)"
+      >
+        {{ option.label }}
+      </NativeSelectOption>
+    </NativeSelect>
     <FieldError v-if="errors.length" :errors="errors.slice(0, 1)" />
   </Field>
 </template>
