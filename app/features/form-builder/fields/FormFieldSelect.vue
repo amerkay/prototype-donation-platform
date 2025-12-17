@@ -41,6 +41,7 @@ const selectValue = computed({
       v-model="selectValue"
       :autocomplete="meta.autocomplete"
       :aria-invalid="!!errors.length"
+      :disabled="meta.disabled"
       :class="meta.class"
       @blur="field.onBlur"
     >

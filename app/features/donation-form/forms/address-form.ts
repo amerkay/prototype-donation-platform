@@ -199,6 +199,7 @@ function handleAddressSelection(
  *
  * @param visibilityCondition - Optional function to control when address fields are visible
  * @param autocompleteSection - HTML autocomplete section attribute (default: 'shipping')
+ * @param forcedCountry - Optional country code to pre-set and hide the country selector (e.g., 'GB' for UK-only forms)
  * @returns FieldMetaMap with all address fields
  *
  * @example
@@ -220,11 +221,17 @@ function handleAddressSelection(
  * const fields = {
  *   ...createAddressFields((values) => values.needsAddress === true)
  * }
+ *
+ * // Force UK only (e.g., for Gift Aid)
+ * const fields = {
+ *   ...createAddressFields(undefined, 'billing', 'GB')
+ * }
  * ```
  */
 export function createAddressFields(
   visibilityCondition?: (values: Record<string, unknown>) => boolean,
-  autocompleteSection = 'shipping'
+  autocompleteSection = 'shipping',
+  forcedCountry?: string
 ): FieldMetaMap {
   return {
     country: {
@@ -254,6 +261,7 @@ export function createAddressFields(
         { value: 'FI', label: 'Finland' }
       ],
       rules: z.string().min(1, 'Country is required'),
+      disabled: !!forcedCountry,
       isNoSeparatorAfter: true,
       autocomplete: `section-${autocompleteSection} ${autocompleteSection} country`,
       visibleWhen: visibilityCondition

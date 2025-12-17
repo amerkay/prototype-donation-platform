@@ -13,6 +13,7 @@ import FormFieldAutocomplete from './fields/FormFieldAutocomplete.vue'
 import FormFieldRadioGroup from './fields/FormFieldRadioGroup.vue'
 import FormFieldEmoji from './fields/FormFieldEmoji.vue'
 import FormFieldCard from './fields/FormFieldCard.vue'
+import FormFieldSeparator from './fields/FormFieldSeparator.vue'
 import FormFieldGroup from './fields/FormFieldGroup.vue'
 import FormFieldArray from './fields/FormFieldArray.vue'
 
@@ -163,6 +164,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :on-field-change="handleFieldChange"
         />
         <FormFieldCard v-else-if="meta.type === 'card'" :meta="meta" />
+        <FormFieldSeparator v-else-if="meta.type === 'separator'" :meta="meta" />
         <FormFieldGroup
           v-else-if="meta.type === 'field-group'"
           :field="field"

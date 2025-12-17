@@ -159,7 +159,7 @@ watch(isOpen, (newIsOpen) => {
     </template>
 
     <!-- Non-collapsible version -->
-    <FieldSet v-else class="gap-0">
+    <FieldSet v-else class="gap-3">
       <FieldLegend v-if="meta.legend || meta.label" :class="['mb-2', meta.labelClass]">{{
         meta.legend || meta.label
       }}</FieldLegend>

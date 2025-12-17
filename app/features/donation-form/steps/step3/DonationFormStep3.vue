@@ -32,7 +32,11 @@ const formData = computed({
     // Gift Aid form fields
     giftAidConsent: giftAidData.value.giftAidConsent,
     useSameAsShipping: giftAidData.value.useSameAsShipping,
-    homeAddress: giftAidData.value.homeAddress,
+    homeAddress: {
+      ...giftAidData.value.homeAddress,
+      // Force UK country for Gift Aid home address
+      country: giftAidData.value.homeAddress?.country || 'GB'
+    },
     joinEmailList: giftAidData.value.joinEmailList,
     acceptTerms: giftAidData.value.acceptTerms
   }),

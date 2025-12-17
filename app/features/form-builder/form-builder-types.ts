@@ -15,6 +15,7 @@ export type FieldType =
   | 'emoji'
   | 'field-group'
   | 'card'
+  | 'separator'
 
 /**
  * Function type for setting field values with relative paths
@@ -42,6 +43,7 @@ export interface BaseFieldMeta {
   description?: string | ((values: Record<string, unknown>) => string)
   placeholder?: string
   optional?: boolean
+  disabled?: boolean
   visibleWhen?: (values: Record<string, unknown>) => boolean
   isNoSeparatorAfter?: boolean
   class?: string
@@ -178,6 +180,14 @@ export interface CardFieldMeta extends BaseFieldMeta {
 }
 
 /**
+ * Separator field metadata - visual divider
+ */
+export interface SeparatorFieldMeta extends BaseFieldMeta {
+  type: 'separator'
+  orientation?: 'horizontal' | 'vertical'
+}
+
+/**
  * Field group metadata - horizontal grouping of fields
  */
 export interface FieldGroupMeta extends BaseFieldMeta {
@@ -206,6 +216,7 @@ export type FieldMeta =
   | ArrayFieldMeta
   | EmojiFieldMeta
   | CardFieldMeta
+  | SeparatorFieldMeta
   | FieldGroupMeta
 
 /**

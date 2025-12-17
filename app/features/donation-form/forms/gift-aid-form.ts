@@ -103,12 +103,16 @@ export const giftAidFormSection: ConfigSectionDef = {
       },
       optional: true,
       visibleWhen: (values) => {
-        // Only show if Gift Aid consent is given AND shipping address exists
+        // Only show if Gift Aid consent is given AND shipping address exists AND shipping address is in UK
         if (values.giftAidConsent !== true) return false
 
         // Check if shipping address has been collected
         const hasShippingAddress = !!(values['shippingAddress.address1'] as string | undefined)
-        return hasShippingAddress
+        if (!hasShippingAddress) return false
+
+        // Check if shipping address country is UK (required for Gift Aid)
+        const shippingCountry = values['shippingAddress.country'] as string | undefined
+        return shippingCountry === 'GB'
       },
       onChange: (value, allValues, setValue: SetFieldValueFn) => {
         // If toggled on, copy shipping address to homeAddress
@@ -147,8 +151,15 @@ export const giftAidFormSection: ConfigSectionDef = {
         // Show if Gift Aid consent is given AND not using shipping address
         return values.giftAidConsent === true && values.useSameAsShipping !== true
       },
-      fields: createAddressFields(undefined, 'billing'),
-      isNoSeparatorAfter: false
+      fields: createAddressFields(undefined, 'billing', 'GB'),
+      isNoSeparatorAfter: true
+    },
+
+    divider: {
+      type: 'separator',
+      orientation: 'horizontal',
+      class: 'my-6',
+      isNoSeparatorAfter: true
     },
 
     // Email list opt-in
