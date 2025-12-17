@@ -43,8 +43,8 @@ function formatAddress(values: Record<string, unknown>, fieldPath = ''): string 
  */
 export const giftAidFormSection: ConfigSectionDef = {
   id: 'giftAid',
-  title: 'Complete Your Donation',
-  description: 'Just a few more details to finalize your contribution',
+  // title: 'Complete Your Donation',
+  // description: 'Just a few more details to finalize your contribution',
   fields: {
     // Gift Aid Information Card (UK only)
     giftAidInfo: {
@@ -86,7 +86,7 @@ export const giftAidFormSection: ConfigSectionDef = {
       type: 'toggle',
       label: 'Yes, I want to Gift Aid my donation',
       description:
-        'I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of Gift Aid claimed on all my donations in that tax year, it is my responsibility to pay any difference.',
+        'I confirm I am a UK taxpayer and have paid sufficient tax to cover this Gift Aid claim.',
       optional: true,
       visibleWhen: (values) => values.currency === 'GBP',
       isNoSeparatorAfter: true
@@ -95,7 +95,7 @@ export const giftAidFormSection: ConfigSectionDef = {
     // Option to use shipping address (if available)
     useSameAsShipping: {
       type: 'toggle',
-      label: 'Use same as shipping address',
+      label: 'Home address same as shipping',
       description: (values) => {
         // Show truncated shipping address
         const shippingAddress = formatAddress(values, 'shippingAddress')
@@ -155,8 +155,7 @@ export const giftAidFormSection: ConfigSectionDef = {
     joinEmailList: {
       type: 'toggle',
       label: 'Join our email list',
-      description:
-        'Stay updated with our latest news, impact stories, and opportunities to make a difference. You can unsubscribe at any time.',
+      description: 'Get updates on our impact and latest news. Unsubscribe anytime.',
       optional: true,
       isNoSeparatorAfter: true
     },
@@ -167,7 +166,7 @@ export const giftAidFormSection: ConfigSectionDef = {
       label: 'I accept the terms and conditions',
       description: (_values) => {
         // Dynamic description with link
-        return 'By continuing, you agree to our Terms of Service and Privacy Policy. We will never share your personal information with third parties.'
+        return 'I agree to the Terms of Service and Privacy Policy.'
       },
       rules: z.boolean().refine((val) => val === true, {
         message: 'You must accept the terms and conditions to continue'

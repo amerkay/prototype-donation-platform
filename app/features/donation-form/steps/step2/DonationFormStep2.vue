@@ -132,7 +132,7 @@ const handleNext = async () => {
 <template>
   <div class="space-y-4">
     <!-- Donor Information Form -->
-    <div class="rounded-lg border px-4 bg-background/80">
+    <div class="rounded-lg border border-transparent px-4 bg-background/40">
       <FormRenderer
         ref="donorFormRef"
         v-model="donorFormValues"
@@ -142,7 +142,7 @@ const handleNext = async () => {
     </div>
 
     <!-- Shipping Address Form (conditional) -->
-    <div v-if="needsShipping" class="rounded-lg border px-4 bg-background/80">
+    <div v-if="needsShipping" class="rounded-lg border border-transparent px-4 bg-background/40">
       <FormRenderer
         ref="shippingFormRef"
         v-model="shippingFormValues"

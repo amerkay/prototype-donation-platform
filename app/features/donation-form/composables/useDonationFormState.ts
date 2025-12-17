@@ -122,7 +122,7 @@ export function useDonationFormState(defaultCurrency: string) {
     giftAidConsent: false,
     useSameAsShipping: false,
     homeAddress: {
-      country: '',
+      country: 'GB',
       addressConfirmed: false,
       enterManually: false,
       address1: '',
@@ -133,7 +133,7 @@ export function useDonationFormState(defaultCurrency: string) {
         postcode: ''
       }
     },
-    joinEmailList: false,
+    joinEmailList: true,
     acceptTerms: false
   }))
 
@@ -203,7 +203,7 @@ export function useDonationFormState(defaultCurrency: string) {
         giftAidConsent: false,
         useSameAsShipping: false,
         homeAddress: {
-          country: '',
+          country: 'GB',
           addressConfirmed: false,
           enterManually: false,
           address1: '',
@@ -211,7 +211,7 @@ export function useDonationFormState(defaultCurrency: string) {
           city: '',
           countyPostcode: { county: '', postcode: '' }
         },
-        joinEmailList: false,
+        joinEmailList: true,
         acceptTerms: false
       }
 

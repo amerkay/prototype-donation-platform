@@ -22,7 +22,7 @@ const resolvedDescription = computed(() => {
 </script>
 
 <template>
-  <div class="rounded-lg border bg-card text-card-foreground p-6">
+  <div class="rounded-lg border text-card-foreground p-6 bg-background/30">
     <!-- Optional image -->
     <img
       v-if="meta.imageSrc"

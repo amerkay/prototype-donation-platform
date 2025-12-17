@@ -76,14 +76,12 @@ const isFormValid = computed(() => formRef.value?.isValid ?? false)
     </div>
 
     <!-- Gift Aid Form -->
-    <div class="rounded-lg border px-4 bg-background/80">
-      <FormRenderer
-        ref="formRef"
-        v-model="formData"
-        :section="giftAidFormSection"
-        @submit="onFormSubmit"
-      />
-    </div>
+    <FormRenderer
+      ref="formRef"
+      v-model="formData"
+      :section="giftAidFormSection"
+      @submit="onFormSubmit"
+    />
 
     <!-- Navigation Buttons -->
     <div class="flex gap-3">
