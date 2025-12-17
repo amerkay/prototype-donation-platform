@@ -5,6 +5,11 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: false },
 
+  runtimeConfig: {
+    // Private keys (server-side only)
+    locationiqApiKey: process.env.LOCATIONIQ_API_KEY || ''
+  },
+
   shadcn: {
     /**
      * Prefix for all the imported component.

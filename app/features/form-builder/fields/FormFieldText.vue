@@ -34,6 +34,7 @@ const handleEnterKey = (event: KeyboardEvent) => {
       :id="name"
       :model-value="inputValue"
       :placeholder="meta.placeholder"
+      :autocomplete="meta.autocomplete"
       :aria-invalid="!!errors.length"
       :class="[meta.class, 'text-sm']"
       @update:model-value="

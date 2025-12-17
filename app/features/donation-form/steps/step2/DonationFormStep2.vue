@@ -71,23 +71,37 @@ const donorFormValues = computed({
 })
 
 const shippingFormValues = computed({
-  get: () => ({
-    address1: shippingAddress.value.address1,
-    address2: shippingAddress.value.address2,
-    city: shippingAddress.value.city,
-    countyPostcode: {
-      county: shippingAddress.value.county,
-      postcode: shippingAddress.value.postcode
-    },
-    country: shippingAddress.value.country
-  }),
+  get: () => {
+    return {
+      country: shippingAddress.value.country, // Select field stores string directly
+      addressSearch: undefined, // Temporary field, not persisted
+      addressConfirmed: !!(shippingAddress.value.address1 && shippingAddress.value.city),
+      address1: shippingAddress.value.address1,
+      address2: shippingAddress.value.address2,
+      city: shippingAddress.value.city,
+      countyPostcode: {
+        county: shippingAddress.value.county,
+        postcode: shippingAddress.value.postcode
+      }
+    }
+  },
   set: (value) => {
+    // Select field returns string value directly
+    if (typeof value.country === 'string') {
+      shippingAddress.value.country = value.country
+    }
+
+    // Update address fields
     shippingAddress.value.address1 = value.address1 || ''
     shippingAddress.value.address2 = value.address2 || ''
     shippingAddress.value.city = value.city || ''
-    shippingAddress.value.county = value.countyPostcode?.county || ''
-    shippingAddress.value.postcode = value.countyPostcode?.postcode || ''
-    shippingAddress.value.country = value.country || ''
+
+    // Handle nested countyPostcode group
+    const countyPostcode = value.countyPostcode as
+      | { county?: string; postcode?: string }
+      | undefined
+    shippingAddress.value.county = countyPostcode?.county || ''
+    shippingAddress.value.postcode = countyPostcode?.postcode || ''
   }
 })
 

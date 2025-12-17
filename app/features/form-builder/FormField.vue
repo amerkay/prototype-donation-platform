@@ -9,6 +9,7 @@ import FormFieldTextarea from './fields/FormFieldTextarea.vue'
 import FormFieldNumber from './fields/FormFieldNumber.vue'
 import FormFieldToggle from './fields/FormFieldToggle.vue'
 import FormFieldSelect from './fields/FormFieldSelect.vue'
+import FormFieldAutocomplete from './fields/FormFieldAutocomplete.vue'
 import FormFieldRadioGroup from './fields/FormFieldRadioGroup.vue'
 import FormFieldEmoji from './fields/FormFieldEmoji.vue'
 import FormFieldCard from './fields/FormFieldCard.vue'
@@ -125,6 +126,14 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
         />
         <FormFieldSelect
           v-else-if="meta.type === 'select'"
+          :field="field"
+          :errors="fieldMeta.touched ? errors : []"
+          :meta="meta"
+          :name="name"
+          :on-field-change="handleFieldChange"
+        />
+        <FormFieldAutocomplete
+          v-else-if="meta.type === 'autocomplete'"
           :field="field"
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"

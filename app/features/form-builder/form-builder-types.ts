@@ -9,6 +9,7 @@ export type FieldType =
   | 'number'
   | 'toggle'
   | 'select'
+  | 'autocomplete'
   | 'radio-group'
   | 'array'
   | 'emoji'
@@ -29,6 +30,7 @@ export interface BaseFieldMeta {
   class?: string
   labelClass?: string
   classDescription?: string
+  autocomplete?: string // HTML autocomplete attribute
   rules?: z.ZodTypeAny | ((values: Record<string, unknown>) => z.ZodTypeAny)
   onChange?: (
     value: unknown,
@@ -76,6 +78,32 @@ export interface ToggleFieldMeta extends BaseFieldMeta {
 export interface SelectFieldMeta extends BaseFieldMeta {
   type: 'select'
   options: ReadonlyArray<{ value: string | number; label: string }>
+  searchPlaceholder?: string
+  notFoundText?: string
+}
+
+/**
+ * Autocomplete option type - can include arbitrary data
+ */
+export interface AutocompleteOption {
+  value: string | number
+  label: string
+  description?: string
+  data?: unknown // For passing parsed objects (e.g., LocationIQAddress)
+}
+
+/**
+ * Autocomplete field metadata - async typeahead with optional static fallback
+ */
+export interface AutocompleteFieldMeta extends BaseFieldMeta {
+  type: 'autocomplete'
+  options?: ReadonlyArray<AutocompleteOption> // Static options (fallback)
+  fetchOptions?: (
+    query: string,
+    formValues: Record<string, unknown>
+  ) => Promise<AutocompleteOption[]>
+  minQueryLength?: number // Minimum chars before fetching (default 3)
+  debounceMs?: number // Debounce delay in ms (default 300)
   searchPlaceholder?: string
   notFoundText?: string
 }
@@ -138,6 +166,7 @@ export type FieldMeta =
   | NumberFieldMeta
   | ToggleFieldMeta
   | SelectFieldMeta
+  | AutocompleteFieldMeta
   | RadioGroupFieldMeta
   | ArrayFieldMeta
   | EmojiFieldMeta
