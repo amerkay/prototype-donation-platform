@@ -193,7 +193,7 @@ export function createFormConfigSection(): ConfigSectionDef {
                 customAmount: {
                   type: 'field-group',
                   label: 'Custom Amount Range',
-                  class: 'grid grid-cols-2 gap-3',
+                  class: 'grid grid-cols-2 gap-x-3',
                   fields: {
                     min: {
                       type: 'number',

@@ -3,7 +3,7 @@ import { computed, inject } from 'vue'
 import { Field as VeeField, useField } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
-import type { FieldMeta } from '~/features/form-builder/form-builder-types'
+import type { FieldMeta, SetFieldValueFn } from '~/features/form-builder/form-builder-types'
 import FormFieldText from './fields/FormFieldText.vue'
 import FormFieldTextarea from './fields/FormFieldTextarea.vue'
 import FormFieldNumber from './fields/FormFieldNumber.vue'
@@ -27,10 +27,13 @@ const props = defineProps<Props>()
 const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
 
 // Inject setFieldValue function from FormRenderer
-const setFieldValue = inject<(path: string, value: unknown) => void>('setFieldValue', () => {})
+const setFieldValue = inject<SetFieldValueFn>('setFieldValue', () => {})
 
 // Inject parent group visibility (if this field is inside a field-group)
 const parentGroupVisible = inject<() => boolean>('parentGroupVisible', () => true)
+
+// Inject field prefix context for relative path computation
+const fieldPrefix = inject<string>('fieldPrefix', '')
 
 // Check if field should be visible
 const isVisible = computed(() => {
@@ -73,6 +76,8 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
 
   // Then call the onChange callback if provided
   if (props.meta.onChange) {
+    // Create a scoped setFieldValue for relative path resolution
+    // Note: For non-autocomplete fields, we pass the injected setFieldValue directly
     props.meta.onChange(value, formValues(), setFieldValue)
   }
 }
@@ -138,6 +143,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
+          :field-prefix="fieldPrefix"
           :on-field-change="handleFieldChange"
         />
         <FormFieldRadioGroup

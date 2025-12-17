@@ -17,6 +17,23 @@ export type FieldType =
   | 'card'
 
 /**
+ * Function type for setting field values with relative paths
+ * Used in onChange callbacks and field components
+ *
+ * @param relativePath - Dot-notation path relative to current context (e.g., 'country' or 'address.city')
+ * @param value - Value to set (type safety enforced by Zod schemas at runtime)
+ *
+ * @example
+ * ```typescript
+ * const setValue: SetFieldValueFn = (path, value) => {
+ *   setValue('address1', '123 Main St')
+ *   setValue('countyPostcode.county', 'London')
+ * }
+ * ```
+ */
+export type SetFieldValueFn = (relativePath: string, value: unknown) => void
+
+/**
  * Base field metadata
  */
 export interface BaseFieldMeta {
@@ -32,11 +49,25 @@ export interface BaseFieldMeta {
   classDescription?: string
   autocomplete?: string // HTML autocomplete attribute
   rules?: z.ZodTypeAny | ((values: Record<string, unknown>) => z.ZodTypeAny)
-  onChange?: (
-    value: unknown,
-    allValues: Record<string, unknown>,
-    setValue: (path: string, value: unknown) => void
-  ) => void
+  /**
+   * Callback triggered when field value changes
+   *
+   * @param value - The new field value
+   * @param allValues - Current form values (scoped to field-group if nested)
+   * @param setValue - Function to set sibling/child field values using relative paths
+   *
+   * @example
+   * ```typescript
+   * onChange: (value, allValues, setValue) => {
+   *   // Set sibling field
+   *   setValue('siblingField', 'newValue')
+   *
+   *   // Set nested field
+   *   setValue('nested.field', 123)
+   * }
+   * ```
+   */
+  onChange?: (value: unknown, allValues: Record<string, unknown>, setValue: SetFieldValueFn) => void
 }
 
 /**
@@ -140,6 +171,10 @@ export interface EmojiFieldMeta extends BaseFieldMeta {
  */
 export interface CardFieldMeta extends BaseFieldMeta {
   type: 'card'
+  imageSrc?: string // Optional image to display in card
+  imageAlt?: string // Alt text for image
+  imageClass?: string // Custom classes for image element
+  content?: string // Rich HTML content (use with caution)
 }
 
 /**

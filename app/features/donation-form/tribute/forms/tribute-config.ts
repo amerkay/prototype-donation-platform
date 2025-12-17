@@ -36,65 +36,22 @@ export function createTributeConfigSection(): ConfigSectionDef {
 
         rules: z
           .object({
-            gift: z.object({ enabled: z.boolean() }),
-            memorial: z.object({ enabled: z.boolean() })
+            giftEnabled: z.boolean(),
+            memorialEnabled: z.boolean()
           })
-          .refine((data) => data.gift.enabled || data.memorial.enabled, {
+          .refine((data) => data.giftEnabled || data.memorialEnabled, {
             message: 'At least one of Gift or Memorial options must be enabled'
           }),
         fields: {
-          none: {
-            type: 'field-group',
-
-            fields: {
-              label: {
-                type: 'text',
-                label: 'None Option Label',
-                placeholder: 'No, thank you'
-              }
-            }
+          giftEnabled: {
+            type: 'toggle',
+            label: 'Enable Gift Option',
+            description: 'Allow donors to make gifts to someone'
           },
-          gift: {
-            type: 'field-group',
-
-            fields: {
-              enabled: {
-                type: 'toggle',
-                label: 'Enable Gift Option',
-                description: 'Allow donors to make gifts to someone'
-              },
-              label: {
-                type: 'text',
-                label: 'Gift Option Label',
-                placeholder: '🎁 Gift to someone',
-                visibleWhen: (values) => {
-                  const types = values.types as Record<string, unknown>
-                  const gift = types?.gift as Record<string, unknown> | undefined
-                  return gift?.enabled === true
-                }
-              }
-            }
-          },
-          memorial: {
-            type: 'field-group',
-
-            fields: {
-              enabled: {
-                type: 'toggle',
-                label: 'Enable Memorial Option',
-                description: 'Allow donors to make donations in memory of someone'
-              },
-              label: {
-                type: 'text',
-                label: 'Memorial Option Label',
-                placeholder: '🕊️ In memory of someone',
-                visibleWhen: (values) => {
-                  const types = values.types as Record<string, unknown>
-                  const memorial = types?.memorial as Record<string, unknown> | undefined
-                  return memorial?.enabled === true
-                }
-              }
-            }
+          memorialEnabled: {
+            type: 'toggle',
+            label: 'Enable Memorial Option',
+            description: 'Allow donors to make donations in memory of someone'
           }
         }
       },

@@ -177,6 +177,6 @@ function handleTributeUpdate(value: Record<string, unknown>) {
 @reference "@/assets/css/main.css";
 
 .config-section {
-  @apply px-6 py-2 bg-muted/50 rounded-xl border;
+  @apply px-4 sm:px-6 bg-muted/50 rounded-xl border;
 }
 </style>

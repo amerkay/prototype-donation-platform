@@ -119,7 +119,7 @@ Group related fields with grid layouts:
 address: {
   type: 'field-group',
   label: 'Address',
-  class: 'grid grid-cols-2 gap-3',  // Applied to container
+  class: 'grid grid-cols-2 gap-x-3',  // Applied to container
   fields: {
     street: { type: 'text', label: 'Street' },
     city: { type: 'text', label: 'City' },
@@ -273,7 +273,7 @@ export const contactFormSection: ConfigSectionDef = {
 
     personalInfo: {
       type: 'field-group',
-      class: 'grid grid-cols-2 gap-3',
+      class: 'grid grid-cols-2 gap-x-3',
       fields: {
         firstName: {
           type: 'text',

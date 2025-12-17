@@ -48,6 +48,41 @@ const isGroupVisible = computed(() => {
 
 provide('parentGroupVisible', () => isGroupVisible.value)
 
+// Extract field key from full name path (e.g., "giftAid.homeAddress" -> "homeAddress")
+const fieldKey = computed(() => {
+  const parts = props.name.split('.')
+  return parts[parts.length - 1] || ''
+})
+
+// Field prefix context for nested paths
+// This allows child fields to compute relative paths
+const parentFieldPrefix = inject<string>('fieldPrefix', '')
+const currentFieldPrefix = computed(() => {
+  // Build cumulative prefix: parent prefix + this field key
+  return parentFieldPrefix ? `${parentFieldPrefix}.${fieldKey.value}` : fieldKey.value
+})
+
+// Provide the cumulative prefix to child fields
+provide('fieldPrefix', currentFieldPrefix.value)
+
+// Provide scoped form values to child fields
+// Children see values relative to this group (e.g., homeAddress.country becomes just 'country')
+const getScopedFormValues = computed(() => {
+  const fullValues = getFormValues()
+  const key = fieldKey.value
+
+  if (!key) return {}
+
+  // Get this group's values
+  const groupValue = fullValues[key] as Record<string, unknown> | undefined
+
+  // Return the group's values (or empty object if not found)
+  return groupValue || {}
+})
+
+// Override formValues for child fields to provide scoped values
+provide('formValues', () => getScopedFormValues.value)
+
 // Watch for field value changes and call onChange if provided
 watch(
   () => props.field.value,
@@ -111,11 +146,11 @@ watch(isOpen, (newIsOpen) => {
           </div>
         </AccordionTrigger>
         <AccordionContent>
-          <div :class="[meta.class, 'space-y-3 mb-4']">
+          <div :class="['grid grid-cols-1 gap-3', meta.class]">
             <FormField
-              v-for="([fieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
-              :key="`${fieldKey}-${index}`"
-              :name="`${name}.${fieldKey}`"
+              v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
+              :key="`${childFieldKey}-${index}`"
+              :name="`${name}.${childFieldKey}`"
               :meta="fieldMeta"
             />
           </div>
@@ -124,17 +159,17 @@ watch(isOpen, (newIsOpen) => {
     </template>
 
     <!-- Non-collapsible version -->
-    <FieldSet v-else>
-      <FieldLegend v-if="meta.legend || meta.label" :class="meta.labelClass">{{
+    <FieldSet v-else class="gap-0">
+      <FieldLegend v-if="meta.legend || meta.label" :class="['mb-2', meta.labelClass]">{{
         meta.legend || meta.label
       }}</FieldLegend>
       <FieldDescription v-if="meta.description">{{ meta.description }}</FieldDescription>
       <FieldError v-if="errors.length > 0" :errors="errors" class="mb-3" />
-      <div :class="[meta.class]">
+      <div :class="['grid grid-cols-1 gap-3', meta.class]">
         <FormField
-          v-for="([fieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
-          :key="`${fieldKey}-${index}`"
-          :name="`${name}.${fieldKey}`"
+          v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
+          :key="`${childFieldKey}-${index}`"
+          :name="`${name}.${childFieldKey}`"
           :meta="fieldMeta"
         />
       </div>

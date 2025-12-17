@@ -76,9 +76,13 @@ export function useScrollOnVisible<T>(items: Ref<T[]>, options: ScrollOnVisibleO
 
   return {
     setElementRef: (key: string, el: HTMLElement | { $el: HTMLElement } | null) => {
-      // Extract HTMLElement from component instance or use directly
-      const htmlElement = el && typeof el === 'object' && '$el' in el ? el.$el : el
-      elementRefs.value[key] = htmlElement instanceof HTMLElement ? htmlElement : null
+      // Defer element extraction to avoid interfering with Vue's DOM updates
+      // This prevents "Node.insertBefore" errors during portal/teleport operations
+      nextTick(() => {
+        // Extract HTMLElement from component instance or use directly
+        const htmlElement = el && typeof el === 'object' && '$el' in el ? el.$el : el
+        elementRefs.value[key] = htmlElement instanceof HTMLElement ? htmlElement : null
+      })
     },
     scrollToElement: (key: string, customOffset?: number) => {
       const element = elementRefs.value[key]

@@ -52,12 +52,12 @@ provide('formConfig', formConfig)
       </header>
       <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
         <div class="space-y-4 flex-col-reverse flex gap-y-6 lg:space-x-4 lg:flex-row">
-          <div class="grow lg:max-w-[45vw]">
+          <div class="grow">
             <p class="text-muted-foreground text-sm font-semibold mb-2">Form Settings</p>
             <DonationFormSettings />
           </div>
 
-          <div class="sm:mx-auto sm:max-w-sm sm:w-sm">
+          <div class="w-full sm:mx-auto lg:min-w-sm lg:max-w-sm lg:w-sm">
             <p class="text-muted-foreground text-sm font-semibold mb-2">Form Preview</p>
             <DonationFormPreview class="border-2" />
           </div>

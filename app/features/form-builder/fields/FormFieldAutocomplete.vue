@@ -16,7 +16,8 @@ import { Check } from 'lucide-vue-next'
 import type {
   AutocompleteFieldMeta,
   AutocompleteOption,
-  VeeFieldContext
+  VeeFieldContext,
+  SetFieldValueFn
 } from '~/features/form-builder/form-builder-types'
 
 interface Props {
@@ -24,14 +25,18 @@ interface Props {
   errors: string[]
   meta: AutocompleteFieldMeta
   name: string
+  fieldPrefix?: string
   onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
 }
 
 const props = defineProps<Props>()
 
 // Inject form values from FormRenderer (generic pattern for all field components)
-// Passed to fetchOptions callback so it can access other field values for conditional logic
+// Note: If inside a field-group, these values are already scoped to the group
 const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
+
+// Inject setFieldValue for onChange callbacks
+const setFieldValue = inject<SetFieldValueFn>('setFieldValue', () => {})
 
 // Component state
 const searchValue = ref('')
@@ -125,6 +130,18 @@ const handleValueChange = (value: AutocompleteOption | null) => {
     props.onFieldChange(value, onChange)
   } else {
     onChange(value)
+  }
+
+  // Call meta.onChange if provided (for address autocomplete population)
+  if (props.meta.onChange) {
+    // Create a scoped setFieldValue that works with relative paths
+    // Prepends fieldPrefix to convert relative paths to absolute paths
+    const scopedSetFieldValue: SetFieldValueFn = (relativePath, val) => {
+      const absolutePath = props.fieldPrefix ? `${props.fieldPrefix}.${relativePath}` : relativePath
+      setFieldValue(absolutePath, val)
+    }
+
+    props.meta.onChange(value, formValues(), scopedSetFieldValue)
   }
 
   // Clear search after selection

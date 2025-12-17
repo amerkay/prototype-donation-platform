@@ -70,8 +70,8 @@ export const formConfig = {
       },
       types: {
         none: { label: 'No, thank you' },
-        gift: { enabled: true, label: '🎁 Gift to someone' },
-        memorial: { enabled: true, label: '🕊️ In memory of someone' }
+        giftEnabled: true,
+        memorialEnabled: true
       },
       relationships: [
         { value: 'mother', label: 'Mother' },

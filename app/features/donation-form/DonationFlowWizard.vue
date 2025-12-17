@@ -4,6 +4,7 @@ import StepperProgress from '~/features/donation-form/components/ProgressBar.vue
 import OrderSummary from '~/features/donation-form/components/OrderSummary.vue'
 import DonationFormStep1 from '~/features/donation-form/steps/step1/DonationFormStep1.vue'
 import DonationFormStep2 from '~/features/donation-form/steps/step2/DonationFormStep2.vue'
+import DonationFormStep3 from '~/features/donation-form/steps/step3/DonationFormStep3.vue'
 import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
 import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
 import { products } from '~/features/donation-form/api-sample-response-products'
@@ -72,7 +73,12 @@ const handleStep1Complete = () => {
 // Step 2 handlers
 const handleStep2Complete = () => {
   nextStep()
-  // TODO: Continue to step 3
+}
+
+// Step 3 handlers
+const handleStep3Complete = () => {
+  nextStep()
+  // TODO: Continue to step 4 (payment)
 }
 
 // Edit handler
@@ -117,11 +123,8 @@ const handleBack = () => {
         @complete="handleStep2Complete"
       />
 
-      <!-- Step 3: Gift Aid / Cover Fees (TODO) -->
-      <div v-if="currentStep === 3" class="rounded-lg border p-8 text-center text-muted-foreground">
-        <p>Step 3: Gift Aid / Cover Our Fees</p>
-        <p class="mt-2 text-sm">(Coming soon)</p>
-      </div>
+      <!-- Step 3: Gift Aid & Preferences -->
+      <DonationFormStep3 v-if="currentStep === 3" @complete="handleStep3Complete" />
 
       <!-- Step 4: Payment (TODO) -->
       <div v-if="currentStep === 4" class="rounded-lg border p-8 text-center text-muted-foreground">

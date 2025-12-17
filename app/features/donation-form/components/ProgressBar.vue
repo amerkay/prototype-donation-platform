@@ -13,5 +13,5 @@ const progress = computed(() => (props.currentStep / props.totalSteps) * 100)
 </script>
 
 <template>
-  <Progress :model-value="progress" class="h-2.5 w-full rounded-none" />
+  <Progress :model-value="progress" class="h-2.5 w-full rounded-none rounded-tr-xl rounded-tl-xl" />
 </template>

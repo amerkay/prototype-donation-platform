@@ -105,8 +105,8 @@ export interface FormConfig {
       }
       types: {
         none: { label: string }
-        gift: { enabled: boolean; label: string }
-        memorial: { enabled: boolean; label: string }
+        giftEnabled: boolean
+        memorialEnabled: boolean
       }
       relationships: ReadonlyArray<{
         value: string

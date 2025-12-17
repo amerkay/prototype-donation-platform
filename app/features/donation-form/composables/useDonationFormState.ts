@@ -26,6 +26,25 @@ export interface ShippingAddress {
   country: string
 }
 
+export interface GiftAidData {
+  giftAidConsent: boolean
+  useSameAsShipping: boolean
+  homeAddress: {
+    country: string
+    addressConfirmed: boolean
+    enterManually: boolean
+    address1: string
+    address2: string
+    city: string
+    countyPostcode: {
+      county: string
+      postcode: string
+    }
+  }
+  joinEmailList: boolean
+  acceptTerms: boolean
+}
+
 // Session storage structure
 interface DonationFormSession {
   currentStep: number
@@ -47,6 +66,7 @@ interface DonationFormSession {
   }
   donorInfo: DonorInfo
   shippingAddress: ShippingAddress
+  giftAidData: GiftAidData
   multipleCartSnapshot: CartItem[]
   selectedRewardsSnapshot: string[]
   lastSyncedAt: number
@@ -98,6 +118,24 @@ export function useDonationFormState(defaultCurrency: string) {
     postcode: '',
     country: ''
   }))
+  const giftAidData = useState<GiftAidData>('donation-form:gift-aid', () => ({
+    giftAidConsent: false,
+    useSameAsShipping: false,
+    homeAddress: {
+      country: '',
+      addressConfirmed: false,
+      enterManually: false,
+      address1: '',
+      address2: '',
+      city: '',
+      countyPostcode: {
+        county: '',
+        postcode: ''
+      }
+    },
+    joinEmailList: false,
+    acceptTerms: false
+  }))
 
   // Session storage sync - only runs on client
   const syncToSession = (multipleCart: CartItem[], selectedRewards: Set<string>) => {
@@ -112,6 +150,7 @@ export function useDonationFormState(defaultCurrency: string) {
       tributeData: { ...tributeData.value },
       donorInfo: { ...donorInfo.value },
       shippingAddress: { ...shippingAddress.value },
+      giftAidData: { ...giftAidData.value },
       multipleCartSnapshot: [...multipleCart],
       selectedRewardsSnapshot: Array.from(selectedRewards),
       lastSyncedAt: Date.now()
@@ -160,6 +199,21 @@ export function useDonationFormState(defaultCurrency: string) {
         postcode: '',
         country: ''
       }
+      giftAidData.value = session.giftAidData ?? {
+        giftAidConsent: false,
+        useSameAsShipping: false,
+        homeAddress: {
+          country: '',
+          addressConfirmed: false,
+          enterManually: false,
+          address1: '',
+          address2: '',
+          city: '',
+          countyPostcode: { county: '', postcode: '' }
+        },
+        joinEmailList: false,
+        acceptTerms: false
+      }
 
       // Return cart/rewards data for caller to restore into useImpactCart
       return {
@@ -195,7 +249,8 @@ export function useDonationFormState(defaultCurrency: string) {
         selectedProducts,
         tributeData,
         donorInfo,
-        shippingAddress
+        shippingAddress,
+        giftAidData
       ],
       () => {
         syncToSession(getMultipleCart(), getSelectedRewards())
@@ -240,6 +295,7 @@ export function useDonationFormState(defaultCurrency: string) {
     tributeData,
     donorInfo,
     shippingAddress,
+    giftAidData,
 
     // Methods
     goToStep,

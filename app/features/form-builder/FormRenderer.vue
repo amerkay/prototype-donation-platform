@@ -33,16 +33,29 @@ const { values, meta, setValues, handleSubmit, setFieldValue } = useForm({
 
 // Provide form values to child fields for conditional visibility
 // Unwrap from section ID prefix to match expected structure
-provide('formValues', () => {
+// Use computed to ensure reactivity - Vue will track access to this value
+const formValuesComputed = computed(() => {
   const sectionValues = (values as Record<string, unknown>)[props.section.id]
   return (sectionValues as Record<string, unknown>) || {}
 })
+provide('formValues', () => formValuesComputed.value)
 
 // Provide setFieldValue for onChange callbacks
-// Wrap to add section ID prefix
-provide('setFieldValue', (path: string, value: unknown) => {
-  setFieldValue(`${props.section.id}.${path}`, value)
-})
+// Wrap to add section ID prefix and emit immediately for reactivity
+const providedSetFieldValue = (path: string, value: unknown): void => {
+  // Construct full path with section ID prefix
+  const fullPath = `${props.section.id}.${path}`
+
+  // Type assertion is safe here because:
+  // 1. vee-validate's setFieldValue accepts any path string
+  // 2. Runtime validation via Zod schemas ensures type correctness
+  // 3. The generic constraint in useForm would require compile-time type knowledge
+  //    which we don't have for dynamic forms
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setFieldValue(fullPath, value as any)
+}
+
+provide('setFieldValue', providedSetFieldValue)
 
 // Provide submit function for Enter key handling in text fields
 provide('submitForm', () => {
@@ -172,7 +185,7 @@ defineExpose({
       <template v-for="([fieldKey, fieldMeta], index) in allFields" :key="`${fieldKey}-${index}`">
         <Separator v-if="shouldShowSeparator(index, fieldMeta)" class="my-4" />
         <div :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)">
-          <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" class="my-3" />
+          <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" />
         </div>
       </template>
     </div>

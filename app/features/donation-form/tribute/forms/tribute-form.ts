@@ -32,11 +32,11 @@ export function createTributeFormSection(
 ): ConfigSectionDef {
   // Build options based on enabled flags
   const options = [{ value: 'none', label: config.types.none.label }]
-  if (config.types.gift.enabled) {
-    options.push({ value: 'gift', label: config.types.gift.label })
+  if (config.types.giftEnabled) {
+    options.push({ value: 'gift', label: '🎁 Gift to someone' })
   }
-  if (config.types.memorial.enabled) {
-    options.push({ value: 'memorial', label: config.types.memorial.label })
+  if (config.types.memorialEnabled) {
+    options.push({ value: 'memorial', label: '🕊️ In memory of someone' })
   }
 
   return {

@@ -127,6 +127,6 @@ Use Composition API with `<script setup lang="ts">`:
 
 ## shadcn-nuxt
 
-Install: `pnpm dlx shadcn-nuxt@latest add [component]`  
+Install: `pnpm dlx shadcn-vue@latest add [component]`  
 Location: `app/components/ui/[component]/`  
 Customize directly in component files

@@ -13,7 +13,7 @@ if (!formConfig) {
 </script>
 
 <template>
-  <div class="bg-muted/50 rounded-xl overflow-hidden">
+  <div class="bg-muted/50 rounded-xl w-full">
     <DonationFlowWizard :config="formConfig" />
   </div>
 </template>

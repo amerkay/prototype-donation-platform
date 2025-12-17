@@ -30,7 +30,7 @@ const resolvedDescription = computed(() => {
 </script>
 
 <template>
-  <Field orientation="horizontal" class="my-4">
+  <Field orientation="horizontal" class="mb-4">
     <FieldContent>
       <FieldLabel v-if="meta.label" :for="name" :class="meta.labelClass">
         {{ meta.label }}

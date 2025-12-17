@@ -23,11 +23,28 @@ const resolvedDescription = computed(() => {
 
 <template>
   <div class="rounded-lg border bg-card text-card-foreground p-6">
-    <h3 v-if="meta.label" class="text-lg font-semibold mb-2">
-      {{ meta.label }}
-    </h3>
-    <p v-if="resolvedDescription" class="text-sm text-muted-foreground whitespace-pre-line">
-      {{ resolvedDescription }}
-    </p>
+    <!-- Optional image -->
+    <img
+      v-if="meta.imageSrc"
+      :src="meta.imageSrc"
+      :alt="meta.imageAlt || ''"
+      :class="meta.imageClass || 'w-32 h-auto mb-4'"
+    />
+
+    <!-- Slot for custom content (highest priority) -->
+    <slot>
+      <!-- Default content rendering -->
+      <h3 v-if="meta.label" class="text-lg font-semibold mb-2">
+        {{ meta.label }}
+      </h3>
+
+      <!-- Rich HTML content (if provided) -->
+      <div v-if="meta.content" class="text-sm text-muted-foreground" v-html="meta.content" />
+
+      <!-- Plain text description (fallback) -->
+      <p v-else-if="resolvedDescription" class="text-sm text-muted-foreground whitespace-pre-line">
+        {{ resolvedDescription }}
+      </p>
+    </slot>
   </div>
 </template>
