@@ -52,7 +52,7 @@ export const giftAidFormSection: ConfigSectionDef = {
       label: 'Boost Your Donation by 25% at No Cost to You',
       imageSrc: '/imgs/gift-aid.svg',
       imageAlt: 'Gift Aid',
-      imageClass: 'h-16 w-auto mb-4',
+      imageClass: 'h-16 w-auto mb-4 dark:invert',
       content: `
         <p class="mb-3">
           Gift Aid is a UK tax incentive that enables us to reclaim 25p for every £1 you donate 
