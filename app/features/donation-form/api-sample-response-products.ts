@@ -33,7 +33,7 @@ export const products: Product[] = [
     icon: '🧸',
     isReward: true,
     isShippingRequired: true,
-    rewardThreshold: { once: 50, monthly: 25, yearly: 200 }
+    rewardThreshold: { monthly: 25, yearly: 200 }
   },
   {
     id: 'adopt-kit',
