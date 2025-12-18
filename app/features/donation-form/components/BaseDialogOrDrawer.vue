@@ -5,7 +5,7 @@ import {
   DialogScrollContent,
   DialogHeader,
   DialogTitle,
-  // DialogDescription,
+  DialogDescription,
   DialogFooter
 } from '@/components/ui/dialog'
 import {
@@ -13,22 +13,24 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-  // DrawerDescription,
+  DrawerDescription,
   DrawerFooter
 } from '@/components/ui/drawer'
 
 interface Props {
   open?: boolean
   dismissible?: boolean
+  description?: string
 }
 
 interface Emits {
   (e: 'update:open', value: boolean): void
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   open: false,
-  dismissible: false
+  dismissible: false,
+  description: undefined
 })
 
 const emit = defineEmits<Emits>()
@@ -46,6 +48,7 @@ const handleOpenChange = (value: boolean) => {
     <DialogScrollContent class="sm:max-w-md">
       <DialogHeader v-if="$slots.header">
         <DialogTitle><slot name="header" /></DialogTitle>
+        <DialogDescription v-if="props.description">{{ props.description }}</DialogDescription>
       </DialogHeader>
       <slot name="content" />
       <DialogFooter v-if="$slots.footer">
@@ -59,6 +62,7 @@ const handleOpenChange = (value: boolean) => {
     <DrawerContent class="flex flex-col">
       <DrawerHeader v-if="$slots.header" class="shrink-0">
         <DrawerTitle><slot name="header" /></DrawerTitle>
+        <DrawerDescription v-if="props.description">{{ props.description }}</DrawerDescription>
       </DrawerHeader>
       <div v-if="$slots.content" class="px-4 overflow-y-auto flex-1">
         <slot name="content" />

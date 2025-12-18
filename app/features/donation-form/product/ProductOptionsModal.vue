@@ -152,15 +152,17 @@ defineExpose({
 </script>
 
 <template>
-  <BaseDialogOrDrawer :open="open" :dismissible="true" @update:open="open = $event">
+  <BaseDialogOrDrawer
+    :open="open"
+    :dismissible="true"
+    :description="product?.description || ''"
+    @update:open="open = $event"
+  >
     <template #header>
       <div class="flex items-center gap-3 mb-2">
         <div class="text-4xl">{{ product?.thumbnail }}</div>
         <div class="flex-1 min-w-0 text-left">
           <h2 class="text-lg font-semibold">{{ product?.name }}</h2>
-          <p class="text-sm text-muted-foreground">
-            {{ product?.description }}
-          </p>
         </div>
       </div>
     </template>

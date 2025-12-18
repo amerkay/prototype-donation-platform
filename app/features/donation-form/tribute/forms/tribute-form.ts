@@ -41,8 +41,8 @@ export function createTributeFormSection(
 
   return {
     id: 'tribute-form',
-    title: config.modal.title,
-    description: config.modal.subtitle,
+    // title: config.modal.title,
+    // description: config.modal.subtitle,
     fields: {
       type: {
         type: 'radio-group',

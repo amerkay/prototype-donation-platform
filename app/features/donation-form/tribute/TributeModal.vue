@@ -45,12 +45,13 @@ defineExpose({
 </script>
 
 <template>
-  <BaseDialogOrDrawer v-model:open="isOpen" :dismissible="true">
+  <BaseDialogOrDrawer
+    v-model:open="isOpen"
+    :dismissible="true"
+    :description="config.modal.subtitle"
+  >
     <template #header>
       <h2 class="text-2xl font-semibold">{{ config.modal.title }}</h2>
-      <p class="text-sm text-muted-foreground">
-        {{ config.modal.subtitle }}
-      </p>
     </template>
     <template #content>
       <ProductTributeFormGenerated

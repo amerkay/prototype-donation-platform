@@ -33,12 +33,9 @@ defineExpose({
 </script>
 
 <template>
-  <BaseDialogOrDrawer v-model:open="isOpen" :dismissible="true">
+  <BaseDialogOrDrawer v-model:open="isOpen" :dismissible="true" :description="description">
     <template #header>
       <h2 class="text-2xl font-semibold">{{ title }}</h2>
-      <p class="text-sm text-muted-foreground">
-        {{ description }}
-      </p>
     </template>
     <template #content>
       <div class="space-y-2 max-h-96 overflow-y-auto">

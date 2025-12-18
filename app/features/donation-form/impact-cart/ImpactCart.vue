@@ -176,7 +176,12 @@ defineExpose({
   </div>
 
   <!-- Modal with ProductListContent (when Add Items is clicked from button) -->
-  <BaseDialogOrDrawer v-if="productListOpen" v-model:open="productListOpen" :dismissible="true">
+  <BaseDialogOrDrawer
+    v-if="productListOpen"
+    v-model:open="productListOpen"
+    :dismissible="true"
+    description="Browse and select items to add to your donation cart"
+  >
     <template #header>
       <h2 class="text-2xl font-semibold">Add Items to Your Donation</h2>
     </template>
