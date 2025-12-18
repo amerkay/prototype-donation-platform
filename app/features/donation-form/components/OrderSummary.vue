@@ -70,7 +70,7 @@ const formattedBreakdown = computed(() => {
   const symbol = getCurrencySymbol(selectedCurrency.value)
   return {
     donation: `${symbol}${totalAmount.value.toFixed(2)}`,
-    fees: `${symbol}${coverFeesAmount.value.toFixed(2)} (${coverFeesPercentage.value}%)`
+    fees: `${coverFeesPercentage.value}`
   }
 })
 
@@ -131,7 +131,8 @@ const descriptionText = computed(() => {
         <!-- Second Row: Breakdown and Description -->
         <div class="flex flex-col">
           <p v-if="coverFeesAmount > 0" class="text-xs text-muted-foreground">
-            {{ formattedBreakdown.donation }} + {{ formattedBreakdown.fees }}
+            <!-- {{ formattedBreakdown.donation }} +  -->
+            including {{ formattedBreakdown.fees }}% covered costs
           </p>
           <p class="text-xs text-muted-foreground">{{ descriptionText }}</p>
         </div>

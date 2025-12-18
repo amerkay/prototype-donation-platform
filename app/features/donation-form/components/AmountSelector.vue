@@ -99,13 +99,6 @@ const backToPresets = () => {
 
 <template>
   <div class="space-y-3">
-    <!-- Selected Amount Display - Always on top -->
-    <div class="rounded-lg bg-muted p-4 text-center">
-      <p class="text-sm text-muted-foreground">Your {{ frequencyLabel }}</p>
-      <p v-if="localAmount > 0" class="text-3xl font-bold">{{ currencySymbol }}{{ localAmount }}</p>
-      <p v-else class="text-lg text-muted-foreground">Select amount below</p>
-    </div>
-
     <!-- Preset Amounts Grid -->
     <div v-if="!showSlider" class="space-y-3">
       <div class="grid grid-cols-3 gap-3">
@@ -132,6 +125,15 @@ const backToPresets = () => {
 
     <!-- Custom Amount Slider -->
     <div v-else class="space-y-3">
+      <!-- Selected Amount Display -->
+      <div class="rounded-lg bg-muted p-4 text-center">
+        <p class="text-sm text-muted-foreground">Your {{ frequencyLabel }}</p>
+        <p v-if="localAmount > 0" class="text-3xl font-bold">
+          {{ currencySymbol }}{{ localAmount }}
+        </p>
+        <p v-else class="text-lg text-muted-foreground">Select amount below</p>
+      </div>
+
       <LogarithmicPriceSlider
         v-model="localAmount"
         :min-price="minPrice"

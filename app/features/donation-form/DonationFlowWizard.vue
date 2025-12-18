@@ -118,7 +118,7 @@ const handleBack = () => {
 <template>
   <div ref="wizardContainer" class="relative w-full">
     <!-- Progress Bar -->
-    <ProgressBar :current-step="currentStep - 1" :total-steps="TOTAL_STEPS" />
+    <ProgressBar :current-step="currentStep" :total-steps="TOTAL_STEPS" />
 
     <div class="p-4 sm:p-6">
       <!-- Order Summary (shown from step 2 onwards) -->
