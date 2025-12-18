@@ -33,20 +33,20 @@ export const products: Product[] = [
     icon: '🧸',
     isReward: true,
     isShippingRequired: true,
-    rewardThreshold: { monthly: 25, yearly: 200 }
+    rewardThreshold: { once: 50, monthly: 25, yearly: 200 }
   },
-  // {
-  //   id: 'adopt-kit',
-  //   name: 'Adoption Welcome Kit',
-  //   description: 'Certificate, photo, and updates about your adopted orangutan',
-  //   frequency: 'once',
-  //   image: '📦',
-  //   thumbnail: '📦',
-  //   icon: '📦',
-  //   isReward: true,
-  //   isShippingRequired: true,
-  //   rewardThreshold: { monthly: 10, yearly: 75 }
-  // },
+  {
+    id: 'adopt-kit',
+    name: 'Adoption Welcome Kit',
+    description: 'Certificate, photo, and updates about your adopted orangutan',
+    frequency: 'once',
+    image: '📦',
+    thumbnail: '📦',
+    icon: '📦',
+    isReward: true,
+    isShippingRequired: true,
+    rewardThreshold: { monthly: 10, yearly: 75 }
+  },
   {
     id: 'tree-planting',
     name: 'Plant 10 Trees',

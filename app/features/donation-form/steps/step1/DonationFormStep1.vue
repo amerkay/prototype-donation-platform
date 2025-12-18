@@ -33,6 +33,8 @@ const {
   donationAmounts,
   selectedProducts,
   tributeData,
+  selectedRewards,
+  toggleReward,
   clearSession
 } = useDonationFormState(formConfig.value.localization.defaultCurrency)
 
@@ -238,6 +240,7 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           :donation-amount="donationAmounts[freq.value as keyof typeof donationAmounts]"
           :selected-product="selectedProducts[freq.value as keyof typeof selectedProducts] ?? null"
           :tribute-data="tributeData[freq.value as keyof typeof tributeData]"
+          :selected-rewards="selectedRewards[freq.value as keyof typeof selectedRewards]"
           :rewards="rewards"
           :products="products"
           :available-amounts="availableAmounts"
@@ -248,6 +251,7 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           @update:donation-amount="
             (val) => (donationAmounts[freq.value as keyof typeof donationAmounts] = val)
           "
+          @toggle-reward="(itemId) => toggleReward(itemId, castFrequency(freq.value))"
           @product-select="handleProductSelect"
           @remove-product="handleRemoveProduct"
           @tribute-save="handleTributeSave"
@@ -264,9 +268,11 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           :currency="selectedCurrency"
           :rewards="rewards"
           :products="products"
+          :selected-rewards="selectedRewards.multiple"
           :enabled-frequencies="enabledFrequencies"
           :initial-products-displayed="INITIAL_PRODUCTS_DISPLAYED"
           :form-config="formConfig"
+          @toggle-reward="(itemId) => toggleReward(itemId, 'multiple')"
           @next="handleNext"
           @switch-to-tab="handleSwitchToTab"
         />

@@ -18,35 +18,56 @@ const props = defineProps<Props>()
 
 const TOTAL_STEPS = 4 // Donation, Donor Info, Gift Aid/Cover Fees, Payment
 
-const { currentStep, nextStep, restoreFromSession, goToStep, setupSync, triggerSync, activeTab } =
-  useDonationFormState(props.config?.localization.defaultCurrency || 'USD')
+const {
+  currentStep,
+  nextStep,
+  restoreFromSession,
+  goToStep,
+  setupSync,
+  triggerSync,
+  activeTab,
+  selectedProducts,
+  selectedRewards
+} = useDonationFormState(props.config?.localization.defaultCurrency || 'USD')
 
-const { multipleCart, selectedRewards, restoreState } = useImpactCart()
+const { multipleCart, restoreState } = useImpactCart()
+
+// Centralized computed: Check if shipping is required based on current tab
+const needsShipping = computed(() => {
+  // Check single tab product selections
+  if (activeTab.value !== 'multiple') {
+    const product = selectedProducts.value[activeTab.value as 'monthly' | 'yearly']
+    if (product?.isShippingRequired) return true
+  }
+
+  // Check multiple cart items
+  if (multipleCart.value.some((item) => item.isShippingRequired)) return true
+
+  // Check selected rewards for current tab
+  const currentTabRewards =
+    selectedRewards.value[activeTab.value as 'once' | 'monthly' | 'yearly' | 'multiple']
+  return Array.from(currentTabRewards).some((id) => {
+    const reward = products.find((p) => p.id === id)
+    return reward?.isShippingRequired
+  })
+})
 
 // Ref for the container element
 const wizardContainer = ref<HTMLElement | null>(null)
 
 // Setup sync between state and sessionStorage
-setupSync(
-  () => multipleCart.value,
-  () => selectedRewards.value
-)
+setupSync(() => multipleCart.value)
 
 // Watch multipleCart for changes and trigger immediate sync when in multiple tab
 watch(
   multipleCart,
   () => {
     if (activeTab.value === 'multiple') {
-      triggerSync(multipleCart.value, selectedRewards.value)
+      triggerSync(multipleCart.value)
     }
   },
   { deep: true }
 )
-
-// Watch selectedRewards for changes and trigger immediate sync
-watch(selectedRewards, () => {
-  triggerSync(multipleCart.value, selectedRewards.value)
-})
 
 // Scroll to top when step changes
 watch(currentStep, () => {
@@ -61,7 +82,7 @@ watch(currentStep, () => {
 onMounted(() => {
   const restored = restoreFromSession()
   if (restored) {
-    restoreState(restored.multipleCart, restored.selectedRewards)
+    restoreState(restored.multipleCart)
   }
 })
 
@@ -103,7 +124,7 @@ const handleBack = () => {
       <!-- Order Summary (shown from step 2 onwards) -->
       <OrderSummary
         v-if="currentStep >= 2"
-        :products="products"
+        :needs-shipping="needsShipping"
         class="mb-4"
         @back="handleBack"
         @edit="handleEdit"
@@ -119,7 +140,7 @@ const handleBack = () => {
       <!-- Step 2: Donor Information & Shipping -->
       <DonationFormStep2
         v-if="currentStep === 2"
-        :products="products"
+        :needs-shipping="needsShipping"
         @complete="handleStep2Complete"
       />
 

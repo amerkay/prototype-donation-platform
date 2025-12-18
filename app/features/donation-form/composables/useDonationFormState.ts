@@ -29,12 +29,17 @@ interface DonationFormSession {
     monthly: TributeData | undefined
     yearly: TributeData | undefined
   }
+  selectedRewards: {
+    once: string[]
+    monthly: string[]
+    yearly: string[]
+    multiple: string[]
+  }
   // Form sections - stored exactly as form structure
   donorInfoSection: Record<string, unknown>
   shippingSection: Record<string, unknown>
   giftAidSection: Record<string, unknown>
   multipleCartSnapshot: CartItem[]
-  selectedRewardsSnapshot: string[]
   lastSyncedAt: number
 }
 
@@ -68,6 +73,18 @@ export function useDonationFormState(defaultCurrency: string) {
     yearly: undefined
   }))
 
+  const selectedRewards = useState<{
+    once: Set<string>
+    monthly: Set<string>
+    yearly: Set<string>
+    multiple: Set<string>
+  }>('donation-form:rewards', () => ({
+    once: new Set(),
+    monthly: new Set(),
+    yearly: new Set(),
+    multiple: new Set()
+  }))
+
   /**
    * Form section state - mirrors form structure exactly
    * Pattern 6: No transformation layer, form definition IS the state structure
@@ -77,7 +94,7 @@ export function useDonationFormState(defaultCurrency: string) {
   const giftAidSection = useState<Record<string, unknown>>('donation-form:gift-aid', () => ({}))
 
   // Session storage sync - only runs on client
-  const syncToSession = (multipleCart: CartItem[], selectedRewards: Set<string>) => {
+  const syncToSession = (multipleCart: CartItem[]) => {
     if (import.meta.server) return
 
     const session: DonationFormSession = {
@@ -87,11 +104,16 @@ export function useDonationFormState(defaultCurrency: string) {
       donationAmounts: { ...donationAmounts.value },
       selectedProducts: { ...selectedProducts.value },
       tributeData: { ...tributeData.value },
+      selectedRewards: {
+        once: Array.from(selectedRewards.value.once),
+        monthly: Array.from(selectedRewards.value.monthly),
+        yearly: Array.from(selectedRewards.value.yearly),
+        multiple: Array.from(selectedRewards.value.multiple)
+      },
       donorInfoSection: { ...donorInfoSection.value },
       shippingSection: { ...shippingSection.value },
       giftAidSection: { ...giftAidSection.value },
       multipleCartSnapshot: [...multipleCart],
-      selectedRewardsSnapshot: Array.from(selectedRewards),
       lastSyncedAt: Date.now()
     }
 
@@ -104,7 +126,6 @@ export function useDonationFormState(defaultCurrency: string) {
 
   const restoreFromSession = (): {
     multipleCart: CartItem[]
-    selectedRewards: string[]
   } | null => {
     if (import.meta.server) return null
 
@@ -122,15 +143,24 @@ export function useDonationFormState(defaultCurrency: string) {
       selectedProducts.value = { ...session.selectedProducts }
       tributeData.value = { ...session.tributeData }
 
+      // Restore rewards per frequency
+      if (session.selectedRewards) {
+        selectedRewards.value = {
+          once: new Set(session.selectedRewards.once || []),
+          monthly: new Set(session.selectedRewards.monthly || []),
+          yearly: new Set(session.selectedRewards.yearly || []),
+          multiple: new Set(session.selectedRewards.multiple || [])
+        }
+      }
+
       // Restore form sections
       donorInfoSection.value = session.donorInfoSection ?? {}
       shippingSection.value = session.shippingSection ?? {}
       giftAidSection.value = session.giftAidSection ?? {}
 
-      // Return cart/rewards data for caller to restore into useImpactCart
+      // Return cart data for caller to restore into useImpactCart
       return {
-        multipleCart: session.multipleCartSnapshot || [],
-        selectedRewards: session.selectedRewardsSnapshot || []
+        multipleCart: session.multipleCartSnapshot || []
       }
     } catch (error) {
       console.warn('Failed to restore donation form from session storage:', error)
@@ -148,7 +178,7 @@ export function useDonationFormState(defaultCurrency: string) {
   }
 
   // Setup debounced sync watcher
-  const setupSync = (getMultipleCart: () => CartItem[], getSelectedRewards: () => Set<string>) => {
+  const setupSync = (getMultipleCart: () => CartItem[]) => {
     if (import.meta.server) return
 
     // Watch all state and sync to session storage (debounced)
@@ -160,26 +190,27 @@ export function useDonationFormState(defaultCurrency: string) {
         donationAmounts,
         selectedProducts,
         tributeData,
+        selectedRewards,
         donorInfoSection,
         shippingSection,
         giftAidSection
       ],
       () => {
-        syncToSession(getMultipleCart(), getSelectedRewards())
+        syncToSession(getMultipleCart())
       },
       { debounce: SYNC_DEBOUNCE_MS, deep: true }
     )
 
     // Also watch for step/tab changes and sync immediately (no debounce)
     watch([currentStep, activeTab], () => {
-      syncToSession(getMultipleCart(), getSelectedRewards())
+      syncToSession(getMultipleCart())
     })
   }
 
   // Manually trigger sync (for cart changes in multiple tab)
-  const triggerSync = (multipleCart: CartItem[], selectedRewards: Set<string>) => {
+  const triggerSync = (multipleCart: CartItem[]) => {
     if (import.meta.server) return
-    syncToSession(multipleCart, selectedRewards)
+    syncToSession(multipleCart)
   }
 
   // Step navigation
@@ -197,6 +228,18 @@ export function useDonationFormState(defaultCurrency: string) {
     }
   }
 
+  // Toggle reward selection for specific frequency
+  const toggleReward = (itemId: string, frequency: 'once' | 'monthly' | 'yearly' | 'multiple') => {
+    const rewardSet = selectedRewards.value[frequency]
+    if (rewardSet.has(itemId)) {
+      rewardSet.delete(itemId)
+    } else {
+      rewardSet.add(itemId)
+    }
+    // Trigger reactivity by creating new Set
+    selectedRewards.value[frequency] = new Set(rewardSet)
+  }
+
   return {
     // State
     currentStep,
@@ -205,6 +248,7 @@ export function useDonationFormState(defaultCurrency: string) {
     donationAmounts,
     selectedProducts,
     tributeData,
+    selectedRewards,
 
     // Form sections - direct binding to forms
     donorInfoSection,
@@ -215,6 +259,7 @@ export function useDonationFormState(defaultCurrency: string) {
     goToStep,
     nextStep,
     previousStep,
+    toggleReward,
     setupSync,
     triggerSync,
     restoreFromSession,

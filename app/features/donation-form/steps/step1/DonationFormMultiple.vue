@@ -11,14 +11,12 @@ import { useImpactCart } from '~/features/donation-form/composables/useImpactCar
 
 const {
   multipleCart,
-  selectedRewards,
   cartTotal,
   recurringTotal,
   oneTimeTotal,
   monthlyTotal,
   yearlyTotal,
   activeRecurringFrequency,
-  toggleReward,
   addToCart,
   updateCartItemPrice,
   updateCartItemQuantity,
@@ -30,6 +28,7 @@ interface Props {
   currency: string
   rewards: Product[]
   products: Product[]
+  selectedRewards: Set<string>
   enabledFrequencies: Array<'once' | 'monthly' | 'yearly'>
   initialProductsDisplayed: number
   formConfig: FormConfig
@@ -38,6 +37,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
+  'toggle-reward': [itemId: string]
   next: []
   'switch-to-tab': [tab: 'monthly' | 'yearly']
 }>()
@@ -139,17 +139,18 @@ defineExpose({
       :currency="currency"
       selected-frequency="multiple"
       :rewards-config="formConfig.features.rewards"
-      @toggle="toggleReward"
+      @toggle="emit('toggle-reward', $event)"
       @switch-to-tab="handleSwitchToTab"
     />
 
     <!-- Shipping Notice -->
     <ShippingNotice
-      selected-frequency="multiple"
-      :products="products"
-      :selected-rewards="selectedRewards"
-      :multiple-cart="multipleCart"
-      :donation-amounts="{ once: oneTimeTotal, monthly: monthlyTotal, yearly: yearlyTotal }"
+      :requires-shipping="
+        multipleCart.some((item) => item.isShippingRequired) ||
+        Array.from(selectedRewards).some(
+          (id) => products.find((p) => p.id === id)?.isShippingRequired
+        )
+      "
       :shipping-notice-config="formConfig.features.shippingNotice"
     />
 

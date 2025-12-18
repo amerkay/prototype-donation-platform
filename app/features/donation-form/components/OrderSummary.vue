@@ -5,22 +5,20 @@ import { Button } from '~/components/ui/button'
 import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
 import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
-import type { Product } from '@/lib/common/types'
 
 interface Props {
-  products: Product[]
+  needsShipping: boolean
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 const emit = defineEmits<{
   back: []
   edit: []
 }>()
 
-const { multipleCart, selectedRewards, cartTotal, oneTimeTotal, monthlyTotal, yearlyTotal } =
-  useImpactCart()
-const { activeTab, donationAmounts, selectedProducts, selectedCurrency } = useDonationFormState('')
+const { multipleCart, cartTotal, oneTimeTotal, monthlyTotal, yearlyTotal } = useImpactCart()
+const { activeTab, donationAmounts, selectedCurrency } = useDonationFormState('')
 const { getCurrencySymbol } = useCurrency()
 
 // Determine total amount
@@ -36,25 +34,6 @@ const frequencyLabel = computed(() => {
   if (activeTab.value === 'monthly') return 'monthly donation'
   if (activeTab.value === 'yearly') return 'yearly donation'
   return 'mixed donations'
-})
-
-// Check if shipping is needed
-const needsShipping = computed(() => {
-  // Check single tab selections
-  if (activeTab.value !== 'multiple') {
-    const product = selectedProducts.value[activeTab.value as 'monthly' | 'yearly']
-    if (product?.isShippingRequired) return true
-  }
-
-  // Check multiple cart
-  const hasShippingItem = multipleCart.value.some((item) => item.isShippingRequired)
-  if (hasShippingItem) return true
-
-  // Check rewards
-  return Array.from(selectedRewards.value).some((id) => {
-    const reward = props.products.find((p) => p.id === id)
-    return reward?.isShippingRequired
-  })
 })
 
 // Item count for multiple cart
@@ -112,10 +91,10 @@ const descriptionText = computed(() => {
           </div>
         </div>
         <div class="flex shrink-0 items-center gap-2">
-          <!-- <Badge v-if="needsShipping" variant="secondary" class="text-xs">
+          <Badge v-if="needsShipping" variant="secondary" class="text-xs">
             <Icon name="lucide:package" class="mr-1 h-3 w-3" />
             Ship
-          </Badge> -->
+          </Badge>
           <Button
             variant="ghost"
             size="sm"

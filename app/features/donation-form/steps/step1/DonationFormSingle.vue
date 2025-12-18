@@ -9,9 +9,6 @@ import TributeCard from '~/features/donation-form/tribute/TributeCard.vue'
 import TributeModal from '~/features/donation-form/tribute/TributeModal.vue'
 import ProductSelectorButton from '~/features/donation-form/product-selector/ProductSelectorButton.vue'
 import type { Product, TributeData, FormConfig } from '@/lib/common/types'
-import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
-
-const { selectedRewards, toggleReward } = useImpactCart()
 
 interface Props {
   frequency: 'once' | 'monthly' | 'yearly'
@@ -20,6 +17,7 @@ interface Props {
   donationAmount: number
   selectedProduct: Product | null
   tributeData: TributeData | undefined
+  selectedRewards: Set<string>
   rewards: Product[]
   products: Product[]
   availableAmounts: number[]
@@ -33,6 +31,7 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:donationAmount': [value: number]
+  'toggle-reward': [itemId: string]
   'product-select': [product: Product]
   'remove-product': []
   'tribute-save': [tributeData: TributeData | undefined]
@@ -138,17 +137,17 @@ defineExpose({
       :currency="currency"
       :selected-frequency="frequency === 'yearly' ? 'monthly' : frequency"
       :rewards-config="formConfig.features.rewards"
-      @toggle="toggleReward"
+      @toggle="emit('toggle-reward', $event)"
       @switch-to-tab="handleSwitchToTab"
     />
 
     <!-- Shipping Notice -->
     <ShippingNotice
-      :selected-frequency="frequency === 'yearly' ? 'monthly' : frequency"
-      :products="products"
-      :selected-rewards="selectedRewards"
-      :multiple-cart="[]"
-      :donation-amounts="{ once: oneTimeTotal, monthly: monthlyTotal, yearly: yearlyTotal }"
+      :requires-shipping="
+        Array.from(selectedRewards).some(
+          (id) => products.find((p) => p.id === id)?.isShippingRequired
+        )
+      "
       :shipping-notice-config="formConfig.features.shippingNotice"
     />
 
