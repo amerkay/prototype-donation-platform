@@ -44,11 +44,11 @@ const formDataWithContext = computed({
       'shippingAddress.address1': shippingSection.value.address1 as string,
       'shippingAddress.address2': shippingSection.value.address2 as string,
       'shippingAddress.city': shippingSection.value.city as string,
-      'shippingAddress.countyPostcode.county': (
-        shippingSection.value.countyPostcode as Record<string, unknown>
-      )?.county as string,
-      'shippingAddress.countyPostcode.postcode':
-        ((shippingSection.value.countyPostcode as Record<string, unknown>)?.postcode as string) ||
+      'shippingAddress.regionPostcode.region': (
+        shippingSection.value.regionPostcode as Record<string, unknown>
+      )?.region as string,
+      'shippingAddress.regionPostcode.postcode':
+        ((shippingSection.value.regionPostcode as Record<string, unknown>)?.postcode as string) ||
         '',
       'shippingAddress.country': shippingSection.value.country as string,
 
@@ -66,8 +66,8 @@ const formDataWithContext = computed({
       'shippingAddress.address1': _a1,
       'shippingAddress.address2': _a2,
       'shippingAddress.city': _city,
-      'shippingAddress.countyPostcode.county': _county,
-      'shippingAddress.countyPostcode.postcode': _postcode,
+      'shippingAddress.regionPostcode.region': _region,
+      'shippingAddress.regionPostcode.postcode': _postcode,
       'shippingAddress.country': _country,
       ...giftAidFields
     } = value

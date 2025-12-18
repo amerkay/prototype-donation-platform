@@ -16,10 +16,10 @@ function formatAddress(values: Record<string, unknown>, fieldPath = ''): string 
   const address1 = getValue('address1')
   const address2 = getValue('address2')
   const city = getValue('city')
-  const county = getValue('countyPostcode.county')
-  const postcode = getValue('countyPostcode.postcode')
+  const region = getValue('regionPostcode.region')
+  const postcode = getValue('regionPostcode.postcode')
 
-  const parts = [address1, address2, city, county, postcode].filter(Boolean)
+  const parts = [address1, address2, city, region, postcode].filter(Boolean)
 
   if (parts.length === 0) return 'No address on file'
 
@@ -119,8 +119,8 @@ export const giftAidFormSection: ConfigSectionDef = {
             'address1',
             'address2',
             'city',
-            'countyPostcode.county',
-            'countyPostcode.postcode'
+            'regionPostcode.region',
+            'regionPostcode.postcode'
           ]
 
           // Copy each field from shippingAddress to homeAddress

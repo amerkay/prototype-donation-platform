@@ -6,127 +6,127 @@ import type { ConfigSectionDef, FieldMetaMap } from '~/features/form-builder/for
  */
 const countryLabels: Record<
   string,
-  { county: string; postcode: string; countyPlaceholder: string; postcodePlaceholder: string }
+  { region: string; postcode: string; regionPlaceholder: string; postcodePlaceholder: string }
 > = {
   US: {
-    county: 'State',
+    region: 'State',
     postcode: 'ZIP Code',
-    countyPlaceholder: 'California',
+    regionPlaceholder: 'California',
     postcodePlaceholder: '90210'
   },
   CA: {
-    county: 'Province',
+    region: 'Province',
     postcode: 'Postal Code',
-    countyPlaceholder: 'Ontario',
+    regionPlaceholder: 'Ontario',
     postcodePlaceholder: 'K1A 0B1'
   },
   AU: {
-    county: 'State',
+    region: 'State',
     postcode: 'Postcode',
-    countyPlaceholder: 'New South Wales',
+    regionPlaceholder: 'New South Wales',
     postcodePlaceholder: '2000'
   },
   NZ: {
-    county: 'Region',
+    region: 'Region',
     postcode: 'Postcode',
-    countyPlaceholder: 'Auckland',
+    regionPlaceholder: 'Auckland',
     postcodePlaceholder: '1010'
   },
   GB: {
-    county: 'County',
+    region: 'County',
     postcode: 'Postcode',
-    countyPlaceholder: 'Greater London',
+    regionPlaceholder: 'Greater London',
     postcodePlaceholder: 'SW1A 1AA'
   },
   IE: {
-    county: 'County',
+    region: 'County',
     postcode: 'Eircode',
-    countyPlaceholder: 'Dublin',
+    regionPlaceholder: 'Dublin',
     postcodePlaceholder: 'D02 XY45'
   },
   DE: {
-    county: 'State',
+    region: 'State',
     postcode: 'Postal Code',
-    countyPlaceholder: 'Bavaria',
+    regionPlaceholder: 'Bavaria',
     postcodePlaceholder: '80331'
   },
   FR: {
-    county: 'Region',
+    region: 'Region',
     postcode: 'Postal Code',
-    countyPlaceholder: 'Île-de-France',
+    regionPlaceholder: 'Île-de-France',
     postcodePlaceholder: '75001'
   },
   ES: {
-    county: 'Province',
+    region: 'Province',
     postcode: 'Postal Code',
-    countyPlaceholder: 'Madrid',
+    regionPlaceholder: 'Madrid',
     postcodePlaceholder: '28001'
   },
   IT: {
-    county: 'Province',
+    region: 'Province',
     postcode: 'Postal Code',
-    countyPlaceholder: 'Rome',
+    regionPlaceholder: 'Rome',
     postcodePlaceholder: '00100'
   },
   NL: {
-    county: 'Province',
+    region: 'Province',
     postcode: 'Postal Code',
-    countyPlaceholder: 'North Holland',
+    regionPlaceholder: 'North Holland',
     postcodePlaceholder: '1012 AB'
   },
   BE: {
-    county: 'Province',
+    region: 'Province',
     postcode: 'Postal Code',
-    countyPlaceholder: 'Brussels',
+    regionPlaceholder: 'Brussels',
     postcodePlaceholder: '1000'
   },
   CH: {
-    county: 'Canton',
+    region: 'Canton',
     postcode: 'Postal Code',
-    countyPlaceholder: 'Zurich',
+    regionPlaceholder: 'Zurich',
     postcodePlaceholder: '8001'
   },
   AT: {
-    county: 'State',
+    region: 'State',
     postcode: 'Postal Code',
-    countyPlaceholder: 'Vienna',
+    regionPlaceholder: 'Vienna',
     postcodePlaceholder: '1010'
   },
   SE: {
-    county: 'County',
+    region: 'County',
     postcode: 'Postal Code',
-    countyPlaceholder: 'Stockholm',
+    regionPlaceholder: 'Stockholm',
     postcodePlaceholder: '111 22'
   },
   NO: {
-    county: 'County',
+    region: 'County',
     postcode: 'Postal Code',
-    countyPlaceholder: 'Oslo',
+    regionPlaceholder: 'Oslo',
     postcodePlaceholder: '0150'
   },
   DK: {
-    county: 'Region',
+    region: 'Region',
     postcode: 'Postal Code',
-    countyPlaceholder: 'Capital Region',
+    regionPlaceholder: 'Capital Region',
     postcodePlaceholder: '1000'
   },
   FI: {
-    county: 'Region',
+    region: 'Region',
     postcode: 'Postal Code',
-    countyPlaceholder: 'Uusimaa',
+    regionPlaceholder: 'Uusimaa',
     postcodePlaceholder: '00100'
   }
 }
 
 const defaultLabels = {
-  county: 'Region/State',
+  region: 'Region/State',
   postcode: 'Postcode',
-  countyPlaceholder: 'Region',
+  regionPlaceholder: 'Region',
   postcodePlaceholder: 'Postal Code'
 }
 
 /**
- * Get country-specific labels for county and postcode fields
+ * Get country-specific labels for region and postcode fields
  */
 function getCountryLabels(country: string | undefined) {
   return country && countryLabels[country] ? countryLabels[country] : defaultLabels
@@ -137,7 +137,7 @@ function getCountryLabels(country: string | undefined) {
  *
  * Provides a complete address collection form with:
  * - Country selection
- * - Structured address fields (address1, address2, city, county, postcode)
+ * - Structured address fields (address1, address2, city, region, postcode)
  *
  * Note: This function uses relative paths throughout. When used inside a field-group,
  * the form-builder automatically handles path prefixing via context injection.
@@ -215,24 +215,24 @@ export function createAddressFields(
       isNoSeparatorAfter: true
     },
 
-    countyPostcode: {
+    regionPostcode: {
       type: 'field-group',
       class: 'grid grid-cols-2 gap-x-3',
       visibleWhen: visibilityCondition,
       isNoSeparatorAfter: true,
       fields: {
-        county: {
+        region: {
           type: 'text',
           label: (values) => {
             const country = values['country'] as string | undefined
-            return getCountryLabels(country).county
+            return getCountryLabels(country).region
           },
           placeholder: (values) => {
             const country = values['country'] as string | undefined
-            return getCountryLabels(country).countyPlaceholder
+            return getCountryLabels(country).regionPlaceholder
           },
           autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level1`,
-          rules: z.string().min(2, 'County/Region is required')
+          rules: z.string().min(2, 'State/Region is required')
         },
         postcode: {
           type: 'text',
