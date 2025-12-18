@@ -2,9 +2,41 @@ import { watch } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import type { Product, TributeData, CartItem } from '@/lib/common/types'
 
-// Session storage key
+// Constants
 const SESSION_KEY = 'donation-form:session'
 const SYNC_DEBOUNCE_MS = 500
+const _FREQUENCIES = ['once', 'monthly', 'yearly', 'multiple'] as const
+type Frequency = (typeof _FREQUENCIES)[number]
+type DonationFrequency = Exclude<Frequency, 'multiple'>
+
+// Session storage utilities
+const sessionStorage = {
+  get: <T>(key: string): T | null => {
+    if (import.meta.server) return null
+    try {
+      const value = window.sessionStorage.getItem(key)
+      return value ? JSON.parse(value) : null
+    } catch {
+      return null
+    }
+  },
+  set: (key: string, value: unknown): void => {
+    if (import.meta.server) return
+    try {
+      window.sessionStorage.setItem(key, JSON.stringify(value))
+    } catch (error) {
+      console.warn(`Failed to save to sessionStorage [${key}]:`, error)
+    }
+  },
+  remove: (key: string): void => {
+    if (import.meta.server) return
+    try {
+      window.sessionStorage.removeItem(key)
+    } catch (error) {
+      console.warn(`Failed to remove from sessionStorage [${key}]:`, error)
+    }
+  }
+}
 
 /**
  * Session storage structure - stores form sections as-is
@@ -13,72 +45,57 @@ const SYNC_DEBOUNCE_MS = 500
  */
 interface DonationFormSession {
   currentStep: number
-  activeTab: 'once' | 'monthly' | 'yearly' | 'multiple'
+  activeTab: Frequency
   currency: string
-  donationAmounts: {
-    once: number
-    monthly: number
-    yearly: number
-  }
-  selectedProducts: {
-    monthly: Product | null
-    yearly: Product | null
-  }
-  tributeData: {
-    once: TributeData | undefined
-    monthly: TributeData | undefined
-    yearly: TributeData | undefined
-  }
-  selectedRewards: {
-    once: string[]
-    monthly: string[]
-    yearly: string[]
-    multiple: string[]
-  }
-  // Form sections - stored exactly as form structure
-  donorInfoSection: Record<string, unknown>
-  shippingSection: Record<string, unknown>
-  giftAidSection: Record<string, unknown>
+  donationAmounts: Record<DonationFrequency, number>
+  selectedProducts: Record<Exclude<DonationFrequency, 'once'>, Product | null>
+  tributeData: Record<DonationFrequency, TributeData | undefined>
+  selectedRewards: Record<Frequency, string[]>
+  formSections: Record<string, Record<string, unknown>>
   multipleCartSnapshot: CartItem[]
   lastSyncedAt: number
+}
+
+// Session conversion utilities
+const sessionMappers = {
+  toSession: (rewards: Record<Frequency, Set<string>>): Record<Frequency, string[]> => ({
+    once: Array.from(rewards.once),
+    monthly: Array.from(rewards.monthly),
+    yearly: Array.from(rewards.yearly),
+    multiple: Array.from(rewards.multiple)
+  }),
+  fromSession: (
+    rewards: Record<Frequency, string[]> | undefined
+  ): Record<Frequency, Set<string>> => ({
+    once: new Set(rewards?.once || []),
+    monthly: new Set(rewards?.monthly || []),
+    yearly: new Set(rewards?.yearly || []),
+    multiple: new Set(rewards?.multiple || [])
+  })
 }
 
 export function useDonationFormState(defaultCurrency: string) {
   // Nuxt useState for reactive in-memory state
   const currentStep = useState<number>('donation-form:current-step', () => 1)
-  const activeTab = useState<'once' | 'monthly' | 'yearly' | 'multiple'>(
-    'donation-form:active-tab',
-    () => 'once'
-  )
+  const activeTab = useState<Frequency>('donation-form:active-tab', () => 'once')
   const selectedCurrency = useState<string>('donation-form:currency', () => defaultCurrency)
-  const donationAmounts = useState('donation-form:amounts', () => ({
-    once: 0,
-    monthly: 0,
-    yearly: 0
-  }))
-  const selectedProducts = useState<{
-    monthly: Product | null
-    yearly: Product | null
-  }>('donation-form:products', () => ({
-    monthly: null,
-    yearly: null
-  }))
-  const tributeData = useState<{
-    once: TributeData | undefined
-    monthly: TributeData | undefined
-    yearly: TributeData | undefined
-  }>('donation-form:tribute', () => ({
-    once: undefined,
-    monthly: undefined,
-    yearly: undefined
-  }))
-
-  const selectedRewards = useState<{
-    once: Set<string>
-    monthly: Set<string>
-    yearly: Set<string>
-    multiple: Set<string>
-  }>('donation-form:rewards', () => ({
+  const donationAmounts = useState<Record<DonationFrequency, number>>(
+    'donation-form:amounts',
+    () => ({
+      once: 0,
+      monthly: 0,
+      yearly: 0
+    })
+  )
+  const selectedProducts = useState<Record<Exclude<DonationFrequency, 'once'>, Product | null>>(
+    'donation-form:products',
+    () => ({ monthly: null, yearly: null })
+  )
+  const tributeData = useState<Record<DonationFrequency, TributeData | undefined>>(
+    'donation-form:tribute',
+    () => ({ once: undefined, monthly: undefined, yearly: undefined })
+  )
+  const selectedRewards = useState<Record<Frequency, Set<string>>>('donation-form:rewards', () => ({
     once: new Set(),
     monthly: new Set(),
     yearly: new Set(),
@@ -89,9 +106,14 @@ export function useDonationFormState(defaultCurrency: string) {
    * Form section state - mirrors form structure exactly
    * Pattern 6: No transformation layer, form definition IS the state structure
    */
-  const donorInfoSection = useState<Record<string, unknown>>('donation-form:donor-info', () => ({}))
-  const shippingSection = useState<Record<string, unknown>>('donation-form:shipping', () => ({}))
-  const giftAidSection = useState<Record<string, unknown>>('donation-form:gift-aid', () => ({}))
+  const formSections = useState<Record<string, Record<string, unknown>>>(
+    'donation-form:sections',
+    () => ({
+      donorInfo: {},
+      shipping: {},
+      giftAid: {}
+    })
+  )
 
   // Session storage sync - only runs on client
   const syncToSession = (multipleCart: CartItem[]) => {
@@ -104,77 +126,39 @@ export function useDonationFormState(defaultCurrency: string) {
       donationAmounts: { ...donationAmounts.value },
       selectedProducts: { ...selectedProducts.value },
       tributeData: { ...tributeData.value },
-      selectedRewards: {
-        once: Array.from(selectedRewards.value.once),
-        monthly: Array.from(selectedRewards.value.monthly),
-        yearly: Array.from(selectedRewards.value.yearly),
-        multiple: Array.from(selectedRewards.value.multiple)
-      },
-      donorInfoSection: { ...donorInfoSection.value },
-      shippingSection: { ...shippingSection.value },
-      giftAidSection: { ...giftAidSection.value },
+      selectedRewards: sessionMappers.toSession(selectedRewards.value),
+      formSections: { ...formSections.value },
       multipleCartSnapshot: [...multipleCart],
       lastSyncedAt: Date.now()
     }
 
-    try {
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(session))
-    } catch (error) {
-      console.warn('Failed to sync donation form to session storage:', error)
-    }
+    sessionStorage.set(SESSION_KEY, session)
   }
 
-  const restoreFromSession = (): {
-    multipleCart: CartItem[]
-  } | null => {
+  const restoreFromSession = (): { multipleCart: CartItem[] } | null => {
     if (import.meta.server) return null
 
-    try {
-      const stored = sessionStorage.getItem(SESSION_KEY)
-      if (!stored) return null
+    const session = sessionStorage.get<DonationFormSession>(SESSION_KEY)
+    if (!session) return null
 
-      const session: DonationFormSession = JSON.parse(stored)
+    // Restore state
+    currentStep.value = session.currentStep ?? 1
+    activeTab.value = session.activeTab
+    selectedCurrency.value = session.currency
+    donationAmounts.value = { ...session.donationAmounts }
+    selectedProducts.value = { ...session.selectedProducts }
+    tributeData.value = { ...session.tributeData }
+    selectedRewards.value = sessionMappers.fromSession(session.selectedRewards)
+    formSections.value = session.formSections ?? { donorInfo: {}, shipping: {}, giftAid: {} }
 
-      // Restore state
-      currentStep.value = session.currentStep ?? 1
-      activeTab.value = session.activeTab
-      selectedCurrency.value = session.currency
-      donationAmounts.value = { ...session.donationAmounts }
-      selectedProducts.value = { ...session.selectedProducts }
-      tributeData.value = { ...session.tributeData }
-
-      // Restore rewards per frequency
-      if (session.selectedRewards) {
-        selectedRewards.value = {
-          once: new Set(session.selectedRewards.once || []),
-          monthly: new Set(session.selectedRewards.monthly || []),
-          yearly: new Set(session.selectedRewards.yearly || []),
-          multiple: new Set(session.selectedRewards.multiple || [])
-        }
-      }
-
-      // Restore form sections
-      donorInfoSection.value = session.donorInfoSection ?? {}
-      shippingSection.value = session.shippingSection ?? {}
-      giftAidSection.value = session.giftAidSection ?? {}
-
-      // Return cart data for caller to restore into useImpactCart
-      return {
-        multipleCart: session.multipleCartSnapshot || []
-      }
-    } catch (error) {
-      console.warn('Failed to restore donation form from session storage:', error)
-      return null
+    // Return cart data for caller to restore into useImpactCart
+    return {
+      multipleCart: session.multipleCartSnapshot || []
     }
   }
 
   const clearSession = () => {
-    if (import.meta.server) return
-    try {
-      sessionStorage.removeItem(SESSION_KEY)
-    } catch (error) {
-      console.warn('Failed to clear donation form session:', error)
-    }
+    sessionStorage.remove(SESSION_KEY)
   }
 
   // Setup debounced sync watcher
@@ -191,20 +175,14 @@ export function useDonationFormState(defaultCurrency: string) {
         selectedProducts,
         tributeData,
         selectedRewards,
-        donorInfoSection,
-        shippingSection,
-        giftAidSection
+        formSections
       ],
-      () => {
-        syncToSession(getMultipleCart())
-      },
+      () => syncToSession(getMultipleCart()),
       { debounce: SYNC_DEBOUNCE_MS, deep: true }
     )
 
     // Also watch for step/tab changes and sync immediately (no debounce)
-    watch([currentStep, activeTab], () => {
-      syncToSession(getMultipleCart())
-    })
+    watch([currentStep, activeTab], () => syncToSession(getMultipleCart()))
   }
 
   // Manually trigger sync (for cart changes in multiple tab)
@@ -214,22 +192,12 @@ export function useDonationFormState(defaultCurrency: string) {
   }
 
   // Step navigation
-  const goToStep = (step: number) => {
-    currentStep.value = step
-  }
-
-  const nextStep = () => {
-    currentStep.value++
-  }
-
-  const previousStep = () => {
-    if (currentStep.value > 1) {
-      currentStep.value--
-    }
-  }
+  const goToStep = (step: number) => (currentStep.value = step)
+  const nextStep = () => currentStep.value++
+  const previousStep = () => currentStep.value > 1 && currentStep.value--
 
   // Toggle reward selection for specific frequency
-  const toggleReward = (itemId: string, frequency: 'once' | 'monthly' | 'yearly' | 'multiple') => {
+  const toggleReward = (itemId: string, frequency: Frequency) => {
     const rewardSet = selectedRewards.value[frequency]
     if (rewardSet.has(itemId)) {
       rewardSet.delete(itemId)
@@ -249,11 +217,7 @@ export function useDonationFormState(defaultCurrency: string) {
     selectedProducts,
     tributeData,
     selectedRewards,
-
-    // Form sections - direct binding to forms
-    donorInfoSection,
-    shippingSection,
-    giftAidSection,
+    formSections,
 
     // Methods
     goToStep,

@@ -5,8 +5,6 @@ import FormRenderer from '~/features/form-builder/FormRenderer.vue'
 import { donorInfoFormSection } from './forms/donor-info-form'
 import { addressFormSection } from '../../forms/address-form'
 import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
-import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
-import type { Product } from '~/lib/common/types'
 
 interface Props {
   needsShipping: boolean
@@ -19,7 +17,22 @@ const emit = defineEmits<{
 }>()
 
 // Pattern 6: Direct binding to form sections - no transformation layer
-const { donorInfoSection, shippingSection } = useDonationFormState('')
+const { formSections } = useDonationFormState('')
+
+// Computed refs for individual form sections
+const donorInfoSection = computed({
+  get: () => formSections.value.donorInfo || {},
+  set: (value) => {
+    formSections.value.donorInfo = value ?? {}
+  }
+})
+
+const shippingSection = computed({
+  get: () => formSections.value.shipping || {},
+  set: (value) => {
+    formSections.value.shipping = value ?? {}
+  }
+})
 
 // Form refs
 const donorFormRef = ref<InstanceType<typeof FormRenderer>>()

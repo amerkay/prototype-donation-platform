@@ -10,7 +10,16 @@ const emit = defineEmits<{
 }>()
 
 // Pattern 6: Direct binding - form structure IS the state structure
-const { selectedCurrency, shippingSection, giftAidSection } = useDonationFormState('')
+const { selectedCurrency, formSections } = useDonationFormState('')
+
+// Computed refs for individual form sections
+const shippingSection = computed(() => formSections.value.shipping || {})
+const giftAidSection = computed({
+  get: () => formSections.value.giftAid || {},
+  set: (value) => {
+    formSections.value.giftAid = value ?? {}
+  }
+})
 
 // Form renderer reference for validation
 const formRef = ref<InstanceType<typeof FormRenderer> | null>(null)
