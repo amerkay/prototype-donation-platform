@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, watch, ref, nextTick } from 'vue'
-import StepperProgress from '~/features/donation-form/components/ProgressBar.vue'
+import ProgressBar from '~/features/donation-form/components/ProgressBar.vue'
 import OrderSummary from '~/features/donation-form/components/OrderSummary.vue'
 import DonationFormStep1 from '~/features/donation-form/steps/step1/DonationFormStep1.vue'
 import DonationFormStep2 from '~/features/donation-form/steps/step2/DonationFormStep2.vue'
@@ -118,7 +118,7 @@ const handleBack = () => {
 <template>
   <div ref="wizardContainer" class="relative w-full">
     <!-- Progress Bar -->
-    <StepperProgress :current-step="currentStep" :total-steps="TOTAL_STEPS" />
+    <ProgressBar :current-step="currentStep - 1" :total-steps="TOTAL_STEPS" />
 
     <div class="p-4 sm:p-6">
       <!-- Order Summary (shown from step 2 onwards) -->

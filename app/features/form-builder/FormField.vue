@@ -12,6 +12,7 @@ import FormFieldSelect from './fields/FormFieldSelect.vue'
 import FormFieldAutocomplete from './fields/FormFieldAutocomplete.vue'
 import FormFieldRadioGroup from './fields/FormFieldRadioGroup.vue'
 import FormFieldEmoji from './fields/FormFieldEmoji.vue'
+import FormFieldSlider from './fields/FormFieldSlider.vue'
 import FormFieldCard from './fields/FormFieldCard.vue'
 import FormFieldSeparator from './fields/FormFieldSeparator.vue'
 import FormFieldGroup from './fields/FormFieldGroup.vue'
@@ -171,6 +172,14 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
         />
         <FormFieldEmoji
           v-else-if="meta.type === 'emoji'"
+          :field="field"
+          :errors="fieldMeta.touched ? errors : []"
+          :meta="meta"
+          :name="name"
+          :on-field-change="handleFieldChange"
+        />
+        <FormFieldSlider
+          v-else-if="meta.type === 'slider'"
           :field="field"
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"

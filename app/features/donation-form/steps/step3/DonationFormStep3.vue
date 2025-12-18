@@ -2,15 +2,18 @@
 import { ref, computed } from 'vue'
 import NextButton from '~/features/donation-form/components/NextButton.vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
-import { giftAidFormSection } from '../../forms/gift-aid-form'
+import CoverFeesUpsellModal from '~/features/donation-form/components/CoverFeesUpsellModal.vue'
+import { step3FormSection } from '../../forms/step3-form'
 import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
+import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
 
 const emit = defineEmits<{
   complete: []
 }>()
 
 // Pattern 6: Direct binding - form structure IS the state structure
-const { selectedCurrency, formSections } = useDonationFormState('')
+const { selectedCurrency, formSections, donationAmounts, activeTab } = useDonationFormState('')
+const { cartTotal } = useImpactCart()
 
 // Computed refs for individual form sections
 const shippingSection = computed(() => formSections.value.shipping || {})
@@ -24,10 +27,21 @@ const giftAidSection = computed({
 // Form renderer reference for validation
 const formRef = ref<InstanceType<typeof FormRenderer> | null>(null)
 
+// Cover fees upsell modal state
+const showUpsellModal = ref(false)
+
+// Handle clicks on card buttons to open upsell modal
+const handleFormClick = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  if (target.hasAttribute('data-cover-fees-terms-trigger')) {
+    showUpsellModal.value = true
+  }
+}
+
 /**
  * Form data with context from previous steps
- * We merge cross-section dependencies (currency, shippingAddress) into the gift aid section
- * These are read-only context fields that gift-aid-form uses for visibility/onChange logic
+ * We merge cross-section dependencies (currency, shippingAddress, donationAmount) into the gift aid section
+ * These are read-only context fields that gift-aid-form and cover-fees-field use for visibility/onChange logic
  */
 const formDataWithContext = computed({
   get: () => {
@@ -38,9 +52,15 @@ const formDataWithContext = computed({
       ...(homeAddress || {})
     }
 
+    // Get current donation amount based on active tab
+    const currentTab = activeTab.value
+    const currentDonationAmount =
+      currentTab === 'multiple' ? cartTotal(currentTab) : donationAmounts.value[currentTab] || 0
+
     return {
       // Cross-section context (read-only)
       currency: selectedCurrency.value,
+      donationAmount: currentDonationAmount, // For cover fees calculation
       'shippingAddress.address1': shippingSection.value.address1 as string,
       'shippingAddress.address2': shippingSection.value.address2 as string,
       'shippingAddress.city': shippingSection.value.city as string,
@@ -53,6 +73,7 @@ const formDataWithContext = computed({
       'shippingAddress.country': shippingSection.value.country as string,
 
       joinEmailList: true, // Default to opted in
+      coverFeesPercentage: 10, // Default to 10% for cover fees
       // Gift Aid section data (editable)
       ...giftAidSection.value,
       // Override homeAddress with default country for Gift Aid (UK-only)
@@ -63,6 +84,7 @@ const formDataWithContext = computed({
     // Extract only the gift aid fields (exclude context fields)
     const {
       currency,
+      donationAmount,
       'shippingAddress.address1': _a1,
       'shippingAddress.address2': _a2,
       'shippingAddress.city': _city,
@@ -94,13 +116,18 @@ const handleNext = () => {
       <!-- <p class="text-muted-foreground">Just a few more questions&hellip;</p> -->
     </div>
 
-    <!-- Gift Aid Form -->
-    <FormRenderer ref="formRef" v-model="formDataWithContext" :section="giftAidFormSection" />
+    <!-- Gift Aid Form (wrapped for click delegation) -->
+    <div @click="handleFormClick">
+      <FormRenderer ref="formRef" v-model="formDataWithContext" :section="step3FormSection" />
+    </div>
 
     <!-- Navigation Buttons -->
     <NextButton :form-refs="[formRef]" @click="handleNext">
       Continue to Payment
       <Icon name="lucide:arrow-right" class="ml-2 h-4 w-4" />
     </NextButton>
+
+    <!-- Cover Fees Upsell Modal -->
+    <CoverFeesUpsellModal v-model:open="showUpsellModal" />
   </div>
 </template>

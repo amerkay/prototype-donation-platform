@@ -1,7 +1,5 @@
-import type { ConfigSectionDef, SetFieldValueFn } from '~/features/form-builder/form-builder-types'
+import type { FieldMetaMap, SetFieldValueFn } from '~/features/form-builder/form-builder-types'
 import { createAddressFields } from './address-form'
-import { createEmailOptInField } from './email-opt-in-field'
-import { createTermsAcceptanceField } from './terms-acceptance-field'
 
 /**
  * Helper to format address for display
@@ -27,21 +25,41 @@ function formatAddress(values: Record<string, unknown>, fieldPath = ''): string 
 }
 
 /**
- * Gift Aid consent form section (Step 3)
+ * Create reusable Gift Aid fields
  *
- * Conditional form for UK donors (GBP currency) with:
+ * Provides Gift Aid consent flow for UK donors (GBP currency) with:
  * - Gift Aid information card with logo
  * - Consent toggle
  * - Home address collection (required for Gift Aid)
  * - Option to reuse shipping address if available
- * - Email list opt-in
- * - Terms acceptance (required)
+ *
+ * @param visibilityCondition - Function that determines when fields should be visible (default: GBP currency check)
+ * @returns FieldMetaMap object with Gift Aid fields
+ *
+ * @example
+ * ```typescript
+ * const fields = {
+ *   ...otherFields,
+ *   ...createGiftAidFields()
+ * }
+ * ```
+ *
+ * Requirements:
+ * - Parent form must inject `currency` value for visibility check
+ * - Parent form must inject `shippingAddress.*` fields if using address reuse feature
  */
-export const giftAidFormSection: ConfigSectionDef = {
-  id: 'giftAid',
-  // title: 'Complete Your Donation',
-  // description: 'Just a few more details to finalize your contribution',
-  fields: {
+export function createGiftAidFields(
+  visibilityCondition?: (values: Record<string, unknown>) => boolean
+): FieldMetaMap {
+  // Default visibility: only show for GBP currency (UK donors)
+  const defaultVisibility = (values: Record<string, unknown>) => {
+    const currency = values.currency as string | undefined
+    return currency === 'GBP'
+  }
+
+  const shouldShow = visibilityCondition || defaultVisibility
+
+  return {
     // Gift Aid Information Card (UK only)
     giftAidInfo: {
       type: 'card',
@@ -68,12 +86,7 @@ export const giftAidFormSection: ConfigSectionDef = {
           pay any difference.
         </p>
       `,
-      visibleWhen: (values) => {
-        // Only show for GBP currency (UK donors)
-        // Access currency from root form context (injected from parent)
-        const currency = values.currency as string | undefined
-        return currency === 'GBP'
-      },
+      visibleWhen: shouldShow,
       isNoSeparatorAfter: true
     },
 
@@ -84,7 +97,7 @@ export const giftAidFormSection: ConfigSectionDef = {
       description:
         'I confirm I am a UK taxpayer and have paid sufficient tax to cover this Gift Aid claim.',
       optional: true,
-      visibleWhen: (values) => values.currency === 'GBP',
+      visibleWhen: shouldShow,
       isNoSeparatorAfter: true
     },
 
@@ -100,6 +113,9 @@ export const giftAidFormSection: ConfigSectionDef = {
       descriptionClass: 'truncate',
       optional: true,
       visibleWhen: (values) => {
+        // First check parent visibility
+        if (!shouldShow(values)) return false
+
         // Show if Gift Aid consent is given AND shipping address exists
         if (values.giftAidConsent !== true) return false
 
@@ -142,6 +158,9 @@ export const giftAidFormSection: ConfigSectionDef = {
       description:
         'Required by HMRC for Gift Aid claims (UK taxpayers living abroad can use their overseas address)',
       visibleWhen: (values) => {
+        // First check parent visibility
+        if (!shouldShow(values)) return false
+
         // Show if Gift Aid consent is given AND not using shipping address
         return values.giftAidConsent === true && values.useSameAsShipping !== true
       },
@@ -149,18 +168,11 @@ export const giftAidFormSection: ConfigSectionDef = {
       isNoSeparatorAfter: true
     },
 
-    divider: {
+    giftAidDivider: {
       type: 'separator',
       class: 'my-6',
-      // visible only when GBP currency
-      visibleWhen: (values) => values.currency === 'GBP',
+      visibleWhen: shouldShow,
       isNoSeparatorAfter: true
-    },
-
-    // Email list opt-in (extracted utility)
-    ...createEmailOptInField(),
-
-    // Terms acceptance (extracted utility)
-    ...createTermsAcceptanceField()
+    }
   }
 }

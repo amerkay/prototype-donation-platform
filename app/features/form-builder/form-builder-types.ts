@@ -13,6 +13,7 @@ export type FieldType =
   | 'radio-group'
   | 'array'
   | 'emoji'
+  | 'slider'
   | 'field-group'
   | 'card'
   | 'separator'
@@ -169,6 +170,19 @@ export interface EmojiFieldMeta extends BaseFieldMeta {
 }
 
 /**
+ * Slider field metadata - range input slider
+ */
+export interface SliderFieldMeta extends BaseFieldMeta {
+  type: 'slider'
+  min?: number
+  max?: number
+  step?: number
+  formatValue?: (value: number, allValues: Record<string, unknown>) => string
+  showMinMax?: boolean
+  minMaxFormatter?: (value: number) => string
+}
+
+/**
  * Card field metadata - informational display card
  */
 export interface CardFieldMeta extends BaseFieldMeta {
@@ -215,6 +229,7 @@ export type FieldMeta =
   | RadioGroupFieldMeta
   | ArrayFieldMeta
   | EmojiFieldMeta
+  | SliderFieldMeta
   | CardFieldMeta
   | SeparatorFieldMeta
   | FieldGroupMeta

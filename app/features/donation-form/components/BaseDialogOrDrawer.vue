@@ -21,6 +21,7 @@ interface Props {
   open?: boolean
   dismissible?: boolean
   description?: string
+  maxWidth?: string
 }
 
 interface Emits {
@@ -30,7 +31,8 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   open: false,
   dismissible: false,
-  description: undefined
+  description: undefined,
+  maxWidth: 'sm:max-w-md'
 })
 
 const emit = defineEmits<Emits>()
@@ -45,7 +47,7 @@ const handleOpenChange = (value: boolean) => {
 <template>
   <!-- Desktop Dialog -->
   <Dialog v-if="isDesktop" :open="open" @update:open="handleOpenChange">
-    <DialogScrollContent class="sm:max-w-md">
+    <DialogScrollContent :class="maxWidth">
       <DialogHeader v-if="$slots.header">
         <DialogTitle><slot name="header" /></DialogTitle>
         <DialogDescription v-if="props.description">{{ props.description }}</DialogDescription>
