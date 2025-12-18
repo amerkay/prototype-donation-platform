@@ -52,7 +52,10 @@ export function createMessageFields(
       },
       rules: (values: Record<string, unknown>) =>
         values.isIncludeMessage === true
-          ? z.string().max(250, 'Message must be 250 characters or less')
+          ? z
+              .string()
+              .min(5, 'Message must be at least 5 characters')
+              .max(250, 'Message must be 250 characters or less')
           : z.string().optional()
     }
   }
