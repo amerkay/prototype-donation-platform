@@ -16,8 +16,25 @@ interface Props {
 const props = defineProps<Props>()
 
 const submitForm = inject<() => void>('submitForm', () => {})
+const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
 
 const inputValue = computed(() => props.field.value as string | number | undefined)
+
+const resolvedLabel = computed(() => {
+  if (!props.meta.label) return undefined
+  if (typeof props.meta.label === 'function') {
+    return props.meta.label(formValues())
+  }
+  return props.meta.label
+})
+
+const resolvedPlaceholder = computed(() => {
+  if (!props.meta.placeholder) return undefined
+  if (typeof props.meta.placeholder === 'function') {
+    return props.meta.placeholder(formValues())
+  }
+  return props.meta.placeholder
+})
 
 const handleEnterKey = (event: KeyboardEvent) => {
   event.preventDefault()
@@ -27,14 +44,14 @@ const handleEnterKey = (event: KeyboardEvent) => {
 
 <template>
   <Field :data-invalid="!!errors.length">
-    <FieldLabel v-if="meta.label" :for="name" :class="meta.labelClass">
-      {{ meta.label }}
+    <FieldLabel v-if="resolvedLabel" :for="name" :class="meta.labelClass">
+      {{ resolvedLabel }}
       <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
     </FieldLabel>
     <Input
       :id="name"
       :model-value="inputValue"
-      :placeholder="meta.placeholder"
+      :placeholder="resolvedPlaceholder"
       :autocomplete="meta.autocomplete"
       :aria-invalid="!!errors.length"
       :class="cn(meta.class, 'text-sm')"

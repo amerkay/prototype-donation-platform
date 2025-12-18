@@ -39,9 +39,9 @@ export type SetFieldValueFn = (relativePath: string, value: unknown) => void
  */
 export interface BaseFieldMeta {
   type: FieldType
-  label?: string
+  label?: string | ((values: Record<string, unknown>) => string)
   description?: string | ((values: Record<string, unknown>) => string)
-  placeholder?: string
+  placeholder?: string | ((values: Record<string, unknown>) => string)
   optional?: boolean
   disabled?: boolean
   visibleWhen?: (values: Record<string, unknown>) => boolean

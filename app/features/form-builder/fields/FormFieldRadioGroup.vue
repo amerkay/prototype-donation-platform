@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import { cn } from '@/lib/utils'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
@@ -27,12 +27,22 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
+
 const fieldValue = computed(() => props.field.value as string | number | undefined)
+
+const resolvedLabel = computed(() => {
+  if (!props.meta.label) return undefined
+  if (typeof props.meta.label === 'function') {
+    return props.meta.label(formValues())
+  }
+  return props.meta.label
+})
 </script>
 
 <template>
   <FieldSet :data-invalid="!!errors.length">
-    <FieldLegend v-if="meta.label" :class="meta.labelClass">{{ meta.label }}</FieldLegend>
+    <FieldLegend v-if="resolvedLabel" :class="meta.labelClass">{{ resolvedLabel }}</FieldLegend>
     <FieldDescription v-if="meta.description" :class="meta.descriptionClass">{{
       meta.description
     }}</FieldDescription>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Field, FieldLabel, FieldDescription, FieldError } from '@/components/ui/field'
 import { cn } from '@/lib/utils'
@@ -16,9 +16,19 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
+
 const items = computed(() => {
   const value = props.field.value as unknown[] | undefined
   return Array.isArray(value) ? value : []
+})
+
+const resolvedLabel = computed(() => {
+  if (!props.meta.label) return undefined
+  if (typeof props.meta.label === 'function') {
+    return props.meta.label(formValues())
+  }
+  return props.meta.label
 })
 
 function addItem() {
@@ -55,8 +65,8 @@ function removeItem(index: number) {
 
 <template>
   <Field :data-invalid="!!errors.length" :class="cn(meta.class, 'space-y-3')">
-    <FieldLabel v-if="meta.label" :class="meta.labelClass">
-      {{ meta.label }}
+    <FieldLabel v-if="resolvedLabel" :class="meta.labelClass">
+      {{ resolvedLabel }}
       <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
     </FieldLabel>
     <FieldDescription v-if="meta.description" :class="meta.descriptionClass">

@@ -22,6 +22,17 @@ const props = defineProps<Props>()
 const accordionValue = inject<Ref<string | undefined>>('accordionValue', ref(undefined))
 const isOpen = computed(() => accordionValue.value === props.name)
 
+// Get form values for dynamic label resolution
+const getFormValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
+
+const resolvedLabel = computed(() => {
+  if (!props.meta.label) return undefined
+  if (typeof props.meta.label === 'function') {
+    return props.meta.label(getFormValues())
+  }
+  return props.meta.label
+})
+
 // Set default open on mount if specified
 if (props.meta.collapsibleDefaultOpen && !accordionValue.value) {
   accordionValue.value = props.name
@@ -38,7 +49,6 @@ const { setElementRef, scrollToElement } = useScrollOnVisible(
 )
 
 // Visibility management
-const getFormValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
 const parentGroupVisible = inject<() => boolean>('parentGroupVisible', () => true)
 
 const isGroupVisible = computed(() => {
@@ -68,17 +78,19 @@ provide('fieldPrefix', currentFieldPrefix.value)
 
 // Provide scoped form values to child fields
 // Children see values relative to this group (e.g., homeAddress.country becomes just 'country')
+// BUT also preserve parent values so they can reference sibling fields
 const getScopedFormValues = computed(() => {
   const fullValues = getFormValues()
   const key = fieldKey.value
 
-  if (!key) return {}
+  if (!key) return fullValues // If no key, return all values
 
   // Get this group's values
   const groupValue = fullValues[key] as Record<string, unknown> | undefined
 
-  // Return the group's values (or empty object if not found)
-  return groupValue || {}
+  // Merge: child fields get their scoped values plus access to parent values
+  // Scoped values take precedence (spread groupValue last)
+  return { ...fullValues, ...(groupValue || {}) }
 })
 
 // Override formValues for child fields to provide scoped values
@@ -119,7 +131,7 @@ watch(isOpen, (newIsOpen) => {
             <div class="flex-1 text-left">
               <div class="flex items-center gap-2">
                 <h3
-                  v-if="meta.legend || meta.label"
+                  v-if="meta.legend || resolvedLabel"
                   :class="
                     cn(
                       meta.labelClass,
@@ -128,7 +140,7 @@ watch(isOpen, (newIsOpen) => {
                     )
                   "
                 >
-                  {{ meta.legend || meta.label }}
+                  {{ meta.legend || resolvedLabel }}
                 </h3>
                 <Badge
                   v-if="meta.badgeLabel"
@@ -166,8 +178,8 @@ watch(isOpen, (newIsOpen) => {
 
     <!-- Non-collapsible version -->
     <FieldSet v-else class="gap-3">
-      <FieldLegend v-if="meta.legend || meta.label" :class="cn('mb-2', meta.labelClass)">{{
-        meta.legend || meta.label
+      <FieldLegend v-if="meta.legend || resolvedLabel" :class="cn('mb-2', meta.labelClass)">{{
+        meta.legend || resolvedLabel
       }}</FieldLegend>
       <FieldDescription v-if="meta.description" :class="meta.descriptionClass">{{
         meta.description

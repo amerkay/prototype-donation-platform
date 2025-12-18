@@ -2,6 +2,137 @@ import * as z from 'zod'
 import type { ConfigSectionDef, FieldMetaMap } from '~/features/form-builder/form-builder-types'
 
 /**
+ * Country-specific label configuration
+ */
+const countryLabels: Record<
+  string,
+  { county: string; postcode: string; countyPlaceholder: string; postcodePlaceholder: string }
+> = {
+  US: {
+    county: 'State',
+    postcode: 'ZIP Code',
+    countyPlaceholder: 'California',
+    postcodePlaceholder: '90210'
+  },
+  CA: {
+    county: 'Province',
+    postcode: 'Postal Code',
+    countyPlaceholder: 'Ontario',
+    postcodePlaceholder: 'K1A 0B1'
+  },
+  AU: {
+    county: 'State',
+    postcode: 'Postcode',
+    countyPlaceholder: 'New South Wales',
+    postcodePlaceholder: '2000'
+  },
+  NZ: {
+    county: 'Region',
+    postcode: 'Postcode',
+    countyPlaceholder: 'Auckland',
+    postcodePlaceholder: '1010'
+  },
+  GB: {
+    county: 'County',
+    postcode: 'Postcode',
+    countyPlaceholder: 'Greater London',
+    postcodePlaceholder: 'SW1A 1AA'
+  },
+  IE: {
+    county: 'County',
+    postcode: 'Eircode',
+    countyPlaceholder: 'Dublin',
+    postcodePlaceholder: 'D02 XY45'
+  },
+  DE: {
+    county: 'State',
+    postcode: 'Postal Code',
+    countyPlaceholder: 'Bavaria',
+    postcodePlaceholder: '80331'
+  },
+  FR: {
+    county: 'Region',
+    postcode: 'Postal Code',
+    countyPlaceholder: 'Île-de-France',
+    postcodePlaceholder: '75001'
+  },
+  ES: {
+    county: 'Province',
+    postcode: 'Postal Code',
+    countyPlaceholder: 'Madrid',
+    postcodePlaceholder: '28001'
+  },
+  IT: {
+    county: 'Province',
+    postcode: 'Postal Code',
+    countyPlaceholder: 'Rome',
+    postcodePlaceholder: '00100'
+  },
+  NL: {
+    county: 'Province',
+    postcode: 'Postal Code',
+    countyPlaceholder: 'North Holland',
+    postcodePlaceholder: '1012 AB'
+  },
+  BE: {
+    county: 'Province',
+    postcode: 'Postal Code',
+    countyPlaceholder: 'Brussels',
+    postcodePlaceholder: '1000'
+  },
+  CH: {
+    county: 'Canton',
+    postcode: 'Postal Code',
+    countyPlaceholder: 'Zurich',
+    postcodePlaceholder: '8001'
+  },
+  AT: {
+    county: 'State',
+    postcode: 'Postal Code',
+    countyPlaceholder: 'Vienna',
+    postcodePlaceholder: '1010'
+  },
+  SE: {
+    county: 'County',
+    postcode: 'Postal Code',
+    countyPlaceholder: 'Stockholm',
+    postcodePlaceholder: '111 22'
+  },
+  NO: {
+    county: 'County',
+    postcode: 'Postal Code',
+    countyPlaceholder: 'Oslo',
+    postcodePlaceholder: '0150'
+  },
+  DK: {
+    county: 'Region',
+    postcode: 'Postal Code',
+    countyPlaceholder: 'Capital Region',
+    postcodePlaceholder: '1000'
+  },
+  FI: {
+    county: 'Region',
+    postcode: 'Postal Code',
+    countyPlaceholder: 'Uusimaa',
+    postcodePlaceholder: '00100'
+  }
+}
+
+const defaultLabels = {
+  county: 'Region/State',
+  postcode: 'Postcode',
+  countyPlaceholder: 'Region',
+  postcodePlaceholder: 'Postal Code'
+}
+
+/**
+ * Get country-specific labels for county and postcode fields
+ */
+function getCountryLabels(country: string | undefined) {
+  return country && countryLabels[country] ? countryLabels[country] : defaultLabels
+}
+
+/**
  * Create reusable address fields with optional visibility condition
  *
  * Provides a complete address collection form with:
@@ -48,6 +179,77 @@ export function createAddressFields(
   forcedCountry?: string
 ): FieldMetaMap {
   return {
+    address1: {
+      type: 'text',
+      label: 'Address Line 1',
+      placeholder: '123 High Street',
+      autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-line1`,
+      visibleWhen: visibilityCondition,
+      rules: z.string().min(5, 'Address is required'),
+      isNoSeparatorAfter: true
+    },
+
+    address2: {
+      type: 'text',
+      label: 'Address Line 2',
+      placeholder: 'Flat 4B',
+      autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-line2`,
+      optional: true,
+      // visibleWhen: (values) => {
+      //   if (visibilityCondition && !visibilityCondition(values)) return false
+
+      //   if (!values['address1'] || typeof values['address1'] !== 'string') return false
+      //   return z.string().min(5).safeParse(values['address1']).success
+      // },
+      rules: z.string().optional(),
+      isNoSeparatorAfter: true
+    },
+
+    city: {
+      type: 'text',
+      label: 'City/Town',
+      placeholder: 'London',
+      autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level2`,
+      visibleWhen: visibilityCondition,
+      rules: z.string().min(2, 'Town/City is required'),
+      isNoSeparatorAfter: true
+    },
+
+    countyPostcode: {
+      type: 'field-group',
+      class: 'grid grid-cols-2 gap-x-3',
+      visibleWhen: visibilityCondition,
+      isNoSeparatorAfter: true,
+      fields: {
+        county: {
+          type: 'text',
+          label: (values) => {
+            const country = values['country'] as string | undefined
+            return getCountryLabels(country).county
+          },
+          placeholder: (values) => {
+            const country = values['country'] as string | undefined
+            return getCountryLabels(country).countyPlaceholder
+          },
+          autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level1`,
+          rules: z.string().min(2, 'County/Region is required')
+        },
+        postcode: {
+          type: 'text',
+          label: (values) => {
+            const country = values['country'] as string | undefined
+            return getCountryLabels(country).postcode
+          },
+          placeholder: (values) => {
+            const country = values['country'] as string | undefined
+            return getCountryLabels(country).postcodePlaceholder
+          },
+          autocomplete: `section-${autocompleteSection} ${autocompleteSection} postal-code`,
+          rules: z.string().min(3, 'Postcode is required')
+        }
+      }
+    },
+
     country: {
       type: 'select',
       label: 'Country',
@@ -76,68 +278,8 @@ export function createAddressFields(
       ],
       rules: z.string().min(1, 'Country is required'),
       disabled: !!forcedCountry,
-      isNoSeparatorAfter: true,
       autocomplete: `section-${autocompleteSection} ${autocompleteSection} country`,
       visibleWhen: visibilityCondition
-    },
-
-    address1: {
-      type: 'text',
-      label: 'Address Line 1',
-      placeholder: '123 High Street',
-      autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-line1`,
-      visibleWhen: visibilityCondition,
-      rules: z.string().min(5, 'Address is required'),
-      isNoSeparatorAfter: true
-    },
-
-    address2: {
-      type: 'text',
-      label: 'Address Line 2',
-      placeholder: 'Flat 4B',
-      autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-line2`,
-      optional: true,
-      visibleWhen: (values) => {
-        if (visibilityCondition && !visibilityCondition(values)) return false
-
-        if (!values['address1'] || typeof values['address1'] !== 'string') return false
-        return z.string().min(5).safeParse(values['address1']).success
-      },
-      rules: z.string().optional(),
-      isNoSeparatorAfter: true
-    },
-
-    city: {
-      type: 'text',
-      label: 'City/Town',
-      placeholder: 'London',
-      autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level2`,
-      visibleWhen: visibilityCondition,
-      rules: z.string().min(2, 'Town/City is required'),
-      isNoSeparatorAfter: true
-    },
-
-    countyPostcode: {
-      type: 'field-group',
-      class: 'grid grid-cols-2 gap-x-3',
-      visibleWhen: visibilityCondition,
-      isNoSeparatorAfter: true,
-      fields: {
-        county: {
-          type: 'text',
-          label: 'Region/State',
-          placeholder: 'Greater London',
-          autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level1`,
-          rules: z.string().min(2, 'County/Region is required')
-        },
-        postcode: {
-          type: 'text',
-          label: 'Postcode',
-          placeholder: 'SW1A 1AA',
-          autocomplete: `section-${autocompleteSection} ${autocompleteSection} postal-code`,
-          rules: z.string().min(3, 'Postcode is required')
-        }
-      }
     }
   }
 }

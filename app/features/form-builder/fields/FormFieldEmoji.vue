@@ -16,8 +16,25 @@ interface Props {
 const props = defineProps<Props>()
 
 const submitForm = inject<() => void>('submitForm', () => {})
+const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
 
 const inputValue = computed(() => props.field.value as string | undefined)
+
+const resolvedLabel = computed(() => {
+  if (!props.meta.label) return undefined
+  if (typeof props.meta.label === 'function') {
+    return props.meta.label(formValues())
+  }
+  return props.meta.label
+})
+
+const resolvedPlaceholder = computed(() => {
+  if (!props.meta.placeholder) return undefined
+  if (typeof props.meta.placeholder === 'function') {
+    return props.meta.placeholder(formValues())
+  }
+  return props.meta.placeholder
+})
 
 // Emoji regex pattern - matches most emoji including multi-byte sequences
 const EMOJI_REGEX = /^[\p{Emoji}\p{Emoji_Presentation}]+$/u

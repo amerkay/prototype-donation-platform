@@ -21,6 +21,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const submitForm = inject<() => void>('submitForm', () => {})
+const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
 
 const handleEnterKey = (event: KeyboardEvent) => {
   event.preventDefault()
@@ -28,12 +29,20 @@ const handleEnterKey = (event: KeyboardEvent) => {
 }
 
 const numberValue = computed(() => props.field.value as number | null | undefined)
+
+const resolvedLabel = computed(() => {
+  if (!props.meta.label) return undefined
+  if (typeof props.meta.label === 'function') {
+    return props.meta.label(formValues())
+  }
+  return props.meta.label
+})
 </script>
 
 <template>
   <Field :data-invalid="!!errors.length">
-    <FieldLabel v-if="meta.label" :for="name" :class="meta.labelClass">
-      {{ meta.label }}
+    <FieldLabel v-if="resolvedLabel" :for="name" :class="meta.labelClass">
+      {{ resolvedLabel }}
       <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
     </FieldLabel>
     <FieldDescription v-if="meta.description" :class="meta.descriptionClass">{{
