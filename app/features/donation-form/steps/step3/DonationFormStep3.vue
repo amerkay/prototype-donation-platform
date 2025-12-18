@@ -75,8 +75,8 @@ const isFormValid = computed(() => formRef.value?.isValid ?? false)
   <div class="space-y-6">
     <!-- Step Header -->
     <div class="space-y-2">
-      <h1 class="text-2xl font-bold">Complete Your Donation</h1>
-      <p class="text-muted-foreground">Just a few more details to finalize your contribution</p>
+      <h1 class="text-lg font-bold">A few more questions&hellip;</h1>
+      <!-- <p class="text-muted-foreground">Just a few more questions&hellip;</p> -->
     </div>
 
     <!-- Gift Aid Form -->

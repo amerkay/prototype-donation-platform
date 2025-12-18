@@ -12,8 +12,6 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
-export const description = 'An inset sidebar with secondary navigation.'
-export const iframeHeight = '800px'
 </script>
 
 <template>
