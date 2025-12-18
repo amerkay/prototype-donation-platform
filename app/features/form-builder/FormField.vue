@@ -57,8 +57,22 @@ const fieldRules = computed(() => {
   if (!props.meta.rules) return undefined
 
   // If rules is a function, call it with current form values
-  const rules =
+  let rules =
     typeof props.meta.rules === 'function' ? props.meta.rules(formValues()) : props.meta.rules
+
+  // Preprocess text/textarea/autocomplete fields to handle undefined/null
+  // This prevents "expected string, received undefined" errors when field is touched but empty
+  const isTextLikeField = ['text', 'textarea', 'autocomplete'].includes(props.meta.type)
+
+  if (isTextLikeField) {
+    rules = z.preprocess((val) => {
+      // Convert undefined/null to empty string for text-based fields
+      if (val === undefined || val === null) {
+        return ''
+      }
+      return val
+    }, rules)
+  }
 
   return toTypedSchema(rules)
 })

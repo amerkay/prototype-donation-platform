@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Button } from '~/components/ui/button'
+import NextButton from '~/features/donation-form/components/NextButton.vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
 import { donorInfoFormSection } from './forms/donor-info-form'
 import { addressFormSection } from '../../forms/address-form'
@@ -47,26 +47,17 @@ const needsShipping = computed(() => {
   })
 })
 
-// Validate and proceed
-const handleNext = async () => {
-  // Validate donor form
-  const donorValid = donorFormRef.value?.isValid
-  if (!donorValid) {
-    // Trigger validation by attempting submit
-    donorFormRef.value?.onSubmit()
-    return
-  }
-
-  // Validate shipping form if needed
+// Compute form refs to validate (conditionally include shipping)
+const formRefsToValidate = computed(() => {
+  const refs = [donorFormRef.value]
   if (needsShipping.value) {
-    const shippingValid = shippingFormRef.value?.isValid
-    if (!shippingValid) {
-      shippingFormRef.value?.onSubmit()
-      return
-    }
+    refs.push(shippingFormRef.value)
   }
+  return refs
+})
 
-  // All valid - emit complete
+// Handle next - just emit complete when valid
+const handleNext = () => {
   emit('complete')
 }
 </script>
@@ -94,6 +85,8 @@ const handleNext = async () => {
     </div>
 
     <!-- Next Button -->
-    <Button class="w-full" size="lg" @click="handleNext"> Continue to Payment </Button>
+    <NextButton :form-refs="formRefsToValidate" @click="handleNext">
+      Continue to Payment
+    </NextButton>
   </div>
 </template>

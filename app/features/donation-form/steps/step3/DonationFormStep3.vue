@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Button } from '@/components/ui/button'
+import NextButton from '~/features/donation-form/components/NextButton.vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
 import { giftAidFormSection } from '../../forms/gift-aid-form'
 import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
@@ -43,11 +43,10 @@ const formDataWithContext = computed({
         '',
       'shippingAddress.country': shippingSection.value.country as string,
 
-      // Gift Aid section data (editable) - spread first to preserve all values
-      // Set defaults for toggles
       joinEmailList: true, // Default to opted in
+      // Gift Aid section data (editable)
       ...giftAidSection.value,
-      // Then override homeAddress with default country
+      // Override homeAddress with default country for Gift Aid (UK-only)
       homeAddress: homeAddressWithDefault
     }
   },
@@ -72,20 +71,10 @@ const formDataWithContext = computed({
   }
 })
 
-// Handle form submission
+// Handle next - just emit complete when valid
 const handleNext = () => {
-  if (!formRef.value) return
-  // Trigger validation
-  formRef.value.onSubmit()
-}
-
-// Listen for form submit event (after validation passes)
-const onFormSubmit = () => {
   emit('complete')
 }
-
-// Check if form is valid
-const isFormValid = computed(() => formRef.value?.isValid ?? false)
 </script>
 
 <template>
@@ -97,19 +86,12 @@ const isFormValid = computed(() => formRef.value?.isValid ?? false)
     </div>
 
     <!-- Gift Aid Form -->
-    <FormRenderer
-      ref="formRef"
-      v-model="formDataWithContext"
-      :section="giftAidFormSection"
-      @submit="onFormSubmit"
-    />
+    <FormRenderer ref="formRef" v-model="formDataWithContext" :section="giftAidFormSection" />
 
     <!-- Navigation Buttons -->
-    <div class="flex gap-3">
-      <Button size="lg" class="w-full" :disabled="!isFormValid" @click="handleNext">
-        Continue to Payment
-        <Icon name="lucide:arrow-right" class="ml-2 h-4 w-4" />
-      </Button>
-    </div>
+    <NextButton :form-refs="[formRef]" @click="handleNext">
+      Continue to Payment
+      <Icon name="lucide:arrow-right" class="ml-2 h-4 w-4" />
+    </NextButton>
   </div>
 </template>

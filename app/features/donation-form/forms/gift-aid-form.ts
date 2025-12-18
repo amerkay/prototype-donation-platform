@@ -1,6 +1,7 @@
-import * as z from 'zod'
 import type { ConfigSectionDef, SetFieldValueFn } from '~/features/form-builder/form-builder-types'
 import { createAddressFields } from './address-form'
+import { createEmailOptInField } from './email-opt-in-field'
+import { createTermsAcceptanceField } from './terms-acceptance-field'
 
 /**
  * Helper to format address for display
@@ -156,26 +157,10 @@ export const giftAidFormSection: ConfigSectionDef = {
       isNoSeparatorAfter: true
     },
 
-    // Email list opt-in
-    joinEmailList: {
-      type: 'toggle',
-      label: 'Join our email list',
-      description: 'Get updates on our impact and latest news. Unsubscribe anytime.',
-      optional: true,
-      isNoSeparatorAfter: true
-    },
+    // Email list opt-in (extracted utility)
+    ...createEmailOptInField(),
 
-    // Terms acceptance (required)
-    acceptTerms: {
-      type: 'toggle',
-      label: 'I accept the terms and conditions',
-      description: (_values) => {
-        // Dynamic description with link
-        return 'I agree to the Terms of Service and Privacy Policy.'
-      },
-      rules: z.boolean().refine((val) => val === true, {
-        message: 'You must accept the terms and conditions to continue'
-      })
-    }
+    // Terms acceptance (extracted utility)
+    ...createTermsAcceptanceField()
   }
 }
