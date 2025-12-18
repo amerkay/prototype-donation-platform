@@ -9,48 +9,65 @@ const emit = defineEmits<{
   complete: []
 }>()
 
-// Get state from composable
-const { selectedCurrency, shippingAddress, giftAidData } = useDonationFormState('')
+// Pattern 6: Direct binding - form structure IS the state structure
+const { selectedCurrency, shippingSection, giftAidSection } = useDonationFormState('')
 
 // Form renderer reference for validation
 const formRef = ref<InstanceType<typeof FormRenderer> | null>(null)
 
-// Form data with context from previous steps
-const formData = computed({
-  get: () => ({
-    // Pass currency for Gift Aid visibility (GBP check)
-    currency: selectedCurrency.value,
+/**
+ * Form data with context from previous steps
+ * We merge cross-section dependencies (currency, shippingAddress) into the gift aid section
+ * These are read-only context fields that gift-aid-form uses for visibility/onChange logic
+ */
+const formDataWithContext = computed({
+  get: () => {
+    // Ensure homeAddress.country defaults to 'GB' for Gift Aid (UK-only requirement)
+    const homeAddress = giftAidSection.value.homeAddress as Record<string, unknown> | undefined
+    const homeAddressWithDefault = {
+      country: 'GB', // Gift Aid is UK-only, always default to GB
+      ...(homeAddress || {})
+    }
 
-    // Pass shipping address fields with prefix for "use same" logic
-    'shippingAddress.address1': shippingAddress.value.address1,
-    'shippingAddress.address2': shippingAddress.value.address2,
-    'shippingAddress.city': shippingAddress.value.city,
-    'shippingAddress.countyPostcode.county': shippingAddress.value.county,
-    'shippingAddress.countyPostcode.postcode': shippingAddress.value.postcode,
-    'shippingAddress.country': shippingAddress.value.country,
+    return {
+      // Cross-section context (read-only)
+      currency: selectedCurrency.value,
+      'shippingAddress.address1': shippingSection.value.address1 as string,
+      'shippingAddress.address2': shippingSection.value.address2 as string,
+      'shippingAddress.city': shippingSection.value.city as string,
+      'shippingAddress.countyPostcode.county': (
+        shippingSection.value.countyPostcode as Record<string, unknown>
+      )?.county as string,
+      'shippingAddress.countyPostcode.postcode':
+        ((shippingSection.value.countyPostcode as Record<string, unknown>)?.postcode as string) ||
+        '',
+      'shippingAddress.country': shippingSection.value.country as string,
 
-    // Gift Aid form fields
-    giftAidConsent: giftAidData.value.giftAidConsent,
-    useSameAsShipping: giftAidData.value.useSameAsShipping,
-    homeAddress: {
-      ...giftAidData.value.homeAddress,
-      // Force UK country for Gift Aid home address
-      country: giftAidData.value.homeAddress?.country || 'GB'
-    },
-    joinEmailList: giftAidData.value.joinEmailList,
-    acceptTerms: giftAidData.value.acceptTerms
-  }),
+      // Gift Aid section data (editable) - spread first to preserve all values
+      // Set defaults for toggles
+      joinEmailList: true, // Default to opted in
+      ...giftAidSection.value,
+      // Then override homeAddress with default country
+      homeAddress: homeAddressWithDefault
+    }
+  },
   set: (value) => {
-    // Update Gift Aid data in composable state
-    giftAidData.value.giftAidConsent = value.giftAidConsent ?? false
-    giftAidData.value.useSameAsShipping = value.useSameAsShipping ?? false
-    giftAidData.value.joinEmailList = value.joinEmailList ?? false
-    giftAidData.value.acceptTerms = value.acceptTerms ?? false
+    // Extract only the gift aid fields (exclude context fields)
+    const {
+      currency,
+      'shippingAddress.address1': _a1,
+      'shippingAddress.address2': _a2,
+      'shippingAddress.city': _city,
+      'shippingAddress.countyPostcode.county': _county,
+      'shippingAddress.countyPostcode.postcode': _postcode,
+      'shippingAddress.country': _country,
+      ...giftAidFields
+    } = value
 
-    // Update home address
-    if (value.homeAddress) {
-      const homeAddr = value.homeAddress as typeof giftAidData.value.homeAddress
-      giftAidData.value.homeAddress = homeAddr
+    // Update gift aid section - preserve existing values by merging
+    giftAidSection.value = {
+      ...giftAidSection.value,
+      ...giftAidFields
     }
   }
 })
@@ -82,7 +99,7 @@ const isFormValid = computed(() => formRef.value?.isValid ?? false)
     <!-- Gift Aid Form -->
     <FormRenderer
       ref="formRef"
-      v-model="formData"
+      v-model="formDataWithContext"
       :section="giftAidFormSection"
       @submit="onFormSubmit"
     />

@@ -18,7 +18,8 @@ const emit = defineEmits<{
   complete: []
 }>()
 
-const { donorInfo, shippingAddress, activeTab, selectedProducts } = useDonationFormState('')
+// Pattern 6: Direct binding to form sections - no transformation layer
+const { donorInfoSection, shippingSection, activeTab, selectedProducts } = useDonationFormState('')
 const { multipleCart, selectedRewards } = useImpactCart()
 
 // Form refs
@@ -44,65 +45,6 @@ const needsShipping = computed(() => {
     const reward = props.products.find((p) => p.id === id)
     return reward?.isShippingRequired
   })
-})
-
-// Form values (nested structure for form-builder)
-const donorFormValues = computed({
-  get: () => ({
-    name: {
-      firstName: donorInfo.value.firstName,
-      lastName: donorInfo.value.lastName
-    },
-    email: donorInfo.value.email,
-    phone: donorInfo.value.phone,
-    anonymous: donorInfo.value.anonymous,
-    isIncludeMessage: donorInfo.value.isIncludeMessage,
-    message: donorInfo.value.message
-  }),
-  set: (value) => {
-    donorInfo.value.firstName = value.name?.firstName || ''
-    donorInfo.value.lastName = value.name?.lastName || ''
-    donorInfo.value.email = value.email || ''
-    donorInfo.value.phone = value.phone || ''
-    donorInfo.value.anonymous = value.anonymous ?? false
-    donorInfo.value.isIncludeMessage = value.isIncludeMessage ?? false
-    donorInfo.value.message = value.message || ''
-  }
-})
-
-const shippingFormValues = computed({
-  get: () => {
-    return {
-      country: shippingAddress.value.country, // Select field stores string directly
-      addressSearch: undefined, // Temporary field, not persisted
-      addressConfirmed: !!(shippingAddress.value.address1 && shippingAddress.value.city),
-      address1: shippingAddress.value.address1,
-      address2: shippingAddress.value.address2,
-      city: shippingAddress.value.city,
-      countyPostcode: {
-        county: shippingAddress.value.county,
-        postcode: shippingAddress.value.postcode
-      }
-    }
-  },
-  set: (value) => {
-    // Select field returns string value directly
-    if (typeof value.country === 'string') {
-      shippingAddress.value.country = value.country
-    }
-
-    // Update address fields
-    shippingAddress.value.address1 = value.address1 || ''
-    shippingAddress.value.address2 = value.address2 || ''
-    shippingAddress.value.city = value.city || ''
-
-    // Handle nested countyPostcode group
-    const countyPostcode = value.countyPostcode as
-      | { county?: string; postcode?: string }
-      | undefined
-    shippingAddress.value.county = countyPostcode?.county || ''
-    shippingAddress.value.postcode = countyPostcode?.postcode || ''
-  }
 })
 
 // Validate and proceed
@@ -135,7 +77,7 @@ const handleNext = async () => {
     <div class="rounded-lg border border-transparent px-4 bg-background/40">
       <FormRenderer
         ref="donorFormRef"
-        v-model="donorFormValues"
+        v-model="donorInfoSection"
         :section="donorInfoFormSection"
         @submit="handleNext"
       />
@@ -145,7 +87,7 @@ const handleNext = async () => {
     <div v-if="needsShipping" class="rounded-lg border border-transparent px-4 bg-background/40">
       <FormRenderer
         ref="shippingFormRef"
-        v-model="shippingFormValues"
+        v-model="shippingSection"
         :section="addressFormSection"
         @submit="handleNext"
       />

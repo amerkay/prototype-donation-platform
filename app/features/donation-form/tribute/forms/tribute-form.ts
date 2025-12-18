@@ -156,6 +156,7 @@ export function createTributeFormSection(
         type: 'text',
         label: 'Email Address',
         placeholder: 'name@example.com',
+        autocomplete: 'email',
         visibleWhen: (values) => values.type !== 'none' && values.sendECard === true,
         isNoSeparatorAfter: true,
         rules: z

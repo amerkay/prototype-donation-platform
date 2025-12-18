@@ -6,46 +6,11 @@ import type { Product, TributeData, CartItem } from '@/lib/common/types'
 const SESSION_KEY = 'donation-form:session'
 const SYNC_DEBOUNCE_MS = 500
 
-// Donor info types
-export interface DonorInfo {
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  anonymous: boolean
-  isIncludeMessage: boolean
-  message: string
-}
-
-export interface ShippingAddress {
-  address1: string
-  address2: string
-  city: string
-  county: string
-  postcode: string
-  country: string
-}
-
-export interface GiftAidData {
-  giftAidConsent: boolean
-  useSameAsShipping: boolean
-  homeAddress: {
-    country: string
-    addressConfirmed: boolean
-    enterManually: boolean
-    address1: string
-    address2: string
-    city: string
-    countyPostcode: {
-      county: string
-      postcode: string
-    }
-  }
-  joinEmailList: boolean
-  acceptTerms: boolean
-}
-
-// Session storage structure
+/**
+ * Session storage structure - stores form sections as-is
+ * Pattern 6: Form Section as Single Source of Truth
+ * Each form section stores its data in the exact structure defined by the form
+ */
 interface DonationFormSession {
   currentStep: number
   activeTab: 'once' | 'monthly' | 'yearly' | 'multiple'
@@ -64,9 +29,10 @@ interface DonationFormSession {
     monthly: TributeData | undefined
     yearly: TributeData | undefined
   }
-  donorInfo: DonorInfo
-  shippingAddress: ShippingAddress
-  giftAidData: GiftAidData
+  // Form sections - stored exactly as form structure
+  donorInfoSection: Record<string, unknown>
+  shippingSection: Record<string, unknown>
+  giftAidSection: Record<string, unknown>
   multipleCartSnapshot: CartItem[]
   selectedRewardsSnapshot: string[]
   lastSyncedAt: number
@@ -101,41 +67,14 @@ export function useDonationFormState(defaultCurrency: string) {
     monthly: undefined,
     yearly: undefined
   }))
-  const donorInfo = useState<DonorInfo>('donation-form:donor-info', () => ({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    anonymous: false,
-    isIncludeMessage: false,
-    message: ''
-  }))
-  const shippingAddress = useState<ShippingAddress>('donation-form:shipping-address', () => ({
-    address1: '',
-    address2: '',
-    city: '',
-    county: '',
-    postcode: '',
-    country: ''
-  }))
-  const giftAidData = useState<GiftAidData>('donation-form:gift-aid', () => ({
-    giftAidConsent: false,
-    useSameAsShipping: false,
-    homeAddress: {
-      country: 'GB',
-      addressConfirmed: false,
-      enterManually: false,
-      address1: '',
-      address2: '',
-      city: '',
-      countyPostcode: {
-        county: '',
-        postcode: ''
-      }
-    },
-    joinEmailList: true,
-    acceptTerms: false
-  }))
+
+  /**
+   * Form section state - mirrors form structure exactly
+   * Pattern 6: No transformation layer, form definition IS the state structure
+   */
+  const donorInfoSection = useState<Record<string, unknown>>('donation-form:donor-info', () => ({}))
+  const shippingSection = useState<Record<string, unknown>>('donation-form:shipping', () => ({}))
+  const giftAidSection = useState<Record<string, unknown>>('donation-form:gift-aid', () => ({}))
 
   // Session storage sync - only runs on client
   const syncToSession = (multipleCart: CartItem[], selectedRewards: Set<string>) => {
@@ -148,9 +87,9 @@ export function useDonationFormState(defaultCurrency: string) {
       donationAmounts: { ...donationAmounts.value },
       selectedProducts: { ...selectedProducts.value },
       tributeData: { ...tributeData.value },
-      donorInfo: { ...donorInfo.value },
-      shippingAddress: { ...shippingAddress.value },
-      giftAidData: { ...giftAidData.value },
+      donorInfoSection: { ...donorInfoSection.value },
+      shippingSection: { ...shippingSection.value },
+      giftAidSection: { ...giftAidSection.value },
       multipleCartSnapshot: [...multipleCart],
       selectedRewardsSnapshot: Array.from(selectedRewards),
       lastSyncedAt: Date.now()
@@ -182,38 +121,11 @@ export function useDonationFormState(defaultCurrency: string) {
       donationAmounts.value = { ...session.donationAmounts }
       selectedProducts.value = { ...session.selectedProducts }
       tributeData.value = { ...session.tributeData }
-      donorInfo.value = session.donorInfo ?? {
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        anonymous: false,
-        isIncludeMessage: false,
-        message: ''
-      }
-      shippingAddress.value = session.shippingAddress ?? {
-        address1: '',
-        address2: '',
-        city: '',
-        county: '',
-        postcode: '',
-        country: ''
-      }
-      giftAidData.value = session.giftAidData ?? {
-        giftAidConsent: false,
-        useSameAsShipping: false,
-        homeAddress: {
-          country: 'GB',
-          addressConfirmed: false,
-          enterManually: false,
-          address1: '',
-          address2: '',
-          city: '',
-          countyPostcode: { county: '', postcode: '' }
-        },
-        joinEmailList: true,
-        acceptTerms: false
-      }
+
+      // Restore form sections
+      donorInfoSection.value = session.donorInfoSection ?? {}
+      shippingSection.value = session.shippingSection ?? {}
+      giftAidSection.value = session.giftAidSection ?? {}
 
       // Return cart/rewards data for caller to restore into useImpactCart
       return {
@@ -248,9 +160,9 @@ export function useDonationFormState(defaultCurrency: string) {
         donationAmounts,
         selectedProducts,
         tributeData,
-        donorInfo,
-        shippingAddress,
-        giftAidData
+        donorInfoSection,
+        shippingSection,
+        giftAidSection
       ],
       () => {
         syncToSession(getMultipleCart(), getSelectedRewards())
@@ -293,9 +205,11 @@ export function useDonationFormState(defaultCurrency: string) {
     donationAmounts,
     selectedProducts,
     tributeData,
-    donorInfo,
-    shippingAddress,
-    giftAidData,
+
+    // Form sections - direct binding to forms
+    donorInfoSection,
+    shippingSection,
+    giftAidSection,
 
     // Methods
     goToStep,

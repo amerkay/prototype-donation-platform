@@ -24,10 +24,10 @@ const tributeIcon = computed(() => {
 
 const tributeTitle = computed(() => {
   if (props.tribute.type === 'gift') {
-    return props.config.types.gift.label.replace(props.config.icons.gift + ' ', '')
+    return 'Gift to someone'
   }
   if (props.tribute.type === 'memorial') {
-    return props.config.types.memorial.label.replace(props.config.icons.memorial + ' ', '')
+    return 'In memory of someone'
   }
   return 'Tribute'
 })

@@ -99,16 +99,12 @@ export const giftAidFormSection: ConfigSectionDef = {
       descriptionClass: 'truncate',
       optional: true,
       visibleWhen: (values) => {
-        // Only show if Gift Aid consent is given AND shipping address exists AND shipping address is in UK
+        // Show if Gift Aid consent is given AND shipping address exists
         if (values.giftAidConsent !== true) return false
 
         // Check if shipping address has been collected
         const hasShippingAddress = !!(values['shippingAddress.address1'] as string | undefined)
-        if (!hasShippingAddress) return false
-
-        // Check if shipping address country is UK (required for Gift Aid)
-        const shippingCountry = values['shippingAddress.country'] as string | undefined
-        return shippingCountry === 'GB'
+        return hasShippingAddress
       },
       onChange: (value, allValues, setValue: SetFieldValueFn) => {
         // If toggled on, copy shipping address to homeAddress
@@ -142,19 +138,21 @@ export const giftAidFormSection: ConfigSectionDef = {
     homeAddress: {
       type: 'field-group',
       label: 'Home Address',
-      description: 'Required by HMRC for Gift Aid claims',
+      description:
+        'Required by HMRC for Gift Aid claims (UK taxpayers living abroad can use their overseas address)',
       visibleWhen: (values) => {
         // Show if Gift Aid consent is given AND not using shipping address
         return values.giftAidConsent === true && values.useSameAsShipping !== true
       },
-      fields: createAddressFields(undefined, 'billing', 'GB'),
+      fields: createAddressFields(undefined, 'billing'),
       isNoSeparatorAfter: true
     },
 
     divider: {
       type: 'separator',
-      orientation: 'horizontal',
       class: 'my-6',
+      // visible only when GBP currency
+      visibleWhen: (values) => values.currency === 'GBP',
       isNoSeparatorAfter: true
     },
 
