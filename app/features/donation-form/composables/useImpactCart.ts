@@ -1,165 +1,131 @@
 import { ref, computed } from 'vue'
 import type { Product, CartItem, TributeData } from '@/lib/common/types'
 
-// Re-export types for backward compatibility
 export type { Product, CartItem, TributeData }
 
-const onceCart = ref<CartItem[]>([])
-const monthlyCart = ref<CartItem[]>([])
-const multipleCart = ref<CartItem[]>([])
+type Frequency = 'once' | 'monthly' | 'multiple'
+type RecurringFrequency = 'monthly' | 'yearly'
+
+const carts = {
+  once: ref<CartItem[]>([]),
+  monthly: ref<CartItem[]>([]),
+  multiple: ref<CartItem[]>([])
+}
 
 export const useImpactCart = () => {
-  const getCartByFrequency = (frequency: 'once' | 'monthly' | 'multiple') => {
-    if (frequency === 'once') return onceCart
-    if (frequency === 'monthly') return monthlyCart
-    return multipleCart
-  }
+  // Shared utilities
+  const getCart = (frequency: Frequency) => carts[frequency]
+  const currentCart = (frequency: Frequency) => getCart(frequency).value
 
-  const currentCart = (frequency: 'once' | 'monthly' | 'multiple') => {
-    return getCartByFrequency(frequency).value
-  }
+  const calculateTotal = (items: CartItem[]) =>
+    items.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0)
 
-  const cartTotal = (frequency: 'once' | 'monthly' | 'multiple') => {
-    return currentCart(frequency).reduce((sum, item) => {
-      const price = item.price || 0
-      const quantity = item.quantity || 1
-      return sum + price * quantity
-    }, 0)
-  }
+  const filterByFrequency = (items: CartItem[], ...frequencies: string[]) =>
+    items.filter((item) => frequencies.includes(item.frequency))
 
-  const recurringTotal = computed(() => {
-    return multipleCart.value
-      .filter((item) => ['monthly', 'yearly'].includes(item.frequency))
-      .reduce((sum, item) => {
-        const price = item.price || 0
-        const quantity = item.quantity || 1
-        return sum + price * quantity
-      }, 0)
-  })
+  // Computed totals
+  const cartTotal = (frequency: Frequency) => calculateTotal(currentCart(frequency))
 
-  const oneTimeTotal = computed(() => {
-    return multipleCart.value
-      .filter((item) => item.frequency === 'once')
-      .reduce((sum, item) => {
-        const price = item.price || 0
-        const quantity = item.quantity || 1
-        return sum + price * quantity
-      }, 0)
-  })
+  const oneTimeTotal = computed(() =>
+    calculateTotal(filterByFrequency(carts.multiple.value, 'once'))
+  )
 
-  const monthlyTotal = computed(() => {
-    return multipleCart.value
-      .filter((item) => item.frequency === 'monthly')
-      .reduce((sum, item) => {
-        const price = item.price || 0
-        const quantity = item.quantity || 1
-        return sum + price * quantity
-      }, 0)
-  })
+  const monthlyTotal = computed(() =>
+    calculateTotal(filterByFrequency(carts.multiple.value, 'monthly'))
+  )
 
-  const yearlyTotal = computed(() => {
-    return multipleCart.value
-      .filter((item) => item.frequency === 'yearly')
-      .reduce((sum, item) => {
-        const price = item.price || 0
-        const quantity = item.quantity || 1
-        return sum + price * quantity
-      }, 0)
-  })
+  const yearlyTotal = computed(() =>
+    calculateTotal(filterByFrequency(carts.multiple.value, 'yearly'))
+  )
 
-  const activeRecurringFrequency = computed<'monthly' | 'yearly' | null>(() => {
-    const items = multipleCart.value
+  const recurringTotal = computed(() =>
+    calculateTotal(filterByFrequency(carts.multiple.value, 'monthly', 'yearly'))
+  )
+
+  const activeRecurringFrequency = computed<RecurringFrequency | null>(() => {
+    const items = carts.multiple.value
     if (items.some((item) => item.frequency === 'monthly')) return 'monthly'
     if (items.some((item) => item.frequency === 'yearly')) return 'yearly'
     return null
   })
 
-  const canAddRecurringFrequency = (frequency: 'monthly' | 'yearly') => {
-    const active = activeRecurringFrequency.value
-    return !active || active === frequency
-  }
+  const canAddRecurringFrequency = (frequency: RecurringFrequency) =>
+    !activeRecurringFrequency.value || activeRecurringFrequency.value === frequency
+
+  // Cart operations
+  const findItem = (frequency: Frequency, itemId: string, addedAt: number) =>
+    currentCart(frequency).find((i) => i.id === itemId && i.addedAt === addedAt)
 
   const addToCart = (
     product: Product,
     price: number,
-    frequency: 'once' | 'monthly' | 'multiple' = 'multiple',
+    frequency: Frequency = 'multiple',
     quantity?: number,
     tribute?: TributeData
   ) => {
     const cartItem: CartItem = { ...product, price, addedAt: Date.now(), quantity, tribute }
-    const cart = getCartByFrequency(frequency)
-    cart.value.push(cartItem)
+    getCart(frequency).value.push(cartItem)
     return cartItem
   }
 
-  const removeFromCart = (
+  const removeFromCart = (itemId: string, addedAt: number, frequency: Frequency = 'multiple') => {
+    const cart = getCart(frequency)
+    cart.value = cart.value.filter((item) => !(item.id === itemId && item.addedAt === addedAt))
+  }
+
+  const updateCartItem = <K extends keyof CartItem>(
+    frequency: Frequency,
     itemId: string,
     addedAt: number,
-    frequency: 'once' | 'monthly' | 'multiple' = 'multiple'
+    key: K,
+    value: CartItem[K]
   ) => {
-    const cart = getCartByFrequency(frequency)
-    cart.value = cart.value.filter((item) => !(item.id === itemId && item.addedAt === addedAt))
+    const item = findItem(frequency, itemId, addedAt)
+    if (item) item[key] = value
   }
 
   const updateCartItemPrice = (
     itemId: string,
     addedAt: number,
     newPrice: number,
-    frequency: 'once' | 'monthly' | 'multiple' = 'multiple'
-  ) => {
-    const item = currentCart(frequency).find((i) => i.id === itemId && i.addedAt === addedAt)
-    if (item) {
-      item.price = newPrice
-    }
-  }
+    frequency: Frequency = 'multiple'
+  ) => updateCartItem(frequency, itemId, addedAt, 'price', newPrice)
 
   const updateCartItemQuantity = (
     itemId: string,
     addedAt: number,
     newQuantity: number,
-    frequency: 'once' | 'monthly' | 'multiple' = 'multiple'
-  ) => {
-    const item = currentCart(frequency).find((i) => i.id === itemId && i.addedAt === addedAt)
-    if (item) {
-      item.quantity = newQuantity
-    }
-  }
+    frequency: Frequency = 'multiple'
+  ) => updateCartItem(frequency, itemId, addedAt, 'quantity', newQuantity)
 
   const updateCartItemTribute = (
     itemId: string,
     addedAt: number,
     tribute: TributeData,
-    frequency: 'once' | 'monthly' | 'multiple' = 'multiple'
-  ) => {
-    const item = currentCart(frequency).find((i) => i.id === itemId && i.addedAt === addedAt)
-    if (item) {
-      item.tribute = tribute
-    }
-  }
+    frequency: Frequency = 'multiple'
+  ) => updateCartItem(frequency, itemId, addedAt, 'tribute', tribute)
 
-  const clearCart = (frequency?: 'once' | 'monthly' | 'multiple') => {
+  const clearCart = (frequency?: Frequency) => {
     if (frequency) {
-      getCartByFrequency(frequency).value = []
+      getCart(frequency).value = []
     } else {
-      onceCart.value = []
-      monthlyCart.value = []
-      multipleCart.value = []
+      Object.values(carts).forEach((cart) => (cart.value = []))
     }
   }
 
   const clearRecurringItems = () => {
-    multipleCart.value = multipleCart.value.filter((item) => item.frequency === 'once')
+    carts.multiple.value = filterByFrequency(carts.multiple.value, 'once')
   }
 
   const restoreState = (cartItems: CartItem[]) => {
-    multipleCart.value = cartItems
+    carts.multiple.value = cartItems
   }
 
   return {
     // State
-    onceCart,
-    monthlyCart,
-    multipleCart,
+    onceCart: carts.once,
+    monthlyCart: carts.monthly,
+    multipleCart: carts.multiple,
 
     // Computed
     recurringTotal,
