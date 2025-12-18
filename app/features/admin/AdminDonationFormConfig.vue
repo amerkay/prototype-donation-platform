@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import FormRenderer from '@/features/form-builder/FormRenderer.vue'
-import { createFormConfigSection } from '../donation-form/forms/form-config'
+import { createFormConfigSection } from '../donation-form/forms/donation-form-config'
 import { createMultipleProductsConfigSection } from '../donation-form/impact-cart/forms/impact-cart-config'
 import { createProductSelectorConfigSection } from '../donation-form/product-selector/forms/product-selector-config'
 import { createRewardsConfigSection } from '../donation-form/rewards/forms/rewards-config'

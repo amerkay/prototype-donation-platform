@@ -20,6 +20,7 @@ export function createRewardsConfigSection(): ConfigSectionDef {
       chooseProducts: {
         type: 'field-group',
         label: 'Choose gift products',
+        visibleWhen: (values) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
         badgeLabel: 'On my TODO list',

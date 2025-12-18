@@ -20,6 +20,7 @@ export function createProductSelectorConfigSection(): ConfigSectionDef {
       productList: {
         type: 'field-group',
         label: 'Products Available',
+        visibleWhen: (values) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
         badgeLabel: 'On my TODO list',

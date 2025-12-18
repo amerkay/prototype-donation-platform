@@ -20,6 +20,7 @@ export function createTributeConfigSection(): ConfigSectionDef {
       ecardTemplate: {
         type: 'field-group',
         label: 'eCard Template',
+        visibleWhen: (values) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
         badgeLabel: 'On my TODO list',
