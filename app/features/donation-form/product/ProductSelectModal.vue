@@ -10,9 +10,12 @@ interface Props {
   title: string
   description: string
   noProductsMessage: string
+  selectedProductIds?: string[]
 }
 
-defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  selectedProductIds: () => []
+})
 
 const emit = defineEmits<{
   select: [product: Product]
@@ -44,6 +47,8 @@ defineExpose({
           :key="product.id"
           :product="product"
           :currency="currency"
+          icon="lucide:check"
+          :active="props.selectedProductIds.includes(product.id)"
           @click="handleSelect(product)"
         />
         <div v-if="products.length === 0" class="py-12 text-center text-muted-foreground">

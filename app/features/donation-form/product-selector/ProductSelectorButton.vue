@@ -45,12 +45,16 @@ const productModalTitle = computed(() => {
 })
 
 const productModalDescription = computed(() => {
-  const { entity, action } = props.selectorConfig.config
+  const { entity } = props.selectorConfig.config
   return `Choose ${entity.singular === entity.plural ? entity.singular.toLowerCase() : 'an ' + entity.singular.toLowerCase()} to support with a ${props.frequency} donation`
 })
 
 const productNoProductsMessage = computed(() => {
   return `No ${props.frequency} ${props.selectorConfig.config.action.noun} products available`
+})
+
+const selectedProductIds = computed(() => {
+  return props.selectedProduct ? [props.selectedProduct.id] : []
 })
 
 // Methods
@@ -104,6 +108,7 @@ defineExpose({
       :title="productModalTitle"
       :description="productModalDescription"
       :no-products-message="productNoProductsMessage"
+      :selected-product-ids="selectedProductIds"
       @select="handleProductSelect"
     />
   </template>

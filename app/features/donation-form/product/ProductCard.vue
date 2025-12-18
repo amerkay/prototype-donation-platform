@@ -5,9 +5,14 @@ import type { Product } from '@/lib/common/types'
 interface Props {
   product: Product
   currency: string
+  icon?: string
+  active?: boolean
 }
 
-defineProps<Props>()
+withDefaults(defineProps<Props>(), {
+  icon: 'lucide:plus',
+  active: false
+})
 
 const emit = defineEmits<{
   click: []
@@ -19,7 +24,8 @@ const { getCurrencySymbol } = useCurrency()
 <template>
   <button
     type="button"
-    class="w-full rounded-lg border bg-card p-3 transition-all hover:shadow-sm text-left"
+    class="w-full rounded-lg border p-3 transition-all text-left"
+    :class="active ? 'bg-primary/10 border-primary hover:bg-primary/15' : 'bg-card hover:shadow-sm'"
     @click="emit('click')"
   >
     <div class="flex items-center gap-2 sm:gap-3">
@@ -38,20 +44,7 @@ const { getCurrencySymbol } = useCurrency()
       <div
         class="shrink-0 flex items-center justify-center w-8 h-8 rounded-md bg-primary text-primary-foreground"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M5 12h14" />
-          <path d="M12 5v14" />
-        </svg>
+        <Icon :name="icon" class="size-4" />
       </div>
     </div>
   </button>
