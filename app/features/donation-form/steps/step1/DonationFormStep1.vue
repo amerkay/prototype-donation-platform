@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, watch, inject } from 'vue'
+import type { Ref } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
@@ -7,8 +8,13 @@ import DonationFormSingle from './DonationFormSingle.vue'
 import DonationFormMultiple from './DonationFormMultiple.vue'
 import type { FormConfig, Product, TributeData } from '@/lib/common/types'
 import { formConfig as defaultConfig } from '@/features/donation-form/api-sample-response-form-config'
-import { products } from '@/features/donation-form/api-sample-response-products'
 import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
+
+// Inject products from parent
+const products = inject<Ref<Product[]>>('products')
+if (!products) {
+  throw new Error('products not provided')
+}
 
 interface Props {
   config?: FormConfig
@@ -102,7 +108,7 @@ const sliderMaxPrice = computed(() => {
   return convertPrice(cfg.customAmount.max, selectedCurrency.value)
 })
 
-const rewards = computed(() => products.filter((p) => p.isReward))
+const rewards = computed(() => products.value.filter((p: Product) => p.isReward))
 
 // Helper to cast frequency type safely
 const castFrequency = (freq: string): 'once' | 'monthly' | 'yearly' => {

@@ -5,6 +5,7 @@ import { createMultipleProductsConfigSection } from '../donation-form/impact-car
 import { createProductSelectorConfigSection } from '../donation-form/product-selector/forms/product-selector-config'
 import { createRewardsConfigSection } from '../donation-form/rewards/forms/rewards-config'
 import { createShippingNoticeConfigSection } from '../donation-form/shipping-notice/forms/shipping-notice-config'
+import { createCoverCostsConfigSection } from '../donation-form/cover-costs/forms/cover-costs-config'
 import { createTributeConfigSection } from '../donation-form/tribute/forms/tribute-config'
 import type { FormConfig } from '@/lib/common/types'
 
@@ -24,6 +25,7 @@ const impactCartSection = createMultipleProductsConfigSection()
 const productSelectorSection = createProductSelectorConfigSection()
 const rewardsSection = createRewardsConfigSection()
 const shippingNoticeSection = createShippingNoticeConfigSection()
+const coverCostsSection = createCoverCostsConfigSection()
 const tributeSection = createTributeConfigSection()
 
 // Update handlers for each section
@@ -84,6 +86,20 @@ function handleShippingNoticeUpdate(value: Record<string, unknown>) {
         ...rest,
         ...(settings as Record<string, unknown>)
       } as FormConfig['features']['shippingNotice']
+    }
+  })
+}
+
+function handleCoverCostsUpdate(value: Record<string, unknown>) {
+  const { settings, ...rest } = value
+  emit('update:config', {
+    ...props.config,
+    features: {
+      ...props.config.features,
+      coverCosts: {
+        ...rest,
+        ...(settings as Record<string, unknown>)
+      } as FormConfig['features']['coverCosts']
     }
   })
 }
@@ -153,6 +169,21 @@ function handleTributeUpdate(value: Record<string, unknown>) {
           settings: { noticeText: config.features.shippingNotice.noticeText }
         }"
         @update:model-value="handleShippingNoticeUpdate"
+      />
+    </div>
+
+    <!-- Cover Costs -->
+    <div class="config-section">
+      <FormRenderer
+        :section="coverCostsSection"
+        :model-value="{
+          enabled: config.features.coverCosts.enabled,
+          settings: {
+            heading: config.features.coverCosts.heading,
+            description: config.features.coverCosts.description
+          }
+        }"
+        @update:model-value="handleCoverCostsUpdate"
       />
     </div>
 

@@ -96,6 +96,11 @@ export interface FormConfig {
       showNotice: boolean
       noticeText: string
     }
+    coverCosts: {
+      enabled: boolean
+      heading: string
+      description: string
+    }
     tribute: {
       enabled: boolean
       icons: {

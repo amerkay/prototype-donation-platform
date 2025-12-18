@@ -43,9 +43,9 @@ export const formConfig = {
     productSelector: {
       enabled: true,
       config: {
-        icon: '🦧',
-        entity: { singular: 'Orangutan', plural: 'Orangutans' },
-        action: { verb: 'Adopt', noun: 'adoption' }
+        icon: '🐘',
+        entity: { singular: 'Elephant', plural: 'Elephants' },
+        action: { verb: 'Sponsor', noun: 'sponsorship' }
       }
     },
     rewards: {
@@ -63,9 +63,9 @@ export const formConfig = {
     },
     coverCosts: {
       enabled: true,
-      heading: 'Send 100% to the Orangutans',
+      heading: 'Send 100% to the Elephants',
       description:
-        'By covering operational costs, your entire donation protects orangutans and their habitat.'
+        'By covering operational costs, your entire donation provides care and comfort for our elderly elephants.'
     },
     tribute: {
       enabled: true,

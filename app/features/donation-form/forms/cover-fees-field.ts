@@ -39,16 +39,24 @@ export function createCoverFeesField(options?: {
   minValue?: number
   maxValue?: number
   visibilityCondition?: (values: Record<string, unknown>) => boolean
+  heading?: string
+  description?: string
 }): FieldMetaMap {
-  const { minValue = 0, maxValue = 30, visibilityCondition } = options || {}
+  const {
+    minValue = 0,
+    maxValue = 30,
+    visibilityCondition,
+    heading = 'Send 100% to the Cause',
+    description = 'By covering operational costs, your entire donation goes directly to the cause.'
+  } = options || {}
 
   return {
     coverFeesInfo: {
       type: 'card',
-      label: 'Send 100% to the Orangutans',
+      label: heading,
       content: `
         <p class="text-sm text-muted-foreground mb-2">
-          By covering operational costs, your entire donation protects orangutans and their habitat.
+          ${description}
           <button 
             type="button" 
             class="text-primary underline-offset-4 hover:underline"

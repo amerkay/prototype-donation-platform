@@ -14,13 +14,16 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { formConfig as sampleConfig } from '~/features/donation-form/api-sample-response-form-config'
-import type { FormConfig } from '@/lib/common/types'
+import { products as sampleProducts } from '~/features/donation-form/api-sample-response-products'
+import type { FormConfig, Product } from '@/lib/common/types'
 
 // Create reactive config that both DonationFormSettings and DonationFormPreview will share
 const formConfig = ref<FormConfig>(structuredClone(sampleConfig))
+const products = ref<Product[]>(sampleProducts)
 
-// Provide config to all child components
+// Provide config and products to all child components
 provide('formConfig', formConfig)
+provide('products', products)
 </script>
 
 <template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, watch, ref, nextTick } from 'vue'
+import { onMounted, watch, ref, nextTick, inject } from 'vue'
+import type { Ref } from 'vue'
 import ProgressBar from '~/features/donation-form/components/ProgressBar.vue'
 import OrderSummary from '~/features/donation-form/components/OrderSummary.vue'
 import DonationFormStep1 from '~/features/donation-form/steps/step1/DonationFormStep1.vue'
@@ -7,8 +8,13 @@ import DonationFormStep2 from '~/features/donation-form/steps/step2/DonationForm
 import DonationFormStep3 from '~/features/donation-form/steps/step3/DonationFormStep3.vue'
 import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
 import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
-import { products } from '~/features/donation-form/api-sample-response-products'
-import type { FormConfig } from '~/lib/common/types'
+import type { FormConfig, Product } from '~/lib/common/types'
+
+// Inject products from parent
+const products = inject<Ref<Product[]>>('products')
+if (!products) {
+  throw new Error('products not provided')
+}
 
 interface Props {
   config?: FormConfig
@@ -47,7 +53,7 @@ const needsShipping = computed(() => {
   const currentTabRewards =
     selectedRewards.value[activeTab.value as 'once' | 'monthly' | 'yearly' | 'multiple']
   return Array.from(currentTabRewards).some((id) => {
-    const reward = products.find((p) => p.id === id)
+    const reward = products.value.find((p: Product) => p.id === id)
     return reward?.isShippingRequired
   })
 })

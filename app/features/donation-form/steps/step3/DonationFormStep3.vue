@@ -1,11 +1,24 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
+import type { Ref } from 'vue'
 import NextButton from '~/features/donation-form/components/NextButton.vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
 import CoverFeesUpsellModal from '~/features/donation-form/components/CoverFeesUpsellModal.vue'
-import { step3FormSection } from '../../forms/step3-form'
+import { createStep3FormSection } from '../../forms/step3-form'
 import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
 import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
+import type { FormConfig } from '@/lib/common/types'
+
+// Inject config from parent
+const formConfig = inject<Ref<FormConfig>>('formConfig')
+if (!formConfig) {
+  throw new Error('formConfig not provided')
+}
+
+// Create form section dynamically with config
+const step3FormSection = computed(() =>
+  createStep3FormSection(formConfig.value.features.coverCosts)
+)
 
 const emit = defineEmits<{
   complete: []
