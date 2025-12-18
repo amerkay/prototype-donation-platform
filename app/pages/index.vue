@@ -1,5 +1,3 @@
-<script lang="ts"></script>
-
 <script setup lang="ts">
 import { ref, provide } from 'vue'
 import AppSidebar from '~/features/admin/sidebar/AppSidebar.vue'

@@ -149,7 +149,7 @@ const handleBack = () => {
 
       <!-- Step 4: Payment (TODO) -->
       <div v-if="currentStep === 4" class="rounded-lg border p-8 text-center text-muted-foreground">
-        <p>Step 4: Payment</p>
+        <p>Step 4: Total &amp; Payment</p>
         <p class="mt-2 text-sm">(Coming soon)</p>
       </div>
     </div>

@@ -4,11 +4,9 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: false },
+  ssr: true,
 
-  runtimeConfig: {
-    // Private keys (server-side only)
-    locationiqApiKey: process.env.LOCATIONIQ_API_KEY || ''
-  },
+  // runtimeConfig: {},
 
   shadcn: {
     /**

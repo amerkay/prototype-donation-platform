@@ -78,8 +78,6 @@ const handleNext = () => {
     </div>
 
     <!-- Next Button -->
-    <NextButton :form-refs="formRefsToValidate" @click="handleNext">
-      Continue to Payment
-    </NextButton>
+    <NextButton :form-refs="formRefsToValidate" @click="handleNext"> Next </NextButton>
   </div>
 </template>
