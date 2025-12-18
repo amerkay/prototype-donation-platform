@@ -2,6 +2,7 @@
 import { inject, computed } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
+import { cn } from '@/lib/utils'
 import type { TextFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 
 interface Props {
@@ -36,7 +37,7 @@ const handleEnterKey = (event: KeyboardEvent) => {
       :placeholder="meta.placeholder"
       :autocomplete="meta.autocomplete"
       :aria-invalid="!!errors.length"
-      :class="[meta.class, 'text-sm']"
+      :class="cn(meta.class, 'text-sm')"
       @update:model-value="
         (value) => (onFieldChange ? onFieldChange(value, field.onChange) : field.onChange(value))
       "

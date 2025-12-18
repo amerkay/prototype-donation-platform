@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, inject } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
+import { cn } from '@/lib/utils'
 import {
   ComboboxAnchor,
   ComboboxContent,

@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Field, FieldLabel, FieldDescription, FieldError } from '@/components/ui/field'
+import { cn } from '@/lib/utils'
 import type { ArrayFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 import FormField from '../FormField.vue'
 
@@ -53,12 +54,12 @@ function removeItem(index: number) {
 </script>
 
 <template>
-  <Field :data-invalid="!!errors.length" :class="[meta.class, 'space-y-3']">
+  <Field :data-invalid="!!errors.length" :class="cn(meta.class, 'space-y-3')">
     <FieldLabel v-if="meta.label" :class="meta.labelClass">
       {{ meta.label }}
       <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
     </FieldLabel>
-    <FieldDescription v-if="meta.description">
+    <FieldDescription v-if="meta.description" :class="meta.descriptionClass">
       {{ meta.description }}
     </FieldDescription>
 

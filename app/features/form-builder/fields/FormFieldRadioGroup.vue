@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { cn } from '@/lib/utils'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   FieldSet,
@@ -32,12 +33,14 @@ const fieldValue = computed(() => props.field.value as string | number | undefin
 <template>
   <FieldSet :data-invalid="!!errors.length">
     <FieldLegend v-if="meta.label" :class="meta.labelClass">{{ meta.label }}</FieldLegend>
-    <FieldDescription v-if="meta.description">{{ meta.description }}</FieldDescription>
+    <FieldDescription v-if="meta.description" :class="meta.descriptionClass">{{
+      meta.description
+    }}</FieldDescription>
     <RadioGroup
       :name="field.name"
       :model-value="fieldValue"
       :aria-invalid="!!errors.length"
-      :class="[meta.class, 'gap-4']"
+      :class="cn(meta.class, 'gap-4')"
       @update:model-value="
         (value) => (onFieldChange ? onFieldChange(value, field.onChange) : field.onChange(value))
       "

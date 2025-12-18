@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed, inject, provide, type Ref } from 'vue'
+import { cn } from '@/lib/utils'
 import { FieldSet, FieldLegend, FieldDescription, FieldError } from '@/components/ui/field'
 import { AccordionItem, AccordionContent, AccordionTrigger } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
@@ -119,11 +120,13 @@ watch(isOpen, (newIsOpen) => {
               <div class="flex items-center gap-2">
                 <h3
                   v-if="meta.legend || meta.label"
-                  :class="[
-                    meta.labelClass,
-                    'font-medium text-sm',
-                    { 'group-hover:underline': !meta.isDisabled }
-                  ]"
+                  :class="
+                    cn(
+                      meta.labelClass,
+                      'font-medium text-sm',
+                      !meta.isDisabled && 'group-hover:underline'
+                    )
+                  "
                 >
                   {{ meta.legend || meta.label }}
                 </h3>
@@ -135,7 +138,10 @@ watch(isOpen, (newIsOpen) => {
                   {{ meta.badgeLabel }}
                 </Badge>
               </div>
-              <p v-if="meta.description" class="text-muted-foreground text-xs mt-0.5">
+              <p
+                v-if="meta.description"
+                :class="cn('text-muted-foreground text-xs mt-0.5', meta.descriptionClass)"
+              >
                 {{ meta.description }}
               </p>
               <FieldError v-if="errors.length > 0" :errors="errors" class="mt-1" />
@@ -146,7 +152,7 @@ watch(isOpen, (newIsOpen) => {
           </div>
         </AccordionTrigger>
         <AccordionContent>
-          <div :class="['grid grid-cols-1 gap-3', meta.class]">
+          <div :class="cn('grid grid-cols-1 gap-3', meta.class)">
             <FormField
               v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
               :key="`${childFieldKey}-${index}`"
@@ -160,12 +166,14 @@ watch(isOpen, (newIsOpen) => {
 
     <!-- Non-collapsible version -->
     <FieldSet v-else class="gap-3">
-      <FieldLegend v-if="meta.legend || meta.label" :class="['mb-2', meta.labelClass]">{{
+      <FieldLegend v-if="meta.legend || meta.label" :class="cn('mb-2', meta.labelClass)">{{
         meta.legend || meta.label
       }}</FieldLegend>
-      <FieldDescription v-if="meta.description">{{ meta.description }}</FieldDescription>
+      <FieldDescription v-if="meta.description" :class="meta.descriptionClass">{{
+        meta.description
+      }}</FieldDescription>
       <FieldError v-if="errors.length > 0" :errors="errors" class="mb-3" />
-      <div :class="['grid grid-cols-1 gap-3', meta.class]">
+      <div :class="cn('grid grid-cols-1 gap-3', meta.class)">
         <FormField
           v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
           :key="`${childFieldKey}-${index}`"

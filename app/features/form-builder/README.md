@@ -203,7 +203,7 @@ email: {
   label: 'Email Address',
   labelClass: 'font-bold text-lg',  // Applied to <label>
   class: 'font-mono',                // Applied to <input>
-  classDescription: 'text-blue-600'  // Applied to description
+  descriptionClass: 'text-blue-600'  // Applied to description
 }
 ```
 

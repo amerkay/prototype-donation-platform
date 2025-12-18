@@ -22,11 +22,6 @@ function formatAddress(values: Record<string, unknown>, fieldPath = ''): string 
 
   if (parts.length === 0) return 'No address on file'
 
-  // Truncate if too long (keep first 2 and last item)
-  if (parts.length > 3) {
-    return `${parts[0]}, ${parts[1]}... ${parts[parts.length - 1]}`
-  }
-
   return parts.join(', ')
 }
 
@@ -99,8 +94,9 @@ export const giftAidFormSection: ConfigSectionDef = {
       description: (values) => {
         // Show truncated shipping address
         const shippingAddress = formatAddress(values, 'shippingAddress')
-        return `Your shipping address: ${shippingAddress}`
+        return `${shippingAddress}`
       },
+      descriptionClass: 'truncate',
       optional: true,
       visibleWhen: (values) => {
         // Only show if Gift Aid consent is given AND shipping address exists AND shipping address is in UK

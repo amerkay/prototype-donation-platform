@@ -2,6 +2,7 @@
 import { inject, computed } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/field'
+import { cn } from '@/lib/utils'
 import type { EmojiFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 
 interface Props {
@@ -49,13 +50,15 @@ const handleEnterKey = (event: KeyboardEvent) => {
       {{ meta.label }}
       <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
     </FieldLabel>
-    <FieldDescription v-if="meta.description">{{ meta.description }}</FieldDescription>
+    <FieldDescription v-if="meta.description" :class="meta.descriptionClass">{{
+      meta.description
+    }}</FieldDescription>
     <Input
       :id="name"
       :model-value="inputValue"
       :placeholder="meta.placeholder"
       :aria-invalid="!!errors.length"
-      :class="[meta.class, 'text-2xl text-center']"
+      :class="cn(meta.class, 'text-2xl text-center')"
       :maxlength="maxLength"
       @update:model-value="handleInput"
       @blur="field.onBlur"

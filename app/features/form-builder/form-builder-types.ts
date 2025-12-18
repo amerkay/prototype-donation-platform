@@ -48,7 +48,7 @@ export interface BaseFieldMeta {
   isNoSeparatorAfter?: boolean
   class?: string
   labelClass?: string
-  classDescription?: string
+  descriptionClass?: string
   autocomplete?: string // HTML autocomplete attribute
   rules?: z.ZodTypeAny | ((values: Record<string, unknown>) => z.ZodTypeAny)
   /**

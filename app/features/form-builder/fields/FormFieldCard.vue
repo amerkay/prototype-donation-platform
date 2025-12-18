@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue'
+import { cn } from '@/lib/utils'
 import type { CardFieldMeta } from '~/features/form-builder/form-builder-types'
 
 interface Props {
@@ -42,7 +43,10 @@ const resolvedDescription = computed(() => {
       <div v-if="meta.content" class="text-sm text-muted-foreground" v-html="meta.content" />
 
       <!-- Plain text description (fallback) -->
-      <p v-else-if="resolvedDescription" class="text-sm text-muted-foreground whitespace-pre-line">
+      <p
+        v-else-if="resolvedDescription"
+        :class="cn('text-sm text-muted-foreground whitespace-pre-line', meta.descriptionClass)"
+      >
         {{ resolvedDescription }}
       </p>
     </slot>

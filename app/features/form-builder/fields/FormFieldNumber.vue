@@ -36,7 +36,9 @@ const numberValue = computed(() => props.field.value as number | null | undefine
       {{ meta.label }}
       <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
     </FieldLabel>
-    <FieldDescription v-if="meta.description">{{ meta.description }}</FieldDescription>
+    <FieldDescription v-if="meta.description" :class="meta.descriptionClass">{{
+      meta.description
+    }}</FieldDescription>
     <NumberField
       :id="name"
       :model-value="numberValue"

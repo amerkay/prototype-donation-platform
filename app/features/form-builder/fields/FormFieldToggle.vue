@@ -31,11 +31,11 @@ const resolvedDescription = computed(() => {
 
 <template>
   <Field orientation="horizontal" class="mb-4">
-    <FieldContent>
+    <FieldContent class="min-w-0">
       <FieldLabel v-if="meta.label" :for="name" :class="meta.labelClass">
         {{ meta.label }}
       </FieldLabel>
-      <FieldDescription v-if="resolvedDescription" :class="meta.classDescription">
+      <FieldDescription v-if="resolvedDescription" :class="meta.descriptionClass">
         {{ resolvedDescription }}
       </FieldDescription>
     </FieldContent>

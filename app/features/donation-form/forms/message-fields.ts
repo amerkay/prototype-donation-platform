@@ -28,6 +28,7 @@ export function createMessageFields(
     isIncludeMessage: {
       type: 'toggle',
       label: 'Include a Message',
+      description: 'Why are you donating today?',
       optional: true,
       visibleWhen: visibilityCondition,
       isNoSeparatorAfter: true
