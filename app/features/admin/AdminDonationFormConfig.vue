@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, toRaw } from 'vue'
 import FormRenderer from '@/features/form-builder/FormRenderer.vue'
 import { createFormConfigSection } from '../donation-form/forms/donation-form-config'
 import { createMultipleProductsConfigSection } from '../donation-form/impact-cart/forms/impact-cart-config'
@@ -8,7 +8,6 @@ import { createRewardsConfigSection } from '../donation-form/rewards/forms/rewar
 import { createShippingNoticeConfigSection } from '../donation-form/shipping-notice/forms/shipping-notice-config'
 import { createCoverCostsConfigSection } from '../donation-form/cover-costs/forms/cover-costs-config'
 import { createTributeConfigSection } from '../donation-form/tribute/forms/tribute-config'
-import { getCurrencyData } from '../donation-form/composables/useCurrency'
 import type { FormConfig } from '@/lib/common/types'
 
 interface Props {
@@ -21,23 +20,15 @@ const emit = defineEmits<{
   'update:config': [value: FormConfig]
 }>()
 
-// Get currency data from single source of truth
-const currencyData = getCurrencyData()
-const CURRENCY_DATA = Object.fromEntries(
-  currencyData.map((c) => [c.code, { label: c.label, symbol: c.symbol }])
-)
-
-// Transform supportedCurrencies from API format to admin format (codes only)
+// Use toRaw to unwrap reactive proxies and make nested arrays mutable
+// Then deep clone to ensure complete mutability without reactive tracking
 const formModelValue = computed(() => {
-  const currencyCodes = props.config.localization.supportedCurrencies.map((c) => c.code)
-  return {
-    form: props.config.form,
-    localization: {
-      defaultCurrency: props.config.localization.defaultCurrency,
-      supportedCurrencies: currencyCodes
-    },
-    pricing: props.config.pricing
+  const raw = {
+    form: toRaw(props.config.form),
+    localization: toRaw(props.config.localization),
+    pricing: toRaw(props.config.pricing)
   }
+  return JSON.parse(JSON.stringify(raw))
 })
 
 // Create all config sections
@@ -51,28 +42,11 @@ const tributeSection = createTributeConfigSection()
 
 // Update handlers for each section
 function handleFormUpdate(value: Record<string, unknown>) {
-  const form = value.form as FormConfig['form']
-  const localizationInput = value.localization as {
-    defaultCurrency: string
-    supportedCurrencies: string[]
-  }
-  const pricing = value.pricing as FormConfig['pricing']
-
-  // Transform supportedCurrencies from codes to full objects
-  const supportedCurrencies = localizationInput.supportedCurrencies.map((code) => ({
-    code,
-    label: CURRENCY_DATA[code]?.label || `${code}`,
-    symbol: CURRENCY_DATA[code]?.symbol || code
-  }))
-
   emit('update:config', {
     ...props.config,
-    form,
-    localization: {
-      defaultCurrency: localizationInput.defaultCurrency,
-      supportedCurrencies
-    },
-    pricing
+    form: value.form as FormConfig['form'],
+    localization: value.localization as FormConfig['localization'],
+    pricing: value.pricing as FormConfig['pricing']
   })
 }
 

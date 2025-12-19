@@ -57,17 +57,22 @@ export function createFormConfigSection(): ConfigSectionDef {
             searchPlaceholder: 'Search currencies...',
             multiple: true,
             options: CURRENCY_OPTIONS,
-            rules: z.array(z.string()).min(1, 'At least one currency must be supported'),
+            rules: z
+              .array(z.object({ code: z.string(), name: z.string(), symbol: z.string() }))
+              .min(1, 'At least one currency must be supported'),
             onChange: (value, allValues, setValue) => {
-              const defaultCurrency = allValues.defaultCurrency as string | undefined
-              const supportedCurrencies = value as string[]
+              const defaultCurrency = allValues.defaultCurrency as { code: string } | undefined
+              const supportedCurrencies = value as Array<{ code: string }>
 
               if (supportedCurrencies.length > 0) {
-                if (!defaultCurrency || !supportedCurrencies.includes(defaultCurrency)) {
+                if (
+                  !defaultCurrency ||
+                  !supportedCurrencies.some((c) => c.code === defaultCurrency.code)
+                ) {
                   setValue('localization.defaultCurrency', supportedCurrencies[0])
                 }
               } else {
-                setValue('localization.defaultCurrency', '')
+                setValue('localization.defaultCurrency', null)
               }
             }
           },
@@ -80,10 +85,12 @@ export function createFormConfigSection(): ConfigSectionDef {
             searchPlaceholder: 'Search currencies...',
             options: (values) => {
               // Only show currencies that are in the supported list
-              const supportedCurrencies = (values.supportedCurrencies as string[]) || []
-              return CURRENCY_OPTIONS.filter((opt) => supportedCurrencies.includes(opt.value))
+              const supportedCurrencies =
+                (values.supportedCurrencies as Array<{ code: string }>) || []
+              const supportedCodes = supportedCurrencies.map((c) => c.code)
+              return CURRENCY_OPTIONS.filter((opt) => supportedCodes.includes(opt.value))
             },
-            rules: z.string().min(1, 'Default currency is required')
+            rules: z.object({ code: z.string(), name: z.string(), symbol: z.string() })
           }
         }
       },
@@ -101,75 +108,159 @@ export function createFormConfigSection(): ConfigSectionDef {
             placeholder: 'Select base currency',
             searchPlaceholder: 'Search currencies...',
             options: CURRENCY_OPTIONS,
-            rules: z.string().length(3, 'Must be 3 characters')
+            rules: z.object({ code: z.string(), name: z.string(), symbol: z.string() })
           },
           frequencies: {
-            type: 'array',
+            type: 'tabs',
             label: 'Donation Frequencies',
             description: 'Configure available donation frequencies and their preset amounts',
-            itemField: {
-              type: 'field-group',
-
-              fields: {
-                value: {
-                  type: 'select',
-                  label: 'Frequency Type',
-                  placeholder: 'Select frequency',
-                  options: [
-                    { value: 'once', label: 'One-time' },
-                    { value: 'monthly', label: 'Monthly' },
-                    { value: 'yearly', label: 'Yearly' }
-                  ],
-                  rules: z.enum(['once', 'monthly', 'yearly'])
-                },
-                label: {
-                  type: 'text',
-                  label: 'Display Label',
-                  placeholder: 'One-time',
-                  rules: z.string().min(1, 'Label is required')
-                },
-                presetAmounts: {
-                  type: 'array',
-                  label: 'Preset Amounts',
-                  description: 'Preset donation amounts (in base currency)',
-                  itemField: {
-                    type: 'number',
-                    label: 'Amount',
-                    placeholder: '25',
-                    min: 1,
-                    rules: z.number().min(1, 'Must be at least 1')
+            defaultValue: 'once',
+            tabs: [
+              {
+                value: 'once',
+                label: 'One-time',
+                fields: {
+                  label: {
+                    type: 'text',
+                    label: 'Display Label',
+                    placeholder: 'One-time',
+                    rules: z.string().min(1, 'Label is required')
                   },
-                  addButtonText: 'Add Amount',
-                  rules: z.array(z.number().min(1)).min(1, 'At least one preset required')
-                },
-                customAmount: {
-                  type: 'field-group',
-                  label: 'Custom Amount Range',
-                  class: 'grid grid-cols-2 gap-x-3',
-                  fields: {
-                    min: {
+                  presetAmounts: {
+                    type: 'array',
+                    label: 'Preset Amounts',
+                    description: 'Preset donation amounts (in base currency)',
+                    itemField: {
                       type: 'number',
-                      label: 'Minimum',
-                      placeholder: '1',
+                      label: 'Amount',
+                      placeholder: '25',
                       min: 1,
                       rules: z.number().min(1, 'Must be at least 1')
                     },
-                    max: {
+                    addButtonText: 'Add Amount',
+                    rules: z.array(z.number().min(1)).min(1, 'At least one preset required')
+                  },
+                  customAmount: {
+                    type: 'field-group',
+                    label: 'Custom Amount Range',
+                    class: 'grid grid-cols-2 gap-x-3',
+                    fields: {
+                      min: {
+                        type: 'number',
+                        label: 'Minimum',
+                        placeholder: '1',
+                        min: 1,
+                        rules: z.number().min(1, 'Must be at least 1')
+                      },
+                      max: {
+                        type: 'number',
+                        label: 'Maximum',
+                        placeholder: '1000000',
+                        min: 1,
+                        rules: z.number().min(1, 'Must be at least 1')
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                value: 'monthly',
+                label: 'Monthly',
+                fields: {
+                  label: {
+                    type: 'text',
+                    label: 'Display Label',
+                    placeholder: 'Monthly',
+                    rules: z.string().min(1, 'Label is required')
+                  },
+                  presetAmounts: {
+                    type: 'array',
+                    label: 'Preset Amounts',
+                    description: 'Preset donation amounts (in base currency)',
+                    itemField: {
                       type: 'number',
-                      label: 'Maximum',
-                      placeholder: '1000000',
+                      label: 'Amount',
+                      placeholder: '25',
                       min: 1,
                       rules: z.number().min(1, 'Must be at least 1')
+                    },
+                    addButtonText: 'Add Amount',
+                    rules: z.array(z.number().min(1)).min(1, 'At least one preset required')
+                  },
+                  customAmount: {
+                    type: 'field-group',
+                    label: 'Custom Amount Range',
+                    class: 'grid grid-cols-2 gap-x-3',
+                    fields: {
+                      min: {
+                        type: 'number',
+                        label: 'Minimum',
+                        placeholder: '1',
+                        min: 1,
+                        rules: z.number().min(1, 'Must be at least 1')
+                      },
+                      max: {
+                        type: 'number',
+                        label: 'Maximum',
+                        placeholder: '1000000',
+                        min: 1,
+                        rules: z.number().min(1, 'Must be at least 1')
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                value: 'yearly',
+                label: 'Yearly',
+                fields: {
+                  label: {
+                    type: 'text',
+                    label: 'Display Label',
+                    placeholder: 'Yearly',
+                    rules: z.string().min(1, 'Label is required')
+                  },
+                  presetAmounts: {
+                    type: 'array',
+                    label: 'Preset Amounts',
+                    description: 'Preset donation amounts (in base currency)',
+                    itemField: {
+                      type: 'number',
+                      label: 'Amount',
+                      placeholder: '25',
+                      min: 1,
+                      rules: z.number().min(1, 'Must be at least 1')
+                    },
+                    addButtonText: 'Add Amount',
+                    rules: z.array(z.number().min(1)).min(1, 'At least one preset required')
+                  },
+                  customAmount: {
+                    type: 'field-group',
+                    label: 'Custom Amount Range',
+                    class: 'grid grid-cols-2 gap-x-3',
+                    fields: {
+                      min: {
+                        type: 'number',
+                        label: 'Minimum',
+                        placeholder: '1',
+                        min: 1,
+                        rules: z.number().min(1, 'Must be at least 1')
+                      },
+                      max: {
+                        type: 'number',
+                        label: 'Maximum',
+                        placeholder: '1000000',
+                        min: 1,
+                        rules: z.number().min(1, 'Must be at least 1')
+                      }
                     }
                   }
                 }
               }
-            },
-            addButtonText: 'Add Frequency',
-            rules: z
-              .array(
-                z.object({
-                  value: z.enum(['once', 'monthly', 'yearly']),
+            ],
+            rules: z.object({
+              once: z
+                .object({
                   label: z.string().min(1),
                   presetAmounts: z.array(z.number()).min(1),
                   customAmount: z.object({
@@ -177,8 +268,28 @@ export function createFormConfigSection(): ConfigSectionDef {
                     max: z.number().min(1)
                   })
                 })
-              )
-              .min(1, 'At least one frequency must be configured')
+                .optional(),
+              monthly: z
+                .object({
+                  label: z.string().min(1),
+                  presetAmounts: z.array(z.number()).min(1),
+                  customAmount: z.object({
+                    min: z.number().min(1),
+                    max: z.number().min(1)
+                  })
+                })
+                .optional(),
+              yearly: z
+                .object({
+                  label: z.string().min(1),
+                  presetAmounts: z.array(z.number()).min(1),
+                  customAmount: z.object({
+                    min: z.number().min(1),
+                    max: z.number().min(1)
+                  })
+                })
+                .optional()
+            })
           }
         }
       }

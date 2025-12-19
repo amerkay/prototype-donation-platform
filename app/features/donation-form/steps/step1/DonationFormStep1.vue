@@ -51,12 +51,16 @@ const CURRENCIES = computed(() =>
     label: c.label
   }))
 )
-const BASE_FREQUENCIES = computed(() =>
-  formConfig.value.pricing.frequencies.map((f) => ({
-    value: f.value,
-    label: f.label
+
+// Convert frequencies object to array format for UI
+const BASE_FREQUENCIES = computed(() => {
+  const freqs = formConfig.value.pricing.frequencies
+  return Object.entries(freqs).map(([value, config]) => ({
+    value,
+    label: config.label
   }))
-)
+})
+
 const ALLOW_MULTIPLE_ITEMS = computed(() => formConfig.value.features.impactCart.enabled)
 const INITIAL_PRODUCTS_DISPLAYED = computed(
   () => formConfig.value.features.impactCart.initialDisplay
@@ -89,21 +93,24 @@ const enabledFrequencies = allFrequencies
 
 const availableAmounts = computed(() => {
   if (selectedFrequency.value === 'multiple') return []
-  const cfg = formConfig.value.pricing.frequencies.find((f) => f.value === selectedFrequency.value)
+  const cfg =
+    formConfig.value.pricing.frequencies[selectedFrequency.value as 'once' | 'monthly' | 'yearly']
   if (!cfg) return []
-  return cfg.presetAmounts.map((amt) => convertPrice(amt, selectedCurrency.value))
+  return cfg.presetAmounts.map((amt: number) => convertPrice(amt, selectedCurrency.value))
 })
 
 const sliderMinPrice = computed(() => {
   if (selectedFrequency.value === 'multiple') return 0
-  const cfg = formConfig.value.pricing.frequencies.find((f) => f.value === selectedFrequency.value)
+  const cfg =
+    formConfig.value.pricing.frequencies[selectedFrequency.value as 'once' | 'monthly' | 'yearly']
   if (!cfg) return 0
   return convertPrice(cfg.customAmount.min, selectedCurrency.value)
 })
 
 const sliderMaxPrice = computed(() => {
   if (selectedFrequency.value === 'multiple') return 0
-  const cfg = formConfig.value.pricing.frequencies.find((f) => f.value === selectedFrequency.value)
+  const cfg =
+    formConfig.value.pricing.frequencies[selectedFrequency.value as 'once' | 'monthly' | 'yearly']
   if (!cfg) return 0
   return convertPrice(cfg.customAmount.max, selectedCurrency.value)
 })

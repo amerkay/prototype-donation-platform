@@ -132,6 +132,10 @@ const data = {
           url: '#'
         },
         {
+          title: 'Currency',
+          url: '#'
+        },
+        {
           title: 'Branding',
           url: '#'
         },

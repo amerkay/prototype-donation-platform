@@ -18,7 +18,7 @@ import { products as sampleProducts } from '~/features/donation-form/api-sample-
 import type { FormConfig, Product } from '@/lib/common/types'
 
 // Create reactive config that both DonationFormSettings and DonationFormPreview will share
-const formConfig = ref<FormConfig>(structuredClone(sampleConfig))
+const formConfig = ref<FormConfig>(sampleConfig)
 const products = ref<Product[]>(sampleProducts)
 
 // Provide config and products to all child components

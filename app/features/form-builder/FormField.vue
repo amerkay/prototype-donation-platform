@@ -18,6 +18,7 @@ import FormFieldCard from './fields/FormFieldCard.vue'
 import FormFieldSeparator from './fields/FormFieldSeparator.vue'
 import FormFieldGroup from './fields/FormFieldGroup.vue'
 import FormFieldArray from './fields/FormFieldArray.vue'
+import FormFieldTabs from './fields/FormFieldTabs.vue'
 
 interface Props {
   name: string
@@ -209,6 +210,14 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           v-else-if="meta.type === 'array'"
           :field="field"
           :errors="fieldMeta.touched ? errors : []"
+          :meta="meta"
+          :name="name"
+          :on-field-change="handleFieldChange"
+        />
+        <FormFieldTabs
+          v-else-if="meta.type === 'tabs'"
+          :field="field"
+          :errors="meta.rules && errors.length > 0 ? errors : fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
           :on-field-change="handleFieldChange"

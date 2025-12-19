@@ -10,30 +10,27 @@ export const formConfig = {
       { code: 'USD', label: 'USD ($)', symbol: '$' },
       { code: 'EUR', label: 'EUR (€)', symbol: '€' },
       { code: 'GBP', label: 'GBP (£)', symbol: '£' }
-    ] as const
+    ]
   },
   pricing: {
     baseCurrency: 'GBP',
-    frequencies: [
-      {
-        value: 'once',
+    frequencies: {
+      once: {
         label: 'One-time',
         presetAmounts: [10, 25, 50, 100, 250, 500],
         customAmount: { min: 5, max: 1000 }
       },
-      {
-        value: 'monthly',
+      monthly: {
         label: 'Monthly',
         presetAmounts: [5, 10, 25, 50, 75, 100],
         customAmount: { min: 3, max: 500 }
+      },
+      yearly: {
+        label: 'Yearly',
+        presetAmounts: [50, 100, 250, 500, 1000],
+        customAmount: { min: 25, max: 2000 }
       }
-      // {
-      //   value: 'yearly',
-      //   label: 'Yearly',
-      //   presetAmounts: [50, 100, 250, 500, 1000],
-      //   customAmount: { min: 25, max: 2000 }
-      // }
-    ] as const
+    }
   },
   features: {
     impactCart: {
@@ -94,11 +91,11 @@ export const formConfig = {
         { value: 'teacher', label: 'Teacher' },
         { value: 'mentor', label: 'Mentor' },
         { value: 'other', label: 'Other' }
-      ] as const,
+      ],
       modal: {
         title: 'Gift or In Memory',
         subtitle: 'Make this donation in honor or memory of someone special'
       }
     }
   }
-} as const
+}

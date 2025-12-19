@@ -18,6 +18,7 @@ export type FieldType =
   | 'field-group'
   | 'card'
   | 'separator'
+  | 'tabs'
 
 /**
  * Function type for setting field values with relative paths
@@ -241,6 +242,27 @@ export interface FieldGroupMeta extends BaseFieldMeta {
 }
 
 /**
+ * Tab definition for tabs field
+ */
+export interface TabDefinition {
+  value: string
+  label: string | ((values: Record<string, unknown>) => string)
+  fields: FieldMetaMap
+  badgeLabel?: string | ((values: Record<string, unknown>) => string)
+  badgeVariant?: 'default' | 'outline' | 'secondary' | 'destructive'
+}
+
+/**
+ * Tabs field metadata - tabbed interface for organizing related fields
+ */
+export interface TabsFieldMeta extends BaseFieldMeta {
+  type: 'tabs'
+  tabs: TabDefinition[]
+  defaultValue?: string // Default active tab value
+  rules?: z.ZodTypeAny | ((values: Record<string, unknown>) => z.ZodTypeAny)
+}
+
+/**
  * Union of all field metadata types
  */
 export type FieldMeta =
@@ -258,6 +280,7 @@ export type FieldMeta =
   | CardFieldMeta
   | SeparatorFieldMeta
   | FieldGroupMeta
+  | TabsFieldMeta
 
 /**
  * Map of field paths to their metadata

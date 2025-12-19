@@ -63,12 +63,23 @@ export interface FormConfig {
   }
   pricing: {
     baseCurrency: string
-    frequencies: ReadonlyArray<{
-      value: 'once' | 'monthly' | 'yearly'
-      label: string
-      presetAmounts: readonly number[]
-      customAmount: { min: number; max: number }
-    }>
+    frequencies: {
+      once?: {
+        label: string
+        presetAmounts: readonly number[]
+        customAmount: { min: number; max: number }
+      }
+      monthly?: {
+        label: string
+        presetAmounts: readonly number[]
+        customAmount: { min: number; max: number }
+      }
+      yearly?: {
+        label: string
+        presetAmounts: readonly number[]
+        customAmount: { min: number; max: number }
+      }
+    }
   }
   features: {
     impactCart: {
