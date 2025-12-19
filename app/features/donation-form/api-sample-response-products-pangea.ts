@@ -35,18 +35,18 @@ export const products: Product[] = [
     isShippingRequired: true,
     rewardThreshold: { monthly: 25, yearly: 200 }
   },
-  {
-    id: 'sponsor-kit',
-    name: 'Sponsorship Welcome Kit',
-    description: 'Certificate, photo, and updates about your sponsored elephant',
-    frequency: 'once',
-    image: '📦',
-    thumbnail: '📦',
-    icon: '📦',
-    isReward: true,
-    isShippingRequired: true,
-    rewardThreshold: { monthly: 15, yearly: 100 }
-  },
+  // {
+  //   id: 'sponsor-kit',
+  //   name: 'Sponsorship Welcome Kit',
+  //   description: 'Certificate, photo, and updates about your sponsored elephant',
+  //   frequency: 'once',
+  //   image: '📦',
+  //   thumbnail: '📦',
+  //   icon: '📦',
+  //   isReward: true,
+  //   isShippingRequired: true,
+  //   rewardThreshold: { monthly: 15, yearly: 100 }
+  // },
   {
     id: 'enrichment-fund',
     name: 'Enrichment Activities Fund',
