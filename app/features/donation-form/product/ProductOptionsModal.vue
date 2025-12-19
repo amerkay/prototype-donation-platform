@@ -51,7 +51,7 @@ const emit = defineEmits<{
   ]
 }>()
 
-const { getCurrencySymbol, convertPrice } = useCurrency()
+const { getCurrencySymbol, convertPrice } = useCurrency(props.baseCurrency)
 
 // Internal state
 const open = ref(false)

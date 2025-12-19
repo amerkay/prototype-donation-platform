@@ -9,12 +9,15 @@ import { Search } from 'lucide-vue-next'
 interface Props {
   products: Product[]
   currency: string
+  baseCurrency?: string
   searchQuery: string
   showAllProducts: boolean
   initialProductsDisplayed: number
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  baseCurrency: 'GBP'
+})
 
 const emit = defineEmits<{
   'update:searchQuery': [value: string]
@@ -78,6 +81,7 @@ const handleSearchUpdate = (value: string | number) => {
         :key="product.id"
         :product="product"
         :currency="currency"
+        :base-currency="baseCurrency"
         @click="handleProductClick(product)"
       />
     </TransitionGroup>

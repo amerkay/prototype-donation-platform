@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
-import { Field, FieldLabel, FieldError } from '@/components/ui/field'
+import { Field, FieldLabel, FieldDescription, FieldError } from '@/components/ui/field'
 import type { SelectFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 
 interface Props {
@@ -22,6 +22,14 @@ const resolvedLabel = computed(() => {
     return props.meta.label(formValues())
   }
   return props.meta.label
+})
+
+const resolvedDescription = computed(() => {
+  if (!props.meta.description) return undefined
+  if (typeof props.meta.description === 'function') {
+    return props.meta.description(formValues())
+  }
+  return props.meta.description
 })
 
 const selectValue = computed({
@@ -46,6 +54,9 @@ const selectValue = computed({
       {{ resolvedLabel }}
       <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
     </FieldLabel>
+    <FieldDescription v-if="resolvedDescription" :class="meta.descriptionClass">
+      {{ resolvedDescription }}
+    </FieldDescription>
     <NativeSelect
       :id="name"
       v-model="selectValue"

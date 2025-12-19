@@ -15,7 +15,9 @@ provide('products', products)
 </script>
 
 <template>
-  <div class="w-full sm:mx-auto lg:min-w-md lg:max-w-md lg:w-md sm:mt-4">
-    <DonationFormPreview class="border-2" />
+  <div class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full sm:max-w-md lg:max-w-md">
+      <DonationFormPreview class="border-2" />
+    </div>
   </div>
 </template>

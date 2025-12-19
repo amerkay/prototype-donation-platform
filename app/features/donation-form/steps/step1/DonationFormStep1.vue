@@ -29,7 +29,7 @@ const emit = defineEmits<{
   complete: []
 }>()
 
-const { convertPrice } = useCurrency()
+const { convertPrice } = useCurrency(computed(() => formConfig.value.pricing.baseCurrency).value)
 const { multipleCart, addToCart } = useImpactCart()
 
 // Use new donation form state composable

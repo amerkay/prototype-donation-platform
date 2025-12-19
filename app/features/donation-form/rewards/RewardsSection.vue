@@ -10,6 +10,7 @@ interface Props {
   yearlyTotal?: number
   oneTimeTotal?: number
   currency?: string
+  baseCurrency?: string
   enabledFrequencies?: Array<'once' | 'monthly' | 'yearly'>
   selectedFrequency?: string
   rewardsConfig: FormConfig['features']['rewards']
@@ -22,6 +23,7 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   currency: 'USD',
+  baseCurrency: 'GBP',
   monthlyTotal: 0,
   yearlyTotal: 0,
   oneTimeTotal: 0,
@@ -29,7 +31,7 @@ const props = withDefaults(defineProps<Props>(), {
   selectedFrequency: 'once'
 })
 
-const { getCurrencySymbol } = useCurrency()
+const { getCurrencySymbol } = useCurrency(props.baseCurrency)
 const currencySymbol = computed(() => getCurrencySymbol(props.currency))
 
 const emit = defineEmits<Emits>()

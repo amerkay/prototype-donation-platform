@@ -1,5 +1,6 @@
 import * as z from 'zod'
 import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
+import { CURRENCY_OPTIONS } from '../composables/useCurrency'
 
 /**
  * Create form config section definition
@@ -46,109 +47,60 @@ export function createFormConfigSection(): ConfigSectionDef {
         label: 'Currency Settings',
         collapsible: true,
         collapsibleDefaultOpen: false,
-        badgeLabel: 'On my TODO list',
-        badgeVariant: 'secondary',
-        isDisabled: true
-      },
-      /* COMMENTED OUT - Full configuration
-      localization: {
-        type: 'field-group',
-        label: 'Currency Settings',
-        collapsible: true,
-        collapsibleDefaultOpen: false,
-        
+
         fields: {
-      localization: {
-        type: 'field-group',
-        label: 'Currency Settings',
-        collapsible: true,
-        collapsibleDefaultOpen: false,
-        
-        fields: {
-          defaultCurrency: {
-            type: 'select',
-            label: 'Default Currency',
-            description: 'The default currency for the donation form',
-            placeholder: 'Select currency',
-            options: [
-              { value: 'USD', label: 'USD - US Dollar' },
-              { value: 'EUR', label: 'EUR - Euro' },
-              { value: 'GBP', label: 'GBP - British Pound' },
-              { value: 'CAD', label: 'CAD - Canadian Dollar' }
-            ],
-            rules: z.string().min(1, 'Default currency is required')
-          },
           supportedCurrencies: {
-            type: 'array',
+            type: 'combobox',
             label: 'Supported Currencies',
-            description: 'List of currencies available to donors',
-            itemField: {
-              type: 'field-group',
-              class: 'grid grid-cols-3 gap-3',
-              fields: {
-                code: {
-                  type: 'text',
-                  label: 'Currency Code',
-                  placeholder: 'USD',
-                  rules: z.string().length(3, 'Must be 3 characters')
-                },
-                label: {
-                  type: 'text',
-                  label: 'Label',
-                  placeholder: 'US Dollar',
-                  rules: z.string().min(1, 'Label is required')
-                },
-                symbol: {
-                  type: 'text',
-                  label: 'Symbol',
-                  placeholder: '$',
-                  rules: z.string().min(1, 'Symbol is required')
+            description: 'Currencies available for donors to choose from (select multiple)',
+            placeholder: 'Select currencies',
+            searchPlaceholder: 'Search currencies...',
+            multiple: true,
+            options: CURRENCY_OPTIONS,
+            rules: z.array(z.string()).min(1, 'At least one currency must be supported'),
+            onChange: (value, allValues, setValue) => {
+              const defaultCurrency = allValues.defaultCurrency as string | undefined
+              const supportedCurrencies = value as string[]
+
+              if (supportedCurrencies.length > 0) {
+                if (!defaultCurrency || !supportedCurrencies.includes(defaultCurrency)) {
+                  setValue('localization.defaultCurrency', supportedCurrencies[0])
                 }
+              } else {
+                setValue('localization.defaultCurrency', '')
               }
+            }
+          },
+          defaultCurrency: {
+            type: 'combobox',
+            label: 'Default Currency',
+            description:
+              'The default currency shown when users first load the donation form (choose from supported currencies above)',
+            placeholder: 'Select default currency',
+            searchPlaceholder: 'Search currencies...',
+            options: (values) => {
+              // Only show currencies that are in the supported list
+              const supportedCurrencies = (values.supportedCurrencies as string[]) || []
+              return CURRENCY_OPTIONS.filter((opt) => supportedCurrencies.includes(opt.value))
             },
-            addButtonText: 'Add Currency',
-            rules: z
-              .array(
-                z.object({
-                  code: z.string().length(3),
-                  label: z.string().min(1),
-                  symbol: z.string().min(1)
-                })
-              )
-              .min(1, 'At least one currency must be supported')
+            rules: z.string().min(1, 'Default currency is required')
           }
         }
       },
-      */
       pricing: {
         type: 'field-group',
         label: 'Pricing Configuration',
         collapsible: true,
         collapsibleDefaultOpen: false,
-        badgeLabel: 'On my TODO list',
-        badgeVariant: 'secondary',
-        isDisabled: true
-      }
-      /* COMMENTED OUT - Full configuration
-      pricing: {
-        type: 'field-group',
-        label: 'Pricing Configuration',
-        collapsible: true,
-        collapsibleDefaultOpen: false,
-        
-        fields: {
-      pricing: {
-        type: 'field-group',
-        label: 'Pricing Configuration',
-        collapsible: true,
-        collapsibleDefaultOpen: false,
-        
+
         fields: {
           baseCurrency: {
-            type: 'text',
+            type: 'combobox',
             label: 'Base Currency',
-            description: 'The currency used for internal calculations',
-            placeholder: 'USD',
+            description: 'The currency used for internal calculations and product pricing',
+            placeholder: 'Select base currency',
+            searchPlaceholder: 'Search currencies...',
+            options: CURRENCY_OPTIONS,
             rules: z.string().length(3, 'Must be 3 characters')
           },
           frequencies: {
@@ -157,7 +109,7 @@ export function createFormConfigSection(): ConfigSectionDef {
             description: 'Configure available donation frequencies and their preset amounts',
             itemField: {
               type: 'field-group',
-              
+
               fields: {
                 value: {
                   type: 'select',
@@ -179,7 +131,7 @@ export function createFormConfigSection(): ConfigSectionDef {
                 presetAmounts: {
                   type: 'array',
                   label: 'Preset Amounts',
-                  description: 'Comma-separated preset donation amounts',
+                  description: 'Preset donation amounts (in base currency)',
                   itemField: {
                     type: 'number',
                     label: 'Amount',
@@ -230,7 +182,6 @@ export function createFormConfigSection(): ConfigSectionDef {
           }
         }
       }
-      */
     }
   }
 }

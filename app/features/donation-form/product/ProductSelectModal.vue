@@ -6,6 +6,7 @@ import type { Product } from '@/lib/common/types'
 
 interface Props {
   currency: string
+  baseCurrency?: string
   products: Product[]
   title: string
   description: string
@@ -14,6 +15,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  baseCurrency: 'GBP',
   selectedProductIds: () => []
 })
 
@@ -47,6 +49,7 @@ defineExpose({
           :key="product.id"
           :product="product"
           :currency="currency"
+          :base-currency="baseCurrency"
           icon="lucide:check"
           :active="props.selectedProductIds.includes(product.id)"
           @click="handleSelect(product)"

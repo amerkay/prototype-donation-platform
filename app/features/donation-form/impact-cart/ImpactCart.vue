@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 interface Props {
   items: CartItem[]
   currency: string
+  baseCurrency?: string
   total: number
   recurringTotal?: number
   showTotal?: boolean
@@ -22,7 +23,9 @@ interface Props {
   tributeConfig: FormConfig['features']['tribute']
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  baseCurrency: 'GBP'
+})
 
 const emit = defineEmits<{
   edit: [item: CartItem, itemKey: string]
@@ -65,7 +68,7 @@ const handleProductSelect = (product: Product) => {
   emit('product-select', product)
 }
 
-const { getCurrencySymbol } = useCurrency()
+const { getCurrencySymbol } = useCurrency(props.baseCurrency)
 
 const totalLabel = computed(() => {
   if (props.items.length === 0) return 'Total'
@@ -104,6 +107,7 @@ defineExpose({
         "
         :item="item"
         :currency="currency"
+        :base-currency="baseCurrency"
         :tribute-config="tributeConfig"
         :is-pulsing="pulseNewItem === getCartItemKey(item.id, item.addedAt)"
         @edit="handleEdit(item)"
@@ -153,6 +157,7 @@ defineExpose({
       v-if="products"
       :products="filteredProducts"
       :currency="currency"
+      :base-currency="baseCurrency"
       :search-query="searchQuery"
       :show-all-products="showAllProducts"
       :initial-products-displayed="initialProductsDisplayed || 3"
@@ -190,6 +195,7 @@ defineExpose({
         v-if="products"
         :products="filteredProducts"
         :currency="currency"
+        :base-currency="baseCurrency"
         :search-query="searchQuery"
         :show-all-products="showAllProducts"
         :initial-products-displayed="initialProductsDisplayed || 3"

@@ -5,11 +5,13 @@ import type { Product } from '@/lib/common/types'
 interface Props {
   product: Product
   currency: string
+  baseCurrency?: string
   icon?: string
   active?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
+  baseCurrency: 'GBP',
   icon: 'lucide:plus',
   active: false
 })
@@ -18,7 +20,7 @@ const emit = defineEmits<{
   click: []
 }>()
 
-const { getCurrencySymbol } = useCurrency()
+const { getCurrencySymbol } = useCurrency(props.baseCurrency)
 </script>
 
 <template>

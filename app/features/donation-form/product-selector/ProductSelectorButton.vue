@@ -8,6 +8,7 @@ import type { Product, FormConfig } from '@/lib/common/types'
 interface Props {
   frequency: 'once' | 'monthly' | 'yearly'
   currency: string
+  baseCurrency?: string
   price: number
   selectedProduct: Product | null
   products: Product[]
@@ -15,7 +16,9 @@ interface Props {
   tributeConfig: FormConfig['features']['tribute']
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  baseCurrency: 'GBP'
+})
 
 const emit = defineEmits<{
   'product-select': [product: Product]
@@ -86,6 +89,7 @@ defineExpose({
       v-if="selectedProduct"
       :item="selectedProduct"
       :currency="currency"
+      :base-currency="baseCurrency"
       :price="price"
       :tribute-config="tributeConfig"
       @edit="handleEditProduct"
@@ -104,6 +108,7 @@ defineExpose({
     <ProductSelectModal
       ref="productModalRef"
       :currency="currency"
+      :base-currency="baseCurrency"
       :products="selectorProducts"
       :title="productModalTitle"
       :description="productModalDescription"

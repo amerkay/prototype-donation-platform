@@ -117,6 +117,7 @@ defineExpose({
       ref="cartRef"
       :items="multipleCart"
       :currency="currency"
+      :base-currency="formConfig.pricing.baseCurrency"
       :total="activeCartTotal"
       :recurring-total="recurringTotal"
       :show-total="true"
@@ -137,6 +138,7 @@ defineExpose({
       :yearly-total="yearlyTotal"
       :enabled-frequencies="enabledFrequencies"
       :currency="currency"
+      :base-currency="formConfig.pricing.baseCurrency"
       selected-frequency="multiple"
       :rewards-config="formConfig.features.rewards"
       @toggle="emit('toggle-reward', $event)"
@@ -161,6 +163,7 @@ defineExpose({
     <ProductOptionsModal
       ref="productOptionsModalRef"
       :currency="currency"
+      :base-currency="formConfig.pricing.baseCurrency"
       :pricing-config="formConfig.pricing.frequencies"
       :tribute-config="formConfig.features.tribute"
       @confirm="handleProductModalConfirm"

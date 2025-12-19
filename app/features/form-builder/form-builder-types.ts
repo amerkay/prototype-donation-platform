@@ -9,6 +9,7 @@ export type FieldType =
   | 'number'
   | 'toggle'
   | 'select'
+  | 'combobox'
   | 'autocomplete'
   | 'radio-group'
   | 'array'
@@ -114,6 +115,29 @@ export interface SelectFieldMeta extends BaseFieldMeta {
   options: ReadonlyArray<{ value: string | number; label: string }>
   searchPlaceholder?: string // Not used in native select, kept for API compatibility
   notFoundText?: string // Not used in native select, kept for API compatibility
+}
+
+/**
+ * Combobox field metadata - searchable select with single or multiple selection
+ */
+export interface ComboboxFieldMeta extends BaseFieldMeta {
+  type: 'combobox'
+  options:
+    | ReadonlyArray<{
+        value: string | number
+        label: string
+        description?: string
+        disabled?: boolean
+      }>
+    | ((values: Record<string, unknown>) => Array<{
+        value: string | number
+        label: string
+        description?: string
+        disabled?: boolean
+      }>)
+  multiple?: boolean // Enable multi-select mode
+  searchPlaceholder?: string
+  notFoundText?: string
 }
 
 /**
@@ -225,6 +249,7 @@ export type FieldMeta =
   | NumberFieldMeta
   | ToggleFieldMeta
   | SelectFieldMeta
+  | ComboboxFieldMeta
   | AutocompleteFieldMeta
   | RadioGroupFieldMeta
   | ArrayFieldMeta

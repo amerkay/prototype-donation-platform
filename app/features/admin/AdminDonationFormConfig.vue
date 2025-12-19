@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import FormRenderer from '@/features/form-builder/FormRenderer.vue'
 import { createFormConfigSection } from '../donation-form/forms/donation-form-config'
 import { createMultipleProductsConfigSection } from '../donation-form/impact-cart/forms/impact-cart-config'
@@ -7,6 +8,7 @@ import { createRewardsConfigSection } from '../donation-form/rewards/forms/rewar
 import { createShippingNoticeConfigSection } from '../donation-form/shipping-notice/forms/shipping-notice-config'
 import { createCoverCostsConfigSection } from '../donation-form/cover-costs/forms/cover-costs-config'
 import { createTributeConfigSection } from '../donation-form/tribute/forms/tribute-config'
+import { getCurrencyData } from '../donation-form/composables/useCurrency'
 import type { FormConfig } from '@/lib/common/types'
 
 interface Props {
@@ -18,6 +20,25 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   'update:config': [value: FormConfig]
 }>()
+
+// Get currency data from single source of truth
+const currencyData = getCurrencyData()
+const CURRENCY_DATA = Object.fromEntries(
+  currencyData.map((c) => [c.code, { label: c.label, symbol: c.symbol }])
+)
+
+// Transform supportedCurrencies from API format to admin format (codes only)
+const formModelValue = computed(() => {
+  const currencyCodes = props.config.localization.supportedCurrencies.map((c) => c.code)
+  return {
+    form: props.config.form,
+    localization: {
+      defaultCurrency: props.config.localization.defaultCurrency,
+      supportedCurrencies: currencyCodes
+    },
+    pricing: props.config.pricing
+  }
+})
 
 // Create all config sections
 const formSection = createFormConfigSection()
@@ -31,13 +52,26 @@ const tributeSection = createTributeConfigSection()
 // Update handlers for each section
 function handleFormUpdate(value: Record<string, unknown>) {
   const form = value.form as FormConfig['form']
-  const localization = value.localization as FormConfig['localization']
+  const localizationInput = value.localization as {
+    defaultCurrency: string
+    supportedCurrencies: string[]
+  }
   const pricing = value.pricing as FormConfig['pricing']
+
+  // Transform supportedCurrencies from codes to full objects
+  const supportedCurrencies = localizationInput.supportedCurrencies.map((code) => ({
+    code,
+    label: CURRENCY_DATA[code]?.label || `${code}`,
+    symbol: CURRENCY_DATA[code]?.symbol || code
+  }))
 
   emit('update:config', {
     ...props.config,
     form,
-    localization,
+    localization: {
+      defaultCurrency: localizationInput.defaultCurrency,
+      supportedCurrencies
+    },
     pricing
   })
 }
@@ -121,11 +155,7 @@ function handleTributeUpdate(value: Record<string, unknown>) {
     <div class="config-section">
       <FormRenderer
         :section="formSection"
-        :model-value="{
-          form: config.form,
-          localization: config.localization,
-          pricing: config.pricing
-        }"
+        :model-value="formModelValue"
         @update:model-value="handleFormUpdate"
       />
     </div>

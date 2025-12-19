@@ -8,19 +8,22 @@ import type { CartItem, Product, FormConfig } from '@/lib/common/types'
 interface Props {
   item: CartItem | Product
   currency: string
+  baseCurrency?: string
   isPulsing?: boolean
   price?: number
   tributeConfig: FormConfig['features']['tribute']
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  baseCurrency: 'GBP'
+})
 
 const emit = defineEmits<{
   edit: []
   remove: []
 }>()
 
-const { getCurrencySymbol } = useCurrency()
+const { getCurrencySymbol } = useCurrency(props.baseCurrency)
 
 const displayPrice = computed(() => {
   return props.price ?? (props.item as CartItem).price ?? 0
