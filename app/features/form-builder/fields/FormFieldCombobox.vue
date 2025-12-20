@@ -155,6 +155,7 @@ const removeBadge = (value: string | number, event: Event) => {
     :invalid="!!errors.length"
     :label-class="meta.labelClass"
     :description-class="meta.descriptionClass"
+    :disable-label-for="true"
   >
     <ComboboxRoot
       v-model="modelValue"

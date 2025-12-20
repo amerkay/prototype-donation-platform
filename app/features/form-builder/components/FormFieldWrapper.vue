@@ -19,6 +19,7 @@ interface Props {
   class?: string
   labelClass?: string
   descriptionClass?: string
+  disableLabelFor?: boolean
 }
 
 const props = defineProps<Props>()
@@ -29,7 +30,11 @@ const props = defineProps<Props>()
     <div :class="cn('flex flex-col gap-1.5', props.class)">
       <Field :data-invalid="props.invalid" :orientation="props.orientation">
         <FieldContent class="min-w-0">
-          <FieldLabel v-if="props.label" :for="props.name" :class="props.labelClass">
+          <FieldLabel
+            v-if="props.label"
+            :for="props.disableLabelFor ? undefined : props.name"
+            :class="props.labelClass"
+          >
             {{ props.label }}
             <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
           </FieldLabel>
@@ -52,7 +57,11 @@ const props = defineProps<Props>()
     :orientation="props.orientation"
     :class="cn(props.class)"
   >
-    <FieldLabel v-if="props.label" :for="props.name" :class="props.labelClass">
+    <FieldLabel
+      v-if="props.label"
+      :for="props.disableLabelFor ? undefined : props.name"
+      :class="props.labelClass"
+    >
       {{ props.label }}
       <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
     </FieldLabel>
