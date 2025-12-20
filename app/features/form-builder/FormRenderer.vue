@@ -26,7 +26,7 @@ const initialFormValues = computed(() => ({
 }))
 
 // Use the composition API to access form context
-const { values, meta, setValues, handleSubmit, setFieldValue } = useForm({
+const { values, meta, setValues, handleSubmit, setFieldValue, setFieldTouched } = useForm({
   initialValues: initialFormValues.value,
   validateOnMount: false
 })
@@ -56,6 +56,10 @@ const providedSetFieldValue = (path: string, value: unknown): void => {
   //    which we don't have for dynamic forms
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setFieldValue(fullPath, value as any)
+
+  // Mark the target field as touched and trigger validation so
+  // programmatic updates (e.g. via onChange handlers) surface errors
+  setFieldTouched(fullPath, true)
 }
 
 provide('setFieldValue', providedSetFieldValue)

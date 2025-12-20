@@ -72,6 +72,11 @@ const modelValue = computed({
   set: (value) => {
     handleChange(value)
 
+    // Mark field as touched and trigger validation on any value change
+    if (props.field.onBlur) {
+      props.field.onBlur(new FocusEvent('blur'))
+    }
+
     // Clear search and close dropdown in single mode
     if (!props.meta.multiple) {
       searchValue.value = ''
