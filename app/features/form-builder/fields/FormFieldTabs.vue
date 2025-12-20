@@ -134,8 +134,8 @@ watch(
       {{ meta.description }}
     </FieldDescription>
 
-    <Tabs v-model="activeTab" class="w-full">
-      <TabsList>
+    <Tabs v-model="activeTab">
+      <TabsList :class="cn(meta.tabsListClass)">
         <TabsTrigger v-for="tab in meta.tabs" :key="tab.value" :value="tab.value" class="gap-2">
           {{ resolveTabLabel(tab) }}
           <Badge

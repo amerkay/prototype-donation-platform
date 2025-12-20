@@ -153,6 +153,7 @@ export function createFormConfigSection(): ConfigSectionDef {
           },
           frequencies: {
             type: 'tabs',
+            tabsListClass: 'w-full',
             label: 'Donation Frequencies',
             description: 'Configure available donation frequencies and their preset amounts',
             defaultValue: 'once',

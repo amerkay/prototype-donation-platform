@@ -259,6 +259,7 @@ export interface TabsFieldMeta extends BaseFieldMeta {
   type: 'tabs'
   tabs: TabDefinition[]
   defaultValue?: string // Default active tab value
+  tabsListClass?: string
   rules?: z.ZodTypeAny | ((values: Record<string, unknown>) => z.ZodTypeAny)
 }
 
