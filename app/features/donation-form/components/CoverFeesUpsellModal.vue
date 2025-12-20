@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
+import { getCurrencySymbol } from '~/features/donation-form/composables/useCurrency'
 
 interface Props {
   open?: boolean
@@ -22,6 +23,7 @@ interface OperationalCost {
   service: string
   purpose: string
   annualCost: string | number
+  currency?: string | null
 }
 
 defineProps<Props>()
@@ -31,47 +33,58 @@ const operationalCosts: OperationalCost[] = [
   {
     service: 'Stripe',
     purpose: 'Payment processing',
-    annualCost: '2.9% + 20p'
+    annualCost: '2.9% + 20p',
+    currency: null
   },
   {
     service: 'BeaconCRM',
     purpose: 'Donor management',
-    annualCost: 2500
+    annualCost: 2500,
+    currency: 'GBP'
   },
   {
     service: 'Mailchimp',
     purpose: 'Email updates',
-    annualCost: 600
+    annualCost: 600,
+    currency: 'GBP'
   },
   {
     service: 'WordPress Hosting',
     purpose: 'Website infrastructure',
-    annualCost: 480
+    annualCost: 480,
+    currency: 'GBP'
   },
   {
     service: 'n8n Automation',
     purpose: 'Workflow automation',
-    annualCost: 360
+    annualCost: 360,
+    currency: 'GBP'
   },
   {
     service: 'CloudFlare',
     purpose: 'Security & performance',
-    annualCost: 240
+    annualCost: 240,
+    currency: 'GBP'
   },
   {
     service: 'Communications Manager',
     purpose: 'Full-time (Portugal)',
-    annualCost: 38000
+    annualCost: 38000,
+    currency: 'GBP'
   },
   {
     service: 'Corporate Outreach',
     purpose: 'Part-time fundraising',
-    annualCost: 26000
+    annualCost: 26000,
+    currency: 'GBP'
   }
 ]
 
-const formatCost = (cost: string | number) => {
-  return typeof cost === 'number' ? `£${cost.toLocaleString()}` : cost
+const formatCost = (cost: string | number, currency?: string | null) => {
+  if (!currency) return String(cost)
+
+  const symbol = getCurrencySymbol(currency)
+  return typeof cost === 'number' ? `${symbol}${cost.toLocaleString()}` : `${cost} ${symbol}`
 }
 
 const handleClose = () => {
@@ -104,7 +117,9 @@ const handleClose = () => {
                 <div class="font-medium">{{ cost.service }}</div>
                 <div class="text-xs text-muted-foreground">{{ cost.purpose }}</div>
               </TableCell>
-              <TableCell class="text-right font-mono">{{ formatCost(cost.annualCost) }}</TableCell>
+              <TableCell class="text-right font-mono">
+                {{ formatCost(cost.annualCost, cost.currency) }}
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>

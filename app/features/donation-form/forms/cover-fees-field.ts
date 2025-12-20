@@ -1,5 +1,6 @@
 import * as z from 'zod'
 import type { FieldMetaMap } from '~/features/form-builder/form-builder-types'
+import { getCurrencySymbol } from '../composables/useCurrency'
 
 /**
  * Create reusable cover fees field with percentage slider
@@ -78,15 +79,7 @@ export function createCoverFeesField(options?: {
         const donationAmount = (values.donationAmount as number) || 0
         const currency = (values.currency as string) || 'GBP'
 
-        // Import currency symbol at runtime
-        const currencySymbols: Record<string, string> = {
-          USD: '$',
-          EUR: '€',
-          GBP: '£',
-          CAD: 'CA$',
-          AUD: 'AU$'
-        }
-        const symbol = currencySymbols[currency] || currency
+        const symbol = getCurrencySymbol(currency)
 
         if (percentage === 0) {
           return 'Move the slider to help cover operational costs'

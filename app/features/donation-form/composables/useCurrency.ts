@@ -1,21 +1,25 @@
-// List of supported currencies
+// List of supported currencies (single source of truth)
 export const CURRENCY_OPTIONS = [
-  { value: 'GBP', label: 'GBP - British Pound', description: '£ - United Kingdom' },
-  { value: 'USD', label: 'USD - US Dollar', description: '$ - United States' },
-  { value: 'CAD', label: 'CAD - Canadian Dollar', description: 'CA$ - Canada' },
-  { value: 'AUD', label: 'AUD - Australian Dollar', description: 'A$ - Australia' },
-  { value: 'NZD', label: 'NZD - New Zealand Dollar', description: 'NZ$ - New Zealand' },
-  { value: 'EUR', label: 'EUR - Euro', description: '€ - European Union' }
+  { value: 'GBP', symbol: '£', label: 'GBP (£)', description: 'United Kingdom' },
+  { value: 'USD', symbol: '$', label: 'USD ($)', description: 'United States' },
+  { value: 'CAD', symbol: 'CA$', label: 'CAD (CA$)', description: 'Canada' },
+  { value: 'AUD', symbol: 'A$', label: 'AUD (A$)', description: 'Australia' },
+  { value: 'NZD', symbol: 'NZ$', label: 'NZD (NZ$)', description: 'New Zealand' },
+  { value: 'EUR', symbol: '€', label: 'EUR (€)', description: 'European Union' }
 ] as const
 
-// Extract currency symbols from descriptions
-const currencySymbols: Record<string, string> = {
-  GBP: '£',
-  USD: '$',
-  CAD: 'CA$',
-  AUD: 'A$',
-  NZD: 'NZ$',
-  EUR: '€'
+type CurrencyOption = (typeof CURRENCY_OPTIONS)[number]
+
+const currencyOptionByCode = new Map<string, CurrencyOption>(
+  CURRENCY_OPTIONS.map((c) => [c.value, c])
+)
+
+export function getCurrencyOption(currencyCode: string): CurrencyOption | undefined {
+  return currencyOptionByCode.get(currencyCode.toUpperCase())
+}
+
+export function getCurrencySymbol(currencyCode: string): string {
+  return getCurrencyOption(currencyCode)?.symbol ?? currencyCode
 }
 
 /**
@@ -25,7 +29,7 @@ export function getCurrencyData() {
   return CURRENCY_OPTIONS.map((currency) => ({
     code: currency.value,
     label: currency.label,
-    symbol: currencySymbols[currency.value] || currency.value
+    symbol: currency.symbol
   }))
 }
 
@@ -71,10 +75,6 @@ export function useCurrency(baseCurrency: string = 'GBP') {
       default:
         return ratesFromGBP
     }
-  }
-
-  const getCurrencySymbol = (currencyCode: string): string => {
-    return currencySymbols[currencyCode.toUpperCase()] || currencyCode
   }
 
   const smartRound = (value: number): number => {
