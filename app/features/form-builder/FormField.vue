@@ -66,9 +66,11 @@ const isVisible = computed(() => {
 
 // Convert Zod rules to typed schema for vee-validate
 // When field is hidden, always return optional schema to skip validation
+// EXCEPT for field-group/tabs - they should validate children even when collapsed
 const fieldRules = computed(() => {
-  // If field is hidden, no validation needed
-  if (!isVisible.value) {
+  // If field is hidden, no validation needed (except container fields)
+  const isContainerField = props.meta.type === 'field-group' || props.meta.type === 'tabs'
+  if (!isVisible.value && !isContainerField) {
     return toTypedSchema(z.any().optional())
   }
 
@@ -207,14 +209,7 @@ const handleFieldChange = (value: unknown) => {
         />
         <FormFieldCard v-else-if="meta.type === 'card'" :meta="meta" />
         <FormFieldSeparator v-else-if="meta.type === 'separator'" :meta="meta" />
-        <FormFieldGroup
-          v-else-if="meta.type === 'field-group'"
-          :field="field"
-          :errors="fieldMeta.touched ? errors : []"
-          :meta="meta"
-          :name="name"
-          :on-change="handleFieldChange"
-        />
+        <FormFieldGroup v-else-if="meta.type === 'field-group'" :meta="meta" :name="name" />
         <FormFieldArray
           v-else-if="meta.type === 'array'"
           :field="field"
@@ -223,14 +218,7 @@ const handleFieldChange = (value: unknown) => {
           :name="name"
           :on-change="handleFieldChange"
         />
-        <FormFieldTabs
-          v-else-if="meta.type === 'tabs'"
-          :field="field"
-          :errors="fieldMeta.touched ? errors : []"
-          :meta="meta"
-          :name="name"
-          :on-change="handleFieldChange"
-        />
+        <FormFieldTabs v-else-if="meta.type === 'tabs'" :meta="meta" :name="name" />
         <div v-else class="text-destructive text-sm">
           Unknown field type: {{ (meta as { type: string }).type }}
         </div>

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, watch, computed, inject, provide, type Ref } from 'vue'
+import { ref, watch, computed, inject, provide, type Ref, type ComputedRef } from 'vue'
 import { cn } from '@/lib/utils'
-import { FieldSet, FieldLegend, FieldDescription, FieldError } from '@/components/ui/field'
+import { FieldSet, FieldLegend, FieldDescription } from '@/components/ui/field'
 import { AccordionItem, AccordionContent, AccordionTrigger } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
-import type { FieldGroupMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import type { FieldGroupMeta } from '~/features/form-builder/form-builder-types'
 import {
   getRecordAtPath,
   joinPath,
@@ -14,11 +14,8 @@ import FormField from '../FormField.vue'
 import { useScrollOnVisible } from '../composables/useScrollOnVisible'
 
 interface Props {
-  field: VeeFieldContext
-  errors: string[]
   meta: FieldGroupMeta
   name: string
-  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
 }
 
 const props = defineProps<Props>()
@@ -32,13 +29,16 @@ const isOpen = computed(() => accordionValue.value === props.name)
 // Get form values for dynamic label resolution
 const getFormValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
 
-const resolvedLabel = computed(() => {
-  if (!props.meta.label) return undefined
-  if (typeof props.meta.label === 'function') {
-    return props.meta.label(getFormValues())
-  }
-  return props.meta.label
-})
+// Get form errors object to detect child field validation errors
+// vee-validate's errors is a reactive object, not a Ref
+const formErrors = inject<ComputedRef<Record<string, string | undefined>>>(
+  'formErrors',
+  computed(() => ({}))
+)
+
+const resolvedLabel = computed(() =>
+  typeof props.meta.label === 'function' ? props.meta.label(getFormValues()) : props.meta.label
+)
 
 // Set default open on mount if specified
 if (props.meta.collapsibleDefaultOpen && !accordionValue.value) {
@@ -46,9 +46,8 @@ if (props.meta.collapsibleDefaultOpen && !accordionValue.value) {
 }
 
 // Setup scroll tracking for collapsible
-const collapsibleKey = computed(() => props.name)
 const { setElementRef, scrollToElement } = useScrollOnVisible(
-  computed(() => (isOpen.value ? [collapsibleKey.value] : [])),
+  computed(() => (isOpen.value ? [props.name] : [])),
   {
     isVisible: () => true,
     getKey: (key) => key
@@ -66,11 +65,21 @@ const isGroupVisible = computed(() => {
 
 provide('parentGroupVisible', () => isGroupVisible.value)
 
-// Normalize to section-relative path.
+// Normalize to section-relative path BEFORE hasChildErrors uses it
 // - Top-level fields are named like `${sectionId}.fieldKey`.
 // - Nested fields (inside field-group/tabs) can be relative like `once.customAmount`.
 const groupPath = computed(() => {
   return toSectionRelativePath(props.name, sectionId)
+})
+
+// Check if any child fields have validation errors
+const hasChildErrors = computed(() => {
+  const errorsObj = formErrors.value
+  const keys = Object.keys(errorsObj)
+  if (keys.length === 0) return false
+
+  const fullGroupPath = sectionId ? `${sectionId}.${groupPath.value}` : groupPath.value
+  return keys.some((key) => errorsObj[key] && key.startsWith(`${fullGroupPath}.`))
 })
 
 // Field prefix context for nested paths
@@ -84,34 +93,16 @@ const currentFieldPrefix = computed(() => {
 provide('fieldPrefix', currentFieldPrefix.value)
 
 // Provide scoped form values to child fields
-// Children see values relative to this group (e.g., homeAddress.country becomes just 'country')
-// BUT also preserve parent values so they can reference sibling fields
-const getScopedFormValues = computed(() => {
+provide('formValues', () => {
   const fullValues = getFormValues()
   const groupValue = getRecordAtPath(fullValues, groupPath.value)
-
-  // Merge: child fields get their scoped values plus access to parent values
-  // Scoped values take precedence (spread groupValue last)
   return { ...fullValues, ...(groupValue || {}) }
 })
-
-// Override formValues for child fields to provide scoped values
-provide('formValues', () => getScopedFormValues.value)
-
-// Watch for field value changes and call onChange if provided
-watch(
-  () => props.field.value,
-  (newValue) => {
-    if (props.meta.onChange && props.onFieldChange) {
-      props.onFieldChange(newValue, props.field.onChange)
-    }
-  }
-)
 
 // Scroll to collapsible when opened
 watch(isOpen, (newIsOpen) => {
   if (newIsOpen) {
-    scrollToElement(collapsibleKey.value)
+    scrollToElement(props.name)
   }
 })
 </script>
@@ -121,7 +112,7 @@ watch(isOpen, (newIsOpen) => {
     <!-- Accordion Item version -->
     <template v-if="meta.collapsible">
       <AccordionItem
-        :ref="(el: any) => setElementRef(collapsibleKey, el)"
+        :ref="(el: any) => setElementRef(props.name, el)"
         :value="name"
         :disabled="meta.isDisabled"
       >
@@ -151,6 +142,10 @@ watch(isOpen, (newIsOpen) => {
                 >
                   {{ meta.badgeLabel }}
                 </Badge>
+                <Badge v-if="hasChildErrors" variant="destructive" class="text-xs gap-1">
+                  <Icon name="lucide:alert-circle" class="h-3 w-3" />
+                  Error
+                </Badge>
               </div>
               <p
                 v-if="meta.description"
@@ -158,7 +153,6 @@ watch(isOpen, (newIsOpen) => {
               >
                 {{ meta.description }}
               </p>
-              <FieldError v-if="errors.length > 0" :errors="errors" class="mt-1" />
             </div>
             <span v-if="!meta.isDisabled" class="text-sm text-muted-foreground">{{
               isOpen ? '' : 'Edit'
@@ -183,10 +177,9 @@ watch(isOpen, (newIsOpen) => {
       <FieldLegend v-if="meta.legend || resolvedLabel" :class="cn('mb-2', meta.labelClass)">{{
         meta.legend || resolvedLabel
       }}</FieldLegend>
-      <FieldDescription v-if="meta.description" :class="meta.descriptionClass">{{
-        meta.description
-      }}</FieldDescription>
-      <FieldError v-if="errors.length > 0" :errors="errors" class="mb-3" />
+      <FieldDescription v-if="meta.description" :class="meta.descriptionClass">
+        {{ meta.description }}
+      </FieldDescription>
       <div :class="cn('grid grid-cols-1 gap-3', meta.class)">
         <FormField
           v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"

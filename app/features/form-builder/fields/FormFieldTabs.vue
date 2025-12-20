@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import { ref, computed, watch, inject, provide } from 'vue'
+import { ref, computed, inject, provide } from 'vue'
 import { cn } from '@/lib/utils'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Field, FieldLegend, FieldDescription, FieldError } from '@/components/ui/field'
+import { Field, FieldLegend, FieldDescription } from '@/components/ui/field'
 import { Badge } from '@/components/ui/badge'
-import type { TabsFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
-import { joinPath, toSectionRelativePath } from '~/features/form-builder/field-path-utils'
+import type { TabsFieldMeta } from '~/features/form-builder/form-builder-types'
+import {
+  getRecordAtPath,
+  joinPath,
+  toSectionRelativePath
+} from '~/features/form-builder/field-path-utils'
 import FormField from '../FormField.vue'
 
 interface Props {
-  field: VeeFieldContext
-  errors: string[]
   meta: TabsFieldMeta
   name: string
-  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
 }
 
 const props = defineProps<Props>()
@@ -38,26 +39,7 @@ provide('parentGroupVisible', () => isTabsVisible.value)
 // Active tab state - initialize from defaultValue or first tab
 const activeTab = ref(props.meta.defaultValue || props.meta.tabs[0]?.value || '')
 
-// Watch for tab changes and initialize nested field values if needed
-watch(
-  activeTab,
-  (newTab) => {
-    // Ensure field values for this tab exist (initialize if needed)
-    const currentValue = props.field.value as Record<string, unknown> | undefined
-    if (!currentValue || typeof currentValue !== 'object') {
-      // Initialize with empty object for the active tab
-      const initialValue = { [newTab]: {} }
-      if (props.onFieldChange) {
-        props.onFieldChange(initialValue, props.field.onChange)
-      } else {
-        props.field.onChange(initialValue)
-      }
-    }
-  },
-  { immediate: true }
-)
-
-// Normalize to section-relative path.
+// Normalize to section-relative path
 const tabsPath = computed(() => {
   return toSectionRelativePath(props.name, sectionId)
 })
@@ -70,99 +52,72 @@ const currentFieldPrefix = computed(() => {
 
 provide('fieldPrefix', currentFieldPrefix.value)
 
-// Create a reactive ref for the currently active tab data
-// This will be updated when the active tab changes
-const currentTabData = computed(() => {
+// Provide scoped form values to child fields
+// This merges the full form values with the current tab's data
+// so that visibleWhen conditions inside tabs can access tab-local field values
+provide('formValues', () => {
   const fullValues = getFormValues()
-  const tabsValue = props.field.value as Record<string, unknown> | undefined
-  const tabData = tabsValue?.[activeTab.value] as Record<string, unknown> | undefined
-  return { ...fullValues, ...(tabData || {}) }
+  const tabsValue = getRecordAtPath(fullValues, tabsPath.value) as
+    | Record<string, unknown>
+    | undefined
+  const currentTabData = tabsValue?.[activeTab.value] as Record<string, unknown> | undefined
+  return { ...fullValues, ...(currentTabData || {}) }
 })
 
-// Provide scoped form values that update based on active tab
-provide('formValues', () => currentTabData.value)
-
-// Resolve label (static string or function)
-const resolvedLabel = computed(() => {
-  if (!props.meta.label) return undefined
-  if (typeof props.meta.label === 'function') {
-    return props.meta.label(getFormValues())
-  }
-  return props.meta.label
-})
+const resolvedLabel = computed(() =>
+  typeof props.meta.label === 'function' ? props.meta.label(getFormValues()) : props.meta.label
+)
 
 // Resolve tab labels
 const resolveTabLabel = (tab: (typeof props.meta.tabs)[number]) => {
-  if (typeof tab.label === 'function') {
-    return tab.label(getFormValues())
-  }
-  return tab.label
+  return typeof tab.label === 'function' ? tab.label(getFormValues()) : tab.label
 }
 
 // Resolve tab badge labels
 const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
   if (!tab.badgeLabel) return undefined
-  if (typeof tab.badgeLabel === 'function') {
-    return tab.badgeLabel(getFormValues())
-  }
-  return tab.badgeLabel
+  return typeof tab.badgeLabel === 'function' ? tab.badgeLabel(getFormValues()) : tab.badgeLabel
 }
-
-// Watch for external field value changes
-watch(
-  () => props.field.value,
-  (newValue) => {
-    if (newValue && typeof newValue === 'object' && !Array.isArray(newValue)) {
-      // If we have data for a different tab, switch to it
-      const availableTabs = Object.keys(newValue)
-      const firstTab = availableTabs[0]
-      if (firstTab && availableTabs.length > 0 && !availableTabs.includes(activeTab.value)) {
-        activeTab.value = firstTab
-      }
-    }
-  },
-  { deep: true }
-)
 </script>
 
 <template>
-  <Field :data-invalid="!!errors.length" :class="cn(meta.class, 'space-y-3')">
-    <FieldLegend v-if="resolvedLabel" :class="meta.labelClass">
-      {{ resolvedLabel }}
-    </FieldLegend>
-    <FieldDescription v-if="meta.description" :class="meta.descriptionClass">
-      {{ meta.description }}
-    </FieldDescription>
+  <div v-show="isTabsVisible">
+    <Field :class="cn(meta.class, 'space-y-3')">
+      <FieldLegend v-if="resolvedLabel" :class="meta.labelClass">
+        {{ resolvedLabel }}
+      </FieldLegend>
+      <FieldDescription v-if="meta.description" :class="meta.descriptionClass">
+        {{ meta.description }}
+      </FieldDescription>
 
-    <Tabs v-model="activeTab">
-      <TabsList :class="cn(meta.tabsListClass)">
-        <TabsTrigger v-for="tab in meta.tabs" :key="tab.value" :value="tab.value" class="gap-2">
-          {{ resolveTabLabel(tab) }}
-          <Badge
-            v-if="resolveTabBadge(tab)"
-            :variant="tab.badgeVariant || 'secondary'"
-            class="ml-1 h-5 px-1.5 text-xs"
-          >
-            {{ resolveTabBadge(tab) }}
-          </Badge>
-        </TabsTrigger>
-      </TabsList>
+      <Tabs v-model="activeTab">
+        <TabsList :class="cn(meta.tabsListClass)">
+          <TabsTrigger v-for="tab in meta.tabs" :key="tab.value" :value="tab.value" class="gap-2">
+            {{ resolveTabLabel(tab) }}
+            <Badge
+              v-if="resolveTabBadge(tab)"
+              :variant="tab.badgeVariant || 'secondary'"
+              class="ml-1 h-5 px-1.5 text-xs"
+            >
+              {{ resolveTabBadge(tab) }}
+            </Badge>
+          </TabsTrigger>
+        </TabsList>
 
-      <TabsContent
-        v-for="tab in meta.tabs"
-        :key="tab.value"
-        :value="tab.value"
-        class="space-y-4 mt-4"
-      >
-        <FormField
-          v-for="[fieldName, fieldMeta] in Object.entries(tab.fields)"
-          :key="fieldName"
-          :name="`${tab.value}.${fieldName}`"
-          :meta="fieldMeta"
-        />
-      </TabsContent>
-    </Tabs>
-
-    <FieldError v-if="errors.length" :errors="errors.slice(0, 1)" />
-  </Field>
+        <TabsContent
+          v-for="tab in meta.tabs"
+          :key="tab.value"
+          :value="tab.value"
+          class="space-y-4 mt-4"
+        >
+          <FormField
+            v-for="[fieldName, fieldMeta] in Object.entries(tab.fields)"
+            :key="fieldName"
+            :name="`${tab.value}.${fieldName}`"
+            :meta="fieldMeta"
+          />
+        </TabsContent>
+      </Tabs>
+    </Field>
+  </div>
 </template>
