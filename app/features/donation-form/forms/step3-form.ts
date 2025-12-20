@@ -1,7 +1,7 @@
 import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
 import type { FormConfig } from '@/lib/common/types'
 import { createGiftAidFields } from './gift-aid-fields'
-import { createCoverFeesField } from './cover-costs-field'
+import { createCoverFeesField } from '../cover-costs/forms/cover-costs-field'
 import { createEmailOptInField } from './email-opt-in-field'
 import { createTermsAcceptanceField } from './terms-acceptance-field'
 
