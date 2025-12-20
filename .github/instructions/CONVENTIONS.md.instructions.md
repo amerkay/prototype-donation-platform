@@ -8,21 +8,6 @@ applyTo: '**'
 
 Multi-step donation platform with single/recurring donations, multi-item cart system, dynamic pricing sliders, conditional free gifts with upsell messaging, and mobile-first progressive disclosure.
 
-## LLM Instructions that YOU MUST ALWAYS FOLLOW:
-
-- YOU MUST ALWAYS think, then create a detailed plan, then work. For example, if we're fixing a bug, think of 7 possible root causes of a bug, pick the most probable then apply the absolute minimum edits to fix the issue. Another example: If we're building a feature, find similar files to learn existing patterns, think 5 methods to build that feature, then pick the most maintainable, elegant, DRY, reusable, best-practices method.
-- YOU MUST use shadcn-vue components or ask me to install missing ones.
-- You MUST always choose the most elegant minimal edits to the code. Don't write a lot of code if you don't need to.
-- You MUST always prioritize DRY coding and reusable functions and components, never repeat code.
-- YOU MUST remove obsolete code that has been replaced with new code. Less code is better.
-- At the end of a task, your summary of the work done must be short.
-- IMPORTANT! YOU MUST ALWAYS, at the end of a task, you MUST reply with an absolute minimal short conventional commit about ALL the work done during the chat session, entire session.
-- Whenever possible, do not edit the shadcn files in @/components/ui. Only if needed.
-- YOU MUST write modular vue3 code using components and composables without overcomplicating things.
-- ALWAYS prefer self container logic. You must rewrite confusing logic to be as self-contained as possible.
-- You MUST define TypeScript interfaces that exactly mirror API response structures and pass config objects directly to components using typed sections (e.g., FormConfig['features']['rewards']) rather than restructuring or mapping data in parent components.
-- YOU MUST follow Feature-Based Architecture: place all feature-specific code (components, composables, types, utils) in `app/features/[feature-name]/`. Only truly shared/reusable UI components belong in `app/components/`, and only system-wide composables belong in `app/composables/`.
-
 ## Tech Stack
 
 - **Framework**: Nuxt 4 (Vue 3.5+)
@@ -130,3 +115,20 @@ Use Composition API with `<script setup lang="ts">`:
 Install: `pnpm dlx shadcn-vue@latest add [component]`  
 Location: `app/components/ui/[component]/`  
 Customize directly in component files
+
+## LLM Instructions that YOU MUST ALWAYS FOLLOW:
+
+THESE ARE COMMANDMENTS. YOU MUST ALWAYS FOLLOW THEM WHEN RESPONDING TO MY PROMPTS!
+
+- YOU MUST ALWAYS think, then create a detailed plan, then work. For example, if we're fixing a bug, think of 7 possible root causes of a bug, pick the most probable then apply the absolute minimum edits to fix the issue. Another example: If we're building a feature, find similar files to learn existing patterns, think 5 methods to build that feature, then pick the most maintainable, elegant, DRY, reusable, best-practices method.
+- YOU MUST use shadcn-vue components or ask me to install missing ones.
+- You MUST always choose the most elegant minimal edits to the code. Don't write a lot of code if you don't need to.
+- You MUST always prioritize DRY coding and reusable functions and components, never repeat code.
+- YOU MUST remove obsolete code that has been replaced with new code. Less code is better.
+- At the end of a task, your summary of the work done must be short.
+- IMPORTANT! YOU MUST ALWAYS, at the end of a task, you MUST reply with an absolute minimal short conventional commit about ALL the work done during the chat session, entire session.
+- Whenever possible, do not edit the shadcn files in @/components/ui. Only if needed.
+- YOU MUST write modular vue3 code using components and composables without overcomplicating things.
+- ALWAYS prefer self container logic. You must rewrite confusing logic to be as self-contained as possible.
+- You MUST define TypeScript interfaces that exactly mirror API response structures and pass config objects directly to components using typed sections (e.g., FormConfig['features']['rewards']) rather than restructuring or mapping data in parent components.
+- YOU MUST follow Feature-Based Architecture: place all feature-specific code (components, composables, types, utils) in `app/features/[feature-name]/`. Only truly shared/reusable UI components belong in `app/components/`, and only system-wide composables belong in `app/composables/`.

@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
+import type { Ref } from 'vue'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
 import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
+import type { FormConfig } from '@/lib/common/types'
 
 interface Props {
   needsShipping: boolean
@@ -16,6 +18,12 @@ const emit = defineEmits<{
   back: []
   edit: []
 }>()
+
+// Inject config from parent
+const formConfig = inject<Ref<FormConfig>>('formConfig')
+if (!formConfig) {
+  throw new Error('formConfig not provided')
+}
 
 const { multipleCart, cartTotal, oneTimeTotal, monthlyTotal, yearlyTotal } = useImpactCart()
 const { activeTab, donationAmounts, selectedCurrency, currentStep, formSections } =
@@ -30,9 +38,10 @@ const totalAmount = computed(() => {
   return donationAmounts.value[activeTab.value as 'once' | 'monthly' | 'yearly']
 })
 
-// Cover costs calculation (only shown from step 3 onwards)
+// Cover costs calculation (only shown from step 3 onwards AND if enabled)
 const coverFeesPercentage = computed(() => {
   if (currentStep.value < 3) return 0
+  if (!formConfig.value.features.coverCosts.enabled) return 0
   return (formSections.value.giftAid?.coverFeesPercentage as number) || 0
 })
 
