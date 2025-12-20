@@ -4,7 +4,7 @@ import type { Ref } from 'vue'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
-import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
+import { useDonationFormStore } from '~/stores/donationForm'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import type { FormConfig } from '@/lib/common/types'
 
@@ -26,23 +26,22 @@ if (!formConfig) {
 }
 
 const { multipleCart, cartTotal, oneTimeTotal, monthlyTotal, yearlyTotal } = useImpactCart()
-const { activeTab, donationAmounts, selectedCurrency, currentStep, formSections } =
-  useDonationFormState('')
+const store = useDonationFormStore()
 const { getCurrencySymbol } = useCurrency()
 
 // Determine total amount
 const totalAmount = computed(() => {
-  if (activeTab.value === 'multiple') {
+  if (store.activeTab === 'multiple') {
     return cartTotal('multiple')
   }
-  return donationAmounts.value[activeTab.value as 'once' | 'monthly' | 'yearly']
+  return store.donationAmounts[store.activeTab as 'once' | 'monthly' | 'yearly']
 })
 
 // Cover costs calculation (only shown from step 3 onwards AND if enabled)
 const coverFeesPercentage = computed(() => {
-  if (currentStep.value < 3) return 0
+  if (store.currentStep < 3) return 0
   if (!formConfig.value.features.coverCosts.enabled) return 0
-  return (formSections.value.giftAid?.coverFeesPercentage as number) || 0
+  return (store.formSections.giftAid?.coverFeesPercentage as number) || 0
 })
 
 const coverFeesAmount = computed(() => {
@@ -55,15 +54,15 @@ const totalWithFees = computed(() => {
 })
 
 const frequencyLabel = computed(() => {
-  if (activeTab.value === 'once') return 'one-time donation'
-  if (activeTab.value === 'monthly') return 'monthly donation'
-  if (activeTab.value === 'yearly') return 'yearly donation'
+  if (store.activeTab === 'once') return 'one-time donation'
+  if (store.activeTab === 'monthly') return 'monthly donation'
+  if (store.activeTab === 'yearly') return 'yearly donation'
   return 'mixed donations'
 })
 
 // Item count for multiple cart
 const itemCount = computed(() => {
-  if (activeTab.value === 'multiple') {
+  if (store.activeTab === 'multiple') {
     return multipleCart.value.reduce((sum, item) => sum + (item.quantity || 1), 0)
   }
   return 1
@@ -71,12 +70,12 @@ const itemCount = computed(() => {
 
 // Format amount with currency
 const formattedAmount = computed(() => {
-  const symbol = getCurrencySymbol(selectedCurrency.value)
+  const symbol = getCurrencySymbol(store.selectedCurrency)
   return `${symbol}${totalWithFees.value.toFixed(2)}`
 })
 
 const formattedBreakdown = computed(() => {
-  const symbol = getCurrencySymbol(selectedCurrency.value)
+  const symbol = getCurrencySymbol(store.selectedCurrency)
   return {
     donation: `${symbol}${totalAmount.value.toFixed(2)}`,
     costs: `${coverFeesPercentage.value}`
@@ -85,8 +84,8 @@ const formattedBreakdown = computed(() => {
 
 // Description text
 const descriptionText = computed(() => {
-  if (activeTab.value === 'multiple') {
-    const symbol = getCurrencySymbol(selectedCurrency.value)
+  if (store.activeTab === 'multiple') {
+    const symbol = getCurrencySymbol(store.selectedCurrency)
     const parts: string[] = []
 
     if (oneTimeTotal.value > 0) parts.push(`${symbol}${oneTimeTotal.value.toFixed(0)} once`)

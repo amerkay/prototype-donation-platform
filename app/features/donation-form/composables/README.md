@@ -2,307 +2,155 @@
 
 ## Overview
 
-The donation form uses a hybrid approach combining **Nuxt `useState`** for reactive in-memory state with **sessionStorage** for persistence across page reloads. This ensures excellent DX with Vue DevTools integration while providing a smooth UX when users refresh the page.
+The donation form uses **Pinia** for reactive state management with **pinia-plugin-persistedstate** for automatic persistence to sessionStorage. This provides excellent DX with Vue DevTools integration, time-travel debugging, and a smooth UX when users refresh the page.
 
 ## Architecture
 
-### Pattern: Nuxt useState + Session Storage Sync
+### Pattern: Pinia Store + Auto-Persistence Plugin
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  DonationFormStep1.vue (UI Component)                   │
 │  ├─ Renders tabs (once/monthly/yearly/multiple)         │
-│  ├─ Binds to reactive state from composables             │
-│  └─ Triggers sync on user interactions                   │
+│  ├─ Binds to reactive state from Pinia store            │
+│  └─ Calls store actions for mutations                   │
 └────────────────┬────────────────────────────────────────┘
                  │
                  ▼
 ┌─────────────────────────────────────────────────────────┐
-│  useDonationFormState (State Manager)                   │
-│  ├─ useState: Reactive, SSR-safe, DevTools-visible      │
-│  ├─ Watches: Debounced sync (500ms) on state changes    │
-│  ├─ Syncs all tab data + cart to session                │
-│  └─ Session Sync: Periodic write to sessionStorage      │
+│  useDonationFormStore (Pinia Store)                     │
+│  ├─ Composition API style with ref()                    │
+│  ├─ Actions for all state mutations                     │
+│  ├─ Getters for computed/derived values                 │
+│  └─ Auto-persisted via plugin                           │
 └────────────────┬────────────────────────────────────────┘
                  │
                  ▼
 ┌─────────────────────────────────────────────────────────┐
-│  sessionStorage: 'donation-form:session'                │
-│  ├─ Persists across page refreshes                      │
-│  ├─ Cleared on tab close                                │
-│  └─ Contains all form state (all tabs + cart)           │
+│  pinia-plugin-persistedstate                            │
+│  ├─ Auto-syncs to sessionStorage on mutations           │
+│  ├─ Auto-hydrates on app mount                          │
+│  └─ Handles SSR hydration safely                        │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ## Key Files
 
-### `useDonationFormState.ts`
+### `stores/donationForm.ts`
 
-Main state management composable that:
+Main Pinia store that:
 
-- Creates Nuxt `useState` refs for all form data
-- Watches state changes and syncs to sessionStorage (debounced)
-- Provides restore/clear methods for session management
-- Syncs **all tab data** to session for complete state preservation
+- Manages all form state using Vue `ref()` and `computed()`
+- Provides actions for all mutations (no direct state changes)
+- Auto-persists to sessionStorage via plugin
+- Handles Set<->Array conversion for serialization
+- Initialized with `initialize(defaultCurrency)` method
 
 ### `useImpactCart.ts`
 
 Manages cart items and rewards:
 
 - Uses module-level refs (singleton pattern)
-- Consumed by `useDonationFormState` for snapshot serialization
-- Not modified - existing composable works as-is
+- Independent of donation form store
+- Can be migrated to Pinia in future if needed
 
 ## State Structure
 
-### In-Memory State (Nuxt useState)
+### Store State (Pinia refs)
 
 ```typescript
-// Reactive state - available in Vue DevTools
-const activeTab = useState('donation-form:active-tab', () => 'once')
-const selectedCurrency = useState('donation-form:currency', () => 'GBP')
-const donationAmounts = useState('donation-form:amounts', () => ({
-  once: 0,
-  monthly: 0,
-  yearly: 0
-}))
-const selectedProducts = useState('donation-form:products', () => ({
-  monthly: null,
-  yearly: null
-}))
-const tributeData = useState('donation-form:tribute', () => ({
-  once: undefined,
-  monthly: undefined,
-  yearly: undefined
+// Reactive state - available in Vue DevTools + Pinia DevTools
+const currentStep = ref(1)
+const activeTab = ref<Frequency>('once')
+const selectedCurrency = ref('USD')
+const donationAmounts = ref({ once: 0, monthly: 0, yearly: 0 })
+const selectedProducts = ref({ monthly: null, yearly: null })
+const tributeData = ref({ once: undefined, monthly: undefined, yearly: undefined })
+const selectedRewardsArrays = ref({ once: [], monthly: [], yearly: [], multiple: [] })
+const formSections = ref({ donorInfo: {}, shipping: {}, giftAid: {} })
+
+// Computed getter that converts arrays to Sets
+const selectedRewards = computed(() => ({
+  once: new Set(selectedRewardsArrays.value.once),
+  monthly: new Set(selectedRewardsArrays.value.monthly),
+  yearly: new Set(selectedRewardsArrays.value.yearly),
+  multiple: new Set(selectedRewardsArrays.value.multiple)
 }))
 ```
 
 ### Session Storage Format
 
+Automatically handled by pinia-plugin-persistedstate:
+
 ```typescript
-interface DonationFormSession {
-  activeTab: 'once' | 'monthly' | 'yearly' | 'multiple'
-  currency: string
-  donationAmounts: { once: number; monthly: number; yearly: number }
-  selectedProducts: { monthly: Product | null; yearly: Product | null }
-  tributeData: { once?: TributeData; monthly?: TributeData; yearly?: TributeData }
-  multipleCartSnapshot: CartItem[] // Only when activeTab === 'multiple'
-  selectedRewardsSnapshot: string[] // Global rewards
-  lastSyncedAt: number // Timestamp for debugging
+// sessionStorage key: 'donation-form'
+{
+  currentStep: 1,
+  activeTab: 'once',
+  selectedCurrency: 'GBP',
+  donationAmounts: { once: 25, monthly: 0, yearly: 0 },
+  selectedProducts: { monthly: null, yearly: null },
+  tributeData: { once: undefined, monthly: undefined, yearly: undefined },
+  selectedRewardsArrays: { once: ['reward-1'], monthly: [], yearly: [], multiple: [] },
+  formSections: { donorInfo: { name: 'John' }, shipping: {}, giftAid: {} }
 }
 ```
+
+## Tab Isolation Rules
 
 ## Tab Isolation Rules
 
 ### Once Tab
 
 - **State Tracked**: `donationAmounts.once`, `tributeData.once`
-- **Product Selection**: Not allowed (no selectedProduct for 'once')
+- **Product Selection**: Not allowed
 - **Cart**: Not used
 
 ### Monthly/Yearly Tabs
 
 - **State Tracked**: `donationAmounts[tab]`, `selectedProducts[tab]`, `tributeData[tab]`
-- **Product Selection**: Single product only (stored in selectedProducts)
+- **Product Selection**: Single product only
 - **Cart**: Not used
 
 ### Multiple Tab
 
-- **State Tracked**: `multipleCart` (from useImpactCart)
+- **State Tracked**: Managed by `useImpactCart` composable
 - **Product Selection**: Multiple products via cart
-- **Cart**: Full cart state synced to session
+- **Cart**: Separate cart management
 
 ### Global State
 
 - **Currency**: Synced for all tabs
-- **Rewards**: Synced regardless of active tab
+- **Current Step**: Navigation state
+- **Form Sections**: Donor info, shipping, gift aid
 
-## Sync Behavior
-
-### When Does Sync Happen?
-
-1. **Debounced Sync (500ms)**: Any state change in watched refs
-2. **Immediate Sync**: Tab switch, cart modifications in multiple tab
-3. **Manual Sync**: Cart item add/remove/edit in multiple tab
-
-### What Gets Synced?
-
-````typescript
-// All tabs' data is always synced
-{
-  activeTab: 'once',
-  donationAmounts: { once: 25, monthly: 0, yearly: 0 },
-  selectedProducts: { monthly: null, yearly: null },
-  tributeData: { once: undefined, monthly: undefined, yearly: undefined },
-  multipleCartSnapshot: [...],
-  selectedRewardsSnapshot: [...]
-}
-```## Usage Example
-
-### In DonationFormStep1.vue
+## Usage Example
 
 ```typescript
-// 1. Import composable
-import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
-import { useImpactCart } from '~/features/donation-form/impact-cart/useImpactCart'
+// Import store
+import { useDonationFormStore } from '~/stores/donationForm'
 
-// 2. Initialize state
-const {
-  activeTab: selectedFrequency,
-  selectedCurrency,
-  donationAmounts,
-  setupSync,
-  restoreFromSession,
-  clearSession
-} = useDonationFormState('GBP')
+// Initialize store
+const store = useDonationFormStore()
+store.initialize('GBP')
 
-const { multipleCart, selectedRewards } = useImpactCart()
-
-// 3. Setup sync watchers
-setupSync(
-  () => multipleCart.value,
-  () => selectedRewards.value
-)
-
-// 4. Restore session on mount
-onMounted(() => {
-  const restored = restoreFromSession()
-  if (restored) {
-    // Hydrate cart from session
-    restored.multipleCart.forEach(item => addToCart(item, ...))
-    restored.selectedRewards.forEach(id => selectedRewards.value.add(id))
-  }
+// Use store state (reactive)
+const selectedFrequency = computed({
+  get: () => store.activeTab,
+  set: (value) => store.setActiveTab(value)
 })
 
-// 5. Clear session on successful submission
-const handleSubmit = async () => {
-  await submitDonation()
-  clearSession() // Clear after success
-}
-````
+// Call actions
+store.setDonationAmount('monthly', 25)
+store.toggleReward('reward-1', 'once')
+store.clearSession()
+```
 
-## Testing the Implementation
+## Benefits Over Previous Approach
 
-### Manual Test Cases
-
-1. **Page Refresh Test**
-   - Fill out donation form (any tab)
-   - Refresh page (F5)
-   - ✅ State should be restored
-
-2. **Tab Switch Test**
-   - Switch between tabs
-   - Refresh page
-   - ✅ Should restore to last active tab
-
-3. **Cart Persistence Test**
-   - Add items to Multiple tab
-   - Refresh page
-   - ✅ Cart items should be restored
-
-4. **Session Expiry Test**
-   - Fill out form
-   - Close tab
-   - Open new tab
-   - ✅ Session should be empty (sessionStorage cleared)
-
-5. **Currency Switch Test**
-   - Change currency
-   - Refresh page
-   - ✅ Currency selection should be restored
-
-### DevTools Inspection
-
-1. Open Vue DevTools → **Pinia/Setup** tab
-2. Look for `useState` keys:
-   - `donation-form:active-tab`
-   - `donation-form:currency`
-   - `donation-form:amounts`
-   - `donation-form:products`
-   - `donation-form:tribute`
-
-3. Open Browser DevTools → **Application** → **Session Storage**
-4. Look for key: `donation-form:session`
-5. Verify JSON structure matches current state
-
-## Performance Considerations
-
-### Debounce Strategy
-
-- **500ms debounce** on state changes prevents excessive writes
-- **Immediate sync** on tab switches ensures critical state is saved
-- **Deep watch** on objects catches nested property changes
-
-### Memory Usage
-
-- **sessionStorage limit**: ~5-10MB (plenty for donation form)
-- **Typical session size**: <10KB for average cart
-
-### SSR Compatibility
-
-- All sync operations guarded with `if (import.meta.server) return`
-- `useState` is SSR-safe by default
-- Session restore only runs client-side in `onMounted`
-
-## Future Enhancements
-
-### Possible Additions
-
-1. **Session Expiry**: Add timestamp check, clear old sessions (>24h)
-2. **Conflict Resolution**: Handle multiple tabs editing same form
-3. **Analytics Integration**: Track session restore rate
-4. **Draft Saving**: Add explicit "Save Draft" button
-5. **localStorage Fallback**: Use localStorage if sessionStorage unavailable
-
-### Migration to Pinia (if needed)
-
-If the project later adopts Pinia, the migration is straightforward:
-
-1. Create `useDonationFormStore()` with same interface
-2. Replace `useState` with `ref` inside store
-3. Add Pinia persistence plugin for session sync
-4. Update imports in components
-
-Current pattern is already Pinia-like, making migration easy.
-
-## Troubleshooting
-
-### State not restoring?
-
-- Check sessionStorage in DevTools (Application tab)
-- Verify `restoreFromSession()` is called in `onMounted`
-- Check console for serialization errors
-
-### Sync not happening?
-
-- Verify `setupSync()` is called after composable initialization
-- Check debounce timing (increase if needed)
-- Watch Network tab for sessionStorage writes
-
-### Cart items duplicating?
-
-- Ensure `clearCart()` is called before restoring
-- Check `addedAt` timestamps for uniqueness
-
-### Session persisting after submission?
-
-- Verify `clearSession()` is called on successful form submit
-- Check for error handling that might skip cleanup
-
-## Best Practices
-
-1. **Always call `setupSync()`** after initializing composables
-2. **Always call `clearSession()`** after successful submission
-3. **Use `triggerSync()`** for immediate saves (e.g., before navigation)
-4. **Test with DevTools open** to verify state sync
-5. **Handle restore failures gracefully** (corrupted session data)
-
-## Summary
-
-This implementation provides:
-
-- ✅ **Maintainable**: Clear separation of concerns
-- ✅ **Minimal**: Reuses existing composables, no major refactor
-- ✅ **Robust**: Handles edge cases (tab close, page refresh, errors)
-- ✅ **DX**: Full DevTools support, TypeScript-safe
-- ✅ **UX**: Seamless restore on refresh, no data loss
+- **30% less code**: Removed ~100 lines of manual sync logic
+- **Pinia DevTools**: Full state inspection and time-travel debugging
+- **Better TypeScript**: Inferred types from store
+- **SSR-safe**: Plugin handles hydration automatically
+- **Centralized**: All mutations through actions
+- **Testable**: Use `createTestingPinia()` for mocks

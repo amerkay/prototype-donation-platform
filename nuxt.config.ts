@@ -25,5 +25,5 @@ export default defineNuxtConfig({
 
   css: ['./app/assets/css/main.css'],
   vite: { plugins: [tailwindcss()] },
-  modules: ['shadcn-nuxt', '@nuxtjs/color-mode', '@nuxt/eslint', '@nuxt/icon']
+  modules: ['shadcn-nuxt', '@nuxtjs/color-mode', '@nuxt/eslint', '@nuxt/icon', '@pinia/nuxt']
 })

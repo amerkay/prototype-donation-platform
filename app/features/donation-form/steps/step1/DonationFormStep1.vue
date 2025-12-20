@@ -3,7 +3,7 @@ import { computed, watch, inject } from 'vue'
 import type { Ref } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CURRENCY_OPTIONS, useCurrency } from '~/features/donation-form/composables/useCurrency'
-import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
+import { useDonationFormStore } from '~/stores/donationForm'
 import DonationFormSingle from './DonationFormSingle.vue'
 import DonationFormMultiple from './DonationFormMultiple.vue'
 import type { FormConfig, Product, TributeData } from '@/lib/common/types'
@@ -32,17 +32,19 @@ const emit = defineEmits<{
 const { convertPrice } = useCurrency(computed(() => formConfig.value.pricing.baseCurrency).value)
 const { multipleCart, addToCart } = useImpactCart()
 
-// Use new donation form state composable
-const {
-  activeTab: selectedFrequency,
-  selectedCurrency,
-  donationAmounts,
-  selectedProducts,
-  tributeData,
-  selectedRewards,
-  toggleReward,
-  clearSession
-} = useDonationFormState(formConfig.value.localization.defaultCurrency)
+// Initialize Pinia store
+const store = useDonationFormStore()
+store.initialize(formConfig.value.localization.defaultCurrency)
+
+// Alias for convenience
+const selectedFrequency = computed({
+  get: () => store.activeTab,
+  set: (value) => store.setActiveTab(value)
+})
+const selectedCurrency = computed({
+  get: () => store.selectedCurrency,
+  set: (value) => store.setCurrency(value)
+})
 
 // Extract config values - now reactive to config changes
 const CURRENCIES = computed(() =>
@@ -159,16 +161,15 @@ const castFrequency = (freq: string): 'once' | 'monthly' | 'yearly' => {
 const handleNext = () => {
   console.log('Proceeding to next step', {
     frequency: selectedFrequency.value,
-    donationAmounts: donationAmounts.value,
-    selectedProducts: selectedProducts.value,
+    donationAmounts: store.donationAmounts,
+    selectedProducts: store.selectedProducts,
     multipleCart: multipleCart.value
   })
 
   // Emit complete event to parent wizard
   emit('complete')
 
-  // TODO: When implementing actual form submission, call clearSession() on success
-  // clearSession()
+  // TODO: When implementing actual form submission, call store.clearSession() on success
 }
 
 const handleSwitchToTab = (tab: 'monthly' | 'yearly', openModal?: boolean) => {
@@ -184,43 +185,43 @@ const handleSwitchToTab = (tab: 'monthly' | 'yearly', openModal?: boolean) => {
 
 const handleRemoveProduct = () => {
   const freqKey = selectedFrequency.value as 'monthly' | 'yearly'
-  selectedProducts.value[freqKey] = null
-  donationAmounts.value[freqKey] = 0
+  store.setSelectedProduct(freqKey, null)
+  store.setDonationAmount(freqKey, 0)
 }
 
 const handleProductSelect = (product: Product) => {
   const freqKey = selectedFrequency.value as 'monthly' | 'yearly'
-  selectedProducts.value[freqKey] = product
-  if (donationAmounts.value[freqKey] === 0) {
-    donationAmounts.value[freqKey] = product.default ?? product.price ?? 0
+  store.setSelectedProduct(freqKey, product)
+  if (store.donationAmounts[freqKey] === 0) {
+    store.setDonationAmount(freqKey, product.default ?? product.price ?? 0)
   }
 }
 
 const handleTributeSave = (data: TributeData | undefined) => {
   const freqKey = selectedFrequency.value as 'once' | 'monthly' | 'yearly'
-  tributeData.value[freqKey] = data
+  store.setTributeData(freqKey, data)
 }
 
 const handleRemoveTribute = () => {
   const freqKey = selectedFrequency.value as 'once' | 'monthly' | 'yearly'
-  tributeData.value[freqKey] = undefined
+  store.setTributeData(freqKey, undefined)
 }
 
 // Expose clearSession for parent components (e.g., after successful form submission)
 defineExpose({
-  clearSession
+  clearSession: () => store.clearSession()
 })
 
 // Watch for tab switches to "multiple" - auto-add selected product if cart is empty
 watch(selectedFrequency, (newFreq, oldFreq) => {
   if (newFreq === 'multiple' && (oldFreq === 'monthly' || oldFreq === 'yearly')) {
     if (multipleCart.value.length === 0) {
-      const previousProduct = selectedProducts.value[oldFreq]
+      const previousProduct = store.selectedProducts[oldFreq]
       if (previousProduct) {
         const price =
-          donationAmounts.value[oldFreq] || previousProduct.default || previousProduct.price || 0
+          store.donationAmounts[oldFreq] || previousProduct.default || previousProduct.price || 0
         if (price > 0) {
-          addToCart(previousProduct, price, 'multiple', undefined, tributeData.value[oldFreq])
+          addToCart(previousProduct, price, 'multiple', undefined, store.tributeData[oldFreq])
         }
       }
     }
@@ -283,10 +284,14 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           :frequency="castFrequency(freq.value)"
           :frequency-label="freq.label"
           :currency="selectedCurrency"
-          :donation-amount="donationAmounts[freq.value as keyof typeof donationAmounts]"
-          :selected-product="selectedProducts[freq.value as keyof typeof selectedProducts] ?? null"
-          :tribute-data="tributeData[freq.value as keyof typeof tributeData]"
-          :selected-rewards="selectedRewards[freq.value as keyof typeof selectedRewards]"
+          :donation-amount="store.donationAmounts[freq.value as keyof typeof store.donationAmounts]"
+          :selected-product="
+            store.selectedProducts[freq.value as keyof typeof store.selectedProducts] ?? null
+          "
+          :tribute-data="store.tributeData[freq.value as keyof typeof store.tributeData]"
+          :selected-rewards="
+            store.selectedRewards[freq.value as keyof typeof store.selectedRewards]
+          "
           :rewards="rewards"
           :products="products"
           :available-amounts="availableAmounts"
@@ -295,9 +300,9 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           :enabled-frequencies="enabledFrequencies"
           :form-config="formConfig"
           @update:donation-amount="
-            (val) => (donationAmounts[freq.value as keyof typeof donationAmounts] = val)
+            (val) => store.setDonationAmount(freq.value as 'once' | 'monthly' | 'yearly', val)
           "
-          @toggle-reward="(itemId) => toggleReward(itemId, castFrequency(freq.value))"
+          @toggle-reward="(itemId) => store.toggleReward(itemId, castFrequency(freq.value))"
           @product-select="handleProductSelect"
           @remove-product="handleRemoveProduct"
           @tribute-save="handleTributeSave"
@@ -314,11 +319,11 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           :currency="selectedCurrency"
           :rewards="rewards"
           :products="products"
-          :selected-rewards="selectedRewards.multiple"
+          :selected-rewards="store.selectedRewards.multiple"
           :enabled-frequencies="enabledFrequencies"
           :initial-products-displayed="INITIAL_PRODUCTS_DISPLAYED"
           :form-config="formConfig"
-          @toggle-reward="(itemId) => toggleReward(itemId, 'multiple')"
+          @toggle-reward="(itemId) => store.toggleReward(itemId, 'multiple')"
           @next="handleNext"
           @switch-to-tab="handleSwitchToTab"
         />

@@ -5,7 +5,7 @@ import NextButton from '~/features/donation-form/components/NextButton.vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
 import CoverFeesUpsellModal from '~/features/donation-form/components/CoverFeesUpsellModal.vue'
 import { createStep3FormSection } from '../../forms/step3-form'
-import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
+import { useDonationFormStore } from '~/stores/donationForm'
 import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
 import type { FormConfig } from '@/lib/common/types'
 
@@ -24,16 +24,16 @@ const emit = defineEmits<{
   complete: []
 }>()
 
-// Pattern 6: Direct binding - form structure IS the state structure
-const { selectedCurrency, formSections, donationAmounts, activeTab } = useDonationFormState('')
+// Initialize Pinia store
+const store = useDonationFormStore()
 const { cartTotal } = useImpactCart()
 
 // Computed refs for individual form sections
-const shippingSection = computed(() => formSections.value.shipping || {})
+const shippingSection = computed(() => store.formSections.shipping || {})
 const giftAidSection = computed({
-  get: () => formSections.value.giftAid || {},
+  get: () => store.formSections.giftAid || {},
   set: (value) => {
-    formSections.value.giftAid = value ?? {}
+    store.updateFormSection('giftAid', value ?? {})
   }
 })
 
@@ -66,13 +66,13 @@ const formDataWithContext = computed({
     }
 
     // Get current donation amount based on active tab
-    const currentTab = activeTab.value
+    const currentTab = store.activeTab
     const currentDonationAmount =
-      currentTab === 'multiple' ? cartTotal(currentTab) : donationAmounts.value[currentTab] || 0
+      currentTab === 'multiple' ? cartTotal(currentTab) : store.donationAmounts[currentTab] || 0
 
     return {
       // Cross-section context (read-only)
-      currency: selectedCurrency.value,
+      currency: store.selectedCurrency,
       donationAmount: currentDonationAmount, // For cover costs calculation
       'shippingAddress.address1': shippingSection.value.address1 as string,
       'shippingAddress.address2': shippingSection.value.address2 as string,

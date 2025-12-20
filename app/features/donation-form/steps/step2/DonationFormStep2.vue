@@ -6,7 +6,7 @@ import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNot
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
 import { donorInfoFormSection } from './forms/donor-info-form'
 import { addressFormSection } from '../../forms/address-form'
-import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
+import { useDonationFormStore } from '~/stores/donationForm'
 import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
 import type { Product } from '@/lib/common/types'
 
@@ -26,8 +26,8 @@ if (!products) {
   throw new Error('products not provided')
 }
 
-// Pattern 6: Direct binding to form sections - no transformation layer
-const { formSections, activeTab, selectedRewards } = useDonationFormState('')
+// Initialize Pinia store
+const store = useDonationFormStore()
 const { multipleCart } = useImpactCart()
 
 // Calculate shipping item counts
@@ -37,7 +37,7 @@ const shippingCounts = computed(() => {
 
   // Count rewards that require shipping for current tab
   const currentTabRewards =
-    selectedRewards.value[activeTab.value as 'once' | 'monthly' | 'yearly' | 'multiple']
+    store.selectedRewards[store.activeTab as 'once' | 'monthly' | 'yearly' | 'multiple']
   if (currentTabRewards) {
     rewardCount = Array.from(currentTabRewards).filter((id) => {
       const reward = products.value.find((p: Product) => p.id === id)
@@ -46,7 +46,7 @@ const shippingCounts = computed(() => {
   }
 
   // Count cart items that require shipping (only for multiple tab)
-  if (activeTab.value === 'multiple') {
+  if (store.activeTab === 'multiple') {
     cartCount = multipleCart.value.filter((item) => item.isShippingRequired).length
   }
 
@@ -55,16 +55,16 @@ const shippingCounts = computed(() => {
 
 // Computed refs for individual form sections
 const donorInfoSection = computed({
-  get: () => formSections.value.donorInfo || {},
+  get: () => store.formSections.donorInfo || {},
   set: (value) => {
-    formSections.value.donorInfo = value ?? {}
+    store.updateFormSection('donorInfo', value ?? {})
   }
 })
 
 const shippingSection = computed({
-  get: () => formSections.value.shipping || {},
+  get: () => store.formSections.shipping || {},
   set: (value) => {
-    formSections.value.shipping = value ?? {}
+    store.updateFormSection('shipping', value ?? {})
   }
 })
 
