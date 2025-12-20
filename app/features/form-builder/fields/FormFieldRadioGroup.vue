@@ -14,7 +14,6 @@ import type {
   VeeFieldContext
 } from '~/features/form-builder/form-builder-types'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
-import { useFieldChange } from '~/features/form-builder/composables/useFieldChange'
 import FormFieldSetWrapper from '~/features/form-builder/components/FormFieldSetWrapper.vue'
 
 interface Props {
@@ -22,7 +21,7 @@ interface Props {
   errors: string[]
   meta: RadioGroupFieldMeta
   name: string
-  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
+  onChange?: (value: unknown) => void
 }
 
 const props = defineProps<Props>()
@@ -30,7 +29,11 @@ const props = defineProps<Props>()
 const fieldValue = computed(() => props.field.value as string | number | undefined)
 
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
-const { handleChange } = useFieldChange(props.field, props.onFieldChange)
+
+const handleChange = (value: unknown) => {
+  props.field.onChange(value)
+  props.onChange?.(value)
+}
 </script>
 
 <template>

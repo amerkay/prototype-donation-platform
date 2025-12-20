@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils'
 import type { ArrayFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 import FormField from '../FormField.vue'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
-import { useFieldChange } from '~/features/form-builder/composables/useFieldChange'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -13,18 +12,22 @@ interface Props {
   errors: string[]
   meta: ArrayFieldMeta
   name: string
-  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
+  onChange?: (value: unknown) => void
 }
 
 const props = defineProps<Props>()
 
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
-const { handleChange } = useFieldChange(props.field, props.onFieldChange)
 
 const items = computed(() => {
   const value = props.field.value as unknown[] | undefined
   return Array.isArray(value) ? value : []
 })
+
+const handleChange = (newItems: unknown[]) => {
+  props.field.onChange(newItems)
+  props.onChange?.(newItems)
+}
 
 function addItem() {
   const newItems = [...items.value]

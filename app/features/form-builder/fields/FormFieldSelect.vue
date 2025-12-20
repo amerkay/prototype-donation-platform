@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import type { SelectFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
-import { useFieldChange } from '~/features/form-builder/composables/useFieldChange'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -11,13 +10,12 @@ interface Props {
   errors: string[]
   meta: SelectFieldMeta
   name: string
-  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
+  onChange?: (value: unknown) => void
 }
 
 const props = defineProps<Props>()
 
 const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(props.meta)
-const { handleChange } = useFieldChange(props.field, props.onFieldChange)
 
 const selectValue = computed({
   get: () => props.field.value as string | number | undefined,
@@ -25,7 +23,8 @@ const selectValue = computed({
     // Find the original option to preserve correct type
     const option = props.meta.options.find((o) => String(o.value) === String(value))
     if (option) {
-      handleChange(option.value)
+      props.field.onChange(option.value)
+      props.onChange?.(option.value)
     }
   }
 })

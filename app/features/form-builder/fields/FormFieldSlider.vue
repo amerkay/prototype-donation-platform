@@ -3,7 +3,6 @@ import { inject, computed } from 'vue'
 import { Slider } from '@/components/ui/slider'
 import type { SliderFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
-import { useFieldChange } from '~/features/form-builder/composables/useFieldChange'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -11,14 +10,13 @@ interface Props {
   errors: string[]
   meta: SliderFieldMeta
   name: string
-  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
+  onChange?: (value: unknown) => void
 }
 
 const props = defineProps<Props>()
 
 const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta, formValues)
-const { handleChange } = useFieldChange(props.field, props.onFieldChange)
 
 const numberValue = computed(() => {
   const val = props.field.value
@@ -44,7 +42,8 @@ const minMaxFormat = (value: number) => {
 const handleSliderChange = (value: number[] | undefined) => {
   const newValue = value?.[0]
   if (newValue !== undefined) {
-    handleChange(newValue)
+    props.field.onChange(newValue)
+    props.onChange?.(newValue)
   }
 }
 </script>

@@ -26,7 +26,7 @@ const initialFormValues = computed(() => ({
 }))
 
 // Use the composition API to access form context
-const { values, meta, setValues, handleSubmit, setFieldValue, setFieldTouched } = useForm({
+const { values, errors, meta, setValues, handleSubmit, setFieldValue, setFieldTouched } = useForm({
   initialValues: initialFormValues.value,
   validateOnMount: false
 })
@@ -39,6 +39,10 @@ const formValuesComputed = computed(() => {
   return (sectionValues as Record<string, unknown>) || {}
 })
 provide('formValues', () => formValuesComputed.value)
+
+// Provide form errors for child field validation state tracking
+// FormFieldGroup uses this to detect child field errors
+provide('formErrors', errors)
 
 // Provide section id so nested fields can resolve absolute vee-validate names
 provide('sectionId', props.section.id)

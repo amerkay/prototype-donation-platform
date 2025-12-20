@@ -13,7 +13,6 @@ import { Check, ChevronsUpDown } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import type { ComboboxFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
-import { useFieldChange } from '~/features/form-builder/composables/useFieldChange'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -21,7 +20,7 @@ interface Props {
   errors: string[]
   meta: ComboboxFieldMeta
   name: string
-  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
+  onChange?: (value: unknown) => void
 }
 
 const props = defineProps<Props>()
@@ -32,7 +31,6 @@ const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedF
   props.meta,
   formValues
 )
-const { handleChange } = useFieldChange(props.field, props.onFieldChange)
 
 const searchValue = ref('')
 const isOpen = ref(false)
@@ -70,7 +68,8 @@ const modelValue = computed({
     }
   },
   set: (value) => {
-    handleChange(value)
+    props.field.onChange(value)
+    props.onChange?.(value)
 
     // Mark field as touched and trigger validation on any value change
     if (props.field.onBlur) {

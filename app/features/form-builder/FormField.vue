@@ -103,14 +103,8 @@ useField(resolvedVeeName.value, fieldRules, {
 })
 
 // Handle field changes and call onChange callback if provided
-const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => void) => {
-  // First update the field value
-  fieldOnChange(value)
-
-  // Then call the onChange callback if provided
+const handleFieldChange = (value: unknown) => {
   if (props.meta.onChange) {
-    // Create a scoped setFieldValue for relative path resolution
-    // Note: For non-autocomplete fields, we pass the injected setFieldValue directly
     props.meta.onChange(value, formValues(), setFieldValue)
   }
 }
@@ -136,7 +130,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
-          :on-field-change="handleFieldChange"
+          :on-change="handleFieldChange"
         />
         <FormFieldTextarea
           v-else-if="meta.type === 'textarea'"
@@ -144,7 +138,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
-          :on-field-change="handleFieldChange"
+          :on-change="handleFieldChange"
         />
         <FormFieldNumber
           v-else-if="meta.type === 'number'"
@@ -152,7 +146,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
-          :on-field-change="handleFieldChange"
+          :on-change="handleFieldChange"
         />
         <FormFieldToggle
           v-else-if="meta.type === 'toggle'"
@@ -160,7 +154,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
-          :on-field-change="handleFieldChange"
+          :on-change="handleFieldChange"
         />
         <FormFieldSelect
           v-else-if="meta.type === 'select'"
@@ -168,7 +162,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
-          :on-field-change="handleFieldChange"
+          :on-change="handleFieldChange"
         />
         <FormFieldCombobox
           v-else-if="meta.type === 'combobox'"
@@ -176,7 +170,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
-          :on-field-change="handleFieldChange"
+          :on-change="handleFieldChange"
         />
         <FormFieldAutocomplete
           v-else-if="meta.type === 'autocomplete'"
@@ -185,7 +179,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :meta="meta"
           :name="name"
           :field-prefix="fieldPrefix"
-          :on-field-change="handleFieldChange"
+          :on-change="handleFieldChange"
         />
         <FormFieldRadioGroup
           v-else-if="meta.type === 'radio-group'"
@@ -193,7 +187,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
-          :on-field-change="handleFieldChange"
+          :on-change="handleFieldChange"
         />
         <FormFieldEmoji
           v-else-if="meta.type === 'emoji'"
@@ -201,7 +195,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
-          :on-field-change="handleFieldChange"
+          :on-change="handleFieldChange"
         />
         <FormFieldSlider
           v-else-if="meta.type === 'slider'"
@@ -209,17 +203,17 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
-          :on-field-change="handleFieldChange"
+          :on-change="handleFieldChange"
         />
         <FormFieldCard v-else-if="meta.type === 'card'" :meta="meta" />
         <FormFieldSeparator v-else-if="meta.type === 'separator'" :meta="meta" />
         <FormFieldGroup
           v-else-if="meta.type === 'field-group'"
           :field="field"
-          :errors="meta.rules && errors.length > 0 ? errors : fieldMeta.touched ? errors : []"
+          :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
-          :on-field-change="handleFieldChange"
+          :on-change="handleFieldChange"
         />
         <FormFieldArray
           v-else-if="meta.type === 'array'"
@@ -227,15 +221,15 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
           :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
-          :on-field-change="handleFieldChange"
+          :on-change="handleFieldChange"
         />
         <FormFieldTabs
           v-else-if="meta.type === 'tabs'"
           :field="field"
-          :errors="meta.rules && errors.length > 0 ? errors : fieldMeta.touched ? errors : []"
+          :errors="fieldMeta.touched ? errors : []"
           :meta="meta"
           :name="name"
-          :on-field-change="handleFieldChange"
+          :on-change="handleFieldChange"
         />
         <div v-else class="text-destructive text-sm">
           Unknown field type: {{ (meta as { type: string }).type }}

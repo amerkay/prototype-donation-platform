@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import type { EmojiFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
-import { useFieldChange } from '~/features/form-builder/composables/useFieldChange'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -12,7 +11,7 @@ interface Props {
   errors: string[]
   meta: EmojiFieldMeta
   name: string
-  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
+  onChange?: (value: unknown) => void
 }
 
 const props = defineProps<Props>()
@@ -20,7 +19,6 @@ const props = defineProps<Props>()
 const submitForm = inject<() => void>('submitForm', () => {})
 
 const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(props.meta)
-const { handleChange } = useFieldChange(props.field, props.onFieldChange)
 
 const inputValue = computed(() => props.field.value as string | undefined)
 
@@ -35,7 +33,8 @@ const handleInput = (value: string | number) => {
   if (stringValue === '' || EMOJI_REGEX.test(stringValue)) {
     // Limit length
     const truncated = stringValue.slice(0, maxLength.value)
-    handleChange(truncated)
+    props.field.onChange(truncated)
+    props.onChange?.(truncated)
   }
 }
 

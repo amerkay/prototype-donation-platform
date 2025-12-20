@@ -9,7 +9,6 @@ import {
 } from '@/components/ui/number-field'
 import type { NumberFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
-import { useFieldChange } from '~/features/form-builder/composables/useFieldChange'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -17,7 +16,7 @@ interface Props {
   errors: string[]
   meta: NumberFieldMeta
   name: string
-  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
+  onChange?: (value: unknown) => void
 }
 
 const props = defineProps<Props>()
@@ -32,7 +31,11 @@ const handleEnterKey = (event: KeyboardEvent) => {
 const numberValue = computed(() => props.field.value as number | null | undefined)
 
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
-const { handleChange } = useFieldChange(props.field, props.onFieldChange)
+
+const handleChange = (value: unknown) => {
+  props.field.onChange(value)
+  props.onChange?.(value)
+}
 </script>
 
 <template>

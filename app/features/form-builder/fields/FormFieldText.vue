@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import type { TextFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
-import { useFieldChange } from '~/features/form-builder/composables/useFieldChange'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -12,7 +11,7 @@ interface Props {
   errors: string[]
   meta: TextFieldMeta
   name: string
-  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
+  onChange?: (value: unknown) => void
 }
 
 const props = defineProps<Props>()
@@ -21,7 +20,11 @@ const submitForm = inject<() => void>('submitForm', () => {})
 const inputValue = computed(() => props.field.value as string | number | undefined)
 
 const { resolvedLabel, resolvedPlaceholder } = useResolvedFieldMeta(props.meta)
-const { handleChange } = useFieldChange(props.field, props.onFieldChange)
+
+const handleChange = (value: unknown) => {
+  props.field.onChange(value)
+  props.onChange?.(value)
+}
 
 const handleEnterKey = (event: KeyboardEvent) => {
   event.preventDefault()

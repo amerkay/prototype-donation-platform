@@ -20,7 +20,6 @@ import type {
 } from '~/features/form-builder/form-builder-types'
 import { joinPath } from '~/features/form-builder/field-path-utils'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
-import { useFieldChange } from '~/features/form-builder/composables/useFieldChange'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -29,7 +28,7 @@ interface Props {
   meta: AutocompleteFieldMeta
   name: string
   fieldPrefix?: string
-  onFieldChange?: (value: unknown, fieldOnChange: (value: unknown) => void) => void
+  onChange?: (value: unknown) => void
 }
 
 const props = defineProps<Props>()
@@ -62,9 +61,6 @@ const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedF
   props.meta,
   formValues
 )
-
-// Unified change handler (supports onFieldChange prop)
-const { handleChange } = useFieldChange(props.field, props.onFieldChange)
 
 // Fetch options (async or static)
 const fetchOptions = async (query: string) => {
@@ -133,8 +129,9 @@ const handleValueChange = (value: AutocompleteOption | null) => {
 
   selectedValue.value = value
 
-  // Update field value and trigger onChange chain
-  handleChange(value)
+  // Update field value via vee-validate
+  props.field.onChange(value)
+  props.onChange?.(value)
 
   // Call meta.onChange if provided (for address autocomplete population)
   if (props.meta.onChange) {
