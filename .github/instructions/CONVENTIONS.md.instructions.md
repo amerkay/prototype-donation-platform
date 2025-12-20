@@ -43,10 +43,11 @@ app/
 **Examples**:
 
 - `app/features/donation-form/` - All donation form logic, components, types
-- `app/features/impact-cart/` - Cart functionality with `useImpactCart` composable, `CartItem` component
+- `app/features/impact-cart/` - Cart functionality with impact cart components
 - `app/features/form-builder/` - Form builder system with fields, config types
 - `app/components/` - Only `Button`, `Card`, `BaseDialogOrDrawer`, etc.
 - `app/composables/` - Only `useAuth`, `useApi`, `useCurrency`, etc.
+- `app/stores/` - Pinia stores like `donationForm`, `impactCart`
 
 ## Component Structure
 

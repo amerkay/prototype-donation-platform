@@ -3,7 +3,7 @@ import { computed, inject } from 'vue'
 import type { Ref } from 'vue'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
-import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
+import { useImpactCartStore } from '~/stores/impactCart'
 import { useDonationFormStore } from '~/stores/donationForm'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import type { FormConfig } from '@/lib/common/types'
@@ -25,14 +25,14 @@ if (!formConfig) {
   throw new Error('formConfig not provided')
 }
 
-const { multipleCart, cartTotal, oneTimeTotal, monthlyTotal, yearlyTotal } = useImpactCart()
+const cartStore = useImpactCartStore()
 const store = useDonationFormStore()
 const { getCurrencySymbol } = useCurrency()
 
 // Determine total amount
 const totalAmount = computed(() => {
   if (store.activeTab === 'multiple') {
-    return cartTotal('multiple')
+    return cartStore.cartTotal('multiple')
   }
   return store.donationAmounts[store.activeTab as 'once' | 'monthly' | 'yearly']
 })
@@ -63,7 +63,7 @@ const frequencyLabel = computed(() => {
 // Item count for multiple cart
 const itemCount = computed(() => {
   if (store.activeTab === 'multiple') {
-    return multipleCart.value.reduce((sum, item) => sum + (item.quantity || 1), 0)
+    return cartStore.multipleCart.reduce((sum, item) => sum + (item.quantity || 1), 0)
   }
   return 1
 })
@@ -88,9 +88,10 @@ const descriptionText = computed(() => {
     const symbol = getCurrencySymbol(store.selectedCurrency)
     const parts: string[] = []
 
-    if (oneTimeTotal.value > 0) parts.push(`${symbol}${oneTimeTotal.value.toFixed(0)} once`)
-    if (monthlyTotal.value > 0) parts.push(`${symbol}${monthlyTotal.value.toFixed(0)} monthly`)
-    if (yearlyTotal.value > 0) parts.push(`${symbol}${yearlyTotal.value.toFixed(0)} yearly`)
+    if (cartStore.oneTimeTotal > 0) parts.push(`${symbol}${cartStore.oneTimeTotal.toFixed(0)} once`)
+    if (cartStore.monthlyTotal > 0)
+      parts.push(`${symbol}${cartStore.monthlyTotal.toFixed(0)} monthly`)
+    if (cartStore.yearlyTotal > 0) parts.push(`${symbol}${cartStore.yearlyTotal.toFixed(0)} yearly`)
 
     const breakdown = parts.length > 1 ? parts.join(', ') : frequencyLabel.value
     return `${itemCount.value} item${itemCount.value !== 1 ? 's' : ''} • ${breakdown}`

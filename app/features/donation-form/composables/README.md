@@ -2,36 +2,36 @@
 
 ## Overview
 
-The donation form uses **Pinia** for reactive state management with **pinia-plugin-persistedstate** for automatic persistence to sessionStorage. This provides excellent DX with Vue DevTools integration, time-travel debugging, and a smooth UX when users refresh the page.
+The donation form uses **Pinia** for reactive state management with manual persistence to sessionStorage. This provides excellent DX with Vue DevTools integration, time-travel debugging, and a smooth UX when users refresh the page.
 
 ## Architecture
 
-### Pattern: Pinia Store + Auto-Persistence Plugin
+### Pattern: Pinia Stores + Manual Persistence Plugin
 
 ```
-┌─────────────────────────────────────────────────────────┐
+┌─────────────────────────────────────────────────────────────┐
 │  DonationFormStep1.vue (UI Component)                   │
 │  ├─ Renders tabs (once/monthly/yearly/multiple)         │
-│  ├─ Binds to reactive state from Pinia store            │
+│  ├─ Binds to reactive state from Pinia stores           │
 │  └─ Calls store actions for mutations                   │
 └────────────────┬────────────────────────────────────────┘
                  │
                  ▼
-┌─────────────────────────────────────────────────────────┐
-│  useDonationFormStore (Pinia Store)                     │
+┌─────────────────────────────────────────────────────────────┐
+│  useDonationFormStore & useImpactCartStore (Pinia)      │
 │  ├─ Composition API style with ref()                    │
 │  ├─ Actions for all state mutations                     │
 │  ├─ Getters for computed/derived values                 │
-│  └─ Auto-persisted via plugin                           │
+│  └─ Manual $persist() and $hydrate() methods            │
 └────────────────┬────────────────────────────────────────┘
                  │
                  ▼
-┌─────────────────────────────────────────────────────────┐
-│  pinia-plugin-persistedstate                            │
-│  ├─ Auto-syncs to sessionStorage on mutations           │
-│  ├─ Auto-hydrates on app mount                          │
+┌─────────────────────────────────────────────────────────────┐
+│  pinia-persistedstate.client.ts (Custom Plugin)         │
+│  ├─ Calls $hydrate() on app mount for all stores        │
+│  ├─ Subscribes to changes and calls $persist()          │
 │  └─ Handles SSR hydration safely                        │
-└─────────────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ## Key Files
@@ -42,17 +42,41 @@ Main Pinia store that:
 
 - Manages all form state using Vue `ref()` and `computed()`
 - Provides actions for all mutations (no direct state changes)
-- Auto-persists to sessionStorage via plugin
+- Persists to sessionStorage via manual $persist() method
 - Handles Set<->Array conversion for serialization
 - Initialized with `initialize(defaultCurrency)` method
 
-### `useImpactCart.ts`
+### `stores/impactCart.ts`
 
-Manages cart items and rewards:
+Impact cart Pinia store that:
 
-- Uses module-level refs (singleton pattern)
-- Independent of donation form store
-- Can be migrated to Pinia in future if needed
+- Manages cart state for once/monthly/multiple frequencies
+- Provides computed totals (oneTimeTotal, monthlyTotal, yearlyTotal, recurringTotal)
+- Provides actions for cart operations (add, remove, update)
+- Persists to sessionStorage via manual $persist() method
+- Auto-hydrates on page refresh
+
+## Key Files
+
+### `stores/donationForm.ts`
+
+Main Pinia store that:
+
+- Manages all form state using Vue `ref()` and `computed()`
+- Provides actions for all mutations (no direct state changes)
+- Persists to sessionStorage via manual $persist() method
+- Handles Set<->Array conversion for serialization
+- Initialized with `initialize(defaultCurrency)` method
+
+### `stores/impactCart.ts`
+
+Impact cart Pinia store that:
+
+- Manages cart state for once/monthly/multiple frequencies
+- Provides computed totals (oneTimeTotal, monthlyTotal, yearlyTotal, recurringTotal)
+- Provides actions for cart operations (add, remove, update)
+- Persists to sessionStorage via manual $persist() method
+- Auto-hydrates on page refresh
 
 ## State Structure
 
@@ -80,7 +104,7 @@ const selectedRewards = computed(() => ({
 
 ### Session Storage Format
 
-Automatically handled by pinia-plugin-persistedstate:
+Automatically handled by the custom persistence plugin:
 
 ```typescript
 // sessionStorage key: 'donation-form'
@@ -94,9 +118,16 @@ Automatically handled by pinia-plugin-persistedstate:
   selectedRewardsArrays: { once: ['reward-1'], monthly: [], yearly: [], multiple: [] },
   formSections: { donorInfo: { name: 'John' }, shipping: {}, giftAid: {} }
 }
-```
 
-## Tab Isolation Rules
+// sessionStorage key: 'impact-cart'
+{
+  onceCart: [],
+  monthlyCart: [],
+  multipleCart: [
+    { id: 'product-1', price: 25, quantity: 1, addedAt: 1234567890, ... }
+  ]
+}
+```
 
 ## Tab Isolation Rules
 
@@ -104,19 +135,19 @@ Automatically handled by pinia-plugin-persistedstate:
 
 - **State Tracked**: `donationAmounts.once`, `tributeData.once`
 - **Product Selection**: Not allowed
-- **Cart**: Not used
+- **Cart**: Managed by `impactCart.onceCart`
 
 ### Monthly/Yearly Tabs
 
 - **State Tracked**: `donationAmounts[tab]`, `selectedProducts[tab]`, `tributeData[tab]`
 - **Product Selection**: Single product only
-- **Cart**: Not used
+- **Cart**: Managed by `impactCart.monthlyCart`
 
 ### Multiple Tab
 
-- **State Tracked**: Managed by `useImpactCart` composable
+- **State Tracked**: Managed by `useImpactCartStore`
 - **Product Selection**: Multiple products via cart
-- **Cart**: Separate cart management
+- **Cart**: Managed by `impactCart.multipleCart`
 
 ### Global State
 
@@ -127,12 +158,16 @@ Automatically handled by pinia-plugin-persistedstate:
 ## Usage Example
 
 ```typescript
-// Import store
+// Import stores
 import { useDonationFormStore } from '~/stores/donationForm'
+import { useImpactCartStore } from '~/stores/impactCart'
 
-// Initialize store
+// Initialize donation form store
 const store = useDonationFormStore()
 store.initialize('GBP')
+
+// Initialize impact cart store
+const cartStore = useImpactCartStore()
 
 // Use store state (reactive)
 const selectedFrequency = computed({
@@ -140,17 +175,28 @@ const selectedFrequency = computed({
   set: (value) => store.setActiveTab(value)
 })
 
-// Call actions
+// Call donation form actions
 store.setDonationAmount('monthly', 25)
 store.toggleReward('reward-1', 'once')
 store.clearSession()
+
+// Call impact cart actions
+cartStore.addToCart(product, 25, 'multiple', 1)
+cartStore.updateCartItemPrice('product-1', 1234567890, 30, 'multiple')
+cartStore.removeFromCart('product-1', 1234567890, 'multiple')
+
+// Access cart totals
+const total = cartStore.recurringTotal
+const monthlyTotal = cartStore.monthlyTotal
 ```
 
-## Benefits Over Previous Approach
+## Benefits of Pinia Store Pattern
 
-- **30% less code**: Removed ~100 lines of manual sync logic
+- **Centralized state**: All state mutations through actions
 - **Pinia DevTools**: Full state inspection and time-travel debugging
-- **Better TypeScript**: Inferred types from store
-- **SSR-safe**: Plugin handles hydration automatically
-- **Centralized**: All mutations through actions
-- **Testable**: Use `createTestingPinia()` for mocks
+- **Better TypeScript**: Inferred types from store definitions
+- **SSR-safe**: Plugin handles hydration automatically via $hydrate()
+- **Testable**: Use `createTestingPinia()` for unit tests
+- **Less code**: ~30% reduction compared to composable pattern
+- **Reactive**: All state changes trigger component re-renders
+- **Persistent**: Auto-saves to sessionStorage on any change

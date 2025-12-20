@@ -7,7 +7,7 @@ import DonationFormStep1 from '~/features/donation-form/steps/step1/DonationForm
 import DonationFormStep2 from '~/features/donation-form/steps/step2/DonationFormStep2.vue'
 import DonationFormStep3 from '~/features/donation-form/steps/step3/DonationFormStep3.vue'
 import { useDonationFormStore } from '~/stores/donationForm'
-import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
+import { useImpactCartStore } from '~/stores/impactCart'
 import type { FormConfig, Product } from '~/lib/common/types'
 
 // Inject products from parent
@@ -24,11 +24,11 @@ const props = defineProps<Props>()
 
 const TOTAL_STEPS = 4 // Donation, Donor Info, Gift Aid/Cover Fees, Payment
 
-// Initialize Pinia store
+// Initialize Pinia stores
 const store = useDonationFormStore()
 store.initialize(props.config?.localization.defaultCurrency || 'USD')
 
-const { multipleCart } = useImpactCart()
+const cartStore = useImpactCartStore()
 
 // Centralized computed: Check if shipping is required based on current tab
 const needsShipping = computed(() => {
@@ -39,7 +39,7 @@ const needsShipping = computed(() => {
   }
 
   // Check multiple cart items
-  if (multipleCart.value.some((item) => item.isShippingRequired)) return true
+  if (cartStore.multipleCart.some((item) => item.isShippingRequired)) return true
 
   // Check selected rewards for current tab
   const currentTabRewards =

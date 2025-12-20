@@ -4,11 +4,11 @@ import type { Ref } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CURRENCY_OPTIONS, useCurrency } from '~/features/donation-form/composables/useCurrency'
 import { useDonationFormStore } from '~/stores/donationForm'
+import { useImpactCartStore } from '~/stores/impactCart'
 import DonationFormSingle from './DonationFormSingle.vue'
 import DonationFormMultiple from './DonationFormMultiple.vue'
 import type { FormConfig, Product, TributeData } from '@/lib/common/types'
 import { formConfig as defaultConfig } from '@/features/donation-form/api-sample-response-form-config'
-import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
 
 // Inject products from parent
 const products = inject<Ref<Product[]>>('products')
@@ -30,11 +30,12 @@ const emit = defineEmits<{
 }>()
 
 const { convertPrice } = useCurrency(computed(() => formConfig.value.pricing.baseCurrency).value)
-const { multipleCart, addToCart } = useImpactCart()
 
-// Initialize Pinia store
+// Initialize Pinia stores
 const store = useDonationFormStore()
 store.initialize(formConfig.value.localization.defaultCurrency)
+
+const cartStore = useImpactCartStore()
 
 // Alias for convenience
 const selectedFrequency = computed({
@@ -160,10 +161,8 @@ const castFrequency = (freq: string): 'once' | 'monthly' | 'yearly' => {
 // Methods
 const handleNext = () => {
   console.log('Proceeding to next step', {
-    frequency: selectedFrequency.value,
-    donationAmounts: store.donationAmounts,
-    selectedProducts: store.selectedProducts,
-    multipleCart: multipleCart.value
+    /* Lines 163-166 omitted */
+    multipleCart: cartStore.multipleCart
   })
 
   // Emit complete event to parent wizard
@@ -215,15 +214,10 @@ defineExpose({
 // Watch for tab switches to "multiple" - auto-add selected product if cart is empty
 watch(selectedFrequency, (newFreq, oldFreq) => {
   if (newFreq === 'multiple' && (oldFreq === 'monthly' || oldFreq === 'yearly')) {
-    if (multipleCart.value.length === 0) {
-      const previousProduct = store.selectedProducts[oldFreq]
-      if (previousProduct) {
-        const price =
-          store.donationAmounts[oldFreq] || previousProduct.default || previousProduct.price || 0
-        if (price > 0) {
-          addToCart(previousProduct, price, 'multiple', undefined, store.tributeData[oldFreq])
-        }
-      }
+    const selectedProduct = store.selectedProducts[oldFreq]
+    const amount = store.donationAmounts[oldFreq]
+    if (selectedProduct && amount > 0 && cartStore.multipleCart.length === 0) {
+      cartStore.addToCart(selectedProduct, amount, 'multiple', 1, store.tributeData[oldFreq])
     }
   }
 })

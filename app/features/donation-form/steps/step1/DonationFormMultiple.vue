@@ -7,22 +7,9 @@ import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNot
 import ProductOptionsModal from '~/features/donation-form/product/ProductOptionsModal.vue'
 import type { Product, CartItem, TributeData, FormConfig } from '@/lib/common/types'
 import { getCartItemKey, parseCartItemKey } from '~/features/donation-form/impact-cart/cart-utils'
-import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
+import { useImpactCartStore } from '~/stores/impactCart'
 
-const {
-  multipleCart,
-  cartTotal,
-  recurringTotal,
-  oneTimeTotal,
-  monthlyTotal,
-  yearlyTotal,
-  activeRecurringFrequency,
-  addToCart,
-  updateCartItemPrice,
-  updateCartItemQuantity,
-  updateCartItemTribute,
-  removeFromCart
-} = useImpactCart()
+const cartStore = useImpactCartStore()
 
 interface Props {
   currency: string
@@ -48,7 +35,7 @@ const productOptionsModalRef = ref<InstanceType<typeof ProductOptionsModal> | nu
 // Computed
 const filteredProducts = computed(() => {
   let regularProducts = props.products.filter((p) => !p.isReward)
-  const locked = activeRecurringFrequency.value
+  const locked = cartStore.activeRecurringFrequency
   if (locked) {
     regularProducts = regularProducts.filter(
       (p) => p.frequency === 'once' || p.frequency === locked
@@ -57,8 +44,8 @@ const filteredProducts = computed(() => {
   return regularProducts
 })
 
-const activeCartTotal = computed(() => cartTotal('multiple'))
-const isFormValid = computed(() => multipleCart.value.length > 0)
+const activeCartTotal = computed(() => cartStore.cartTotal('multiple'))
+const isFormValid = computed(() => cartStore.multipleCart.length > 0)
 
 // Methods
 const handleSwitchToTab = (tab: 'monthly' | 'yearly') => {
@@ -70,7 +57,7 @@ const handleEditCartItem = (item: CartItem, itemKey: string) => {
 }
 
 const handleRemoveCartItem = (itemId: string, addedAt: number) => {
-  removeFromCart(itemId, addedAt, 'multiple')
+  cartStore.removeFromCart(itemId, addedAt, 'multiple')
 }
 
 const handleProductSelect = (product: Product) => {
@@ -87,16 +74,16 @@ const handleProductModalConfirm = (
   tribute?: TributeData
 ) => {
   if (mode === 'add') {
-    const cartItem = addToCart(product, price, 'multiple', quantity, tribute)
+    const cartItem = cartStore.addToCart(product, price, 'multiple', quantity, tribute)
     const newItemKey = getCartItemKey(cartItem.id, cartItem.addedAt)
     cartRef.value?.triggerPulse(newItemKey)
   } else if (mode === 'edit' && itemKey) {
     const parsed = parseCartItemKey(itemKey)
     if (parsed) {
-      updateCartItemPrice(parsed.itemId, parsed.addedAt, price, 'multiple')
-      updateCartItemQuantity(parsed.itemId, parsed.addedAt, quantity, 'multiple')
+      cartStore.updateCartItemPrice(parsed.itemId, parsed.addedAt, price, 'multiple')
+      cartStore.updateCartItemQuantity(parsed.itemId, parsed.addedAt, quantity, 'multiple')
       if (tribute) {
-        updateCartItemTribute(parsed.itemId, parsed.addedAt, tribute, 'multiple')
+        cartStore.updateCartItemTribute(parsed.itemId, parsed.addedAt, tribute, 'multiple')
       }
     }
   }
@@ -115,11 +102,11 @@ defineExpose({
     <!-- ImpactCart Component -->
     <ImpactCart
       ref="cartRef"
-      :items="multipleCart"
+      :items="cartStore.multipleCart"
       :currency="currency"
       :base-currency="formConfig.pricing.baseCurrency"
       :total="activeCartTotal"
-      :recurring-total="recurringTotal"
+      :recurring-total="cartStore.recurringTotal"
       :show-total="true"
       :products="filteredProducts"
       :initial-products-displayed="initialProductsDisplayed"
@@ -133,9 +120,9 @@ defineExpose({
     <RewardsSection
       :rewards="rewards"
       :selected-rewards="selectedRewards"
-      :one-time-total="oneTimeTotal"
-      :monthly-total="monthlyTotal"
-      :yearly-total="yearlyTotal"
+      :one-time-total="cartStore.oneTimeTotal"
+      :monthly-total="cartStore.monthlyTotal"
+      :yearly-total="cartStore.yearlyTotal"
       :enabled-frequencies="enabledFrequencies"
       :currency="currency"
       :base-currency="formConfig.pricing.baseCurrency"
@@ -148,7 +135,7 @@ defineExpose({
     <!-- Shipping Notice -->
     <ShippingNotice
       :requires-shipping="
-        multipleCart.some((item) => item.isShippingRequired) ||
+        cartStore.multipleCart.some((item) => item.isShippingRequired) ||
         Array.from(selectedRewards).some(
           (id) => products.find((p) => p.id === id)?.isShippingRequired
         )

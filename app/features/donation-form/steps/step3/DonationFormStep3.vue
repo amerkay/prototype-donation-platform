@@ -6,7 +6,7 @@ import FormRenderer from '~/features/form-builder/FormRenderer.vue'
 import CoverFeesUpsellModal from '~/features/donation-form/components/CoverFeesUpsellModal.vue'
 import { createStep3FormSection } from '../../forms/step3-form'
 import { useDonationFormStore } from '~/stores/donationForm'
-import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
+import { useImpactCartStore } from '~/stores/impactCart'
 import type { FormConfig } from '@/lib/common/types'
 
 // Inject config from parent
@@ -24,9 +24,9 @@ const emit = defineEmits<{
   complete: []
 }>()
 
-// Initialize Pinia store
+// Initialize Pinia stores
 const store = useDonationFormStore()
-const { cartTotal } = useImpactCart()
+const cartStore = useImpactCartStore()
 
 // Computed refs for individual form sections
 const shippingSection = computed(() => store.formSections.shipping || {})
@@ -68,7 +68,9 @@ const formDataWithContext = computed({
     // Get current donation amount based on active tab
     const currentTab = store.activeTab
     const currentDonationAmount =
-      currentTab === 'multiple' ? cartTotal(currentTab) : store.donationAmounts[currentTab] || 0
+      currentTab === 'multiple'
+        ? cartStore.cartTotal(currentTab)
+        : store.donationAmounts[currentTab] || 0
 
     return {
       // Cross-section context (read-only)

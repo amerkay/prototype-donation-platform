@@ -7,7 +7,7 @@ import FormRenderer from '~/features/form-builder/FormRenderer.vue'
 import { donorInfoFormSection } from './forms/donor-info-form'
 import { addressFormSection } from '../../forms/address-form'
 import { useDonationFormStore } from '~/stores/donationForm'
-import { useImpactCart } from '~/features/donation-form/composables/useImpactCart'
+import { useImpactCartStore } from '~/stores/impactCart'
 import type { Product } from '@/lib/common/types'
 
 interface Props {
@@ -26,9 +26,9 @@ if (!products) {
   throw new Error('products not provided')
 }
 
-// Initialize Pinia store
+// Initialize Pinia stores
 const store = useDonationFormStore()
-const { multipleCart } = useImpactCart()
+const cartStore = useImpactCartStore()
 
 // Calculate shipping item counts
 const shippingCounts = computed(() => {
@@ -47,7 +47,7 @@ const shippingCounts = computed(() => {
 
   // Count cart items that require shipping (only for multiple tab)
   if (store.activeTab === 'multiple') {
-    cartCount = multipleCart.value.filter((item) => item.isShippingRequired).length
+    cartCount = cartStore.multipleCart.filter((item) => item.isShippingRequired).length
   }
 
   return { rewardCount, cartCount }
