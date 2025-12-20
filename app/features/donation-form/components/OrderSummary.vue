@@ -30,7 +30,7 @@ const totalAmount = computed(() => {
   return donationAmounts.value[activeTab.value as 'once' | 'monthly' | 'yearly']
 })
 
-// Cover fees calculation (only shown from step 3 onwards)
+// Cover costs calculation (only shown from step 3 onwards)
 const coverFeesPercentage = computed(() => {
   if (currentStep.value < 3) return 0
   return (formSections.value.giftAid?.coverFeesPercentage as number) || 0
@@ -70,7 +70,7 @@ const formattedBreakdown = computed(() => {
   const symbol = getCurrencySymbol(selectedCurrency.value)
   return {
     donation: `${symbol}${totalAmount.value.toFixed(2)}`,
-    fees: `${coverFeesPercentage.value}`
+    costs: `${coverFeesPercentage.value}`
   }
 })
 
@@ -132,7 +132,7 @@ const descriptionText = computed(() => {
         <div class="flex flex-col">
           <p v-if="coverFeesAmount > 0" class="text-xs text-muted-foreground">
             <!-- {{ formattedBreakdown.donation }} +  -->
-            including {{ formattedBreakdown.fees }}% covered costs
+            including {{ formattedBreakdown.costs }}% covered costs
           </p>
           <p class="text-xs text-muted-foreground">{{ descriptionText }}</p>
         </div>

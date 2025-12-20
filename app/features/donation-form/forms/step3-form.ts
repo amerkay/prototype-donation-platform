@@ -1,7 +1,7 @@
 import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
 import type { FormConfig } from '@/lib/common/types'
 import { createGiftAidFields } from './gift-aid-fields'
-import { createCoverFeesField } from './cover-fees-field'
+import { createCoverFeesField } from './cover-costs-field'
 import { createEmailOptInField } from './email-opt-in-field'
 import { createTermsAcceptanceField } from './terms-acceptance-field'
 
@@ -10,7 +10,7 @@ import { createTermsAcceptanceField } from './terms-acceptance-field'
  *
  * Includes:
  * - Gift Aid consent (UK donors only)
- * - Cover fees option (configurable heading/description)
+ * - Cover costs option (configurable heading/description)
  * - Email list opt-in
  * - Terms acceptance (required)
  */
@@ -23,11 +23,12 @@ export function createStep3FormSection(
       // Gift Aid fields (UK donors only)
       ...createGiftAidFields(),
 
-      // Cover fees fields (only if enabled)
+      // Cover costs fields (only if enabled)
       ...(config.enabled
         ? createCoverFeesField({
             minValue: 0,
             maxValue: 30,
+            defaultValue: config.defaultPercentage,
             heading: config.heading,
             description: config.description
           })

@@ -40,13 +40,13 @@ const giftAidSection = computed({
 // Form renderer reference for validation
 const formRef = ref<InstanceType<typeof FormRenderer> | null>(null)
 
-// Cover fees upsell modal state
+// Cover costs upsell modal state
 const showUpsellModal = ref(false)
 
 // Handle clicks on card buttons to open upsell modal
 const handleFormClick = (event: MouseEvent) => {
   const target = event.target as HTMLElement
-  if (target.hasAttribute('data-cover-fees-terms-trigger')) {
+  if (target.hasAttribute('data-cover-costs-terms-trigger')) {
     showUpsellModal.value = true
   }
 }
@@ -54,7 +54,7 @@ const handleFormClick = (event: MouseEvent) => {
 /**
  * Form data with context from previous steps
  * We merge cross-section dependencies (currency, shippingAddress, donationAmount) into the gift aid section
- * These are read-only context fields that gift-aid-form and cover-fees-field use for visibility/onChange logic
+ * These are read-only context fields that gift-aid-form and cover-costs-field use for visibility/onChange logic
  */
 const formDataWithContext = computed({
   get: () => {
@@ -73,7 +73,7 @@ const formDataWithContext = computed({
     return {
       // Cross-section context (read-only)
       currency: selectedCurrency.value,
-      donationAmount: currentDonationAmount, // For cover fees calculation
+      donationAmount: currentDonationAmount, // For cover costs calculation
       'shippingAddress.address1': shippingSection.value.address1 as string,
       'shippingAddress.address2': shippingSection.value.address2 as string,
       'shippingAddress.city': shippingSection.value.city as string,
@@ -86,9 +86,13 @@ const formDataWithContext = computed({
       'shippingAddress.country': shippingSection.value.country as string,
 
       joinEmailList: true, // Default to opted in
-      coverFeesPercentage: 10, // Default to 10% for cover fees
       // Gift Aid section data (editable)
       ...giftAidSection.value,
+      // Set cover costs default only if enabled and not already set
+      ...(formConfig.value.features.coverCosts.enabled &&
+      giftAidSection.value.coverFeesPercentage === undefined
+        ? { coverFeesPercentage: formConfig.value.features.coverCosts.defaultPercentage }
+        : {}),
       // Override homeAddress with default country for Gift Aid (UK-only)
       homeAddress: homeAddressWithDefault
     }

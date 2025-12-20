@@ -156,7 +156,8 @@ function handleTributeUpdate(value: Record<string, unknown>) {
           enabled: config.features.coverCosts.enabled,
           settings: {
             heading: config.features.coverCosts.heading,
-            description: config.features.coverCosts.description
+            description: config.features.coverCosts.description,
+            defaultPercentage: config.features.coverCosts.defaultPercentage
           }
         }"
         @update:model-value="handleCoverCostsUpdate"

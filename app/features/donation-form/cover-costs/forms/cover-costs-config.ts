@@ -39,6 +39,13 @@ export function createCoverCostsConfigSection(): ConfigSectionDef {
             placeholder:
               'By covering operational costs, your entire donation goes directly to [your cause].',
             rules: z.string().min(1, 'Description is required when enabled')
+          },
+          defaultPercentage: {
+            type: 'number',
+            label: 'Default Percentage',
+            description: 'The default percentage donors will see (0-30%)',
+            placeholder: '10',
+            rules: z.number().min(0).max(30)
           }
         }
       }

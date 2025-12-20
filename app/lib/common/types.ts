@@ -106,6 +106,7 @@ export interface FormConfig {
       enabled: boolean
       heading: string
       description: string
+      defaultPercentage: number
     }
     tribute: {
       enabled: boolean

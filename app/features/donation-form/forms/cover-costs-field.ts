@@ -3,9 +3,9 @@ import type { FieldMetaMap } from '~/features/form-builder/form-builder-types'
 import { getCurrencySymbol } from '../composables/useCurrency'
 
 /**
- * Create reusable cover fees field with percentage slider
+ * Create reusable cover costs field with percentage slider
  *
- * Provides a slider to cover platform/processing fees with:
+ * Provides a slider to cover platform/processing costs with:
  * - Percentage-based slider (0-30% default range)
  * - Large formatted display showing fee amount and percentage
  * - Appeal message with link to terms dialog
@@ -61,7 +61,7 @@ export function createCoverFeesField(options?: {
           <button 
             type="button" 
             class="text-primary underline-offset-4 hover:underline"
-            data-cover-fees-terms-trigger
+            data-cover-costs-terms-trigger
           >
             See cost breakdown
           </button>
@@ -111,7 +111,7 @@ export function createCoverFeesField(options?: {
 }
 
 /**
- * Component to handle cover fees upsell modal
+ * Component to handle cover costs upsell modal
  *
  * This should be included once in the parent component that uses createCoverFeesField
  *
@@ -134,7 +134,7 @@ export function createCoverFeesField(options?: {
  *
  * <script>
  * const handleCardClick = (e) => {
- *   if (e.target.hasAttribute('data-cover-fees-terms-trigger')) {
+ *   if (e.target.hasAttribute('data-cover-costs-terms-trigger')) {
  *     showUpsellModal.value = true
  *   }
  * }

@@ -57,7 +57,8 @@ export const formConfig = {
       enabled: true,
       heading: 'Send 100% to the Elephants',
       description:
-        'By covering operational costs, your entire donation provides care and comfort for our elderly elephants.'
+        'By covering operational costs, your entire donation provides care and comfort for our elderly elephants.',
+      defaultPercentage: 10
     },
     tribute: {
       enabled: true,

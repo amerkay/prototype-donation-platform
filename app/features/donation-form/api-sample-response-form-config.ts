@@ -57,7 +57,8 @@ export const formConfig = {
       enabled: true,
       heading: 'Send 100% to the Orangutans',
       description:
-        'By covering operational costs, your entire donation protects orangutans and their habitat.'
+        'By covering operational costs, your entire donation protects orangutans and their habitat.',
+      defaultPercentage: 10
     },
     tribute: {
       enabled: true,
