@@ -10,7 +10,6 @@ import {
   ComboboxRoot,
   ComboboxViewport
 } from 'reka-ui'
-import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Spinner } from '@/components/ui/spinner'
 import { Check } from 'lucide-vue-next'
 import type {
@@ -20,6 +19,9 @@ import type {
   SetFieldValueFn
 } from '~/features/form-builder/form-builder-types'
 import { joinPath } from '~/features/form-builder/field-path-utils'
+import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useFieldChange } from '~/features/form-builder/composables/useFieldChange'
+import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
   field: VeeFieldContext
@@ -54,6 +56,15 @@ if (props.field.value && typeof props.field.value === 'object' && props.field.va
 const minQueryLength = computed(() => props.meta.minQueryLength ?? 3)
 const debounceMs = computed(() => props.meta.debounceMs ?? 300)
 const notFoundText = computed(() => props.meta.notFoundText ?? 'No results found.')
+
+// Resolved field meta (supports dynamic label/description/placeholder)
+const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(
+  props.meta,
+  formValues
+)
+
+// Unified change handler (supports onFieldChange prop)
+const { handleChange } = useFieldChange(props.field, props.onFieldChange)
 
 // Fetch options (async or static)
 const fetchOptions = async (query: string) => {
@@ -122,16 +133,8 @@ const handleValueChange = (value: AutocompleteOption | null) => {
 
   selectedValue.value = value
 
-  // Update field value and trigger onChange
-  const onChange = (val: unknown) => {
-    props.field.onChange(val)
-  }
-
-  if (props.onFieldChange) {
-    props.onFieldChange(value, onChange)
-  } else {
-    onChange(value)
-  }
+  // Update field value and trigger onChange chain
+  handleChange(value)
 
   // Call meta.onChange if provided (for address autocomplete population)
   if (props.meta.onChange) {
@@ -162,12 +165,16 @@ const handleBlur = () => {
 </script>
 
 <template>
-  <Field :data-invalid="!!errors.length">
-    <FieldLabel v-if="meta.label" :for="name" :class="meta.labelClass">
-      {{ meta.label }}
-      <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
-    </FieldLabel>
-
+  <FormFieldWrapper
+    :name="name"
+    :label="resolvedLabel"
+    :description="resolvedDescription"
+    :optional="meta.optional"
+    :errors="errors"
+    :invalid="!!errors.length"
+    :label-class="meta.labelClass"
+    :description-class="meta.descriptionClass"
+  >
     <ComboboxRoot
       v-model="selectedValue"
       ignore-filter
@@ -180,7 +187,7 @@ const handleBlur = () => {
       >
         <ComboboxInput
           :id="name"
-          :placeholder="meta.placeholder"
+          :placeholder="resolvedPlaceholder"
           :autocomplete="meta.autocomplete"
           :aria-invalid="!!errors.length"
           class="flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
@@ -227,7 +234,5 @@ const handleBlur = () => {
         </ComboboxViewport>
       </ComboboxContent>
     </ComboboxRoot>
-
-    <FieldError v-if="errors.length" :errors="errors.slice(0, 1)" />
-  </Field>
+  </FormFieldWrapper>
 </template>

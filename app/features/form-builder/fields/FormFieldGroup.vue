@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed, inject, provide, type Ref } from 'vue'
 import { cn } from '@/lib/utils'
-import { FieldSet, FieldLegend, FieldDescription, FieldError } from '@/components/ui/field'
+import { FieldError } from '@/components/ui/field'
 import { AccordionItem, AccordionContent, AccordionTrigger } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
 import type { FieldGroupMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
@@ -10,6 +10,8 @@ import {
   joinPath,
   toSectionRelativePath
 } from '~/features/form-builder/field-path-utils'
+import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import FormFieldSetWrapper from '~/features/form-builder/components/FormFieldSetWrapper.vue'
 import FormField from '../FormField.vue'
 import { useScrollOnVisible } from '../composables/useScrollOnVisible'
 
@@ -32,13 +34,8 @@ const isOpen = computed(() => accordionValue.value === props.name)
 // Get form values for dynamic label resolution
 const getFormValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
 
-const resolvedLabel = computed(() => {
-  if (!props.meta.label) return undefined
-  if (typeof props.meta.label === 'function') {
-    return props.meta.label(getFormValues())
-  }
-  return props.meta.label
-})
+// Resolved label/description support dynamic functions on meta
+const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta, getFormValues)
 
 // Set default open on mount if specified
 if (props.meta.collapsibleDefaultOpen && !accordionValue.value) {
@@ -153,10 +150,10 @@ watch(isOpen, (newIsOpen) => {
                 </Badge>
               </div>
               <p
-                v-if="meta.description"
+                v-if="resolvedDescription"
                 :class="cn('text-muted-foreground text-xs mt-0.5', meta.descriptionClass)"
               >
-                {{ meta.description }}
+                {{ resolvedDescription }}
               </p>
               <FieldError v-if="errors.length > 0" :errors="errors" class="mt-1" />
             </div>
@@ -179,14 +176,16 @@ watch(isOpen, (newIsOpen) => {
     </template>
 
     <!-- Non-collapsible version -->
-    <FieldSet v-else class="gap-3">
-      <FieldLegend v-if="meta.legend || resolvedLabel" :class="cn('mb-2', meta.labelClass)">{{
-        meta.legend || resolvedLabel
-      }}</FieldLegend>
-      <FieldDescription v-if="meta.description" :class="meta.descriptionClass">{{
-        meta.description
-      }}</FieldDescription>
-      <FieldError v-if="errors.length > 0" :errors="errors" class="mb-3" />
+    <FormFieldSetWrapper
+      v-else
+      :legend="meta.legend || resolvedLabel"
+      :description="resolvedDescription"
+      :errors="errors"
+      :invalid="!!errors.length"
+      class="gap-3"
+      :legend-class="cn('mb-2', meta.labelClass)"
+      :description-class="meta.descriptionClass"
+    >
       <div :class="cn('grid grid-cols-1 gap-3', meta.class)">
         <FormField
           v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
@@ -195,6 +194,6 @@ watch(isOpen, (newIsOpen) => {
           :meta="fieldMeta"
         />
       </div>
-    </FieldSet>
+    </FormFieldSetWrapper>
   </div>
 </template>
