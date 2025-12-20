@@ -12,7 +12,7 @@ interface Props {
   currency: string
   baseCurrency?: string
   pricingConfig?: FormConfig['pricing']['frequencies']
-  // eslint-disable-next-line vue/require-default-prop
+
   tributeConfig?: FormConfig['features']['tribute']
 }
 
