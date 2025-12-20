@@ -20,16 +20,19 @@ const props = withDefaults(defineProps<Props>(), {
   baseCurrency: 'GBP',
   pricingConfig: () => ({
     once: {
+      enabled: true,
       label: 'One-time',
       presetAmounts: [10, 25, 50, 100, 250, 500],
       customAmount: { min: 5, max: 1000 }
     },
     monthly: {
+      enabled: true,
       label: 'Monthly',
       presetAmounts: [5, 10, 25, 50, 75, 100],
       customAmount: { min: 3, max: 500 }
     },
     yearly: {
+      enabled: true,
       label: 'Yearly',
       presetAmounts: [50, 100, 250, 500, 1000],
       customAmount: { min: 25, max: 2000 }

@@ -55,12 +55,15 @@ const CURRENCIES = computed(() =>
   })
 )
 
-// Convert frequencies object to array format for UI
+const BASE_FREQUENCY_ORDER = ['once', 'monthly', 'yearly'] as const
+
+// Convert frequencies config to array format for UI (enabled only)
 const BASE_FREQUENCIES = computed(() => {
-  const freqs = formConfig.value.pricing.frequencies
-  return Object.entries(freqs).map(([value, config]) => ({
-    value,
-    label: config.label
+  return BASE_FREQUENCY_ORDER.filter(
+    (freq) => formConfig.value.pricing.frequencies[freq].enabled
+  ).map((freq) => ({
+    value: freq,
+    label: formConfig.value.pricing.frequencies[freq].label
   }))
 })
 
@@ -87,15 +90,32 @@ const frequencies = computed(() => {
   return freqs
 })
 
-const allFrequencies = computed(
+const enabledFrequencies = computed(
   () => BASE_FREQUENCIES.value.map((f) => f.value) as Array<'once' | 'monthly' | 'yearly'>
 )
 
-// Alias for backward compatibility
-const enabledFrequencies = allFrequencies
+const firstEnabledFrequency = computed(() => enabledFrequencies.value[0] ?? 'once')
+
+watch(
+  [enabledFrequencies, selectedFrequency],
+  () => {
+    if (selectedFrequency.value === 'multiple') return
+    if (
+      !enabledFrequencies.value.includes(selectedFrequency.value as 'once' | 'monthly' | 'yearly')
+    ) {
+      selectedFrequency.value = firstEnabledFrequency.value
+    }
+  },
+  { immediate: true }
+)
 
 const availableAmounts = computed(() => {
   if (selectedFrequency.value === 'multiple') return []
+  if (
+    !enabledFrequencies.value.includes(selectedFrequency.value as 'once' | 'monthly' | 'yearly')
+  ) {
+    return []
+  }
   const cfg =
     formConfig.value.pricing.frequencies[selectedFrequency.value as 'once' | 'monthly' | 'yearly']
   if (!cfg) return []
@@ -104,6 +124,11 @@ const availableAmounts = computed(() => {
 
 const sliderMinPrice = computed(() => {
   if (selectedFrequency.value === 'multiple') return 0
+  if (
+    !enabledFrequencies.value.includes(selectedFrequency.value as 'once' | 'monthly' | 'yearly')
+  ) {
+    return 0
+  }
   const cfg =
     formConfig.value.pricing.frequencies[selectedFrequency.value as 'once' | 'monthly' | 'yearly']
   if (!cfg) return 0
@@ -112,6 +137,11 @@ const sliderMinPrice = computed(() => {
 
 const sliderMaxPrice = computed(() => {
   if (selectedFrequency.value === 'multiple') return 0
+  if (
+    !enabledFrequencies.value.includes(selectedFrequency.value as 'once' | 'monthly' | 'yearly')
+  ) {
+    return 0
+  }
   const cfg =
     formConfig.value.pricing.frequencies[selectedFrequency.value as 'once' | 'monthly' | 'yearly']
   if (!cfg) return 0

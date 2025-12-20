@@ -60,17 +60,20 @@ export interface FormConfig {
   pricing: {
     baseCurrency: string
     frequencies: {
-      once?: {
+      once: {
+        enabled: boolean
         label: string
         presetAmounts: readonly number[]
         customAmount: { min: number; max: number }
       }
-      monthly?: {
+      monthly: {
+        enabled: boolean
         label: string
         presetAmounts: readonly number[]
         customAmount: { min: number; max: number }
       }
-      yearly?: {
+      yearly: {
+        enabled: boolean
         label: string
         presetAmounts: readonly number[]
         customAmount: { min: number; max: number }

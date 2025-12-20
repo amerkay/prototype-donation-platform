@@ -7,6 +7,54 @@ import { CURRENCY_OPTIONS } from '../composables/useCurrency'
  * Returns the form configuration for editing form, localization, and pricing settings
  */
 export function createFormConfigSection(): ConfigSectionDef {
+  const frequencySchema = z
+    .object({
+      enabled: z.boolean(),
+      label: z.string(),
+      presetAmounts: z.array(z.number()),
+      customAmount: z.object({
+        min: z.number().min(1),
+        max: z.number().min(1)
+      })
+    })
+    .superRefine((val, ctx) => {
+      if (!val.enabled) return
+
+      if (!val.label.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Label is required',
+          path: ['label']
+        })
+      }
+
+      if (!val.presetAmounts.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'At least one preset required',
+          path: ['presetAmounts']
+        })
+      }
+
+      val.presetAmounts.forEach((amount, idx) => {
+        if (amount < 1) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Must be at least 1',
+            path: ['presetAmounts', idx]
+          })
+        }
+      })
+    })
+
+  const enabledString = (values: Record<string, unknown>, message: string) =>
+    values.enabled ? z.string().min(1, message) : z.string()
+
+  const enabledPresetAmounts = (values: Record<string, unknown>) =>
+    values.enabled
+      ? z.array(z.number().min(1)).min(1, 'At least one preset required')
+      : z.array(z.number())
+
   return {
     id: 'form',
     title: 'Form Settings',
@@ -113,16 +161,24 @@ export function createFormConfigSection(): ConfigSectionDef {
                 value: 'once',
                 label: 'One-time',
                 fields: {
+                  enabled: {
+                    type: 'toggle',
+                    label: 'Enabled',
+                    description: 'Show One-time as an option on the donation form',
+                    rules: z.boolean()
+                  },
                   label: {
                     type: 'text',
                     label: 'Display Label',
                     placeholder: 'One-time',
-                    rules: z.string().min(1, 'Label is required')
+                    visibleWhen: (values) => !!values.enabled,
+                    rules: (values) => enabledString(values, 'Label is required')
                   },
                   presetAmounts: {
                     type: 'array',
                     label: 'Preset Amounts',
                     description: 'Preset donation amounts (in base currency)',
+                    visibleWhen: (values) => !!values.enabled,
                     itemField: {
                       type: 'number',
                       label: 'Amount',
@@ -131,12 +187,13 @@ export function createFormConfigSection(): ConfigSectionDef {
                       rules: z.number().min(1, 'Must be at least 1')
                     },
                     addButtonText: 'Add Amount',
-                    rules: z.array(z.number().min(1)).min(1, 'At least one preset required')
+                    rules: (values) => enabledPresetAmounts(values)
                   },
                   customAmount: {
                     type: 'field-group',
                     label: 'Custom Amount Range',
                     class: 'grid grid-cols-2 gap-x-3',
+                    visibleWhen: (values) => !!values.enabled,
                     fields: {
                       min: {
                         type: 'number',
@@ -160,16 +217,24 @@ export function createFormConfigSection(): ConfigSectionDef {
                 value: 'monthly',
                 label: 'Monthly',
                 fields: {
+                  enabled: {
+                    type: 'toggle',
+                    label: 'Enabled',
+                    description: 'Show Monthly as an option on the donation form',
+                    rules: z.boolean()
+                  },
                   label: {
                     type: 'text',
                     label: 'Display Label',
                     placeholder: 'Monthly',
-                    rules: z.string().min(1, 'Label is required')
+                    visibleWhen: (values) => !!values.enabled,
+                    rules: (values) => enabledString(values, 'Label is required')
                   },
                   presetAmounts: {
                     type: 'array',
                     label: 'Preset Amounts',
                     description: 'Preset donation amounts (in base currency)',
+                    visibleWhen: (values) => !!values.enabled,
                     itemField: {
                       type: 'number',
                       label: 'Amount',
@@ -178,12 +243,13 @@ export function createFormConfigSection(): ConfigSectionDef {
                       rules: z.number().min(1, 'Must be at least 1')
                     },
                     addButtonText: 'Add Amount',
-                    rules: z.array(z.number().min(1)).min(1, 'At least one preset required')
+                    rules: (values) => enabledPresetAmounts(values)
                   },
                   customAmount: {
                     type: 'field-group',
                     label: 'Custom Amount Range',
                     class: 'grid grid-cols-2 gap-x-3',
+                    visibleWhen: (values) => !!values.enabled,
                     fields: {
                       min: {
                         type: 'number',
@@ -207,16 +273,24 @@ export function createFormConfigSection(): ConfigSectionDef {
                 value: 'yearly',
                 label: 'Yearly',
                 fields: {
+                  enabled: {
+                    type: 'toggle',
+                    label: 'Enabled',
+                    description: 'Show Yearly as an option on the donation form',
+                    rules: z.boolean()
+                  },
                   label: {
                     type: 'text',
                     label: 'Display Label',
                     placeholder: 'Yearly',
-                    rules: z.string().min(1, 'Label is required')
+                    visibleWhen: (values) => !!values.enabled,
+                    rules: (values) => enabledString(values, 'Label is required')
                   },
                   presetAmounts: {
                     type: 'array',
                     label: 'Preset Amounts',
                     description: 'Preset donation amounts (in base currency)',
+                    visibleWhen: (values) => !!values.enabled,
                     itemField: {
                       type: 'number',
                       label: 'Amount',
@@ -225,12 +299,13 @@ export function createFormConfigSection(): ConfigSectionDef {
                       rules: z.number().min(1, 'Must be at least 1')
                     },
                     addButtonText: 'Add Amount',
-                    rules: z.array(z.number().min(1)).min(1, 'At least one preset required')
+                    rules: (values) => enabledPresetAmounts(values)
                   },
                   customAmount: {
                     type: 'field-group',
                     label: 'Custom Amount Range',
                     class: 'grid grid-cols-2 gap-x-3',
+                    visibleWhen: (values) => !!values.enabled,
                     fields: {
                       min: {
                         type: 'number',
@@ -242,7 +317,7 @@ export function createFormConfigSection(): ConfigSectionDef {
                       max: {
                         type: 'number',
                         label: 'Maximum',
-                        placeholder: '1000000',
+                        placeholder: '50000',
                         min: 1,
                         rules: z.number().min(1, 'Must be at least 1')
                       }
@@ -251,38 +326,15 @@ export function createFormConfigSection(): ConfigSectionDef {
                 }
               }
             ],
-            rules: z.object({
-              once: z
-                .object({
-                  label: z.string().min(1),
-                  presetAmounts: z.array(z.number()).min(1),
-                  customAmount: z.object({
-                    min: z.number().min(1),
-                    max: z.number().min(1)
-                  })
-                })
-                .optional(),
-              monthly: z
-                .object({
-                  label: z.string().min(1),
-                  presetAmounts: z.array(z.number()).min(1),
-                  customAmount: z.object({
-                    min: z.number().min(1),
-                    max: z.number().min(1)
-                  })
-                })
-                .optional(),
-              yearly: z
-                .object({
-                  label: z.string().min(1),
-                  presetAmounts: z.array(z.number()).min(1),
-                  customAmount: z.object({
-                    min: z.number().min(1),
-                    max: z.number().min(1)
-                  })
-                })
-                .optional()
-            })
+            rules: z
+              .object({
+                once: frequencySchema,
+                monthly: frequencySchema,
+                yearly: frequencySchema
+              })
+              .refine((val) => val.once.enabled || val.monthly.enabled || val.yearly.enabled, {
+                message: 'Enable at least one donation frequency'
+              })
           }
         }
       }
