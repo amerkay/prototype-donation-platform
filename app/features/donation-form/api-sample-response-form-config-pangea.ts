@@ -6,11 +6,7 @@ export const formConfig = {
   },
   localization: {
     defaultCurrency: 'EUR',
-    supportedCurrencies: [
-      { code: 'USD', label: 'USD ($)', symbol: '$' },
-      { code: 'EUR', label: 'EUR (€)', symbol: '€' },
-      { code: 'GBP', label: 'GBP (£)', symbol: '£' }
-    ]
+    supportedCurrencies: ['USD', 'EUR', 'GBP']
   },
   pricing: {
     baseCurrency: 'EUR',

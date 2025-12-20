@@ -2,7 +2,7 @@
 import { computed, watch, inject } from 'vue'
 import type { Ref } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useCurrency } from '~/features/donation-form/composables/useCurrency'
+import { CURRENCY_OPTIONS, useCurrency } from '~/features/donation-form/composables/useCurrency'
 import { useDonationFormState } from '~/features/donation-form/composables/useDonationFormState'
 import DonationFormSingle from './DonationFormSingle.vue'
 import DonationFormMultiple from './DonationFormMultiple.vue'
@@ -46,10 +46,13 @@ const {
 
 // Extract config values - now reactive to config changes
 const CURRENCIES = computed(() =>
-  formConfig.value.localization.supportedCurrencies.map((c) => ({
-    value: c.code,
-    label: c.label
-  }))
+  formConfig.value.localization.supportedCurrencies.map((code) => {
+    const option = CURRENCY_OPTIONS.find((o) => o.value === code)
+    return {
+      value: code,
+      label: option?.label ?? code
+    }
+  })
 )
 
 // Convert frequencies object to array format for UI

@@ -55,11 +55,7 @@ export interface FormConfig {
   }
   localization: {
     defaultCurrency: string
-    supportedCurrencies: ReadonlyArray<{
-      code: string
-      label: string
-      symbol: string
-    }>
+    supportedCurrencies: readonly string[]
   }
   pricing: {
     baseCurrency: string

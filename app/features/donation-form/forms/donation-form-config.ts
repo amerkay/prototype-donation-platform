@@ -57,22 +57,17 @@ export function createFormConfigSection(): ConfigSectionDef {
             searchPlaceholder: 'Search currencies...',
             multiple: true,
             options: CURRENCY_OPTIONS,
-            rules: z
-              .array(z.object({ code: z.string(), name: z.string(), symbol: z.string() }))
-              .min(1, 'At least one currency must be supported'),
+            rules: z.array(z.string()).min(1, 'At least one currency must be supported'),
             onChange: (value, allValues, setValue) => {
-              const defaultCurrency = allValues.defaultCurrency as { code: string } | undefined
-              const supportedCurrencies = value as Array<{ code: string }>
+              const defaultCurrency = allValues.defaultCurrency as string | undefined
+              const supportedCurrencies = (value as string[]).filter(Boolean)
 
               if (supportedCurrencies.length > 0) {
-                if (
-                  !defaultCurrency ||
-                  !supportedCurrencies.some((c) => c.code === defaultCurrency.code)
-                ) {
+                if (!defaultCurrency || !supportedCurrencies.includes(defaultCurrency)) {
                   setValue('localization.defaultCurrency', supportedCurrencies[0])
                 }
               } else {
-                setValue('localization.defaultCurrency', null)
+                setValue('localization.defaultCurrency', '')
               }
             }
           },
@@ -85,12 +80,10 @@ export function createFormConfigSection(): ConfigSectionDef {
             searchPlaceholder: 'Search currencies...',
             options: (values) => {
               // Only show currencies that are in the supported list
-              const supportedCurrencies =
-                (values.supportedCurrencies as Array<{ code: string }>) || []
-              const supportedCodes = supportedCurrencies.map((c) => c.code)
-              return CURRENCY_OPTIONS.filter((opt) => supportedCodes.includes(opt.value))
+              const supportedCurrencies = (values.supportedCurrencies as string[]) || []
+              return CURRENCY_OPTIONS.filter((opt) => supportedCurrencies.includes(opt.value))
             },
-            rules: z.object({ code: z.string(), name: z.string(), symbol: z.string() })
+            rules: z.string().min(1, 'Default currency is required')
           }
         }
       },
@@ -108,7 +101,7 @@ export function createFormConfigSection(): ConfigSectionDef {
             placeholder: 'Select base currency',
             searchPlaceholder: 'Search currencies...',
             options: CURRENCY_OPTIONS,
-            rules: z.object({ code: z.string(), name: z.string(), symbol: z.string() })
+            rules: z.string().min(1, 'Base currency is required')
           },
           frequencies: {
             type: 'tabs',
