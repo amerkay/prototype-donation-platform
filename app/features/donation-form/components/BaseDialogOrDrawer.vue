@@ -39,39 +39,45 @@ const emit = defineEmits<Emits>()
 
 const isDesktop = useMediaQuery('(min-width: 768px)')
 
-const handleOpenChange = (value: boolean) => {
-  emit('update:open', value)
-}
+const Modal = computed(() => ({
+  Root: isDesktop.value ? Dialog : Drawer,
+  Content: isDesktop.value ? DialogScrollContent : DrawerContent,
+  Header: isDesktop.value ? DialogHeader : DrawerHeader,
+  Title: isDesktop.value ? DialogTitle : DrawerTitle,
+  Description: isDesktop.value ? DialogDescription : DrawerDescription,
+  Footer: isDesktop.value ? DialogFooter : DrawerFooter
+}))
+
+const openModel = computed({
+  get: () => props.open,
+  set: (value: boolean) => emit('update:open', value)
+})
+
+const rootProps = computed(() => (isDesktop.value ? {} : { dismissible: props.dismissible }))
+
+const contentClass = computed(() => (isDesktop.value ? props.maxWidth : 'flex flex-col'))
 </script>
 
 <template>
-  <!-- Desktop Dialog -->
-  <Dialog v-if="isDesktop" :open="open" @update:open="handleOpenChange">
-    <DialogScrollContent :class="maxWidth">
-      <DialogHeader v-if="$slots.header">
-        <DialogTitle><slot name="header" /></DialogTitle>
-        <DialogDescription v-if="props.description">{{ props.description }}</DialogDescription>
-      </DialogHeader>
-      <slot name="content" />
-      <DialogFooter v-if="$slots.footer">
-        <slot name="footer" />
-      </DialogFooter>
-    </DialogScrollContent>
-  </Dialog>
+  <component :is="Modal.Root" v-model:open="openModel" v-bind="rootProps">
+    <component :is="Modal.Content" :class="contentClass">
+      <component :is="Modal.Header" v-if="$slots.header" :class="{ 'shrink-0': !isDesktop }">
+        <component :is="Modal.Title"><slot name="header" /></component>
+        <component :is="Modal.Description" v-if="props.description">
+          {{ props.description }}
+        </component>
+      </component>
 
-  <!-- Mobile Drawer -->
-  <Drawer v-else :open="open" :dismissible="dismissible" @update:open="handleOpenChange">
-    <DrawerContent class="flex flex-col">
-      <DrawerHeader v-if="$slots.header" class="shrink-0">
-        <DrawerTitle><slot name="header" /></DrawerTitle>
-        <DrawerDescription v-if="props.description">{{ props.description }}</DrawerDescription>
-      </DrawerHeader>
-      <div v-if="$slots.content" class="px-4 overflow-y-auto flex-1">
-        <slot name="content" />
-      </div>
-      <DrawerFooter v-if="$slots.footer" class="shrink-0">
+      <slot v-if="isDesktop" name="content" />
+      <template v-else>
+        <div v-if="$slots.content" class="px-4 overflow-y-auto flex-1">
+          <slot name="content" />
+        </div>
+      </template>
+
+      <component :is="Modal.Footer" v-if="$slots.footer" :class="{ 'shrink-0': !isDesktop }">
         <slot name="footer" />
-      </DrawerFooter>
-    </DrawerContent>
-  </Drawer>
+      </component>
+    </component>
+  </component>
 </template>
