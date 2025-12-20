@@ -150,7 +150,6 @@ defineExpose({
           (id) => products.find((p) => p.id === id)?.isShippingRequired
         )
       "
-      :shipping-notice-config="formConfig.features.shippingNotice"
     />
 
     <!-- Next Button -->

@@ -102,10 +102,6 @@ export interface FormConfig {
         }
       }
     }
-    shippingNotice: {
-      showNotice: boolean
-      noticeText: string
-    }
     coverCosts: {
       enabled: boolean
       heading: string

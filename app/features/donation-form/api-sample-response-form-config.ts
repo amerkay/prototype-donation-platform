@@ -53,10 +53,6 @@ export const formConfig = {
         }
       }
     },
-    shippingNotice: {
-      showNotice: true,
-      noticeText: '📦 Shipping address on next page'
-    },
     coverCosts: {
       enabled: true,
       heading: 'Send 100% to the Orangutans',

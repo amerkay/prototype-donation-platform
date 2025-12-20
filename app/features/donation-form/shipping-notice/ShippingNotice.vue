@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import type { FormConfig } from '@/lib/common/types'
-
 interface Props {
   requiresShipping: boolean
-  shippingNoticeConfig: FormConfig['features']['shippingNotice']
 }
 
 defineProps<Props>()
@@ -12,10 +9,10 @@ defineProps<Props>()
 <template>
   <Transition name="shipping-notice">
     <div
-      v-if="shippingNoticeConfig.showNotice && requiresShipping"
+      v-if="requiresShipping"
       class="rounded-lg bg-muted p-3 text-sm text-muted-foreground"
     >
-      {{ shippingNoticeConfig.noticeText }}
+      📦 Shipping address on next page
     </div>
   </Transition>
 </template>

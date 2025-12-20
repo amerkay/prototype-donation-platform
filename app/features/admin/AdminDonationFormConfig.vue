@@ -5,7 +5,6 @@ import { createFormConfigSection } from '../donation-form/forms/donation-form-co
 import { createMultipleProductsConfigSection } from '../donation-form/impact-cart/forms/impact-cart-config'
 import { createProductSelectorConfigSection } from '../donation-form/product-selector/forms/product-selector-config'
 import { createRewardsConfigSection } from '../donation-form/rewards/forms/rewards-config'
-import { createShippingNoticeConfigSection } from '../donation-form/shipping-notice/forms/shipping-notice-config'
 import { createCoverCostsConfigSection } from '../donation-form/cover-costs/forms/cover-costs-config'
 import { createTributeConfigSection } from '../donation-form/tribute/forms/tribute-config'
 import type { FormConfig } from '@/lib/common/types'
@@ -36,7 +35,6 @@ const formSection = createFormConfigSection()
 const impactCartSection = createMultipleProductsConfigSection()
 const productSelectorSection = createProductSelectorConfigSection()
 const rewardsSection = createRewardsConfigSection()
-const shippingNoticeSection = createShippingNoticeConfigSection()
 const coverCostsSection = createCoverCostsConfigSection()
 const tributeSection = createTributeConfigSection()
 
@@ -80,20 +78,6 @@ function handleRewardsUpdate(value: Record<string, unknown>) {
     features: {
       ...props.config.features,
       rewards: value as FormConfig['features']['rewards']
-    }
-  })
-}
-
-function handleShippingNoticeUpdate(value: Record<string, unknown>) {
-  const { settings, ...rest } = value
-  emit('update:config', {
-    ...props.config,
-    features: {
-      ...props.config.features,
-      shippingNotice: {
-        ...rest,
-        ...(settings as Record<string, unknown>)
-      } as FormConfig['features']['shippingNotice']
     }
   })
 }
@@ -161,18 +145,6 @@ function handleTributeUpdate(value: Record<string, unknown>) {
         :section="rewardsSection"
         :model-value="config.features.rewards"
         @update:model-value="handleRewardsUpdate"
-      />
-    </div>
-
-    <!-- Shipping Notice -->
-    <div class="config-section">
-      <FormRenderer
-        :section="shippingNoticeSection"
-        :model-value="{
-          showNotice: config.features.shippingNotice.showNotice,
-          settings: { noticeText: config.features.shippingNotice.noticeText }
-        }"
-        @update:model-value="handleShippingNoticeUpdate"
       />
     </div>
 
