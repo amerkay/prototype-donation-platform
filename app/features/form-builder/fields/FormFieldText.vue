@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { inject, computed } from 'vue'
 import { Input } from '@/components/ui/input'
-import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { cn } from '@/lib/utils'
 import type { TextFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useFieldChange } from '~/features/form-builder/composables/useFieldChange'
+import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
   field: VeeFieldContext
@@ -16,25 +18,10 @@ interface Props {
 const props = defineProps<Props>()
 
 const submitForm = inject<() => void>('submitForm', () => {})
-const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
-
 const inputValue = computed(() => props.field.value as string | number | undefined)
 
-const resolvedLabel = computed(() => {
-  if (!props.meta.label) return undefined
-  if (typeof props.meta.label === 'function') {
-    return props.meta.label(formValues())
-  }
-  return props.meta.label
-})
-
-const resolvedPlaceholder = computed(() => {
-  if (!props.meta.placeholder) return undefined
-  if (typeof props.meta.placeholder === 'function') {
-    return props.meta.placeholder(formValues())
-  }
-  return props.meta.placeholder
-})
+const { resolvedLabel, resolvedPlaceholder } = useResolvedFieldMeta(props.meta)
+const { handleChange } = useFieldChange(props.field, props.onFieldChange)
 
 const handleEnterKey = (event: KeyboardEvent) => {
   event.preventDefault()
@@ -43,11 +30,14 @@ const handleEnterKey = (event: KeyboardEvent) => {
 </script>
 
 <template>
-  <Field :data-invalid="!!errors.length">
-    <FieldLabel v-if="resolvedLabel" :for="name" :class="meta.labelClass">
-      {{ resolvedLabel }}
-      <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
-    </FieldLabel>
+  <FormFieldWrapper
+    :name="name"
+    :label="resolvedLabel"
+    :optional="meta.optional"
+    :errors="errors"
+    :invalid="!!errors.length"
+    :label-class="meta.labelClass"
+  >
     <Input
       :id="name"
       :model-value="inputValue"
@@ -55,12 +45,9 @@ const handleEnterKey = (event: KeyboardEvent) => {
       :autocomplete="meta.autocomplete"
       :aria-invalid="!!errors.length"
       :class="cn(meta.class, 'text-sm')"
-      @update:model-value="
-        (value) => (onFieldChange ? onFieldChange(value, field.onChange) : field.onChange(value))
-      "
+      @update:model-value="handleChange"
       @blur="field.onBlur"
       @keydown.enter="handleEnterKey"
     />
-    <FieldError v-if="errors.length" :errors="errors.slice(0, 1)" />
-  </Field>
+  </FormFieldWrapper>
 </template>

@@ -5,6 +5,11 @@ import { FieldSet, FieldLegend, FieldDescription, FieldError } from '@/component
 import { AccordionItem, AccordionContent, AccordionTrigger } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
 import type { FieldGroupMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import {
+  getRecordAtPath,
+  joinPath,
+  toSectionRelativePath
+} from '~/features/form-builder/field-path-utils'
 import FormField from '../FormField.vue'
 import { useScrollOnVisible } from '../composables/useScrollOnVisible'
 
@@ -17,6 +22,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const sectionId = inject<string>('sectionId', '')
 
 // Get accordion state from parent (FormRenderer)
 const accordionValue = inject<Ref<string | undefined>>('accordionValue', ref(undefined))
@@ -59,18 +66,18 @@ const isGroupVisible = computed(() => {
 
 provide('parentGroupVisible', () => isGroupVisible.value)
 
-// Extract field key from full name path (e.g., "giftAid.homeAddress" -> "homeAddress")
-const fieldKey = computed(() => {
-  const parts = props.name.split('.')
-  return parts[parts.length - 1] || ''
+// Normalize to section-relative path.
+// - Top-level fields are named like `${sectionId}.fieldKey`.
+// - Nested fields (inside field-group/tabs) can be relative like `once.customAmount`.
+const groupPath = computed(() => {
+  return toSectionRelativePath(props.name, sectionId)
 })
 
 // Field prefix context for nested paths
 // This allows child fields to compute relative paths
 const parentFieldPrefix = inject<string>('fieldPrefix', '')
 const currentFieldPrefix = computed(() => {
-  // Build cumulative prefix: parent prefix + this field key
-  return parentFieldPrefix ? `${parentFieldPrefix}.${fieldKey.value}` : fieldKey.value
+  return joinPath(parentFieldPrefix, groupPath.value)
 })
 
 // Provide the cumulative prefix to child fields
@@ -81,12 +88,7 @@ provide('fieldPrefix', currentFieldPrefix.value)
 // BUT also preserve parent values so they can reference sibling fields
 const getScopedFormValues = computed(() => {
   const fullValues = getFormValues()
-  const key = fieldKey.value
-
-  if (!key) return fullValues // If no key, return all values
-
-  // Get this group's values
-  const groupValue = fullValues[key] as Record<string, unknown> | undefined
+  const groupValue = getRecordAtPath(fullValues, groupPath.value)
 
   // Merge: child fields get their scoped values plus access to parent values
   // Scoped values take precedence (spread groupValue last)
@@ -168,7 +170,7 @@ watch(isOpen, (newIsOpen) => {
             <FormField
               v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
               :key="`${childFieldKey}-${index}`"
-              :name="`${name}.${childFieldKey}`"
+              :name="childFieldKey"
               :meta="fieldMeta"
             />
           </div>
@@ -189,7 +191,7 @@ watch(isOpen, (newIsOpen) => {
         <FormField
           v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
           :key="`${childFieldKey}-${index}`"
-          :name="`${name}.${childFieldKey}`"
+          :name="childFieldKey"
           :meta="fieldMeta"
         />
       </div>

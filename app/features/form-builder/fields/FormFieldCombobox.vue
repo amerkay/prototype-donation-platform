@@ -9,10 +9,12 @@ import {
   ComboboxRoot,
   ComboboxViewport
 } from 'reka-ui'
-import { Field, FieldLabel, FieldDescription, FieldError } from '@/components/ui/field'
 import { Check, ChevronsUpDown } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import type { ComboboxFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useFieldChange } from '~/features/form-builder/composables/useFieldChange'
+import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
   field: VeeFieldContext
@@ -26,25 +28,14 @@ const props = defineProps<Props>()
 
 const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
 
+const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(
+  props.meta,
+  formValues
+)
+const { handleChange } = useFieldChange(props.field, props.onFieldChange)
+
 const searchValue = ref('')
 const isOpen = ref(false)
-
-// Resolved label and description
-const resolvedLabel = computed(() => {
-  if (!props.meta.label) return undefined
-  if (typeof props.meta.label === 'function') {
-    return props.meta.label(formValues())
-  }
-  return props.meta.label
-})
-
-const resolvedDescription = computed(() => {
-  if (!props.meta.description) return undefined
-  if (typeof props.meta.description === 'function') {
-    return props.meta.description(formValues())
-  }
-  return props.meta.description
-})
 
 const searchPlaceholder = computed(() => props.meta.searchPlaceholder ?? 'Search...')
 
@@ -79,11 +70,7 @@ const modelValue = computed({
     }
   },
   set: (value) => {
-    if (props.onFieldChange) {
-      props.onFieldChange(value, props.field.onChange)
-    } else {
-      props.field.onChange(value)
-    }
+    handleChange(value)
 
     // Clear search and close dropdown in single mode
     if (!props.meta.multiple) {
@@ -155,15 +142,16 @@ const removeBadge = (value: string | number, event: Event) => {
 </script>
 
 <template>
-  <Field :data-invalid="!!errors.length">
-    <FieldLabel v-if="resolvedLabel" :for="name" :class="meta.labelClass">
-      {{ resolvedLabel }}
-      <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
-    </FieldLabel>
-    <FieldDescription v-if="resolvedDescription" :class="meta.descriptionClass">
-      {{ resolvedDescription }}
-    </FieldDescription>
-
+  <FormFieldWrapper
+    :name="name"
+    :label="resolvedLabel"
+    :description="resolvedDescription"
+    :optional="meta.optional"
+    :errors="errors"
+    :invalid="!!errors.length"
+    :label-class="meta.labelClass"
+    :description-class="meta.descriptionClass"
+  >
     <ComboboxRoot
       v-model="modelValue"
       v-model:open="isOpen"
@@ -204,7 +192,7 @@ const removeBadge = (value: string | number, event: Event) => {
           <!-- Input for search -->
           <ComboboxInput
             :id="name"
-            :placeholder="displayText || meta.placeholder || searchPlaceholder"
+            :placeholder="displayText || resolvedPlaceholder || searchPlaceholder"
             :autocomplete="meta.autocomplete"
             :aria-invalid="!!errors.length"
             :disabled="meta.disabled"
@@ -258,7 +246,5 @@ const removeBadge = (value: string | number, event: Event) => {
         </ComboboxViewport>
       </ComboboxContent>
     </ComboboxRoot>
-
-    <FieldError v-if="errors.length" :errors="errors.slice(0, 1)" />
-  </Field>
+  </FormFieldWrapper>
 </template>

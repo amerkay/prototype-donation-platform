@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed } from 'vue'
 import { Switch } from '@/components/ui/switch'
-import { Field, FieldContent, FieldLabel, FieldDescription } from '@/components/ui/field'
 import type { ToggleFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useFieldChange } from '~/features/form-builder/composables/useFieldChange'
+import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
   field: VeeFieldContext
@@ -14,38 +16,30 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Inject form values for dynamic descriptions
-const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
+const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
+const { handleChange } = useFieldChange(props.field, props.onFieldChange)
 
 const switchValue = computed(() => props.field.value as boolean | undefined)
-
-// Resolve description (static string or dynamic function)
-const resolvedDescription = computed(() => {
-  if (!props.meta.description) return undefined
-  if (typeof props.meta.description === 'function') {
-    return props.meta.description(formValues())
-  }
-  return props.meta.description
-})
 </script>
 
 <template>
-  <Field orientation="horizontal" class="mb-4">
-    <FieldContent class="min-w-0">
-      <FieldLabel v-if="meta.label" :for="name" :class="meta.labelClass">
-        {{ meta.label }}
-      </FieldLabel>
-      <FieldDescription v-if="resolvedDescription" :class="meta.descriptionClass">
-        {{ resolvedDescription }}
-      </FieldDescription>
-    </FieldContent>
+  <FormFieldWrapper
+    :name="name"
+    :label="resolvedLabel"
+    :description="resolvedDescription"
+    :optional="meta.optional"
+    :errors="errors"
+    :invalid="!!errors.length"
+    orientation="horizontal"
+    :label-class="meta.labelClass"
+    :description-class="meta.descriptionClass"
+    class="mb-4"
+  >
     <Switch
       :id="name"
       :model-value="switchValue"
       :class="meta.class"
-      @update:model-value="
-        (value) => (onFieldChange ? onFieldChange(value, field.onChange) : field.onChange(value))
-      "
+      @update:model-value="handleChange"
     />
-  </Field>
+  </FormFieldWrapper>
 </template>

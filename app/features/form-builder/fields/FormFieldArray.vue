@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
-import { Field, FieldLabel, FieldDescription, FieldError } from '@/components/ui/field'
 import { cn } from '@/lib/utils'
 import type { ArrayFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 import FormField from '../FormField.vue'
+import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useFieldChange } from '~/features/form-builder/composables/useFieldChange'
+import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
   field: VeeFieldContext
@@ -16,19 +18,12 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
+const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
+const { handleChange } = useFieldChange(props.field, props.onFieldChange)
 
 const items = computed(() => {
   const value = props.field.value as unknown[] | undefined
   return Array.isArray(value) ? value : []
-})
-
-const resolvedLabel = computed(() => {
-  if (!props.meta.label) return undefined
-  if (typeof props.meta.label === 'function') {
-    return props.meta.label(formValues())
-  }
-  return props.meta.label
 })
 
 function addItem() {
@@ -46,33 +41,26 @@ function addItem() {
   }
 
   newItems.push(defaultValue)
-  if (props.onFieldChange) {
-    props.onFieldChange(newItems, props.field.onChange)
-  } else {
-    props.field.onChange(newItems)
-  }
+  handleChange(newItems)
 }
 
 function removeItem(index: number) {
   const newItems = items.value.filter((_, i) => i !== index)
-  if (props.onFieldChange) {
-    props.onFieldChange(newItems, props.field.onChange)
-  } else {
-    props.field.onChange(newItems)
-  }
+  handleChange(newItems)
 }
 </script>
 
 <template>
-  <Field :data-invalid="!!errors.length" :class="cn(meta.class, 'space-y-3')">
-    <FieldLabel v-if="resolvedLabel" :class="meta.labelClass">
-      {{ resolvedLabel }}
-      <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
-    </FieldLabel>
-    <FieldDescription v-if="meta.description" :class="meta.descriptionClass">
-      {{ meta.description }}
-    </FieldDescription>
-
+  <FormFieldWrapper
+    :label="resolvedLabel"
+    :description="resolvedDescription"
+    :optional="meta.optional"
+    :errors="errors"
+    :invalid="!!errors.length"
+    :class="cn(meta.class, 'space-y-3')"
+    :label-class="meta.labelClass"
+    :description-class="meta.descriptionClass"
+  >
     <div class="space-y-3">
       <!-- Array items -->
       <div
@@ -105,7 +93,5 @@ function removeItem(index: number) {
         {{ meta.addButtonText || 'Add Item' }}
       </Button>
     </div>
-
-    <FieldError v-if="errors.length" :errors="errors.slice(0, 1)" />
-  </Field>
+  </FormFieldWrapper>
 </template>

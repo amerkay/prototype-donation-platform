@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { inject, computed } from 'vue'
 import { Input } from '@/components/ui/input'
-import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/field'
 import { cn } from '@/lib/utils'
 import type { EmojiFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useFieldChange } from '~/features/form-builder/composables/useFieldChange'
+import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
   field: VeeFieldContext
@@ -16,25 +18,11 @@ interface Props {
 const props = defineProps<Props>()
 
 const submitForm = inject<() => void>('submitForm', () => {})
-const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
+
+const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(props.meta)
+const { handleChange } = useFieldChange(props.field, props.onFieldChange)
 
 const inputValue = computed(() => props.field.value as string | undefined)
-
-const resolvedLabel = computed(() => {
-  if (!props.meta.label) return undefined
-  if (typeof props.meta.label === 'function') {
-    return props.meta.label(formValues())
-  }
-  return props.meta.label
-})
-
-const resolvedPlaceholder = computed(() => {
-  if (!props.meta.placeholder) return undefined
-  if (typeof props.meta.placeholder === 'function') {
-    return props.meta.placeholder(formValues())
-  }
-  return props.meta.placeholder
-})
 
 // Emoji regex pattern - matches most emoji including multi-byte sequences
 const EMOJI_REGEX = /^[\p{Emoji}\p{Emoji_Presentation}]+$/u
@@ -47,11 +35,7 @@ const handleInput = (value: string | number) => {
   if (stringValue === '' || EMOJI_REGEX.test(stringValue)) {
     // Limit length
     const truncated = stringValue.slice(0, maxLength.value)
-    if (props.onFieldChange) {
-      props.onFieldChange(truncated, props.field.onChange)
-    } else {
-      props.field.onChange(truncated)
-    }
+    handleChange(truncated)
   }
 }
 
@@ -62,18 +46,20 @@ const handleEnterKey = (event: KeyboardEvent) => {
 </script>
 
 <template>
-  <Field :data-invalid="!!errors.length">
-    <FieldLabel v-if="meta.label" :for="name" :class="meta.labelClass">
-      {{ meta.label }}
-      <span v-if="meta.optional" class="text-muted-foreground font-normal">(optional)</span>
-    </FieldLabel>
-    <FieldDescription v-if="meta.description" :class="meta.descriptionClass">{{
-      meta.description
-    }}</FieldDescription>
+  <FormFieldWrapper
+    :name="name"
+    :label="resolvedLabel"
+    :description="resolvedDescription"
+    :optional="meta.optional"
+    :errors="errors"
+    :invalid="!!errors.length"
+    :label-class="meta.labelClass"
+    :description-class="meta.descriptionClass"
+  >
     <Input
       :id="name"
       :model-value="inputValue"
-      :placeholder="meta.placeholder"
+      :placeholder="resolvedPlaceholder"
       :aria-invalid="!!errors.length"
       :class="cn(meta.class, 'text-2xl text-center')"
       :maxlength="maxLength"
@@ -81,6 +67,5 @@ const handleEnterKey = (event: KeyboardEvent) => {
       @blur="field.onBlur"
       @keydown.enter="handleEnterKey"
     />
-    <FieldError v-if="errors.length" :errors="errors.slice(0, 1)" />
-  </Field>
+  </FormFieldWrapper>
 </template>

@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed } from 'vue'
 import { cn } from '@/lib/utils'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
-  FieldSet,
-  FieldLegend,
   FieldDescription,
   FieldLabel,
-  FieldError,
   Field,
   FieldContent,
   FieldTitle
@@ -16,6 +13,9 @@ import type {
   RadioGroupFieldMeta,
   VeeFieldContext
 } from '~/features/form-builder/form-builder-types'
+import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useFieldChange } from '~/features/form-builder/composables/useFieldChange'
+import FormFieldSetWrapper from '~/features/form-builder/components/FormFieldSetWrapper.vue'
 
 interface Props {
   field: VeeFieldContext
@@ -27,33 +27,28 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
-
 const fieldValue = computed(() => props.field.value as string | number | undefined)
 
-const resolvedLabel = computed(() => {
-  if (!props.meta.label) return undefined
-  if (typeof props.meta.label === 'function') {
-    return props.meta.label(formValues())
-  }
-  return props.meta.label
-})
+const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
+const { handleChange } = useFieldChange(props.field, props.onFieldChange)
 </script>
 
 <template>
-  <FieldSet :data-invalid="!!errors.length">
-    <FieldLegend v-if="resolvedLabel" :class="meta.labelClass">{{ resolvedLabel }}</FieldLegend>
-    <FieldDescription v-if="meta.description" :class="meta.descriptionClass">{{
-      meta.description
-    }}</FieldDescription>
+  <FormFieldSetWrapper
+    :legend="resolvedLabel"
+    :description="resolvedDescription"
+    :optional="meta.optional"
+    :errors="errors"
+    :invalid="!!errors.length"
+    :legend-class="meta.labelClass"
+    :description-class="meta.descriptionClass"
+  >
     <RadioGroup
       :name="field.name"
       :model-value="fieldValue"
       :aria-invalid="!!errors.length"
       :class="cn(meta.class, 'gap-4')"
-      @update:model-value="
-        (value) => (onFieldChange ? onFieldChange(value, field.onChange) : field.onChange(value))
-      "
+      @update:model-value="handleChange"
     >
       <FieldLabel
         v-for="option in meta.options"
@@ -73,6 +68,5 @@ const resolvedLabel = computed(() => {
         </Field>
       </FieldLabel>
     </RadioGroup>
-    <FieldError v-if="errors.length" :errors="errors.slice(0, 1)" />
-  </FieldSet>
+  </FormFieldSetWrapper>
 </template>

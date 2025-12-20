@@ -1,0 +1,59 @@
+<script setup lang="ts">
+import { cn } from '@/lib/utils'
+import {
+  Field,
+  FieldContent,
+  FieldLabel,
+  FieldDescription,
+  FieldError
+} from '@/components/ui/field'
+
+interface Props {
+  name?: string
+  label?: string
+  description?: string
+  optional?: boolean
+  errors?: string[]
+  invalid?: boolean
+  orientation?: 'horizontal' | 'vertical'
+  class?: string
+  labelClass?: string
+  descriptionClass?: string
+}
+
+const props = defineProps<Props>()
+</script>
+
+<template>
+  <Field :data-invalid="props.invalid" :orientation="props.orientation" :class="cn(props.class)">
+    <template v-if="props.orientation === 'horizontal'">
+      <FieldContent class="min-w-0">
+        <FieldLabel v-if="props.label" :for="props.name" :class="props.labelClass">
+          {{ props.label }}
+          <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
+        </FieldLabel>
+
+        <FieldDescription v-if="props.description" :class="props.descriptionClass">
+          {{ props.description }}
+        </FieldDescription>
+      </FieldContent>
+
+      <slot />
+    </template>
+
+    <template v-else>
+      <FieldLabel v-if="props.label" :for="props.name" :class="props.labelClass">
+        {{ props.label }}
+        <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
+      </FieldLabel>
+
+      <FieldDescription v-if="props.description" :class="props.descriptionClass">
+        {{ props.description }}
+      </FieldDescription>
+
+      <slot />
+    </template>
+
+    <FieldError v-if="props.errors?.length" :errors="props.errors.slice(0, 1)" />
+  </Field>
+</template>

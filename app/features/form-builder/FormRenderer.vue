@@ -40,6 +40,9 @@ const formValuesComputed = computed(() => {
 })
 provide('formValues', () => formValuesComputed.value)
 
+// Provide section id so nested fields can resolve absolute vee-validate names
+provide('sectionId', props.section.id)
+
 // Provide setFieldValue for onChange callbacks
 // Wrap to add section ID prefix and emit immediately for reactivity
 const providedSetFieldValue = (path: string, value: unknown): void => {

@@ -164,7 +164,7 @@ export function createGiftAidFields(
         // Show if Gift Aid consent is given AND not using shipping address
         return values.giftAidConsent === true && values.useSameAsShipping !== true
       },
-      fields: createAddressFields(undefined, 'billing'),
+      fields: createAddressFields(undefined, 'shipping'),
       isNoSeparatorAfter: true
     },
 

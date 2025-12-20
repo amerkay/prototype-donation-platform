@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Field, FieldLegend, FieldDescription, FieldError } from '@/components/ui/field'
 import { Badge } from '@/components/ui/badge'
 import type { TabsFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import { joinPath, toSectionRelativePath } from '~/features/form-builder/field-path-utils'
 import FormField from '../FormField.vue'
 
 interface Props {
@@ -16,6 +17,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const sectionId = inject<string>('sectionId', '')
 
 // Get form values for dynamic label/badge resolution
 const getFormValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
@@ -54,16 +57,15 @@ watch(
   { immediate: true }
 )
 
-// Extract field key from full name path
-const fieldKey = computed(() => {
-  const parts = props.name.split('.')
-  return parts[parts.length - 1] || ''
+// Normalize to section-relative path.
+const tabsPath = computed(() => {
+  return toSectionRelativePath(props.name, sectionId)
 })
 
 // Field prefix context for nested paths
 const parentFieldPrefix = inject<string>('fieldPrefix', '')
 const currentFieldPrefix = computed(() => {
-  return parentFieldPrefix ? `${parentFieldPrefix}.${fieldKey.value}` : fieldKey.value
+  return joinPath(parentFieldPrefix, tabsPath.value)
 })
 
 provide('fieldPrefix', currentFieldPrefix.value)
@@ -155,7 +157,7 @@ watch(
         <FormField
           v-for="[fieldName, fieldMeta] in Object.entries(tab.fields)"
           :key="fieldName"
-          :name="`${name}.${tab.value}.${fieldName}`"
+          :name="`${tab.value}.${fieldName}`"
           :meta="fieldMeta"
         />
       </TabsContent>

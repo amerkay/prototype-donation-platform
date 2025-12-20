@@ -4,6 +4,7 @@ import { Field as VeeField, useField } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
 import type { FieldMeta, SetFieldValueFn } from '~/features/form-builder/form-builder-types'
+import { resolveVeeFieldPath } from '~/features/form-builder/field-path-utils'
 import FormFieldText from './fields/FormFieldText.vue'
 import FormFieldTextarea from './fields/FormFieldTextarea.vue'
 import FormFieldNumber from './fields/FormFieldNumber.vue'
@@ -38,6 +39,20 @@ const parentGroupVisible = inject<() => boolean>('parentGroupVisible', () => tru
 
 // Inject field prefix context for relative path computation
 const fieldPrefix = inject<string>('fieldPrefix', '')
+
+// Inject section id so child fields can use relative names
+const sectionId = inject<string>('sectionId', '')
+
+// Resolve the vee-validate field path.
+// - Top-level fields are already passed as `${sectionId}.${fieldKey}` from FormRenderer.
+// - Fields inside containers (e.g. field-group) can pass relative names like `address1`.
+const resolvedVeeName = computed(() => {
+  return resolveVeeFieldPath({
+    name: props.name,
+    sectionId,
+    fieldPrefix
+  })
+})
 
 // Check if field should be visible
 const isVisible = computed(() => {
@@ -81,7 +96,7 @@ const fieldRules = computed(() => {
 })
 
 // Use useField to get direct access to field state
-useField(props.name, fieldRules, {
+useField(resolvedVeeName.value, fieldRules, {
   syncVModel: false,
   // Keep field value even when component unmounts (accordion closes)
   keepValueOnUnmount: true
@@ -105,7 +120,7 @@ const handleFieldChange = (value: unknown, fieldOnChange: (value: unknown) => vo
 </script>
 
 <template>
-  <VeeField v-slot="{ field, errors, meta: fieldMeta }" :name="name" :rules="fieldRules">
+  <VeeField v-slot="{ field, errors, meta: fieldMeta }" :name="resolvedVeeName" :rules="fieldRules">
     <Transition
       enter-active-class="transition-all duration-300 ease-out"
       leave-active-class="transition-all duration-200 ease-in"

@@ -20,6 +20,7 @@ import type {
   VeeFieldContext,
   SetFieldValueFn
 } from '~/features/form-builder/form-builder-types'
+import { joinPath } from '~/features/form-builder/field-path-utils'
 
 interface Props {
   field: VeeFieldContext
@@ -138,7 +139,7 @@ const handleValueChange = (value: AutocompleteOption | null) => {
     // Create a scoped setFieldValue that works with relative paths
     // Prepends fieldPrefix to convert relative paths to absolute paths
     const scopedSetFieldValue: SetFieldValueFn = (relativePath, val) => {
-      const absolutePath = props.fieldPrefix ? `${props.fieldPrefix}.${relativePath}` : relativePath
+      const absolutePath = joinPath(props.fieldPrefix, relativePath)
       setFieldValue(absolutePath, val)
     }
 

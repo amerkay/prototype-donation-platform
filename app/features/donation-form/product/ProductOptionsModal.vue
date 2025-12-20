@@ -18,26 +18,23 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   baseCurrency: 'GBP',
-  pricingConfig: () => [
-    {
-      value: 'once',
+  pricingConfig: () => ({
+    once: {
       label: 'One-time',
       presetAmounts: [10, 25, 50, 100, 250, 500],
       customAmount: { min: 5, max: 1000 }
     },
-    {
-      value: 'monthly',
+    monthly: {
       label: 'Monthly',
       presetAmounts: [5, 10, 25, 50, 75, 100],
       customAmount: { min: 3, max: 500 }
     },
-    {
-      value: 'yearly',
+    yearly: {
       label: 'Yearly',
       presetAmounts: [50, 100, 250, 500, 1000],
       customAmount: { min: 25, max: 2000 }
     }
-  ]
+  })
 })
 
 const emit = defineEmits<{
@@ -91,15 +88,17 @@ const frequencyLabel = computed(() => {
 
 const amounts = computed(() => {
   if (!product.value || !isRecurring.value) return []
-  const config = props.pricingConfig?.find((f) => f.value === product.value?.frequency)
-  if (!config) return []
+  const frequency = product.value.frequency
+  const config = props.pricingConfig?.[frequency]
+  if (!config?.presetAmounts) return []
   return config.presetAmounts.map((amount) => convertPrice(amount, props.currency))
 })
 
 const maxPrice = computed(() => {
   if (!product.value) return 1000
-  const config = props.pricingConfig?.find((f) => f.value === product.value?.frequency)
-  return convertPrice(config?.customAmount.max ?? 1000, props.currency)
+  const frequency = product.value.frequency
+  const config = props.pricingConfig?.[frequency]
+  return convertPrice(config?.customAmount?.max ?? 1000, props.currency)
 })
 
 // Methods
