@@ -118,13 +118,13 @@ export function createCoverFeesField(options?: {
  * @example
  * ```vue
  * <script setup>
- * import CoverFeesUpsellModal from '~/features/donation-form/components/CoverFeesUpsellModal.vue'
+ * import CoverCostsUpsellModal from '~/features/donation-form/cover-costs/CoverCostsUpsellModal.vue'
  * const showUpsellModal = ref(false)
  * </script>
  *
  * <template>
  *   <FormRenderer :section="section" v-model="formData" />
- *   <CoverFeesUpsellModal v-model:open="showUpsellModal" />
+ *   <CoverCostsUpsellModal v-model:open="showUpsellModal" />
  *
  *   <!-- Use event delegation to open modal from card button -->
  *   <div @click="handleCardClick">

@@ -70,29 +70,27 @@ const handleClick = () => {
 </script>
 
 <template>
-  <ClientOnly>
-    <div ref="containerRef" class="relative">
-      <!-- Spacer to prevent layout shift when button becomes fixed -->
-      <div v-if="shouldFloat" class="h-18" />
+  <div ref="containerRef" class="relative">
+    <!-- Spacer to prevent layout shift when button becomes fixed -->
+    <div v-if="shouldFloat" class="h-18" />
 
-      <div
+    <div
+      :class="[
+        'transition-opacity duration-150',
+        shouldFloat
+          ? 'fixed bottom-0 left-0 right-0 z-50 p-4 bg-background border-t shadow-lg'
+          : 'relative'
+      ]"
+    >
+      <Button
         :class="[
-          'transition-opacity duration-150',
-          shouldFloat
-            ? 'fixed bottom-0 left-0 right-0 z-50 p-4 bg-background border-t shadow-lg'
-            : 'relative'
+          'w-full h-12 text-base',
+          !isValid && 'opacity-50 cursor-not-allowed pointer-events-auto'
         ]"
+        @click="handleClick"
       >
-        <Button
-          :class="[
-            'w-full h-12 text-base',
-            !isValid && 'opacity-50 cursor-not-allowed pointer-events-auto'
-          ]"
-          @click="handleClick"
-        >
-          <slot>Next</slot>
-        </Button>
-      </div>
+        <slot>Next</slot>
+      </Button>
     </div>
-  </ClientOnly>
+  </div>
 </template>

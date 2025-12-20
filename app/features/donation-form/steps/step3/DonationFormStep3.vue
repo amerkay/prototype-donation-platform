@@ -3,7 +3,7 @@ import { ref, computed, inject } from 'vue'
 import type { Ref } from 'vue'
 import NextButton from '~/features/donation-form/components/NextButton.vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
-import CoverFeesUpsellModal from '~/features/donation-form/components/CoverFeesUpsellModal.vue'
+import CoverCostsUpsellModal from '~/features/donation-form/cover-costs/CoverCostsUpsellModal.vue'
 import { createStep3FormSection } from '../../forms/step3-form'
 import { useDonationFormStore } from '~/stores/donationForm'
 import { useImpactCartStore } from '~/stores/impactCart'
@@ -147,6 +147,6 @@ const handleNext = () => {
     </NextButton>
 
     <!-- Cover Fees Upsell Modal -->
-    <CoverFeesUpsellModal v-model:open="showUpsellModal" />
+    <CoverCostsUpsellModal v-model:open="showUpsellModal" />
   </div>
 </template>
