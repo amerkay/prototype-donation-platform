@@ -134,16 +134,25 @@ const handleClose = () => {
 const handleConfirm = () => {
   if (!product.value) return
 
-  emit(
-    'confirm',
-    product.value,
-    localPrice.value,
-    localQuantity.value,
-    mode.value,
-    editingItemKey.value || undefined,
-    tribute.value
-  )
-  open.value = false
+  // If already valid, proceed
+  if (isTributeFormValid.value) {
+    emit(
+      'confirm',
+      product.value,
+      localPrice.value,
+      localQuantity.value,
+      mode.value,
+      editingItemKey.value || undefined,
+      tribute.value
+    )
+    open.value = false
+    return
+  }
+
+  // Trigger validation to show errors
+  if (tributeFormRef.value?.formRenderer) {
+    tributeFormRef.value.formRenderer.onSubmit()
+  }
 }
 
 // Expose methods for parent component
@@ -235,7 +244,13 @@ defineExpose({
     </template>
 
     <template #footer>
-      <Button class="flex-1 md:flex-1 h-12" :disabled="!isTributeFormValid" @click="handleConfirm">
+      <Button
+        :class="[
+          'flex-1 md:flex-1 h-12',
+          !isTributeFormValid && 'opacity-50 cursor-not-allowed pointer-events-auto'
+        ]"
+        @click="handleConfirm"
+      >
         {{ mode === 'edit' ? 'Update' : 'Add to Cart' }}
       </Button>
       <Button variant="outline" class="flex-1 md:flex-1 h-12" @click="handleClose"> Cancel </Button>
