@@ -80,14 +80,12 @@ const fieldRules = computed(() => {
   let rules =
     typeof props.meta.rules === 'function' ? props.meta.rules(formValues()) : props.meta.rules
 
-  // Preprocess text/textarea/autocomplete/select fields to handle undefined/null
-  // This prevents "expected string, received undefined" errors when field is touched but empty
+  // Preprocess fields to handle undefined/null values
   const isTextLikeField = ['text', 'textarea', 'autocomplete', 'select'].includes(props.meta.type)
   const isBooleanField = props.meta.type === 'toggle'
 
-  if (isTextLikeField) {
+  if (isTextLikeField || isBooleanField) {
     rules = z.preprocess((val) => {
-      // Convert undefined/null to empty string for text-based fields
       if (val === undefined || val === null) {
         return isBooleanField ? false : ''
       }
