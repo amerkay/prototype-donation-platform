@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, computed } from 'vue'
+import { computed } from 'vue'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import type { EmojiFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
@@ -15,8 +15,6 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-
-const submitForm = inject<() => void>('submitForm', () => {})
 
 const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(props.meta)
 
@@ -40,7 +38,6 @@ const handleInput = (value: string | number) => {
 
 const handleEnterKey = (event: KeyboardEvent) => {
   event.preventDefault()
-  submitForm()
 }
 </script>
 

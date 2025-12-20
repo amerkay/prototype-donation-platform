@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, computed } from 'vue'
+import { computed } from 'vue'
 import {
   NumberField,
   NumberFieldContent,
@@ -21,11 +21,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const submitForm = inject<() => void>('submitForm', () => {})
-
 const handleEnterKey = (event: KeyboardEvent) => {
   event.preventDefault()
-  submitForm()
 }
 
 const numberValue = computed(() => props.field.value as number | null | undefined)
