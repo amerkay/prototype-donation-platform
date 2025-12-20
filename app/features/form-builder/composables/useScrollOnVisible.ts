@@ -28,7 +28,14 @@ function scrollToElement(element: HTMLElement, offset: number = 50) {
       // Scroll down to show bottom with margin
       const targetPosition =
         scrollContainer.scrollTop + (rect.bottom - containerRect.bottom) + offset
-      scrollContainer.scrollTo({ top: targetPosition, behavior: 'smooth' })
+
+      // Don't scroll so far down that the element's top (e.g., an accordion trigger)
+      // scrolls out of view.
+      const maxPositionToKeepTopVisible =
+        scrollContainer.scrollTop + (rect.top - containerRect.top) - offset
+
+      const clampedTargetPosition = Math.min(targetPosition, maxPositionToKeepTopVisible)
+      scrollContainer.scrollTo({ top: clampedTargetPosition, behavior: 'smooth' })
     }
   } else {
     const topIsVisible = rect.top >= offset
@@ -41,7 +48,12 @@ function scrollToElement(element: HTMLElement, offset: number = 50) {
     } else if (!bottomIsVisible) {
       // Scroll down to show bottom with margin
       const targetPosition = window.scrollY + (rect.bottom - window.innerHeight) + offset
-      window.scrollTo({ top: targetPosition, behavior: 'smooth' })
+
+      // Don't scroll so far down that the element's top scrolls out of view.
+      const maxPositionToKeepTopVisible = window.scrollY + rect.top - offset
+
+      const clampedTargetPosition = Math.min(targetPosition, maxPositionToKeepTopVisible)
+      window.scrollTo({ top: clampedTargetPosition, behavior: 'smooth' })
     }
   }
 }
