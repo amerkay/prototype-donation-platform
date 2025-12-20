@@ -83,7 +83,13 @@ const handleClick = () => {
             : 'relative'
         ]"
       >
-        <Button :disabled="!isValid" class="w-full h-12 text-base" @click="handleClick">
+        <Button
+          :class="[
+            'w-full h-12 text-base',
+            !isValid && 'opacity-50 cursor-not-allowed pointer-events-auto'
+          ]"
+          @click="handleClick"
+        >
           <slot>Next</slot>
         </Button>
       </div>
