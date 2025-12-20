@@ -46,7 +46,7 @@ export function createTributeFormSection(
     fields: {
       type: {
         type: 'radio-group',
-        label: 'Tribute Type',
+        label: 'Dedicate this donation',
         description: 'Make this donation a tribute to someone special',
         options,
         onChange: (value, allValues, setValue) => {

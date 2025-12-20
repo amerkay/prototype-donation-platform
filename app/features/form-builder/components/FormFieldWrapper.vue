@@ -25,34 +25,43 @@ const props = defineProps<Props>()
 </script>
 
 <template>
-  <Field :data-invalid="props.invalid" :orientation="props.orientation" :class="cn(props.class)">
-    <template v-if="props.orientation === 'horizontal'">
-      <FieldContent class="min-w-0">
-        <FieldLabel v-if="props.label" :for="props.name" :class="props.labelClass">
-          {{ props.label }}
-          <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
-        </FieldLabel>
+  <template v-if="props.orientation === 'horizontal'">
+    <div :class="cn('flex flex-col gap-1.5', props.class)">
+      <Field :data-invalid="props.invalid" :orientation="props.orientation">
+        <FieldContent class="min-w-0">
+          <FieldLabel v-if="props.label" :for="props.name" :class="props.labelClass">
+            {{ props.label }}
+            <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
+          </FieldLabel>
 
-        <FieldDescription v-if="props.description" :class="props.descriptionClass">
-          {{ props.description }}
-        </FieldDescription>
-      </FieldContent>
+          <FieldDescription v-if="props.description" :class="props.descriptionClass">
+            {{ props.description }}
+          </FieldDescription>
+        </FieldContent>
 
-      <slot />
-    </template>
+        <slot />
+      </Field>
 
-    <template v-else>
-      <FieldLabel v-if="props.label" :for="props.name" :class="props.labelClass">
-        {{ props.label }}
-        <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
-      </FieldLabel>
+      <FieldError v-if="props.errors?.length" :errors="props.errors.slice(0, 1)" />
+    </div>
+  </template>
 
-      <FieldDescription v-if="props.description" :class="props.descriptionClass">
-        {{ props.description }}
-      </FieldDescription>
+  <Field
+    v-else
+    :data-invalid="props.invalid"
+    :orientation="props.orientation"
+    :class="cn(props.class)"
+  >
+    <FieldLabel v-if="props.label" :for="props.name" :class="props.labelClass">
+      {{ props.label }}
+      <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
+    </FieldLabel>
 
-      <slot />
-    </template>
+    <FieldDescription v-if="props.description" :class="props.descriptionClass">
+      {{ props.description }}
+    </FieldDescription>
+
+    <slot />
 
     <FieldError v-if="props.errors?.length" :errors="props.errors.slice(0, 1)" />
   </Field>
