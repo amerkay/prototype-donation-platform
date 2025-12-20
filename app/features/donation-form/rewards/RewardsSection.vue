@@ -36,8 +36,23 @@ const currencySymbol = computed(() => getCurrencySymbol(props.currency))
 
 const emit = defineEmits<Emits>()
 
-const eligibleRewards = computed(() => {
+// Filter rewards to only those with at least one enabled frequency threshold
+const availableRewards = computed(() => {
   return props.rewards.filter((item) => {
+    if (!item.rewardThreshold) return false
+    const { once, monthly, yearly } = item.rewardThreshold
+
+    // Include reward if it has a threshold for at least one enabled frequency
+    if (once !== undefined && props.enabledFrequencies.includes('once')) return true
+    if (monthly !== undefined && props.enabledFrequencies.includes('monthly')) return true
+    if (yearly !== undefined && props.enabledFrequencies.includes('yearly')) return true
+
+    return false
+  })
+})
+
+const eligibleRewards = computed(() => {
+  return availableRewards.value.filter((item) => {
     if (!item.rewardThreshold) return false
     const { once, monthly, yearly } = item.rewardThreshold
 
@@ -51,7 +66,7 @@ const eligibleRewards = computed(() => {
 })
 
 const upsellRewards = computed(() => {
-  return props.rewards.filter((item) => {
+  return availableRewards.value.filter((item) => {
     if (!item.rewardThreshold) return false
     const { once, monthly, yearly } = item.rewardThreshold
 
