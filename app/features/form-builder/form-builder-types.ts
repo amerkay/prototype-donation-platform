@@ -7,6 +7,7 @@ export type FieldType =
   | 'text'
   | 'textarea'
   | 'number'
+  | 'currency'
   | 'toggle'
   | 'select'
   | 'combobox'
@@ -99,6 +100,17 @@ export interface NumberFieldMeta extends BaseFieldMeta {
   min?: number
   max?: number
   step?: number
+}
+
+/**
+ * Currency field metadata - number input with currency symbol prefix
+ */
+export interface CurrencyFieldMeta extends BaseFieldMeta {
+  type: 'currency'
+  min?: number
+  max?: number
+  step?: number
+  currencySymbol: string | ((values: Record<string, unknown>) => string)
 }
 
 /**
@@ -270,6 +282,7 @@ export type FieldMeta =
   | TextFieldMeta
   | TextareaFieldMeta
   | NumberFieldMeta
+  | CurrencyFieldMeta
   | ToggleFieldMeta
   | SelectFieldMeta
   | ComboboxFieldMeta

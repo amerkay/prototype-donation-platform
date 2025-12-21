@@ -1,6 +1,6 @@
 import * as z from 'zod'
 import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
-import { CURRENCY_OPTIONS } from '../composables/useCurrency'
+import { CURRENCY_OPTIONS, getCurrencySymbol } from '../composables/useCurrency'
 
 /**
  * Create form config section definition
@@ -182,10 +182,14 @@ export function createFormConfigSection(): ConfigSectionDef {
                     visibleWhen: (values) => !!values.enabled,
                     class: 'grid grid-cols-2 gap-2',
                     itemField: {
-                      type: 'number',
-                      // label: 'Amount',
+                      type: 'currency',
                       placeholder: '25',
                       min: 1,
+                      currencySymbol: (values) => {
+                        const pricing = values.pricing as Record<string, unknown> | undefined
+                        const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
+                        return getCurrencySymbol(baseCurrency)
+                      },
                       rules: z.number({ error: 'Amount is required' }).min(1, 'Must be at least 1')
                     },
                     addButtonText: 'Add Amount',
@@ -239,10 +243,14 @@ export function createFormConfigSection(): ConfigSectionDef {
                     visibleWhen: (values) => !!values.enabled,
                     class: 'grid grid-cols-2 gap-2',
                     itemField: {
-                      type: 'number',
-                      // label: 'Amount',
+                      type: 'currency',
                       placeholder: '25',
                       min: 1,
+                      currencySymbol: (values) => {
+                        const pricing = values.pricing as Record<string, unknown> | undefined
+                        const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
+                        return getCurrencySymbol(baseCurrency)
+                      },
                       rules: z.number({ error: 'Amount is required' }).min(1, 'Must be at least 1')
                     },
                     addButtonText: 'Add Amount',
@@ -296,10 +304,14 @@ export function createFormConfigSection(): ConfigSectionDef {
                     visibleWhen: (values) => !!values.enabled,
                     class: 'grid grid-cols-2 gap-2',
                     itemField: {
-                      type: 'number',
-                      // label: 'Amount',
+                      type: 'currency',
                       placeholder: '25',
                       min: 1,
+                      currencySymbol: (values) => {
+                        const pricing = values.pricing as Record<string, unknown> | undefined
+                        const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
+                        return getCurrencySymbol(baseCurrency)
+                      },
                       rules: z.number({ error: 'Amount is required' }).min(1, 'Must be at least 1')
                     },
                     addButtonText: 'Add Amount',

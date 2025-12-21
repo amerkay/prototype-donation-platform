@@ -9,6 +9,7 @@ import { useFormBuilderContext } from '~/features/form-builder/composables/useFo
 import FormFieldText from './fields/FormFieldText.vue'
 import FormFieldTextarea from './fields/FormFieldTextarea.vue'
 import FormFieldNumber from './fields/FormFieldNumber.vue'
+import FormFieldCurrency from './fields/FormFieldCurrency.vue'
 import FormFieldToggle from './fields/FormFieldToggle.vue'
 import FormFieldSelect from './fields/FormFieldSelect.vue'
 import FormFieldCombobox from './fields/FormFieldCombobox.vue'
@@ -139,6 +140,14 @@ const handleFieldChange = (value: unknown) => {
         />
         <FormFieldNumber
           v-else-if="meta.type === 'number'"
+          :field="field"
+          :errors="fieldMeta.touched || isInsideArray ? errors : []"
+          :meta="meta"
+          :name="name"
+          :on-change="handleFieldChange"
+        />
+        <FormFieldCurrency
+          v-else-if="meta.type === 'currency'"
           :field="field"
           :errors="fieldMeta.touched || isInsideArray ? errors : []"
           :meta="meta"
