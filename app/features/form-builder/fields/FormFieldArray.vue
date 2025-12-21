@@ -152,12 +152,12 @@ function removeItem(index: number) {
     :optional="meta.optional"
     :errors="allErrors"
     :invalid="false"
-    :class="cn(meta.class, 'space-y-3', allErrors.length && 'ff-array--has-errors')"
+    :class="cn('space-y-3', allErrors.length && 'ff-array--has-errors')"
     :label-class="meta.labelClass"
     :description-class="meta.descriptionClass"
   >
     <div class="space-y-3">
-      <div ref="parent" v-auto-animate="{ duration: 180 }" class="space-y-3">
+      <div ref="parent" v-auto-animate="{ duration: 180 }" :class="cn('grid gap-3', meta.class)">
         <div v-for="(fieldItem, index) in fields" :key="fieldItem.key" class="ff-array__item">
           <span class="drag-handle ff-array__handle">
             <Icon name="lucide:grip-vertical" class="h-5 w-5" />
@@ -198,15 +198,15 @@ function removeItem(index: number) {
 
 /* Keep Tailwind usage centralized + readable */
 .ff-array__item {
-  @apply relative flex gap-2 rounded-lg border bg-card p-2 transition-colors hover:bg-accent/5;
+  @apply relative flex items-start rounded-lg border bg-card px-0 transition-colors hover:bg-accent/5;
 }
 
 .ff-array__handle {
-  @apply shrink-0 p-1 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none;
+  @apply shrink-0 py-1.5 mt-1 px-2 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none;
 }
 
 .ff-array__remove {
-  @apply h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10;
+  @apply mt-0.5 h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10;
 }
 
 /* Drag state polish */

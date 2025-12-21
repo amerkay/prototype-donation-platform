@@ -33,7 +33,7 @@ const props = defineProps<Props>()
           <FieldLabel
             v-if="props.label"
             :for="props.disableLabelFor ? undefined : props.name"
-            :class="props.labelClass"
+            :class="cn('mb-0', props.labelClass)"
           >
             {{ props.label }}
             <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
@@ -60,7 +60,7 @@ const props = defineProps<Props>()
     <FieldLabel
       v-if="props.label"
       :for="props.disableLabelFor ? undefined : props.name"
-      :class="props.labelClass"
+      :class="cn('mb-0', props.labelClass)"
     >
       {{ props.label }}
       <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
@@ -72,6 +72,6 @@ const props = defineProps<Props>()
 
     <slot />
 
-    <FieldError v-if="props.errors?.length" :errors="props.errors.slice(0, 1)" />
+    <FieldError v-if="props.errors?.length" class="mb-1" :errors="props.errors.slice(0, 1)" />
   </Field>
 </template>
