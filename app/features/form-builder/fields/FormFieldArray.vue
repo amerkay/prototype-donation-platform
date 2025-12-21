@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, watch } from 'vue'
+import { useFieldArray } from 'vee-validate'
 import { useDragAndDrop } from '@formkit/drag-and-drop/vue'
 import { vAutoAnimate } from '@formkit/auto-animate'
 import { Button } from '@/components/ui/button'
@@ -66,29 +67,11 @@ const allErrors = computed(() => {
 
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
 
-const items = computed(() => {
-  const value = props.field.value as unknown[] | undefined
-  return Array.isArray(value) ? value : []
-})
+// Use vee-validate's useFieldArray for proper array management with error cleanup
+const { fields, push, swap, replace } = useFieldArray(resolvedVeeName)
 
-// Stable keys (short + sufficient). Keeps DOM moves correct while reordering.
-const itemKeys = ref<string[]>([])
-let uid = 0
-const key = () => String(++uid)
-
-function ensureKeysLength(len: number) {
-  if (itemKeys.value.length === len) return
-  itemKeys.value = Array.from({ length: len }, (_, i) => itemKeys.value[i] ?? key())
-}
-
-function moveKey(from: number, to: number) {
-  if (from === to) return
-  const keys = itemKeys.value.slice()
-  const [moved] = keys.splice(from, 1)
-  if (!moved) return
-  keys.splice(to, 0, moved)
-  itemKeys.value = keys
-}
+// Create array of values for drag-and-drop (synced from vee-validate fields)
+const draggableValues = computed(() => fields.value.map((f) => f.value))
 
 function insertPoint() {
   const el = document.createElement('div')
@@ -97,7 +80,8 @@ function insertPoint() {
   return el
 }
 
-const [parent, draggableItems] = useDragAndDrop(items.value, {
+// Setup drag-and-drop with vee-validate field array values
+const [parent, draggableItems] = useDragAndDrop(draggableValues.value, {
   dragHandle: '.drag-handle',
   insertConfig: { insertPoint },
 
@@ -112,22 +96,22 @@ const [parent, draggableItems] = useDragAndDrop(items.value, {
     const from = e.previousPosition
     const to = e.position
     if (Number.isInteger(from) && Number.isInteger(to)) {
-      moveKey(from!, to!)
-      props.field.onChange(draggableItems.value)
-      props.onChange?.(draggableItems.value)
+      // Use vee-validate's swap for proper error state management
+      swap(from!, to!)
+      props.onChange?.(fields.value.map((f) => f.value))
     }
   },
 
   onDragend() {
-    props.field.onChange(draggableItems.value)
-    props.onChange?.(draggableItems.value)
+    // Trigger onChange after drag completes
+    props.onChange?.(fields.value.map((f) => f.value))
   }
 })
 
+// Sync draggableItems with vee-validate fields
 watch(
-  items,
+  draggableValues,
   (next) => {
-    ensureKeysLength(next.length)
     if (JSON.stringify(next) !== JSON.stringify(draggableItems.value)) {
       draggableItems.value = [...next]
     }
@@ -136,25 +120,22 @@ watch(
 )
 
 function addItem() {
-  const next = [...draggableItems.value]
-
   let defaultValue: unknown
   if (props.meta.itemField.type === 'field-group') defaultValue = {}
   else if (props.meta.itemField.type === 'number') defaultValue = undefined
   else defaultValue = ''
 
-  next.push(defaultValue)
-  draggableItems.value = next
-  itemKeys.value = [...itemKeys.value, key()]
-  props.field.onChange(next)
-  props.onChange?.(next)
+  // Use vee-validate's push for proper field registration
+  push(defaultValue)
+  props.onChange?.(fields.value.map((f) => f.value))
 }
 
 function removeItem(index: number) {
-  const next = draggableItems.value.filter((_, i) => i !== index)
-  itemKeys.value = itemKeys.value.filter((_, i) => i !== index)
-  props.field.onChange(next)
-  props.onChange?.(next)
+  // Use replace() instead of remove() to properly reindex all fields and clear orphaned errors
+  // This ensures error paths match the new indices after removal
+  const newArray = fields.value.map((f) => f.value).filter((_, i) => i !== index)
+  replace(newArray)
+  props.onChange?.(newArray)
 }
 </script>
 
@@ -171,21 +152,13 @@ function removeItem(index: number) {
   >
     <div class="space-y-3">
       <div ref="parent" v-auto-animate="{ duration: 180 }" class="space-y-3">
-        <div
-          v-for="(item, index) in draggableItems"
-          :key="itemKeys[index] || index"
-          class="ff-array__item"
-        >
+        <div v-for="(fieldItem, index) in fields" :key="fieldItem.key" class="ff-array__item">
           <span class="drag-handle ff-array__handle">
             <Icon name="lucide:grip-vertical" class="h-5 w-5" />
           </span>
 
           <div class="min-w-0 flex-1">
-            <FormField
-              :key="`${name}-${index}-${itemKeys[index]}`"
-              :name="`${name}.${index}`"
-              :meta="meta.itemField"
-            />
+            <FormField :name="`${name}.${index}`" :meta="meta.itemField" />
           </div>
 
           <Button
