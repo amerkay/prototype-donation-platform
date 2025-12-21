@@ -164,7 +164,11 @@ function removeItem(index: number) {
           </span>
 
           <div class="min-w-0 flex-1">
-            <FormField :name="`${name}.${index}`" :meta="meta.itemField" />
+            <FormField
+              :name="`${name}.${index}`"
+              :meta="meta.itemField"
+              class="border-0 bg-transparent rounded-none"
+            />
           </div>
 
           <Button

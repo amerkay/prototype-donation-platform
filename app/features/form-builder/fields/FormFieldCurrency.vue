@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, inject, type ComputedRef } from 'vue'
+import { computed, inject, type ComputedRef, type HTMLAttributes } from 'vue'
+
 import {
   InputGroup,
   InputGroupAddon,
@@ -9,6 +10,7 @@ import {
 import type { CurrencyFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
+import { cn } from '@/lib/utils'
 
 interface Props {
   field: VeeFieldContext
@@ -16,6 +18,7 @@ interface Props {
   meta: CurrencyFieldMeta
   name: string
   onChange?: (value: unknown) => void
+  class?: HTMLAttributes['class']
 }
 
 const props = defineProps<Props>()
@@ -65,7 +68,7 @@ const handleUpdate = (value: string | number) => {
     :label-class="meta.labelClass"
     :description-class="meta.descriptionClass"
   >
-    <InputGroup>
+    <InputGroup :class="cn(props.class, meta.class)">
       <InputGroupAddon>
         <InputGroupText>{{ currencySymbol }}</InputGroupText>
       </InputGroupAddon>
