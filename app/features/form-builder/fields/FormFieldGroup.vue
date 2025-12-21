@@ -73,7 +73,7 @@ const fullGroupPath = computed(() => {
 })
 
 // Check if any child fields have validation errors
-// Uses vee-validate's useFormErrors() internally for guaranteed reactivity
+// Re-evaluate when accordion state changes to ensure fresh error state
 const { hasChildErrors } = useChildFieldErrors(fullGroupPath)
 
 // Field prefix context for nested paths
@@ -94,9 +94,10 @@ const scopedFormValues = computed(() => {
 })
 provide('formValues', scopedFormValues)
 
-// Scroll to collapsible when opened
+// Watch accordion state changes
 watch(isOpen, (newIsOpen) => {
   if (newIsOpen) {
+    // Scroll to element and refresh error state
     scrollToElement(props.name)
   }
 })
@@ -110,6 +111,7 @@ watch(isOpen, (newIsOpen) => {
         :ref="(el: any) => setElementRef(props.name, el)"
         :value="name"
         :disabled="meta.isDisabled"
+        :unmount-on-hide="false"
       >
         <AccordionTrigger
           class="hover:no-underline group py-4"

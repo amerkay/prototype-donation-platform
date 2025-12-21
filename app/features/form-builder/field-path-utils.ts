@@ -25,7 +25,8 @@ export function resolveVeeFieldPath(params: {
   const { name, sectionId, fieldPrefix } = params
 
   if (!sectionId) return name
-  if (name === sectionId || name.startsWith(`${sectionId}.`)) return name
+  // Only treat as absolute path if it already includes the section prefix
+  if (name.startsWith(`${sectionId}.`)) return name
 
   const relativePath = joinPath(fieldPrefix, name)
   return joinPath(sectionId, relativePath)

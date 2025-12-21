@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed, inject, type ComputedRef } from 'vue'
 import { Field as VeeField, useField } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
@@ -105,8 +105,11 @@ const fieldRules = computed(() => {
 // Use useField to get direct access to field state
 useField(resolvedVeeName.value, fieldRules, {
   syncVModel: false,
-  // Keep field value even when component unmounts (accordion closes)
+  // Keep field value and validation state even when component unmounts (accordion closes)
   keepValueOnUnmount: true
+  // Validate immediately when value changes
+  // validateOnValueUpdate: true,
+  // validateOnMount: true
 })
 
 // Handle field changes and call onChange callback if provided

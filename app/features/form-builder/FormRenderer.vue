@@ -26,9 +26,10 @@ const initialFormValues = computed(() => ({
 }))
 
 // Use the composition API to access form context
-const { values, errors, meta, setValues, handleSubmit, setFieldValue, setFieldTouched } = useForm({
+const { values, meta, setValues, handleSubmit, setFieldValue, setFieldTouched } = useForm({
   initialValues: initialFormValues.value,
-  validateOnMount: false
+  // validateOnMount: true
+  keepValuesOnUnmount: false
 })
 
 // Provide form values to child fields for conditional visibility

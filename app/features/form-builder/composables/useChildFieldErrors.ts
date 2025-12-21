@@ -4,7 +4,8 @@ import { useFormErrors } from 'vee-validate'
 /**
  * Composable to detect if any child fields within a container (group/array/tabs) have validation errors
  *
- * Uses vee-validate's useFormErrors() helper for guaranteed reactivity.
+ * Uses vee-validate's useFormErrors() directly for guaranteed reactivity.
+ * Must be called in a component that is a child of a form component where useForm was called.
  * Trusts vee-validate to manage error lifecycle - no manual path validation needed.
  *
  * @param containerPath - The full path to the container field (can be string, ref, or computed)
@@ -23,15 +24,15 @@ import { useFormErrors } from 'vee-validate'
 export function useChildFieldErrors(containerPath: MaybeRefOrGetter<string>): {
   hasChildErrors: ComputedRef<boolean>
 } {
-  // Use vee-validate's official helper for reactive error tracking
-  const formErrors = useFormErrors()
+  // Use vee-validate's useFormErrors() directly for proper reactivity
+  const formErrors = useFormErrors<Record<string, string | undefined>>()
 
   const hasChildErrors = computed(() => {
+    // Resolve the container path first (handles ref, computed, or plain string)
+    const resolvedPath = unref(containerPath)
+
     // Access errors.value to establish reactive dependency
     const errorsObj = formErrors.value
-
-    // Resolve the container path (handles ref, computed, or plain string)
-    const resolvedPath = unref(containerPath)
 
     // Check for any error keys that are children of this container
     const containerPrefix = `${resolvedPath}.`
@@ -39,10 +40,12 @@ export function useChildFieldErrors(containerPath: MaybeRefOrGetter<string>): {
     // Check if any child field has an error
     // vee-validate automatically cleans up errors when fields are fixed,
     // so we trust the errors object as the source of truth
-    return Object.keys(errorsObj).some((errorKey) => {
-      // Has error value and is a child of this container
-      return errorsObj[errorKey] && errorKey.startsWith(containerPrefix)
+    const result = Object.entries(errorsObj).some(([errorKey, errorValue]) => {
+      // Must have an error value AND be a child of this container
+      return errorValue && errorValue.length > 0 && errorKey.startsWith(containerPrefix)
     })
+
+    return result
   })
 
   return {
