@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Separator } from '@/components/ui/separator'
+import { FieldSeparator } from '@/components/ui/field'
 import type { SeparatorFieldMeta } from '~/features/form-builder/form-builder-types'
 
 interface Props {
@@ -10,5 +10,5 @@ defineProps<Props>()
 </script>
 
 <template>
-  <Separator :orientation="meta.orientation || 'horizontal'" :class="meta.class" />
+  <FieldSeparator :class="meta.class" />
 </template>

@@ -96,7 +96,7 @@ watch(isOpen, (newIsOpen) => {
         :unmount-on-hide="false"
       >
         <AccordionTrigger
-          class="hover:no-underline group py-4"
+          class="hover:no-underline group py-0"
           :class="{ 'cursor-not-allowed opacity-60': meta.isDisabled }"
         >
           <div class="flex items-start justify-between w-full">
@@ -138,7 +138,7 @@ watch(isOpen, (newIsOpen) => {
             }}</span>
           </div>
         </AccordionTrigger>
-        <AccordionContent>
+        <AccordionContent class="pt-4 pb-0">
           <div :class="cn('grid grid-cols-1 gap-3', meta.class)">
             <FormField
               v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"

@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Field, FieldLegend, FieldDescription } from '@/components/ui/field'
 import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
 import type { TabsFieldMeta } from '~/features/form-builder/form-builder-types'
 import { getRecordAtPath } from '~/features/form-builder/field-path-utils'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
@@ -81,7 +82,7 @@ const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
 <template>
   <div v-show="isTabsVisible">
     <Field :class="cn(meta.class, 'space-y-3')">
-      <FieldLegend v-if="resolvedLabel" :class="meta.labelClass">
+      <FieldLegend v-if="resolvedLabel" :class="cn('mb-0', meta.labelClass)">
         {{ resolvedLabel }}
       </FieldLegend>
       <FieldDescription v-if="meta.description" :class="meta.descriptionClass">
@@ -111,18 +112,15 @@ const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent
-          v-for="tab in meta.tabs"
-          :key="tab.value"
-          :value="tab.value"
-          class="space-y-4 mt-4"
-        >
-          <FormField
-            v-for="[fieldName, fieldMeta] in Object.entries(tab.fields)"
-            :key="fieldName"
-            :name="`${tab.value}.${fieldName}`"
-            :meta="fieldMeta"
-          />
+        <TabsContent v-for="tab in meta.tabs" :key="tab.value" :value="tab.value" class="">
+          <Card class="px-4 bg-muted/50">
+            <FormField
+              v-for="[fieldName, fieldMeta] in Object.entries(tab.fields)"
+              :key="fieldName"
+              :name="`${tab.value}.${fieldName}`"
+              :meta="fieldMeta"
+            />
+          </Card>
         </TabsContent>
       </Tabs>
     </Field>

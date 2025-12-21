@@ -36,7 +36,6 @@ const handleChange = (value: unknown) => {
     orientation="horizontal"
     :label-class="meta.labelClass"
     :description-class="meta.descriptionClass"
-    class="mb-4"
   >
     <Switch
       :id="name"

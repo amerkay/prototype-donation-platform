@@ -2,7 +2,7 @@
 import { ref, computed, watch, provide, nextTick } from 'vue'
 import { useForm } from 'vee-validate'
 import { Accordion } from '@/components/ui/accordion'
-import { Separator } from '@/components/ui/separator'
+import { FieldSeparator } from '@/components/ui/field'
 import FormField from './FormField.vue'
 import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
 import { useScrollOnVisible } from './composables/useScrollOnVisible'
@@ -176,7 +176,7 @@ defineExpose({
 
 <template>
   <form :class="props.class" @submit.prevent="onSubmit">
-    <div class="space-y-1 mt-4 mb-2">
+    <div class="space-y-1">
       <h2 v-if="section.title" class="text-sm font-semibold">{{ section.title }}</h2>
       <p v-if="section.description" class="text-muted-foreground text-sm mb-4">
         {{ section.description }}
@@ -191,15 +191,15 @@ defineExpose({
       class="w-full"
     >
       <template v-for="([fieldKey, fieldMeta], index) in allFields" :key="`${fieldKey}-${index}`">
-        <Separator v-if="shouldShowSeparator(index, fieldMeta)" />
+        <FieldSeparator v-if="shouldShowSeparator(index, fieldMeta)" class="my-2" />
         <div :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)">
           <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" />
         </div>
       </template>
     </Accordion>
-    <div v-else class="space-y-3 mb-4">
+    <div v-else class="space-y-3">
       <template v-for="([fieldKey, fieldMeta], index) in allFields" :key="`${fieldKey}-${index}`">
-        <Separator v-if="shouldShowSeparator(index, fieldMeta)" class="my-4" />
+        <FieldSeparator v-if="shouldShowSeparator(index, fieldMeta)" class="my-2" />
         <div :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)">
           <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" />
         </div>
