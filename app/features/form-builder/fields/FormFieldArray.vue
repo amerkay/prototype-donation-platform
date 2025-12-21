@@ -51,15 +51,6 @@ function insertPoint() {
   return el
 }
 
-let raf = 0
-function syncForm() {
-  cancelAnimationFrame(raf)
-  raf = requestAnimationFrame(() => {
-    props.field.onChange(draggableItems.value)
-    props.onChange?.(draggableItems.value)
-  })
-}
-
 const [parent, draggableItems] = useDragAndDrop(items.value, {
   dragHandle: '.drag-handle',
   insertConfig: { insertPoint },
@@ -76,7 +67,8 @@ const [parent, draggableItems] = useDragAndDrop(items.value, {
     const to = e.position
     if (Number.isInteger(from) && Number.isInteger(to)) {
       moveKey(from!, to!)
-      syncForm() // keeps index-based field names showing the correct value while dragging
+      props.field.onChange(draggableItems.value)
+      props.onChange?.(draggableItems.value)
     }
   },
 
@@ -135,7 +127,7 @@ function removeItem(index: number) {
     <div class="space-y-3">
       <div ref="parent" v-auto-animate="{ duration: 180 }" class="space-y-3">
         <div
-          v-for="(_, index) in draggableItems"
+          v-for="(item, index) in draggableItems"
           :key="itemKeys[index] || index"
           class="ff-array__item"
         >
@@ -144,7 +136,11 @@ function removeItem(index: number) {
           </span>
 
           <div class="min-w-0 flex-1">
-            <FormField :name="`${name}.${index}`" :meta="meta.itemField" />
+            <FormField
+              :key="`${name}-${index}-${itemKeys[index]}`"
+              :name="`${name}.${index}`"
+              :meta="meta.itemField"
+            />
           </div>
 
           <Button
