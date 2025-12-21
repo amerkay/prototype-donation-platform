@@ -11,6 +11,7 @@ import {
   toSectionRelativePath
 } from '~/features/form-builder/field-path-utils'
 import FormField from '../FormField.vue'
+import { useChildFieldErrors } from '../composables/useChildFieldErrors'
 
 interface Props {
   meta: TabsFieldMeta
@@ -55,6 +56,21 @@ const currentFieldPrefix = computed(() => {
 
 provide('fieldPrefix', currentFieldPrefix.value)
 
+// Construct full path for child error detection
+// Combine sectionId + currentFieldPrefix to get the complete path for vee-validate
+const fullTabsPath = computed(() => {
+  // Need to include sectionId (e.g., "form") + currentFieldPrefix (e.g., "pricing.frequencies")
+  // to get the full vee-validate path: "form.pricing.frequencies"
+  return sectionId ? `${sectionId}.${currentFieldPrefix.value}` : currentFieldPrefix.value
+})
+
+// Check if each tab has validation errors in its child fields
+const tabHasErrors = (tabValue: string) => {
+  const tabPath = computed(() => `${fullTabsPath.value}.${tabValue}`)
+  const { hasChildErrors } = useChildFieldErrors(tabPath)
+  return { hasChildErrors }
+}
+
 // Provide scoped form values to child fields (as ComputedRef for reactivity)
 // This merges the full form values with the current tab's data
 // so that visibleWhen conditions inside tabs can access tab-local field values
@@ -77,7 +93,7 @@ const resolveTabLabel = (tab: (typeof props.meta.tabs)[number]) => {
   return typeof tab.label === 'function' ? tab.label(formValues.value) : tab.label
 }
 
-// Resolve tab badge labels
+// Resolve tab badge labels (for custom badges)
 const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
   if (!tab.badgeLabel) return undefined
   return typeof tab.badgeLabel === 'function' ? tab.badgeLabel(formValues.value) : tab.badgeLabel
@@ -94,12 +110,21 @@ const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
         {{ meta.description }}
       </FieldDescription>
 
-      <Tabs v-model="activeTab">
+      <Tabs v-model="activeTab" :unmount-on-hide="false">
         <TabsList :class="cn(meta.tabsListClass)">
           <TabsTrigger v-for="tab in meta.tabs" :key="tab.value" :value="tab.value" class="gap-2">
             {{ resolveTabLabel(tab) }}
+            <!-- Error badge takes priority -->
             <Badge
-              v-if="resolveTabBadge(tab)"
+              v-if="tabHasErrors(tab.value).hasChildErrors.value"
+              variant="destructive"
+              class="ml-1 h-5 px-1.5 text-xs gap-1"
+            >
+              <Icon name="lucide:alert-circle" class="h-3 w-3" />
+            </Badge>
+            <!-- Custom badge shown when no errors -->
+            <Badge
+              v-else-if="resolveTabBadge(tab)"
               :variant="tab.badgeVariant || 'secondary'"
               class="ml-1 h-5 px-1.5 text-xs"
             >

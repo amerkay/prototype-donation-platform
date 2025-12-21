@@ -41,8 +41,10 @@ export function useChildFieldErrors(containerPath: MaybeRefOrGetter<string>): {
     // vee-validate automatically cleans up errors when fields are fixed,
     // so we trust the errors object as the source of truth
     const result = Object.entries(errorsObj).some(([errorKey, errorValue]) => {
+      const hasError = errorValue && errorValue.length > 0
+      const isChild = errorKey.startsWith(containerPrefix)
       // Must have an error value AND be a child of this container
-      return errorValue && errorValue.length > 0 && errorKey.startsWith(containerPrefix)
+      return hasError && isChild
     })
 
     return result
