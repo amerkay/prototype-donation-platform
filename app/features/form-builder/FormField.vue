@@ -28,8 +28,11 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Inject form values for conditional visibility
-const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
+// Inject form values for conditional visibility (as ComputedRef for reactivity)
+const formValues = inject<ComputedRef<Record<string, unknown>>>(
+  'formValues',
+  computed(() => ({}))
+)
 
 // Inject setFieldValue function from FormRenderer
 const setFieldValue = inject<SetFieldValueFn>('setFieldValue', () => {})
@@ -64,7 +67,7 @@ const isVisible = computed(() => {
 
   // Then check this field's own visibility
   if (!props.meta.visibleWhen) return true
-  return props.meta.visibleWhen(formValues())
+  return props.meta.visibleWhen(formValues.value)
 })
 
 // Convert Zod rules to typed schema for vee-validate
@@ -81,7 +84,7 @@ const fieldRules = computed(() => {
 
   // If rules is a function, call it with current form values
   let rules =
-    typeof props.meta.rules === 'function' ? props.meta.rules(formValues()) : props.meta.rules
+    typeof props.meta.rules === 'function' ? props.meta.rules(formValues.value) : props.meta.rules
 
   // Preprocess fields to handle undefined/null values
   const isTextLikeField = ['text', 'textarea', 'autocomplete', 'select'].includes(props.meta.type)
@@ -109,7 +112,7 @@ useField(resolvedVeeName.value, fieldRules, {
 // Handle field changes and call onChange callback if provided
 const handleFieldChange = (value: unknown) => {
   if (props.meta.onChange) {
-    props.meta.onChange(value, formValues(), setFieldValue)
+    props.meta.onChange(value, formValues.value, setFieldValue)
   }
 }
 

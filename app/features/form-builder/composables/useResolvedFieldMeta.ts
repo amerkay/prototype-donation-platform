@@ -1,4 +1,4 @@
-import { computed, inject } from 'vue'
+import { computed, inject, type ComputedRef } from 'vue'
 import type { BaseFieldMeta } from '~/features/form-builder/form-builder-types'
 
 type FormValues = Record<string, unknown>
@@ -12,12 +12,23 @@ function resolveText(text: ResolvableText | undefined, values: FormValues): stri
   return typeof text === 'function' ? text(values) : text
 }
 
-export function useResolvedFieldMeta(meta: WithResolvableText, getFormValues?: () => FormValues) {
-  const formValues = getFormValues ?? inject<() => FormValues>('formValues', () => ({}))
+/**
+ * Composable to resolve dynamic field metadata (label, description, placeholder)
+ * Now accepts ComputedRef<FormValues> for proper reactivity
+ */
+export function useResolvedFieldMeta(
+  meta: WithResolvableText,
+  formValues?: ComputedRef<FormValues>
+) {
+  const injectedFormValues = inject<ComputedRef<FormValues>>(
+    'formValues',
+    computed(() => ({}))
+  )
+  const values = formValues || injectedFormValues
 
-  const resolvedLabel = computed(() => resolveText(meta.label, formValues()))
-  const resolvedDescription = computed(() => resolveText(meta.description, formValues()))
-  const resolvedPlaceholder = computed(() => resolveText(meta.placeholder, formValues()))
+  const resolvedLabel = computed(() => resolveText(meta.label, values.value))
+  const resolvedDescription = computed(() => resolveText(meta.description, values.value))
+  const resolvedPlaceholder = computed(() => resolveText(meta.placeholder, values.value))
 
   return {
     resolvedLabel,

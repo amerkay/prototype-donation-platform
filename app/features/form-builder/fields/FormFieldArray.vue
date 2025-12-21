@@ -28,7 +28,8 @@ provide('isInsideArray', true)
 const parentIsInsideArray = inject<boolean>('isInsideArray', false)
 
 // Check if any child items have validation errors
-const { hasChildErrors } = useChildFieldErrors(props.name, props.field.value)
+// vee-validate will handle error cleanup automatically when items are removed
+const { hasChildErrors } = useChildFieldErrors(props.name)
 
 // Show child error indicator if: touched, inside another array, or has child errors
 const shouldShowChildErrors = computed(() => {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, inject } from 'vue'
+import { ref, computed, inject, type ComputedRef } from 'vue'
 import {
   ComboboxAnchor,
   ComboboxContent,
@@ -25,7 +25,10 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
+const formValues = inject<ComputedRef<Record<string, unknown>>>(
+  'formValues',
+  computed(() => ({}))
+)
 
 const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(
   props.meta,
@@ -42,7 +45,7 @@ const notFoundText = computed(() => props.meta.notFoundText ?? 'No results found
 // Resolve options (can be static array or function)
 const resolvedOptions = computed(() => {
   if (typeof props.meta.options === 'function') {
-    return props.meta.options(formValues())
+    return props.meta.options(formValues.value)
   }
   return props.meta.options
 })

@@ -38,11 +38,8 @@ const formValuesComputed = computed(() => {
   const sectionValues = (values as Record<string, unknown>)[props.section.id]
   return (sectionValues as Record<string, unknown>) || {}
 })
-provide('formValues', () => formValuesComputed.value)
-
-// Provide form errors for child field validation state tracking
-// FormFieldGroup uses this to detect child field errors
-provide('formErrors', errors)
+// Provide as computed ref (not function) for proper reactive dependency tracking
+provide('formValues', formValuesComputed)
 
 // Provide section id so nested fields can resolve absolute vee-validate names
 provide('sectionId', props.section.id)

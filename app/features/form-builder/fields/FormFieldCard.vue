@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed, inject, type ComputedRef } from 'vue'
 import { cn } from '@/lib/utils'
 import type { CardFieldMeta } from '~/features/form-builder/form-builder-types'
 
@@ -9,14 +9,17 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Inject form values for dynamic descriptions
-const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
+// Inject form values for dynamic descriptions (as ComputedRef for reactivity)
+const formValues = inject<ComputedRef<Record<string, unknown>>>(
+  'formValues',
+  computed(() => ({}))
+)
 
 // Resolve description (static string or dynamic function)
 const resolvedDescription = computed(() => {
   if (!props.meta.description) return undefined
   if (typeof props.meta.description === 'function') {
-    return props.meta.description(formValues())
+    return props.meta.description(formValues.value)
   }
   return props.meta.description
 })

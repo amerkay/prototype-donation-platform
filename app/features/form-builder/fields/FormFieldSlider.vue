@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, computed } from 'vue'
+import { inject, computed, type ComputedRef } from 'vue'
 import { Slider } from '@/components/ui/slider'
 import type { SliderFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
@@ -15,7 +15,10 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
+const formValues = inject<ComputedRef<Record<string, unknown>>>(
+  'formValues',
+  computed(() => ({}))
+)
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta, formValues)
 
 const numberValue = computed(() => {
@@ -27,7 +30,7 @@ const numberValue = computed(() => {
 
 const formattedValue = computed(() => {
   if (props.meta.formatValue) {
-    return props.meta.formatValue(numberValue.value, formValues())
+    return props.meta.formatValue(numberValue.value, formValues.value)
   }
   return String(numberValue.value)
 })

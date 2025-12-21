@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, inject } from 'vue'
+import { ref, computed, watch, inject, type ComputedRef } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import {
   ComboboxAnchor,
@@ -35,7 +35,10 @@ const props = defineProps<Props>()
 
 // Inject form values from FormRenderer (generic pattern for all field components)
 // Note: If inside a field-group, these values are already scoped to the group
-const formValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
+const formValues = inject<ComputedRef<Record<string, unknown>>>(
+  'formValues',
+  computed(() => ({}))
+)
 
 // Inject setFieldValue for onChange callbacks
 const setFieldValue = inject<SetFieldValueFn>('setFieldValue', () => {})
@@ -77,7 +80,7 @@ const fetchOptions = async (query: string) => {
   try {
     if (props.meta.fetchOptions) {
       // Async mode - fetch from API
-      const results = await props.meta.fetchOptions(trimmed, formValues())
+      const results = await props.meta.fetchOptions(trimmed, formValues.value)
       options.value = results
     } else if (props.meta.options) {
       // Static mode - filter locally
@@ -142,7 +145,7 @@ const handleValueChange = (value: AutocompleteOption | null) => {
       setFieldValue(absolutePath, val)
     }
 
-    props.meta.onChange(value, formValues(), scopedSetFieldValue)
+    props.meta.onChange(value, formValues.value, scopedSetFieldValue)
   }
 
   // Clear search after selection

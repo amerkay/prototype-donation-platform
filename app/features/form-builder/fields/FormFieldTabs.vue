@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, inject, provide } from 'vue'
+import { ref, computed, inject, provide, type ComputedRef } from 'vue'
 import { cn } from '@/lib/utils'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Field, FieldLegend, FieldDescription } from '@/components/ui/field'
@@ -21,8 +21,11 @@ const props = defineProps<Props>()
 
 const sectionId = inject<string>('sectionId', '')
 
-// Get form values for dynamic label/badge resolution
-const getFormValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
+// Get form values for dynamic label/badge resolution (as ComputedRef for reactivity)
+const formValues = inject<ComputedRef<Record<string, unknown>>>(
+  'formValues',
+  computed(() => ({}))
+)
 
 // Inject parent visibility for conditional rendering
 const parentGroupVisible = inject<() => boolean>('parentGroupVisible', () => true)
@@ -31,7 +34,7 @@ const parentGroupVisible = inject<() => boolean>('parentGroupVisible', () => tru
 const isTabsVisible = computed(() => {
   if (!parentGroupVisible()) return false
   if (!props.meta.visibleWhen) return true
-  return props.meta.visibleWhen(getFormValues())
+  return props.meta.visibleWhen(formValues.value)
 })
 
 provide('parentGroupVisible', () => isTabsVisible.value)
@@ -52,31 +55,32 @@ const currentFieldPrefix = computed(() => {
 
 provide('fieldPrefix', currentFieldPrefix.value)
 
-// Provide scoped form values to child fields
+// Provide scoped form values to child fields (as ComputedRef for reactivity)
 // This merges the full form values with the current tab's data
 // so that visibleWhen conditions inside tabs can access tab-local field values
-provide('formValues', () => {
-  const fullValues = getFormValues()
+const scopedFormValues = computed(() => {
+  const fullValues = formValues.value
   const tabsValue = getRecordAtPath(fullValues, tabsPath.value) as
     | Record<string, unknown>
     | undefined
   const currentTabData = tabsValue?.[activeTab.value] as Record<string, unknown> | undefined
   return { ...fullValues, ...(currentTabData || {}) }
 })
+provide('formValues', scopedFormValues)
 
 const resolvedLabel = computed(() =>
-  typeof props.meta.label === 'function' ? props.meta.label(getFormValues()) : props.meta.label
+  typeof props.meta.label === 'function' ? props.meta.label(formValues.value) : props.meta.label
 )
 
 // Resolve tab labels
 const resolveTabLabel = (tab: (typeof props.meta.tabs)[number]) => {
-  return typeof tab.label === 'function' ? tab.label(getFormValues()) : tab.label
+  return typeof tab.label === 'function' ? tab.label(formValues.value) : tab.label
 }
 
 // Resolve tab badge labels
 const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
   if (!tab.badgeLabel) return undefined
-  return typeof tab.badgeLabel === 'function' ? tab.badgeLabel(getFormValues()) : tab.badgeLabel
+  return typeof tab.badgeLabel === 'function' ? tab.badgeLabel(formValues.value) : tab.badgeLabel
 }
 </script>
 

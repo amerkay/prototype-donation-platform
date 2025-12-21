@@ -27,11 +27,14 @@ const sectionId = inject<string>('sectionId', '')
 const accordionValue = inject<Ref<string | undefined>>('accordionValue', ref(undefined))
 const isOpen = computed(() => accordionValue.value === props.name)
 
-// Get form values for dynamic label resolution
-const getFormValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
+// Get form values for dynamic label resolution (as ComputedRef for reactivity)
+const formValues = inject<ComputedRef<Record<string, unknown>>>(
+  'formValues',
+  computed(() => ({}))
+)
 
 const resolvedLabel = computed(() =>
-  typeof props.meta.label === 'function' ? props.meta.label(getFormValues()) : props.meta.label
+  typeof props.meta.label === 'function' ? props.meta.label(formValues.value) : props.meta.label
 )
 
 // Set default open on mount if specified
@@ -54,7 +57,7 @@ const parentGroupVisible = inject<() => boolean>('parentGroupVisible', () => tru
 const isGroupVisible = computed(() => {
   if (!parentGroupVisible()) return false
   if (!props.meta.visibleWhen) return true
-  return props.meta.visibleWhen(getFormValues())
+  return props.meta.visibleWhen(formValues.value)
 })
 
 provide('parentGroupVisible', () => isGroupVisible.value)
@@ -70,6 +73,7 @@ const fullGroupPath = computed(() => {
 })
 
 // Check if any child fields have validation errors
+// Uses vee-validate's useFormErrors() internally for guaranteed reactivity
 const { hasChildErrors } = useChildFieldErrors(fullGroupPath)
 
 // Field prefix context for nested paths
@@ -82,12 +86,13 @@ const currentFieldPrefix = computed(() => {
 // Provide the cumulative prefix to child fields
 provide('fieldPrefix', currentFieldPrefix.value)
 
-// Provide scoped form values to child fields
-provide('formValues', () => {
-  const fullValues = getFormValues()
+// Provide scoped form values to child fields (as ComputedRef for reactivity)
+const scopedFormValues = computed(() => {
+  const fullValues = formValues.value
   const groupValue = getRecordAtPath(fullValues, groupPath.value)
   return { ...fullValues, ...(groupValue || {}) }
 })
+provide('formValues', scopedFormValues)
 
 // Scroll to collapsible when opened
 watch(isOpen, (newIsOpen) => {
