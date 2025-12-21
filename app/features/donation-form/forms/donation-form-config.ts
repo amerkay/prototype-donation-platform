@@ -182,7 +182,7 @@ export function createFormConfigSection(): ConfigSectionDef {
                     visibleWhen: (values) => !!values.enabled,
                     itemField: {
                       type: 'number',
-                      label: 'Amount',
+                      // label: 'Amount',
                       placeholder: '25',
                       min: 1,
                       rules: z.number().min(1, 'Must be at least 1')
@@ -238,7 +238,7 @@ export function createFormConfigSection(): ConfigSectionDef {
                     visibleWhen: (values) => !!values.enabled,
                     itemField: {
                       type: 'number',
-                      label: 'Amount',
+                      // label: 'Amount',
                       placeholder: '25',
                       min: 1,
                       rules: z.number().min(1, 'Must be at least 1')
@@ -294,7 +294,7 @@ export function createFormConfigSection(): ConfigSectionDef {
                     visibleWhen: (values) => !!values.enabled,
                     itemField: {
                       type: 'number',
-                      label: 'Amount',
+                      // label: 'Amount',
                       placeholder: '25',
                       min: 1,
                       rules: z.number().min(1, 'Must be at least 1')
