@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, inject, provide, type Ref, type ComputedRef } from 'vue'
+import { ref, watch, computed, inject, provide, type Ref } from 'vue'
 import { cn } from '@/lib/utils'
 import { FieldSet, FieldLegend, FieldDescription } from '@/components/ui/field'
 import { AccordionItem, AccordionContent, AccordionTrigger } from '@/components/ui/accordion'
@@ -8,11 +8,11 @@ import type { FieldGroupMeta } from '~/features/form-builder/form-builder-types'
 import {
   getRecordAtPath,
   joinPath,
-  pathExistsInValues,
   toSectionRelativePath
 } from '~/features/form-builder/field-path-utils'
 import FormField from '../FormField.vue'
 import { useScrollOnVisible } from '../composables/useScrollOnVisible'
+import { useChildFieldErrors } from '../composables/useChildFieldErrors'
 
 interface Props {
   meta: FieldGroupMeta
@@ -29,13 +29,6 @@ const isOpen = computed(() => accordionValue.value === props.name)
 
 // Get form values for dynamic label resolution
 const getFormValues = inject<() => Record<string, unknown>>('formValues', () => ({}))
-
-// Get form errors object to detect child field validation errors
-// vee-validate's errors is a reactive object, not a Ref
-const formErrors = inject<ComputedRef<Record<string, string | undefined>>>(
-  'formErrors',
-  computed(() => ({}))
-)
 
 const resolvedLabel = computed(() =>
   typeof props.meta.label === 'function' ? props.meta.label(getFormValues()) : props.meta.label
@@ -66,29 +59,18 @@ const isGroupVisible = computed(() => {
 
 provide('parentGroupVisible', () => isGroupVisible.value)
 
-// Normalize to section-relative path BEFORE hasChildErrors uses it
-// - Top-level fields are named like `${sectionId}.fieldKey`.
-// - Nested fields (inside field-group/tabs) can be relative like `once.customAmount`.
+// Normalize to section-relative path
 const groupPath = computed(() => {
   return toSectionRelativePath(props.name, sectionId)
 })
 
-// Check if any child fields have validation errors (filters orphaned paths)
-const hasChildErrors = computed(() => {
-  const errorsObj = formErrors.value
-  const keys = Object.keys(errorsObj)
-  if (keys.length === 0) return false
-
-  const fullGroupPath = sectionId ? `${sectionId}.${groupPath.value}` : groupPath.value
-  const formVals = getFormValues()
-
-  return keys.some((key) => {
-    if (!errorsObj[key] || !key.startsWith(`${fullGroupPath}.`)) return false
-
-    const relativePath = key.slice(fullGroupPath.length + 1)
-    return pathExistsInValues(relativePath, formVals)
-  })
+// Construct full path for child error detection
+const fullGroupPath = computed(() => {
+  return sectionId ? `${sectionId}.${groupPath.value}` : groupPath.value
 })
+
+// Check if any child fields have validation errors
+const { hasChildErrors } = useChildFieldErrors(fullGroupPath)
 
 // Field prefix context for nested paths
 // This allows child fields to compute relative paths

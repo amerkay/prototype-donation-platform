@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch, type ComputedRef } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 import { useDragAndDrop } from '@formkit/drag-and-drop/vue'
 import { vAutoAnimate } from '@formkit/auto-animate'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { ArrayFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
-import { pathExistsInValues } from '~/features/form-builder/field-path-utils'
 import FormField from '../FormField.vue'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useChildFieldErrors } from '~/features/form-builder/composables/useChildFieldErrors'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -21,31 +21,14 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Get form errors to check for child item errors
-const formErrors = inject<ComputedRef<Record<string, string | undefined>>>(
-  'formErrors',
-  computed(() => ({}))
-)
-
 // Provide context that child fields are inside an array
 provide('isInsideArray', true)
 
 // Check if this array itself is inside another array (for nested arrays)
 const parentIsInsideArray = inject<boolean>('isInsideArray', false)
 
-// Check if any child items have validation errors (filters orphaned paths)
-const hasChildErrors = computed(() => {
-  const errorsObj = formErrors.value
-  const arrayPrefix = `${props.name}.`
-
-  return Object.keys(errorsObj).some((key) => {
-    if (!errorsObj[key] || !key.startsWith(arrayPrefix)) return false
-
-    // Validate error path exists in current array value
-    const relativePath = key.slice(arrayPrefix.length)
-    return pathExistsInValues(relativePath, props.field.value)
-  })
-})
+// Check if any child items have validation errors
+const { hasChildErrors } = useChildFieldErrors(props.name, props.field.value)
 
 // Show child error indicator if: touched, inside another array, or has child errors
 const shouldShowChildErrors = computed(() => {
