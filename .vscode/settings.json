@@ -22,5 +22,8 @@
     "**/node_modules": true,
     "**/pnpm-lock.yaml": true,
     "**/.nuxt": true
-  }
+  },
+  "css.lint.unknownAtRules": "ignore",
+  "scss.lint.unknownAtRules": "ignore",
+  "less.lint.unknownAtRules": "ignore"
 }
