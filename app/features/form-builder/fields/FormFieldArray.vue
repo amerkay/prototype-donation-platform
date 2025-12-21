@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useDragAndDrop } from '@formkit/drag-and-drop/vue'
 import { vAutoAnimate } from '@formkit/auto-animate'
 import { Button } from '@/components/ui/button'
@@ -8,6 +8,7 @@ import type { ArrayFieldMeta, VeeFieldContext } from '~/features/form-builder/fo
 import FormField from '../FormField.vue'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import { useChildFieldErrors } from '~/features/form-builder/composables/useChildFieldErrors'
+import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 import { resolveVeeFieldPath } from '~/features/form-builder/field-path-utils'
 
@@ -22,11 +23,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Inject field prefix context for relative path computation (same as FormField.vue)
-const fieldPrefix = inject<string>('fieldPrefix', '')
-
-// Inject section id so we can resolve the full vee-validate path
-const sectionId = inject<string>('sectionId', '')
+// Inject common form builder context
+const { sectionId, fieldPrefix } = useFormBuilderContext()
 
 // Resolve the full vee-validate field path (same pattern as FormField.vue)
 // This is needed for useChildFieldErrors to correctly match error keys

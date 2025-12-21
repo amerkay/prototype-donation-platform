@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref, computed, inject, provide, type ComputedRef } from 'vue'
+import { ref, computed, provide } from 'vue'
 import { cn } from '@/lib/utils'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Field, FieldLegend, FieldDescription } from '@/components/ui/field'
 import { Badge } from '@/components/ui/badge'
 import type { TabsFieldMeta } from '~/features/form-builder/form-builder-types'
-import {
-  getRecordAtPath,
-  joinPath,
-  toSectionRelativePath
-} from '~/features/form-builder/field-path-utils'
+import { getRecordAtPath } from '~/features/form-builder/field-path-utils'
+import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
+import { useFieldVisibility } from '~/features/form-builder/composables/useFieldVisibility'
+import { useContainerFieldPaths } from '~/features/form-builder/composables/useContainerFieldPaths'
+import { resolveText } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormField from '../FormField.vue'
 import { useChildFieldErrors } from '../composables/useChildFieldErrors'
 
@@ -20,49 +20,30 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const sectionId = inject<string>('sectionId', '')
+// Inject common form builder context
+const {
+  sectionId,
+  fieldPrefix: parentFieldPrefix,
+  formValues,
+  parentGroupVisible
+} = useFormBuilderContext()
 
-// Get form values for dynamic label/badge resolution (as ComputedRef for reactivity)
-const formValues = inject<ComputedRef<Record<string, unknown>>>(
-  'formValues',
-  computed(() => ({}))
-)
-
-// Inject parent visibility for conditional rendering
-const parentGroupVisible = inject<() => boolean>('parentGroupVisible', () => true)
-
-// Computed visibility for this tabs field
-const isTabsVisible = computed(() => {
-  if (!parentGroupVisible()) return false
-  if (!props.meta.visibleWhen) return true
-  return props.meta.visibleWhen(formValues.value)
-})
+// Compute visibility for this tabs field
+const isTabsVisible = useFieldVisibility(props.meta, formValues, parentGroupVisible)
 
 provide('parentGroupVisible', () => isTabsVisible.value)
 
 // Active tab state - initialize from defaultValue or first tab
 const activeTab = ref(props.meta.defaultValue || props.meta.tabs[0]?.value || '')
 
-// Normalize to section-relative path
-const tabsPath = computed(() => {
-  return toSectionRelativePath(props.name, sectionId)
-})
-
-// Field prefix context for nested paths
-const parentFieldPrefix = inject<string>('fieldPrefix', '')
-const currentFieldPrefix = computed(() => {
-  return joinPath(parentFieldPrefix, tabsPath.value)
-})
+// Compute paths for this container field
+const {
+  relativePath: tabsPath,
+  currentFieldPrefix,
+  fullPath: fullTabsPath
+} = useContainerFieldPaths(props.name, sectionId, parentFieldPrefix)
 
 provide('fieldPrefix', currentFieldPrefix.value)
-
-// Construct full path for child error detection
-// Combine sectionId + currentFieldPrefix to get the complete path for vee-validate
-const fullTabsPath = computed(() => {
-  // Need to include sectionId (e.g., "form") + currentFieldPrefix (e.g., "pricing.frequencies")
-  // to get the full vee-validate path: "form.pricing.frequencies"
-  return sectionId ? `${sectionId}.${currentFieldPrefix.value}` : currentFieldPrefix.value
-})
 
 // Check if each tab has validation errors in its child fields
 const tabHasErrors = (tabValue: string) => {
@@ -84,19 +65,16 @@ const scopedFormValues = computed(() => {
 })
 provide('formValues', scopedFormValues)
 
-const resolvedLabel = computed(() =>
-  typeof props.meta.label === 'function' ? props.meta.label(formValues.value) : props.meta.label
-)
+const resolvedLabel = computed(() => resolveText(props.meta.label, formValues.value))
 
-// Resolve tab labels
+// Resolve tab labels using utility
 const resolveTabLabel = (tab: (typeof props.meta.tabs)[number]) => {
-  return typeof tab.label === 'function' ? tab.label(formValues.value) : tab.label
+  return resolveText(tab.label, formValues.value)
 }
 
-// Resolve tab badge labels (for custom badges)
+// Resolve tab badge labels using utility
 const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
-  if (!tab.badgeLabel) return undefined
-  return typeof tab.badgeLabel === 'function' ? tab.badgeLabel(formValues.value) : tab.badgeLabel
+  return resolveText(tab.badgeLabel, formValues.value)
 }
 </script>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, inject, type ComputedRef } from 'vue'
+import { ref, computed, watch, inject } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import {
   ComboboxAnchor,
@@ -19,6 +19,7 @@ import type {
   SetFieldValueFn
 } from '~/features/form-builder/form-builder-types'
 import { joinPath } from '~/features/form-builder/field-path-utils'
+import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
@@ -33,14 +34,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Inject form values from FormRenderer (generic pattern for all field components)
-// Note: If inside a field-group, these values are already scoped to the group
-const formValues = inject<ComputedRef<Record<string, unknown>>>(
-  'formValues',
-  computed(() => ({}))
-)
-
-// Inject setFieldValue for onChange callbacks
+// Inject form values and setFieldValue from context
+// Note: If inside a field-group, formValues are already scoped to the group
+const { formValues } = useFormBuilderContext()
 const setFieldValue = inject<SetFieldValueFn>('setFieldValue', () => {})
 
 // Component state

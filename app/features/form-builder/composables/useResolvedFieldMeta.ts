@@ -7,7 +7,14 @@ type ResolvableText = string | ((values: FormValues) => string)
 
 type WithResolvableText = Pick<BaseFieldMeta, 'label' | 'description' | 'placeholder'>
 
-function resolveText(text: ResolvableText | undefined, values: FormValues): string | undefined {
+/**
+ * Utility to resolve text that can be static string or dynamic function
+ * Exported for reuse in other components (e.g., tab labels, badges)
+ */
+export function resolveText(
+  text: ResolvableText | undefined,
+  values: FormValues
+): string | undefined {
   if (!text) return undefined
   return typeof text === 'function' ? text(values) : text
 }

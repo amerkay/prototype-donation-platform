@@ -5,11 +5,11 @@ import { FieldSet, FieldLegend, FieldDescription } from '@/components/ui/field'
 import { AccordionItem, AccordionContent, AccordionTrigger } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
 import type { FieldGroupMeta } from '~/features/form-builder/form-builder-types'
-import {
-  getRecordAtPath,
-  joinPath,
-  toSectionRelativePath
-} from '~/features/form-builder/field-path-utils'
+import { getRecordAtPath } from '~/features/form-builder/field-path-utils'
+import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
+import { useFieldVisibility } from '~/features/form-builder/composables/useFieldVisibility'
+import { useContainerFieldPaths } from '~/features/form-builder/composables/useContainerFieldPaths'
+import { resolveText } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormField from '../FormField.vue'
 import { useScrollOnVisible } from '../composables/useScrollOnVisible'
 import { useChildFieldErrors } from '../composables/useChildFieldErrors'
@@ -21,21 +21,19 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const sectionId = inject<string>('sectionId', '')
+// Inject common form builder context
+const {
+  sectionId,
+  fieldPrefix: parentFieldPrefix,
+  formValues,
+  parentGroupVisible
+} = useFormBuilderContext()
 
 // Get accordion state from parent (FormRenderer)
 const accordionValue = inject<Ref<string | undefined>>('accordionValue', ref(undefined))
 const isOpen = computed(() => accordionValue.value === props.name)
 
-// Get form values for dynamic label resolution (as ComputedRef for reactivity)
-const formValues = inject<ComputedRef<Record<string, unknown>>>(
-  'formValues',
-  computed(() => ({}))
-)
-
-const resolvedLabel = computed(() =>
-  typeof props.meta.label === 'function' ? props.meta.label(formValues.value) : props.meta.label
-)
+const resolvedLabel = computed(() => resolveText(props.meta.label, formValues.value))
 
 // Set default open on mount if specified
 if (props.meta.collapsibleDefaultOpen && !accordionValue.value) {
@@ -51,37 +49,21 @@ const { setElementRef, scrollToElement } = useScrollOnVisible(
   }
 )
 
-// Visibility management
-const parentGroupVisible = inject<() => boolean>('parentGroupVisible', () => true)
-
-const isGroupVisible = computed(() => {
-  if (!parentGroupVisible()) return false
-  if (!props.meta.visibleWhen) return true
-  return props.meta.visibleWhen(formValues.value)
-})
+// Compute visibility for this field group
+const isGroupVisible = useFieldVisibility(props.meta, formValues, parentGroupVisible)
 
 provide('parentGroupVisible', () => isGroupVisible.value)
 
-// Normalize to section-relative path
-const groupPath = computed(() => {
-  return toSectionRelativePath(props.name, sectionId)
-})
-
-// Construct full path for child error detection
-const fullGroupPath = computed(() => {
-  return sectionId ? `${sectionId}.${groupPath.value}` : groupPath.value
-})
+// Compute paths for this container field
+const {
+  relativePath: groupPath,
+  currentFieldPrefix,
+  fullPath: fullGroupPath
+} = useContainerFieldPaths(props.name, sectionId, parentFieldPrefix)
 
 // Check if any child fields have validation errors
 // Re-evaluate when accordion state changes to ensure fresh error state
 const { hasChildErrors } = useChildFieldErrors(fullGroupPath)
-
-// Field prefix context for nested paths
-// This allows child fields to compute relative paths
-const parentFieldPrefix = inject<string>('fieldPrefix', '')
-const currentFieldPrefix = computed(() => {
-  return joinPath(parentFieldPrefix, groupPath.value)
-})
 
 // Provide the cumulative prefix to child fields
 provide('fieldPrefix', currentFieldPrefix.value)

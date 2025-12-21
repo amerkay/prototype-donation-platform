@@ -137,7 +137,12 @@ const handleNext = () => {
 
     <!-- Gift Aid Form (wrapped for click delegation) -->
     <div @click="handleFormClick">
-      <FormRenderer ref="formRef" v-model="formDataWithContext" :section="step3FormSection" />
+      <FormRenderer
+        ref="formRef"
+        v-model="formDataWithContext"
+        :section="step3FormSection"
+        :keep-values-on-unmount="true"
+      />
     </div>
 
     <!-- Navigation Buttons -->

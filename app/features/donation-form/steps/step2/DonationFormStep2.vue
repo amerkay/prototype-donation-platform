@@ -97,6 +97,7 @@ const handleNext = () => {
         ref="donorFormRef"
         v-model="donorInfoSection"
         :section="donorInfoFormSection"
+        :keep-values-on-unmount="true"
         @submit="handleNext"
       />
     </div>
@@ -113,6 +114,7 @@ const handleNext = () => {
           ref="shippingFormRef"
           v-model="shippingSection"
           :section="addressFormSection"
+          :keep-values-on-unmount="true"
           @submit="handleNext"
         />
       </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, inject, type ComputedRef } from 'vue'
+import { ref, computed } from 'vue'
 import {
   ComboboxAnchor,
   ComboboxContent,
@@ -12,6 +12,7 @@ import {
 import { Check, ChevronsUpDown } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import type { ComboboxFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
@@ -25,10 +26,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const formValues = inject<ComputedRef<Record<string, unknown>>>(
-  'formValues',
-  computed(() => ({}))
-)
+const { formValues } = useFormBuilderContext()
 
 const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(
   props.meta,

@@ -5,6 +5,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
 import type { FieldMeta, SetFieldValueFn } from '~/features/form-builder/form-builder-types'
 import { resolveVeeFieldPath } from '~/features/form-builder/field-path-utils'
+import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import FormFieldText from './fields/FormFieldText.vue'
 import FormFieldTextarea from './fields/FormFieldTextarea.vue'
 import FormFieldNumber from './fields/FormFieldNumber.vue'
@@ -28,6 +29,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
+// Inject common form builder context
+const { sectionId, fieldPrefix, parentGroupVisible } = useFormBuilderContext()
+
 // Inject form values for conditional visibility (as ComputedRef for reactivity)
 const formValues = inject<ComputedRef<Record<string, unknown>>>(
   'formValues',
@@ -36,15 +40,6 @@ const formValues = inject<ComputedRef<Record<string, unknown>>>(
 
 // Inject setFieldValue function from FormRenderer
 const setFieldValue = inject<SetFieldValueFn>('setFieldValue', () => {})
-
-// Inject parent group visibility (if this field is inside a field-group)
-const parentGroupVisible = inject<() => boolean>('parentGroupVisible', () => true)
-
-// Inject field prefix context for relative path computation
-const fieldPrefix = inject<string>('fieldPrefix', '')
-
-// Inject section id so child fields can use relative names
-const sectionId = inject<string>('sectionId', '')
 
 // Check if this field is inside an array (injected by FormFieldArray)
 const isInsideArray = inject<boolean>('isInsideArray', false)

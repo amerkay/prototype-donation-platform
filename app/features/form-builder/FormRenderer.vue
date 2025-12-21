@@ -11,9 +11,17 @@ interface Props {
   section: ConfigSectionDef
   modelValue: Record<string, unknown>
   class?: string
+  /**
+   * Keep field values in vee-validate when component unmounts.
+   * Useful for multi-step wizards with v-if navigation.
+   * @default false
+   */
+  keepValuesOnUnmount?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  keepValuesOnUnmount: false
+})
 
 const emit = defineEmits<{
   'update:modelValue': [value: Record<string, unknown>]
@@ -27,7 +35,8 @@ const initialFormValues = computed(() => ({
 
 // Use the composition API to access form context
 const { values, meta, setValues, handleSubmit, setFieldValue, setFieldTouched } = useForm({
-  initialValues: initialFormValues.value
+  initialValues: initialFormValues.value,
+  keepValuesOnUnmount: props.keepValuesOnUnmount
 })
 
 // Provide form values to child fields for conditional visibility

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { inject, computed, type ComputedRef } from 'vue'
+import { computed } from 'vue'
 import { Slider } from '@/components/ui/slider'
 import type { SliderFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
@@ -15,10 +16,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const formValues = inject<ComputedRef<Record<string, unknown>>>(
-  'formValues',
-  computed(() => ({}))
-)
+const { formValues } = useFormBuilderContext()
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta, formValues)
 
 const numberValue = computed(() => {
