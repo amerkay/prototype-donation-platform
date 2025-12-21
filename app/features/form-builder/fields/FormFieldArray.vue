@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, watch, nextTick } from 'vue'
 import { useFieldArray } from 'vee-validate'
 import { useDragAndDrop } from '@formkit/drag-and-drop/vue'
 import { vAutoAnimate } from '@formkit/auto-animate'
@@ -68,7 +68,7 @@ const allErrors = computed(() => {
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
 
 // Use vee-validate's useFieldArray for proper array management with error cleanup
-const { fields, push, swap, replace } = useFieldArray(resolvedVeeName)
+const { fields, push, move, replace } = useFieldArray(resolvedVeeName)
 
 // Create array of values for drag-and-drop (synced from vee-validate fields)
 const draggableValues = computed(() => fields.value.map((f) => f.value))
@@ -96,9 +96,15 @@ const [parent, draggableItems] = useDragAndDrop(draggableValues.value, {
     const from = e.previousPosition
     const to = e.position
     if (Number.isInteger(from) && Number.isInteger(to)) {
-      // Use vee-validate's swap for proper error state management
-      swap(from!, to!)
-      props.onChange?.(fields.value.map((f) => f.value))
+      // Use move() for immediate value reorder (keeps animation smooth)
+      move(from!, to!)
+
+      // Use replace() in nextTick to force complete error path recalculation
+      // This fixes the issue where errors jump to wrong fields during drag
+      nextTick(() => {
+        const currentValues = fields.value.map((f) => f.value)
+        replace(currentValues)
+      })
     }
   },
 

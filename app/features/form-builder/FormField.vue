@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, inject, type ComputedRef } from 'vue'
-import { Field as VeeField, useField } from 'vee-validate'
+import { Field as VeeField } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
 import type { FieldMeta, SetFieldValueFn } from '~/features/form-builder/form-builder-types'
@@ -95,11 +95,6 @@ const fieldRules = computed(() => {
   }
 
   return toTypedSchema(rules)
-})
-
-// Use useField to get direct access to field state
-useField(resolvedVeeName.value, fieldRules, {
-  syncVModel: false
 })
 
 // Handle field changes and call onChange callback if provided
