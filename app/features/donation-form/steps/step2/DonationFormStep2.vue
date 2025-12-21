@@ -92,7 +92,7 @@ const handleNext = () => {
 <template>
   <div class="space-y-4">
     <!-- Donor Information Form -->
-    <div class="rounded-lg border border-transparent px-4 bg-background/40">
+    <div class="rounded-lg border border-transparent px-4 py-6 bg-background/40">
       <FormRenderer
         ref="donorFormRef"
         v-model="donorInfoSection"
@@ -109,7 +109,7 @@ const handleNext = () => {
         :reward-count="shippingCounts.rewardCount"
         :cart-count="shippingCounts.cartCount"
       />
-      <div class="rounded-lg border border-transparent px-4 bg-background/40">
+      <div class="rounded-lg border border-transparent px-4 py-6 bg-background/40">
         <FormRenderer
           ref="shippingFormRef"
           v-model="shippingSection"

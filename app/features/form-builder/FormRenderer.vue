@@ -122,6 +122,15 @@ const shouldShowSeparator = (
   return !lastVisibleField[1].isNoSeparatorAfter
 }
 
+// Check if the current field is the last visible field
+const isLastVisibleField = (currentIndex: number) => {
+  const visibleFieldsAfter = allFields.value
+    .slice(currentIndex + 1)
+    .filter(([, fieldMeta]) => isFieldVisible(fieldMeta))
+
+  return visibleFieldsAfter.length === 0
+}
+
 // Auto-scroll to newly visible fields (scroll to top of element)
 const { setElementRef } = useScrollOnVisible(allFields, {
   isVisible: ([, fieldMeta]) => {
@@ -176,9 +185,9 @@ defineExpose({
 
 <template>
   <form :class="props.class" @submit.prevent="onSubmit">
-    <div class="space-y-1">
+    <div v-if="section.title || section.description" class="mb-6">
       <h2 v-if="section.title" class="text-sm font-semibold">{{ section.title }}</h2>
-      <p v-if="section.description" class="text-muted-foreground text-sm mb-4">
+      <p v-if="section.description" class="text-muted-foreground text-sm mt-1">
         {{ section.description }}
       </p>
     </div>
@@ -197,13 +206,17 @@ defineExpose({
         </div>
       </template>
     </Accordion>
-    <div v-else class="space-y-3">
+    <template v-else>
       <template v-for="([fieldKey, fieldMeta], index) in allFields" :key="`${fieldKey}-${index}`">
         <FieldSeparator v-if="shouldShowSeparator(index, fieldMeta)" class="my-2" />
         <div :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)">
-          <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" />
+          <FormField
+            :name="`${section.id}.${fieldKey}`"
+            :meta="fieldMeta"
+            :class="!isLastVisibleField(index) ? 'my-3' : ''"
+          />
         </div>
       </template>
-    </div>
+    </template>
   </form>
 </template>

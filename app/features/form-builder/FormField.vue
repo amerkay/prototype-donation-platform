@@ -21,10 +21,12 @@ import FormFieldSeparator from './fields/FormFieldSeparator.vue'
 import FormFieldGroup from './fields/FormFieldGroup.vue'
 import FormFieldArray from './fields/FormFieldArray.vue'
 import FormFieldTabs from './fields/FormFieldTabs.vue'
+import { cn } from '@/lib/utils'
 
 interface Props {
   name: string
   meta: FieldMeta
+  class?: string
 }
 
 const props = defineProps<Props>()
@@ -118,7 +120,7 @@ const handleFieldChange = (value: unknown) => {
       leave-from-class="opacity-100 translate-y-0"
       leave-to-class="opacity-0 -translate-y-2"
     >
-      <div v-show="isVisible">
+      <div v-show="isVisible" :class="cn(props.class)">
         <FormFieldText
           v-if="meta.type === 'text'"
           :field="field"
