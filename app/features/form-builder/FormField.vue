@@ -43,6 +43,9 @@ const fieldPrefix = inject<string>('fieldPrefix', '')
 // Inject section id so child fields can use relative names
 const sectionId = inject<string>('sectionId', '')
 
+// Check if this field is inside an array (injected by FormFieldArray)
+const isInsideArray = inject<boolean>('isInsideArray', false)
+
 // Resolve the vee-validate field path.
 // - Top-level fields are already passed as `${sectionId}.${fieldKey}` from FormRenderer.
 // - Fields inside containers (e.g. field-group) can pass relative names like `address1`.
@@ -144,7 +147,7 @@ const handleFieldChange = (value: unknown) => {
         <FormFieldNumber
           v-else-if="meta.type === 'number'"
           :field="field"
-          :errors="fieldMeta.touched ? errors : []"
+          :errors="fieldMeta.touched || isInsideArray ? errors : []"
           :meta="meta"
           :name="name"
           :on-change="handleFieldChange"
@@ -212,9 +215,10 @@ const handleFieldChange = (value: unknown) => {
         <FormFieldArray
           v-else-if="meta.type === 'array'"
           :field="field"
-          :errors="fieldMeta.touched ? errors : []"
+          :errors="errors"
           :meta="meta"
           :name="name"
+          :touched="fieldMeta.touched"
           :on-change="handleFieldChange"
         />
         <FormFieldTabs v-else-if="meta.type === 'tabs'" :meta="meta" :name="name" />

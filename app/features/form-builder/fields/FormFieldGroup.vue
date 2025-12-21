@@ -8,6 +8,7 @@ import type { FieldGroupMeta } from '~/features/form-builder/form-builder-types'
 import {
   getRecordAtPath,
   joinPath,
+  pathExistsInValues,
   toSectionRelativePath
 } from '~/features/form-builder/field-path-utils'
 import FormField from '../FormField.vue'
@@ -72,14 +73,21 @@ const groupPath = computed(() => {
   return toSectionRelativePath(props.name, sectionId)
 })
 
-// Check if any child fields have validation errors
+// Check if any child fields have validation errors (filters orphaned paths)
 const hasChildErrors = computed(() => {
   const errorsObj = formErrors.value
   const keys = Object.keys(errorsObj)
   if (keys.length === 0) return false
 
   const fullGroupPath = sectionId ? `${sectionId}.${groupPath.value}` : groupPath.value
-  return keys.some((key) => errorsObj[key] && key.startsWith(`${fullGroupPath}.`))
+  const formVals = getFormValues()
+
+  return keys.some((key) => {
+    if (!errorsObj[key] || !key.startsWith(`${fullGroupPath}.`)) return false
+
+    const relativePath = key.slice(fullGroupPath.length + 1)
+    return pathExistsInValues(relativePath, formVals)
+  })
 })
 
 // Field prefix context for nested paths

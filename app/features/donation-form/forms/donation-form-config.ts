@@ -185,7 +185,7 @@ export function createFormConfigSection(): ConfigSectionDef {
                       // label: 'Amount',
                       placeholder: '25',
                       min: 1,
-                      rules: z.number().min(1, 'Must be at least 1')
+                      rules: z.number({ error: 'Amount is required' }).min(1, 'Must be at least 1')
                     },
                     addButtonText: 'Add Amount',
                     rules: (values) => enabledPresetAmounts(values)
@@ -241,7 +241,7 @@ export function createFormConfigSection(): ConfigSectionDef {
                       // label: 'Amount',
                       placeholder: '25',
                       min: 1,
-                      rules: z.number().min(1, 'Must be at least 1')
+                      rules: z.number({ error: 'Amount is required' }).min(1, 'Must be at least 1')
                     },
                     addButtonText: 'Add Amount',
                     rules: (values) => enabledPresetAmounts(values)
@@ -297,7 +297,7 @@ export function createFormConfigSection(): ConfigSectionDef {
                       // label: 'Amount',
                       placeholder: '25',
                       min: 1,
-                      rules: z.number().min(1, 'Must be at least 1')
+                      rules: z.number({ error: 'Amount is required' }).min(1, 'Must be at least 1')
                     },
                     addButtonText: 'Add Amount',
                     rules: (values) => enabledPresetAmounts(values)

@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, inject, ref, watch, type ComputedRef } from 'vue'
 import { useDragAndDrop } from '@formkit/drag-and-drop/vue'
 import { vAutoAnimate } from '@formkit/auto-animate'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { ArrayFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import { pathExistsInValues } from '~/features/form-builder/field-path-utils'
 import FormField from '../FormField.vue'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
@@ -14,10 +15,56 @@ interface Props {
   errors: string[]
   meta: ArrayFieldMeta
   name: string
+  touched: boolean
   onChange?: (value: unknown) => void
 }
 
 const props = defineProps<Props>()
+
+// Get form errors to check for child item errors
+const formErrors = inject<ComputedRef<Record<string, string | undefined>>>(
+  'formErrors',
+  computed(() => ({}))
+)
+
+// Provide context that child fields are inside an array
+provide('isInsideArray', true)
+
+// Check if this array itself is inside another array (for nested arrays)
+const parentIsInsideArray = inject<boolean>('isInsideArray', false)
+
+// Check if any child items have validation errors (filters orphaned paths)
+const hasChildErrors = computed(() => {
+  const errorsObj = formErrors.value
+  const arrayPrefix = `${props.name}.`
+
+  return Object.keys(errorsObj).some((key) => {
+    if (!errorsObj[key] || !key.startsWith(arrayPrefix)) return false
+
+    // Validate error path exists in current array value
+    const relativePath = key.slice(arrayPrefix.length)
+    return pathExistsInValues(relativePath, props.field.value)
+  })
+})
+
+// Show child error indicator if: touched, inside another array, or has child errors
+const shouldShowChildErrors = computed(() => {
+  return props.touched || parentIsInsideArray || hasChildErrors.value
+})
+
+// Combine own errors with child errors indicator
+const allErrors = computed(() => {
+  // Show child error indicator when appropriate (takes priority for clearer UX)
+  if (shouldShowChildErrors.value && hasChildErrors.value) {
+    return ['One or more errors above, please fix']
+  }
+
+  // Show own array-level validation errors
+  if (props.errors.length > 0) return props.errors
+
+  return []
+})
+
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
 
 const items = computed(() => {
@@ -106,7 +153,6 @@ function addItem() {
 
 function removeItem(index: number) {
   const next = draggableItems.value.filter((_, i) => i !== index)
-  draggableItems.value = next
   itemKeys.value = itemKeys.value.filter((_, i) => i !== index)
   props.field.onChange(next)
   props.onChange?.(next)
@@ -118,9 +164,9 @@ function removeItem(index: number) {
     :label="resolvedLabel"
     :description="resolvedDescription"
     :optional="meta.optional"
-    :errors="errors"
-    :invalid="!!errors.length"
-    :class="cn(meta.class, 'space-y-3')"
+    :errors="allErrors"
+    :invalid="false"
+    :class="cn(meta.class, 'space-y-3', allErrors.length && 'ff-array--has-errors')"
     :label-class="meta.labelClass"
     :description-class="meta.descriptionClass"
   >
@@ -166,6 +212,11 @@ function removeItem(index: number) {
 
 <style scoped>
 @reference '@/assets/css/main.css';
+
+/* Error state for array label */
+.ff-array--has-errors :deep(label) {
+  @apply text-destructive;
+}
 
 /* Keep Tailwind usage centralized + readable */
 .ff-array__item {

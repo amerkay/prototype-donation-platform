@@ -37,3 +37,28 @@ export function getRecordAtPath(
   if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined
   return value as Record<string, unknown>
 }
+
+/**
+ * Check if a path exists in form values (validates array indices are within bounds)
+ * Used to filter orphaned validation errors from removed array items
+ */
+export function pathExistsInValues(path: string, values: unknown): boolean {
+  const parts = path.split('.')
+  let current = values
+
+  for (const part of parts) {
+    if (current == null) return false
+
+    if (Array.isArray(current)) {
+      const idx = Number(part)
+      if (!Number.isFinite(idx) || idx < 0 || idx >= current.length) return false
+      current = current[idx]
+    } else if (typeof current === 'object') {
+      current = (current as Record<string, unknown>)[part]
+    } else {
+      return false
+    }
+  }
+
+  return true
+}
