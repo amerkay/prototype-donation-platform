@@ -104,12 +104,7 @@ const fieldRules = computed(() => {
 
 // Use useField to get direct access to field state
 useField(resolvedVeeName.value, fieldRules, {
-  syncVModel: false,
-  // Keep field value and validation state even when component unmounts (accordion closes)
-  keepValueOnUnmount: true
-  // Validate immediately when value changes
-  // validateOnValueUpdate: true,
-  // validateOnMount: true
+  syncVModel: false
 })
 
 // Handle field changes and call onChange callback if provided
@@ -133,7 +128,7 @@ const handleFieldChange = (value: unknown) => {
       leave-from-class="opacity-100 translate-y-0"
       leave-to-class="opacity-0 -translate-y-2"
     >
-      <div v-if="isVisible">
+      <div v-show="isVisible">
         <FormFieldText
           v-if="meta.type === 'text'"
           :field="field"

@@ -1,12 +1,13 @@
 import { computed, unref, type ComputedRef, type MaybeRefOrGetter } from 'vue'
-import { useFormErrors } from 'vee-validate'
+import { useFormErrors, useFormValues } from 'vee-validate'
+import { pathExistsInValues } from '~/features/form-builder/field-path-utils'
 
 /**
  * Composable to detect if any child fields within a container (group/array/tabs) have validation errors
  *
- * Uses vee-validate's useFormErrors() directly for guaranteed reactivity.
+ * Uses vee-validate's useFormErrors() and useFormValues() for guaranteed reactivity.
  * Must be called in a component that is a child of a form component where useForm was called.
- * Trusts vee-validate to manage error lifecycle - no manual path validation needed.
+ * Filters out orphaned errors from removed array items by validating paths against current form values.
  *
  * @param containerPath - The full path to the container field (can be string, ref, or computed)
  * @returns Object with hasChildErrors computed boolean
@@ -24,30 +25,40 @@ import { useFormErrors } from 'vee-validate'
 export function useChildFieldErrors(containerPath: MaybeRefOrGetter<string>): {
   hasChildErrors: ComputedRef<boolean>
 } {
-  // Use vee-validate's useFormErrors() directly for proper reactivity
+  // Use vee-validate's useFormErrors() and useFormValues() directly for proper reactivity
   const formErrors = useFormErrors<Record<string, string | undefined>>()
+  const formValues = useFormValues()
 
-  const hasChildErrors = computed(() => {
-    // Resolve the container path first (handles ref, computed, or plain string)
+  // Computed filtered errors (only valid child errors)
+  const filteredErrors = computed(() => {
     const resolvedPath = unref(containerPath)
-
-    // Access errors.value to establish reactive dependency
     const errorsObj = formErrors.value
-
-    // Check for any error keys that are children of this container
+    const values = formValues.value
     const containerPrefix = `${resolvedPath}.`
 
-    // Check if any child field has an error
-    // vee-validate automatically cleans up errors when fields are fixed,
-    // so we trust the errors object as the source of truth
-    const result = Object.entries(errorsObj).some(([errorKey, errorValue]) => {
+    const filtered: Record<string, string | undefined> = {}
+
+    for (const [errorKey, errorValue] of Object.entries(errorsObj)) {
       const hasError = errorValue && errorValue.length > 0
       const isChild = errorKey.startsWith(containerPrefix)
-      // Must have an error value AND be a child of this container
-      return hasError && isChild
-    })
 
-    return result
+      if (!hasError || !isChild) continue
+
+      // Convert bracket notation to dot notation for path validation
+      const dotNotationPath = errorKey.replace(/\[(\d+)\]/g, '.$1')
+      const pathExists = pathExistsInValues(dotNotationPath, values)
+
+      if (pathExists) {
+        filtered[errorKey] = errorValue
+      }
+    }
+
+    return filtered
+  })
+
+  const hasChildErrors = computed(() => {
+    // Simply check if filtered errors is not empty
+    return Object.keys(filteredErrors.value).length > 0
   })
 
   return {

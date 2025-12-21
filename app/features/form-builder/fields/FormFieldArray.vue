@@ -9,6 +9,7 @@ import FormField from '../FormField.vue'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import { useChildFieldErrors } from '~/features/form-builder/composables/useChildFieldErrors'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
+import { resolveVeeFieldPath } from '~/features/form-builder/field-path-utils'
 
 interface Props {
   field: VeeFieldContext
@@ -21,6 +22,22 @@ interface Props {
 
 const props = defineProps<Props>()
 
+// Inject field prefix context for relative path computation (same as FormField.vue)
+const fieldPrefix = inject<string>('fieldPrefix', '')
+
+// Inject section id so we can resolve the full vee-validate path
+const sectionId = inject<string>('sectionId', '')
+
+// Resolve the full vee-validate field path (same pattern as FormField.vue)
+// This is needed for useChildFieldErrors to correctly match error keys
+const resolvedVeeName = computed(() => {
+  return resolveVeeFieldPath({
+    name: props.name,
+    sectionId,
+    fieldPrefix
+  })
+})
+
 // Provide context that child fields are inside an array
 provide('isInsideArray', true)
 
@@ -28,8 +45,8 @@ provide('isInsideArray', true)
 const parentIsInsideArray = inject<boolean>('isInsideArray', false)
 
 // Check if any child items have validation errors
-// vee-validate will handle error cleanup automatically when items are removed
-const { hasChildErrors } = useChildFieldErrors(props.name)
+// Use resolved vee-validate path to match error keys correctly
+const { hasChildErrors } = useChildFieldErrors(resolvedVeeName)
 
 // Show child error indicator if: touched, inside another array, or has child errors
 const shouldShowChildErrors = computed(() => {
