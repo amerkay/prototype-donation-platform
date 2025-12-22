@@ -1,6 +1,6 @@
 import * as z from 'zod'
 import type { FormDef } from '~/features/form-builder/form-builder-types'
-import { createMessageFields } from '~/features/donation-form/forms/message-fields'
+import { createMessageFields } from '~/features/donation-form/forms/optional-message-field'
 
 /**
  * Donor information form section

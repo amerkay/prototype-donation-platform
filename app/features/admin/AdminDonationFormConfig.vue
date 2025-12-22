@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, toRaw } from 'vue'
 import FormRenderer from '@/features/form-builder/FormRenderer.vue'
-import { createFormConfigSection } from '../donation-form/forms/donation-form-config'
-import { createMultipleProductsConfigSection } from '../donation-form/impact-cart/forms/impact-cart-config'
-import { createProductSelectorConfigSection } from '../donation-form/product-selector/forms/product-selector-config'
-import { createRewardsConfigSection } from '../donation-form/rewards/forms/rewards-config'
-import { createCoverCostsConfigSection } from '../donation-form/cover-costs/forms/cover-costs-config'
-import { createTributeConfigSection } from '../donation-form/tribute/forms/tribute-config'
+import { createFormConfigSection } from '../donation-form/forms/donation-form-config-form'
+import { createMultipleProductsConfigSection } from '../donation-form/impact-cart/forms/impact-cart-config-form'
+import { createProductSelectorConfigSection } from '../donation-form/product-selector/forms/product-selector-config-form'
+import { createRewardsConfigSection } from '../donation-form/rewards/forms/rewards-config-form'
+import { createCoverCostsConfigSection } from '../donation-form/cover-costs/forms/cover-costs-config-form'
+import { createTributeConfigSection } from '../donation-form/tribute/forms/tribute-config-form'
 import type { FormConfig } from '@/lib/common/types'
 
 interface Props {

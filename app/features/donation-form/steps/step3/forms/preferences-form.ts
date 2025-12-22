@@ -1,6 +1,6 @@
 import type { FormDef } from '~/features/form-builder/form-builder-types'
-import { createEmailOptInField } from '~/features/donation-form/forms/email-opt-in-field'
-import { createTermsAcceptanceField } from '~/features/donation-form/forms/terms-acceptance-field'
+import { createEmailOptInField } from '~/features/donation-form/contact-consent/forms/email-opt-in-field'
+import { createTermsAcceptanceField } from '~/features/donation-form/terms/forms/terms-acceptance-field'
 
 /**
  * Preferences form section
