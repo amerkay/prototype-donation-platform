@@ -182,7 +182,7 @@ const removeBadge = (value: string | number, event: Event) => {
               v-for="option in selectedBadges"
               :key="option.value"
               variant="secondary"
-              class="text-xs"
+              class="text-xs last-of-type:mr-2"
             >
               {{ option.label }}
               <button

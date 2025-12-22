@@ -1,7 +1,5 @@
 import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
-import type { FormConfig } from '@/lib/common/types'
 import { createGiftAidFields } from './gift-aid-fields'
-import { createCoverFeesField } from '../cover-costs/forms/cover-costs-field'
 import { createEmailOptInField } from './email-opt-in-field'
 import { createTermsAcceptanceField } from './terms-acceptance-field'
 
@@ -10,29 +8,18 @@ import { createTermsAcceptanceField } from './terms-acceptance-field'
  *
  * Includes:
  * - Gift Aid consent (UK donors only)
- * - Cover costs option (configurable heading/description)
  * - Email list opt-in
  * - Terms acceptance (required)
+ *
+ * Note: Cover costs is now handled separately via CoverCostsField component
+ * in DonationFormStep3.vue for dynamic percentage/amount switching
  */
-export function createStep3FormSection(
-  config: FormConfig['features']['coverCosts']
-): ConfigSectionDef {
+export function createStep3FormSection(): ConfigSectionDef {
   return {
-    id: 'giftAid',
+    id: 'step3',
     fields: {
       // Gift Aid fields (UK donors only)
       ...createGiftAidFields(),
-
-      // Cover costs fields (only if enabled)
-      ...(config.enabled
-        ? createCoverFeesField({
-            minValue: 0,
-            maxValue: 30,
-            defaultValue: config.defaultPercentage,
-            heading: config.heading,
-            description: config.description
-          })
-        : {}),
 
       // Email list opt-in (extracted utility)
       ...createEmailOptInField(),

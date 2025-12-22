@@ -211,14 +211,14 @@ export interface EmojiFieldMeta extends BaseFieldMeta {
  */
 export interface SliderFieldMeta extends BaseFieldMeta {
   type: 'slider'
-  min?: number
-  max?: number
-  step?: number
+  min?: number | ((values: Record<string, unknown>) => number)
+  max?: number | ((values: Record<string, unknown>) => number)
+  step?: number | ((values: Record<string, unknown>) => number)
+  formatValue?: (value: number, formValues?: Record<string, unknown>) => string
+  minMaxFormatter?: (value: number, formValues?: Record<string, unknown>) => string
+  showMinMax?: boolean
   prefix?: string
   suffix?: string
-  formatValue?: (value: number, allValues: Record<string, unknown>) => string
-  showMinMax?: boolean
-  minMaxFormatter?: (value: number) => string
 }
 
 /**

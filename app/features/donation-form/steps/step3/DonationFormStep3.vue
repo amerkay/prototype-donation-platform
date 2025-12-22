@@ -3,8 +3,10 @@ import { ref, computed, inject } from 'vue'
 import type { Ref } from 'vue'
 import NextButton from '~/features/donation-form/components/NextButton.vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
+import CoverCostsField from '~/features/donation-form/cover-costs/CoverCostsField.vue'
 import CoverCostsUpsellModal from '~/features/donation-form/cover-costs/CoverCostsUpsellModal.vue'
-import { createStep3FormSection } from '../../forms/step3-form'
+import { giftAidFormSection } from './forms/gift-aid-form'
+import { preferencesFormSection } from './forms/preferences-form'
 import { useDonationFormStore } from '~/stores/donationForm'
 import { useImpactCartStore } from '~/stores/impactCart'
 import type { FormConfig } from '@/lib/common/types'
@@ -14,11 +16,6 @@ const formConfig = inject<Ref<FormConfig>>('formConfig')
 if (!formConfig) {
   throw new Error('formConfig not provided')
 }
-
-// Create form section dynamically with config
-const step3FormSection = computed(() =>
-  createStep3FormSection(formConfig.value.features.coverCosts)
-)
 
 const emit = defineEmits<{
   complete: []
@@ -36,9 +33,16 @@ const giftAidSection = computed({
     store.updateFormSection('giftAid', value ?? {})
   }
 })
+const preferencesSection = computed({
+  get: () => store.formSections.preferences || {},
+  set: (value) => {
+    store.updateFormSection('preferences', value ?? {})
+  }
+})
 
-// Form renderer reference for validation
-const formRef = ref<InstanceType<typeof FormRenderer> | null>(null)
+// Form renderer references for validation
+const giftAidFormRef = ref<InstanceType<typeof FormRenderer> | null>(null)
+const preferencesFormRef = ref<InstanceType<typeof FormRenderer> | null>(null)
 const formContainerRef = ref<HTMLElement | null>(null)
 
 // Cover costs upsell modal state
@@ -53,11 +57,10 @@ const handleFormClick = (event: MouseEvent) => {
 }
 
 /**
- * Form data with context from previous steps
- * We merge cross-section dependencies (currency, shippingAddress, donationAmount) into the gift aid section
- * These are read-only context fields that gift-aid-form and cover-costs-field use for visibility/onChange logic
+ * Gift Aid form data with context from previous steps
+ * We merge cross-section dependencies (currency, shippingAddress) for visibility logic and address reuse
  */
-const formDataWithContext = computed({
+const giftAidDataWithContext = computed({
   get: () => {
     // Ensure homeAddress.country defaults to 'GB' for Gift Aid (UK-only requirement)
     const homeAddress = giftAidSection.value.homeAddress as Record<string, unknown> | undefined
@@ -66,17 +69,9 @@ const formDataWithContext = computed({
       ...(homeAddress || {})
     }
 
-    // Get current donation amount based on active tab
-    const currentTab = store.activeTab
-    const currentDonationAmount =
-      currentTab === 'multiple'
-        ? cartStore.cartTotal(currentTab)
-        : store.donationAmounts[currentTab] || 0
-
     return {
       // Cross-section context (read-only)
       currency: store.selectedCurrency,
-      donationAmount: currentDonationAmount, // For cover costs calculation
       'shippingAddress.address1': shippingSection.value.address1 as string,
       'shippingAddress.address2': shippingSection.value.address2 as string,
       'shippingAddress.city': shippingSection.value.city as string,
@@ -88,14 +83,8 @@ const formDataWithContext = computed({
         '',
       'shippingAddress.country': shippingSection.value.country as string,
 
-      joinEmailList: true, // Default to opted in
       // Gift Aid section data (editable)
       ...giftAidSection.value,
-      // Set cover costs default only if enabled and not already set
-      ...(formConfig.value.features.coverCosts.enabled &&
-      giftAidSection.value.coverFeesPercentage === undefined
-        ? { coverFeesPercentage: formConfig.value.features.coverCosts.defaultPercentage }
-        : {}),
       // Override homeAddress with default country for Gift Aid (UK-only)
       homeAddress: homeAddressWithDefault
     }
@@ -104,7 +93,6 @@ const formDataWithContext = computed({
     // Extract only the gift aid fields (exclude context fields)
     const {
       currency,
-      donationAmount,
       'shippingAddress.address1': _a1,
       'shippingAddress.address2': _a2,
       'shippingAddress.city': _city,
@@ -122,6 +110,45 @@ const formDataWithContext = computed({
   }
 })
 
+/**
+ * Preferences form data (email opt-in, terms acceptance)
+ * Simple pass-through with default values
+ */
+const preferencesDataWithContext = computed({
+  get: () => {
+    return {
+      joinEmailList: true, // Default to opted in
+      ...preferencesSection.value
+    }
+  },
+  set: (value) => {
+    preferencesSection.value = { ...preferencesSection.value, ...value }
+  }
+})
+
+// Separate model for cover costs field
+const coverCostsData = computed({
+  get: () => {
+    return {
+      currency: store.selectedCurrency,
+      donationAmount:
+        store.activeTab === 'multiple'
+          ? cartStore.cartTotal('multiple')
+          : store.donationAmounts[store.activeTab] || 0,
+      coverFeesPercentage: giftAidSection.value.coverFeesPercentage,
+      coverFeesAmount: giftAidSection.value.coverFeesAmount
+    }
+  },
+  set: (value) => {
+    // Store cover costs data in giftAid section
+    giftAidSection.value = {
+      ...giftAidSection.value,
+      coverFeesPercentage: value.coverFeesPercentage,
+      coverFeesAmount: value.coverFeesAmount
+    }
+  }
+})
+
 // Handle next - just emit complete when valid
 const handleNext = () => {
   emit('complete')
@@ -129,7 +156,7 @@ const handleNext = () => {
 </script>
 
 <template>
-  <div ref="formContainerRef" class="space-y-6">
+  <div ref="formContainerRef" class="space-y-4">
     <!-- Step Header -->
     <div class="space-y-2">
       <h1 class="text-lg font-bold">A few more questions&hellip;</h1>
@@ -139,15 +166,44 @@ const handleNext = () => {
     <!-- Gift Aid Form (wrapped for click delegation) -->
     <div @click="handleFormClick">
       <FormRenderer
-        ref="formRef"
-        v-model="formDataWithContext"
-        :section="step3FormSection"
+        ref="giftAidFormRef"
+        v-model="giftAidDataWithContext"
+        :section="giftAidFormSection"
         :keep-values-on-unmount="true"
       />
     </div>
 
+    <!-- Cover Costs Field (separate component for dynamic percentage/amount switching) -->
+    <div v-if="formConfig.features.coverCosts.enabled" @click="handleFormClick">
+      <CoverCostsField
+        v-model="coverCostsData"
+        :config="formConfig.features.coverCosts"
+        :donation-amount="
+          store.activeTab === 'multiple'
+            ? cartStore.cartTotal('multiple')
+            : store.donationAmounts[store.activeTab] || 0
+        "
+        :currency="store.selectedCurrency"
+      />
+    </div>
+
+    <!-- Preferences Form (email opt-in, terms) -->
+    <div>
+      <FormRenderer
+        ref="preferencesFormRef"
+        v-model="preferencesDataWithContext"
+        :section="preferencesFormSection"
+        :keep-values-on-unmount="true"
+        @submit="handleNext"
+      />
+    </div>
+
     <!-- Navigation Buttons -->
-    <NextButton :form-refs="[formRef]" :parent-container-ref="formContainerRef" @click="handleNext">
+    <NextButton
+      :form-refs="[giftAidFormRef, preferencesFormRef]"
+      :parent-container-ref="formContainerRef"
+      @click="handleNext"
+    >
       Continue to Payment
       <Icon name="lucide:arrow-right" class="ml-2 h-4 w-4" />
     </NextButton>

@@ -1,0 +1,21 @@
+import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
+import { createEmailOptInField } from '~/features/donation-form/forms/email-opt-in-field'
+import { createTermsAcceptanceField } from '~/features/donation-form/forms/terms-acceptance-field'
+
+/**
+ * Preferences form section
+ *
+ * Collects final user preferences before payment:
+ * - Email list subscription opt-in
+ * - Terms and conditions acceptance (required)
+ *
+ * This section is always visible and required for all donors regardless of currency.
+ */
+export const preferencesFormSection: ConfigSectionDef = {
+  id: 'preferences',
+  //   title: 'Final Details',
+  fields: {
+    ...createEmailOptInField(),
+    ...createTermsAcceptanceField()
+  }
+}

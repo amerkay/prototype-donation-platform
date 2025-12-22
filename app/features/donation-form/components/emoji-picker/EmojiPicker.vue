@@ -293,7 +293,7 @@ function handleKeyDown(e: KeyboardEvent) {
               :class="
                 cn(
                   'h-6 w-6 sm:h-7 sm:w-7 p-0 text-xs sm:text-sm rounded-full transition-all',
-                  selectedSkinTone === tone.key && 'ring-2 ring-primary'
+                  selectedSkinTone === tone.key && 'ring-2 ring-primary bg-transparent'
                 )
               "
               :title="tone.label"

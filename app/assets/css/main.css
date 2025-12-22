@@ -149,3 +149,13 @@
     cursor: pointer;
   }
 }
+
+@layer utilities {
+  .text-primary {
+    color: oklch(from var(--primary) calc(l * 0.85) c h);
+  }
+
+  .dark .text-primary {
+    color: var(--primary);
+  }
+}

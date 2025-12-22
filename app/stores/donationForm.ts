@@ -37,7 +37,8 @@ export const useDonationFormStore = defineStore(
     const formSections = ref<Record<string, Record<string, unknown>>>({
       donorInfo: {},
       shipping: {},
-      giftAid: {}
+      giftAid: {},
+      preferences: {}
     })
 
     // ==================== GETTERS ====================
@@ -122,7 +123,7 @@ export const useDonationFormStore = defineStore(
         yearly: [],
         multiple: []
       }
-      formSections.value = { donorInfo: {}, shipping: {}, giftAid: {} }
+      formSections.value = { donorInfo: {}, shipping: {}, giftAid: {}, preferences: {} }
     }
 
     // Persistence methods (called by plugin after hydration)

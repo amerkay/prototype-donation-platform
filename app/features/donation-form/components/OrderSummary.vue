@@ -45,6 +45,15 @@ const coverFeesPercentage = computed(() => {
 })
 
 const coverFeesAmount = computed(() => {
+  if (store.currentStep < 3 || !formConfig.value.features.coverCosts.enabled) return 0
+
+  // Check if we have a fixed amount (for small donations)
+  const fixedAmount = store.formSections.giftAid?.coverFeesAmount as number | undefined
+  if (fixedAmount !== undefined && fixedAmount > 0) {
+    return fixedAmount
+  }
+
+  // Otherwise calculate from percentage
   if (coverFeesPercentage.value === 0) return 0
   return totalAmount.value * (coverFeesPercentage.value / 100)
 })
@@ -76,9 +85,18 @@ const formattedAmount = computed(() => {
 
 const formattedBreakdown = computed(() => {
   const symbol = getCurrencySymbol(store.selectedCurrency)
+
+  // Show percentage if available, otherwise indicate fixed amount
+  const costsDisplay =
+    coverFeesPercentage.value > 0
+      ? `${coverFeesPercentage.value}`
+      : coverFeesAmount.value > 0
+        ? 'fixed'
+        : '0'
+
   return {
     donation: `${symbol}${totalAmount.value.toFixed(2)}`,
-    costs: `${coverFeesPercentage.value}`
+    costs: costsDisplay
   }
 })
 
@@ -141,7 +159,13 @@ const descriptionText = computed(() => {
         <div class="flex flex-col">
           <p v-if="coverFeesAmount > 0" class="text-xs text-muted-foreground">
             <!-- {{ formattedBreakdown.donation }} +  -->
-            including {{ formattedBreakdown.costs }}% covered costs
+            <template v-if="formattedBreakdown.costs === 'fixed'">
+              including {{ getCurrencySymbol(store.selectedCurrency)
+              }}{{ coverFeesAmount.toFixed(2) }} covered costs
+            </template>
+            <template v-else-if="formattedBreakdown.costs !== '0'">
+              including {{ formattedBreakdown.costs }}% covered costs
+            </template>
           </p>
           <p class="text-xs text-muted-foreground">{{ descriptionText }}</p>
         </div>

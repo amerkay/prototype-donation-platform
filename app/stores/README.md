@@ -91,7 +91,7 @@ const donationAmounts = ref({ once: 0, monthly: 0, yearly: 0 })
 const selectedProducts = ref({ monthly: null, yearly: null })
 const tributeData = ref({ once: undefined, monthly: undefined, yearly: undefined })
 const selectedRewardsArrays = ref({ once: [], monthly: [], yearly: [], multiple: [] })
-const formSections = ref({ donorInfo: {}, shipping: {}, giftAid: {} })
+const formSections = ref({ donorInfo: {}, shipping: {}, giftAid: {}, preferences: {} })
 
 // Computed getter that converts arrays to Sets
 const selectedRewards = computed(() => ({
@@ -116,7 +116,7 @@ Automatically handled by the custom persistence plugin:
   selectedProducts: { monthly: null, yearly: null },
   tributeData: { once: undefined, monthly: undefined, yearly: undefined },
   selectedRewardsArrays: { once: ['reward-1'], monthly: [], yearly: [], multiple: [] },
-  formSections: { donorInfo: { name: 'John' }, shipping: {}, giftAid: {} }
+  formSections: { donorInfo: { name: 'John' }, shipping: {}, giftAid: {}, preferences: {} }
 }
 
 // sessionStorage key: 'impact-cart'
@@ -153,7 +153,7 @@ Automatically handled by the custom persistence plugin:
 
 - **Currency**: Synced for all tabs
 - **Current Step**: Navigation state
-- **Form Sections**: Donor info, shipping, gift aid
+- **Form Sections**: Donor info, shipping, gift aid, preferences
 
 ## Usage Example
 

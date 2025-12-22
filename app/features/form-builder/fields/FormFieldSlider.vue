@@ -19,11 +19,27 @@ const props = defineProps<Props>()
 const { formValues } = useFormBuilderContext()
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta, formValues)
 
+// Resolve dynamic min/max/step values
+const resolvedMin = computed(() => {
+  const min = props.meta.min
+  return typeof min === 'function' ? min(formValues.value) : (min ?? 0)
+})
+
+const resolvedMax = computed(() => {
+  const max = props.meta.max
+  return typeof max === 'function' ? max(formValues.value) : (max ?? 100)
+})
+
+const resolvedStep = computed(() => {
+  const step = props.meta.step
+  return typeof step === 'function' ? step(formValues.value) : (step ?? 1)
+})
+
 const numberValue = computed(() => {
   const val = props.field.value
   if (typeof val === 'number') return val
-  if (val === null || val === undefined) return props.meta.min ?? 0
-  return (Number(val) || props.meta.min) ?? 0
+  if (val === null || val === undefined) return resolvedMin.value
+  return Number(val) || resolvedMin.value
 })
 
 const formattedValue = computed(() => {
@@ -35,7 +51,7 @@ const formattedValue = computed(() => {
 
 const minMaxFormat = (value: number) => {
   if (props.meta.minMaxFormatter) {
-    return props.meta.minMaxFormatter(value)
+    return props.meta.minMaxFormatter(value, formValues.value)
   }
   return String(value)
 }
@@ -74,9 +90,9 @@ const handleSliderChange = (value: number[] | undefined) => {
       <Slider
         :id="name"
         :model-value="[numberValue]"
-        :min="meta.min ?? 0"
-        :max="meta.max ?? 100"
-        :step="meta.step ?? 1"
+        :min="resolvedMin"
+        :max="resolvedMax"
+        :step="resolvedStep"
         :class="meta.class"
         class="**:data-[slot=slider-track]:h-2.5 **:data-[slot=slider-thumb]:size-6"
         @update:model-value="handleSliderChange"
@@ -85,8 +101,8 @@ const handleSliderChange = (value: number[] | undefined) => {
 
       <!-- Min/Max labels -->
       <div v-if="meta.showMinMax" class="flex justify-between text-xs text-muted-foreground">
-        <span>{{ minMaxFormat(meta.min ?? 0) }}</span>
-        <span>{{ minMaxFormat(meta.max ?? 100) }}</span>
+        <span>{{ minMaxFormat(resolvedMin) }}</span>
+        <span>{{ minMaxFormat(resolvedMax) }}</span>
       </div>
     </div>
   </FormFieldWrapper>
