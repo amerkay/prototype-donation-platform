@@ -41,10 +41,13 @@ export function createCoverCostsConfigSection(): ConfigSectionDef {
             rules: z.string().min(1, 'Description is required when enabled')
           },
           defaultPercentage: {
-            type: 'number',
+            type: 'slider',
             label: 'Default Percentage',
             description: 'The default percentage donors will see (0-30%)',
             placeholder: '10',
+            min: 3,
+            max: 30,
+            suffix: '%',
             rules: z.number().min(0).max(30)
           }
         }

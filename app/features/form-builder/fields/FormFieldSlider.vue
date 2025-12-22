@@ -63,7 +63,10 @@ const handleSliderChange = (value: number[] | undefined) => {
     <div class="space-y-2">
       <!-- Formatted value display -->
       <div class="flex items-center justify-between">
-        <span class="text-2xl font-semibold">{{ formattedValue }}</span>
+        <span class="text-2xl font-semibold">
+          <span v-if="meta.prefix">{{ meta.prefix }}</span
+          >{{ formattedValue }}<span v-if="meta.suffix">{{ meta.suffix }}</span>
+        </span>
       </div>
 
       <!-- Slider -->

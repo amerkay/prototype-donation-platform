@@ -214,6 +214,8 @@ export interface SliderFieldMeta extends BaseFieldMeta {
   min?: number
   max?: number
   step?: number
+  prefix?: string
+  suffix?: string
   formatValue?: (value: number, allValues: Record<string, unknown>) => string
   showMinMax?: boolean
   minMaxFormatter?: (value: number) => string
