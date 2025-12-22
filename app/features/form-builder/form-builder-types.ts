@@ -22,6 +22,18 @@ export type FieldType =
   | 'tabs'
 
 /**
+ * Config section definition
+ */
+export interface FormDef<T extends z.ZodTypeAny = z.ZodTypeAny> {
+  id: string
+  title?: string
+  description?: string
+  schema?: T
+  fields: FieldMetaMap
+  defaultValue?: z.infer<T>
+}
+
+/**
  * Function type for setting field values with relative paths
  * Used in onChange callbacks and field components
  *
@@ -304,23 +316,7 @@ export type FieldMeta =
 export type FieldMetaMap = Record<string, FieldMeta>
 
 /**
- * Config section definition
+ * Re-export vee-validate's FieldBindingObject for field component props
+ * This represents the field binding object from VeeField's slot
  */
-export interface FormDef<T extends z.ZodTypeAny = z.ZodTypeAny> {
-  id: string
-  title?: string
-  description?: string
-  schema?: T
-  fields: FieldMetaMap
-  defaultValue?: z.infer<T>
-}
-
-/**
- * Common field props interface for vee-validate field components
- */
-export interface VeeFieldContext {
-  value?: unknown
-  onChange: (value: unknown) => void
-  onBlur?: (e: Event) => void
-  name: string
-}
+export type { FieldBindingObject as VeeFieldContext } from 'vee-validate'
