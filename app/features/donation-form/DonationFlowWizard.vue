@@ -57,11 +57,22 @@ const wizardContainer = ref<HTMLElement | null>(null)
 watch(
   () => store.currentStep,
   () => {
-    nextTick(() => {
-      if (wizardContainer.value) {
+    setTimeout(() => {
+      if (!wizardContainer.value) return
+
+      // Find the scroll container (for desktop sticky preview)
+      const scrollContainer = wizardContainer.value.closest(
+        '.overflow-y-auto'
+      ) as HTMLElement | null
+
+      if (scrollContainer) {
+        // Scroll within the container (desktop preview)
+        scrollContainer.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        // Scroll the window (mobile or full page)
         wizardContainer.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
-    })
+    }, 150)
   }
 )
 
