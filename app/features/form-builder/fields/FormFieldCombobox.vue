@@ -182,12 +182,12 @@ const removeBadge = (value: string | number, event: Event) => {
               v-for="option in selectedBadges"
               :key="option.value"
               variant="secondary"
-              class="text-xs gap-1"
+              class="text-xs"
             >
               {{ option.label }}
               <button
                 type="button"
-                class="ml-1 rounded-full hover:bg-muted-foreground/20"
+                class="ml-1 rounded-full hover:bg-muted-foreground/20 inline-flex items-center justify-center"
                 @click="removeBadge(option.value, $event)"
               >
                 <Icon name="lucide:x" class="h-3 w-3" />
