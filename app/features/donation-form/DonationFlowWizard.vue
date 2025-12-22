@@ -57,7 +57,7 @@ const wizardContainer = ref<HTMLElement | null>(null)
 watch(
   () => store.currentStep,
   () => {
-    setTimeout(() => {
+    nextTick(() => {
       if (!wizardContainer.value) return
 
       // Find the scroll container (for desktop sticky preview)
@@ -72,7 +72,7 @@ watch(
         // Scroll the window (mobile or full page)
         wizardContainer.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
-    }, 150)
+    })
   }
 )
 
