@@ -67,7 +67,10 @@ function handleProductSelectorUpdate(value: Record<string, unknown>) {
     ...props.config,
     features: {
       ...props.config.features,
-      productSelector: value as FormConfig['features']['productSelector']
+      productSelector: {
+        ...props.config.features.productSelector,
+        ...value
+      } as FormConfig['features']['productSelector']
     }
   })
 }
@@ -77,7 +80,10 @@ function handleRewardsUpdate(value: Record<string, unknown>) {
     ...props.config,
     features: {
       ...props.config.features,
-      rewards: value as FormConfig['features']['rewards']
+      rewards: {
+        ...props.config.features.rewards,
+        ...value
+      } as FormConfig['features']['rewards']
     }
   })
 }
@@ -101,7 +107,10 @@ function handleTributeUpdate(value: Record<string, unknown>) {
     ...props.config,
     features: {
       ...props.config.features,
-      tribute: value as FormConfig['features']['tribute']
+      tribute: {
+        ...props.config.features.tribute,
+        ...value
+      } as FormConfig['features']['tribute']
     }
   })
 }
