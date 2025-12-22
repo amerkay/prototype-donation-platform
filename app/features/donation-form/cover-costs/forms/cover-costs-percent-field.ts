@@ -15,7 +15,7 @@ import { getCurrencySymbol } from '../../composables/useCurrency'
  * @param options.defaultValue Default percentage value (default: 10)
  * @param options.minValue Minimum percentage (default: 0)
  * @param options.maxValue Maximum percentage (default: 30)
- * @param options.visibilityCondition Function that determines when field should be visible
+ * @param options.visibleWhen Function that determines when field should be visible
  * @returns FieldMetaMap object with coverFeesPercentage field and supporting fields
  *
  * @example
@@ -39,14 +39,14 @@ export function createCoverFeesField(options?: {
   defaultValue?: number
   minValue?: number
   maxValue?: number
-  visibilityCondition?: (values: Record<string, unknown>) => boolean
+  visibleWhen?: (values: Record<string, unknown>) => boolean
   heading?: string
   description?: string
 }): FieldMetaMap {
   const {
     minValue = 0,
     maxValue = 30,
-    visibilityCondition,
+    visibleWhen,
     heading = 'Send 100% to the Cause',
     description = 'By covering operational costs, your entire donation goes directly to the cause.'
   } = options || {}
@@ -67,7 +67,7 @@ export function createCoverFeesField(options?: {
           </button>
         </p>
       `,
-      visibleWhen: visibilityCondition,
+      visibleWhen,
       isNoSeparatorAfter: true
     },
 
@@ -94,7 +94,7 @@ export function createCoverFeesField(options?: {
       formatValue: (value: number) => `${value}%`,
       showMinMax: true,
       minMaxFormatter: (value: number) => `${value}%`,
-      visibleWhen: visibilityCondition,
+      visibleWhen,
       rules: z.number().min(minValue).max(maxValue),
       class: '**:data-[slot=slider-track]:h-2.5 **:data-[slot=slider-thumb]:size-6'
     },

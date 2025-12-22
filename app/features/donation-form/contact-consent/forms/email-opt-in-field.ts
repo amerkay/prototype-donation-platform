@@ -5,7 +5,7 @@ import type { FieldMetaMap } from '~/features/form-builder/form-builder-types'
  *
  * Provides a consistent email subscription pattern with optional toggle.
  *
- * @param visibilityCondition - Function that determines when field should be visible
+ * @param visibleWhen - Function that determines when field should be visible
  * @returns FieldMetaMap object with joinEmailList field
  *
  * @example
@@ -17,7 +17,7 @@ import type { FieldMetaMap } from '~/features/form-builder/form-builder-types'
  * ```
  */
 export function createEmailOptInField(
-  visibilityCondition?: (values: Record<string, unknown>) => boolean
+  visibleWhen?: (values: Record<string, unknown>) => boolean
 ): FieldMetaMap {
   return {
     joinEmailList: {
@@ -25,7 +25,7 @@ export function createEmailOptInField(
       label: 'Join our email list',
       description: 'Get updates on our impact and latest news. Unsubscribe anytime.',
       optional: true,
-      visibleWhen: visibilityCondition,
+      visibleWhen,
       isNoSeparatorAfter: true
     }
   }

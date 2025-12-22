@@ -142,7 +142,7 @@ function getCountryLabels(country: string | undefined) {
  * Note: This function uses relative paths throughout. When used inside a field-group,
  * the form-builder automatically handles path prefixing via context injection.
  *
- * @param visibilityCondition - Optional function to control when address fields are visible
+ * @param visibleWhen - Optional function to control when address fields are visible
  * @param autocompleteSection - HTML autocomplete section attribute (default: 'shipping')
  * @param forcedCountry - Optional country code to pre-set and hide the country selector (e.g., 'GB' for UK-only forms)
  * @returns FieldMetaMap with all address fields
@@ -174,7 +174,7 @@ function getCountryLabels(country: string | undefined) {
  * ```
  */
 export function createAddressFields(
-  visibilityCondition?: (values: Record<string, unknown>) => boolean,
+  visibleWhen?: (values: Record<string, unknown>) => boolean,
   autocompleteSection = 'shipping',
   forcedCountry?: string
 ): FieldMetaMap {
@@ -184,7 +184,7 @@ export function createAddressFields(
       label: 'Address Line 1',
       placeholder: '123 High Street',
       autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-line1`,
-      visibleWhen: visibilityCondition,
+      visibleWhen,
       rules: z.string().min(5, 'Address is required'),
       isNoSeparatorAfter: true
     },
@@ -196,7 +196,7 @@ export function createAddressFields(
       autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-line2`,
       optional: true,
       // visibleWhen: (values) => {
-      //   if (visibilityCondition && !visibilityCondition(values)) return false
+      //   if (visibleWhen && !visibleWhen(values)) return false
 
       //   if (!values['address1'] || typeof values['address1'] !== 'string') return false
       //   return z.string().min(5).safeParse(values['address1']).success
@@ -210,7 +210,7 @@ export function createAddressFields(
       label: 'City/Town',
       placeholder: 'London',
       autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level2`,
-      visibleWhen: visibilityCondition,
+      visibleWhen,
       rules: z.string().min(2, 'Town/City is required'),
       isNoSeparatorAfter: true
     },
@@ -218,7 +218,7 @@ export function createAddressFields(
     regionPostcode: {
       type: 'field-group',
       class: 'grid grid-cols-2 gap-x-3',
-      visibleWhen: visibilityCondition,
+      visibleWhen,
       isNoSeparatorAfter: true,
       fields: {
         region: {
@@ -279,7 +279,7 @@ export function createAddressFields(
       rules: z.string().min(1, 'Country is required'),
       disabled: !!forcedCountry,
       autocomplete: `section-${autocompleteSection} ${autocompleteSection} country`,
-      visibleWhen: visibilityCondition
+      visibleWhen: visibleWhen
     }
   }
 }

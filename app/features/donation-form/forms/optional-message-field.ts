@@ -10,7 +10,7 @@ import type { FieldMetaMap } from '~/features/form-builder/form-builder-types'
  * - Dynamic character counter
  * - Conditional validation
  *
- * @param visibilityCondition - Function that determines when message fields should be visible
+ * @param visibleWhen - Function that determines when message fields should be visible
  * @returns Object with isIncludeMessage toggle and message textarea fields
  *
  * @example
@@ -22,7 +22,7 @@ import type { FieldMetaMap } from '~/features/form-builder/form-builder-types'
  * ```
  */
 export function createMessageFields(
-  visibilityCondition?: (values: Record<string, unknown>) => boolean
+  visibleWhen?: (values: Record<string, unknown>) => boolean
 ): FieldMetaMap {
   return {
     isIncludeMessage: {
@@ -30,7 +30,7 @@ export function createMessageFields(
       label: 'Include a Message',
       description: 'Why are you donating today?',
       optional: true,
-      visibleWhen: visibilityCondition,
+      visibleWhen,
       isNoSeparatorAfter: true
     },
     message: {
@@ -44,7 +44,7 @@ export function createMessageFields(
       },
       visibleWhen: (values: Record<string, unknown>) => {
         // First check parent visibility condition
-        if (visibilityCondition && !visibilityCondition(values)) {
+        if (visibleWhen && !visibleWhen(values)) {
           return false
         }
         // Then check if message toggle is enabled

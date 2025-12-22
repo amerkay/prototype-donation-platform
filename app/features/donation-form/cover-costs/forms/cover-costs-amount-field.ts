@@ -14,7 +14,7 @@ import { getCurrencySymbol } from '../../composables/useCurrency'
  * @param options Configuration options
  * @param options.defaultValue Default amount value in currency units
  * @param options.maxValue Maximum amount in currency units (default: 5)
- * @param options.visibilityCondition Function that determines when field should be visible
+ * @param options.visibleWhen Function that determines when field should be visible
  * @returns FieldMetaMap object with coverFeesAmount field and supporting fields
  *
  * @example
@@ -36,14 +36,14 @@ export function createCoverFeesAmountField(options?: {
   defaultValue?: number
   minValue?: number
   maxValue?: number
-  visibilityCondition?: (values: Record<string, unknown>) => boolean
+  visibleWhen?: (values: Record<string, unknown>) => boolean
   heading?: string
   description?: string
 }): FieldMetaMap {
   const {
     minValue = 0,
     maxValue = 5,
-    visibilityCondition,
+    visibleWhen,
     heading = 'Send 100% to the Cause',
     description = 'By covering operational costs, your entire donation goes directly to the cause.'
   } = options || {}
@@ -64,7 +64,7 @@ export function createCoverFeesAmountField(options?: {
           </button>
         </p>
       `,
-      visibleWhen: visibilityCondition,
+      visibleWhen,
       isNoSeparatorAfter: true
     },
 
@@ -97,7 +97,7 @@ export function createCoverFeesAmountField(options?: {
         const symbol = getCurrencySymbol(currency)
         return `${symbol}${value.toFixed(2)}`
       },
-      visibleWhen: visibilityCondition,
+      visibleWhen,
       rules: z.number().min(minValue).max(maxValue),
       class: '**:data-[slot=slider-track]:h-2.5 **:data-[slot=slider-thumb]:size-6'
     }

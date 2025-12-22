@@ -37,7 +37,7 @@ function formatAddress(values: Record<string, unknown>, fieldPath = ''): string 
  * - Home address collection (required for Gift Aid)
  * - Option to reuse shipping address if available
  *
- * @param visibilityCondition - Function that determines when fields should be visible (default: GBP currency check)
+ * @param visibleWhen - Function that determines when fields should be visible (default: GBP currency check)
  * @returns FieldMetaMap object with Gift Aid fields
  *
  * @example
@@ -53,7 +53,7 @@ function formatAddress(values: Record<string, unknown>, fieldPath = ''): string 
  * - Parent form must inject `shippingAddress.*` fields if using address reuse feature
  */
 export function createGiftAidFields(
-  visibilityCondition?: (values: Record<string, unknown>) => boolean
+  visibleWhen?: (values: Record<string, unknown>) => boolean
 ): FieldMetaMap {
   // Default visibility: only show for GBP currency (UK donors)
   const defaultVisibility = (values: Record<string, unknown>) => {
@@ -61,7 +61,7 @@ export function createGiftAidFields(
     return currency === 'GBP'
   }
 
-  const shouldShow = visibilityCondition || defaultVisibility
+  const shouldShow = visibleWhen || defaultVisibility
 
   return {
     // Gift Aid Information Card (UK only)

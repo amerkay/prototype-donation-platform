@@ -6,7 +6,7 @@ import type { FieldMetaMap } from '~/features/form-builder/form-builder-types'
  *
  * Provides a consistent required terms acceptance pattern with Zod validation.
  *
- * @param visibilityCondition - Function that determines when field should be visible
+ * @param visibleWhen - Function that determines when field should be visible
  * @returns FieldMetaMap object with acceptTerms field
  *
  * @example
@@ -18,14 +18,14 @@ import type { FieldMetaMap } from '~/features/form-builder/form-builder-types'
  * ```
  */
 export function createTermsAcceptanceField(
-  visibilityCondition?: (values: Record<string, unknown>) => boolean
+  visibleWhen?: (values: Record<string, unknown>) => boolean
 ): FieldMetaMap {
   return {
     acceptTerms: {
       type: 'toggle',
       label: 'I accept the terms and conditions',
       description: 'I agree to the Terms of Service and Privacy Policy.',
-      visibleWhen: visibilityCondition,
+      visibleWhen,
       rules: z.boolean().refine((val) => val === true, {
         message: 'You must accept the terms and conditions to continue'
       })
