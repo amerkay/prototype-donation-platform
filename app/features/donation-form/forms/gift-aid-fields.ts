@@ -166,13 +166,6 @@ export function createGiftAidFields(
       },
       fields: createAddressFields(undefined, 'shipping'),
       isNoSeparatorAfter: true
-    },
-
-    giftAidDivider: {
-      type: 'separator',
-      class: 'my-6',
-      visibleWhen: shouldShow,
-      isNoSeparatorAfter: true
     }
   }
 }

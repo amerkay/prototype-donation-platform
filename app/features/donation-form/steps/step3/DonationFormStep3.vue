@@ -10,6 +10,7 @@ import { preferencesFormSection } from './forms/preferences-form'
 import { useDonationFormStore } from '~/stores/donationForm'
 import { useImpactCartStore } from '~/stores/impactCart'
 import type { FormConfig } from '@/lib/common/types'
+import Separator from '~/components/ui/separator/Separator.vue'
 
 // Inject config from parent
 const formConfig = inject<Ref<FormConfig>>('formConfig')
@@ -156,7 +157,7 @@ const handleNext = () => {
 </script>
 
 <template>
-  <div ref="formContainerRef" class="space-y-4">
+  <div ref="formContainerRef" class="space-y-6">
     <!-- Step Header -->
     <div class="space-y-2">
       <h1 class="text-lg font-bold">A few more questions&hellip;</h1>
@@ -173,6 +174,8 @@ const handleNext = () => {
       />
     </div>
 
+    <Separator />
+
     <!-- Cover Costs Field (separate component for dynamic percentage/amount switching) -->
     <div v-if="formConfig.features.coverCosts.enabled" @click="handleFormClick">
       <CoverCostsField
@@ -186,6 +189,8 @@ const handleNext = () => {
         :currency="store.selectedCurrency"
       />
     </div>
+
+    <Separator />
 
     <!-- Preferences Form (email opt-in, terms) -->
     <div>

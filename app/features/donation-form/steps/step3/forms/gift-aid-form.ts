@@ -18,6 +18,6 @@ import { createGiftAidFields } from '~/features/donation-form/forms/gift-aid-fie
  */
 export const giftAidFormSection: ConfigSectionDef = {
   id: 'gift-aid',
-  title: 'Gift Aid (UK Taxpayers Only)',
+  //   title: 'Gift Aid (UK Taxpayers Only)',
   fields: createGiftAidFields()
 }
