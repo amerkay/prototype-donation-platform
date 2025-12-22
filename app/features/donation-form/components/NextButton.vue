@@ -11,12 +11,15 @@ interface Props {
   formRefs?: Array<InstanceType<typeof FormRenderer> | null | undefined>
   /** Additional custom validation logic */
   customValid?: boolean
+  /** Parent container ref to check if form is in viewport */
+  parentContainerRef?: HTMLElement | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   formRefs: () => [],
-  customValid: true
+  customValid: true,
+  parentContainerRef: null
 })
 
 const emit = defineEmits<{
@@ -25,6 +28,7 @@ const emit = defineEmits<{
 
 const containerRef = ref<HTMLElement | null>(null)
 const isVisible = useElementVisibility(containerRef, { threshold: 0.8 })
+const isParentVisible = useElementVisibility(() => props.parentContainerRef, { threshold: 0.1 })
 const isMobile = useMediaQuery('(max-width: 768px)')
 
 /**
@@ -45,9 +49,9 @@ const isValid = computed(() => {
   return props.formRefs.every((formRef) => formRef?.isValid ?? false)
 })
 
-// Only float on mobile when button is not visible and not enabled
+// Only float on mobile when button is not visible, parent IS visible, and button is enabled
 const shouldFloat = computed(() => {
-  return isMobile.value && !isVisible.value && isValid.value
+  return isMobile.value && !isVisible.value && isParentVisible.value && isValid.value
 })
 
 /**

@@ -43,6 +43,7 @@ const emit = defineEmits<{
 // Refs
 const productSelectorRef = ref<InstanceType<typeof ProductSelectorButton> | null>(null)
 const tributeModalRef = ref<InstanceType<typeof TributeModal> | null>(null)
+const formContainerRef = ref<HTMLElement | null>(null)
 
 // Computed
 const showTributeSection = computed(() => props.frequency !== 'once')
@@ -84,7 +85,7 @@ defineExpose({
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div ref="formContainerRef" class="space-y-4">
     <!-- Donation Amount Selector -->
     <AmountSelector
       :model-value="donationAmount"
@@ -153,7 +154,11 @@ defineExpose({
     />
 
     <!-- Next Button -->
-    <NextButton :disabled="!isFormValid" @click="emit('next')" />
+    <NextButton
+      :disabled="!isFormValid"
+      :parent-container-ref="formContainerRef"
+      @click="emit('next')"
+    />
 
     <!-- Modals -->
     <TributeModal

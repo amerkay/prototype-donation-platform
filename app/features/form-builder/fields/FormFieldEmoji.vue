@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils'
+import { computed, onMounted, ref } from 'vue'
+import { EmojiPicker } from '~/features/donation-form/components/emoji-picker'
+import { Button } from '@/components/ui/button'
+import { X } from 'lucide-vue-next'
 import type { EmojiFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
@@ -16,29 +17,29 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(props.meta)
+const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
 
-const inputValue = computed(() => props.field.value as string | undefined)
+const pickerOpen = ref(false)
+const selectedEmoji = computed(() => props.field.value as string | undefined)
 
-// Emoji regex pattern - matches most emoji including multi-byte sequences
-const EMOJI_REGEX = /^[\p{Emoji}\p{Emoji_Presentation}]+$/u
-const maxLength = computed(() => props.meta.maxLength ?? 2)
-
-const handleInput = (value: string | number) => {
-  const stringValue = String(value)
-
-  // Only allow emoji characters
-  if (stringValue === '' || EMOJI_REGEX.test(stringValue)) {
-    // Limit length
-    const truncated = stringValue.slice(0, maxLength.value)
-    props.field.onChange(truncated)
-    props.onChange?.(truncated)
-  }
+const handleEmojiSelect = (emoji: string) => {
+  props.field.onChange(emoji)
+  // Trigger validation by simulating blur event
+  props.field.onBlur?.(new Event('blur'))
+  props.onChange?.(emoji)
 }
 
-const handleEnterKey = (event: KeyboardEvent) => {
-  event.preventDefault()
+const clearEmoji = () => {
+  props.field.onChange('')
+  // Trigger validation by simulating blur event
+  props.field.onBlur?.(new Event('blur'))
+  props.onChange?.('')
 }
+
+// Trigger validation on mount to show errors immediately if field is required and empty
+onMounted(() => {
+  props.field.onBlur?.(new Event('blur'))
+})
 </script>
 
 <template>
@@ -52,16 +53,35 @@ const handleEnterKey = (event: KeyboardEvent) => {
     :label-class="meta.labelClass"
     :description-class="meta.descriptionClass"
   >
-    <Input
-      :id="name"
-      :model-value="inputValue"
-      :placeholder="resolvedPlaceholder"
-      :aria-invalid="!!errors.length"
-      :class="cn(meta.class, 'text-2xl text-center')"
-      :maxlength="maxLength"
-      @update:model-value="handleInput"
-      @blur="field.onBlur"
-      @keydown.enter="handleEnterKey"
-    />
+    <div class="flex items-center gap-2">
+      <EmojiPicker
+        v-model:open="pickerOpen"
+        :disabled="meta.disabled"
+        :class="meta.class"
+        :selected-value="selectedEmoji"
+        :hide-trigger="!!selectedEmoji"
+        @select="handleEmojiSelect"
+      />
+
+      <div v-if="selectedEmoji" class="flex items-center gap-2 flex-1">
+        <Button
+          variant="outline"
+          class="text-2xl h-10 px-3"
+          aria-label="Change emoji"
+          @click="pickerOpen = true"
+        >
+          {{ selectedEmoji }}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-10 w-10"
+          aria-label="Clear emoji"
+          @click="clearEmoji"
+        >
+          <X class="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
   </FormFieldWrapper>
 </template>

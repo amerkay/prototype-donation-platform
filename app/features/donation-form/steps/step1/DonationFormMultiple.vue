@@ -31,6 +31,7 @@ const emit = defineEmits<{
 
 const cartRef = ref<InstanceType<typeof ImpactCart> | null>(null)
 const productOptionsModalRef = ref<InstanceType<typeof ProductOptionsModal> | null>(null)
+const formContainerRef = ref<HTMLElement | null>(null)
 
 // Computed
 const filteredProducts = computed(() => {
@@ -98,7 +99,7 @@ defineExpose({
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div ref="formContainerRef" class="space-y-4">
     <!-- ImpactCart Component -->
     <ImpactCart
       ref="cartRef"
@@ -143,7 +144,11 @@ defineExpose({
     />
 
     <!-- Next Button -->
-    <NextButton :disabled="!isFormValid" @click="emit('next')" />
+    <NextButton
+      :disabled="!isFormValid"
+      :parent-container-ref="formContainerRef"
+      @click="emit('next')"
+    />
 
     <!-- Product Configuration Modal -->
     <ProductOptionsModal

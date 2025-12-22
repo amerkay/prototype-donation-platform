@@ -90,19 +90,19 @@ export function createTributeConfigSection(): ConfigSectionDef {
             type: 'emoji',
             label: 'Gift Icon',
             placeholder: '🎁',
-            rules: z.string().min(1, 'Required').max(2, 'Must be a single emoji')
+            rules: z.string().min(1, 'Required')
           },
           memorial: {
             type: 'emoji',
             label: 'Memorial Icon',
             placeholder: '🕊️',
-            rules: z.string().min(1, 'Required').max(2, 'Must be a single emoji')
+            rules: z.string().min(1, 'Required')
           },
           tribute: {
             type: 'emoji',
             label: 'Tribute Icon',
             placeholder: '💝',
-            rules: z.string().min(1, 'Required').max(2, 'Must be a single emoji')
+            rules: z.string().min(1, 'Required')
           }
         }
       }

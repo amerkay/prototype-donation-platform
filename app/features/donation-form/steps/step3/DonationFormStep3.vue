@@ -39,6 +39,7 @@ const giftAidSection = computed({
 
 // Form renderer reference for validation
 const formRef = ref<InstanceType<typeof FormRenderer> | null>(null)
+const formContainerRef = ref<HTMLElement | null>(null)
 
 // Cover costs upsell modal state
 const showUpsellModal = ref(false)
@@ -128,7 +129,7 @@ const handleNext = () => {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div ref="formContainerRef" class="space-y-6">
     <!-- Step Header -->
     <div class="space-y-2">
       <h1 class="text-lg font-bold">A few more questions&hellip;</h1>
@@ -146,7 +147,7 @@ const handleNext = () => {
     </div>
 
     <!-- Navigation Buttons -->
-    <NextButton :form-refs="[formRef]" @click="handleNext">
+    <NextButton :form-refs="[formRef]" :parent-container-ref="formContainerRef" @click="handleNext">
       Continue to Payment
       <Icon name="lucide:arrow-right" class="ml-2 h-4 w-4" />
     </NextButton>

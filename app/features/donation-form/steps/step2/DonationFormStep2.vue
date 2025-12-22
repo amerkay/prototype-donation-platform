@@ -71,6 +71,7 @@ const shippingSection = computed({
 // Form refs
 const donorFormRef = ref<InstanceType<typeof FormRenderer>>()
 const shippingFormRef = ref<InstanceType<typeof FormRenderer>>()
+const formContainerRef = ref<HTMLElement | null>(null)
 
 addressFormSection.title = 'Shipping Address'
 
@@ -90,7 +91,7 @@ const handleNext = () => {
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div ref="formContainerRef" class="space-y-4">
     <!-- Donor Information Form -->
     <div class="rounded-lg border border-transparent px-4 py-6 bg-background/40">
       <FormRenderer
@@ -121,6 +122,12 @@ const handleNext = () => {
     </template>
 
     <!-- Next Button -->
-    <NextButton :form-refs="formRefsToValidate" @click="handleNext"> Next </NextButton>
+    <NextButton
+      :form-refs="formRefsToValidate"
+      :parent-container-ref="formContainerRef"
+      @click="handleNext"
+    >
+      Next
+    </NextButton>
   </div>
 </template>

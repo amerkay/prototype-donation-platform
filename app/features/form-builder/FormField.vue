@@ -1,28 +1,32 @@
 <script setup lang="ts">
-import { computed, inject, type ComputedRef } from 'vue'
+import { computed, inject, defineAsyncComponent, type ComputedRef } from 'vue'
 import { Field as VeeField } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
 import type { FieldMeta, SetFieldValueFn } from '~/features/form-builder/form-builder-types'
 import { resolveVeeFieldPath } from '~/features/form-builder/field-path-utils'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
-import FormFieldText from './fields/FormFieldText.vue'
-import FormFieldTextarea from './fields/FormFieldTextarea.vue'
-import FormFieldNumber from './fields/FormFieldNumber.vue'
-import FormFieldCurrency from './fields/FormFieldCurrency.vue'
-import FormFieldToggle from './fields/FormFieldToggle.vue'
-import FormFieldSelect from './fields/FormFieldSelect.vue'
-import FormFieldCombobox from './fields/FormFieldCombobox.vue'
-import FormFieldAutocomplete from './fields/FormFieldAutocomplete.vue'
-import FormFieldRadioGroup from './fields/FormFieldRadioGroup.vue'
-import FormFieldEmoji from './fields/FormFieldEmoji.vue'
-import FormFieldSlider from './fields/FormFieldSlider.vue'
-import FormFieldCard from './fields/FormFieldCard.vue'
-import FormFieldSeparator from './fields/FormFieldSeparator.vue'
-import FormFieldGroup from './fields/FormFieldGroup.vue'
-import FormFieldArray from './fields/FormFieldArray.vue'
-import FormFieldTabs from './fields/FormFieldTabs.vue'
 import { cn } from '@/lib/utils'
+
+// Async component imports for code splitting
+const FormFieldText = defineAsyncComponent(() => import('./fields/FormFieldText.vue'))
+const FormFieldTextarea = defineAsyncComponent(() => import('./fields/FormFieldTextarea.vue'))
+const FormFieldNumber = defineAsyncComponent(() => import('./fields/FormFieldNumber.vue'))
+const FormFieldCurrency = defineAsyncComponent(() => import('./fields/FormFieldCurrency.vue'))
+const FormFieldToggle = defineAsyncComponent(() => import('./fields/FormFieldToggle.vue'))
+const FormFieldSelect = defineAsyncComponent(() => import('./fields/FormFieldSelect.vue'))
+const FormFieldCombobox = defineAsyncComponent(() => import('./fields/FormFieldCombobox.vue'))
+const FormFieldAutocomplete = defineAsyncComponent(
+  () => import('./fields/FormFieldAutocomplete.vue')
+)
+const FormFieldRadioGroup = defineAsyncComponent(() => import('./fields/FormFieldRadioGroup.vue'))
+const FormFieldEmoji = defineAsyncComponent(() => import('./fields/FormFieldEmoji.vue'))
+const FormFieldSlider = defineAsyncComponent(() => import('./fields/FormFieldSlider.vue'))
+const FormFieldCard = defineAsyncComponent(() => import('./fields/FormFieldCard.vue'))
+const FormFieldSeparator = defineAsyncComponent(() => import('./fields/FormFieldSeparator.vue'))
+const FormFieldGroup = defineAsyncComponent(() => import('./fields/FormFieldGroup.vue'))
+const FormFieldArray = defineAsyncComponent(() => import('./fields/FormFieldArray.vue'))
+const FormFieldTabs = defineAsyncComponent(() => import('./fields/FormFieldTabs.vue'))
 
 interface Props {
   name: string
@@ -85,7 +89,9 @@ const fieldRules = computed(() => {
     typeof props.meta.rules === 'function' ? props.meta.rules(formValues.value) : props.meta.rules
 
   // Preprocess fields to handle undefined/null values
-  const isTextLikeField = ['text', 'textarea', 'autocomplete', 'select'].includes(props.meta.type)
+  const isTextLikeField = ['text', 'textarea', 'autocomplete', 'select', 'emoji'].includes(
+    props.meta.type
+  )
   const isBooleanField = props.meta.type === 'toggle'
 
   if (isTextLikeField || isBooleanField) {
