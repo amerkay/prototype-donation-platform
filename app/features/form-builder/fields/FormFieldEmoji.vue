@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { EmojiPicker } from '~/features/donation-form/components/emoji-picker'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-vue-next'
 import type { EmojiFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
+import EmojiPicker from '../components/EmojiPicker.vue'
 
 interface Props {
   field: VeeFieldContext

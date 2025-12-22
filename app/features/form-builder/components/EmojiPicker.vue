@@ -123,7 +123,7 @@ const open = computed({
 const search = ref('')
 const selectedSkinTone = ref<string | null>(null)
 const hoveredCategory = ref<string | null>(null)
-const searchRef = ref<HTMLInputElement>()
+const searchRef = ref<InstanceType<typeof Input>>()
 
 // ---- Lazy-loaded emojibase dataset (compact) ----
 const emojiDataset = ref<CompactEmoji[] | null>(null)
@@ -153,7 +153,8 @@ watch(open, async (isOpen) => {
   if (!isOpen) return
   await loadEmojiDatasetIfNeeded()
   await nextTick()
-  searchRef.value?.focus()
+  const inputEl = searchRef.value?.$el as HTMLInputElement | undefined
+  inputEl?.focus()
 })
 
 // ---- Helpers ----

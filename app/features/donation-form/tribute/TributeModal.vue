@@ -57,10 +57,12 @@ defineExpose({
   <BaseDialogOrDrawer
     v-model:open="isOpen"
     :dismissible="true"
-    :description="config.modal.subtitle"
+    :description="
+      config.modal?.subtitle ?? 'Make this donation in honor or memory of someone special'
+    "
   >
     <template #header>
-      <h2 class="text-2xl font-semibold">{{ config.modal.title }}</h2>
+      <h2 class="text-2xl font-semibold">{{ config.modal?.title ?? 'Gift or In Memory' }}</h2>
     </template>
     <template #content>
       <ProductTributeFormGenerated
