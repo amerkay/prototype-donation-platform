@@ -1,12 +1,12 @@
 import * as z from 'zod'
-import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
+import type { FormDef } from '~/features/form-builder/form-builder-types'
 import { createMessageFields } from '~/features/donation-form/forms/message-fields'
 
 /**
  * Donor information form section
  * Collects basic contact information from the donor
  */
-export const donorInfoFormSection: ConfigSectionDef = {
+export const donorInfoFormSection: FormDef = {
   id: 'donor-info',
   title: 'Your Information',
   fields: {

@@ -4,11 +4,11 @@ import { useForm } from 'vee-validate'
 import { Accordion } from '@/components/ui/accordion'
 import { FieldSeparator } from '@/components/ui/field'
 import FormField from './FormField.vue'
-import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
+import type { FormDef } from '~/features/form-builder/form-builder-types'
 import { useScrollOnVisible } from './composables/useScrollOnVisible'
 
 interface Props {
-  section: ConfigSectionDef
+  section: FormDef
   modelValue: Record<string, unknown>
   class?: string
   /**

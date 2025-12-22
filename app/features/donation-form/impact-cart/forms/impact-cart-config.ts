@@ -1,11 +1,11 @@
 import * as z from 'zod'
-import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
+import type { FormDef } from '~/features/form-builder/form-builder-types'
 
 /**
  * Create multiple products config section definition
  * Returns the form configuration for editing multiple products feature settings
  */
-export function createMultipleProductsConfigSection(): ConfigSectionDef {
+export function createMultipleProductsConfigSection(): FormDef {
   return {
     id: 'impactCart',
     // title: 'Multiple Products',

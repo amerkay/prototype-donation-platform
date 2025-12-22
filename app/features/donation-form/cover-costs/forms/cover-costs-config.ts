@@ -1,11 +1,11 @@
 import * as z from 'zod'
-import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
+import type { FormDef } from '~/features/form-builder/form-builder-types'
 
 /**
  * Create cover costs config section definition
  * Returns the form configuration for editing cover costs settings
  */
-export function createCoverCostsConfigSection(): ConfigSectionDef {
+export function createCoverCostsConfigSection(): FormDef {
   return {
     id: 'coverCosts',
     // title: 'Cover Costs',

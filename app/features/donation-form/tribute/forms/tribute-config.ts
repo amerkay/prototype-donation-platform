@@ -1,11 +1,11 @@
 import * as z from 'zod'
-import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
+import type { FormDef } from '~/features/form-builder/form-builder-types'
 
 /**
  * Create tribute config section definition
  * Returns the form configuration for editing tribute settings in admin
  */
-export function createTributeConfigSection(): ConfigSectionDef {
+export function createTributeConfigSection(): FormDef {
   return {
     id: 'tribute',
     // title: 'Tribute Settings',

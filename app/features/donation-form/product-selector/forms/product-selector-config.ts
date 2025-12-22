@@ -1,11 +1,11 @@
 import * as z from 'zod'
-import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
+import type { FormDef } from '~/features/form-builder/form-builder-types'
 
 /**
  * Create product selector config section definition
  * Returns the form configuration for editing product selector feature settings
  */
-export function createProductSelectorConfigSection(): ConfigSectionDef {
+export function createProductSelectorConfigSection(): FormDef {
   return {
     id: 'productSelector',
     // title: 'Product Selector',

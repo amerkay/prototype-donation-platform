@@ -1,4 +1,4 @@
-import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
+import type { FormDef } from '~/features/form-builder/form-builder-types'
 import { createGiftAidFields } from '../gift-aid/forms/gift-aid-fields'
 import { createEmailOptInField } from './email-opt-in-field'
 import { createTermsAcceptanceField } from './terms-acceptance-field'
@@ -14,7 +14,7 @@ import { createTermsAcceptanceField } from './terms-acceptance-field'
  * Note: Cover costs is now handled separately via CoverCostsField component
  * in DonationFormStep3.vue for dynamic percentage/amount switching
  */
-export function createStep3FormSection(): ConfigSectionDef {
+export function createStep3FormSection(): FormDef {
   return {
     id: 'step3',
     fields: {

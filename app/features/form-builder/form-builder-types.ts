@@ -306,7 +306,7 @@ export type FieldMetaMap = Record<string, FieldMeta>
 /**
  * Config section definition
  */
-export interface ConfigSectionDef<T extends z.ZodTypeAny = z.ZodTypeAny> {
+export interface FormDef<T extends z.ZodTypeAny = z.ZodTypeAny> {
   id: string
   title?: string
   description?: string

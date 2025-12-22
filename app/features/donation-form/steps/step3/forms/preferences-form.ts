@@ -1,4 +1,4 @@
-import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
+import type { FormDef } from '~/features/form-builder/form-builder-types'
 import { createEmailOptInField } from '~/features/donation-form/forms/email-opt-in-field'
 import { createTermsAcceptanceField } from '~/features/donation-form/forms/terms-acceptance-field'
 
@@ -11,7 +11,7 @@ import { createTermsAcceptanceField } from '~/features/donation-form/forms/terms
  *
  * This section is always visible and required for all donors regardless of currency.
  */
-export const preferencesFormSection: ConfigSectionDef = {
+export const preferencesFormSection: FormDef = {
   id: 'preferences',
   //   title: 'Final Details',
   fields: {

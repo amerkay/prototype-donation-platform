@@ -93,7 +93,7 @@ Benefits of separation:
 
 **Full Section Exports** (in `steps/stepN/forms/`):
 
-- Export complete `ConfigSectionDef` objects with id, title, fields
+- Export complete `FormDef` objects with id, title, fields
 - Examples: `donorInfoFormSection`, `giftAidFormSection`, `preferencesFormSection`
 - Used directly in FormRenderer components
 - Specific to a single step/section

@@ -7,7 +7,7 @@ A type-safe, declarative form builder for creating dynamic forms with validation
 Forms are defined using **field metadata** objects that describe structure, validation, and behavior:
 
 ```typescript
-const formSection: ConfigSectionDef = {
+const formSection: FormDef = {
   id: 'my-form',
   title: 'Contact Information',
   fields: {
@@ -254,9 +254,9 @@ fields: {
 
 ```typescript
 import * as z from 'zod'
-import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
+import type { FormDef } from '~/features/form-builder/form-builder-types'
 
-export const contactFormSection: ConfigSectionDef = {
+export const contactFormSection: FormDef = {
   id: 'contact-form',
   title: 'Contact Us',
   description: "We'll get back to you within 24 hours",
@@ -336,7 +336,7 @@ async function handleSubmit() {
 
 **Props:**
 
-- `section: ConfigSectionDef` - Form configuration
+- `section: FormDef` - Form configuration
 - `modelValue: Record<string, unknown>` - Form values (v-model)
 - `class?: string` - Form element classes
 

@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import type { ConfigSectionDef, FieldMetaMap } from '~/features/form-builder/form-builder-types'
+import type { FormDef, FieldMetaMap } from '~/features/form-builder/form-builder-types'
 
 /**
  * Country-specific label configuration
@@ -292,7 +292,7 @@ export function createAddressFields(
  * 3. Town/City
  * 4. County/Region and Postcode
  */
-export const addressFormSection: ConfigSectionDef = {
+export const addressFormSection: FormDef = {
   id: 'address',
   title: 'Address',
   fields: createAddressFields()

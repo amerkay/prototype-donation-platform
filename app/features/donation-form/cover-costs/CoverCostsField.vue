@@ -5,7 +5,7 @@ import { createCoverFeesField } from './forms/cover-costs-percent-field'
 import { createCoverFeesAmountField } from './forms/cover-costs-amount-field'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import type { FormConfig } from '@/lib/common/types'
-import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
+import type { FormDef } from '~/features/form-builder/form-builder-types'
 
 // Constants
 const THRESHOLD_AMOUNT_GBP = 10 // Threshold in base currency (GBP)
@@ -43,7 +43,7 @@ const defaultFixedAmount = computed(() => {
 })
 
 // Create appropriate form section based on mode
-const formSection = computed<ConfigSectionDef>(() => {
+const formSection = computed<FormDef>(() => {
   if (usePercentageMode.value) {
     // Use percentage slider for amounts >= threshold
     return {

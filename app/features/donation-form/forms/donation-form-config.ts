@@ -1,12 +1,12 @@
 import * as z from 'zod'
-import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
+import type { FormDef } from '~/features/form-builder/form-builder-types'
 import { CURRENCY_OPTIONS, getCurrencySymbol } from '../composables/useCurrency'
 
 /**
  * Create form config section definition
  * Returns the form configuration for editing form, localization, and pricing settings
  */
-export function createFormConfigSection(): ConfigSectionDef {
+export function createFormConfigSection(): FormDef {
   const frequencySchema = z
     .object({
       enabled: z.boolean(),
