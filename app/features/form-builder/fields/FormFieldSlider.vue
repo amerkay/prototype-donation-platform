@@ -60,7 +60,7 @@ const handleSliderChange = (value: number[] | undefined) => {
     :label-class="meta.labelClass"
     :description-class="meta.descriptionClass"
   >
-    <div class="space-y-1">
+    <div class="space-y-3">
       <!-- Formatted value display -->
       <div class="flex items-center justify-between">
         <span class="text-2xl font-semibold">
@@ -70,18 +70,18 @@ const handleSliderChange = (value: number[] | undefined) => {
       </div>
 
       <!-- Slider -->
-      <div class="py-3 px-1">
-        <Slider
-          :id="name"
-          :model-value="[numberValue]"
-          :min="meta.min ?? 0"
-          :max="meta.max ?? 100"
-          :step="meta.step ?? 1"
-          :class="meta.class"
-          class="**:data-[slot=slider-track]:h-2.5 **:data-[slot=slider-thumb]:size-6"
-          @update:model-value="handleSliderChange"
-        />
-      </div>
+      <!-- <div class="py-3 px-1"> -->
+      <Slider
+        :id="name"
+        :model-value="[numberValue]"
+        :min="meta.min ?? 0"
+        :max="meta.max ?? 100"
+        :step="meta.step ?? 1"
+        :class="meta.class"
+        class="**:data-[slot=slider-track]:h-2.5 **:data-[slot=slider-thumb]:size-6"
+        @update:model-value="handleSliderChange"
+      />
+      <!-- </div> -->
 
       <!-- Min/Max labels -->
       <div v-if="meta.showMinMax" class="flex justify-between text-xs text-muted-foreground">

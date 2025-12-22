@@ -170,3 +170,10 @@ watch(isOpen, (newIsOpen) => {
     </FieldSet>
   </div>
 </template>
+
+<style scoped>
+/* Ensure accordion content overflows correctly */
+[data-state='open'] {
+  overflow: visible;
+}
+</style>
