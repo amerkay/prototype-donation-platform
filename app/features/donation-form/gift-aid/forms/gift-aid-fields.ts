@@ -1,5 +1,5 @@
 import type { FieldMetaMap, SetFieldValueFn } from '~/features/form-builder/form-builder-types'
-import { createAddressFields } from './address-form'
+import { createAddressFields } from '../../forms/address-form'
 
 /**
  * Helper to format address for display

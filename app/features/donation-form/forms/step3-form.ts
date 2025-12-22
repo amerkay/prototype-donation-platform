@@ -1,5 +1,5 @@
 import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
-import { createGiftAidFields } from './gift-aid-fields'
+import { createGiftAidFields } from '../gift-aid/forms/gift-aid-fields'
 import { createEmailOptInField } from './email-opt-in-field'
 import { createTermsAcceptanceField } from './terms-acceptance-field'
 

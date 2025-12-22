@@ -1,5 +1,5 @@
 import type { ConfigSectionDef } from '~/features/form-builder/form-builder-types'
-import { createGiftAidFields } from '~/features/donation-form/forms/gift-aid-fields'
+import { createGiftAidFields } from '~/features/donation-form/gift-aid/forms/gift-aid-fields'
 
 /**
  * Gift Aid form section
