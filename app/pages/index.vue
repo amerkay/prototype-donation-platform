@@ -51,14 +51,16 @@ provide('products', products)
           </Breadcrumb>
         </div>
       </header>
-      <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div class="space-y-4 flex-col-reverse flex gap-y-6 lg:space-x-4 lg:flex-row">
-          <div class="grow">
+      <div class="flex flex-1 flex-col px-4 pt-0">
+        <div class="flex-col-reverse flex gap-y-6 lg:space-x-4 lg:flex-row">
+          <div class="grow pb-4">
             <p class="text-muted-foreground text-sm font-semibold mb-2">Form Settings</p>
             <DonationFormSettings />
           </div>
 
-          <div class="w-full sm:mx-auto lg:min-w-sm lg:max-w-sm lg:w-sm">
+          <div
+            class="w-full sm:mx-auto lg:min-w-sm lg:max-w-sm lg:w-sm lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto pb-4"
+          >
             <p class="text-muted-foreground text-sm font-semibold mb-2">Form Preview</p>
             <DonationFormPreview class="border-2" />
           </div>
