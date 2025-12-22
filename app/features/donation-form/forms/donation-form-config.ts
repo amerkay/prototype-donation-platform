@@ -108,11 +108,16 @@ export function createFormConfigSection(): ConfigSectionDef {
             rules: z.array(z.string()).min(1, 'At least one currency must be supported'),
             onChange: (value, allValues, setValue) => {
               const defaultCurrency = allValues.defaultCurrency as string | undefined
+              const baseCurrency = (allValues.pricing as Record<string, unknown> | undefined)
+                ?.baseCurrency as string | undefined
               const supportedCurrencies = (value as string[]).filter(Boolean)
 
               if (supportedCurrencies.length > 0) {
                 if (!defaultCurrency || !supportedCurrencies.includes(defaultCurrency)) {
                   setValue('localization.defaultCurrency', supportedCurrencies[0])
+                }
+                if (baseCurrency && !supportedCurrencies.includes(baseCurrency)) {
+                  setValue('pricing.baseCurrency', supportedCurrencies[0])
                 }
               } else {
                 setValue('localization.defaultCurrency', '')
@@ -145,10 +150,17 @@ export function createFormConfigSection(): ConfigSectionDef {
           baseCurrency: {
             type: 'combobox',
             label: 'Base Currency',
-            description: 'The currency used for internal calculations and product pricing',
+            description:
+              'The currency used for internal calculations and product pricing (choose from supported currencies above)',
             placeholder: 'Select base currency',
             searchPlaceholder: 'Search currencies...',
-            options: CURRENCY_OPTIONS,
+            options: (values) => {
+              // Only show currencies that are in the supported list
+              const supportedCurrencies =
+                ((values.localization as Record<string, unknown> | undefined)
+                  ?.supportedCurrencies as string[]) || []
+              return CURRENCY_OPTIONS.filter((opt) => supportedCurrencies.includes(opt.value))
+            },
             rules: z.string().min(1, 'Base currency is required')
           },
           frequencies: {
@@ -190,7 +202,15 @@ export function createFormConfigSection(): ConfigSectionDef {
                         const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
                         return getCurrencySymbol(baseCurrency)
                       },
-                      rules: z.number({ error: 'Amount is required' }).min(1, 'Must be at least 1')
+                      rules: (values) => {
+                        const minAmount = (
+                          values.customAmount as Record<string, unknown> | undefined
+                        )?.min as number | undefined
+                        const effectiveMin = minAmount ?? 1
+                        return z
+                          .number({ error: 'Amount is required' })
+                          .min(effectiveMin, `Must be at least ${effectiveMin}`)
+                      }
                     },
                     addButtonText: 'Add Amount',
                     rules: (values) => enabledPresetAmounts(values)
@@ -202,17 +222,27 @@ export function createFormConfigSection(): ConfigSectionDef {
                     visibleWhen: (values) => !!values.enabled,
                     fields: {
                       min: {
-                        type: 'number',
+                        type: 'currency',
                         label: 'Minimum',
                         placeholder: '1',
                         min: 1,
+                        currencySymbol: (values) => {
+                          const pricing = values.pricing as Record<string, unknown> | undefined
+                          const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
+                          return getCurrencySymbol(baseCurrency)
+                        },
                         rules: z.number().min(1, 'Must be at least 1')
                       },
                       max: {
-                        type: 'number',
+                        type: 'currency',
                         label: 'Maximum',
                         placeholder: '1000000',
                         min: 1,
+                        currencySymbol: (values) => {
+                          const pricing = values.pricing as Record<string, unknown> | undefined
+                          const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
+                          return getCurrencySymbol(baseCurrency)
+                        },
                         rules: z.number().min(1, 'Must be at least 1')
                       }
                     }
@@ -251,7 +281,15 @@ export function createFormConfigSection(): ConfigSectionDef {
                         const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
                         return getCurrencySymbol(baseCurrency)
                       },
-                      rules: z.number({ error: 'Amount is required' }).min(1, 'Must be at least 1')
+                      rules: (values) => {
+                        const minAmount = (
+                          values.customAmount as Record<string, unknown> | undefined
+                        )?.min as number | undefined
+                        const effectiveMin = minAmount ?? 1
+                        return z
+                          .number({ error: 'Amount is required' })
+                          .min(effectiveMin, `Must be at least ${effectiveMin}`)
+                      }
                     },
                     addButtonText: 'Add Amount',
                     rules: (values) => enabledPresetAmounts(values)
@@ -263,17 +301,27 @@ export function createFormConfigSection(): ConfigSectionDef {
                     visibleWhen: (values) => !!values.enabled,
                     fields: {
                       min: {
-                        type: 'number',
+                        type: 'currency',
                         label: 'Minimum',
                         placeholder: '1',
                         min: 1,
+                        currencySymbol: (values) => {
+                          const pricing = values.pricing as Record<string, unknown> | undefined
+                          const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
+                          return getCurrencySymbol(baseCurrency)
+                        },
                         rules: z.number().min(1, 'Must be at least 1')
                       },
                       max: {
-                        type: 'number',
+                        type: 'currency',
                         label: 'Maximum',
                         placeholder: '1000000',
                         min: 1,
+                        currencySymbol: (values) => {
+                          const pricing = values.pricing as Record<string, unknown> | undefined
+                          const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
+                          return getCurrencySymbol(baseCurrency)
+                        },
                         rules: z.number().min(1, 'Must be at least 1')
                       }
                     }
@@ -312,7 +360,15 @@ export function createFormConfigSection(): ConfigSectionDef {
                         const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
                         return getCurrencySymbol(baseCurrency)
                       },
-                      rules: z.number({ error: 'Amount is required' }).min(1, 'Must be at least 1')
+                      rules: (values) => {
+                        const minAmount = (
+                          values.customAmount as Record<string, unknown> | undefined
+                        )?.min as number | undefined
+                        const effectiveMin = minAmount ?? 1
+                        return z
+                          .number({ error: 'Amount is required' })
+                          .min(effectiveMin, `Must be at least ${effectiveMin}`)
+                      }
                     },
                     addButtonText: 'Add Amount',
                     rules: (values) => enabledPresetAmounts(values)
@@ -324,17 +380,27 @@ export function createFormConfigSection(): ConfigSectionDef {
                     visibleWhen: (values) => !!values.enabled,
                     fields: {
                       min: {
-                        type: 'number',
+                        type: 'currency',
                         label: 'Minimum',
                         placeholder: '1',
                         min: 1,
+                        currencySymbol: (values) => {
+                          const pricing = values.pricing as Record<string, unknown> | undefined
+                          const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
+                          return getCurrencySymbol(baseCurrency)
+                        },
                         rules: z.number().min(1, 'Must be at least 1')
                       },
                       max: {
-                        type: 'number',
+                        type: 'currency',
                         label: 'Maximum',
                         placeholder: '50000',
                         min: 1,
+                        currencySymbol: (values) => {
+                          const pricing = values.pricing as Record<string, unknown> | undefined
+                          const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
+                          return getCurrencySymbol(baseCurrency)
+                        },
                         rules: z.number().min(1, 'Must be at least 1')
                       }
                     }
