@@ -6,8 +6,8 @@ import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNot
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
 import { donorInfoFormSection } from '../../donor-info/forms/donor-info-form'
 import { addressFormSection } from '../../forms/address-form'
-import { useDonationFormStore } from '~/stores/donationForm'
-import { useImpactCartStore } from '~/stores/impactCart'
+import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
+import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
 import type { Product } from '@/lib/common/types'
 
 interface Props {

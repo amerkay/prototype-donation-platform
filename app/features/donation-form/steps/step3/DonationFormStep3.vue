@@ -7,8 +7,8 @@ import CoverCostsField from '~/features/donation-form/cover-costs/CoverCostsFiel
 import CoverCostsUpsellModal from '~/features/donation-form/cover-costs/CoverCostsUpsellModal.vue'
 import { giftAidFormSection } from '../../gift-aid/forms/gift-aid-declaration-form'
 import { preferencesFormSection } from './forms/preferences-form'
-import { useDonationFormStore } from '~/stores/donationForm'
-import { useImpactCartStore } from '~/stores/impactCart'
+import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
+import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
 import type { FormConfig } from '@/lib/common/types'
 import Separator from '~/components/ui/separator/Separator.vue'
 

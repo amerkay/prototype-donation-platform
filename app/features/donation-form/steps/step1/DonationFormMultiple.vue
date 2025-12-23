@@ -7,7 +7,7 @@ import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNot
 import ProductOptionsModal from '~/features/donation-form/product/ProductOptionsModal.vue'
 import type { Product, CartItem, TributeData, FormConfig } from '@/lib/common/types'
 import { getCartItemKey, parseCartItemKey } from '~/features/donation-form/impact-cart/cart-utils'
-import { useImpactCartStore } from '~/stores/impactCart'
+import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
 
 const cartStore = useImpactCartStore()
 
