@@ -185,9 +185,6 @@ export function createGiftAidFields(
  * - Consent toggle
  * - Home address collection (required by HMRC)
  * - Option to copy from shipping address
- *
- * Note: Cover costs fields are handled separately via CoverCostsField component
- * in DonationFormStep3.vue for dynamic percentage/amount switching based on donation amount.
  */
 export const giftAidFormSection: FormDef = {
   id: 'gift-aid',

@@ -8,7 +8,6 @@ import CoverCostsUpsellModal from '~/features/donation-form/cover-costs/CoverCos
 import { giftAidFormSection } from '../../gift-aid/forms/gift-aid-declaration-form'
 import { preferencesFormSection } from './forms/preferences-form'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
-import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
 import type { FormConfig } from '@/lib/common/types'
 import Separator from '~/components/ui/separator/Separator.vue'
 
@@ -22,9 +21,8 @@ const emit = defineEmits<{
   complete: []
 }>()
 
-// Initialize Pinia stores
+// Initialize Pinia store
 const store = useDonationFormStore()
-const cartStore = useImpactCartStore()
 
 // Computed refs for individual form sections
 const shippingSection = computed(() => store.formSections.shipping || {})
@@ -127,29 +125,6 @@ const preferencesDataWithContext = computed({
   }
 })
 
-// Separate model for cover costs field
-const coverCostsData = computed({
-  get: () => {
-    return {
-      currency: store.selectedCurrency,
-      donationAmount:
-        store.activeTab === 'multiple'
-          ? cartStore.cartTotal('multiple')
-          : store.donationAmounts[store.activeTab] || 0,
-      coverFeesPercentage: giftAidSection.value.coverFeesPercentage,
-      coverFeesAmount: giftAidSection.value.coverFeesAmount
-    }
-  },
-  set: (value) => {
-    // Store cover costs data in giftAid section
-    giftAidSection.value = {
-      ...giftAidSection.value,
-      coverFeesPercentage: value.coverFeesPercentage,
-      coverFeesAmount: value.coverFeesAmount
-    }
-  }
-})
-
 // Handle next - just emit complete when valid
 const handleNext = () => {
   emit('complete')
@@ -178,16 +153,7 @@ const handleNext = () => {
 
     <!-- Cover Costs Field (separate component for dynamic percentage/amount switching) -->
     <div v-if="formConfig.features.coverCosts.enabled" @click="handleFormClick">
-      <CoverCostsField
-        v-model="coverCostsData"
-        :config="formConfig.features.coverCosts"
-        :donation-amount="
-          store.activeTab === 'multiple'
-            ? cartStore.cartTotal('multiple')
-            : store.donationAmounts[store.activeTab] || 0
-        "
-        :currency="store.selectedCurrency"
-      />
+      <CoverCostsField :config="formConfig.features.coverCosts" />
     </div>
 
     <Separator />

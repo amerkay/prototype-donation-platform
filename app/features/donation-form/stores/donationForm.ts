@@ -6,6 +6,11 @@ import type { Product, TributeData } from '@/lib/common/types'
 type Frequency = 'once' | 'monthly' | 'yearly' | 'multiple'
 type DonationFrequency = Exclude<Frequency, 'multiple'>
 
+export interface CoverCostsData {
+  type: 'percentage' | 'amount'
+  value: number
+}
+
 export const useDonationFormStore = defineStore(
   'donationForm',
   () => {
@@ -34,6 +39,7 @@ export const useDonationFormStore = defineStore(
       yearly: [],
       multiple: []
     })
+    const coverCosts = ref<CoverCostsData | null>(null)
     const formSections = ref<Record<string, Record<string, unknown>>>({
       donorInfo: {},
       shipping: {},
@@ -111,6 +117,10 @@ export const useDonationFormStore = defineStore(
       formSections.value[section] = data
     }
 
+    function setCoverCosts(data: CoverCostsData | null) {
+      coverCosts.value = data
+    }
+
     function clearSession() {
       currentStep.value = 1
       activeTab.value = 'once'
@@ -123,6 +133,7 @@ export const useDonationFormStore = defineStore(
         yearly: [],
         multiple: []
       }
+      coverCosts.value = null
       formSections.value = { donorInfo: {}, shipping: {}, giftAid: {}, preferences: {} }
     }
 
@@ -140,6 +151,7 @@ export const useDonationFormStore = defineStore(
             selectedProducts: selectedProducts.value,
             tributeData: tributeData.value,
             selectedRewardsArrays: selectedRewardsArrays.value,
+            coverCosts: coverCosts.value,
             formSections: formSections.value
           })
         )
@@ -163,6 +175,7 @@ export const useDonationFormStore = defineStore(
         if (data.tributeData !== undefined) tributeData.value = data.tributeData
         if (data.selectedRewardsArrays !== undefined)
           selectedRewardsArrays.value = data.selectedRewardsArrays
+        if (data.coverCosts !== undefined) coverCosts.value = data.coverCosts
         if (data.formSections !== undefined) formSections.value = data.formSections
       } catch (error) {
         console.warn('Failed to hydrate donation form:', error)
@@ -179,6 +192,7 @@ export const useDonationFormStore = defineStore(
       tributeData,
       selectedRewards,
       selectedRewardsArrays, // Expose internal arrays for persistence
+      coverCosts,
       formSections,
 
       // Getters
@@ -197,6 +211,7 @@ export const useDonationFormStore = defineStore(
       setTributeData,
       toggleReward,
       updateFormSection,
+      setCoverCosts,
       clearSession,
       $persist,
       $hydrate

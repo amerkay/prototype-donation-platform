@@ -6,6 +6,7 @@ import { Button } from '~/components/ui/button'
 import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
+import { useCoverCostsManager } from '~/features/donation-form/cover-costs/composables/useCoverCostsManager'
 import type { FormConfig } from '@/lib/common/types'
 
 interface Props {
@@ -29,6 +30,9 @@ const cartStore = useImpactCartStore()
 const store = useDonationFormStore()
 const { getCurrencySymbol } = useCurrency()
 
+// Use centralized cover costs manager
+const { coverCostsAmount, coverCostsType, coverCostsValue } = useCoverCostsManager()
+
 // Determine total amount
 const totalAmount = computed(() => {
   if (store.activeTab === 'multiple') {
@@ -38,28 +42,13 @@ const totalAmount = computed(() => {
 })
 
 // Cover costs calculation (only shown from step 3 onwards AND if enabled)
-const coverFeesPercentage = computed(() => {
-  if (store.currentStep < 3) return 0
-  if (!formConfig.value.features.coverCosts.enabled) return 0
-  return (store.formSections.giftAid?.coverFeesPercentage as number) || 0
-})
-
-const coverFeesAmount = computed(() => {
+const displayCoverFeesAmount = computed(() => {
   if (store.currentStep < 3 || !formConfig.value.features.coverCosts.enabled) return 0
-
-  // Check if we have a fixed amount (for small donations)
-  const fixedAmount = store.formSections.giftAid?.coverFeesAmount as number | undefined
-  if (fixedAmount !== undefined && fixedAmount > 0) {
-    return fixedAmount
-  }
-
-  // Otherwise calculate from percentage
-  if (coverFeesPercentage.value === 0) return 0
-  return totalAmount.value * (coverFeesPercentage.value / 100)
+  return coverCostsAmount.value
 })
 
 const totalWithFees = computed(() => {
-  return totalAmount.value + coverFeesAmount.value
+  return totalAmount.value + displayCoverFeesAmount.value
 })
 
 const frequencyLabel = computed(() => {
@@ -88,9 +77,9 @@ const formattedBreakdown = computed(() => {
 
   // Show percentage if available, otherwise indicate fixed amount
   const costsDisplay =
-    coverFeesPercentage.value > 0
-      ? `${coverFeesPercentage.value}`
-      : coverFeesAmount.value > 0
+    coverCostsType.value === 'percentage'
+      ? `${coverCostsValue.value}`
+      : coverCostsType.value === 'amount'
         ? 'fixed'
         : '0'
 
@@ -157,11 +146,11 @@ const descriptionText = computed(() => {
 
         <!-- Second Row: Breakdown and Description -->
         <div class="flex flex-col">
-          <p v-if="coverFeesAmount > 0" class="text-xs text-muted-foreground">
+          <p v-if="displayCoverFeesAmount > 0" class="text-xs text-muted-foreground">
             <!-- {{ formattedBreakdown.donation }} +  -->
             <template v-if="formattedBreakdown.costs === 'fixed'">
               including {{ getCurrencySymbol(store.selectedCurrency)
-              }}{{ coverFeesAmount.toFixed(2) }} covered costs
+              }}{{ displayCoverFeesAmount.toFixed(2) }} covered costs
             </template>
             <template v-else-if="formattedBreakdown.costs !== '0'">
               including {{ formattedBreakdown.costs }}% covered costs

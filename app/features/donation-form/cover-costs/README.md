@@ -2,7 +2,47 @@
 
 ## Overview
 
-The cover costs feature dynamically switches between percentage-based and fixed amount modes based on the donation amount.
+The cover costs feature dynamically switches between percentage-based and fixed amount modes based on the donation amount. **All logic is centralized in this feature folder** through the `useCoverCostsManager()` composable.
+
+## Architecture
+
+### Centralized Logic Pattern
+
+All cover costs logic is contained within this feature folder. Other components access cover costs values through the composable API - no scattered calculations or mode switching logic elsewhere.
+
+#### Store Schema
+
+The donation store contains a simple normalized state:
+
+```ts
+{
+  coverCosts: {
+    type: 'percentage' | 'amount',
+    value: number
+  } | null
+}
+```
+
+#### Composable API
+
+**`useCoverCostsManager()`** - Single source of truth for all cover costs logic
+
+```ts
+const {
+  // Computed values
+  donationAmount, // Current donation amount
+  thresholdInCurrentCurrency, // Threshold for mode switching
+  shouldUsePercentageMode, // Whether to use percentage or fixed amount
+  coverCostsType, // 'percentage' | 'amount' | null
+  coverCostsValue, // Raw value (percentage or amount)
+  coverCostsAmount, // Calculated amount in currency
+
+  // Actions
+  setCoverCostsPercentage, // Set as percentage
+  setCoverCostsAmount, // Set as fixed amount
+  clearCoverCosts // Clear cover costs
+} = useCoverCostsManager()
+```
 
 ## Behavior
 
@@ -14,10 +54,10 @@ The cover costs feature dynamically switches between percentage-based and fixed 
 ### Components
 
 1. **`CoverCostsField.vue`** - Smart wrapper component
-   - Calculates threshold in current currency
-   - Determines which mode to use
-   - Renders appropriate form section
-   - Handles value initialization and mode switching
+   - Uses `useCoverCostsManager()` for all logic
+   - Renders appropriate form section based on mode
+   - Handles value initialization on mount
+   - No complex props - just config
 
 2. **`cover-costs-percent-field.ts`** - Percentage mode form definition
    - Slider showing 0-30% range
@@ -29,25 +69,42 @@ The cover costs feature dynamically switches between percentage-based and fixed 
 
 ### Data Storage
 
-Both modes store their values in the `giftAid` form section:
+Centralized in store as normalized state:
 
-- **Percentage mode**: `coverFeesPercentage` (number, 0-30)
-- **Fixed amount mode**: `coverFeesAmount` (number, 0-5)
-
-When switching modes, the inactive field is set to `undefined`.
+- `{ type: 'percentage', value: 10 }` - 10% mode
+- `{ type: 'amount', value: 2.5 }` - £2.50 fixed amount mode
+- `null` - No cover costs selected
 
 ### Default Values
 
 - **Percentage mode**: Uses `config.defaultPercentage` (e.g., 10%)
 - **Fixed amount mode**: Calculates as `2 × defaultPercentage × donationAmount`, capped at 5
 
-### Display
+### Usage in Other Components
 
-`OrderSummary.vue` handles both modes:
+**OrderSummary.vue** - Display cover costs
 
-- Shows percentage if `coverFeesPercentage` is set
-- Shows fixed amount if `coverFeesAmount` is set
-- Formats appropriately: "including X% covered costs" or "including £X.XX covered costs"
+```ts
+const { coverCostsAmount, coverCostsType, coverCostsValue } = useCoverCostsManager()
+
+// Use coverCostsAmount.value for calculations
+// Use coverCostsType.value to determine display format
+```
+
+**DonationFormStep3.vue** - Render field
+
+```vue
+<CoverCostsField :config="formConfig.features.coverCosts" />
+```
+
+## Benefits
+
+1. ✅ Single source of truth - All logic in feature folder
+2. ✅ Clean store schema - Simple normalized state
+3. ✅ Type-safe API - Full TypeScript support
+4. ✅ Easy to test - Pure composable functions
+5. ✅ Minimal coupling - Components only depend on composable
+6. ✅ Maintainable - Changes isolated to feature folder
 
 ## Constants
 
