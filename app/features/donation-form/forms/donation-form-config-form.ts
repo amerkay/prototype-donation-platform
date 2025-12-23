@@ -47,14 +47,6 @@ export function createFormConfigSection(): FormDef {
       })
     })
 
-  const enabledString = (values: Record<string, unknown>, message: string) =>
-    values.enabled ? z.string().min(1, message) : z.string()
-
-  const enabledPresetAmounts = (values: Record<string, unknown>) =>
-    values.enabled
-      ? z.array(z.number().min(1)).min(1, 'At least one preset required')
-      : z.array(z.number())
-
   return {
     id: 'form',
     title: 'Form Settings',
@@ -184,14 +176,17 @@ export function createFormConfigSection(): FormDef {
                     type: 'text',
                     label: 'Display Label',
                     placeholder: 'One-time',
-                    visibleWhen: (values) => !!values.enabled,
-                    rules: (values) => enabledString(values, 'Label is required')
+                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
+                    rules: (values) => {
+                      const enabled = values.enabled as boolean | undefined
+                      return enabled ? z.string().min(1, 'Label is required') : z.string()
+                    }
                   },
                   presetAmounts: {
                     type: 'array',
                     label: 'Preset Amounts',
                     description: 'Preset donation amounts (in base currency)',
-                    visibleWhen: (values) => !!values.enabled,
+                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
                     class: 'grid grid-cols-2 gap-2',
                     itemField: {
                       type: 'currency',
@@ -213,13 +208,18 @@ export function createFormConfigSection(): FormDef {
                       }
                     },
                     addButtonText: 'Add Amount',
-                    rules: (values) => enabledPresetAmounts(values)
+                    rules: (values) => {
+                      const enabled = values.enabled as boolean | undefined
+                      return enabled
+                        ? z.array(z.number().min(1)).min(1, 'At least one preset required')
+                        : z.array(z.number())
+                    }
                   },
                   customAmount: {
                     type: 'field-group',
                     label: 'Custom Amount Range',
                     class: 'grid grid-cols-2 gap-x-3',
-                    visibleWhen: (values) => !!values.enabled,
+                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
                     fields: {
                       min: {
                         type: 'currency',
@@ -263,14 +263,17 @@ export function createFormConfigSection(): FormDef {
                     type: 'text',
                     label: 'Display Label',
                     placeholder: 'Monthly',
-                    visibleWhen: (values) => !!values.enabled,
-                    rules: (values) => enabledString(values, 'Label is required')
+                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
+                    rules: (values) => {
+                      const enabled = values.enabled as boolean | undefined
+                      return enabled ? z.string().min(1, 'Label is required') : z.string()
+                    }
                   },
                   presetAmounts: {
                     type: 'array',
                     label: 'Preset Amounts',
                     description: 'Preset donation amounts (in base currency)',
-                    visibleWhen: (values) => !!values.enabled,
+                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
                     class: 'grid grid-cols-2 gap-2',
                     itemField: {
                       type: 'currency',
@@ -292,13 +295,18 @@ export function createFormConfigSection(): FormDef {
                       }
                     },
                     addButtonText: 'Add Amount',
-                    rules: (values) => enabledPresetAmounts(values)
+                    rules: (values) => {
+                      const enabled = values.enabled as boolean | undefined
+                      return enabled
+                        ? z.array(z.number().min(1)).min(1, 'At least one preset required')
+                        : z.array(z.number())
+                    }
                   },
                   customAmount: {
                     type: 'field-group',
                     label: 'Custom Amount Range',
                     class: 'grid grid-cols-2 gap-x-3',
-                    visibleWhen: (values) => !!values.enabled,
+                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
                     fields: {
                       min: {
                         type: 'currency',
@@ -342,14 +350,17 @@ export function createFormConfigSection(): FormDef {
                     type: 'text',
                     label: 'Display Label',
                     placeholder: 'Yearly',
-                    visibleWhen: (values) => !!values.enabled,
-                    rules: (values) => enabledString(values, 'Label is required')
+                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
+                    rules: (values) => {
+                      const enabled = values.enabled as boolean | undefined
+                      return enabled ? z.string().min(1, 'Label is required') : z.string()
+                    }
                   },
                   presetAmounts: {
                     type: 'array',
                     label: 'Preset Amounts',
                     description: 'Preset donation amounts (in base currency)',
-                    visibleWhen: (values) => !!values.enabled,
+                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
                     class: 'grid grid-cols-2 gap-2',
                     itemField: {
                       type: 'currency',
@@ -371,13 +382,18 @@ export function createFormConfigSection(): FormDef {
                       }
                     },
                     addButtonText: 'Add Amount',
-                    rules: (values) => enabledPresetAmounts(values)
+                    rules: (values) => {
+                      const enabled = values.enabled as boolean | undefined
+                      return enabled
+                        ? z.array(z.number().min(1)).min(1, 'At least one preset required')
+                        : z.array(z.number())
+                    }
                   },
                   customAmount: {
                     type: 'field-group',
                     label: 'Custom Amount Range',
                     class: 'grid grid-cols-2 gap-x-3',
-                    visibleWhen: (values) => !!values.enabled,
+                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
                     fields: {
                       min: {
                         type: 'currency',

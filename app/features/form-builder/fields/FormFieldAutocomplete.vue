@@ -56,10 +56,7 @@ const debounceMs = computed(() => props.meta.debounceMs ?? 300)
 const notFoundText = computed(() => props.meta.notFoundText ?? 'No results found.')
 
 // Resolved field meta (supports dynamic label/description/placeholder)
-const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(
-  props.meta,
-  formValues
-)
+const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(props.meta)
 
 // Fetch options (async or static)
 const fetchOptions = async (query: string) => {

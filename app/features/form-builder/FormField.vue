@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, defineAsyncComponent, type ComputedRef } from 'vue'
+import { computed, inject, defineAsyncComponent } from 'vue'
 import { Field as VeeField } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
@@ -36,20 +36,11 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Inject common form builder context
-const { sectionId, fieldPrefix, parentGroupVisible } = useFormBuilderContext()
-
-// Inject form values for conditional visibility (as ComputedRef for reactivity)
-const formValues = inject<ComputedRef<Record<string, unknown>>>(
-  'formValues',
-  computed(() => ({}))
-)
+// Inject common form builder context (includes formValues via vee-validate)
+const { sectionId, fieldPrefix, formValues, parentGroupVisible } = useFormBuilderContext()
 
 // Inject setFieldValue function from FormRenderer
 const setFieldValue = inject<SetFieldValueFn>('setFieldValue', () => {})
-
-// Check if this field is inside an array (injected by FormFieldArray)
-const isInsideArray = inject<boolean>('isInsideArray', false)
 
 // Resolve the vee-validate field path.
 // - Top-level fields are already passed as `${sectionId}.${fieldKey}` from FormRenderer.
@@ -112,9 +103,6 @@ const handleFieldChange = (value: unknown) => {
     props.meta.onChange(value, formValues.value, setFieldValue)
   }
 }
-
-// Note: We don't reset field values when they become hidden
-// This preserves user input when toggling visibility on/off
 </script>
 
 <template>
@@ -131,7 +119,7 @@ const handleFieldChange = (value: unknown) => {
       <FormFieldText
         v-if="meta.type === 'text'"
         :field="field"
-        :errors="fieldMeta.touched ? errors : []"
+        :errors="errors"
         :meta="meta"
         :name="name"
         :class="cn(props.class)"
@@ -140,7 +128,7 @@ const handleFieldChange = (value: unknown) => {
       <FormFieldTextarea
         v-else-if="meta.type === 'textarea'"
         :field="field"
-        :errors="fieldMeta.touched ? errors : []"
+        :errors="errors"
         :meta="meta"
         :name="name"
         :class="cn(props.class)"
@@ -149,7 +137,7 @@ const handleFieldChange = (value: unknown) => {
       <FormFieldNumber
         v-else-if="meta.type === 'number'"
         :field="field"
-        :errors="fieldMeta.touched || isInsideArray ? errors : []"
+        :errors="errors"
         :meta="meta"
         :name="name"
         :class="cn(props.class)"
@@ -158,7 +146,7 @@ const handleFieldChange = (value: unknown) => {
       <FormFieldCurrency
         v-else-if="meta.type === 'currency'"
         :field="field"
-        :errors="fieldMeta.touched || isInsideArray ? errors : []"
+        :errors="errors"
         :meta="meta"
         :name="name"
         :class="cn(props.class)"
@@ -167,7 +155,7 @@ const handleFieldChange = (value: unknown) => {
       <FormFieldToggle
         v-else-if="meta.type === 'toggle'"
         :field="field"
-        :errors="fieldMeta.touched ? errors : []"
+        :errors="errors"
         :meta="meta"
         :name="name"
         :class="cn(props.class)"
@@ -176,7 +164,7 @@ const handleFieldChange = (value: unknown) => {
       <FormFieldSelect
         v-else-if="meta.type === 'select'"
         :field="field"
-        :errors="fieldMeta.touched ? errors : []"
+        :errors="errors"
         :meta="meta"
         :name="name"
         :class="cn(props.class)"
@@ -185,7 +173,7 @@ const handleFieldChange = (value: unknown) => {
       <FormFieldCombobox
         v-else-if="meta.type === 'combobox'"
         :field="field"
-        :errors="fieldMeta.touched ? errors : []"
+        :errors="errors"
         :meta="meta"
         :name="name"
         :class="cn(props.class)"
@@ -194,7 +182,7 @@ const handleFieldChange = (value: unknown) => {
       <FormFieldAutocomplete
         v-else-if="meta.type === 'autocomplete'"
         :field="field"
-        :errors="fieldMeta.touched ? errors : []"
+        :errors="errors"
         :meta="meta"
         :name="name"
         :field-prefix="fieldPrefix"
@@ -204,7 +192,7 @@ const handleFieldChange = (value: unknown) => {
       <FormFieldRadioGroup
         v-else-if="meta.type === 'radio-group'"
         :field="field"
-        :errors="fieldMeta.touched ? errors : []"
+        :errors="errors"
         :meta="meta"
         :name="name"
         :class="cn(props.class)"
@@ -213,7 +201,7 @@ const handleFieldChange = (value: unknown) => {
       <FormFieldEmoji
         v-else-if="meta.type === 'emoji'"
         :field="field"
-        :errors="fieldMeta.touched ? errors : []"
+        :errors="errors"
         :meta="meta"
         :name="name"
         :class="cn(props.class)"
@@ -222,7 +210,7 @@ const handleFieldChange = (value: unknown) => {
       <FormFieldSlider
         v-else-if="meta.type === 'slider'"
         :field="field"
-        :errors="fieldMeta.touched ? errors : []"
+        :errors="errors"
         :meta="meta"
         :name="name"
         :class="cn(props.class)"

@@ -5,14 +5,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Field, FieldLegend, FieldDescription } from '@/components/ui/field'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
-import type { TabsFieldMeta } from '~/features/form-builder/form-builder-types'
+import type { TabsFieldMeta, FieldGroupMeta } from '~/features/form-builder/form-builder-types'
 import { getRecordAtPath } from '~/features/form-builder/field-path-utils'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useFieldVisibility } from '~/features/form-builder/composables/useFieldVisibility'
 import { useContainerFieldPaths } from '~/features/form-builder/composables/useContainerFieldPaths'
 import { resolveText } from '~/features/form-builder/composables/useResolvedFieldMeta'
-import FormField from '../FormField.vue'
 import { useChildFieldErrors } from '../composables/useChildFieldErrors'
+import FormFieldGroup from './FormFieldGroup.vue'
 
 interface Props {
   meta: TabsFieldMeta
@@ -30,7 +30,7 @@ const {
 } = useFormBuilderContext()
 
 // Compute visibility for this tabs field
-const isTabsVisible = useFieldVisibility(props.meta, formValues, parentGroupVisible)
+const isTabsVisible = useFieldVisibility(props.meta, parentGroupVisible)
 
 provide('parentGroupVisible', () => isTabsVisible.value)
 
@@ -46,25 +46,21 @@ const {
 
 provide('fieldPrefix', currentFieldPrefix.value)
 
+// Provide scoped form values to child fields (as ComputedRef for reactivity)
+// This ensures child FormFieldGroup components can find tab data at the correct path
+const scopedFormValues = computed(() => {
+  const fullValues = formValues.value
+  const tabsValue = getRecordAtPath(fullValues, tabsPath.value)
+  return { ...fullValues, ...(tabsValue || {}) }
+})
+provide('scopedFormValues', scopedFormValues)
+
 // Check if each tab has validation errors in its child fields
 const tabHasErrors = (tabValue: string) => {
   const tabPath = computed(() => `${fullTabsPath.value}.${tabValue}`)
   const { hasChildErrors } = useChildFieldErrors(tabPath)
   return { hasChildErrors }
 }
-
-// Provide scoped form values to child fields (as ComputedRef for reactivity)
-// This merges the full form values with the current tab's data
-// so that visibleWhen conditions inside tabs can access tab-local field values
-const scopedFormValues = computed(() => {
-  const fullValues = formValues.value
-  const tabsValue = getRecordAtPath(fullValues, tabsPath.value) as
-    | Record<string, unknown>
-    | undefined
-  const currentTabData = tabsValue?.[activeTab.value] as Record<string, unknown> | undefined
-  return { ...fullValues, ...(currentTabData || {}) }
-})
-provide('formValues', scopedFormValues)
 
 const resolvedLabel = computed(() => resolveText(props.meta.label, formValues.value))
 
@@ -101,6 +97,7 @@ const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
             >
               <Icon name="lucide:alert-circle" class="h-3 w-3" />
             </Badge>
+
             <!-- Custom badge shown when no errors -->
             <Badge
               v-else-if="resolveTabBadge(tab)"
@@ -112,13 +109,11 @@ const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent v-for="tab in meta.tabs" :key="tab.value" :value="tab.value" class="">
+        <TabsContent v-for="tab in meta.tabs" :key="tab.value" :value="tab.value">
           <Card class="px-4 bg-muted/50">
-            <FormField
-              v-for="[fieldName, fieldMeta] in Object.entries(tab.fields)"
-              :key="fieldName"
-              :name="`${tab.value}.${fieldName}`"
-              :meta="fieldMeta"
+            <FormFieldGroup
+              :name="tab.value"
+              :meta="{ type: 'field-group', fields: tab.fields } as FieldGroupMeta"
             />
           </Card>
         </TabsContent>

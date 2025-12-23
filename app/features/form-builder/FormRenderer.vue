@@ -39,16 +39,6 @@ const { values, meta, setValues, handleSubmit, setFieldValue, setFieldTouched } 
   keepValuesOnUnmount: props.keepValuesOnUnmount
 })
 
-// Provide form values to child fields for conditional visibility
-// Unwrap from section ID prefix to match expected structure
-// Use computed to ensure reactivity - Vue will track access to this value
-const formValuesComputed = computed(() => {
-  const sectionValues = (values as Record<string, unknown>)[props.section.id]
-  return (sectionValues as Record<string, unknown>) || {}
-})
-// Provide as computed ref (not function) for proper reactive dependency tracking
-provide('formValues', formValuesComputed)
-
 // Provide section id so nested fields can resolve absolute vee-validate names
 provide('sectionId', props.section.id)
 

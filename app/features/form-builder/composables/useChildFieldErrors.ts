@@ -34,13 +34,17 @@ export function useChildFieldErrors(containerPath: MaybeRefOrGetter<string>): {
     const resolvedPath = unref(containerPath)
     const errorsObj = formErrors.value
     const values = formValues.value
-    const containerPrefix = `${resolvedPath}.`
+
+    // Match both dot notation children (.field) and bracket notation children ([index])
+    const dotPrefix = `${resolvedPath}.`
+    const bracketPrefix = `${resolvedPath}[`
 
     const filtered: Record<string, string | undefined> = {}
 
     for (const [errorKey, errorValue] of Object.entries(errorsObj)) {
       const hasError = errorValue && errorValue.length > 0
-      const isChild = errorKey.startsWith(containerPrefix)
+      // Check if error is a child using either dot or bracket notation
+      const isChild = errorKey.startsWith(dotPrefix) || errorKey.startsWith(bracketPrefix)
 
       if (!hasError || !isChild) continue
 
@@ -57,7 +61,6 @@ export function useChildFieldErrors(containerPath: MaybeRefOrGetter<string>): {
   })
 
   const hasChildErrors = computed(() => {
-    // Simply check if filtered errors is not empty
     return Object.keys(filteredErrors.value).length > 0
   })
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, watch, nextTick } from 'vue'
-import { useFieldArray } from 'vee-validate'
+import { useFieldArray, useValidateField } from 'vee-validate'
 import { useDragAndDrop } from '@formkit/drag-and-drop/vue'
 import { vAutoAnimate } from '@formkit/auto-animate'
 import { Button } from '@/components/ui/button'
@@ -37,29 +37,19 @@ const resolvedVeeName = computed(() => {
   })
 })
 
-// Provide context that child fields are inside an array
-provide('isInsideArray', true)
-
-// Check if this array itself is inside another array (for nested arrays)
-const parentIsInsideArray = inject<boolean>('isInsideArray', false)
-
 // Check if any child items have validation errors
 // Use resolved vee-validate path to match error keys correctly
 const { hasChildErrors } = useChildFieldErrors(resolvedVeeName)
 
-// Show child error indicator if: touched, inside another array, or has child errors
-const shouldShowChildErrors = computed(() => {
-  return props.touched || parentIsInsideArray || hasChildErrors.value
-})
-
 // Combine own errors with child errors indicator
 const allErrors = computed(() => {
-  // Show child error indicator when appropriate (takes priority for clearer UX)
-  if (shouldShowChildErrors.value && hasChildErrors.value) {
+  // Always show child error indicator when there are child errors (takes priority for clearer UX)
+  // This ensures validation errors from individual fields are communicated at the array level
+  if (hasChildErrors.value) {
     return ['One or more errors above, please fix']
   }
 
-  // Show own array-level validation errors
+  // Show own array-level validation errors (e.g., "at least one item required")
   if (props.errors.length > 0) return props.errors
 
   return []
@@ -69,6 +59,19 @@ const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
 
 // Use vee-validate's useFieldArray for proper array management with error cleanup
 const { fields, push, move, replace } = useFieldArray(resolvedVeeName)
+
+// Get validation function for this array field to handle array-level validation
+const validateArrayField = useValidateField(resolvedVeeName)
+
+// Watch for value changes and trigger array validation to clear stale array-level errors
+// This ensures array-level schemas (like z.array(z.number())) stay in sync
+watch(
+  () => fields.value.map((f) => f.value),
+  () => {
+    validateArrayField()
+  },
+  { deep: true }
+)
 
 // Create array of values for drag-and-drop (synced from vee-validate fields)
 const draggableValues = computed(() => fields.value.map((f) => f.value))
@@ -128,7 +131,12 @@ watch(
 function addItem() {
   let defaultValue: unknown
   if (props.meta.itemField.type === 'field-group') defaultValue = {}
-  else if (props.meta.itemField.type === 'number') defaultValue = undefined
+  else if (
+    props.meta.itemField.type === 'number' ||
+    props.meta.itemField.type === 'currency' ||
+    props.meta.itemField.type === 'slider'
+  )
+    defaultValue = undefined
   else defaultValue = ''
 
   // Use vee-validate's push for proper field registration

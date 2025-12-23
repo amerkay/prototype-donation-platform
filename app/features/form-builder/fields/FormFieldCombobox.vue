@@ -28,10 +28,7 @@ const props = defineProps<Props>()
 
 const { formValues } = useFormBuilderContext()
 
-const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(
-  props.meta,
-  formValues
-)
+const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(props.meta)
 
 const searchValue = ref('')
 const isOpen = ref(false)

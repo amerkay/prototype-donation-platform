@@ -50,7 +50,7 @@ const { setElementRef, scrollToElement } = useScrollOnVisible(
 )
 
 // Compute visibility for this field group
-const isGroupVisible = useFieldVisibility(props.meta, formValues, parentGroupVisible)
+const isGroupVisible = useFieldVisibility(props.meta, parentGroupVisible)
 
 provide('parentGroupVisible', () => isGroupVisible.value)
 
@@ -74,7 +74,7 @@ const scopedFormValues = computed(() => {
   const groupValue = getRecordAtPath(fullValues, groupPath.value)
   return { ...fullValues, ...(groupValue || {}) }
 })
-provide('formValues', scopedFormValues)
+provide('scopedFormValues', scopedFormValues)
 
 // Watch accordion state changes
 watch(isOpen, (newIsOpen) => {

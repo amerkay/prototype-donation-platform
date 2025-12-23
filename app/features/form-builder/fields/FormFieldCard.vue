@@ -11,7 +11,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Inject form values for dynamic descriptions
+// Get form values for dynamic descriptions
 const { formValues } = useFormBuilderContext()
 
 // Resolve description using utility

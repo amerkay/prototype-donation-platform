@@ -1,5 +1,6 @@
-import { computed, inject, type ComputedRef } from 'vue'
+import { computed } from 'vue'
 import type { BaseFieldMeta } from '~/features/form-builder/form-builder-types'
+import { useFormBuilderContext } from './useFormBuilderContext'
 
 type FormValues = Record<string, unknown>
 
@@ -21,21 +22,14 @@ export function resolveText(
 
 /**
  * Composable to resolve dynamic field metadata (label, description, placeholder)
- * Now accepts ComputedRef<FormValues> for proper reactivity
+ * Uses vee-validate's form values via useFormBuilderContext for reactivity
  */
-export function useResolvedFieldMeta(
-  meta: WithResolvableText,
-  formValues?: ComputedRef<FormValues>
-) {
-  const injectedFormValues = inject<ComputedRef<FormValues>>(
-    'formValues',
-    computed(() => ({}))
-  )
-  const values = formValues || injectedFormValues
+export function useResolvedFieldMeta(meta: WithResolvableText) {
+  const { formValues } = useFormBuilderContext()
 
-  const resolvedLabel = computed(() => resolveText(meta.label, values.value))
-  const resolvedDescription = computed(() => resolveText(meta.description, values.value))
-  const resolvedPlaceholder = computed(() => resolveText(meta.placeholder, values.value))
+  const resolvedLabel = computed(() => resolveText(meta.label, formValues.value))
+  const resolvedDescription = computed(() => resolveText(meta.description, formValues.value))
+  const resolvedPlaceholder = computed(() => resolveText(meta.placeholder, formValues.value))
 
   return {
     resolvedLabel,

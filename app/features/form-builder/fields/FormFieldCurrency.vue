@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, type ComputedRef, type HTMLAttributes } from 'vue'
+import { computed, type HTMLAttributes } from 'vue'
 
 import {
   InputGroup,
@@ -8,6 +8,7 @@ import {
   InputGroupText
 } from '@/components/ui/input-group'
 import type { CurrencyFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 import { cn } from '@/lib/utils'
@@ -23,11 +24,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Inject form values for dynamic currencyCode resolution
-const formValues = inject<ComputedRef<Record<string, unknown>>>(
-  'formValues',
-  computed(() => ({}))
-)
+// Get form values for dynamic currencySymbol resolution
+const { formValues } = useFormBuilderContext()
 
 const handleEnterKey = (event: KeyboardEvent) => {
   event.preventDefault()

@@ -17,7 +17,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const { formValues } = useFormBuilderContext()
-const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta, formValues)
+const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
 
 // Resolve dynamic min/max/step values
 const resolvedMin = computed(() => {
