@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
-import type { Product } from '@/lib/common/types'
+import type { Product } from '~/features/donation-form/product/types'
 
 interface Props {
   product: Product

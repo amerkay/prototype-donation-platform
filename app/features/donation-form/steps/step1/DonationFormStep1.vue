@@ -6,14 +6,17 @@ import { useDonationFormStore } from '~/features/donation-form/stores/donationFo
 import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
 import DonationFormSingle from './DonationFormSingle.vue'
 import DonationFormMultiple from './DonationFormMultiple.vue'
-import type { FormConfig, Product, TributeData } from '@/lib/common/types'
+import { useFormConfigStore } from '~/stores/formConfig'
+import type { FullFormConfig } from '~/stores/formConfig'
+import type { Product, TributeData } from '~/features/donation-form/product/types'
 import { formConfig as defaultConfig } from '@/features/donation-form/api-sample-response-form-config'
 
-// Get products from centralized config
-const { products } = useFormConfig()
+// Get products from store
+const configStore = useFormConfigStore()
+const products = configStore.products
 
 interface Props {
-  config?: FormConfig
+  config?: FullFormConfig
 }
 
 const props = defineProps<Props>()
@@ -68,7 +71,7 @@ const BASE_FREQUENCIES = computed(() => {
 
 const ALLOW_MULTIPLE_ITEMS = computed(() => formConfig.value.features.impactCart.enabled)
 const INITIAL_PRODUCTS_DISPLAYED = computed(
-  () => formConfig.value.features.impactCart.initialDisplay
+  () => formConfig.value.features.impactCart.settings.initialDisplay
 )
 
 // Refs
@@ -147,7 +150,7 @@ const sliderMaxPrice = computed(() => {
   return convertPrice(cfg.customAmount.max, selectedCurrency.value)
 })
 
-const rewards = computed(() => products.value.filter((p: Product) => p.isReward))
+const rewards = computed(() => products.filter((p: Product) => p.isReward))
 
 // Helper to cast frequency type safely
 const castFrequency = (freq: string): 'once' | 'monthly' | 'yearly' => {

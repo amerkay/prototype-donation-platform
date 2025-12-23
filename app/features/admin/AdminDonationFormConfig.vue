@@ -7,28 +7,10 @@ import { createProductSelectorConfigSection } from '../donation-form/product-sel
 import { createRewardsConfigSection } from '../donation-form/rewards/forms/rewards-config-form'
 import { createCoverCostsConfigSection } from '../donation-form/cover-costs/forms/cover-costs-config-form'
 import { createTributeConfigSection } from '../donation-form/tribute/forms/tribute-config-form'
-import type { FormConfig } from '@/lib/common/types'
+import { useFormConfigStore } from '~/stores/formConfig'
 
-interface Props {
-  config: FormConfig
-}
-
-const props = defineProps<Props>()
-
-const emit = defineEmits<{
-  'update:config': [value: FormConfig]
-}>()
-
-// Use toRaw to unwrap reactive proxies and make nested arrays mutable
-// Then deep clone to ensure complete mutability without reactive tracking
-const formModelValue = computed(() => {
-  const raw = {
-    form: toRaw(props.config.form),
-    localization: toRaw(props.config.localization),
-    pricing: toRaw(props.config.pricing)
-  }
-  return JSON.parse(JSON.stringify(raw))
-})
+// Get shared reactive config store - mutations propagate automatically
+const store = useFormConfigStore()
 
 // Create all config sections
 const formSection = createFormConfigSection()
@@ -38,155 +20,57 @@ const rewardsSection = createRewardsConfigSection()
 const coverCostsSection = createCoverCostsConfigSection()
 const tributeSection = createTributeConfigSection()
 
-// Update handlers for each section
-function handleFormUpdate(value: Record<string, unknown>) {
-  emit('update:config', {
-    ...props.config,
-    form: value.form as FormConfig['form'],
-    localization: value.localization as FormConfig['localization'],
-    pricing: value.pricing as FormConfig['pricing']
-  })
-}
-
-function handleMultipleProductsUpdate(value: Record<string, unknown>) {
-  const { settings, ...rest } = value
-  emit('update:config', {
-    ...props.config,
-    features: {
-      ...props.config.features,
-      impactCart: {
-        ...rest,
-        ...(settings as Record<string, unknown>)
-      } as FormConfig['features']['impactCart']
+// FormRenderer for 'form' section expects combined form, localization, pricing
+// Use toRaw and deep clone to strip Pinia reactive proxies and make nested arrays mutable
+const formModel = computed({
+  get: () => {
+    const raw = {
+      form: toRaw(store.form),
+      localization: toRaw(store.localization),
+      pricing: toRaw(store.pricing)
     }
-  })
-}
-
-function handleProductSelectorUpdate(value: Record<string, unknown>) {
-  emit('update:config', {
-    ...props.config,
-    features: {
-      ...props.config.features,
-      productSelector: {
-        ...props.config.features.productSelector,
-        ...value
-      } as FormConfig['features']['productSelector']
-    }
-  })
-}
-
-function handleRewardsUpdate(value: Record<string, unknown>) {
-  emit('update:config', {
-    ...props.config,
-    features: {
-      ...props.config.features,
-      rewards: {
-        ...props.config.features.rewards,
-        ...value
-      } as FormConfig['features']['rewards']
-    }
-  })
-}
-
-function handleCoverCostsUpdate(value: Record<string, unknown>) {
-  const { settings, ...rest } = value
-  emit('update:config', {
-    ...props.config,
-    features: {
-      ...props.config.features,
-      coverCosts: {
-        ...rest,
-        ...(settings as Record<string, unknown>)
-      } as FormConfig['features']['coverCosts']
-    }
-  })
-}
-
-function handleTributeUpdate(value: Record<string, unknown>) {
-  emit('update:config', {
-    ...props.config,
-    features: {
-      ...props.config.features,
-      tribute: {
-        ...props.config.features.tribute,
-        ...value
-      } as FormConfig['features']['tribute']
-    }
-  })
-}
+    // Deep clone to ensure nested arrays are mutable
+    return JSON.parse(JSON.stringify(raw))
+  },
+  set: (value: Record<string, unknown>) => {
+    if (value.form) store.form = value.form as typeof store.form
+    if (value.localization) store.localization = value.localization as typeof store.localization
+    if (value.pricing) store.pricing = value.pricing as typeof store.pricing
+  }
+})
 </script>
 
 <template>
-  <div class="w-full mx-auto space-y-6">
+  <div v-if="store.form" class="w-full mx-auto space-y-6">
     <!-- Form Settings (includes form, localization, pricing) -->
     <div class="config-section">
-      <FormRenderer
-        :section="formSection"
-        :model-value="formModelValue"
-        @update:model-value="handleFormUpdate"
-      />
+      <FormRenderer v-model="formModel" :section="formSection" />
     </div>
 
     <!-- Multiple Products -->
-    <div class="config-section">
-      <FormRenderer
-        :section="impactCartSection"
-        :model-value="{
-          enabled: config.features.impactCart.enabled,
-          settings: { initialDisplay: config.features.impactCart.initialDisplay }
-        }"
-        @update:model-value="handleMultipleProductsUpdate"
-      />
+    <div v-if="store.impactCart" class="config-section">
+      <FormRenderer v-model="store.impactCart" :section="impactCartSection" />
     </div>
 
     <!-- Product Selector -->
-    <div class="config-section">
-      <FormRenderer
-        :section="productSelectorSection"
-        :model-value="config.features.productSelector"
-        @update:model-value="handleProductSelectorUpdate"
-      />
+    <div v-if="store.productSelector" class="config-section">
+      <FormRenderer v-model="store.productSelector" :section="productSelectorSection" />
     </div>
 
     <!-- Rewards -->
-    <div class="config-section">
-      <FormRenderer
-        :section="rewardsSection"
-        :model-value="config.features.rewards"
-        @update:model-value="handleRewardsUpdate"
-      />
+    <div v-if="store.rewards" class="config-section">
+      <FormRenderer v-model="store.rewards" :section="rewardsSection" />
     </div>
 
     <!-- Cover Costs -->
-    <div class="config-section">
-      <FormRenderer
-        :section="coverCostsSection"
-        :model-value="{
-          enabled: config.features.coverCosts.enabled,
-          settings: {
-            heading: config.features.coverCosts.heading,
-            description: config.features.coverCosts.description,
-            defaultPercentage: config.features.coverCosts.defaultPercentage
-          }
-        }"
-        @update:model-value="handleCoverCostsUpdate"
-      />
+    <div v-if="store.coverCosts" class="config-section">
+      <FormRenderer v-model="store.coverCosts" :section="coverCostsSection" />
     </div>
 
     <!-- Tribute Settings -->
-    <div class="config-section">
-      <FormRenderer
-        :section="tributeSection"
-        :model-value="config.features.tribute"
-        @update:model-value="handleTributeUpdate"
-      />
+    <div v-if="store.tribute" class="config-section">
+      <FormRenderer v-model="store.tribute" :section="tributeSection" />
     </div>
-
-    <!-- Debug output -->
-    <!-- <div class="mt-8 p-4 bg-muted rounded-lg">
-      <h3 class="text-sm font-semibold mb-2">Current Config (Debug)</h3>
-      <pre class="text-xs overflow-auto max-h-96">{{ JSON.stringify(config, null, 2) }}</pre>
-    </div> -->
   </div>
 </template>
 

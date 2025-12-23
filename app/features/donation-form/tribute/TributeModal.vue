@@ -3,10 +3,11 @@ import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import BaseDialogOrDrawer from '~/features/donation-form/components/BaseDialogOrDrawer.vue'
 import ProductTributeFormGenerated from '~/features/donation-form/tribute/ProductTributeFormGenerated.vue'
-import type { TributeData, FormConfig } from '@/lib/common/types'
+import type { TributeData } from '~/features/donation-form/product/types'
+import type { TributeSettings } from './types'
 
 interface Props {
-  config: FormConfig['features']['tribute']
+  config: TributeSettings
 }
 
 defineProps<Props>()

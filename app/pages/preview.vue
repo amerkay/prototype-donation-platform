@@ -2,10 +2,11 @@
 import DonationFormPreview from '~/features/admin/DonationFormPreview.vue'
 import { formConfig as sampleConfig } from '~/features/donation-form/api-sample-response-form-config'
 import { products as sampleProducts } from '~/features/donation-form/api-sample-response-products'
+import { useFormConfigStore } from '~/stores/formConfig'
 
-// Initialize centralized config
-const { initializeConfig } = useFormConfig()
-initializeConfig(structuredClone(sampleConfig), sampleProducts)
+// Initialize store with config
+const store = useFormConfigStore()
+store.initialize(sampleConfig, sampleProducts)
 </script>
 
 <template>

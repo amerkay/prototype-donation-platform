@@ -2,10 +2,11 @@
 import DonationFormPreview from '~/features/admin/DonationFormPreview.vue'
 import { formConfig as sampleConfig } from '~/features/donation-form/api-sample-response-form-config-pangea'
 import { products as pangeaProducts } from '~/features/donation-form/api-sample-response-products-pangea'
+import { useFormConfigStore } from '~/stores/formConfig'
 
-// Initialize centralized config
-const { initializeConfig } = useFormConfig()
-initializeConfig(structuredClone(sampleConfig), pangeaProducts)
+// Initialize store with config
+const store = useFormConfigStore()
+store.initialize(sampleConfig, pangeaProducts)
 </script>
 
 <template>

@@ -7,7 +7,8 @@ import { donorInfoFormSection } from '../../donor-info/forms/donor-info-form'
 import { addressFormSection } from '../../forms/address-form'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
-import type { Product } from '@/lib/common/types'
+import type { Product } from '~/features/donation-form/product/types'
+import { useFormConfigStore } from '~/stores/formConfig'
 
 interface Props {
   needsShipping: boolean
@@ -19,9 +20,9 @@ const emit = defineEmits<{
   complete: []
 }>()
 
-// Get products from centralized config
-const { products: productsRef } = useFormConfig()
-const products = productsRef
+// Get products from store
+const configStore = useFormConfigStore()
+const products = configStore.products
 
 // Initialize Pinia stores
 const store = useDonationFormStore()
@@ -37,7 +38,7 @@ const shippingCounts = computed(() => {
     store.selectedRewards[store.activeTab as 'once' | 'monthly' | 'yearly' | 'multiple']
   if (currentTabRewards) {
     rewardCount = Array.from(currentTabRewards).filter((id) => {
-      const reward = products.value.find((p: Product) => p.id === id)
+      const reward = products.find((p: Product) => p.id === id)
       return reward?.isShippingRequired
     }).length
   }

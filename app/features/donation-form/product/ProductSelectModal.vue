@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import BaseDialogOrDrawer from '~/features/donation-form/components/BaseDialogOrDrawer.vue'
 import ProductCard from '~/features/donation-form/product/ProductCard.vue'
-import type { Product } from '@/lib/common/types'
+import type { Product } from '~/features/donation-form/product/types'
 
 interface Props {
   currency: string

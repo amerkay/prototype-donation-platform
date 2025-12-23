@@ -34,7 +34,9 @@ export const formConfig = {
   features: {
     impactCart: {
       enabled: true,
-      initialDisplay: 3
+      settings: {
+        initialDisplay: 3
+      }
     },
     productSelector: {
       enabled: true,
@@ -55,10 +57,12 @@ export const formConfig = {
     },
     coverCosts: {
       enabled: true,
-      heading: 'Send 100% to the Orangutans',
-      description:
-        'By covering operational costs, your entire donation protects orangutans and their habitat.',
-      defaultPercentage: 10
+      settings: {
+        heading: 'Send 100% to the Orangutans',
+        description:
+          'By covering operational costs, your entire donation protects orangutans and their habitat.',
+        defaultPercentage: 10
+      }
     },
     tribute: {
       enabled: true,

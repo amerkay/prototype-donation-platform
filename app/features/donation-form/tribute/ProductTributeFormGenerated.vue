@@ -2,11 +2,12 @@
 import { ref, computed } from 'vue'
 import FormRenderer from '@/features/form-builder/FormRenderer.vue'
 import { createTributeFormSection } from '~/features/donation-form/tribute/forms/tribute-form'
-import type { TributeData, FormConfig } from '@/lib/common/types'
+import type { TributeData } from '~/features/donation-form/product/types'
+import type { TributeSettings } from './types'
 
 interface Props {
   modelValue?: TributeData
-  config: FormConfig['features']['tribute']
+  config: TributeSettings
 }
 
 const props = defineProps<Props>()

@@ -1,6 +1,6 @@
 import * as z from 'zod'
 import type { FormDef } from '~/features/form-builder/form-builder-types'
-import type { FormConfig } from '@/lib/common/types'
+import type { TributeSettings } from '../types'
 import { createMessageFields } from '~/features/donation-form/forms/optional-message-field'
 
 /**
@@ -27,7 +27,7 @@ function shouldDefaultSameAsHonoree(allValues: Record<string, unknown>): boolean
  * Form fields, labels, placeholders, and validation are hardcoded here.
  * Only display config (icons, labels, modal title) comes from API config.
  */
-export function createTributeFormSection(config: FormConfig['features']['tribute']): FormDef {
+export function createTributeFormSection(config: TributeSettings): FormDef {
   // Build options based on enabled flags
   const options = [{ value: 'none', label: config.types.none.label }]
   if (config.types.giftEnabled) {

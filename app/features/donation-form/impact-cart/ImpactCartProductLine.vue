@@ -3,7 +3,9 @@ import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import TributeLine from '../tribute/TributeLine.vue'
-import type { CartItem, Product, FormConfig } from '@/lib/common/types'
+import type { Product } from '~/features/donation-form/product/types'
+import type { TributeSettings } from '../tribute/types'
+import type { CartItem } from '../impact-cart/types'
 
 interface Props {
   item: CartItem | Product
@@ -11,7 +13,7 @@ interface Props {
   baseCurrency?: string
   isPulsing?: boolean
   price?: number
-  tributeConfig: FormConfig['features']['tribute']
+  tributeConfig: TributeSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {

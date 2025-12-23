@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
-import type { Product, FormConfig } from '@/lib/common/types'
+import type { Product } from '~/features/donation-form/product/types'
+import type { RewardsSettings } from '~/features/donation-form/rewards/types'
 
 interface Props {
-  rewards: readonly Product[]
+  rewards: Product[]
   selectedRewards: Set<string>
   monthlyTotal?: number
   yearlyTotal?: number
@@ -13,7 +14,7 @@ interface Props {
   baseCurrency?: string
   enabledFrequencies?: Array<'once' | 'monthly' | 'yearly'>
   selectedFrequency?: string
-  rewardsConfig: FormConfig['features']['rewards']
+  rewardsConfig: RewardsSettings
 }
 
 interface Emits {

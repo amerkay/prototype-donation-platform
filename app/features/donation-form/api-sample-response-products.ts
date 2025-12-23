@@ -1,4 +1,4 @@
-import type { Product } from '@/lib/common/types'
+import type { Product } from '~/features/donation-form/product/types'
 
 export const products: Product[] = [
   {

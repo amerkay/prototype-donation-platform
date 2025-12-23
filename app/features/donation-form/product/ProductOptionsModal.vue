@@ -6,14 +6,16 @@ import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import BaseDialogOrDrawer from '~/features/donation-form/components/BaseDialogOrDrawer.vue'
 import AmountSelector from '~/features/donation-form/components/AmountSelector.vue'
 import ProductTributeFormGenerated from '~/features/donation-form/tribute/ProductTributeFormGenerated.vue'
-import type { Product, CartItem, TributeData, FormConfig } from '@/lib/common/types'
+import type { Product } from '~/features/donation-form/product/types'
+import type { PricingSettings } from '~/features/donation-form/types'
+import type { TributeSettings, TributeData } from '~/features/donation-form/tribute/types'
+import type { CartItem } from '~/features/donation-form/impact-cart/types'
 
 interface Props {
   currency: string
   baseCurrency?: string
-  pricingConfig?: FormConfig['pricing']['frequencies']
-
-  tributeConfig?: FormConfig['features']['tribute']
+  pricingConfig?: PricingSettings['frequencies']
+  tributeConfig?: TributeSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {

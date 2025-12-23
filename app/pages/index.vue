@@ -14,10 +14,11 @@ import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { formConfig as sampleConfig } from '~/features/donation-form/api-sample-response-form-config'
 import { products as sampleProducts } from '~/features/donation-form/api-sample-response-products'
+import { useFormConfigStore } from '~/stores/formConfig'
 
-// Initialize centralized config
-const { initializeConfig } = useFormConfig()
-initializeConfig(sampleConfig, sampleProducts)
+// Initialize store with config
+const store = useFormConfigStore()
+store.initialize(sampleConfig, sampleProducts)
 </script>
 
 <template>

@@ -8,7 +8,8 @@ import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNot
 import TributeCard from '~/features/donation-form/tribute/TributeCard.vue'
 import TributeModal from '~/features/donation-form/tribute/TributeModal.vue'
 import ProductSelectorButton from '~/features/donation-form/product-selector/ProductSelectorButton.vue'
-import type { Product, TributeData, FormConfig } from '@/lib/common/types'
+import type { Product, TributeData } from '~/features/donation-form/product/types'
+import type { FullFormConfig } from '~/stores/formConfig'
 
 interface Props {
   frequency: 'once' | 'monthly' | 'yearly'
@@ -18,13 +19,13 @@ interface Props {
   selectedProduct: Product | null
   tributeData: TributeData | undefined
   selectedRewards: Set<string>
-  rewards: readonly Product[]
-  products: readonly Product[]
+  rewards: Product[]
+  products: Product[]
   availableAmounts: number[]
   minPrice: number
   maxPrice: number
   enabledFrequencies: Array<'once' | 'monthly' | 'yearly'>
-  formConfig: FormConfig
+  formConfig: FullFormConfig
 }
 
 const props = defineProps<Props>()

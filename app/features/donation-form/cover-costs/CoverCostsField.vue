@@ -3,10 +3,10 @@ import { computed, onMounted, watch } from 'vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
 import { createCoverCostsField } from './forms/cover-costs-field'
 import { useCoverCostsManager } from './composables/useCoverCostsManager'
-import type { FormConfig } from '@/lib/common/types'
+import type { CoverCostsSettings } from './types'
 
 interface Props {
-  config: FormConfig['features']['coverCosts']
+  config: CoverCostsSettings
 }
 
 const props = defineProps<Props>()

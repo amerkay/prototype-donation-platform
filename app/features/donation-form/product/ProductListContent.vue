@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product } from '@/lib/common/types'
+import type { Product } from '~/features/donation-form/product/types'
 import ProductCard from '@/features/donation-form/product/ProductCard.vue'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'

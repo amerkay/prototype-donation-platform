@@ -6,6 +6,7 @@ import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import { useCoverCostsManager } from '~/features/donation-form/cover-costs/composables/useCoverCostsManager'
+import { useFormConfigStore } from '~/stores/formConfig'
 
 interface Props {
   needsShipping: boolean
@@ -18,8 +19,9 @@ const emit = defineEmits<{
   edit: []
 }>()
 
-// Get shared form config from composable
-const { formConfig } = useFormConfig()
+// Get shared form config from store
+const configStore = useFormConfigStore()
+const formConfig = computed(() => configStore.fullConfig)
 
 const cartStore = useImpactCartStore()
 const store = useDonationFormStore()

@@ -5,7 +5,10 @@ import NextButton from '~/features/donation-form/components/NextButton.vue'
 import RewardsSection from '~/features/donation-form/rewards/RewardsSection.vue'
 import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNotice.vue'
 import ProductOptionsModal from '~/features/donation-form/product/ProductOptionsModal.vue'
-import type { Product, CartItem, TributeData, FormConfig } from '@/lib/common/types'
+import type { Product } from '~/features/donation-form/product/types'
+import type { FullFormConfig } from '~/stores/formConfig'
+import type { CartItem } from '~/features/donation-form/impact-cart/types'
+import type { TributeData } from '~/features/donation-form/tribute/types'
 import { getCartItemKey, parseCartItemKey } from '~/features/donation-form/impact-cart/cart-utils'
 import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
 
@@ -13,12 +16,12 @@ const cartStore = useImpactCartStore()
 
 interface Props {
   currency: string
-  rewards: readonly Product[]
-  products: readonly Product[]
+  rewards: Product[]
+  products: Product[]
   selectedRewards: Set<string>
   enabledFrequencies: Array<'once' | 'monthly' | 'yearly'>
   initialProductsDisplayed: number
-  formConfig: FormConfig
+  formConfig: FullFormConfig
 }
 
 const props = defineProps<Props>()

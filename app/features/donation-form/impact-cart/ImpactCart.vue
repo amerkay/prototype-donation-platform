@@ -3,7 +3,9 @@ import { ref } from 'vue'
 import { ShoppingCart } from 'lucide-vue-next'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import { getCartItemKey } from '~/features/donation-form/impact-cart/cart-utils'
-import type { CartItem, Product, FormConfig } from '@/lib/common/types'
+import type { Product } from '~/features/donation-form/product/types'
+import type { TributeSettings } from '~/features/donation-form/tribute/types'
+import type { CartItem } from '~/features/donation-form/impact-cart/types'
 import CartProductLine from '~/features/donation-form/impact-cart/ImpactCartProductLine.vue'
 import ProductListContent from '~/features/donation-form/product/ProductListContent.vue'
 import BaseDialogOrDrawer from '~/features/donation-form/components/BaseDialogOrDrawer.vue'
@@ -20,7 +22,7 @@ interface Props {
   // Product list props
   products?: Product[]
   initialProductsDisplayed?: number
-  tributeConfig: FormConfig['features']['tribute']
+  tributeConfig: TributeSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {

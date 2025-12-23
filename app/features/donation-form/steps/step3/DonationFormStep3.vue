@@ -8,9 +8,11 @@ import { giftAidFormSection } from '../../gift-aid/forms/gift-aid-declaration-fo
 import { preferencesFormSection } from './forms/preferences-form'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import Separator from '~/components/ui/separator/Separator.vue'
+import { useFormConfigStore } from '~/stores/formConfig'
 
-// Get shared form config from composable
-const { formConfig } = useFormConfig()
+// Get shared form config from store
+const configStore = useFormConfigStore()
+const formConfig = computed(() => configStore.fullConfig)
 
 const emit = defineEmits<{
   complete: []
@@ -148,7 +150,7 @@ const handleNext = () => {
 
     <!-- Cover Costs Field (separate component for dynamic percentage/amount switching) -->
     <div v-if="formConfig?.features.coverCosts.enabled" @click="handleFormClick">
-      <CoverCostsField :config="formConfig.features.coverCosts" />
+      <CoverCostsField :config="formConfig.features.coverCosts.settings" />
     </div>
 
     <Separator />

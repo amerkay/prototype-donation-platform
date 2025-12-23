@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { TributeData, FormConfig } from '@/lib/common/types'
+import type { TributeData } from '~/features/donation-form/product/types'
+import type { TributeSettings } from './types'
 
 interface Props {
   tribute: TributeData
-  config: FormConfig['features']['tribute']
+  config: TributeSettings
 }
 
 const props = defineProps<Props>()

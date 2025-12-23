@@ -3,7 +3,9 @@ import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import CartProductLine from '~/features/donation-form/impact-cart/ImpactCartProductLine.vue'
 import ProductSelectModal from '~/features/donation-form/product/ProductSelectModal.vue'
-import type { Product, FormConfig } from '@/lib/common/types'
+import type { Product } from '~/features/donation-form/product/types'
+import type { ProductSelectorSettings } from '~/features/donation-form/product-selector/types'
+import type { TributeSettings } from '~/features/donation-form/tribute/types'
 
 interface Props {
   frequency: 'once' | 'monthly' | 'yearly'
@@ -12,8 +14,8 @@ interface Props {
   price: number
   selectedProduct: Product | null
   products: Product[]
-  selectorConfig: FormConfig['features']['productSelector']
-  tributeConfig: FormConfig['features']['tribute']
+  selectorConfig: ProductSelectorSettings
+  tributeConfig: TributeSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {

@@ -7,14 +7,16 @@ import DonationFormStep2 from '~/features/donation-form/steps/step2/DonationForm
 import DonationFormStep3 from '~/features/donation-form/steps/step3/DonationFormStep3.vue'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
-import type { FormConfig, Product } from '@/lib/common/types'
+import { useFormConfigStore } from '~/stores/formConfig'
+import type { FullFormConfig } from '~/stores/formConfig'
+import type { Product } from '~/features/donation-form/product/types'
 
-// Get products from centralized config
-const { products: productsRef } = useFormConfig()
-const products = productsRef
+// Get products from store
+const configStore = useFormConfigStore()
+const products = configStore.products
 
 interface Props {
-  config?: FormConfig
+  config?: FullFormConfig
 }
 
 const props = defineProps<Props>()
@@ -42,7 +44,7 @@ const needsShipping = computed(() => {
   const currentTabRewards =
     store.selectedRewards[store.activeTab as 'once' | 'monthly' | 'yearly' | 'multiple']
   return Array.from(currentTabRewards).some((id) => {
-    const reward = products.value.find((p: Product) => p.id === id)
+    const reward = products.find((p: Product) => p.id === id)
     return reward?.isShippingRequired
   })
 })
