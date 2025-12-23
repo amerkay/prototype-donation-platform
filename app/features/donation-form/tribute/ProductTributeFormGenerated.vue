@@ -2,8 +2,7 @@
 import { ref, computed } from 'vue'
 import FormRenderer from '@/features/form-builder/FormRenderer.vue'
 import { createTributeFormSection } from '~/features/donation-form/tribute/forms/tribute-form'
-import type { TributeData } from '~/features/donation-form/product/types'
-import type { TributeSettings } from './types'
+import type { TributeSettings, TributeData } from './types'
 
 interface Props {
   modelValue?: TributeData

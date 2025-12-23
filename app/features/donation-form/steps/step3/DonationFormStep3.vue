@@ -150,7 +150,7 @@ const handleNext = () => {
 
     <!-- Cover Costs Field (separate component for dynamic percentage/amount switching) -->
     <div v-if="formConfig?.features.coverCosts.enabled" @click="handleFormClick">
-      <CoverCostsField :config="formConfig.features.coverCosts.settings" />
+      <CoverCostsField :config="formConfig.features.coverCosts" />
     </div>
 
     <Separator />

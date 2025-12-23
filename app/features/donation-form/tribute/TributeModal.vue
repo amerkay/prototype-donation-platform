@@ -3,8 +3,7 @@ import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import BaseDialogOrDrawer from '~/features/donation-form/components/BaseDialogOrDrawer.vue'
 import ProductTributeFormGenerated from '~/features/donation-form/tribute/ProductTributeFormGenerated.vue'
-import type { TributeData } from '~/features/donation-form/product/types'
-import type { TributeSettings } from './types'
+import type { TributeSettings, TributeData } from './types'
 
 interface Props {
   config: TributeSettings

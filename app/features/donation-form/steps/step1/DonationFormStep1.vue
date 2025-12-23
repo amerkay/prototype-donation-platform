@@ -8,7 +8,8 @@ import DonationFormSingle from './DonationFormSingle.vue'
 import DonationFormMultiple from './DonationFormMultiple.vue'
 import { useFormConfigStore } from '~/stores/formConfig'
 import type { FullFormConfig } from '~/stores/formConfig'
-import type { Product, TributeData } from '~/features/donation-form/product/types'
+import type { Product } from '~/features/donation-form/product/types'
+import type { TributeData } from '~/features/donation-form/tribute/types'
 import { formConfig as defaultConfig } from '@/features/donation-form/api-sample-response-form-config'
 
 // Get products from store

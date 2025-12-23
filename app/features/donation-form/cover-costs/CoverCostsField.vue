@@ -26,8 +26,8 @@ const {
 const formSection = computed(() => ({
   id: 'coverCosts',
   fields: createCoverCostsField({
-    heading: props.config.heading,
-    description: props.config.description
+    heading: props.config.settings.heading,
+    description: props.config.settings.description
   })
 }))
 
@@ -41,8 +41,8 @@ const formData = computed({
 
     // Use default if type doesn't match mode (e.g., stored 3 as 'amount' but now in percentage mode)
     const valueToUse = isTypeMismatch
-      ? getDefaultValue(props.config.defaultPercentage)
-      : storedValue || getDefaultValue(props.config.defaultPercentage)
+      ? getDefaultValue(props.config.settings.defaultPercentage)
+      : storedValue || getDefaultValue(props.config.settings.defaultPercentage)
 
     return {
       donationAmount: donationAmount.value,
@@ -60,7 +60,7 @@ const formData = computed({
 // Reset to default when mode changes
 watch(shouldUsePercentageMode, (newMode, oldMode) => {
   if (oldMode !== undefined && newMode !== oldMode) {
-    setCoverCosts(getDefaultValue(props.config.defaultPercentage))
+    setCoverCosts(getDefaultValue(props.config.settings.defaultPercentage))
   }
 })
 
@@ -71,7 +71,7 @@ onMounted(() => {
   const hasTypeMismatch = coverCostsType.value && coverCostsType.value !== expectedType
 
   if (!coverCostsValue.value || hasTypeMismatch) {
-    setCoverCosts(getDefaultValue(props.config.defaultPercentage))
+    setCoverCosts(getDefaultValue(props.config.settings.defaultPercentage))
   }
 })
 </script>

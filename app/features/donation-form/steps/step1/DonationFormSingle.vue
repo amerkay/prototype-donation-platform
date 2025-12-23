@@ -8,7 +8,8 @@ import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNot
 import TributeCard from '~/features/donation-form/tribute/TributeCard.vue'
 import TributeModal from '~/features/donation-form/tribute/TributeModal.vue'
 import ProductSelectorButton from '~/features/donation-form/product-selector/ProductSelectorButton.vue'
-import type { Product, TributeData } from '~/features/donation-form/product/types'
+import type { Product } from '~/features/donation-form/product/types'
+import type { TributeData } from '~/features/donation-form/tribute/types'
 import type { FullFormConfig } from '~/stores/formConfig'
 
 interface Props {

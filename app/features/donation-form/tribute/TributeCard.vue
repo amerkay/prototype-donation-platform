@@ -2,8 +2,7 @@
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import TributeLine from './TributeLine.vue'
-import type { TributeData } from '~/features/donation-form/product/types'
-import type { TributeSettings } from './types'
+import type { TributeSettings, TributeData } from './types'
 
 interface Props {
   tribute: TributeData
