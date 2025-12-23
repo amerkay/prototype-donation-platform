@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { watch, ref, nextTick, inject } from 'vue'
-import type { Ref } from 'vue'
+import { watch, ref, nextTick } from 'vue'
 import ProgressBar from '~/features/donation-form/components/ProgressBar.vue'
 import OrderSummary from '~/features/donation-form/components/OrderSummary.vue'
 import DonationFormStep1 from '~/features/donation-form/steps/step1/DonationFormStep1.vue'
@@ -8,13 +7,11 @@ import DonationFormStep2 from '~/features/donation-form/steps/step2/DonationForm
 import DonationFormStep3 from '~/features/donation-form/steps/step3/DonationFormStep3.vue'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
-import type { FormConfig, Product } from '~/lib/common/types'
+import type { FormConfig, Product } from '@/lib/common/types'
 
-// Inject products from parent
-const products = inject<Ref<Product[]>>('products')
-if (!products) {
-  throw new Error('products not provided')
-}
+// Get products from centralized config
+const { products: productsRef } = useFormConfig()
+const products = productsRef
 
 interface Props {
   config?: FormConfig

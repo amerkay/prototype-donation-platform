@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, inject } from 'vue'
-import type { Ref } from 'vue'
+import { computed, watch } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CURRENCY_OPTIONS, useCurrency } from '~/features/donation-form/composables/useCurrency'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
@@ -10,11 +9,8 @@ import DonationFormMultiple from './DonationFormMultiple.vue'
 import type { FormConfig, Product, TributeData } from '@/lib/common/types'
 import { formConfig as defaultConfig } from '@/features/donation-form/api-sample-response-form-config'
 
-// Inject products from parent
-const products = inject<Ref<Product[]>>('products')
-if (!products) {
-  throw new Error('products not provided')
-}
+// Get products from centralized config
+const { products } = useFormConfig()
 
 interface Props {
   config?: FormConfig

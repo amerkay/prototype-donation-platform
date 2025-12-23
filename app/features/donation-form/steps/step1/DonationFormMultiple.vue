@@ -13,8 +13,8 @@ const cartStore = useImpactCartStore()
 
 interface Props {
   currency: string
-  rewards: Product[]
-  products: Product[]
+  rewards: readonly Product[]
+  products: readonly Product[]
   selectedRewards: Set<string>
   enabledFrequencies: Array<'once' | 'monthly' | 'yearly'>
   initialProductsDisplayed: number

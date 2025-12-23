@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, inject } from 'vue'
-import type { Ref } from 'vue'
+import { ref, computed } from 'vue'
 import NextButton from '~/features/donation-form/components/NextButton.vue'
 import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNotice.vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
@@ -20,11 +19,9 @@ const emit = defineEmits<{
   complete: []
 }>()
 
-// Inject products from parent
-const products = inject<Ref<Product[]>>('products')
-if (!products) {
-  throw new Error('products not provided')
-}
+// Get products from centralized config
+const { products: productsRef } = useFormConfig()
+const products = productsRef
 
 // Initialize Pinia stores
 const store = useDonationFormStore()

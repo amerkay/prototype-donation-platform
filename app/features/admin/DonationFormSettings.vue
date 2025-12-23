@@ -1,24 +1,19 @@
 <script setup lang="ts">
-import { inject } from 'vue'
-import type { Ref } from 'vue'
 import AdminDonationFormConfig from '@/features/admin/AdminDonationFormConfig.vue'
-import type { FormConfig } from '@/lib/common/types'
 
-// Inject the shared form config from parent
-const formConfig = inject<Ref<FormConfig>>('formConfig')
-
-if (!formConfig) {
-  throw new Error('formConfig not provided')
-}
+// Get shared form config from composable
+const { formConfig, updateConfig } = useFormConfig()
 
 // Handle config updates
-function handleConfigUpdate(value: FormConfig) {
-  if (formConfig) {
-    formConfig.value = value
-  }
+function handleConfigUpdate(value: import('@/lib/common/types').FormConfig) {
+  updateConfig(value)
 }
 </script>
 
 <template>
-  <AdminDonationFormConfig :config="formConfig" @update:config="handleConfigUpdate" />
+  <AdminDonationFormConfig
+    v-if="formConfig"
+    :config="formConfig"
+    @update:config="handleConfigUpdate"
+  />
 </template>

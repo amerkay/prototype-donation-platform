@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, provide } from 'vue'
 import AppSidebar from '~/features/admin/sidebar/AppSidebar.vue'
 import DonationFormSettings from '~/features/admin/DonationFormSettings.vue'
 import DonationFormPreview from '~/features/admin/DonationFormPreview.vue'
@@ -15,15 +14,10 @@ import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { formConfig as sampleConfig } from '~/features/donation-form/api-sample-response-form-config'
 import { products as sampleProducts } from '~/features/donation-form/api-sample-response-products'
-import type { FormConfig, Product } from '@/lib/common/types'
 
-// Create reactive config that both DonationFormSettings and DonationFormPreview will share
-const formConfig = ref<FormConfig>(sampleConfig)
-const products = ref<Product[]>(sampleProducts)
-
-// Provide config and products to all child components
-provide('formConfig', formConfig)
-provide('products', products)
+// Initialize centralized config
+const { initializeConfig } = useFormConfig()
+initializeConfig(sampleConfig, sampleProducts)
 </script>
 
 <template>

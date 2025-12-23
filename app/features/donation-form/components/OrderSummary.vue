@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue'
-import type { Ref } from 'vue'
+import { computed } from 'vue'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import { useCoverCostsManager } from '~/features/donation-form/cover-costs/composables/useCoverCostsManager'
-import type { FormConfig } from '@/lib/common/types'
 
 interface Props {
   needsShipping: boolean
@@ -20,11 +18,8 @@ const emit = defineEmits<{
   edit: []
 }>()
 
-// Inject config from parent
-const formConfig = inject<Ref<FormConfig>>('formConfig')
-if (!formConfig) {
-  throw new Error('formConfig not provided')
-}
+// Get shared form config from composable
+const { formConfig } = useFormConfig()
 
 const cartStore = useImpactCartStore()
 const store = useDonationFormStore()
@@ -43,7 +38,7 @@ const totalAmount = computed(() => {
 
 // Cover costs calculation (only shown from step 3 onwards AND if enabled)
 const displayCoverFeesAmount = computed(() => {
-  if (store.currentStep < 3 || !formConfig.value.features.coverCosts.enabled) return 0
+  if (store.currentStep < 3 || !formConfig.value?.features.coverCosts.enabled) return 0
   return coverCostsAmount.value
 })
 

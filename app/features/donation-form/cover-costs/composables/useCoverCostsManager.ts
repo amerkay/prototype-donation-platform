@@ -74,6 +74,26 @@ export function useCoverCostsManager() {
     return 0
   })
 
+  // Calculate default value based on mode and config
+  function getDefaultValue(defaultPercentage: number): number {
+    if (shouldUsePercentageMode.value) {
+      return defaultPercentage
+    } else {
+      // For fixed amount: 2x percentage as amount, capped at 5
+      const calculatedAmount = (defaultPercentage / 100) * 2 * donationAmount.value
+      return Math.min(calculatedAmount, 5)
+    }
+  }
+
+  // Set cover costs with auto-mode detection
+  function setCoverCosts(value: number) {
+    if (shouldUsePercentageMode.value) {
+      store.setCoverCosts({ type: 'percentage', value })
+    } else {
+      store.setCoverCosts({ type: 'amount', value })
+    }
+  }
+
   // Set cover costs as percentage
   function setCoverCostsPercentage(value: number) {
     store.setCoverCosts({ type: 'percentage', value })
@@ -100,6 +120,8 @@ export function useCoverCostsManager() {
     coverCostsAmount,
 
     // Actions
+    getDefaultValue,
+    setCoverCosts,
     setCoverCostsPercentage,
     setCoverCostsAmount,
     clearCoverCosts

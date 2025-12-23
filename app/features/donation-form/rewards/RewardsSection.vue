@@ -4,7 +4,7 @@ import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import type { Product, FormConfig } from '@/lib/common/types'
 
 interface Props {
-  rewards: Product[]
+  rewards: readonly Product[]
   selectedRewards: Set<string>
   monthlyTotal?: number
   yearlyTotal?: number

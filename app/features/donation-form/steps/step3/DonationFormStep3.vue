@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, inject } from 'vue'
-import type { Ref } from 'vue'
+import { ref, computed } from 'vue'
 import NextButton from '~/features/donation-form/components/NextButton.vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
 import CoverCostsField from '~/features/donation-form/cover-costs/CoverCostsField.vue'
@@ -8,14 +7,10 @@ import CoverCostsUpsellModal from '~/features/donation-form/cover-costs/CoverCos
 import { giftAidFormSection } from '../../gift-aid/forms/gift-aid-declaration-form'
 import { preferencesFormSection } from './forms/preferences-form'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
-import type { FormConfig } from '@/lib/common/types'
 import Separator from '~/components/ui/separator/Separator.vue'
 
-// Inject config from parent
-const formConfig = inject<Ref<FormConfig>>('formConfig')
-if (!formConfig) {
-  throw new Error('formConfig not provided')
-}
+// Get shared form config from composable
+const { formConfig } = useFormConfig()
 
 const emit = defineEmits<{
   complete: []
@@ -149,10 +144,10 @@ const handleNext = () => {
       />
     </div>
 
-    <Separator />
+    <Separator v-if="formConfig?.features.coverCosts.enabled" />
 
     <!-- Cover Costs Field (separate component for dynamic percentage/amount switching) -->
-    <div v-if="formConfig.features.coverCosts.enabled" @click="handleFormClick">
+    <div v-if="formConfig?.features.coverCosts.enabled" @click="handleFormClick">
       <CoverCostsField :config="formConfig.features.coverCosts" />
     </div>
 

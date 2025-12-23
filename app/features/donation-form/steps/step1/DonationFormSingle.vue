@@ -18,8 +18,8 @@ interface Props {
   selectedProduct: Product | null
   tributeData: TributeData | undefined
   selectedRewards: Set<string>
-  rewards: Product[]
-  products: Product[]
+  rewards: readonly Product[]
+  products: readonly Product[]
   availableAmounts: number[]
   minPrice: number
   maxPrice: number
