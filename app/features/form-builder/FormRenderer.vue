@@ -17,10 +17,16 @@ interface Props {
    * @default false
    */
   keepValuesOnUnmount?: boolean
+  /**
+   * Validate all fields immediately on mount.
+   * @default false
+   */
+  validateOnMount?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  keepValuesOnUnmount: false
+  keepValuesOnUnmount: false,
+  validateOnMount: false
 })
 
 const emit = defineEmits<{
@@ -36,7 +42,8 @@ const initialFormValues = computed(() => ({
 // Use the composition API to access form context
 const { values, meta, setValues, handleSubmit, setFieldValue, setFieldTouched } = useForm({
   initialValues: initialFormValues.value,
-  keepValuesOnUnmount: props.keepValuesOnUnmount
+  keepValuesOnUnmount: props.keepValuesOnUnmount,
+  validateOnMount: props.validateOnMount
 })
 
 // Provide section id so nested fields can resolve absolute vee-validate names

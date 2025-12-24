@@ -44,32 +44,36 @@ const formModel = computed({
   <div v-if="store.form" class="w-full mx-auto space-y-6">
     <!-- Form Settings (includes form, localization, pricing) -->
     <div class="config-section">
-      <FormRenderer v-model="formModel" :section="formSection" />
+      <FormRenderer v-model="formModel" :section="formSection" validate-on-mount />
     </div>
 
     <!-- Multiple Products -->
     <div v-if="store.impactCart" class="config-section">
-      <FormRenderer v-model="store.impactCart" :section="impactCartSection" />
+      <FormRenderer v-model="store.impactCart" :section="impactCartSection" validate-on-mount />
     </div>
 
     <!-- Product Selector -->
     <div v-if="store.productSelector" class="config-section">
-      <FormRenderer v-model="store.productSelector" :section="productSelectorSection" />
+      <FormRenderer
+        v-model="store.productSelector"
+        :section="productSelectorSection"
+        validate-on-mount
+      />
     </div>
 
     <!-- Rewards -->
     <div v-if="store.rewards" class="config-section">
-      <FormRenderer v-model="store.rewards" :section="rewardsSection" />
+      <FormRenderer v-model="store.rewards" :section="rewardsSection" validate-on-mount />
     </div>
 
     <!-- Cover Costs -->
     <div v-if="store.coverCosts" class="config-section">
-      <FormRenderer v-model="store.coverCosts" :section="coverCostsSection" />
+      <FormRenderer v-model="store.coverCosts" :section="coverCostsSection" validate-on-mount />
     </div>
 
     <!-- Tribute Settings -->
     <div v-if="store.tribute" class="config-section">
-      <FormRenderer v-model="store.tribute" :section="tributeSection" />
+      <FormRenderer v-model="store.tribute" :section="tributeSection" validate-on-mount />
     </div>
   </div>
 </template>
