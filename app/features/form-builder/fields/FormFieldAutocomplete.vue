@@ -19,7 +19,7 @@ import type {
 } from '~/features/form-builder/form-builder-types'
 import { joinPath } from '~/features/form-builder/field-path-utils'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
-import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -52,13 +52,11 @@ if (props.modelValue) {
   selectedValue.value = props.modelValue
 }
 
-// Computed config values with defaults
-const minQueryLength = computed(() => props.meta.minQueryLength ?? 3)
-const debounceMs = computed(() => props.meta.debounceMs ?? 300)
-const notFoundText = computed(() => props.meta.notFoundText ?? 'No results found.')
-
-// Resolved field meta (supports dynamic label/description/placeholder)
-const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(props.meta)
+const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
+  props.meta,
+  props.name,
+  () => props.errors
+)
 
 // Fetch options (async or static)
 const fetchOptions = async (query: string) => {
@@ -156,19 +154,15 @@ const handleInput = (event: Event) => {
 const handleBlur = () => {
   props.onBlur?.(new Event('blur'))
 }
+
+// Computed config values with defaults
+const minQueryLength = computed(() => props.meta.minQueryLength ?? 3)
+const debounceMs = computed(() => props.meta.debounceMs ?? 300)
+const notFoundText = computed(() => props.meta.notFoundText ?? 'No results found.')
 </script>
 
 <template>
-  <FormFieldWrapper
-    :name="name"
-    :label="resolvedLabel"
-    :description="resolvedDescription"
-    :optional="meta.optional"
-    :errors="errors"
-    :invalid="!!errors.length"
-    :label-class="meta.labelClass"
-    :description-class="meta.descriptionClass"
-  >
+  <FormFieldWrapper v-bind="wrapperProps">
     <ComboboxRoot
       v-model="selectedValue"
       ignore-filter

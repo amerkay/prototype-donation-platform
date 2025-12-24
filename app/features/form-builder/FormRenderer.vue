@@ -91,11 +91,15 @@ const allFields = computed(() => {
   return Object.entries(props.section.fields)
 })
 
+// Extract section values to avoid repeated casting
+const sectionValues = computed(() => {
+  return ((values as Record<string, unknown>)[props.section.id] as Record<string, unknown>) || {}
+})
+
 // Track which fields are visible for separator logic
 const isFieldVisible = (fieldMeta: (typeof props.section.fields)[string]) => {
   if (!fieldMeta.visibleWhen) return true
-  const sectionValues = (values as Record<string, unknown>)[props.section.id]
-  return fieldMeta.visibleWhen((sectionValues as Record<string, unknown>) || {})
+  return fieldMeta.visibleWhen(sectionValues.value)
 }
 
 // Check if there's any visible field before the current index
@@ -132,8 +136,7 @@ const isLastVisibleField = (currentIndex: number) => {
 const { setElementRef } = useScrollOnVisible(allFields, {
   isVisible: ([, fieldMeta]) => {
     if (!fieldMeta.visibleWhen) return true
-    const sectionValues = (values as Record<string, unknown>)[props.section.id]
-    return fieldMeta.visibleWhen((sectionValues as Record<string, unknown>) || {})
+    return fieldMeta.visibleWhen(sectionValues.value)
   },
   getKey: ([key]) => key
 })
@@ -159,8 +162,9 @@ watch(
   values,
   (newValues) => {
     if (!isUpdatingFromProp) {
-      const sectionValues = (newValues as Record<string, unknown>)[props.section.id]
-      emit('update:modelValue', (sectionValues as Record<string, unknown>) || {})
+      const currentSectionValues =
+        ((newValues as Record<string, unknown>)[props.section.id] as Record<string, unknown>) || {}
+      emit('update:modelValue', currentSectionValues)
     }
   },
   { deep: true }
@@ -168,8 +172,10 @@ watch(
 
 // Handle form submission
 const onSubmit = handleSubmit((submittedValues) => {
-  const sectionValues = (submittedValues as Record<string, unknown>)[props.section.id]
-  emit('update:modelValue', (sectionValues as Record<string, unknown>) || {})
+  const currentSectionValues =
+    ((submittedValues as Record<string, unknown>)[props.section.id] as Record<string, unknown>) ||
+    {}
+  emit('update:modelValue', currentSectionValues)
   emit('submit')
 })
 

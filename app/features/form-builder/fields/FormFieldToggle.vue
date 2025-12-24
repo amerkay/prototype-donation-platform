@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Switch } from '@/components/ui/switch'
 import type { ToggleFieldMeta } from '~/features/form-builder/form-builder-types'
-import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -17,7 +17,9 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
 }>()
 
-const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
+const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors, {
+  orientation: 'horizontal'
+})
 
 const handleChange = (value: boolean) => {
   emit('update:modelValue', value)
@@ -25,17 +27,7 @@ const handleChange = (value: boolean) => {
 </script>
 
 <template>
-  <FormFieldWrapper
-    :name="name"
-    :label="resolvedLabel"
-    :description="resolvedDescription"
-    :optional="meta.optional"
-    :errors="errors"
-    :invalid="!!errors.length"
-    orientation="horizontal"
-    :label-class="meta.labelClass"
-    :description-class="meta.descriptionClass"
-  >
+  <FormFieldWrapper v-bind="wrapperProps">
     <Switch
       :id="name"
       :model-value="modelValue"

@@ -9,7 +9,7 @@ import {
   FieldTitle
 } from '@/components/ui/field'
 import type { RadioGroupFieldMeta } from '~/features/form-builder/form-builder-types'
-import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldSetWrapper from '~/features/form-builder/components/FormFieldSetWrapper.vue'
 
 interface Props {
@@ -25,7 +25,9 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | number]
 }>()
 
-const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
+const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors, {
+  variant: 'fieldset'
+})
 
 const handleChange = (value: string | number) => {
   emit('update:modelValue', value)
@@ -33,15 +35,7 @@ const handleChange = (value: string | number) => {
 </script>
 
 <template>
-  <FormFieldSetWrapper
-    :legend="resolvedLabel"
-    :description="resolvedDescription"
-    :optional="meta.optional"
-    :errors="errors"
-    :invalid="!!errors.length"
-    :legend-class="meta.labelClass"
-    :description-class="meta.descriptionClass"
-  >
+  <FormFieldSetWrapper v-bind="wrapperProps">
     <RadioGroup
       :name="name"
       :model-value="modelValue"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Textarea } from '@/components/ui/textarea'
 import type { TextareaFieldMeta } from '~/features/form-builder/form-builder-types'
-import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -17,7 +17,11 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | number | undefined]
 }>()
 
-const { resolvedLabel, resolvedPlaceholder } = useResolvedFieldMeta(props.meta)
+const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
+  props.meta,
+  props.name,
+  () => props.errors
+)
 
 const handleChange = (value: string | number | undefined) => {
   emit('update:modelValue', value)
@@ -25,14 +29,7 @@ const handleChange = (value: string | number | undefined) => {
 </script>
 
 <template>
-  <FormFieldWrapper
-    :name="name"
-    :label="resolvedLabel"
-    :optional="meta.optional"
-    :errors="errors"
-    :invalid="!!errors.length"
-    :label-class="meta.labelClass"
-  >
+  <FormFieldWrapper v-bind="wrapperProps">
     <Textarea
       :id="name"
       :model-value="modelValue"

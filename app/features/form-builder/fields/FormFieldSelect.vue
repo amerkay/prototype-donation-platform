@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import type { SelectFieldMeta } from '~/features/form-builder/form-builder-types'
-import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -18,7 +18,11 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | number]
 }>()
 
-const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(props.meta)
+const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
+  props.meta,
+  props.name,
+  () => props.errors
+)
 
 const selectValue = computed({
   get: () => props.modelValue,
@@ -33,16 +37,7 @@ const selectValue = computed({
 </script>
 
 <template>
-  <FormFieldWrapper
-    :name="name"
-    :label="resolvedLabel"
-    :description="resolvedDescription"
-    :optional="meta.optional"
-    :errors="errors"
-    :invalid="!!errors.length"
-    :label-class="meta.labelClass"
-    :description-class="meta.descriptionClass"
-  >
+  <FormFieldWrapper v-bind="wrapperProps">
     <NativeSelect
       :id="name"
       v-model="selectValue"

@@ -9,7 +9,10 @@ import {
 } from '@/components/ui/input-group'
 import type { CurrencyFieldMeta } from '~/features/form-builder/form-builder-types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
-import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import {
+  useFieldWrapper,
+  preventEnterSubmit
+} from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 import { cn } from '@/lib/utils'
 
@@ -30,11 +33,7 @@ const emit = defineEmits<{
 // Get form values for dynamic currencySymbol resolution
 const { formValues } = useFormBuilderContext()
 
-const handleEnterKey = (event: KeyboardEvent) => {
-  event.preventDefault()
-}
-
-const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
+const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors)
 
 // Resolve currency symbol dynamically
 const currencySymbol = computed(() => {
@@ -56,16 +55,7 @@ const handleUpdate = (value: string | number) => {
 </script>
 
 <template>
-  <FormFieldWrapper
-    :name="name"
-    :label="resolvedLabel"
-    :description="resolvedDescription"
-    :optional="meta.optional"
-    :errors="errors"
-    :invalid="!!errors.length"
-    :label-class="meta.labelClass"
-    :description-class="meta.descriptionClass"
-  >
+  <FormFieldWrapper v-bind="wrapperProps">
     <InputGroup :class="cn(props.class, meta.class)">
       <InputGroupAddon>
         <InputGroupText>{{ currencySymbol }}</InputGroupText>
@@ -81,7 +71,7 @@ const handleUpdate = (value: string | number) => {
         :aria-invalid="!!errors.length"
         @update:model-value="handleUpdate"
         @blur="onBlur"
-        @keydown.enter="handleEnterKey"
+        @keydown.enter="preventEnterSubmit"
       />
     </InputGroup>
   </FormFieldWrapper>

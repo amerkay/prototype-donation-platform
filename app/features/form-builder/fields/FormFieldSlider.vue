@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { Slider } from '@/components/ui/slider'
 import type { SliderFieldMeta } from '~/features/form-builder/form-builder-types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
-import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -20,7 +20,7 @@ const emit = defineEmits<{
 }>()
 
 const { formValues } = useFormBuilderContext()
-const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
+const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors)
 
 // Resolve dynamic min/max/step values
 const resolvedMin = computed(() => {
@@ -68,16 +68,7 @@ const handleSliderChange = (value: number[] | undefined) => {
 </script>
 
 <template>
-  <FormFieldWrapper
-    :name="name"
-    :label="resolvedLabel"
-    :description="resolvedDescription"
-    :optional="meta.optional"
-    :errors="errors"
-    :invalid="!!errors.length"
-    :label-class="meta.labelClass"
-    :description-class="meta.descriptionClass"
-  >
+  <FormFieldWrapper v-bind="wrapperProps">
     <div class="space-y-3">
       <!-- Formatted value display -->
       <div class="flex items-center justify-between">

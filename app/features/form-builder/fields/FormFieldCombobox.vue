@@ -13,7 +13,7 @@ import { Check, ChevronsUpDown } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import type { ComboboxFieldMeta } from '~/features/form-builder/form-builder-types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
-import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -31,7 +31,11 @@ const emit = defineEmits<{
 
 const { formValues } = useFormBuilderContext()
 
-const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(props.meta)
+const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
+  props.meta,
+  props.name,
+  () => props.errors
+)
 
 const searchValue = ref('')
 const isOpen = ref(false)
@@ -134,17 +138,7 @@ const removeBadge = (value: string | number, event: Event) => {
 </script>
 
 <template>
-  <FormFieldWrapper
-    :name="name"
-    :label="resolvedLabel"
-    :description="resolvedDescription"
-    :optional="meta.optional"
-    :errors="errors"
-    :invalid="!!errors.length"
-    :label-class="meta.labelClass"
-    :description-class="meta.descriptionClass"
-    :disable-label-for="true"
-  >
+  <FormFieldWrapper v-bind="wrapperProps" :disable-label-for="true">
     <ComboboxRoot
       v-model="modelValue"
       v-model:open="isOpen"

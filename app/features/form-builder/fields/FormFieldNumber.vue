@@ -7,7 +7,10 @@ import {
   NumberFieldInput
 } from '@/components/ui/number-field'
 import type { NumberFieldMeta } from '~/features/form-builder/form-builder-types'
-import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import {
+  useFieldWrapper,
+  preventEnterSubmit
+} from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -23,11 +26,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: number | null | undefined]
 }>()
 
-const handleEnterKey = (event: KeyboardEvent) => {
-  event.preventDefault()
-}
-
-const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
+const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors)
 
 const handleChange = (value: number | null | undefined) => {
   emit('update:modelValue', value)
@@ -35,19 +34,10 @@ const handleChange = (value: number | null | undefined) => {
 </script>
 
 <template>
-  <FormFieldWrapper
-    :name="name"
-    :label="resolvedLabel"
-    :description="resolvedDescription"
-    :optional="meta.optional"
-    :errors="errors"
-    :invalid="!!errors.length"
-    :label-class="meta.labelClass"
-    :description-class="meta.descriptionClass"
-  >
+  <FormFieldWrapper v-bind="wrapperProps">
     <NumberField
       :id="name"
-      :model-value="numberValue"
+      :model-value="modelValue"
       :min="meta.min"
       :max="meta.max"
       :step="meta.step"
@@ -58,7 +48,7 @@ const handleChange = (value: number | null | undefined) => {
         <NumberFieldInput
           :aria-invalid="!!errors.length"
           :class="meta.class"
-          @keydown.enter="handleEnterKey"
+          @keydown.enter="preventEnterSubmit"
         />
         <NumberFieldIncrement />
       </NumberFieldContent>

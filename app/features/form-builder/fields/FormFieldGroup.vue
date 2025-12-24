@@ -1,18 +1,14 @@
 <script setup lang="ts">
-import { ref, watch, computed, inject, provide, type Ref } from 'vue'
+import { ref, watch, computed, inject, type Ref } from 'vue'
 import { cn } from '@/lib/utils'
 import { FieldSet, FieldLegend, FieldDescription } from '@/components/ui/field'
 import { AccordionItem, AccordionContent, AccordionTrigger } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
 import type { FieldGroupMeta } from '~/features/form-builder/form-builder-types'
-import { getRecordAtPath } from '~/features/form-builder/field-path-utils'
-import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
-import { useFieldVisibility } from '~/features/form-builder/composables/useFieldVisibility'
-import { useContainerFieldPaths } from '~/features/form-builder/composables/useContainerFieldPaths'
 import { resolveText } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useContainerFieldSetup } from '~/features/form-builder/composables/useContainerFieldSetup'
 import FormField from '../FormField.vue'
 import { useScrollOnVisible } from '../composables/useScrollOnVisible'
-import { useChildFieldErrors } from '../composables/useChildFieldErrors'
 
 interface Props {
   meta: FieldGroupMeta
@@ -21,13 +17,12 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Inject common form builder context
+// Use unified container setup composable
 const {
-  sectionId,
-  fieldPrefix: parentFieldPrefix,
-  formValues,
-  parentGroupVisible
-} = useFormBuilderContext()
+  isVisible: isGroupVisible,
+  hasChildErrors,
+  formValues
+} = useContainerFieldSetup(props.name, props.meta.visibleWhen)
 
 // Get accordion state from parent (FormRenderer)
 const accordionValue = inject<Ref<string | undefined>>('accordionValue', ref(undefined))
@@ -48,33 +43,6 @@ const { setElementRef, scrollToElement } = useScrollOnVisible(
     getKey: (key) => key
   }
 )
-
-// Compute visibility for this field group
-const isGroupVisible = useFieldVisibility(props.meta, parentGroupVisible)
-
-provide('parentGroupVisible', () => isGroupVisible.value)
-
-// Compute paths for this container field
-const {
-  relativePath: groupPath,
-  currentFieldPrefix,
-  fullPath: fullGroupPath
-} = useContainerFieldPaths(props.name, sectionId, parentFieldPrefix)
-
-// Check if any child fields have validation errors
-// Re-evaluate when accordion state changes to ensure fresh error state
-const { hasChildErrors } = useChildFieldErrors(fullGroupPath)
-
-// Provide the cumulative prefix to child fields
-provide('fieldPrefix', currentFieldPrefix.value)
-
-// Provide scoped form values to child fields (as ComputedRef for reactivity)
-const scopedFormValues = computed(() => {
-  const fullValues = formValues.value
-  const groupValue = getRecordAtPath(fullValues, groupPath.value)
-  return { ...fullValues, ...(groupValue || {}) }
-})
-provide('scopedFormValues', scopedFormValues)
 
 // Watch accordion state changes
 watch(isOpen, (newIsOpen) => {

@@ -2,7 +2,10 @@
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import type { TextFieldMeta } from '~/features/form-builder/form-builder-types'
-import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import {
+  useFieldWrapper,
+  preventEnterSubmit
+} from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
@@ -18,26 +21,19 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | number | undefined]
 }>()
 
-const { resolvedLabel, resolvedPlaceholder } = useResolvedFieldMeta(props.meta)
+const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
+  props.meta,
+  props.name,
+  () => props.errors
+)
 
 const handleChange = (value: string | number | undefined) => {
   emit('update:modelValue', value)
 }
-
-const handleEnterKey = (event: KeyboardEvent) => {
-  event.preventDefault()
-}
 </script>
 
 <template>
-  <FormFieldWrapper
-    :name="name"
-    :label="resolvedLabel"
-    :optional="meta.optional"
-    :errors="errors"
-    :invalid="!!errors.length"
-    :label-class="meta.labelClass"
-  >
+  <FormFieldWrapper v-bind="wrapperProps">
     <Input
       :id="name"
       :model-value="modelValue"
@@ -47,7 +43,7 @@ const handleEnterKey = (event: KeyboardEvent) => {
       :class="cn(meta.class, 'text-sm')"
       @update:model-value="handleChange"
       @blur="onBlur"
-      @keydown.enter="handleEnterKey"
+      @keydown.enter="preventEnterSubmit"
     />
   </FormFieldWrapper>
 </template>
