@@ -17,24 +17,18 @@ import type {
   AutocompleteOption,
   SetFieldValueFn
 } from '~/features/form-builder/form-builder-types'
+import type { FieldProps, FieldEmits } from './shared-field-types'
 import { joinPath } from '~/features/form-builder/field-path-utils'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
-interface Props {
-  modelValue?: AutocompleteOption | null
-  errors: string[]
-  meta: AutocompleteFieldMeta
-  name: string
+interface Props extends FieldProps<AutocompleteOption | null, AutocompleteFieldMeta> {
   fieldPrefix?: string
-  onBlur?: (e?: Event) => void
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits<{
-  'update:modelValue': [value: AutocompleteOption | null]
-}>()
+const emit = defineEmits<FieldEmits<AutocompleteOption | null>>()
 
 // Inject form values and setFieldValue from context
 // Note: If inside a field-group, formValues are already scoped to the group
@@ -57,6 +51,10 @@ const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
   props.name,
   () => props.errors
 )
+
+// Configuration computed values
+const minQueryLength = computed(() => props.meta.minQueryLength ?? 3)
+const debounceMs = computed(() => props.meta.debounceMs ?? 300)
 
 // Fetch options (async or static)
 const fetchOptions = async (query: string) => {
@@ -155,9 +153,7 @@ const handleBlur = () => {
   props.onBlur?.(new Event('blur'))
 }
 
-// Computed config values with defaults
-const minQueryLength = computed(() => props.meta.minQueryLength ?? 3)
-const debounceMs = computed(() => props.meta.debounceMs ?? 300)
+// Additional config values with defaults
 const notFoundText = computed(() => props.meta.notFoundText ?? 'No results found.')
 </script>
 

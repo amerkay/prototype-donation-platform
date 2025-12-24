@@ -7,30 +7,19 @@ import {
   NumberFieldInput
 } from '@/components/ui/number-field'
 import type { NumberFieldMeta } from '~/features/form-builder/form-builder-types'
+import type { FieldProps, FieldEmits } from './shared-field-types'
 import {
   useFieldWrapper,
   preventEnterSubmit
 } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
-interface Props {
-  modelValue?: number | null
-  errors: string[]
-  meta: NumberFieldMeta
-  name: string
-  onBlur?: (e?: Event) => void
-}
+type Props = FieldProps<number | null, NumberFieldMeta>
 
 const props = defineProps<Props>()
-const emit = defineEmits<{
-  'update:modelValue': [value: number | null | undefined]
-}>()
+defineEmits<FieldEmits<number | null | undefined>>()
 
 const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors)
-
-const handleChange = (value: number | null | undefined) => {
-  emit('update:modelValue', value)
-}
 </script>
 
 <template>
@@ -41,7 +30,7 @@ const handleChange = (value: number | null | undefined) => {
       :min="meta.min"
       :max="meta.max"
       :step="meta.step"
-      @update:model-value="handleChange"
+      @update:model-value="$emit('update:modelValue', $event)"
     >
       <NumberFieldContent>
         <NumberFieldDecrement />

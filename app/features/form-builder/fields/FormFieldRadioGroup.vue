@@ -9,39 +9,28 @@ import {
   FieldTitle
 } from '@/components/ui/field'
 import type { RadioGroupFieldMeta } from '~/features/form-builder/form-builder-types'
+import type { FieldProps, FieldEmits } from './shared-field-types'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
-import FormFieldSetWrapper from '~/features/form-builder/components/FormFieldSetWrapper.vue'
+import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
-interface Props {
-  modelValue?: string | number
-  errors: string[]
-  meta: RadioGroupFieldMeta
-  name: string
-  onBlur?: (e?: Event) => void
-}
+type Props = FieldProps<string | number, RadioGroupFieldMeta>
 
 const props = defineProps<Props>()
-const emit = defineEmits<{
-  'update:modelValue': [value: string | number]
-}>()
+defineEmits<FieldEmits<string | number>>()
 
 const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors, {
   variant: 'fieldset'
 })
-
-const handleChange = (value: string | number) => {
-  emit('update:modelValue', value)
-}
 </script>
 
 <template>
-  <FormFieldSetWrapper v-bind="wrapperProps">
+  <FormFieldWrapper v-bind="wrapperProps">
     <RadioGroup
       :name="name"
       :model-value="modelValue"
       :aria-invalid="!!errors.length"
       :class="cn(meta.class, 'gap-4')"
-      @update:model-value="handleChange"
+      @update:model-value="$emit('update:modelValue', $event)"
     >
       <FieldLabel
         v-for="option in meta.options"
@@ -61,5 +50,5 @@ const handleChange = (value: string | number) => {
         </Field>
       </FieldLabel>
     </RadioGroup>
-  </FormFieldSetWrapper>
+  </FormFieldWrapper>
 </template>

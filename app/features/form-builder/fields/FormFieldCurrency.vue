@@ -8,6 +8,7 @@ import {
   InputGroupText
 } from '@/components/ui/input-group'
 import type { CurrencyFieldMeta } from '~/features/form-builder/form-builder-types'
+import type { FieldProps, FieldEmits } from './shared-field-types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import {
   useFieldWrapper,
@@ -16,19 +17,12 @@ import {
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 import { cn } from '@/lib/utils'
 
-interface Props {
-  modelValue?: number | string | null
-  errors: string[]
-  meta: CurrencyFieldMeta
-  name: string
-  onBlur?: (e?: Event) => void
+interface Props extends FieldProps<number | string | null, CurrencyFieldMeta> {
   class?: HTMLAttributes['class']
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits<{
-  'update:modelValue': [value: number | string]
-}>()
+const emit = defineEmits<FieldEmits<number | string>>()
 
 // Get form values for dynamic currencySymbol resolution
 const { formValues } = useFormBuilderContext()

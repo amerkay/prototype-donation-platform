@@ -2,21 +2,14 @@
 import { computed } from 'vue'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import type { SelectFieldMeta } from '~/features/form-builder/form-builder-types'
+import type { FieldProps, FieldEmits } from './shared-field-types'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
-interface Props {
-  modelValue?: string | number
-  errors: string[]
-  meta: SelectFieldMeta
-  name: string
-  onBlur?: (e?: Event) => void
-}
+type Props = FieldProps<string | number, SelectFieldMeta>
 
 const props = defineProps<Props>()
-const emit = defineEmits<{
-  'update:modelValue': [value: string | number]
-}>()
+const emit = defineEmits<FieldEmits<string | number>>()
 
 const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
   props.meta,

@@ -3,22 +3,15 @@ import { computed, onMounted, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-vue-next'
 import type { EmojiFieldMeta } from '~/features/form-builder/form-builder-types'
+import type { FieldProps, FieldEmits } from './shared-field-types'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 import EmojiPicker from '../components/EmojiPicker.vue'
 
-interface Props {
-  modelValue?: string
-  errors: string[]
-  meta: EmojiFieldMeta
-  name: string
-  onBlur?: (e?: Event) => void
-}
+type Props = FieldProps<string, EmojiFieldMeta>
 
 const props = defineProps<Props>()
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
+const emit = defineEmits<FieldEmits<string>>()
 
 const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors)
 
@@ -27,12 +20,6 @@ const selectedEmoji = computed(() => props.modelValue)
 
 const handleEmojiSelect = (emoji: string) => {
   emit('update:modelValue', emoji)
-  // Trigger validation by calling onBlur if provided
-  props.onBlur?.(new Event('blur'))
-}
-
-const clearEmoji = () => {
-  emit('update:modelValue', '')
   // Trigger validation by calling onBlur if provided
   props.onBlur?.(new Event('blur'))
 }
@@ -56,20 +43,19 @@ onMounted(() => {
       />
 
       <div v-if="selectedEmoji" class="flex items-center gap-2 flex-1">
-        <Button
-          variant="outline"
-          class="text-2xl h-10 px-3"
-          aria-label="Change emoji"
-          @click="pickerOpen = true"
-        >
-          {{ selectedEmoji }}
+        <Button type="button" variant="outline" size="lg" @click="pickerOpen = true">
+          <span class="text-2xl">{{ selectedEmoji }}</span>
         </Button>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
-          class="h-10 w-10"
-          aria-label="Clear emoji"
-          @click="clearEmoji"
+          @click="
+            () => {
+              $emit('update:modelValue', '')
+              onBlur?.()
+            }
+          "
         >
           <X class="h-4 w-4" />
         </Button>

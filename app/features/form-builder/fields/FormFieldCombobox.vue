@@ -12,22 +12,15 @@ import {
 import { Check, ChevronsUpDown } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import type { ComboboxFieldMeta } from '~/features/form-builder/form-builder-types'
+import type { FieldProps, FieldEmits } from './shared-field-types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
-interface Props {
-  modelValue?: string | number | (string | number)[]
-  errors: string[]
-  meta: ComboboxFieldMeta
-  name: string
-  onBlur?: (e?: Event) => void
-}
+type Props = FieldProps<string | number | (string | number)[], ComboboxFieldMeta>
 
 const props = defineProps<Props>()
-const emit = defineEmits<{
-  'update:modelValue': [value: string | number | (string | number)[]]
-}>()
+const emit = defineEmits<FieldEmits<string | number | (string | number)[]>>()
 
 const { formValues } = useFormBuilderContext()
 

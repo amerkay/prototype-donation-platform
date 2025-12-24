@@ -1,31 +1,20 @@
 <script setup lang="ts">
 import { Textarea } from '@/components/ui/textarea'
 import type { TextareaFieldMeta } from '~/features/form-builder/form-builder-types'
+import type { FieldProps, FieldEmits } from './shared-field-types'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
-interface Props {
-  modelValue?: string | number
-  errors: string[]
-  meta: TextareaFieldMeta
-  name: string
-  onBlur?: (e?: Event) => void
-}
+type Props = FieldProps<string | number, TextareaFieldMeta>
 
 const props = defineProps<Props>()
-const emit = defineEmits<{
-  'update:modelValue': [value: string | number | undefined]
-}>()
+defineEmits<FieldEmits<string | number | undefined>>()
 
 const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors
 )
-
-const handleChange = (value: string | number | undefined) => {
-  emit('update:modelValue', value)
-}
 </script>
 
 <template>
@@ -38,7 +27,7 @@ const handleChange = (value: string | number | undefined) => {
       :maxlength="meta.maxLength"
       :aria-invalid="!!errors.length"
       :class="meta.class"
-      @update:model-value="handleChange"
+      @update:model-value="$emit('update:modelValue', $event)"
       @blur="onBlur"
     />
   </FormFieldWrapper>

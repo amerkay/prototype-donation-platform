@@ -1,29 +1,18 @@
 <script setup lang="ts">
 import { Switch } from '@/components/ui/switch'
 import type { ToggleFieldMeta } from '~/features/form-builder/form-builder-types'
+import type { FieldProps, FieldEmits } from './shared-field-types'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
-interface Props {
-  modelValue?: boolean
-  errors: string[]
-  meta: ToggleFieldMeta
-  name: string
-  onBlur?: (e?: Event) => void
-}
+type Props = FieldProps<boolean, ToggleFieldMeta>
 
 const props = defineProps<Props>()
-const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
-}>()
+defineEmits<FieldEmits<boolean>>()
 
 const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors, {
   orientation: 'horizontal'
 })
-
-const handleChange = (value: boolean) => {
-  emit('update:modelValue', value)
-}
 </script>
 
 <template>
@@ -32,7 +21,7 @@ const handleChange = (value: boolean) => {
       :id="name"
       :model-value="modelValue"
       :class="meta.class"
-      @update:model-value="handleChange"
+      @update:model-value="$emit('update:modelValue', $event)"
     />
   </FormFieldWrapper>
 </template>

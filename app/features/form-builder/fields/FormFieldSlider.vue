@@ -2,22 +2,15 @@
 import { computed } from 'vue'
 import { Slider } from '@/components/ui/slider'
 import type { SliderFieldMeta } from '~/features/form-builder/form-builder-types'
+import type { FieldProps, FieldEmits } from './shared-field-types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
-interface Props {
-  modelValue?: number
-  errors: string[]
-  meta: SliderFieldMeta
-  name: string
-  onBlur?: (e?: Event) => void
-}
+type Props = FieldProps<number, SliderFieldMeta>
 
 const props = defineProps<Props>()
-const emit = defineEmits<{
-  'update:modelValue': [value: number]
-}>()
+const emit = defineEmits<FieldEmits<number>>()
 
 const { formValues } = useFormBuilderContext()
 const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors)

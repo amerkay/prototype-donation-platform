@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed, inject, type Component } from 'vue'
 import { useField, useFormErrors } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
@@ -31,6 +31,26 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Component registry - maps field types to their components
+const FIELD_COMPONENTS: Record<string, Component> = {
+  text: FormFieldText,
+  textarea: FormFieldTextarea,
+  number: FormFieldNumber,
+  currency: FormFieldCurrency,
+  toggle: FormFieldToggle,
+  select: FormFieldSelect,
+  combobox: FormFieldCombobox,
+  autocomplete: FormFieldAutocomplete,
+  'radio-group': FormFieldRadioGroup,
+  emoji: FormFieldEmoji,
+  slider: FormFieldSlider,
+  card: FormFieldCard,
+  separator: FormFieldSeparator,
+  'field-group': FormFieldGroup,
+  array: FormFieldArray,
+  tabs: FormFieldTabs
+}
 
 // Inject common form builder context (includes formValues via vee-validate)
 const { sectionId, fieldPrefix, formValues, parentGroupVisible } = useFormBuilderContext()
@@ -126,7 +146,6 @@ const fieldAttrs = computed(() => {
   if (!fieldBinding) return {}
 
   return {
-    name: fieldBinding.name,
     onBlur: fieldBinding.handleBlur
   }
 })
@@ -144,6 +163,51 @@ const fieldMeta = computed(() => ({
   dirty: fieldBinding?.meta.dirty ?? false,
   valid: fieldBinding?.meta.valid ?? true
 }))
+
+// Resolve the component for this field type
+const fieldComponent = computed(() => {
+  return FIELD_COMPONENTS[props.meta.type] || null
+})
+
+// Props to pass to field components
+const fieldProps = computed(() => {
+  const baseProps = {
+    meta: props.meta,
+    name: props.name,
+    class: cn(props.class),
+    errors: fieldErrors.value,
+    onBlur: fieldAttrs.value.onBlur
+  }
+
+  // Container fields (group, tabs, card, separator) don't need v-model
+  if (isContainerField.value) {
+    return baseProps
+  }
+
+  // Array field needs touched state
+  if (props.meta.type === 'array') {
+    return {
+      ...baseProps,
+      modelValue: fieldValue.value,
+      touched: fieldMeta.value.touched
+    }
+  }
+
+  // Autocomplete needs fieldPrefix
+  if (props.meta.type === 'autocomplete') {
+    return {
+      ...baseProps,
+      modelValue: fieldValue.value,
+      fieldPrefix
+    }
+  }
+
+  // Standard fields with v-model
+  return {
+    ...baseProps,
+    modelValue: fieldValue.value
+  }
+})
 </script>
 
 <template>
@@ -156,133 +220,11 @@ const fieldMeta = computed(() => ({
     leave-from-class="opacity-100 translate-y-0"
     leave-to-class="opacity-0 -translate-y-2"
   >
-    <FormFieldText
-      v-if="meta.type === 'text'"
-      v-model="fieldValue"
-      v-bind="fieldAttrs"
-      :errors="fieldErrors"
-      :meta="meta"
-      :name="name"
-      :class="cn(props.class)"
-    />
-    <FormFieldTextarea
-      v-else-if="meta.type === 'textarea'"
-      v-model="fieldValue"
-      v-bind="fieldAttrs"
-      :errors="fieldErrors"
-      :meta="meta"
-      :name="name"
-      :class="cn(props.class)"
-    />
-    <FormFieldNumber
-      v-else-if="meta.type === 'number'"
-      v-model="fieldValue"
-      v-bind="fieldAttrs"
-      :errors="fieldErrors"
-      :meta="meta"
-      :name="name"
-      :class="cn(props.class)"
-    />
-    <FormFieldCurrency
-      v-else-if="meta.type === 'currency'"
-      v-model="fieldValue"
-      v-bind="fieldAttrs"
-      :errors="fieldErrors"
-      :meta="meta"
-      :name="name"
-      :class="cn(props.class)"
-    />
-    <FormFieldToggle
-      v-else-if="meta.type === 'toggle'"
-      v-model="fieldValue"
-      v-bind="fieldAttrs"
-      :errors="fieldErrors"
-      :meta="meta"
-      :name="name"
-      :class="cn(props.class)"
-    />
-    <FormFieldSelect
-      v-else-if="meta.type === 'select'"
-      v-model="fieldValue"
-      v-bind="fieldAttrs"
-      :errors="fieldErrors"
-      :meta="meta"
-      :name="name"
-      :class="cn(props.class)"
-    />
-    <FormFieldCombobox
-      v-else-if="meta.type === 'combobox'"
-      v-model="fieldValue"
-      v-bind="fieldAttrs"
-      :errors="fieldErrors"
-      :meta="meta"
-      :name="name"
-      :class="cn(props.class)"
-    />
-    <FormFieldAutocomplete
-      v-else-if="meta.type === 'autocomplete'"
-      v-model="fieldValue"
-      v-bind="fieldAttrs"
-      :errors="fieldErrors"
-      :meta="meta"
-      :name="name"
-      :field-prefix="fieldPrefix"
-      :class="cn(props.class)"
-    />
-    <FormFieldRadioGroup
-      v-else-if="meta.type === 'radio-group'"
-      v-model="fieldValue"
-      v-bind="fieldAttrs"
-      :errors="fieldErrors"
-      :meta="meta"
-      :name="name"
-      :class="cn(props.class)"
-    />
-    <FormFieldEmoji
-      v-else-if="meta.type === 'emoji'"
-      v-model="fieldValue"
-      v-bind="fieldAttrs"
-      :errors="fieldErrors"
-      :meta="meta"
-      :name="name"
-      :class="cn(props.class)"
-    />
-    <FormFieldSlider
-      v-else-if="meta.type === 'slider'"
-      v-model="fieldValue"
-      v-bind="fieldAttrs"
-      :errors="fieldErrors"
-      :meta="meta"
-      :name="name"
-      :class="cn(props.class)"
-    />
-    <FormFieldCard v-else-if="meta.type === 'card'" :meta="meta" :class="cn(props.class)" />
-    <FormFieldSeparator
-      v-else-if="meta.type === 'separator'"
-      :meta="meta"
-      :class="cn(props.class)"
-    />
-    <FormFieldGroup
-      v-else-if="meta.type === 'field-group'"
-      :meta="meta"
-      :name="name"
-      :class="cn(props.class)"
-    />
-    <FormFieldArray
-      v-else-if="meta.type === 'array'"
-      v-model="fieldValue"
-      v-bind="fieldAttrs"
-      :errors="fieldErrors"
-      :meta="meta"
-      :name="name"
-      :touched="fieldMeta.touched"
-      :class="cn(props.class)"
-    />
-    <FormFieldTabs
-      v-else-if="meta.type === 'tabs'"
-      :meta="meta"
-      :name="name"
-      :class="cn(props.class)"
+    <component
+      :is="fieldComponent"
+      v-if="fieldComponent"
+      v-bind="fieldProps"
+      @update:model-value="fieldValue = $event"
     />
     <div v-else class="text-destructive text-sm">
       Unknown field type: {{ (meta as { type: string }).type }}
