@@ -144,7 +144,9 @@ watch(
   () => props.modelValue,
   (newValue) => {
     isUpdatingFromProp = true
-    setValues({ [props.section.id]: newValue })
+    // Use setValues without triggering validation to respect validateOnMount setting
+    // This prevents fields from being marked as touched/validated when external data updates
+    setValues({ [props.section.id]: newValue }, false)
     nextTick(() => {
       isUpdatingFromProp = false
     })
