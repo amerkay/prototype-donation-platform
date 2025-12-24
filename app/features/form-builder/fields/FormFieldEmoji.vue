@@ -2,43 +2,44 @@
 import { computed, onMounted, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-vue-next'
-import type { EmojiFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import type { EmojiFieldMeta } from '~/features/form-builder/form-builder-types'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 import EmojiPicker from '../components/EmojiPicker.vue'
 
 interface Props {
-  field: VeeFieldContext
+  modelValue?: string
   errors: string[]
   meta: EmojiFieldMeta
   name: string
-  onChange?: (value: unknown) => void
+  onBlur?: (e?: Event) => void
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{
+  'update:modelValue': [value: string]
+}>()
 
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
 
 const pickerOpen = ref(false)
-const selectedEmoji = computed(() => props.field.value as string | undefined)
+const selectedEmoji = computed(() => props.modelValue)
 
 const handleEmojiSelect = (emoji: string) => {
-  props.field.onChange(emoji)
-  // Trigger validation by simulating blur event
-  props.field.onBlur?.(new Event('blur'))
-  props.onChange?.(emoji)
+  emit('update:modelValue', emoji)
+  // Trigger validation by calling onBlur if provided
+  props.onBlur?.(new Event('blur'))
 }
 
 const clearEmoji = () => {
-  props.field.onChange('')
-  // Trigger validation by simulating blur event
-  props.field.onBlur?.(new Event('blur'))
-  props.onChange?.('')
+  emit('update:modelValue', '')
+  // Trigger validation by calling onBlur if provided
+  props.onBlur?.(new Event('blur'))
 }
 
 // Trigger validation on mount to show errors immediately if field is required and empty
 onMounted(() => {
-  props.field.onBlur?.(new Event('blur'))
+  props.onBlur?.(new Event('blur'))
 })
 </script>
 

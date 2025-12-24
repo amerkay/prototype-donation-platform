@@ -11,20 +11,23 @@ import {
 } from 'reka-ui'
 import { Check, ChevronsUpDown } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
-import type { ComboboxFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import type { ComboboxFieldMeta } from '~/features/form-builder/form-builder-types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
-  field: VeeFieldContext
+  modelValue?: string | number | (string | number)[]
   errors: string[]
   meta: ComboboxFieldMeta
   name: string
-  onChange?: (value: unknown) => void
+  onBlur?: (e?: Event) => void
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{
+  'update:modelValue': [value: string | number | (string | number)[]]
+}>()
 
 const { formValues } = useFormBuilderContext()
 
@@ -58,27 +61,14 @@ const modelValue = computed({
   get: () => {
     if (props.meta.multiple) {
       // Multiple mode: return array
-      const val = props.field.value as Array<string | number> | undefined
+      const val = props.modelValue
       return Array.isArray(val) ? val : []
-    } else {
-      // Single mode: return single value
-      return props.field.value as string | number | undefined
     }
+    // Single mode: return single value
+    return props.modelValue
   },
   set: (value) => {
-    props.field.onChange(value)
-    props.onChange?.(value)
-
-    // Mark field as touched and trigger validation on any value change
-    if (props.field.onBlur) {
-      props.field.onBlur(new FocusEvent('blur'))
-    }
-
-    // Clear search and close dropdown in single mode
-    if (!props.meta.multiple) {
-      searchValue.value = ''
-      isOpen.value = false
-    }
+    emit('update:modelValue', value as string | number | (string | number)[])
   }
 })
 
@@ -200,7 +190,7 @@ const removeBadge = (value: string | number, event: Event) => {
             :aria-invalid="!!errors.length"
             :disabled="meta.disabled"
             class="flex-1 min-w-30 bg-transparent outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
-            @blur="field.onBlur"
+            @blur="onBlur"
             @focus="!meta.disabled && (isOpen = true)"
           />
         </div>

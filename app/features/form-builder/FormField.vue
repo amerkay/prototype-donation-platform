@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, inject, defineAsyncComponent } from 'vue'
-import { Field as VeeField } from 'vee-validate'
+import { computed, inject } from 'vue'
+import { useField, useFormErrors } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
 import type { FieldMeta, SetFieldValueFn } from '~/features/form-builder/form-builder-types'
@@ -20,13 +20,9 @@ import FormFieldCard from './fields/FormFieldCard.vue'
 import FormFieldSeparator from './fields/FormFieldSeparator.vue'
 import FormFieldGroup from './fields/FormFieldGroup.vue'
 import FormFieldTabs from './fields/FormFieldTabs.vue'
-
-// Async component imports for code splitting (only heavy components)
-const FormFieldAutocomplete = defineAsyncComponent(
-  () => import('./fields/FormFieldAutocomplete.vue')
-)
-const FormFieldEmoji = defineAsyncComponent(() => import('./fields/FormFieldEmoji.vue'))
-const FormFieldArray = defineAsyncComponent(() => import('./fields/FormFieldArray.vue'))
+import FormFieldAutocomplete from './fields/FormFieldAutocomplete.vue'
+import FormFieldEmoji from './fields/FormFieldEmoji.vue'
+import FormFieldArray from './fields/FormFieldArray.vue'
 
 interface Props {
   name: string
@@ -97,156 +93,199 @@ const fieldRules = computed(() => {
   return toTypedSchema(rules)
 })
 
-// Handle field changes and call onChange callback if provided
-const handleFieldChange = (value: unknown) => {
-  if (props.meta.onChange) {
-    props.meta.onChange(value, formValues.value, setFieldValue)
+// Container fields don't need field binding (they manage children)
+const isContainerField = computed(() => {
+  return ['field-group', 'tabs', 'card', 'separator'].includes(props.meta.type)
+})
+
+// Use vee-validate's useField composition API for non-container fields
+// Container fields (groups, tabs) don't bind to form values
+const fieldBinding = isContainerField.value
+  ? null
+  : useField(() => resolvedVeeName.value, fieldRules, {
+      validateOnValueUpdate: true,
+      syncVModel: false
+    })
+
+// Extract field value and validation attrs
+const fieldValue = computed({
+  get: () => (fieldBinding ? fieldBinding.value.value : undefined),
+  set: (val) => {
+    if (fieldBinding) {
+      fieldBinding.value.value = val
+      // Trigger onChange callback if provided
+      if (props.meta.onChange) {
+        props.meta.onChange(val, formValues.value, setFieldValue)
+      }
+    }
   }
-}
+})
+
+// Get validation attributes for input binding
+const fieldAttrs = computed(() => {
+  if (!fieldBinding) return {}
+
+  return {
+    name: fieldBinding.name,
+    onBlur: fieldBinding.handleBlur
+  }
+})
+
+// Get field-specific errors from form errors
+const formErrors = useFormErrors()
+const fieldErrors = computed(() => {
+  const errorMsg = formErrors.value[resolvedVeeName.value]
+  return errorMsg ? [errorMsg] : []
+})
+
+// Get field metadata (touched state, etc.)
+const fieldMeta = computed(() => ({
+  touched: fieldBinding?.meta.touched ?? false,
+  dirty: fieldBinding?.meta.dirty ?? false,
+  valid: fieldBinding?.meta.valid ?? true
+}))
 </script>
 
 <template>
-  <VeeField v-slot="{ field, errors, meta: fieldMeta }" :name="resolvedVeeName" :rules="fieldRules">
-    <Transition
-      v-show="isVisible"
-      enter-active-class="transition-all duration-300 ease-out"
-      leave-active-class="transition-all duration-200 ease-in"
-      enter-from-class="opacity-0 -translate-y-2"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 -translate-y-2"
-    >
-      <FormFieldText
-        v-if="meta.type === 'text'"
-        :field="field"
-        :errors="errors"
-        :meta="meta"
-        :name="name"
-        :class="cn(props.class)"
-        :on-change="handleFieldChange"
-      />
-      <FormFieldTextarea
-        v-else-if="meta.type === 'textarea'"
-        :field="field"
-        :errors="errors"
-        :meta="meta"
-        :name="name"
-        :class="cn(props.class)"
-        :on-change="handleFieldChange"
-      />
-      <FormFieldNumber
-        v-else-if="meta.type === 'number'"
-        :field="field"
-        :errors="errors"
-        :meta="meta"
-        :name="name"
-        :class="cn(props.class)"
-        :on-change="handleFieldChange"
-      />
-      <FormFieldCurrency
-        v-else-if="meta.type === 'currency'"
-        :field="field"
-        :errors="errors"
-        :meta="meta"
-        :name="name"
-        :class="cn(props.class)"
-        :on-change="handleFieldChange"
-      />
-      <FormFieldToggle
-        v-else-if="meta.type === 'toggle'"
-        :field="field"
-        :errors="errors"
-        :meta="meta"
-        :name="name"
-        :class="cn(props.class)"
-        :on-change="handleFieldChange"
-      />
-      <FormFieldSelect
-        v-else-if="meta.type === 'select'"
-        :field="field"
-        :errors="errors"
-        :meta="meta"
-        :name="name"
-        :class="cn(props.class)"
-        :on-change="handleFieldChange"
-      />
-      <FormFieldCombobox
-        v-else-if="meta.type === 'combobox'"
-        :field="field"
-        :errors="errors"
-        :meta="meta"
-        :name="name"
-        :class="cn(props.class)"
-        :on-change="handleFieldChange"
-      />
-      <FormFieldAutocomplete
-        v-else-if="meta.type === 'autocomplete'"
-        :field="field"
-        :errors="errors"
-        :meta="meta"
-        :name="name"
-        :field-prefix="fieldPrefix"
-        :class="cn(props.class)"
-        :on-change="handleFieldChange"
-      />
-      <FormFieldRadioGroup
-        v-else-if="meta.type === 'radio-group'"
-        :field="field"
-        :errors="errors"
-        :meta="meta"
-        :name="name"
-        :class="cn(props.class)"
-        :on-change="handleFieldChange"
-      />
-      <FormFieldEmoji
-        v-else-if="meta.type === 'emoji'"
-        :field="field"
-        :errors="errors"
-        :meta="meta"
-        :name="name"
-        :class="cn(props.class)"
-        :on-change="handleFieldChange"
-      />
-      <FormFieldSlider
-        v-else-if="meta.type === 'slider'"
-        :field="field"
-        :errors="errors"
-        :meta="meta"
-        :name="name"
-        :class="cn(props.class)"
-        :on-change="handleFieldChange"
-      />
-      <FormFieldCard v-else-if="meta.type === 'card'" :meta="meta" :class="cn(props.class)" />
-      <FormFieldSeparator
-        v-else-if="meta.type === 'separator'"
-        :meta="meta"
-        :class="cn(props.class)"
-      />
-      <FormFieldGroup
-        v-else-if="meta.type === 'field-group'"
-        :meta="meta"
-        :name="name"
-        :class="cn(props.class)"
-      />
-      <FormFieldArray
-        v-else-if="meta.type === 'array'"
-        :field="field"
-        :errors="errors"
-        :meta="meta"
-        :name="name"
-        :touched="fieldMeta.touched"
-        :class="cn(props.class)"
-        :on-change="handleFieldChange"
-      />
-      <FormFieldTabs
-        v-else-if="meta.type === 'tabs'"
-        :meta="meta"
-        :name="name"
-        :class="cn(props.class)"
-      />
-      <div v-else class="text-destructive text-sm">
-        Unknown field type: {{ (meta as { type: string }).type }}
-      </div>
-    </Transition>
-  </VeeField>
+  <Transition
+    v-show="isVisible"
+    enter-active-class="transition-all duration-300 ease-out"
+    leave-active-class="transition-all duration-200 ease-in"
+    enter-from-class="opacity-0 -translate-y-2"
+    enter-to-class="opacity-100 translate-y-0"
+    leave-from-class="opacity-100 translate-y-0"
+    leave-to-class="opacity-0 -translate-y-2"
+  >
+    <FormFieldText
+      v-if="meta.type === 'text'"
+      v-model="fieldValue"
+      v-bind="fieldAttrs"
+      :errors="fieldErrors"
+      :meta="meta"
+      :name="name"
+      :class="cn(props.class)"
+    />
+    <FormFieldTextarea
+      v-else-if="meta.type === 'textarea'"
+      v-model="fieldValue"
+      v-bind="fieldAttrs"
+      :errors="fieldErrors"
+      :meta="meta"
+      :name="name"
+      :class="cn(props.class)"
+    />
+    <FormFieldNumber
+      v-else-if="meta.type === 'number'"
+      v-model="fieldValue"
+      v-bind="fieldAttrs"
+      :errors="fieldErrors"
+      :meta="meta"
+      :name="name"
+      :class="cn(props.class)"
+    />
+    <FormFieldCurrency
+      v-else-if="meta.type === 'currency'"
+      v-model="fieldValue"
+      v-bind="fieldAttrs"
+      :errors="fieldErrors"
+      :meta="meta"
+      :name="name"
+      :class="cn(props.class)"
+    />
+    <FormFieldToggle
+      v-else-if="meta.type === 'toggle'"
+      v-model="fieldValue"
+      v-bind="fieldAttrs"
+      :errors="fieldErrors"
+      :meta="meta"
+      :name="name"
+      :class="cn(props.class)"
+    />
+    <FormFieldSelect
+      v-else-if="meta.type === 'select'"
+      v-model="fieldValue"
+      v-bind="fieldAttrs"
+      :errors="fieldErrors"
+      :meta="meta"
+      :name="name"
+      :class="cn(props.class)"
+    />
+    <FormFieldCombobox
+      v-else-if="meta.type === 'combobox'"
+      v-model="fieldValue"
+      v-bind="fieldAttrs"
+      :errors="fieldErrors"
+      :meta="meta"
+      :name="name"
+      :class="cn(props.class)"
+    />
+    <FormFieldAutocomplete
+      v-else-if="meta.type === 'autocomplete'"
+      v-model="fieldValue"
+      v-bind="fieldAttrs"
+      :errors="fieldErrors"
+      :meta="meta"
+      :name="name"
+      :field-prefix="fieldPrefix"
+      :class="cn(props.class)"
+    />
+    <FormFieldRadioGroup
+      v-else-if="meta.type === 'radio-group'"
+      v-model="fieldValue"
+      v-bind="fieldAttrs"
+      :errors="fieldErrors"
+      :meta="meta"
+      :name="name"
+      :class="cn(props.class)"
+    />
+    <FormFieldEmoji
+      v-else-if="meta.type === 'emoji'"
+      v-model="fieldValue"
+      v-bind="fieldAttrs"
+      :errors="fieldErrors"
+      :meta="meta"
+      :name="name"
+      :class="cn(props.class)"
+    />
+    <FormFieldSlider
+      v-else-if="meta.type === 'slider'"
+      v-model="fieldValue"
+      v-bind="fieldAttrs"
+      :errors="fieldErrors"
+      :meta="meta"
+      :name="name"
+      :class="cn(props.class)"
+    />
+    <FormFieldCard v-else-if="meta.type === 'card'" :meta="meta" :class="cn(props.class)" />
+    <FormFieldSeparator
+      v-else-if="meta.type === 'separator'"
+      :meta="meta"
+      :class="cn(props.class)"
+    />
+    <FormFieldGroup
+      v-else-if="meta.type === 'field-group'"
+      :meta="meta"
+      :name="name"
+      :class="cn(props.class)"
+    />
+    <FormFieldArray
+      v-else-if="meta.type === 'array'"
+      v-model="fieldValue"
+      v-bind="fieldAttrs"
+      :errors="fieldErrors"
+      :meta="meta"
+      :name="name"
+      :touched="fieldMeta.touched"
+      :class="cn(props.class)"
+    />
+    <FormFieldTabs
+      v-else-if="meta.type === 'tabs'"
+      :meta="meta"
+      :name="name"
+      :class="cn(props.class)"
+    />
+    <div v-else class="text-destructive text-sm">
+      Unknown field type: {{ (meta as { type: string }).type }}
+    </div>
+  </Transition>
 </template>

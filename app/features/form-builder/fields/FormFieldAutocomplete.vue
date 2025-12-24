@@ -15,7 +15,6 @@ import { Check } from 'lucide-vue-next'
 import type {
   AutocompleteFieldMeta,
   AutocompleteOption,
-  VeeFieldContext,
   SetFieldValueFn
 } from '~/features/form-builder/form-builder-types'
 import { joinPath } from '~/features/form-builder/field-path-utils'
@@ -24,15 +23,18 @@ import { useResolvedFieldMeta } from '~/features/form-builder/composables/useRes
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
-  field: VeeFieldContext
+  modelValue?: AutocompleteOption | null
   errors: string[]
   meta: AutocompleteFieldMeta
   name: string
   fieldPrefix?: string
-  onChange?: (value: unknown) => void
+  onBlur?: (e?: Event) => void
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{
+  'update:modelValue': [value: AutocompleteOption | null]
+}>()
 
 // Inject form values and setFieldValue from context
 // Note: If inside a field-group, formValues are already scoped to the group
@@ -45,9 +47,9 @@ const selectedValue = ref<AutocompleteOption | null>(null)
 const options = ref<AutocompleteOption[]>([])
 const isLoading = ref(false)
 
-// Initialize selected value from field if present
-if (props.field.value && typeof props.field.value === 'object' && props.field.value !== null) {
-  selectedValue.value = props.field.value as AutocompleteOption
+// Initialize selected value from modelValue if present
+if (props.modelValue) {
+  selectedValue.value = props.modelValue
 }
 
 // Computed config values with defaults
@@ -106,15 +108,15 @@ watch(searchValue, (newValue) => {
   }
 })
 
-// Watch for external field value changes (form resets, etc.)
+// Watch for external modelValue changes (form resets, etc.)
 watch(
-  () => props.field.value,
+  () => props.modelValue,
   (newValue) => {
     if (!newValue) {
       selectedValue.value = null
       searchValue.value = ''
-    } else if (typeof newValue === 'object') {
-      selectedValue.value = newValue as AutocompleteOption
+    } else {
+      selectedValue.value = newValue
     }
   }
 )
@@ -125,9 +127,8 @@ const handleValueChange = (value: AutocompleteOption | null) => {
 
   selectedValue.value = value
 
-  // Update field value via vee-validate
-  props.field.onChange(value)
-  props.onChange?.(value)
+  // Update field value via emit
+  emit('update:modelValue', value)
 
   // Call meta.onChange if provided (for address autocomplete population)
   if (props.meta.onChange) {
@@ -153,7 +154,7 @@ const handleInput = (event: Event) => {
 
 // Handle blur
 const handleBlur = () => {
-  props.field.onBlur?.(new Event('blur'))
+  props.onBlur?.(new Event('blur'))
 }
 </script>
 

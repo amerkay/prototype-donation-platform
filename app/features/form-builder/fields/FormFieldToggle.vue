@@ -1,27 +1,26 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { Switch } from '@/components/ui/switch'
-import type { ToggleFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import type { ToggleFieldMeta } from '~/features/form-builder/form-builder-types'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
-  field: VeeFieldContext
+  modelValue?: boolean
   errors: string[]
   meta: ToggleFieldMeta
   name: string
-  onChange?: (value: unknown) => void
+  onBlur?: (e?: Event) => void
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{
+  'update:modelValue': [value: boolean]
+}>()
 
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
 
-const switchValue = computed(() => props.field.value as boolean | undefined)
-
-const handleChange = (value: unknown) => {
-  props.field.onChange(value)
-  props.onChange?.(value)
+const handleChange = (value: boolean) => {
+  emit('update:modelValue', value)
 }
 </script>
 
@@ -39,7 +38,7 @@ const handleChange = (value: unknown) => {
   >
     <Switch
       :id="name"
-      :model-value="switchValue"
+      :model-value="modelValue"
       :class="meta.class"
       @update:model-value="handleChange"
     />

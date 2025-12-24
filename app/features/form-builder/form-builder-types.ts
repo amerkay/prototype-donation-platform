@@ -314,9 +314,3 @@ export type FieldMeta =
  * Map of field paths to their metadata
  */
 export type FieldMetaMap = Record<string, FieldMeta>
-
-/**
- * Re-export vee-validate's FieldBindingObject for field component props
- * This represents the field binding object from VeeField's slot
- */
-export type { FieldBindingObject as VeeFieldContext } from 'vee-validate'

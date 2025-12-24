@@ -7,22 +7,25 @@ import {
   InputGroupInput,
   InputGroupText
 } from '@/components/ui/input-group'
-import type { CurrencyFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import type { CurrencyFieldMeta } from '~/features/form-builder/form-builder-types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 import { cn } from '@/lib/utils'
 
 interface Props {
-  field: VeeFieldContext
+  modelValue?: number | string | null
   errors: string[]
   meta: CurrencyFieldMeta
   name: string
-  onChange?: (value: unknown) => void
+  onBlur?: (e?: Event) => void
   class?: HTMLAttributes['class']
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{
+  'update:modelValue': [value: number | string]
+}>()
 
 // Get form values for dynamic currencySymbol resolution
 const { formValues } = useFormBuilderContext()
@@ -30,8 +33,6 @@ const { formValues } = useFormBuilderContext()
 const handleEnterKey = (event: KeyboardEvent) => {
   event.preventDefault()
 }
-
-const modelValue = computed(() => props.field.value as number | string | null | undefined)
 
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
 
@@ -50,8 +51,7 @@ const handleUpdate = (value: string | number) => {
     convertedValue = Number(value)
   }
 
-  props.field.onChange(convertedValue)
-  props.onChange?.(convertedValue)
+  emit('update:modelValue', convertedValue)
 }
 </script>
 
@@ -78,10 +78,9 @@ const handleUpdate = (value: string | number) => {
         :max="meta.max"
         :step="meta.step ?? 1"
         :placeholder="meta.placeholder"
-        :disabled="meta.disabled"
         :aria-invalid="!!errors.length"
-        :class="meta.class"
         @update:model-value="handleUpdate"
+        @blur="onBlur"
         @keydown.enter="handleEnterKey"
       />
     </InputGroup>

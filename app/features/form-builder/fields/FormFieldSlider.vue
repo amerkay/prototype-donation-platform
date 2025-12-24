@@ -1,20 +1,23 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Slider } from '@/components/ui/slider'
-import type { SliderFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import type { SliderFieldMeta } from '~/features/form-builder/form-builder-types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
-  field: VeeFieldContext
+  modelValue?: number
   errors: string[]
   meta: SliderFieldMeta
   name: string
-  onChange?: (value: unknown) => void
+  onBlur?: (e?: Event) => void
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{
+  'update:modelValue': [value: number]
+}>()
 
 const { formValues } = useFormBuilderContext()
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
@@ -36,7 +39,7 @@ const resolvedStep = computed(() => {
 })
 
 const numberValue = computed(() => {
-  const val = props.field.value
+  const val = props.modelValue
   if (typeof val === 'number') return val
   if (val === null || val === undefined) return resolvedMin.value
   return Number(val) || resolvedMin.value
@@ -59,8 +62,7 @@ const minMaxFormat = (value: number) => {
 const handleSliderChange = (value: number[] | undefined) => {
   const newValue = value?.[0]
   if (newValue !== undefined) {
-    props.field.onChange(newValue)
-    props.onChange?.(newValue)
+    emit('update:modelValue', newValue)
   }
 }
 </script>

@@ -5,7 +5,7 @@ import { useDragAndDrop } from '@formkit/drag-and-drop/vue'
 import { vAutoAnimate } from '@formkit/auto-animate'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import type { ArrayFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import type { ArrayFieldMeta } from '~/features/form-builder/form-builder-types'
 import FormField from '../FormField.vue'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import { useChildFieldErrors } from '~/features/form-builder/composables/useChildFieldErrors'
@@ -14,12 +14,12 @@ import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrappe
 import { resolveVeeFieldPath } from '~/features/form-builder/field-path-utils'
 
 interface Props {
-  field: VeeFieldContext
+  modelValue?: unknown[]
   errors: string[]
   meta: ArrayFieldMeta
   name: string
   touched: boolean
-  onChange?: (value: unknown) => void
+  onBlur?: (e?: Event) => void
 }
 
 const props = defineProps<Props>()
@@ -112,8 +112,8 @@ const [parent, draggableItems] = useDragAndDrop(draggableValues.value, {
   },
 
   onDragend() {
-    // Trigger onChange after drag completes
-    props.onChange?.(fields.value.map((f) => f.value))
+    // Trigger validation after drag completes
+    validateArrayField()
   }
 })
 
@@ -141,7 +141,7 @@ function addItem() {
 
   // Use vee-validate's push for proper field registration
   push(defaultValue)
-  props.onChange?.(fields.value.map((f) => f.value))
+  validateArrayField()
 }
 
 function removeItem(index: number) {
@@ -149,7 +149,7 @@ function removeItem(index: number) {
   // This ensures error paths match the new indices after removal
   const newArray = fields.value.map((f) => f.value).filter((_, i) => i !== index)
   replace(newArray)
-  props.onChange?.(newArray)
+  validateArrayField()
 }
 </script>
 
@@ -173,7 +173,7 @@ function removeItem(index: number) {
 
           <div class="min-w-0 flex-1">
             <FormField
-              :name="`${name}.${index}`"
+              :name="`${name}[${index}]`"
               :meta="meta.itemField"
               class="border-0 bg-transparent rounded-none"
             />

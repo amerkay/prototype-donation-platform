@@ -1,30 +1,32 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
-import type { SelectFieldMeta, VeeFieldContext } from '~/features/form-builder/form-builder-types'
+import type { SelectFieldMeta } from '~/features/form-builder/form-builder-types'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 
 interface Props {
-  field: VeeFieldContext
+  modelValue?: string | number
   errors: string[]
   meta: SelectFieldMeta
   name: string
-  onChange?: (value: unknown) => void
+  onBlur?: (e?: Event) => void
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{
+  'update:modelValue': [value: string | number]
+}>()
 
 const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(props.meta)
 
 const selectValue = computed({
-  get: () => props.field.value as string | number | undefined,
+  get: () => props.modelValue,
   set: (value) => {
     // Find the original option to preserve correct type
     const option = props.meta.options.find((o) => String(o.value) === String(value))
     if (option) {
-      props.field.onChange(option.value)
-      props.onChange?.(option.value)
+      emit('update:modelValue', option.value)
     }
   }
 })
@@ -48,7 +50,7 @@ const selectValue = computed({
       :aria-invalid="!!errors.length"
       :disabled="meta.disabled"
       :class="meta.class"
-      @blur="field.onBlur"
+      @blur="onBlur"
     >
       <NativeSelectOption v-if="resolvedPlaceholder" value="">
         {{ resolvedPlaceholder }}

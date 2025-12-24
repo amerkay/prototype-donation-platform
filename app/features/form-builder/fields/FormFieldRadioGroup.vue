@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { cn } from '@/lib/utils'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
@@ -9,30 +8,27 @@ import {
   FieldContent,
   FieldTitle
 } from '@/components/ui/field'
-import type {
-  RadioGroupFieldMeta,
-  VeeFieldContext
-} from '~/features/form-builder/form-builder-types'
+import type { RadioGroupFieldMeta } from '~/features/form-builder/form-builder-types'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import FormFieldSetWrapper from '~/features/form-builder/components/FormFieldSetWrapper.vue'
 
 interface Props {
-  field: VeeFieldContext
+  modelValue?: string | number
   errors: string[]
   meta: RadioGroupFieldMeta
   name: string
-  onChange?: (value: unknown) => void
+  onBlur?: (e?: Event) => void
 }
 
 const props = defineProps<Props>()
-
-const fieldValue = computed(() => props.field.value as string | number | undefined)
+const emit = defineEmits<{
+  'update:modelValue': [value: string | number]
+}>()
 
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
 
-const handleChange = (value: unknown) => {
-  props.field.onChange(value)
-  props.onChange?.(value)
+const handleChange = (value: string | number) => {
+  emit('update:modelValue', value)
 }
 </script>
 
@@ -47,8 +43,8 @@ const handleChange = (value: unknown) => {
     :description-class="meta.descriptionClass"
   >
     <RadioGroup
-      :name="field.name"
-      :model-value="fieldValue"
+      :name="name"
+      :model-value="modelValue"
       :aria-invalid="!!errors.length"
       :class="cn(meta.class, 'gap-4')"
       @update:model-value="handleChange"
