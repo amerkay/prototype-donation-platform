@@ -66,9 +66,9 @@ const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
             <Badge
               v-if="tabHasErrors(tab.value).hasChildErrors.value"
               variant="destructive"
-              class="ml-1 h-5 px-1.5 text-xs gap-1"
+              class="ml-1 size-5 p-0 text-xs gap-1"
             >
-              <Icon name="lucide:alert-circle" class="h-3 w-3" />
+              <Icon name="lucide:alert-circle" />
             </Badge>
 
             <!-- Custom badge shown when no errors -->
