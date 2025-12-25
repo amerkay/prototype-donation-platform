@@ -1,6 +1,6 @@
 import { computed, unref, type ComputedRef, type MaybeRefOrGetter } from 'vue'
 import { useFormErrors, useFormValues } from 'vee-validate'
-import { pathExistsInValues } from '~/features/form-builder/field-path-utils'
+import { pathExistsInValues } from './useFieldPath'
 
 /**
  * Composable to detect if any child fields within a container (group/array/tabs) have validation errors

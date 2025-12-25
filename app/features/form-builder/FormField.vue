@@ -4,7 +4,10 @@ import { useField, useFormErrors } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
 import type { FieldMeta, SetFieldValueFn } from '~/features/form-builder/form-builder-types'
-import { resolveVeeFieldPath } from '~/features/form-builder/field-path-utils'
+import {
+  resolveVeeFieldPath,
+  checkFieldVisibility
+} from '~/features/form-builder/composables/useFieldPath'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { cn } from '@/lib/utils'
 import FormFieldText from './fields/FormFieldText.vue'
@@ -69,23 +72,23 @@ const resolvedVeeName = computed(() => {
   })
 })
 
-// Check if field should be visible
+// Check if field should be visible using unified visibility utility
 const isVisible = computed(() => {
-  // First check if parent group is visible
-  if (!parentGroupVisible()) return false
-
-  // Then check this field's own visibility
-  if (!props.meta.visibleWhen) return true
-  return props.meta.visibleWhen(formValues.value)
+  return checkFieldVisibility(props.meta, formValues.value, {
+    parentVisible: parentGroupVisible()
+  })
 })
 
 // Convert Zod rules to typed schema for vee-validate
 // When field is hidden, always return optional schema to skip validation
 // EXCEPT for field-group/tabs - they should validate children even when collapsed
 const fieldRules = computed(() => {
-  // If field is hidden, no validation needed (except container fields)
-  const isContainerField = props.meta.type === 'field-group' || props.meta.type === 'tabs'
-  if (!isVisible.value && !isContainerField) {
+  // Check visibility without container validation exception for field-level rules
+  const isVisibleForValidation = checkFieldVisibility(props.meta, formValues.value, {
+    parentVisible: parentGroupVisible(),
+    skipContainerValidation: true
+  })
+  if (!isVisibleForValidation) {
     return toTypedSchema(z.any().optional())
   }
 

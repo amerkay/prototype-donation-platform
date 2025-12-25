@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { cn } from '@/lib/utils'
 import {
   Field,
@@ -28,6 +29,9 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   variant: 'field'
 })
+
+// Determine if we should show any errors
+const showErrors = computed(() => props.errors && props.errors.length > 0)
 </script>
 
 <template>
@@ -48,7 +52,7 @@ const props = withDefaults(defineProps<Props>(), {
 
     <slot />
 
-    <FieldError v-if="props.errors?.length" :errors="props.errors.slice(0, 1)" />
+    <FieldError v-if="showErrors" :errors="props.errors!.slice(0, 1)" />
   </FieldSet>
 
   <!-- Horizontal orientation -->
@@ -75,7 +79,7 @@ const props = withDefaults(defineProps<Props>(), {
       <slot />
     </Field>
 
-    <FieldError v-if="props.errors?.length" :errors="props.errors.slice(0, 1)" />
+    <FieldError v-if="showErrors" :errors="props.errors!.slice(0, 1)" />
   </div>
 
   <!-- Default vertical orientation -->
@@ -100,6 +104,6 @@ const props = withDefaults(defineProps<Props>(), {
 
     <slot />
 
-    <FieldError v-if="props.errors?.length" class="mb-1" :errors="props.errors.slice(0, 1)" />
+    <FieldError v-if="showErrors" class="mb-1" :errors="props.errors!.slice(0, 1)" />
   </Field>
 </template>

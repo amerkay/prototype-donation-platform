@@ -6,6 +6,7 @@ import { FieldSeparator } from '@/components/ui/field'
 import FormField from './FormField.vue'
 import type { FormDef } from '~/features/form-builder/form-builder-types'
 import { useScrollOnVisible } from './composables/useScrollOnVisible'
+import { checkFieldVisibility } from './composables/useFieldPath'
 
 interface Props {
   section: FormDef
@@ -96,10 +97,12 @@ const sectionValues = computed(() => {
   return ((values as Record<string, unknown>)[props.section.id] as Record<string, unknown>) || {}
 })
 
-// Track which fields are visible for separator logic
+// Track which fields are visible for separator logic (using unified visibility check)
+// Skip container validation since we want actual visibility, not validation behavior
 const isFieldVisible = (fieldMeta: (typeof props.section.fields)[string]) => {
-  if (!fieldMeta.visibleWhen) return true
-  return fieldMeta.visibleWhen(sectionValues.value)
+  return checkFieldVisibility(fieldMeta, sectionValues.value, {
+    skipContainerValidation: true
+  })
 }
 
 // Check if there's any visible field before the current index
@@ -133,11 +136,10 @@ const isLastVisibleField = (currentIndex: number) => {
 }
 
 // Auto-scroll to newly visible fields (scroll to top of element)
+// Skip container validation since we want actual visibility for scroll behavior
 const { setElementRef } = useScrollOnVisible(allFields, {
-  isVisible: ([, fieldMeta]) => {
-    if (!fieldMeta.visibleWhen) return true
-    return fieldMeta.visibleWhen(sectionValues.value)
-  },
+  isVisible: ([, fieldMeta]) =>
+    checkFieldVisibility(fieldMeta, sectionValues.value, { skipContainerValidation: true }),
   getKey: ([key]) => key
 })
 

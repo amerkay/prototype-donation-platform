@@ -11,7 +11,7 @@ import { useResolvedFieldMeta } from '~/features/form-builder/composables/useRes
 import { useChildFieldErrors } from '~/features/form-builder/composables/useChildFieldErrors'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
-import { resolveVeeFieldPath } from '~/features/form-builder/field-path-utils'
+import { resolveVeeFieldPath } from '~/features/form-builder/composables/useFieldPath'
 
 interface Props {
   modelValue?: unknown[]
@@ -43,17 +43,29 @@ const { hasChildErrors } = useChildFieldErrors(resolvedVeeName)
 
 // Combine own errors with child errors indicator
 const allErrors = computed(() => {
-  // Always show child error indicator when there are child errors (takes priority for clearer UX)
-  // This ensures validation errors from individual fields are communicated at the array level
+  // If there are child errors, show friendly message
   if (hasChildErrors.value) {
     return ['One or more errors above, please fix']
   }
 
-  // Show own array-level validation errors (e.g., "at least one item required")
+  // If array has items but array-level validation fails, it's likely because of invalid child values
+  // Show friendly message instead of raw Zod error (e.g., "expected number, received undefined")
+  if (props.errors.length > 0 && fields.value.length > 0) {
+    return ['One or more errors above, please fix']
+  }
+
+  // Show array-level validation errors only when array is empty (e.g., "at least one item required")
   if (props.errors.length > 0) return props.errors
 
   return []
 })
+
+// Only mark array label as invalid for array-level errors, not child errors
+// We pass labelClass with conditional destructive color instead of using invalid prop
+// to avoid cascading data-invalid styling to child fields
+const arrayLabelClass = computed(() =>
+  cn(props.meta.labelClass, props.errors.length > 0 && 'text-destructive')
+)
 
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
 
@@ -160,8 +172,8 @@ function removeItem(index: number) {
     :optional="meta.optional"
     :errors="allErrors"
     :invalid="false"
-    :class="cn('space-y-4', allErrors.length && 'ff-array--has-errors')"
-    :label-class="meta.labelClass"
+    :class="cn('space-y-1')"
+    :label-class="arrayLabelClass"
     :description-class="meta.descriptionClass"
   >
     <div class="space-y-2">
@@ -202,11 +214,6 @@ function removeItem(index: number) {
 
 <style scoped>
 @reference '@/assets/css/main.css';
-
-/* Error state for array label */
-.ff-array--has-errors :deep(label) {
-  @apply text-destructive;
-}
 
 /* Keep Tailwind usage centralized + readable */
 .ff-array__item {

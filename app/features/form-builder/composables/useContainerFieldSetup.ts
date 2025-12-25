@@ -1,8 +1,7 @@
 import { computed, provide } from 'vue'
-import { getRecordAtPath } from '~/features/form-builder/field-path-utils'
+import { getRecordAtPath, useFieldPath } from './useFieldPath'
 import { useFormBuilderContext } from './useFormBuilderContext'
 import { useFieldVisibility } from './useFieldVisibility'
-import { useContainerFieldPaths } from './useContainerFieldPaths'
 import { useChildFieldErrors } from './useChildFieldErrors'
 
 type FormValues = Record<string, unknown>
@@ -42,11 +41,11 @@ export function useContainerFieldSetup(
   } = useFormBuilderContext()
 
   // Compute paths for this container field
-  const { relativePath, currentFieldPrefix, fullPath } = useContainerFieldPaths(
+  const { relativePath, currentFieldPrefix, fullPath } = useFieldPath({
     name,
     sectionId,
     parentFieldPrefix
-  )
+  })
 
   // Compute visibility for this container
   const isVisible = useFieldVisibility({ visibleWhen }, parentGroupVisible)

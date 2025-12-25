@@ -50,7 +50,7 @@ const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
 
 <template>
   <div v-show="isTabsVisible">
-    <Field :class="cn(meta.class, 'space-y-4')">
+    <Field :class="cn(meta.class, 'space-y-1')">
       <FieldLegend v-if="resolvedLabel" :class="cn('mb-0', meta.labelClass)">
         {{ resolvedLabel }}
       </FieldLegend>

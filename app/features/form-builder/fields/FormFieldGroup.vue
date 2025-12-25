@@ -121,7 +121,7 @@ watch(isOpen, (newIsOpen) => {
 
     <!-- Non-collapsible version -->
     <FieldSet v-else class="gap-4">
-      <FieldLegend v-if="meta.legend || resolvedLabel" :class="cn('mt-4', meta.labelClass)">{{
+      <FieldLegend v-if="meta.legend || resolvedLabel" :class="cn(meta.labelClass)">{{
         meta.legend || resolvedLabel
       }}</FieldLegend>
       <FieldDescription v-if="meta.description" :class="meta.descriptionClass">

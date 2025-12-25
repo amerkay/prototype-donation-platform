@@ -18,7 +18,7 @@ import type {
   SetFieldValueFn
 } from '~/features/form-builder/form-builder-types'
 import type { FieldProps, FieldEmits } from './shared-field-types'
-import { joinPath } from '~/features/form-builder/field-path-utils'
+import { joinPath } from '~/features/form-builder/composables/useFieldPath'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
