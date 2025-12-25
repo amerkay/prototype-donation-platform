@@ -6,11 +6,10 @@ export interface ImpactMessage {
   threshold: number // Currency value in baseCurrency
   title: string // Bold heading
   description: string // Body text
-  cta?: {
-    // Optional call-to-action
-    text: string // Button text
-    action: 'switch-monthly' | 'switch-yearly' // What button does
-  }
+  showCta?: boolean // Whether to show CTA button
+  ctaText?: string // Button text
+  ctaAction?: 'switch-monthly' | 'switch-yearly' // What button does
+  ctaTargetAmount?: number // Optional preset amount to set when switching (in base currency)
 }
 
 export interface FrequencyImpactConfig {

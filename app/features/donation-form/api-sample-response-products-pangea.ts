@@ -31,9 +31,7 @@ export const products: Product[] = [
     image: '🐘',
     thumbnail: '🐘',
     icon: '🐘',
-    isReward: true,
-    isShippingRequired: true,
-    rewardThreshold: { monthly: 25, yearly: 200 }
+    isShippingRequired: true
   },
   // {
   //   id: 'sponsor-kit',
@@ -43,9 +41,7 @@ export const products: Product[] = [
   //   image: '📦',
   //   thumbnail: '📦',
   //   icon: '📦',
-  //   isReward: true,
-  //   isShippingRequired: true,
-  //   rewardThreshold: { monthly: 15, yearly: 100 }
+  //   isShippingRequired: true
   // },
   {
     id: 'enrichment-fund',

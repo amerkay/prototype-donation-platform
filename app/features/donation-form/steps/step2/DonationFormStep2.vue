@@ -7,8 +7,6 @@ import { donorInfoFormSection } from '../../donor-info/forms/donor-info-form'
 import { addressFormSection } from '../../forms/address-form'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
-import type { Product } from '~/features/donation-form/product/types'
-import { useFormConfigStore } from '~/stores/formConfig'
 
 interface Props {
   needsShipping: boolean
@@ -20,35 +18,20 @@ const emit = defineEmits<{
   complete: []
 }>()
 
-// Get products from store
-const configStore = useFormConfigStore()
-const products = configStore.products
-
 // Initialize Pinia stores
 const store = useDonationFormStore()
 const cartStore = useImpactCartStore()
 
 // Calculate shipping item counts
 const shippingCounts = computed(() => {
-  let rewardCount = 0
   let cartCount = 0
-
-  // Count rewards that require shipping for current tab
-  const currentTabRewards =
-    store.selectedRewards[store.activeTab as 'once' | 'monthly' | 'yearly' | 'multiple']
-  if (currentTabRewards) {
-    rewardCount = Array.from(currentTabRewards).filter((id) => {
-      const reward = products.find((p: Product) => p.id === id)
-      return reward?.isShippingRequired
-    }).length
-  }
 
   // Count cart items that require shipping (only for multiple tab)
   if (store.activeTab === 'multiple') {
     cartCount = cartStore.multipleCart.filter((item) => item.isShippingRequired).length
   }
 
-  return { rewardCount, cartCount }
+  return { cartCount }
 })
 
 // Computed refs for individual form sections
@@ -103,11 +86,7 @@ const handleNext = () => {
 
     <!-- Shipping Address Form (conditional) -->
     <template v-if="needsShipping">
-      <ShippingNotice
-        :requires-shipping="true"
-        :reward-count="shippingCounts.rewardCount"
-        :cart-count="shippingCounts.cartCount"
-      />
+      <ShippingNotice :requires-shipping="true" :cart-count="shippingCounts.cartCount" />
       <div class="rounded-lg border border-transparent px-4 py-6 bg-background/40">
         <FormRenderer
           ref="shippingFormRef"

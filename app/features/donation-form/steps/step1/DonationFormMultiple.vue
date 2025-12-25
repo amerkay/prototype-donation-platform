@@ -26,7 +26,7 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   next: []
-  'switch-to-tab': [tab: 'monthly' | 'yearly']
+  'switch-to-tab': [tab: 'monthly' | 'yearly', amount?: number]
 }>()
 
 const cartRef = ref<InstanceType<typeof ImpactCart> | null>(null)
@@ -35,22 +35,20 @@ const formContainerRef = ref<HTMLElement | null>(null)
 
 // Computed
 const filteredProducts = computed(() => {
-  let regularProducts = props.products.filter((p) => !p.isReward)
+  let products = props.products
   const locked = cartStore.activeRecurringFrequency
   if (locked) {
-    regularProducts = regularProducts.filter(
-      (p) => p.frequency === 'once' || p.frequency === locked
-    )
+    products = products.filter((p) => p.frequency === 'once' || p.frequency === locked)
   }
-  return regularProducts
+  return products
 })
 
 const activeCartTotal = computed(() => cartStore.cartTotal('multiple'))
 const isFormValid = computed(() => cartStore.multipleCart.length > 0)
 
 // Methods
-const handleSwitchToTab = (tab: 'monthly' | 'yearly') => {
-  emit('switch-to-tab', tab)
+const handleSwitchToTab = (tab: 'monthly' | 'yearly', amount?: number) => {
+  emit('switch-to-tab', tab, amount)
 }
 
 const handleEditCartItem = (item: CartItem, itemKey: string) => {

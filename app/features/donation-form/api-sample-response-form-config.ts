@@ -53,22 +53,33 @@ export const formConfig = {
           enabled: true,
           messages: [
             {
+              threshold: 0,
+              title: 'Make it monthly for greater impact',
+              description:
+                'A one-time donation helps protect orangutans today. Consider £10/month to support ongoing rescue and care.',
+              showCta: true,
+              ctaText: 'Switch to Monthly →',
+              ctaAction: 'switch-monthly',
+              ctaTargetAmount: 10
+            },
+            {
               threshold: 50,
               title: 'Make it monthly for greater impact',
-              description: '£50 once helps today. £10/month = £120/year of sustained support.',
-              cta: {
-                text: 'Switch to Monthly →',
-                action: 'switch-monthly'
-              }
+              description: '£50 once helps fund urgent medical care and shelter for orangutans.',
+              showCta: true,
+              ctaText: 'Switch to Monthly →',
+              ctaAction: 'switch-monthly',
+              ctaTargetAmount: 10
             },
             {
               threshold: 100,
               title: 'Join our major donors circle',
-              description: '£100 once is generous. £25/month = £300/year creates lasting change.',
-              cta: {
-                text: 'Make it Monthly →',
-                action: 'switch-monthly'
-              }
+              description:
+                '£100 once is generous — it helps fund rescue missions and habitat protection for orangutans.',
+              showCta: true,
+              ctaText: 'Make it Monthly →',
+              ctaAction: 'switch-monthly',
+              ctaTargetAmount: 25
             }
           ]
         },
@@ -79,19 +90,19 @@ export const formConfig = {
               threshold: 5,
               title: '💙 Thank you for becoming a monthly supporter',
               description:
-                "Your £5/month creates £60 sustained annual impact. You'll receive quarterly updates on our blog."
+                "Your £5/month helps provide food and basic care for orangutans. You'll receive quarterly updates on our work."
             },
             {
               threshold: 10,
               title: '💙 Join 1,200+ Monthly Supporters',
               description:
-                "Your £10/month = £120/year of sustained support. You'll receive quarterly impact updates (available publicly on our blog)."
+                "Your £10/month funds enrichment, medical checks, and daily care for orangutans. You'll receive quarterly impact updates."
             },
             {
               threshold: 25,
               title: '🌟 Major monthly supporter',
               description:
-                'Your £25/month = £300/year provides stable funding for multiple programs. Thank you!'
+                'Your £25/month provides stable funding for orangutan rescue, rehabilitation, and habitat protection. Thank you!'
             }
           ]
         },
@@ -106,13 +117,13 @@ export const formConfig = {
               threshold: 10,
               title: '💡 Your combined recurring impact',
               description:
-                'Your cart includes recurring donations that create sustained annual support. Thank you!'
+                'Your cart includes recurring donations that help fund orangutan rescue and care. Thank you!'
             },
             {
               threshold: 25,
               title: '🌟 Major supporter: Recurring gifts in cart',
               description:
-                'Your recurring items provide stable, predictable funding for our programs. This makes a huge difference!'
+                'Your recurring items provide stable, predictable funding for orangutan rescue, rehabilitation, and habitat protection. This makes a huge difference!'
             }
           ]
         }

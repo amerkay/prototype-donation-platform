@@ -57,20 +57,20 @@ export const formConfig = {
               title: 'Double your impact with monthly giving',
               description:
                 '€25 once helps today. €5/month = €60/year of sustained care for our elderly elephants.',
-              cta: {
-                text: 'Switch to Monthly →',
-                action: 'switch-monthly'
-              }
+              showCta: true,
+              ctaText: 'Switch to Monthly →',
+              ctaAction: 'switch-monthly',
+              ctaTargetAmount: 5
             },
             {
               threshold: 50,
               title: 'Make it monthly for lasting impact',
               description:
                 '€50 is generous! €10/month = €120/year provides ongoing support and sanctuary care.',
-              cta: {
-                text: 'Become a Monthly Supporter →',
-                action: 'switch-monthly'
-              }
+              showCta: true,
+              ctaText: 'Become a Monthly Supporter →',
+              ctaAction: 'switch-monthly',
+              ctaTargetAmount: 10
             }
           ]
         },

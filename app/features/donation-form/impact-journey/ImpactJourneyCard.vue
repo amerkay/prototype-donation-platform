@@ -16,7 +16,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  'switch-to-tab': [tab: 'monthly' | 'yearly']
+  'switch-to-tab': [tab: 'monthly' | 'yearly', amount?: number]
 }>()
 
 // Convert props to refs for composable
@@ -36,13 +36,13 @@ const { currentMessage } = useImpactJourneyMessages(
 
 // Determine CTA action from message
 const ctaAction = computed<'monthly' | 'yearly'>(() => {
-  if (!currentMessage.value?.cta) return 'monthly'
-  return currentMessage.value.cta.action === 'switch-yearly' ? 'yearly' : 'monthly'
+  if (!currentMessage.value?.showCta || !currentMessage.value?.ctaAction) return 'monthly'
+  return currentMessage.value.ctaAction === 'switch-yearly' ? 'yearly' : 'monthly'
 })
 
 const handleCtaClick = () => {
-  if (currentMessage.value?.cta) {
-    emit('switch-to-tab', ctaAction.value)
+  if (currentMessage.value?.showCta && currentMessage.value?.ctaText) {
+    emit('switch-to-tab', ctaAction.value, currentMessage.value.ctaTargetAmount)
   }
 }
 </script>
@@ -53,13 +53,13 @@ const handleCtaClick = () => {
       <h4 class="font-semibold text-sm">{{ currentMessage.title }}</h4>
       <p class="text-sm text-muted-foreground">{{ currentMessage.description }}</p>
       <Button
-        v-if="currentMessage.cta"
+        v-if="currentMessage.showCta && currentMessage.ctaText?.trim()"
         variant="outline"
         size="sm"
         class="w-full"
         @click="handleCtaClick"
       >
-        {{ currentMessage.cta.text }}
+        {{ currentMessage.ctaText }}
       </Button>
     </div>
   </div>

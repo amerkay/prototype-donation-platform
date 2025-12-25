@@ -9,11 +9,5 @@ export interface Product {
   image: string
   thumbnail: string
   icon: string
-  isReward?: boolean
   isShippingRequired?: boolean
-  rewardThreshold?: {
-    once?: number
-    monthly?: number
-    yearly?: number
-  }
 }

@@ -114,7 +114,7 @@ watch(isOpen, (newIsOpen) => {
           }}</span>
         </div>
       </AccordionTrigger>
-      <AccordionContent class="py-2">
+      <AccordionContent class="pt-2 pb-4">
         <div :class="cn('grid grid-cols-1 gap-4', meta.class)">
           <FormField
             v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"

@@ -19,7 +19,6 @@ interface Props {
   donationAmount: number
   selectedProduct: Product | null
   tributeData: TributeData | undefined
-  rewards: Product[]
   products: Product[]
   availableAmounts: number[]
   minPrice: number
@@ -37,7 +36,7 @@ const emit = defineEmits<{
   'tribute-save': [tributeData: TributeData | undefined]
   'remove-tribute': []
   next: []
-  'switch-to-tab': [tab: 'monthly' | 'yearly', openModal?: boolean]
+  'switch-to-tab': [tab: 'monthly' | 'yearly', openModal?: boolean, amount?: number]
 }>()
 
 // Refs
@@ -59,8 +58,8 @@ const handleAmountUpdate = (value: number) => {
   emit('update:donationAmount', value)
 }
 
-const handleSwitchToTab = (tab: 'monthly' | 'yearly') => {
-  emit('switch-to-tab', tab)
+const handleSwitchToTab = (tab: 'monthly' | 'yearly', amount?: number) => {
+  emit('switch-to-tab', tab, false, amount)
 }
 
 const handleOpenTributeModal = () => {

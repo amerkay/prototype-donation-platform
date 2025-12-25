@@ -169,8 +169,15 @@ const handleNext = () => {
   // TODO: When implementing actual form submission, call store.clearSession() on success
 }
 
-const handleSwitchToTab = (tab: 'monthly' | 'yearly', openModal?: boolean) => {
+const handleSwitchToTab = (tab: 'monthly' | 'yearly', openModal?: boolean, amount?: number) => {
   selectedFrequency.value = tab
+
+  // Set donation amount if provided (from Impact Journey CTA)
+  if (amount !== undefined) {
+    const convertedAmount = convertPrice(amount, selectedCurrency.value)
+    store.setDonationAmount(tab, convertedAmount)
+  }
+
   if (openModal) {
     // Wait for next tick to ensure the new tab component is rendered
     setTimeout(() => {
@@ -281,7 +288,6 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
             store.selectedProducts[freq.value as keyof typeof store.selectedProducts] ?? null
           "
           :tribute-data="store.tributeData[freq.value as keyof typeof store.tributeData]"
-          :rewards="[]"
           :products="products"
           :available-amounts="availableAmounts"
           :min-price="sliderMinPrice"

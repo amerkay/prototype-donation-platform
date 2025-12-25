@@ -41,7 +41,7 @@ const productButtonText = computed(() => {
 })
 
 const selectorProducts = computed(() => {
-  return props.products.filter((p) => !p.isReward && p.frequency === props.frequency)
+  return props.products.filter((p) => p.frequency === props.frequency)
 })
 
 const productModalTitle = computed(() => {

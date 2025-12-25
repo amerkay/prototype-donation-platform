@@ -6,7 +6,7 @@ applyTo: '**'
 
 ## Project Overview
 
-Multi-step donation platform with single/recurring donations, multi-item cart system, dynamic pricing sliders, conditional free gifts with upsell messaging, and mobile-first progressive disclosure.
+Multi-step donation platform with single/recurring donations, multi-item cart system, dynamic pricing sliders and mobile-first progressive disclosure.
 
 ## Tech Stack
 
@@ -131,5 +131,5 @@ THESE ARE COMMANDMENTS. YOU MUST ALWAYS FOLLOW THEM WHEN RESPONDING TO MY PROMPT
 - Whenever possible, do not edit the shadcn files in @/components/ui. Only if needed.
 - YOU MUST write modular vue3 code using components and composables without overcomplicating things.
 - ALWAYS prefer self container logic. You must rewrite confusing logic to be as self-contained as possible.
-- You MUST define TypeScript interfaces that exactly mirror API response structures and pass config objects directly to components using typed sections (e.g., FormConfig['features']['rewards']) rather than restructuring or mapping data in parent components.
+- You MUST define TypeScript interfaces that exactly mirror API response structures and pass config objects directly to components using typed sections (e.g., FormConfig['features']['multi-cart']) rather than restructuring or mapping data in parent components.
 - YOU MUST follow Feature-Based Architecture: place all feature-specific code (components, composables, types, utils) in `app/features/[feature-name]/`. Only truly shared/reusable UI components belong in `app/components/`, and only system-wide composables belong in `app/composables/`.
