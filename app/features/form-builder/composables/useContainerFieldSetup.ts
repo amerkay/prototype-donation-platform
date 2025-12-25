@@ -1,7 +1,6 @@
 import { computed, provide } from 'vue'
-import { getRecordAtPath, useFieldPath } from './useFieldPath'
+import { getRecordAtPath, useFieldPath, checkFieldVisibility } from './useFieldPath'
 import { useFormBuilderContext } from './useFormBuilderContext'
-import { useFieldVisibility } from './useFieldVisibility'
 import { useChildFieldErrors } from './useChildFieldErrors'
 
 type FormValues = Record<string, unknown>
@@ -48,7 +47,11 @@ export function useContainerFieldSetup(
   })
 
   // Compute visibility for this container
-  const isVisible = useFieldVisibility({ visibleWhen }, parentGroupVisible)
+  const isVisible = computed(() => {
+    return checkFieldVisibility({ visibleWhen }, formValues.value, {
+      parentVisible: parentGroupVisible()
+    })
+  })
 
   // Update parent visibility context for children
   provide('parentGroupVisible', () => isVisible.value)
