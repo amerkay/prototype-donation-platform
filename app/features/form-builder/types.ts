@@ -173,7 +173,9 @@ export interface ToggleFieldMeta extends BaseFieldMeta {
  */
 export interface SelectFieldMeta extends BaseFieldMeta {
   type: 'select'
-  options: ReadonlyArray<{ value: string | number; label: string }>
+  options:
+    | Array<{ value: string | number; label: string }>
+    | ((values: Record<string, unknown>) => Array<{ value: string | number; label: string }>)
   searchPlaceholder?: string // Not used in native select, kept for API compatibility
   notFoundText?: string // Not used in native select, kept for API compatibility
 }
@@ -184,7 +186,7 @@ export interface SelectFieldMeta extends BaseFieldMeta {
 export interface ComboboxFieldMeta extends BaseFieldMeta {
   type: 'combobox'
   options:
-    | ReadonlyArray<{
+    | Array<{
         value: string | number
         label: string
         description?: string
