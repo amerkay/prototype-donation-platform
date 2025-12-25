@@ -149,15 +149,29 @@ city: {
   loadOptions: async (query) => {
     const res = await fetch(`/api/cities?q=${query}`)
     const cities = await res.json()
-    return cities.map(c => ({ value: c.id, label: c.name, data: c }))
+    return cities.map(c => ({
+      value: c.id,
+      label: c.name,
+      data: c  // Store full object for later use
+    }))
   },
   staticOptions: [
-    { value: 'nyc', label: 'New York' }  // Shown before search
-  ]
+    { value: 'nyc', label: 'New York', data: { ... } }
+  ],
+  onChange: (selected, allValues, setValue) => {
+    // Access the full city object via selected.data
+    const cityData = selected?.data
+    if (cityData) {
+      setValue('timezone', cityData.timezone)
+    }
+  }
 }
 ```
 
-**Props:** `loadOptions: (query: string) => Promise<AutocompleteOption[]>`, `staticOptions`, `debounceMs`
+**Props:** `loadOptions: (query: string) => Promise<AutocompleteOption[]>`, `staticOptions`, `debounceMs`, `minQueryLength`
+
+**AutocompleteOption structure:** `{ value: string | number, label: string, data?: any }`  
+The `data` property stores the full object, accessible in `onChange` callbacks.
 
 ### radio-group
 
@@ -197,8 +211,33 @@ amount: {
 }
 ```
 
+**Dynamic currency symbol:**
+
+```typescript
+fields: {
+  currency: {
+    type: 'select',
+    label: 'Currency',
+    options: [
+      { value: 'USD', label: 'US Dollar' },
+      { value: 'GBP', label: 'British Pound' },
+      { value: 'EUR', label: 'Euro' }
+    ]
+  },
+  amount: {
+    type: 'currency',
+    label: 'Amount',
+    currencySymbol: (values) => {
+      const symbols = { USD: '$', GBP: '£', EUR: '€' }
+      return symbols[values.currency as string] || '$'
+    },
+    min: 1
+  }
+}
+```
+
 **Props:** `currencySymbol`, `min`, `max`, `step`  
-**Dynamic symbol:** `currencySymbol: (values) => getCurrencySymbol(values.currency)`
+**Dynamic symbol:** `currencySymbol` accepts a function that receives form values
 
 ### slider
 
@@ -211,11 +250,32 @@ volume: {
   min: 0,
   max: 100,
   step: 1,
-  formatLabel: (val) => `${val}%`
+  formatValue: (val) => `${val}%`
 }
 ```
 
-**Props:** `min`, `max`, `step`, `formatLabel: (value: number) => string`
+**Advanced slider with dynamic formatting:**
+
+```typescript
+coverCosts: {
+  type: 'slider',
+  label: 'Cover Transaction Costs',
+  min: (values) => values.donationAmount >= 100 ? 0 : 0,
+  max: (values) => values.donationAmount >= 100 ? 15 : 5.50,
+  step: (values) => values.donationAmount >= 100 ? 1 : 0.5,
+  formatValue: (value, formValues) => {
+    // Show percentage for large donations, currency for small
+    return formValues?.donationAmount >= 100 ? `${value}%` : `$${value.toFixed(2)}`
+  },
+  showMinMax: true,  // Display min/max labels below slider
+  minMaxFormatter: (value, formValues) => `${value}%`,  // Custom min/max format
+  prefix: 'Add',     // Text before value label
+  suffix: 'extra'    // Text after value label
+}
+```
+
+**Props:** `min`, `max`, `step`, `formatValue`, `showMinMax`, `minMaxFormatter`, `prefix`, `suffix`  
+**Dynamic props:** All numeric props (`min`, `max`, `step`) accept functions for conditional behavior
 
 ### emoji
 
@@ -239,13 +299,27 @@ Display-only card. For instructions or context.
 ```typescript
 info: {
   type: 'card',
-  title: 'Important Notice',
-  content: 'Your data is encrypted and never shared.',
-  icon: 'ℹ️'
+  label: 'Important Notice',
+  description: 'Your data is encrypted and never shared.',
+  imageSrc: '/icon-shield.svg',
+  imageAlt: 'Security',
+  imageClass: 'w-16 h-16 mb-4'
 }
 ```
 
-**Props:** `title`, `content`, `icon`, `variant: 'default' | 'info' | 'warning'`
+**With rich HTML content:**
+
+```typescript
+tips: {
+  type: 'card',
+  label: 'Pro Tips',
+  content: '<ul><li>Use strong passwords</li><li>Enable 2FA</li></ul>'
+}
+```
+
+**Props:** `label`, `description`, `content` (raw HTML), `imageSrc`, `imageAlt`, `imageClass`
+
+**Custom content:** Card fields support slots for complete layout control. Use `FormField` component with custom template when needed.
 
 ### separator
 
@@ -308,6 +382,8 @@ advanced: {
 
 **Props:** `collapsible`, `collapsibleDefaultOpen`, `badgeLabel`, `badgeVariant`
 
+**Automatic error indicators:** When any child field has validation errors, collapsible groups automatically show a red error badge. The badge text changes to "X errors" (where X is the count). This helps users locate problems in collapsed sections.
+
 ### tabs
 
 Organize fields into tabbed sections. Like field-groups, but with tab navigation.
@@ -321,6 +397,7 @@ contact: {
     {
       value: 'email',
       label: 'Email',
+      badgeLabel: 'Primary',  // Optional badge on tab
       fields: {
         emailAddress: { type: 'text', label: 'Email' },
         emailFrequency: { type: 'select', label: 'Frequency', options: [...] }
@@ -339,11 +416,13 @@ contact: {
 
 **Result:** Form data is `{ contact: { emailAddress: '...', emailFrequency: '...', phone: '...' } }`
 
-**Props:** `tabs: TabDefinition[]`, `defaultValue`, `tabsListClass`
+**Props:** `tabs: TabDefinition[]`, `defaultValue`, `tabsListClass`, `badgeLabel` (per tab), `badgeVariant` (per tab)
+
+**Automatic error indicators:** Tabs with validation errors automatically show a red error badge on the tab trigger. This helps users identify which tabs need attention without switching between them.
 
 ### array
 
-Dynamic list of items. Users can add/remove entries.
+Dynamic list of items. Users can add/remove entries. **Supports drag-and-drop reordering.**
 
 ```typescript
 skills: {
@@ -366,6 +445,7 @@ contacts: {
   type: 'array',
   label: 'Emergency Contacts',
   addButtonText: 'Add Contact',
+  removeButtonText: 'Remove',  // Optional custom remove button text
   itemField: {
     type: 'field-group',
     class: 'grid grid-cols-2 gap-x-3',
@@ -379,7 +459,8 @@ contacts: {
 
 **Result:** `{ contacts: [{ name: 'Jane', phone: '555-0100' }, ...] }`
 
-**Props:** `itemField`, `addButtonText`, `class` (applied to grid container)
+**Props:** `itemField`, `addButtonText`, `removeButtonText`, `class` (applied to grid container)  
+**Note:** Drag handles appear automatically. Items can be reordered by dragging.
 
 ## Making Forms Interactive
 
@@ -565,33 +646,40 @@ export function createMessageFields(
 - `modelValue: Record<string, unknown>` – Form values (use with `v-model`)
 - `class?: string` – CSS classes applied to form element
 - `keepValuesOnUnmount?: boolean` – Preserve form state when component unmounts (default: `false`)
+- `validateOnMount?: boolean` – Validate all fields immediately on mount (default: `false`). Useful for edit forms with pre-filled data.
 
 **Events:**
 
 - `update:modelValue` – Emitted on any field change
-- `submit` – Emitted when form is submitted (Enter key or manual `onSubmit()`)
+- `submit` – Emitted when form is submitted (Enter key in text fields or manual `onSubmit()`)
 
-**Exposed Methods:**
+**Exposed Properties:**
 
-- `isValid: boolean` – Current form validation state
-- `onSubmit: () => void` – Manually trigger form submission
+- `isValid` – Computed ref with current form validation state
+- `onSubmit()` – Function to manually trigger form submission
 
 **Example:**
 
 ```vue
 <script setup lang="ts">
-const formRef = ref()
+const formRef = ref<InstanceType<typeof FormRenderer>>()
 const data = ref({})
 
 function manualSubmit() {
-  if (formRef.value.isValid) {
+  if (formRef.value?.isValid) {
     formRef.value.onSubmit()
   }
 }
 </script>
 
 <template>
-  <FormRenderer ref="formRef" :section="form" v-model="data" @submit="handleSubmit" />
+  <FormRenderer
+    ref="formRef"
+    :section="form"
+    v-model="data"
+    validate-on-mount
+    @submit="handleSubmit"
+  />
   <Button @click="manualSubmit">Submit</Button>
 </template>
 ```
@@ -608,6 +696,20 @@ interface FormDef {
   defaultValue?: Record<string, unknown> // Initial form values
 }
 ```
+
+**About `schema`:** Each field defines its own validation via the `rules` property. The root `schema` is only needed for cross-field validation that involves multiple fields. For example:
+
+```typescript
+schema: z.object({
+  password: z.string(),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ['confirmPassword']
+})
+```
+
+For most forms, field-level `rules` are sufficient.
 
 ### Common Field Properties
 
@@ -661,3 +763,7 @@ onChange: (value, allValues, setValue) => {
 **Extract patterns:** If you use the same fields in 3+ places, make a factory function. Your future self will thank you.
 
 **Remove separators for tight groups:** Add `isNoSeparatorAfter: true` to the first field in a pair that should feel like one unit (e.g., first name / last name).
+
+**Error indicators work automatically:** Collapsible field-groups and tabs automatically display error badges when child fields have validation errors. You don't need to manage this manually.
+
+**Form submission:** Text-based fields (text, textarea, number, currency) submit the form when Enter is pressed. This is standard form behavior. For multi-line textareas, Shift+Enter adds a new line.

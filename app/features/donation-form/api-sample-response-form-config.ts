@@ -14,7 +14,7 @@ export const formConfig = {
       once: {
         enabled: true,
         label: 'One-time',
-        presetAmounts: [1, 25, 50, 100, 250, 500],
+        presetAmounts: [10, 25, 50, 100, 250, 500],
         customAmount: { min: 5, max: 1000 }
       },
       monthly: {
