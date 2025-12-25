@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import type { FormDef } from '~/features/form-builder/form-builder-types'
+import type { FormDef } from '~/features/form-builder/types'
 import type { TributeSettings } from '../types'
 import { createMessageFields } from '~/features/donation-form/forms/optional-message-field'
 

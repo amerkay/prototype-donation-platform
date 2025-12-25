@@ -1,4 +1,4 @@
-import type { FieldMetaMap } from '~/features/form-builder/form-builder-types'
+import type { FieldMetaMap } from '~/features/form-builder/types'
 
 /**
  * Create reusable email opt-in toggle field

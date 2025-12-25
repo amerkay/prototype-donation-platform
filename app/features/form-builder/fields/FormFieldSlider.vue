@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Slider } from '@/components/ui/slider'
-import type { SliderFieldMeta } from '~/features/form-builder/form-builder-types'
-import type { FieldProps, FieldEmits } from './shared-field-types'
+import type { SliderFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'

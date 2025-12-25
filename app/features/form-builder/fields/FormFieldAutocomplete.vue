@@ -15,9 +15,10 @@ import { Check } from 'lucide-vue-next'
 import type {
   AutocompleteFieldMeta,
   AutocompleteOption,
-  SetFieldValueFn
-} from '~/features/form-builder/form-builder-types'
-import type { FieldProps, FieldEmits } from './shared-field-types'
+  SetFieldValueFn,
+  FieldProps,
+  FieldEmits
+} from '~/features/form-builder/types'
 import { joinPath } from '~/features/form-builder/composables/useFieldPath'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'

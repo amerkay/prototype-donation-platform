@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { FieldSeparator } from '@/components/ui/field'
-import type { SeparatorFieldMeta } from '~/features/form-builder/form-builder-types'
+import type { SeparatorFieldMeta } from '~/features/form-builder/types'
 
 interface Props {
   meta: SeparatorFieldMeta

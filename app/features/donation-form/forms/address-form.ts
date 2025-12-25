@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import type { FormDef, FieldMetaMap } from '~/features/form-builder/form-builder-types'
+import type { FormDef, FieldMetaMap } from '~/features/form-builder/types'
 
 /**
  * Country-specific label configuration

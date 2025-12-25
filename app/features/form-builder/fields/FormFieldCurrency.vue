@@ -7,8 +7,7 @@ import {
   InputGroupInput,
   InputGroupText
 } from '@/components/ui/input-group'
-import type { CurrencyFieldMeta } from '~/features/form-builder/form-builder-types'
-import type { FieldProps, FieldEmits } from './shared-field-types'
+import type { CurrencyFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import {
   useFieldWrapper,

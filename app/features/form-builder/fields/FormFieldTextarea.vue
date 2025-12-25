@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Textarea } from '@/components/ui/textarea'
-import type { TextareaFieldMeta } from '~/features/form-builder/form-builder-types'
-import type { FieldProps, FieldEmits } from './shared-field-types'
+import type { TextareaFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 

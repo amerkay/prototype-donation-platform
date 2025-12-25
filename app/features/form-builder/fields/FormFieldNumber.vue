@@ -6,8 +6,7 @@ import {
   NumberFieldIncrement,
   NumberFieldInput
 } from '@/components/ui/number-field'
-import type { NumberFieldMeta } from '~/features/form-builder/form-builder-types'
-import type { FieldProps, FieldEmits } from './shared-field-types'
+import type { NumberFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
 import {
   useFieldWrapper,
   preventEnterSubmit

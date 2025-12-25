@@ -4,7 +4,7 @@ import { useForm } from 'vee-validate'
 import { Accordion } from '@/components/ui/accordion'
 import { FieldSeparator } from '@/components/ui/field'
 import FormField from './FormField.vue'
-import type { FormDef } from '~/features/form-builder/form-builder-types'
+import type { FormDef } from '~/features/form-builder/types'
 import { useScrollOnVisible } from './composables/useScrollOnVisible'
 import { checkFieldVisibility } from './composables/useFieldPath'
 

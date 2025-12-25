@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import type { FieldMetaMap } from '~/features/form-builder/form-builder-types'
+import type { FieldMetaMap } from '~/features/form-builder/types'
 
 /**
  * Create reusable terms acceptance toggle field

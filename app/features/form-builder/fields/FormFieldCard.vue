@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { cn } from '@/lib/utils'
-import type { CardFieldMeta } from '~/features/form-builder/form-builder-types'
+import type { CardFieldMeta } from '~/features/form-builder/types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { resolveText } from '~/features/form-builder/composables/useResolvedFieldMeta'
 

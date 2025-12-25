@@ -1,5 +1,9 @@
 import type { z } from 'zod'
 
+// ============================================================================
+// CORE TYPES - Shared across all form builder features
+// ============================================================================
+
 /**
  * Field types supported by the form builder
  */
@@ -51,7 +55,7 @@ export interface FormDef<T extends z.ZodTypeAny = z.ZodTypeAny> {
 export type SetFieldValueFn = (relativePath: string, value: unknown) => void
 
 /**
- * Base field metadata
+ * Base field metadata - extended by all field-specific metadata interfaces
  */
 export interface BaseFieldMeta {
   type: FieldType
@@ -87,6 +91,36 @@ export interface BaseFieldMeta {
    */
   onChange?: (value: unknown, allValues: Record<string, unknown>, setValue: SetFieldValueFn) => void
 }
+
+// ============================================================================
+// FIELD COMPONENT PROPS & EMITS - Shared by value-based field components
+// ============================================================================
+
+/**
+ * Standard props for all value-based form field components
+ * Used by: Text, Textarea, Number, Currency, Toggle, Select, Combobox, Autocomplete, RadioGroup, Emoji, Slider
+ */
+export interface FieldProps<TValue = unknown, TMeta = unknown> {
+  modelValue?: TValue
+  errors: string[]
+  meta: TMeta
+  name: string
+  onBlur?: (e?: Event) => void
+  class?: string
+}
+
+/**
+ * Standard emits for all form field components with v-model support
+ */
+export interface FieldEmits<TValue = unknown> {
+  'update:modelValue': [value: TValue]
+}
+
+// ============================================================================
+// FIELD METADATA INTERFACES - Specific to each field type
+// ============================================================================
+
+// --- Input Fields ---
 
 /**
  * Text field metadata
@@ -124,6 +158,8 @@ export interface CurrencyFieldMeta extends BaseFieldMeta {
   step?: number
   currencySymbol: string | ((values: Record<string, unknown>) => string)
 }
+
+// --- Selection Fields ---
 
 /**
  * Toggle/Switch field metadata
@@ -200,15 +236,7 @@ export interface RadioGroupFieldMeta extends BaseFieldMeta {
   orientation?: 'vertical' | 'horizontal'
 }
 
-/**
- * Array field metadata
- */
-export interface ArrayFieldMeta extends BaseFieldMeta {
-  type: 'array'
-  itemField: FieldMeta
-  addButtonText?: string
-  removeButtonText?: string
-}
+// --- Specialized Input Fields ---
 
 /**
  * Emoji field metadata - single emoji input
@@ -233,23 +261,16 @@ export interface SliderFieldMeta extends BaseFieldMeta {
   suffix?: string
 }
 
-/**
- * Card field metadata - informational display card
- */
-export interface CardFieldMeta extends BaseFieldMeta {
-  type: 'card'
-  imageSrc?: string // Optional image to display in card
-  imageAlt?: string // Alt text for image
-  imageClass?: string // Custom classes for image element
-  content?: string // Rich HTML content (use with caution)
-}
+// --- Container & Layout Fields ---
 
 /**
- * Separator field metadata - visual divider
+ * Array field metadata
  */
-export interface SeparatorFieldMeta extends BaseFieldMeta {
-  type: 'separator'
-  orientation?: 'horizontal' | 'vertical'
+export interface ArrayFieldMeta extends BaseFieldMeta {
+  type: 'array'
+  itemField: FieldMeta
+  addButtonText?: string
+  removeButtonText?: string
 }
 
 /**
@@ -289,9 +310,31 @@ export interface TabsFieldMeta extends BaseFieldMeta {
   rules?: z.ZodTypeAny | ((values: Record<string, unknown>) => z.ZodTypeAny)
 }
 
+// --- Display-Only Fields ---
+
 /**
- * Union of all field metadata types
+ * Card field metadata - informational display card
  */
+export interface CardFieldMeta extends BaseFieldMeta {
+  type: 'card'
+  imageSrc?: string // Optional image to display in card
+  imageAlt?: string // Alt text for image
+  imageClass?: string // Custom classes for image element
+  content?: string // Rich HTML content (use with caution)
+}
+
+/**
+ * Separator field metadata - visual divider
+ */
+export interface SeparatorFieldMeta extends BaseFieldMeta {
+  type: 'separator'
+  orientation?: 'horizontal' | 'vertical'
+}
+
+// ============================================================================
+// UNION TYPES - Aggregates for type-safe field handling
+// ============================================================================
+
 export type FieldMeta =
   | TextFieldMeta
   | TextareaFieldMeta

@@ -1,8 +1,4 @@
-import type {
-  FormDef,
-  FieldMetaMap,
-  SetFieldValueFn
-} from '~/features/form-builder/form-builder-types'
+import type { FormDef, FieldMetaMap, SetFieldValueFn } from '~/features/form-builder/types'
 import { createAddressFields } from '../../forms/address-form'
 
 /**

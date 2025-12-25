@@ -3,7 +3,7 @@ import { computed, inject, type Component } from 'vue'
 import { useField, useFormErrors } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
-import type { FieldMeta, SetFieldValueFn } from '~/features/form-builder/form-builder-types'
+import type { FieldMeta, SetFieldValueFn } from '~/features/form-builder/types'
 import {
   resolveVeeFieldPath,
   checkFieldVisibility

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import type { TextFieldMeta } from '~/features/form-builder/form-builder-types'
-import type { FieldProps, FieldEmits } from './shared-field-types'
+import type { TextFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
 import {
   useFieldWrapper,
   preventEnterSubmit

@@ -8,8 +8,7 @@ import {
   FieldContent,
   FieldTitle
 } from '@/components/ui/field'
-import type { RadioGroupFieldMeta } from '~/features/form-builder/form-builder-types'
-import type { FieldProps, FieldEmits } from './shared-field-types'
+import type { RadioGroupFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 

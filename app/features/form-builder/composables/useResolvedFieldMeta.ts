@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import type { BaseFieldMeta } from '~/features/form-builder/form-builder-types'
+import type { BaseFieldMeta } from '~/features/form-builder/types'
 import { useFormBuilderContext } from './useFormBuilderContext'
 
 type FormValues = Record<string, unknown>

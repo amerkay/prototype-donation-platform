@@ -1,5 +1,5 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
-import type { BaseFieldMeta } from '~/features/form-builder/form-builder-types'
+import type { BaseFieldMeta } from '~/features/form-builder/types'
 import { useResolvedFieldMeta } from './useResolvedFieldMeta'
 
 type WrapperOptions = {
