@@ -27,7 +27,7 @@ export function createImpactJourneyConfigSection(): FormDef {
 
           const baseCurrency = pricing.baseCurrency
           const symbol = getCurrencySymbol(baseCurrency)
-          
+
           // Get all preset amounts from all enabled frequencies
           const allAmounts = new Set<number>()
           Object.values(pricing.frequencies).forEach((freq) => {
@@ -40,27 +40,27 @@ export function createImpactJourneyConfigSection(): FormDef {
               )
             }
           })
-          
+
           const sortedAmounts = Array.from(allAmounts).sort((a, b) => a - b)
-          
+
           const options: Array<{ value: number; label: string }> = []
-          
+
           // Add "< lowest" option
           if (sortedAmounts.length > 0) {
             options.push({ value: 0, label: `< ${symbol}${sortedAmounts[0]}` })
           }
-          
+
           // Add each amount
           sortedAmounts.forEach((amt) => {
             options.push({ value: amt, label: `${symbol}${amt}` })
           })
-          
+
           // Add "highest+" option
           if (sortedAmounts.length > 0) {
             const highest = sortedAmounts[sortedAmounts.length - 1]!
             options.push({ value: highest + 1, label: `${symbol}${highest}+` })
           }
-          
+
           return options
         },
         rules: z.number().min(0, 'Must be positive')

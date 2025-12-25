@@ -23,7 +23,7 @@ interface Props {
 const props = defineProps<Props>()
 
 // Use provided config or fall back to default
-const formConfig = computed(() => props.config ?? defaultConfig)
+const formConfig = computed(() => (props.config ?? defaultConfig) as FullFormConfig)
 
 const emit = defineEmits<{
   complete: []
@@ -169,12 +169,20 @@ const handleNext = () => {
   // TODO: When implementing actual form submission, call store.clearSession() on success
 }
 
-const handleSwitchToTab = (tab: 'monthly' | 'yearly', openModal?: boolean, amount?: number) => {
+const handleSwitchToTab = (
+  tab: 'monthly' | 'yearly',
+  openModalOrAmount?: boolean | number,
+  amount?: number
+) => {
   selectedFrequency.value = tab
 
+  // Handle both signatures: (tab, openModal?, amount?) from Single and (tab, amount?) from Multiple
+  const openModal = typeof openModalOrAmount === 'boolean' ? openModalOrAmount : false
+  const actualAmount = typeof openModalOrAmount === 'number' ? openModalOrAmount : amount
+
   // Set donation amount if provided (from Impact Journey CTA)
-  if (amount !== undefined) {
-    const convertedAmount = convertPrice(amount, selectedCurrency.value)
+  if (actualAmount !== undefined) {
+    const convertedAmount = convertPrice(actualAmount, selectedCurrency.value)
     store.setDonationAmount(tab, convertedAmount)
   }
 
