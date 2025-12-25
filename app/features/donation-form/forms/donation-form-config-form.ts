@@ -187,7 +187,7 @@ export function createFormConfigSection(): FormDef {
                     label: 'Preset Amounts',
                     description: 'Preset donation amounts (in base currency)',
                     visibleWhen: (values) => !!(values.enabled as boolean | undefined),
-                    class: 'grid grid-cols-2 gap-2',
+                    class: 'grid grid-cols-2 gap-2 items-start',
                     itemField: {
                       type: 'currency',
                       placeholder: '25',
@@ -274,7 +274,7 @@ export function createFormConfigSection(): FormDef {
                     label: 'Preset Amounts',
                     description: 'Preset donation amounts (in base currency)',
                     visibleWhen: (values) => !!(values.enabled as boolean | undefined),
-                    class: 'grid grid-cols-2 gap-2',
+                    class: 'grid grid-cols-2 gap-2 items-start',
                     itemField: {
                       type: 'currency',
                       placeholder: '25',
@@ -361,7 +361,7 @@ export function createFormConfigSection(): FormDef {
                     label: 'Preset Amounts',
                     description: 'Preset donation amounts (in base currency)',
                     visibleWhen: (values) => !!(values.enabled as boolean | undefined),
-                    class: 'grid grid-cols-2 gap-2',
+                    class: 'grid grid-cols-2 gap-2 items-start',
                     itemField: {
                       type: 'currency',
                       placeholder: '25',
