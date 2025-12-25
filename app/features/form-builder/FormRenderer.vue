@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, provide, nextTick } from 'vue'
 import { useForm } from 'vee-validate'
-import { Accordion } from '@/components/ui/accordion'
 import { FieldSeparator } from '@/components/ui/field'
 import FormField from './FormField.vue'
 import type { FormDef } from '~/features/form-builder/types'
@@ -74,17 +73,6 @@ provide('setFieldValue', providedSetFieldValue)
 // Provide submit function for Enter key handling in text fields
 provide('submitForm', () => {
   onSubmit()
-})
-
-// Accordion state for collapsible field groups
-const accordionValue = ref<string | undefined>(undefined)
-provide('accordionValue', accordionValue)
-
-// Check if we have any collapsible field groups
-const hasCollapsibleGroups = computed(() => {
-  return allFields.value.some(([, fieldMeta]) => {
-    return fieldMeta.type === 'field-group' && fieldMeta.collapsible
-  })
 })
 
 // All fields - we render all of them, visibility is handled by FormField
@@ -199,30 +187,14 @@ defineExpose({
       </p>
     </div>
 
-    <Accordion
-      v-if="hasCollapsibleGroups"
-      v-model="accordionValue"
-      type="single"
-      collapsible
-      class="w-full"
-    >
-      <template v-for="([fieldKey, fieldMeta], index) in allFields" :key="`${fieldKey}-${index}`">
-        <FieldSeparator v-if="shouldShowSeparator(index, fieldMeta)" class="my-4 h-1" />
-        <div :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)">
-          <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" />
-        </div>
-      </template>
-    </Accordion>
-    <template v-else>
-      <template v-for="([fieldKey, fieldMeta], index) in allFields" :key="`${fieldKey}-${index}`">
-        <FieldSeparator v-if="shouldShowSeparator(index, fieldMeta)" class="my-4 h-1" />
-        <div
-          :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)"
-          :class="!isLastVisibleField(index) ? 'my-4' : ''"
-        >
-          <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" />
-        </div>
-      </template>
+    <template v-for="([fieldKey, fieldMeta], index) in allFields" :key="`${fieldKey}-${index}`">
+      <FieldSeparator v-if="shouldShowSeparator(index, fieldMeta)" class="my-4 h-1" />
+      <div
+        :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)"
+        :class="!isLastVisibleField(index) ? 'my-4' : ''"
+      >
+        <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" />
+      </div>
     </template>
   </form>
 </template>

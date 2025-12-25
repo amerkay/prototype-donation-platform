@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { ref, watch, computed, inject, type Ref } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { cn } from '@/lib/utils'
 import { FieldSet, FieldLegend, FieldDescription } from '@/components/ui/field'
-import { AccordionItem, AccordionContent, AccordionTrigger } from '@/components/ui/accordion'
+import {
+  Accordion,
+  AccordionItem,
+  AccordionContent,
+  AccordionTrigger
+} from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
 import type { FieldGroupMeta } from '~/features/form-builder/types'
 import { resolveText } from '~/features/form-builder/composables/useResolvedFieldMeta'
@@ -24,16 +29,13 @@ const {
   formValues
 } = useContainerFieldSetup(props.name, props.meta.visibleWhen)
 
-// Get accordion state from parent (FormRenderer)
-const accordionValue = inject<Ref<string | undefined>>('accordionValue', ref(undefined))
+// Local accordion state (self-contained for nested support)
+const accordionValue = ref<string | undefined>(
+  props.meta.collapsibleDefaultOpen ? props.name : undefined
+)
 const isOpen = computed(() => accordionValue.value === props.name)
 
 const resolvedLabel = computed(() => resolveText(props.meta.label, formValues.value))
-
-// Set default open on mount if specified
-if (props.meta.collapsibleDefaultOpen && !accordionValue.value) {
-  accordionValue.value = props.name
-}
 
 // Setup scroll tracking for collapsible
 const { setElementRef, scrollToElement } = useScrollOnVisible(
@@ -55,8 +57,14 @@ watch(isOpen, (newIsOpen) => {
 
 <template>
   <div v-show="isGroupVisible">
-    <!-- Accordion Item version -->
-    <template v-if="meta.collapsible">
+    <!-- Collapsible version with self-contained Accordion -->
+    <Accordion
+      v-if="meta.collapsible"
+      v-model="accordionValue"
+      type="single"
+      collapsible
+      class="w-full"
+    >
       <AccordionItem
         :ref="(el: any) => setElementRef(props.name, el)"
         :value="name"
@@ -117,7 +125,7 @@ watch(isOpen, (newIsOpen) => {
           </div>
         </AccordionContent>
       </AccordionItem>
-    </template>
+    </Accordion>
 
     <!-- Non-collapsible version -->
     <FieldSet v-else class="gap-4">
