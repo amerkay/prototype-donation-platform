@@ -22,7 +22,7 @@ const props = defineProps<Props>()
 const {
   isVisible: isTabsVisible,
   fullPath: fullTabsPath,
-  formValues
+  scopedFormValues
 } = useContainerFieldSetup(props.name, props.meta.visibleWhen)
 
 // Active tab state - initialize from defaultValue or first tab
@@ -35,16 +35,16 @@ const tabHasErrors = (tabValue: string) => {
   return { hasChildErrors }
 }
 
-const resolvedLabel = computed(() => resolveText(props.meta.label, formValues.value))
+const resolvedLabel = computed(() => resolveText(props.meta.label, scopedFormValues.value))
 
 // Resolve tab labels using utility
 const resolveTabLabel = (tab: (typeof props.meta.tabs)[number]) => {
-  return resolveText(tab.label, formValues.value)
+  return resolveText(tab.label, scopedFormValues.value)
 }
 
 // Resolve tab badge labels using utility
 const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
-  return resolveText(tab.badgeLabel, formValues.value)
+  return resolveText(tab.badgeLabel, scopedFormValues.value)
 }
 </script>
 
@@ -59,7 +59,7 @@ const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
       </FieldDescription>
 
       <Tabs v-model="activeTab" :unmount-on-hide="false">
-        <TabsList :class="cn(meta.tabsListClass)">
+        <TabsList :class="cn('w-full', meta.tabsListClass)">
           <TabsTrigger v-for="tab in meta.tabs" :key="tab.value" :value="tab.value" class="gap-2">
             {{ resolveTabLabel(tab) }}
             <!-- Error badge takes priority -->

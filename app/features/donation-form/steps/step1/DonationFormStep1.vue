@@ -151,8 +151,6 @@ const sliderMaxPrice = computed(() => {
   return convertPrice(cfg.customAmount.max, selectedCurrency.value)
 })
 
-const rewards = computed(() => products.filter((p: Product) => p.isReward))
-
 // Helper to cast frequency type safely
 const castFrequency = (freq: string): 'once' | 'monthly' | 'yearly' => {
   return freq as 'once' | 'monthly' | 'yearly'
@@ -283,10 +281,7 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
             store.selectedProducts[freq.value as keyof typeof store.selectedProducts] ?? null
           "
           :tribute-data="store.tributeData[freq.value as keyof typeof store.tributeData]"
-          :selected-rewards="
-            store.selectedRewards[freq.value as keyof typeof store.selectedRewards]
-          "
-          :rewards="rewards"
+          :rewards="[]"
           :products="products"
           :available-amounts="availableAmounts"
           :min-price="sliderMinPrice"
@@ -296,7 +291,6 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           @update:donation-amount="
             (val) => store.setDonationAmount(freq.value as 'once' | 'monthly' | 'yearly', val)
           "
-          @toggle-reward="(itemId) => store.toggleReward(itemId, castFrequency(freq.value))"
           @product-select="handleProductSelect"
           @remove-product="handleRemoveProduct"
           @tribute-save="handleTributeSave"
@@ -311,13 +305,10 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
         <DonationFormMultiple
           ref="multipleFormRef"
           :currency="selectedCurrency"
-          :rewards="rewards"
           :products="products"
-          :selected-rewards="store.selectedRewards.multiple"
           :enabled-frequencies="enabledFrequencies"
           :initial-products-displayed="INITIAL_PRODUCTS_DISPLAYED"
           :form-config="formConfig"
-          @toggle-reward="(itemId) => store.toggleReward(itemId, 'multiple')"
           @next="handleNext"
           @switch-to-tab="handleSwitchToTab"
         />

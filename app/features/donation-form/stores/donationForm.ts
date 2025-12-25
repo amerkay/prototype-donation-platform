@@ -33,13 +33,6 @@ export const useDonationFormStore = defineStore(
       monthly: undefined,
       yearly: undefined
     })
-    // Store rewards as arrays for easy serialization (convert to/from Set on access)
-    const selectedRewardsArrays = ref<Record<Frequency, string[]>>({
-      once: [],
-      monthly: [],
-      yearly: [],
-      multiple: []
-    })
     const coverCosts = ref<CoverCostsData | null>(null)
     const formSections = ref<Record<string, Record<string, unknown>>>({
       donorInfo: {},
@@ -54,14 +47,6 @@ export const useDonationFormStore = defineStore(
       if (activeTab.value === 'multiple') return 0 // Use cart total instead
       return donationAmounts.value[activeTab.value as DonationFrequency]
     })
-
-    // Convert arrays to Sets for component consumption
-    const selectedRewards = computed<Record<Frequency, Set<string>>>(() => ({
-      once: new Set(selectedRewardsArrays.value.once),
-      monthly: new Set(selectedRewardsArrays.value.monthly),
-      yearly: new Set(selectedRewardsArrays.value.yearly),
-      multiple: new Set(selectedRewardsArrays.value.multiple)
-    }))
 
     // ==================== ACTIONS ====================
     function initialize(defaultCurrency: string) {
@@ -104,16 +89,6 @@ export const useDonationFormStore = defineStore(
       tributeData.value[frequency] = data
     }
 
-    function toggleReward(itemId: string, frequency: Frequency) {
-      const rewardArray = selectedRewardsArrays.value[frequency]
-      const index = rewardArray.indexOf(itemId)
-      if (index > -1) {
-        rewardArray.splice(index, 1)
-      } else {
-        rewardArray.push(itemId)
-      }
-    }
-
     function updateFormSection(section: string, data: Record<string, unknown>) {
       formSections.value[section] = data
     }
@@ -128,12 +103,6 @@ export const useDonationFormStore = defineStore(
       donationAmounts.value = { once: 0, monthly: 0, yearly: 0 }
       selectedProducts.value = { monthly: null, yearly: null }
       tributeData.value = { once: undefined, monthly: undefined, yearly: undefined }
-      selectedRewardsArrays.value = {
-        once: [],
-        monthly: [],
-        yearly: [],
-        multiple: []
-      }
       coverCosts.value = null
       formSections.value = { donorInfo: {}, shipping: {}, giftAid: {}, preferences: {} }
     }
@@ -151,7 +120,6 @@ export const useDonationFormStore = defineStore(
             donationAmounts: donationAmounts.value,
             selectedProducts: selectedProducts.value,
             tributeData: tributeData.value,
-            selectedRewardsArrays: selectedRewardsArrays.value,
             coverCosts: coverCosts.value,
             formSections: formSections.value
           })
@@ -174,8 +142,6 @@ export const useDonationFormStore = defineStore(
         if (data.donationAmounts !== undefined) donationAmounts.value = data.donationAmounts
         if (data.selectedProducts !== undefined) selectedProducts.value = data.selectedProducts
         if (data.tributeData !== undefined) tributeData.value = data.tributeData
-        if (data.selectedRewardsArrays !== undefined)
-          selectedRewardsArrays.value = data.selectedRewardsArrays
         if (data.coverCosts !== undefined) coverCosts.value = data.coverCosts
         if (data.formSections !== undefined) formSections.value = data.formSections
       } catch (error) {
@@ -191,8 +157,6 @@ export const useDonationFormStore = defineStore(
       donationAmounts,
       selectedProducts,
       tributeData,
-      selectedRewards,
-      selectedRewardsArrays, // Expose internal arrays for persistence
       coverCosts,
       formSections,
 
@@ -210,7 +174,6 @@ export const useDonationFormStore = defineStore(
       setDonationAmount,
       setSelectedProduct,
       setTributeData,
-      toggleReward,
       updateFormSection,
       setCoverCosts,
       clearSession,

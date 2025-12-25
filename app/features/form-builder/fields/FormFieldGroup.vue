@@ -26,7 +26,7 @@ const props = defineProps<Props>()
 const {
   isVisible: isGroupVisible,
   hasChildErrors,
-  formValues
+  scopedFormValues
 } = useContainerFieldSetup(props.name, props.meta.visibleWhen)
 
 // Local accordion state (self-contained for nested support)
@@ -35,7 +35,7 @@ const accordionValue = ref<string | undefined>(
 )
 const isOpen = computed(() => accordionValue.value === props.name)
 
-const resolvedLabel = computed(() => resolveText(props.meta.label, formValues.value))
+const resolvedLabel = computed(() => resolveText(props.meta.label, scopedFormValues.value))
 
 // Setup scroll tracking for collapsible
 const { setElementRef, scrollToElement } = useScrollOnVisible(
@@ -56,95 +56,94 @@ watch(isOpen, (newIsOpen) => {
 </script>
 
 <template>
-  <div v-show="isGroupVisible">
-    <!-- Collapsible version with self-contained Accordion -->
-    <Accordion
-      v-if="meta.collapsible"
-      v-model="accordionValue"
-      type="single"
-      collapsible
-      class="w-full"
+  <!-- Collapsible version with self-contained Accordion -->
+  <Accordion
+    v-if="meta.collapsible"
+    v-show="isGroupVisible"
+    v-model="accordionValue"
+    type="single"
+    collapsible
+    class="w-full -mt-2"
+  >
+    <AccordionItem
+      :ref="(el: any) => setElementRef(props.name, el)"
+      :value="name"
+      :disabled="meta.isDisabled"
+      :unmount-on-hide="false"
     >
-      <AccordionItem
-        :ref="(el: any) => setElementRef(props.name, el)"
-        :value="name"
-        :disabled="meta.isDisabled"
-        :unmount-on-hide="false"
+      <AccordionTrigger
+        class="hover:no-underline group py-2"
+        :class="{ 'cursor-not-allowed opacity-60': meta.isDisabled }"
       >
-        <AccordionTrigger
-          class="hover:no-underline group py-0"
-          :class="{ 'cursor-not-allowed opacity-60': meta.isDisabled }"
-        >
-          <div class="flex items-start justify-between w-full">
-            <div class="flex-1 text-left">
-              <div class="flex items-center gap-2">
-                <h3
-                  v-if="meta.legend || resolvedLabel"
-                  :class="
-                    cn(
-                      meta.labelClass,
-                      'font-medium text-sm',
-                      !meta.isDisabled && 'group-hover:underline'
-                    )
-                  "
-                >
-                  {{ meta.legend || resolvedLabel }}
-                </h3>
-                <Badge
-                  v-if="meta.badgeLabel"
-                  :variant="meta.badgeVariant || 'secondary'"
-                  class="text-xs"
-                >
-                  {{ meta.badgeLabel }}
-                </Badge>
-                <Badge v-if="hasChildErrors" variant="destructive" class="text-xs gap-1">
-                  <Icon name="lucide:alert-circle" class="h-3 w-3" />
-                  Error
-                </Badge>
-              </div>
-              <p
-                v-if="meta.description"
-                :class="cn('text-muted-foreground text-xs mt-0.5', meta.descriptionClass)"
+        <div class="flex items-start justify-between w-full">
+          <div class="flex-1 text-left">
+            <div class="flex items-center gap-2">
+              <h3
+                v-if="meta.legend || resolvedLabel"
+                :class="
+                  cn(
+                    meta.labelClass,
+                    'font-medium text-sm',
+                    !meta.isDisabled && 'group-hover:underline'
+                  )
+                "
               >
-                {{ meta.description }}
-              </p>
+                {{ meta.legend || resolvedLabel }}
+              </h3>
+              <Badge
+                v-if="meta.badgeLabel"
+                :variant="meta.badgeVariant || 'secondary'"
+                class="text-xs"
+              >
+                {{ meta.badgeLabel }}
+              </Badge>
+              <Badge v-if="hasChildErrors" variant="destructive" class="text-xs gap-1">
+                <Icon name="lucide:alert-circle" class="h-3 w-3" />
+                Error
+              </Badge>
             </div>
-            <span v-if="!meta.isDisabled" class="text-sm text-muted-foreground">{{
-              isOpen ? '' : 'Edit'
-            }}</span>
+            <p
+              v-if="meta.description"
+              :class="cn('text-muted-foreground text-xs mt-0.5', meta.descriptionClass)"
+            >
+              {{ meta.description }}
+            </p>
           </div>
-        </AccordionTrigger>
-        <AccordionContent class="pt-4 pb-0">
-          <div :class="cn('grid grid-cols-1 gap-4', meta.class)">
-            <FormField
-              v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
-              :key="`${childFieldKey}-${index}`"
-              :name="childFieldKey"
-              :meta="fieldMeta"
-            />
-          </div>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+          <span v-if="!meta.isDisabled" class="text-sm text-muted-foreground">{{
+            isOpen ? '' : 'Edit'
+          }}</span>
+        </div>
+      </AccordionTrigger>
+      <AccordionContent class="py-2">
+        <div :class="cn('grid grid-cols-1 gap-4', meta.class)">
+          <FormField
+            v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
+            :key="`${childFieldKey}-${index}`"
+            :name="childFieldKey"
+            :meta="fieldMeta"
+          />
+        </div>
+      </AccordionContent>
+    </AccordionItem>
+  </Accordion>
 
-    <!-- Non-collapsible version -->
-    <FieldSet v-else class="gap-4">
-      <FieldLegend v-if="meta.legend || resolvedLabel" :class="cn(meta.labelClass)">{{
-        meta.legend || resolvedLabel
-      }}</FieldLegend>
-      <FieldDescription v-if="meta.description" :class="meta.descriptionClass">
-        {{ meta.description }}
-      </FieldDescription>
-      <div :class="cn('grid grid-cols-1 gap-4', meta.class)">
-        <FormField
-          v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
-          :key="`${childFieldKey}-${index}`"
-          :name="childFieldKey"
-          :meta="fieldMeta"
-        />
-      </div>
-    </FieldSet>
-  </div>
+  <!-- Non-collapsible version -->
+  <FieldSet v-else v-show="isGroupVisible" class="gap-4">
+    <FieldLegend v-if="meta.legend || resolvedLabel" :class="cn(meta.labelClass)">{{
+      meta.legend || resolvedLabel
+    }}</FieldLegend>
+    <FieldDescription v-if="meta.description" :class="meta.descriptionClass">
+      {{ meta.description }}
+    </FieldDescription>
+    <div :class="cn('grid grid-cols-1 gap-4', meta.class)">
+      <FormField
+        v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
+        :key="`${childFieldKey}-${index}`"
+        :name="childFieldKey"
+        :meta="fieldMeta"
+      />
+    </div>
+  </FieldSet>
 </template>
 
 <style scoped>

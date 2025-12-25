@@ -46,12 +46,77 @@ export const formConfig = {
         action: { verb: 'Sponsor', noun: 'sponsorship' }
       }
     },
-    rewards: {
+    impactJourney: {
       enabled: true,
-      ui: {
-        labels: {
-          freeGifts: '🎁 Free gifts available:',
-          freeWithDonation: 'FREE with your donation!'
+      frequencies: {
+        once: {
+          enabled: true,
+          messages: [
+            {
+              threshold: 25,
+              title: 'Double your impact with monthly giving',
+              description:
+                '€25 once helps today. €5/month = €60/year of sustained care for our elderly elephants.',
+              cta: {
+                text: 'Switch to Monthly →',
+                action: 'switch-monthly'
+              }
+            },
+            {
+              threshold: 50,
+              title: 'Make it monthly for lasting impact',
+              description:
+                '€50 is generous! €10/month = €120/year provides ongoing support and sanctuary care.',
+              cta: {
+                text: 'Become a Monthly Supporter →',
+                action: 'switch-monthly'
+              }
+            }
+          ]
+        },
+        monthly: {
+          enabled: true,
+          messages: [
+            {
+              threshold: 5,
+              title: '🐘 Thank you for supporting our elephants monthly',
+              description:
+                "Your €5/month provides €60/year of ongoing sanctuary care. You'll receive updates on our elephant family."
+            },
+            {
+              threshold: 10,
+              title: '🐘 Join 800+ Monthly Elephant Guardians',
+              description:
+                'Your €10/month = €120/year helps provide food, medical care, and a safe home for our elderly elephants.'
+            },
+            {
+              threshold: 25,
+              title: '⭐ Champion Elephant Guardian',
+              description:
+                'Your €25/month = €300/year provides comprehensive care for one elephant. You make a profound difference!'
+            }
+          ]
+        },
+        yearly: {
+          enabled: false,
+          messages: []
+        },
+        multiple: {
+          enabled: true,
+          messages: [
+            {
+              threshold: 10,
+              title: '🐘 Your elephant sanctuary impact',
+              description:
+                'Your recurring donations provide stable support for our elephant sanctuary. Every month counts!'
+            },
+            {
+              threshold: 20,
+              title: '⭐ Major sanctuary supporter',
+              description:
+                'Your combined recurring support helps us plan long-term care for our elephant family. Thank you!'
+            }
+          ]
         }
       }
     },

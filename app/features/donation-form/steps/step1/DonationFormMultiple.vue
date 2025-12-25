@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import ImpactCart from '~/features/donation-form/impact-cart/ImpactCart.vue'
 import NextButton from '~/features/donation-form/components/NextButton.vue'
-import RewardsSection from '~/features/donation-form/rewards/RewardsSection.vue'
+import ImpactJourneyCard from '~/features/donation-form/impact-journey/ImpactJourneyCard.vue'
 import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNotice.vue'
 import ProductOptionsModal from '~/features/donation-form/product/ProductOptionsModal.vue'
 import type { Product } from '~/features/donation-form/product/types'
@@ -16,9 +16,7 @@ const cartStore = useImpactCartStore()
 
 interface Props {
   currency: string
-  rewards: Product[]
   products: Product[]
-  selectedRewards: Set<string>
   enabledFrequencies: Array<'once' | 'monthly' | 'yearly'>
   initialProductsDisplayed: number
   formConfig: FullFormConfig
@@ -27,7 +25,6 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  'toggle-reward': [itemId: string]
   next: []
   'switch-to-tab': [tab: 'monthly' | 'yearly']
 }>()
@@ -120,30 +117,21 @@ defineExpose({
       @product-select="handleProductSelect"
     />
 
-    <!-- Rewards Section -->
-    <RewardsSection
-      :rewards="rewards"
-      :selected-rewards="selectedRewards"
-      :one-time-total="cartStore.oneTimeTotal"
-      :monthly-total="cartStore.monthlyTotal"
-      :yearly-total="cartStore.yearlyTotal"
-      :enabled-frequencies="enabledFrequencies"
+    <!-- Impact Journey -->
+    <ImpactJourneyCard
+      v-if="formConfig.features.impactJourney.enabled"
+      frequency="multiple"
+      :donation-amount="cartStore.recurringTotal"
       :currency="currency"
       :base-currency="formConfig.pricing.baseCurrency"
-      selected-frequency="multiple"
-      :rewards-config="formConfig.features.rewards"
-      @toggle="emit('toggle-reward', $event)"
+      :config="formConfig.features.impactJourney"
+      :enabled-frequencies="enabledFrequencies"
       @switch-to-tab="handleSwitchToTab"
     />
 
     <!-- Shipping Notice -->
     <ShippingNotice
-      :requires-shipping="
-        cartStore.multipleCart.some((item) => item.isShippingRequired) ||
-        Array.from(selectedRewards).some(
-          (id) => products.find((p) => p.id === id)?.isShippingRequired
-        )
-      "
+      :requires-shipping="cartStore.multipleCart.some((item) => item.isShippingRequired)"
     />
 
     <!-- Next Button -->

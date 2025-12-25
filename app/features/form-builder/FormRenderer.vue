@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, provide, nextTick } from 'vue'
+import { computed, watch, provide, nextTick, toRaw } from 'vue'
 import { useForm } from 'vee-validate'
 import { FieldSeparator } from '@/components/ui/field'
 import FormField from './FormField.vue'
@@ -114,6 +114,13 @@ const shouldShowSeparator = (
   return !lastVisibleField[1].isNoSeparatorAfter
 }
 
+// Check if a field is a visible collapsible accordion
+const isVisibleCollapsibleGroup = (fieldMeta: (typeof props.section.fields)[string]) => {
+  return (
+    fieldMeta.type === 'field-group' && fieldMeta.collapsible === true && isFieldVisible(fieldMeta)
+  )
+}
+
 // Check if the current field is the last visible field
 const isLastVisibleField = (currentIndex: number) => {
   const visibleFieldsAfter = allFields.value
@@ -137,9 +144,9 @@ watch(
   () => props.modelValue,
   (newValue) => {
     isUpdatingFromProp = true
-    // Use setValues without triggering validation to respect validateOnMount setting
-    // This prevents fields from being marked as touched/validated when external data updates
-    setValues({ [props.section.id]: newValue }, false)
+    // Use toRaw() to prevent vee-validate from caching readonly proxies
+    const rawValue = toRaw(newValue)
+    setValues({ [props.section.id]: rawValue }, false)
     nextTick(() => {
       isUpdatingFromProp = false
     })
@@ -188,10 +195,13 @@ defineExpose({
     </div>
 
     <template v-for="([fieldKey, fieldMeta], index) in allFields" :key="`${fieldKey}-${index}`">
-      <FieldSeparator v-if="shouldShowSeparator(index, fieldMeta)" class="my-4 h-1" />
+      <FieldSeparator v-if="shouldShowSeparator(index, fieldMeta)" class="my-4! h-1" />
       <div
         :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)"
-        :class="!isLastVisibleField(index) ? 'my-4' : ''"
+        :class="[
+          isVisibleCollapsibleGroup(fieldMeta) ? '-my-2!' : '',
+          !isLastVisibleField(index) ? 'mb-4' : ''
+        ]"
       >
         <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" />
       </div>

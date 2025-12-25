@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import AmountSelector from '~/features/donation-form/components/AmountSelector.vue'
 import NextButton from '~/features/donation-form/components/NextButton.vue'
-import RewardsSection from '~/features/donation-form/rewards/RewardsSection.vue'
+import ImpactJourneyCard from '~/features/donation-form/impact-journey/ImpactJourneyCard.vue'
 import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNotice.vue'
 import TributeCard from '~/features/donation-form/tribute/TributeCard.vue'
 import TributeModal from '~/features/donation-form/tribute/TributeModal.vue'
@@ -19,7 +19,6 @@ interface Props {
   donationAmount: number
   selectedProduct: Product | null
   tributeData: TributeData | undefined
-  selectedRewards: Set<string>
   rewards: Product[]
   products: Product[]
   availableAmounts: number[]
@@ -33,7 +32,6 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:donationAmount': [value: number]
-  'toggle-reward': [itemId: string]
   'product-select': [product: Product]
   'remove-product': []
   'tribute-save': [tributeData: TributeData | undefined]
@@ -55,10 +53,6 @@ const hasTribute = computed(
 )
 
 const isFormValid = computed(() => props.donationAmount > 0)
-
-const oneTimeTotal = computed(() => (props.frequency === 'once' ? props.donationAmount : 0))
-const monthlyTotal = computed(() => (props.frequency === 'monthly' ? props.donationAmount : 0))
-const yearlyTotal = computed(() => (props.frequency === 'yearly' ? props.donationAmount : 0))
 
 // Methods
 const handleAmountUpdate = (value: number) => {
@@ -130,30 +124,20 @@ defineExpose({
       </Button>
     </template>
 
-    <!-- Rewards Section -->
-    <RewardsSection
-      :rewards="rewards"
-      :selected-rewards="selectedRewards"
-      :one-time-total="oneTimeTotal"
-      :monthly-total="monthlyTotal"
-      :yearly-total="yearlyTotal"
-      :enabled-frequencies="enabledFrequencies"
+    <!-- Impact Journey -->
+    <ImpactJourneyCard
+      v-if="formConfig.features.impactJourney.enabled"
+      :frequency="frequency"
+      :donation-amount="donationAmount"
       :currency="currency"
       :base-currency="formConfig.pricing.baseCurrency"
-      :selected-frequency="frequency === 'yearly' ? 'monthly' : frequency"
-      :rewards-config="formConfig.features.rewards"
-      @toggle="emit('toggle-reward', $event)"
+      :config="formConfig.features.impactJourney"
+      :enabled-frequencies="enabledFrequencies"
       @switch-to-tab="handleSwitchToTab"
     />
 
     <!-- Shipping Notice -->
-    <ShippingNotice
-      :requires-shipping="
-        Array.from(selectedRewards).some(
-          (id) => products.find((p) => p.id === id)?.isShippingRequired
-        )
-      "
-    />
+    <ShippingNotice :requires-shipping="false" />
 
     <!-- Next Button -->
     <NextButton

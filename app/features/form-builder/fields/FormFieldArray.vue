@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, nextTick } from 'vue'
+import { computed, watch, nextTick, toRaw } from 'vue'
 import { useFieldArray, useValidateField } from 'vee-validate'
 import { useDragAndDrop } from '@formkit/drag-and-drop/vue'
 import { vAutoAnimate } from '@formkit/auto-animate'
@@ -95,7 +95,8 @@ function insertPoint() {
 }
 
 // Setup drag-and-drop with vee-validate field array values
-const [parent, draggableItems] = useDragAndDrop(draggableValues.value, {
+// Use toRaw() to pass plain values, preventing readonly proxy issues
+const [parent, _draggableItems] = useDragAndDrop(toRaw(draggableValues.value), {
   dragHandle: '.drag-handle',
   insertConfig: { insertPoint },
 
@@ -110,55 +111,56 @@ const [parent, draggableItems] = useDragAndDrop(draggableValues.value, {
     const from = e.previousPosition
     const to = e.position
     if (Number.isInteger(from) && Number.isInteger(to)) {
-      // Use move() for immediate value reorder (keeps animation smooth)
       move(from!, to!)
-
-      // Use replace() in nextTick to force complete error path recalculation
-      // This fixes the issue where errors jump to wrong fields during drag
+      // Recalculate error paths after reorder
       nextTick(() => {
-        const currentValues = fields.value.map((f) => f.value)
+        const currentValues = fields.value.map((f) => toRaw(f.value))
         replace(currentValues)
       })
     }
   },
 
   onDragend() {
-    // Trigger validation after drag completes
     validateArrayField()
   }
 })
 
-// Sync draggableItems with vee-validate fields
-watch(
-  draggableValues,
-  (next) => {
-    if (JSON.stringify(next) !== JSON.stringify(draggableItems.value)) {
-      draggableItems.value = [...next]
+/**
+ * Recursively create default values for field structures
+ */
+function createDefaultValue(fieldMeta: typeof props.meta.itemField): unknown {
+  if (fieldMeta.type === 'field-group') {
+    const groupDefaults: Record<string, unknown> = {}
+    if (fieldMeta.fields) {
+      for (const [key, nestedField] of Object.entries(fieldMeta.fields)) {
+        groupDefaults[key] = createDefaultValue(nestedField)
+      }
     }
-  },
-  { deep: true, immediate: true }
-)
+    return groupDefaults
+  } else if (fieldMeta.type === 'array') {
+    return []
+  } else if (
+    fieldMeta.type === 'number' ||
+    fieldMeta.type === 'currency' ||
+    fieldMeta.type === 'slider'
+  ) {
+    return undefined
+  } else if (fieldMeta.type === 'toggle') {
+    return false
+  } else {
+    return ''
+  }
+}
 
 function addItem() {
-  let defaultValue: unknown
-  if (props.meta.itemField.type === 'field-group') defaultValue = {}
-  else if (
-    props.meta.itemField.type === 'number' ||
-    props.meta.itemField.type === 'currency' ||
-    props.meta.itemField.type === 'slider'
-  )
-    defaultValue = undefined
-  else defaultValue = ''
-
-  // Use vee-validate's push for proper field registration
+  const defaultValue = createDefaultValue(props.meta.itemField)
   push(defaultValue)
   validateArrayField()
 }
 
 function removeItem(index: number) {
-  // Use replace() instead of remove() to properly reindex all fields and clear orphaned errors
-  // This ensures error paths match the new indices after removal
-  const newArray = fields.value.map((f) => f.value).filter((_, i) => i !== index)
+  // Use replace() to properly reindex fields and clear orphaned errors
+  const newArray = fields.value.map((f) => toRaw(f.value)).filter((_, i) => i !== index)
   replace(newArray)
   validateArrayField()
 }
@@ -176,7 +178,7 @@ function removeItem(index: number) {
     :description-class="meta.descriptionClass"
   >
     <div class="space-y-2">
-      <div ref="parent" v-auto-animate="{ duration: 180 }" :class="cn('grid gap-4', meta.class)">
+      <div ref="parent" v-auto-animate="{ duration: 180 }" :class="cn('grid gap-2', meta.class)">
         <div v-for="(fieldItem, index) in fields" :key="fieldItem.key" class="ff-array__item">
           <span class="drag-handle ff-array__handle">
             <Icon name="lucide:grip-vertical" class="h-5 w-5" />
@@ -186,7 +188,14 @@ function removeItem(index: number) {
             <FormField
               :name="`${name}[${index}]`"
               :meta="meta.itemField"
-              class="border-0 bg-transparent rounded-none"
+              :class="
+                cn(
+                  'border-0 bg-transparent rounded-none',
+                  meta.itemField.type === 'field-group' && meta.itemField.collapsible
+                    ? 'mt-0.5'
+                    : ''
+                )
+              "
             />
           </div>
 

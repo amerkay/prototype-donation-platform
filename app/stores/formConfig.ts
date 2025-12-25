@@ -6,7 +6,7 @@ import type {
 } from '~/features/donation-form/types'
 import type { ImpactCartSettings } from '~/features/donation-form/impact-cart/types'
 import type { ProductSelectorSettings } from '~/features/donation-form/product-selector/types'
-import type { RewardsSettings } from '~/features/donation-form/rewards/types'
+import type { ImpactJourneySettings } from '~/features/donation-form/impact-journey/types'
 import type { CoverCostsSettings } from '~/features/donation-form/cover-costs/types'
 import type { TributeSettings } from '~/features/donation-form/tribute/types'
 import type { Product } from '~/features/donation-form/product/types'
@@ -33,15 +33,13 @@ export const useFormConfigStore = defineStore('formConfig', {
     // Metadata
     version: '1.0',
 
-    // Core donation form settings
-    form: null as FormSettings | null,
-    localization: null as LocalizationSettings | null,
-    pricing: null as PricingSettings | null,
+    // Core donation form settings (combined for direct v-model binding)
+    formSettings: null as FormSettingsCombined | null,
 
     // Feature settings (flat for direct v-model binding)
     impactCart: null as ImpactCartSettings | null,
     productSelector: null as ProductSelectorSettings | null,
-    rewards: null as RewardsSettings | null,
+    impactJourney: null as ImpactJourneySettings | null,
     coverCosts: null as CoverCostsSettings | null,
     tribute: null as TributeSettings | null,
 
@@ -55,19 +53,19 @@ export const useFormConfigStore = defineStore('formConfig', {
      * Use this when you need to serialize the entire config (e.g., for API submission)
      */
     fullConfig(state): FullFormConfig | null {
-      if (!state.form || !state.localization || !state.pricing) {
+      if (!state.formSettings) {
         return null
       }
 
       return {
         version: state.version,
-        form: state.form,
-        localization: state.localization,
-        pricing: state.pricing,
+        form: state.formSettings.form,
+        localization: state.formSettings.localization,
+        pricing: state.formSettings.pricing,
         features: {
           impactCart: state.impactCart!,
           productSelector: state.productSelector!,
-          rewards: state.rewards!,
+          impactJourney: state.impactJourney!,
           coverCosts: state.coverCosts!,
           tribute: state.tribute!
         }
@@ -82,18 +80,30 @@ export const useFormConfigStore = defineStore('formConfig', {
      */
     initialize(config: FullFormConfig, productList: Product[]) {
       this.version = config.version
-      this.form = config.form
-      this.localization = config.localization
-      this.pricing = config.pricing
+      this.formSettings = {
+        form: config.form,
+        localization: config.localization,
+        pricing: config.pricing
+      }
       this.impactCart = config.features.impactCart
       this.productSelector = config.features.productSelector
-      this.rewards = config.features.rewards
+      this.impactJourney = config.features.impactJourney
       this.coverCosts = config.features.coverCosts
       this.tribute = config.features.tribute
       this.products = productList
     }
   }
 })
+
+/**
+ * Combined form settings type for v-model binding
+ * Matches the structure expected by createFormConfigSection()
+ */
+export interface FormSettingsCombined {
+  form: FormSettings
+  localization: LocalizationSettings
+  pricing: PricingSettings
+}
 
 /**
  * Full form configuration type (API response shape)
@@ -107,7 +117,7 @@ export interface FullFormConfig {
   features: {
     impactCart: ImpactCartSettings
     productSelector: ProductSelectorSettings
-    rewards: RewardsSettings
+    impactJourney: ImpactJourneySettings
     coverCosts: CoverCostsSettings
     tribute: TributeSettings
   }

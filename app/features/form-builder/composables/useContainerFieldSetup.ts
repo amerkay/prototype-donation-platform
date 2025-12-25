@@ -61,8 +61,21 @@ export function useContainerFieldSetup(
 
   // Provide scoped form values to child fields
   // Merges container-specific values into the root form values for child access
+  // Special case: if we're inside an array item (path contains [N]), use the item values directly
   const scopedFormValues = computed(() => {
-    const containerValue = getRecordAtPath(formValues.value, relativePath.value)
+    // Convert bracket notation to dot notation for getRecordAtPath
+    // e.g., "messages[0]" -> "messages.0"
+    const normalizedPath = relativePath.value.replace(/\[(\d+)\]/g, '.$1')
+    const containerValue = getRecordAtPath(formValues.value, normalizedPath)
+
+    // If we're inside an array item (detected by array index in path like "messages[0]")
+    // Use the item's values as the base for resolving dynamic text (labels, descriptions)
+    // This allows label functions in array itemFields to access item properties directly
+    if (relativePath.value.includes('[') && containerValue) {
+      return containerValue
+    }
+
+    // For regular containers, merge container values with root form values
     return { ...formValues.value, ...(containerValue || {}) }
   })
   provide('scopedFormValues', scopedFormValues)
