@@ -84,6 +84,9 @@ watch(
   { deep: true }
 )
 
+// Check if drag-and-drop is enabled (default: false)
+const isSortable = computed(() => props.meta.sortable === true)
+
 // Create array of values for drag-and-drop (synced from vee-validate fields)
 const draggableValues = computed(() => fields.value.map((f) => f.value))
 
@@ -94,36 +97,39 @@ function insertPoint() {
   return el
 }
 
-// Setup drag-and-drop with vee-validate field array values
+// Setup drag-and-drop only if sortable is enabled
 // Use toRaw() to pass plain values, preventing readonly proxy issues
-const [parent, _draggableItems] = useDragAndDrop(toRaw(draggableValues.value), {
-  dragHandle: '.drag-handle',
-  insertConfig: { insertPoint },
+// The parent ref is returned from useDragAndDrop and assigned to the container element
+const [arrayContainer] = isSortable.value
+  ? useDragAndDrop(toRaw(draggableValues.value), {
+      dragHandle: '.drag-handle',
+      insertConfig: { insertPoint },
 
-  // Small, maintainable hooks for styling
-  draggingClass: 'ff-array__dragging',
-  dragPlaceholderClass: 'ff-array__placeholder',
-  synthDragPlaceholderClass: 'ff-array__placeholder',
-  dropZoneParentClass: 'ff-array__zone',
-  synthDropZoneParentClass: 'ff-array__zone',
+      // Small, maintainable hooks for styling
+      draggingClass: 'ff-array__dragging',
+      dragPlaceholderClass: 'ff-array__placeholder',
+      synthDragPlaceholderClass: 'ff-array__placeholder',
+      dropZoneParentClass: 'ff-array__zone',
+      synthDropZoneParentClass: 'ff-array__zone',
 
-  onSort(e: { previousPosition?: number; position?: number }) {
-    const from = e.previousPosition
-    const to = e.position
-    if (Number.isInteger(from) && Number.isInteger(to)) {
-      move(from!, to!)
-      // Recalculate error paths after reorder
-      nextTick(() => {
-        const currentValues = fields.value.map((f) => toRaw(f.value))
-        replace(currentValues)
-      })
-    }
-  },
+      onSort(e: { previousPosition?: number; position?: number }) {
+        const from = e.previousPosition
+        const to = e.position
+        if (Number.isInteger(from) && Number.isInteger(to)) {
+          move(from!, to!)
+          // Recalculate error paths after reorder
+          nextTick(() => {
+            const currentValues = fields.value.map((f) => toRaw(f.value))
+            replace(currentValues)
+          })
+        }
+      },
 
-  onDragend() {
-    validateArrayField()
-  }
-})
+      onDragend() {
+        validateArrayField()
+      }
+    })
+  : [ref<HTMLElement>()]
 
 /**
  * Recursively create default values for field structures
@@ -178,9 +184,17 @@ function removeItem(index: number) {
     :description-class="meta.descriptionClass"
   >
     <div class="space-y-2">
-      <div ref="parent" v-auto-animate="{ duration: 180 }" :class="cn('grid gap-2', meta.class)">
-        <div v-for="(fieldItem, index) in fields" :key="fieldItem.key" class="ff-array__item">
-          <span class="drag-handle ff-array__handle">
+      <div
+        ref="arrayContainer"
+        v-auto-animate="{ duration: 180 }"
+        :class="cn('grid gap-2', meta.class)"
+      >
+        <div
+          v-for="(fieldItem, index) in fields"
+          :key="fieldItem.key"
+          :class="isSortable ? 'ff-array__item' : 'ff-array__item--simple'"
+        >
+          <span v-if="isSortable" class="drag-handle ff-array__handle">
             <Icon name="lucide:grip-vertical" class="h-5 w-5" />
           </span>
 
@@ -226,6 +240,11 @@ function removeItem(index: number) {
 /* Keep Tailwind usage centralized + readable */
 .ff-array__item {
   @apply relative flex items-start rounded-lg border bg-card px-0 transition-colors hover:bg-accent/5;
+}
+
+/* Non-sortable items: no drag handle, simpler layout */
+.ff-array__item--simple {
+  @apply relative flex items-start rounded-lg border bg-card px-3 transition-colors hover:bg-accent/5;
 }
 
 .ff-array__handle {

@@ -273,6 +273,7 @@ export interface ArrayFieldMeta extends BaseFieldMeta {
   itemField: FieldMeta
   addButtonText?: string
   removeButtonText?: string
+  sortable?: boolean // Enable drag-and-drop reordering (default: false)
 }
 
 /**
