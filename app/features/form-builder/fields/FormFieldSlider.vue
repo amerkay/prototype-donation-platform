@@ -62,7 +62,7 @@ const handleSliderChange = (value: number[] | undefined) => {
 
 <template>
   <FormFieldWrapper v-bind="wrapperProps">
-    <div class="space-y-3">
+    <div class="space-y-4">
       <!-- Formatted value display -->
       <div class="flex items-center justify-between">
         <span class="text-2xl font-semibold">

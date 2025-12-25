@@ -205,7 +205,7 @@ defineExpose({
       class="w-full"
     >
       <template v-for="([fieldKey, fieldMeta], index) in allFields" :key="`${fieldKey}-${index}`">
-        <FieldSeparator v-if="shouldShowSeparator(index, fieldMeta)" class="my-2" />
+        <FieldSeparator v-if="shouldShowSeparator(index, fieldMeta)" class="my-4 h-1" />
         <div :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)">
           <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" />
         </div>
@@ -213,13 +213,12 @@ defineExpose({
     </Accordion>
     <template v-else>
       <template v-for="([fieldKey, fieldMeta], index) in allFields" :key="`${fieldKey}-${index}`">
-        <FieldSeparator v-if="shouldShowSeparator(index, fieldMeta)" class="my-2" />
-        <div :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)">
-          <FormField
-            :name="`${section.id}.${fieldKey}`"
-            :meta="fieldMeta"
-            :class="!isLastVisibleField(index) ? 'my-3' : ''"
-          />
+        <FieldSeparator v-if="shouldShowSeparator(index, fieldMeta)" class="my-4 h-1" />
+        <div
+          :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)"
+          :class="!isLastVisibleField(index) ? 'my-4' : ''"
+        >
+          <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" />
         </div>
       </template>
     </template>

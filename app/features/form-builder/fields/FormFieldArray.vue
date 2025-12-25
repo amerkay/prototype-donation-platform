@@ -160,12 +160,12 @@ function removeItem(index: number) {
     :optional="meta.optional"
     :errors="allErrors"
     :invalid="false"
-    :class="cn('space-y-3', allErrors.length && 'ff-array--has-errors')"
+    :class="cn('space-y-4', allErrors.length && 'ff-array--has-errors')"
     :label-class="meta.labelClass"
     :description-class="meta.descriptionClass"
   >
-    <div class="space-y-3">
-      <div ref="parent" v-auto-animate="{ duration: 180 }" :class="cn('grid gap-3', meta.class)">
+    <div class="space-y-2">
+      <div ref="parent" v-auto-animate="{ duration: 180 }" :class="cn('grid gap-4', meta.class)">
         <div v-for="(fieldItem, index) in fields" :key="fieldItem.key" class="ff-array__item">
           <span class="drag-handle ff-array__handle">
             <Icon name="lucide:grip-vertical" class="h-5 w-5" />

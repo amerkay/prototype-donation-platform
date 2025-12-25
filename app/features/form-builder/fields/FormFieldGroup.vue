@@ -107,7 +107,7 @@ watch(isOpen, (newIsOpen) => {
           </div>
         </AccordionTrigger>
         <AccordionContent class="pt-4 pb-0">
-          <div :class="cn('grid grid-cols-1 gap-3', meta.class)">
+          <div :class="cn('grid grid-cols-1 gap-4', meta.class)">
             <FormField
               v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
               :key="`${childFieldKey}-${index}`"
@@ -120,14 +120,14 @@ watch(isOpen, (newIsOpen) => {
     </template>
 
     <!-- Non-collapsible version -->
-    <FieldSet v-else class="gap-3">
-      <FieldLegend v-if="meta.legend || resolvedLabel" :class="cn('', meta.labelClass)">{{
+    <FieldSet v-else class="gap-4">
+      <FieldLegend v-if="meta.legend || resolvedLabel" :class="cn('mt-4', meta.labelClass)">{{
         meta.legend || resolvedLabel
       }}</FieldLegend>
       <FieldDescription v-if="meta.description" :class="meta.descriptionClass">
         {{ meta.description }}
       </FieldDescription>
-      <div :class="cn('grid grid-cols-1 gap-3', meta.class)">
+      <div :class="cn('grid grid-cols-1 gap-4', meta.class)">
         <FormField
           v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
           :key="`${childFieldKey}-${index}`"
