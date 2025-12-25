@@ -2,7 +2,6 @@ import { computed } from 'vue'
 
 /**
  * Unified field path and visibility utilities
- * Consolidates field-path-utils.ts and useContainerFieldPaths.ts
  */
 
 // ============================================================================
