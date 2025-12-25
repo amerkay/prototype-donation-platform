@@ -60,11 +60,10 @@ const allErrors = computed(() => {
   return []
 })
 
-// Only mark array label as invalid for array-level errors, not child errors
-// We pass labelClass with conditional destructive color instead of using invalid prop
-// to avoid cascading data-invalid styling to child fields
+// Mark array label as red when there are any errors (array-level OR child errors)
+// This matches the allErrors behavior for visual consistency
 const arrayLabelClass = computed(() =>
-  cn(props.meta.labelClass, props.errors.length > 0 && 'text-destructive')
+  cn(props.meta.labelClass, allErrors.value.length > 0 && 'text-destructive')
 )
 
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
