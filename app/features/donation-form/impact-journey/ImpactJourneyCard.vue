@@ -36,7 +36,7 @@ const {
   targetRecurringFrequency,
   emoji,
   timeFrameHeadline,
-  multiplierText,
+  // multiplierText,
   impactListInline,
   impactListPrefix,
   ctaCopy
@@ -77,9 +77,9 @@ const handleUpsellClick = () => {
       </h3>
 
       <!-- Compact Multiplier Subtitle -->
-      <p class="text-sm text-muted-foreground leading-relaxed">
+      <!-- <p class="text-sm text-muted-foreground leading-relaxed">
         {{ multiplierText }}
-      </p>
+      </p> -->
 
       <!-- Inline Bullet Impact List -->
       <p class="text-sm text-foreground leading-relaxed">

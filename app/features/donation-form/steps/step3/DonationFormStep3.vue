@@ -5,14 +5,25 @@ import FormRenderer from '~/features/form-builder/FormRenderer.vue'
 import CoverCostsField from '~/features/donation-form/cover-costs/CoverCostsField.vue'
 import CoverCostsUpsellModal from '~/features/donation-form/cover-costs/CoverCostsUpsellModal.vue'
 import { giftAidFormSection } from '../../gift-aid/forms/gift-aid-declaration-form'
-import { preferencesFormSection } from './forms/preferences-form'
+import { createEmailOptInField } from '~/features/donation-form/contact-consent/forms/email-opt-in-field'
+import { createTermsAcceptanceField } from '~/features/donation-form/terms/forms/terms-acceptance-field'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import Separator from '~/components/ui/separator/Separator.vue'
 import { useFormConfigStore } from '~/stores/formConfig'
+import type { FormDef } from '~/features/form-builder/types'
 
 // Get shared form config from store
 const configStore = useFormConfigStore()
 const formConfig = computed(() => configStore.fullConfig)
+
+// Preferences form section (email opt-in, terms acceptance)
+const preferencesFormSection: FormDef = {
+  id: 'preferences',
+  fields: {
+    ...createEmailOptInField(),
+    ...createTermsAcceptanceField()
+  }
+}
 
 const emit = defineEmits<{
   complete: []

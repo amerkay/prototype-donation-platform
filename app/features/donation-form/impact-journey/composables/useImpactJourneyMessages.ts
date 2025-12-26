@@ -56,19 +56,19 @@ export function useImpactJourneyMessages(
     return messaging?.onceHeadline || 'Your Support Today'
   })
 
-  const multiplierText = computed<string | null>(() => {
-    const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
-    const currencySymbol = getCurrencySymbol(currency.value)
-    const formattedAmount = `${currencySymbol}${amount.value}`
+  // const multiplierText = computed<string | null>(() => {
+  //   const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
+  //   const currencySymbol = getCurrencySymbol(currency.value)
+  //   const formattedAmount = `${currencySymbol}${amount.value}`
 
-    if (freqKey === 'monthly') {
-      return `Monthly support = reliable care they count on`
-    }
-    if (freqKey === 'yearly') {
-      return `Yearly support = consistent care all year long`
-    }
-    return `Your ${formattedAmount} provides immediate care`
-  })
+  //   if (freqKey === 'monthly') {
+  //     return `Monthly support = reliable care they count on`
+  //   }
+  //   if (freqKey === 'yearly') {
+  //     return `Yearly support = consistent care all year long`
+  //   }
+  //   return `Your ${formattedAmount} provides immediate care`
+  // })
 
   const impactListInline = computed<string | null>(() => {
     if (providedItems.value.length === 0) return null
@@ -208,7 +208,7 @@ export function useImpactJourneyMessages(
     targetRecurringFrequency,
     emoji,
     timeFrameHeadline,
-    multiplierText,
+    // multiplierText,
     impactListInline,
     impactListPrefix,
     ctaCopy
