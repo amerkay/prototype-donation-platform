@@ -62,6 +62,11 @@ const handleSwitchToTab = (tab: 'monthly' | 'yearly', amount?: number) => {
   emit('switch-to-tab', tab, false, amount)
 }
 
+const handleUpdateAmount = (amount: number) => {
+  // Parent component should handle finding next higher preset amount
+  emit('update:donationAmount', amount)
+}
+
 const handleOpenTributeModal = () => {
   tributeModalRef.value?.open(props.tributeData)
 }
@@ -133,6 +138,7 @@ defineExpose({
       :config="formConfig.features.impactJourney"
       :enabled-frequencies="enabledFrequencies"
       @switch-to-tab="handleSwitchToTab"
+      @update-amount="handleUpdateAmount"
     />
 
     <!-- Shipping Notice -->

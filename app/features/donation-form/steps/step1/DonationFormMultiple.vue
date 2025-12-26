@@ -51,6 +51,11 @@ const handleSwitchToTab = (tab: 'monthly' | 'yearly', amount?: number) => {
   emit('switch-to-tab', tab, amount)
 }
 
+const handleUpdateAmount = (_amount: number) => {
+  // Multiple cart doesn't support amount updates via this method
+  // User must edit individual cart items
+}
+
 const handleEditCartItem = (item: CartItem, itemKey: string) => {
   productOptionsModalRef.value?.openForEdit(item, itemKey)
 }
@@ -125,6 +130,7 @@ defineExpose({
       :config="formConfig.features.impactJourney"
       :enabled-frequencies="enabledFrequencies"
       @switch-to-tab="handleSwitchToTab"
+      @update-amount="handleUpdateAmount"
     />
 
     <!-- Shipping Notice -->

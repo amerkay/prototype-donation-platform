@@ -1,28 +1,43 @@
 /**
- * Impact Journey types - educational messaging for donation impact
+ * Impact Journey types - simplified emotion-focused messaging
+ *
+ * Auto-generates impact messages by matching donation amounts to impact items.
+ * Shows all items where item.amount <= donation amount.
  */
 
-export interface ImpactMessage {
-  threshold: number // Currency value in baseCurrency
-  title: string // Bold heading
-  description: string // Body text
-  showCta?: boolean // Whether to show CTA button
-  ctaText?: string // Button text
-  ctaAction?: 'switch-monthly' | 'switch-yearly' // What button does
-  ctaTargetAmount?: number // Optional preset amount to set when switching (in base currency)
+/**
+ * Impact per amount - what each amount level provides
+ * System automatically shows all items up to the donation amount
+ */
+export interface ImpactPerAmount {
+  amount: number // Amount in base currency
+  label: string // What this amount provides (e.g., "Daily fresh fruit and vegetables")
 }
 
-export interface FrequencyImpactConfig {
-  enabled: boolean // Show messages for this tab
-  messages: ImpactMessage[] // Array of threshold-based messages
+/**
+ * Upsell prompt settings
+ * Optional CTA to encourage monthly giving or amount increases
+ */
+export interface UpsellSettings {
+  enabled: boolean
+  onceToMonthly?: {
+    enabled: boolean
+    message: string // e.g., "Make your impact last - switch to monthly giving"
+    targetAmount?: number // Optional suggested monthly amount
+  }
+  increaseAmount?: {
+    enabled: boolean
+    message: string // e.g., "Want to provide even more? Increase your monthly gift"
+  }
 }
 
+/**
+ * Complete Impact Journey configuration
+ */
 export interface ImpactJourneySettings {
   enabled: boolean // Master toggle
-  frequencies: {
-    once: FrequencyImpactConfig
-    monthly: FrequencyImpactConfig
-    yearly: FrequencyImpactConfig
-    multiple: FrequencyImpactConfig
+  impactPerAmount: {
+    items: ImpactPerAmount[] // Impact items at each amount level
   }
+  upsell?: UpsellSettings // Optional upsell prompts
 }

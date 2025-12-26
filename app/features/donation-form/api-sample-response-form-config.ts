@@ -48,84 +48,28 @@ export const formConfig = {
     },
     impactJourney: {
       enabled: true,
-      frequencies: {
-        once: {
+      impactPerAmount: {
+        items: [
+          { amount: 5, label: 'Daily fresh fruit and vegetables' },
+          { amount: 10, label: 'Medical supplies and health checks' },
+          { amount: 15, label: 'Enrichment activities and mental stimulation' },
+          { amount: 25, label: 'Complete daily care for one orangutan' },
+          { amount: 50, label: 'Comprehensive care for multiple orangutans' },
+          { amount: 75, label: 'Rescue mission equipment and transport' },
+          { amount: 100, label: 'Habitat maintenance and forest protection programs' }
+        ]
+      },
+      upsell: {
+        enabled: true,
+        onceToMonthly: {
           enabled: true,
-          messages: [
-            {
-              threshold: 0,
-              title: 'Make it monthly for greater impact',
-              description:
-                'A one-time donation helps protect orangutans today. Consider £10/month to support ongoing rescue and care.',
-              showCta: true,
-              ctaText: 'Switch to Monthly →',
-              ctaAction: 'switch-monthly',
-              ctaTargetAmount: 10
-            },
-            {
-              threshold: 50,
-              title: 'Make it monthly for greater impact',
-              description: '£50 once helps fund urgent medical care and shelter for orangutans.',
-              showCta: true,
-              ctaText: 'Switch to Monthly →',
-              ctaAction: 'switch-monthly',
-              ctaTargetAmount: 10
-            },
-            {
-              threshold: 100,
-              title: 'Join our major donors circle',
-              description:
-                '£100 once is generous — it helps fund rescue missions and habitat protection for orangutans.',
-              showCta: true,
-              ctaText: 'Make it Monthly →',
-              ctaAction: 'switch-monthly',
-              ctaTargetAmount: 25
-            }
-          ]
+          message:
+            'Your one-time gift makes an immediate difference. Switch to monthly giving to provide ongoing care year-round.',
+          targetAmount: 10
         },
-        monthly: {
+        increaseAmount: {
           enabled: true,
-          messages: [
-            {
-              threshold: 5,
-              title: '💙 Thank you for becoming a monthly supporter',
-              description:
-                "Your £5/month helps provide food and basic care for orangutans. You'll receive quarterly updates on our work."
-            },
-            {
-              threshold: 10,
-              title: '💙 Join 1,200+ Monthly Supporters',
-              description:
-                "Your £10/month funds enrichment, medical checks, and daily care for orangutans. You'll receive quarterly impact updates."
-            },
-            {
-              threshold: 25,
-              title: '🌟 Major monthly supporter',
-              description:
-                'Your £25/month provides stable funding for orangutan rescue, rehabilitation, and habitat protection. Thank you!'
-            }
-          ]
-        },
-        yearly: {
-          enabled: false,
-          messages: []
-        },
-        multiple: {
-          enabled: true,
-          messages: [
-            {
-              threshold: 10,
-              title: '💡 Your combined recurring impact',
-              description:
-                'Your cart includes recurring donations that help fund orangutan rescue and care. Thank you!'
-            },
-            {
-              threshold: 25,
-              title: '🌟 Major supporter: Recurring gifts in cart',
-              description:
-                'Your recurring items provide stable, predictable funding for orangutan rescue, rehabilitation, and habitat protection. This makes a huge difference!'
-            }
-          ]
+          message: 'Want to help even more orangutans? Consider increasing your monthly support.'
         }
       }
     },

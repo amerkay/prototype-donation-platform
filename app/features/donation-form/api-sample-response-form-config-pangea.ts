@@ -48,75 +48,28 @@ export const formConfig = {
     },
     impactJourney: {
       enabled: true,
-      frequencies: {
-        once: {
+      impactPerAmount: {
+        items: [
+          { amount: 5, label: 'Fresh fruit and vegetables' },
+          { amount: 10, label: 'Medical supplies and health monitoring' },
+          { amount: 15, label: 'Enrichment activities and comfort items' },
+          { amount: 25, label: 'Complete daily care for one elephant' },
+          { amount: 50, label: 'Comprehensive care for multiple elephants' },
+          { amount: 75, label: 'Sanctuary maintenance and long-term improvements' }
+        ]
+      },
+      upsell: {
+        enabled: true,
+        onceToMonthly: {
           enabled: true,
-          messages: [
-            {
-              threshold: 25,
-              title: 'Double your impact with monthly giving',
-              description:
-                '€25 once helps today. €5/month = €60/year of sustained care for our elderly elephants.',
-              showCta: true,
-              ctaText: 'Switch to Monthly →',
-              ctaAction: 'switch-monthly',
-              ctaTargetAmount: 5
-            },
-            {
-              threshold: 50,
-              title: 'Make it monthly for lasting impact',
-              description:
-                '€50 is generous! €10/month = €120/year provides ongoing support and sanctuary care.',
-              showCta: true,
-              ctaText: 'Become a Monthly Supporter →',
-              ctaAction: 'switch-monthly',
-              ctaTargetAmount: 10
-            }
-          ]
+          message:
+            'Your one-time gift helps today. Switch to monthly giving to provide ongoing sanctuary care and comfort for our elderly elephants year-round.',
+          targetAmount: 5
         },
-        monthly: {
+        increaseAmount: {
           enabled: true,
-          messages: [
-            {
-              threshold: 5,
-              title: '🐘 Thank you for supporting our elephants monthly',
-              description:
-                "Your €5/month provides €60/year of ongoing sanctuary care. You'll receive updates on our elephant family."
-            },
-            {
-              threshold: 10,
-              title: '🐘 Join 800+ Monthly Elephant Guardians',
-              description:
-                'Your €10/month = €120/year helps provide food, medical care, and a safe home for our elderly elephants.'
-            },
-            {
-              threshold: 25,
-              title: '⭐ Champion Elephant Guardian',
-              description:
-                'Your €25/month = €300/year provides comprehensive care for one elephant. You make a profound difference!'
-            }
-          ]
-        },
-        yearly: {
-          enabled: false,
-          messages: []
-        },
-        multiple: {
-          enabled: true,
-          messages: [
-            {
-              threshold: 10,
-              title: '🐘 Your elephant sanctuary impact',
-              description:
-                'Your recurring donations provide stable support for our elephant sanctuary. Every month counts!'
-            },
-            {
-              threshold: 20,
-              title: '⭐ Major sanctuary supporter',
-              description:
-                'Your combined recurring support helps us plan long-term care for our elephant family. Thank you!'
-            }
-          ]
+          message:
+            'Want to provide even more care and comfort? Consider increasing your monthly support to help more elephants.'
         }
       }
     },
