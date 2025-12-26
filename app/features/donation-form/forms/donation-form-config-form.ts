@@ -96,7 +96,7 @@ export function createFormConfigSection(): FormDef {
             placeholder: 'Select currencies',
             searchPlaceholder: 'Search currencies...',
             multiple: true,
-            options: CURRENCY_OPTIONS,
+            options: [...CURRENCY_OPTIONS],
             rules: z.array(z.string()).min(1, 'At least one currency must be supported'),
             onChange: (value, allValues, setValue) => {
               const defaultCurrency = allValues.defaultCurrency as string | undefined
