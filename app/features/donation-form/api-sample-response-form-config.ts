@@ -65,13 +65,10 @@ export const formConfig = {
           { amount: 100, label: 'Habitat protection' }
         ]
       },
-      upsellEnabled: true,
-      upsellOnceToRecurring: {
-        enabled: true,
-        targetAmount: 10
-      },
-      upsellIncreaseAmount: {
-        enabled: true
+      upsells: {
+        upsellOnceToRecurring: true,
+        upsellOnceToRecurringTarget: 10,
+        upsellIncreaseAmount: true
       }
     },
     coverCosts: {

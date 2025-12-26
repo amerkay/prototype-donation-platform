@@ -113,32 +113,28 @@ export function createImpactJourneyConfigSection(): FormDef {
           }
         }
       },
-      upsellEnabled: {
-        type: 'toggle',
-        label: 'Enable Upsell Prompts',
-        description: 'Show CTAs to encourage recurring donations or higher amounts',
-        visibleWhen: (values) => values.enabled === true
-      },
-      upsellOnceToRecurring: {
+      upsells: {
         type: 'field-group',
-        label: 'One-Time to Recurring Upsell',
-        description: 'Auto-generates "Be Their Constant" CTA to convert one-time donors',
+        label: 'Upsell Prompts',
+        description: 'CTAs to encourage recurring donations or higher amounts',
         collapsible: true,
         collapsibleDefaultOpen: false,
-        visibleWhen: (values) => values.enabled === true && values.upsellEnabled === true,
+        visibleWhen: (values) => values.enabled === true,
         fields: {
-          enabled: {
+          upsellOnceToRecurring: {
             type: 'toggle',
-            label: 'Enable',
-            description: 'Shows CTA on one-time tab. Adapts for monthly/yearly based on target.'
+            label: 'One-Time to Recurring',
+            description:
+              'Shows "Be Their Constant" CTA on one-time tab to convert to monthly/yearly'
           },
-          targetAmount: {
+          upsellOnceToRecurringTarget: {
             type: 'select',
-            label: 'Suggested Amount',
-            description: 'Auto-switches to correct tab (monthly/yearly) based on this amount.',
+            label: 'Suggested Recurring Amount',
+            description: 'Auto-switches to correct tab (monthly/yearly) based on this amount',
             placeholder: 'Select an amount...',
             optional: true,
-            visibleWhen: (values) => (values as Record<string, unknown>).enabled === true,
+            visibleWhen: (values) =>
+              (values as Record<string, unknown>).upsellOnceToRecurring === true,
             options: () => {
               // Get pricing config from store
               const pricing = store.formSettings?.pricing
@@ -174,22 +170,12 @@ export function createImpactJourneyConfigSection(): FormDef {
 
               return options
             }
-          }
-        }
-      },
-      upsellIncreaseAmount: {
-        type: 'field-group',
-        label: 'Amount Increase Prompt',
-        description: 'Auto-generates "Greater Impact" CTA with next preset amount',
-        collapsible: true,
-        collapsibleDefaultOpen: false,
-        visibleWhen: (values) => values.enabled === true && values.upsellEnabled === true,
-        fields: {
-          enabled: {
+          },
+          upsellIncreaseAmount: {
             type: 'toggle',
-            label: 'Enable',
+            label: 'Amount Increase',
             description:
-              'Shows CTA with next higher preset (e.g., "Increase to £50 — Greater Impact").'
+              'Shows "Greater Impact" CTA with next preset amount (e.g., "Increase to £50")'
           }
         }
       }

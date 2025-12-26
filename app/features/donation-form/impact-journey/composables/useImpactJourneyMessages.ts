@@ -96,7 +96,7 @@ export function useImpactJourneyMessages(
 
   // Determine which recurring frequency to suggest (monthly or yearly)
   const targetRecurringFrequency = computed<'monthly' | 'yearly' | null>(() => {
-    const targetAmount = config.value.upsellOnceToRecurring?.targetAmount
+    const targetAmount = config.value.upsells?.upsellOnceToRecurringTarget
 
     // If specific target amount set, check which frequency it belongs to
     if (targetAmount) {
@@ -123,14 +123,12 @@ export function useImpactJourneyMessages(
 
   // Check if upsell CTA should be shown
   const showUpsell = computed<boolean>(() => {
-    if (!config.value.upsellEnabled) return false
-
     const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
 
     // One-time → recurring conversion
     if (
       freqKey === 'once' &&
-      config.value.upsellOnceToRecurring?.enabled &&
+      config.value.upsells?.upsellOnceToRecurring &&
       targetRecurringFrequency.value
     ) {
       return true
@@ -139,7 +137,7 @@ export function useImpactJourneyMessages(
     // Amount increase (only if next level exists)
     if (
       (freqKey === 'monthly' || freqKey === 'yearly') &&
-      config.value.upsellIncreaseAmount?.enabled &&
+      config.value.upsells?.upsellIncreaseAmount &&
       nextPresetAmount.value !== null
     ) {
       return true
@@ -155,9 +153,9 @@ export function useImpactJourneyMessages(
     const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
 
     // One-time → recurring: use configured target amount
-    if (freqKey === 'once' && config.value.upsellOnceToRecurring?.targetAmount) {
+    if (freqKey === 'once' && config.value.upsells?.upsellOnceToRecurringTarget) {
       return convertPrice(
-        config.value.upsellOnceToRecurring.targetAmount,
+        config.value.upsells.upsellOnceToRecurringTarget,
         currency.value,
         baseCurrency
       )
@@ -166,7 +164,7 @@ export function useImpactJourneyMessages(
     // Amount increase: use next preset
     if (
       (freqKey === 'monthly' || freqKey === 'yearly') &&
-      config.value.upsellIncreaseAmount?.enabled &&
+      config.value.upsells?.upsellIncreaseAmount &&
       nextPresetAmount.value
     ) {
       return convertPrice(nextPresetAmount.value, currency.value, baseCurrency)

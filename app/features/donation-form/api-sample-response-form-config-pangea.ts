@@ -64,13 +64,10 @@ export const formConfig = {
           { amount: 75, label: 'Sanctuary upkeep' }
         ]
       },
-      upsellEnabled: true,
-      upsellOnceToRecurring: {
-        enabled: true,
-        targetAmount: 5
-      },
-      upsellIncreaseAmount: {
-        enabled: true
+      upsells: {
+        upsellOnceToRecurring: true,
+        upsellOnceToRecurringTarget: 5,
+        upsellIncreaseAmount: true
       }
     },
     coverCosts: {

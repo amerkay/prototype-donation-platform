@@ -28,12 +28,9 @@ export interface ImpactJourneySettings {
     monthlyHeadline?: string // Default: "Every Day You're There"
     yearlyHeadline?: string // Default: "Every Day You're There"
   }
-  upsellEnabled?: boolean
-  upsellOnceToRecurring?: {
-    enabled: boolean
-    targetAmount?: number // In base currency
-  }
-  upsellIncreaseAmount?: {
-    enabled: boolean
+  upsells?: {
+    upsellOnceToRecurring?: boolean
+    upsellOnceToRecurringTarget?: number // In base currency
+    upsellIncreaseAmount?: boolean
   }
 }
