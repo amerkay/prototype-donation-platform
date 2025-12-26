@@ -38,20 +38,25 @@ const selectedAmount = ref<number | null>(null)
 // Initialize based on modelValue
 watch(
   () => props.modelValue,
-  (newValue) => {
+  (newValue, oldValue) => {
     localAmount.value = newValue
-    // Check if modelValue matches one of the preset amounts
-    if (props.amounts.includes(newValue)) {
-      selectedAmount.value = newValue
-      showSlider.value = false
-    } else if (newValue > 0) {
-      // Has a custom value, show slider
-      selectedAmount.value = null
-      showSlider.value = true
-    } else {
-      // No value selected
-      selectedAmount.value = null
-      showSlider.value = false
+
+    // Only auto-switch mode on initial load (oldValue === undefined)
+    // Don't interfere when user is actively using the slider
+    if (oldValue === undefined) {
+      // Check if modelValue matches one of the preset amounts
+      if (props.amounts.includes(newValue)) {
+        selectedAmount.value = newValue
+        showSlider.value = false
+      } else if (newValue > 0) {
+        // Has a custom value, show slider
+        selectedAmount.value = null
+        showSlider.value = true
+      } else {
+        // No value selected
+        selectedAmount.value = null
+        showSlider.value = false
+      }
     }
   },
   { immediate: true }
@@ -74,9 +79,9 @@ const selectAmount = (amount: number) => {
 const enableCustomAmount = () => {
   selectedAmount.value = null
   showSlider.value = true
-  // Preserve current amount if set, otherwise use first preset or minimum
+  // Preserve current amount if set, otherwise use minimum price
   if (localAmount.value === 0) {
-    localAmount.value = props.amounts[0] || props.minPrice
+    localAmount.value = props.minPrice
   }
 }
 

@@ -130,7 +130,7 @@ export function createImpactJourneyConfigSection(): FormDef {
             description:
               'Button text for one-time to recurring conversion. Default: "Be Their Constant"',
             placeholder: 'Be Their Constant',
-            maxLength: 25,
+            maxLength: 20,
             optional: true,
             visibleWhen: (values) =>
               (values as Record<string, unknown>).upsellOnceToRecurring === true
