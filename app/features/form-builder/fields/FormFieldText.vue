@@ -27,6 +27,7 @@ const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
       :model-value="modelValue"
       :placeholder="resolvedPlaceholder"
       :autocomplete="meta.autocomplete"
+      :maxlength="meta.maxLength"
       :aria-invalid="!!errors.length"
       :class="cn(meta.class, 'text-sm')"
       @update:model-value="$emit('update:modelValue', $event)"

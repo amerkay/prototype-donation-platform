@@ -29,16 +29,24 @@ const currencyRef = toRef(props, 'currency')
 const configRef = toRef(props, 'config')
 const pricingConfigRef = toRef(props, 'pricingConfig')
 
-// Get impact items provided at this donation level
-const { providedItems, showUpsell, upsellMessage, upsellTargetAmount, targetRecurringFrequency } =
-  useImpactJourneyMessages(
-    frequencyRef,
-    amountRef,
-    currencyRef,
-    props.baseCurrency,
-    configRef,
-    pricingConfigRef
-  )
+// Get impact items provided at this donation level + new design props
+const {
+  showUpsell,
+  upsellTargetAmount,
+  targetRecurringFrequency,
+  timeFrameHeadline,
+  multiplierText,
+  impactListInline,
+  impactListPrefix,
+  ctaCopy
+} = useImpactJourneyMessages(
+  frequencyRef,
+  amountRef,
+  currencyRef,
+  props.baseCurrency,
+  configRef,
+  pricingConfigRef
+)
 
 // Handle upsell CTA click
 const handleUpsellClick = () => {
@@ -59,55 +67,28 @@ const handleUpsellClick = () => {
 </script>
 
 <template>
-  <div v-if="providedItems.length > 0" class="border-t pt-4 space-y-3">
-    <!-- Impact Items Checklist -->
-    <div class="rounded-lg border bg-card p-4 space-y-3">
-      <!-- Frequency-aware heading -->
-      <h4 class="font-semibold text-sm">
-        <template v-if="frequency === 'once'">Your donation provides:</template>
-        <template v-else-if="frequency === 'monthly'">Your monthly donation provides:</template>
-        <template v-else-if="frequency === 'yearly'">Your yearly donation provides:</template>
-        <template v-else>Your donation provides:</template>
-      </h4>
+  <div v-if="impactListInline && frequency !== 'multiple'" class="border-t pt-4">
+    <!-- Compact Impact Card: Multiplication Emphasis Design -->
+    <div class="rounded-lg border bg-muted/30 p-5 space-y-4">
+      <!-- Bold All-Caps Headline -->
+      <h3 class="text-lg font-bold tracking-tight text-foreground">
+        {{ timeFrameHeadline }}
+      </h3>
 
-      <!-- Auto-generated list of all items up to this amount -->
-      <ul class="space-y-2">
-        <li
-          v-for="item in providedItems"
-          :key="item.amount"
-          class="flex items-start gap-2 text-sm text-muted-foreground"
-        >
-          <span class="text-primary mt-0.5">✓</span>
-          <span>{{ item.label }}</span>
-        </li>
-      </ul>
-
-      <!-- Frequency context summary -->
-      <p v-if="frequency === 'monthly'" class="text-sm text-foreground font-medium pt-2 border-t">
-        These benefits repeat every month for as long as you give.
-      </p>
-      <p v-if="frequency === 'yearly'" class="text-sm text-foreground font-medium pt-2 border-t">
-        These benefits continue all year (12 months of ongoing impact).
+      <!-- Compact Multiplier Subtitle -->
+      <p class="text-sm text-muted-foreground leading-relaxed">
+        {{ multiplierText }}
       </p>
 
-      <!-- Thank you message -->
-      <p
-        class="text-sm text-foreground font-medium"
-        :class="{ 'pt-2 border-t': frequency === 'once' }"
-      >
-        Thank you for making this impact possible.
+      <!-- Inline Bullet Impact List -->
+      <p class="text-sm text-foreground leading-relaxed">
+        <span class="font-medium">{{ impactListPrefix }}</span>
+        {{ impactListInline }}
       </p>
-    </div>
 
-    <!-- Optional Upsell CTA -->
-    <div v-if="showUpsell && upsellMessage" class="rounded-lg border bg-muted/50 p-4 space-y-3">
-      <p class="text-sm text-muted-foreground">{{ upsellMessage }}</p>
-      <Button variant="outline" size="sm" class="w-full" @click="handleUpsellClick">
-        <template v-if="frequency === 'once'"> Switch to Recurring → </template>
-        <template v-else-if="upsellTargetAmount">
-          Increase to {{ currency }}{{ upsellTargetAmount }} →
-        </template>
-        <template v-else> Increase My Impact → </template>
+      <!-- Primary CTA Button (if upsell enabled) -->
+      <Button v-if="showUpsell" size="default" class="w-full" @click="handleUpsellClick">
+        {{ ctaCopy }}
       </Button>
     </div>
   </div>

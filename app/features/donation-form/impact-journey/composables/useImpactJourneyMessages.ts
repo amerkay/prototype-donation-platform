@@ -1,10 +1,10 @@
 import { computed, type Ref } from 'vue'
-import { useCurrency } from '~/features/donation-form/composables/useCurrency'
+import { useCurrency, getCurrencySymbol } from '~/features/donation-form/composables/useCurrency'
 import type { ImpactJourneySettings, ImpactPerAmount } from '../types'
 import type { PricingSettings } from '~/features/donation-form/types'
 
 /**
- * Composable for impact journey - auto-generates impact from building blocks
+ * Composable for impact journey - auto-generates impact messages and CTAs
  * Shows all impact items where item.amount <= donation amount
  */
 export function useImpactJourneyMessages(
@@ -17,53 +17,112 @@ export function useImpactJourneyMessages(
 ) {
   const { convertPrice } = useCurrency(baseCurrency)
 
-  // Get all impact items provided at this donation level
+  // ============================================================================
+  // STEP 1: Calculate provided items based on donation amount
+  // ============================================================================
+
   const providedItems = computed<ImpactPerAmount[]>(() => {
     if (!config.value.enabled || !config.value.impactPerAmount?.items) return []
 
-    // Convert amount from selected currency to base currency
+    // Convert to base currency for comparison
     let baseAmount = convertPrice(amount.value, baseCurrency, currency.value)
 
-    // For yearly donations, convert to monthly equivalent so impact messages make sense
-    // e.g., £120/year = £10/month → show impact items up to £10
+    // Yearly: convert to monthly equivalent (£120/year = £10/month)
     if (frequency.value === 'yearly') {
       baseAmount = baseAmount / 12
     }
 
-    // Return all items where amount <= donation amount
     return config.value.impactPerAmount.items
       .filter((item) => item.amount <= baseAmount)
-      .sort((a, b) => a.amount - b.amount) // Sort by amount ascending
+      .sort((a, b) => a.amount - b.amount)
   })
 
-  // Get next preset amount from pricing config (for amount increase upsell)
+  // ============================================================================
+  // STEP 2: Generate display content (headline, subtitle, list)
+  // ============================================================================
+
+  const timeFrameHeadline = computed<string>(() => {
+    const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
+    if (freqKey === 'monthly') return '12 Months of Care'
+    if (freqKey === 'yearly') return '365 Days of Care'
+    return 'Your Donation Today'
+  })
+
+  const multiplierText = computed<string | null>(() => {
+    const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
+    const currencySymbol = getCurrencySymbol(currency.value)
+    const formattedAmount = `${currencySymbol}${amount.value}`
+
+    if (freqKey === 'monthly') {
+      return `Your ${formattedAmount}/month becomes 12x the impact`
+    }
+    if (freqKey === 'yearly') {
+      return `Your ${formattedAmount}/year provides 365 days of support`
+    }
+    return `Your ${formattedAmount} helps today`
+  })
+
+  const impactListInline = computed<string | null>(() => {
+    if (providedItems.value.length === 0) return null
+    return providedItems.value.map((item) => item.label).join(' • ')
+  })
+
+  const impactListPrefix = computed<string>(() => {
+    const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
+    if (freqKey === 'monthly') return 'Each month:'
+    if (freqKey === 'yearly') return 'All year:'
+    return 'Provides:'
+  })
+
+  // ============================================================================
+  // STEP 3: Calculate upsell logic (if enabled)
+  // ============================================================================
+
+  // Find next preset amount for increase upsell
   const nextPresetAmount = computed<number | null>(() => {
     const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
     const freqConfig = pricingConfig.value.frequencies[freqKey]
     if (!freqConfig?.enabled || !freqConfig.presetAmounts) return null
 
-    // Convert current amount from selected currency to base currency
     const baseAmount = convertPrice(amount.value, baseCurrency, currency.value)
-
-    // Find first preset amount greater than current donation
     const sorted = [...freqConfig.presetAmounts].sort((a, b) => a - b)
     return sorted.find((preset) => preset > baseAmount) || null
   })
 
-  // Determine target recurring frequency (prefer monthly, fallback to yearly)
+  // Determine which recurring frequency to suggest (monthly or yearly)
   const targetRecurringFrequency = computed<'monthly' | 'yearly' | null>(() => {
+    const targetAmount = config.value.upsellOnceToRecurring?.targetAmount
+
+    // If specific target amount set, check which frequency it belongs to
+    if (targetAmount) {
+      if (
+        pricingConfig.value.frequencies.yearly?.enabled &&
+        pricingConfig.value.frequencies.yearly.presetAmounts?.includes(targetAmount)
+      ) {
+        return 'yearly'
+      }
+
+      if (
+        pricingConfig.value.frequencies.monthly?.enabled &&
+        pricingConfig.value.frequencies.monthly.presetAmounts?.includes(targetAmount)
+      ) {
+        return 'monthly'
+      }
+    }
+
+    // Fallback: prefer monthly, then yearly
     if (pricingConfig.value.frequencies.monthly?.enabled) return 'monthly'
     if (pricingConfig.value.frequencies.yearly?.enabled) return 'yearly'
     return null
   })
 
-  // Check if upsell should be shown
+  // Check if upsell CTA should be shown
   const showUpsell = computed<boolean>(() => {
     if (!config.value.upsellEnabled) return false
 
     const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
 
-    // Show once-to-recurring upsell on one-time donations (only if recurring frequency available)
+    // One-time → recurring conversion
     if (
       freqKey === 'once' &&
       config.value.upsellOnceToRecurring?.enabled &&
@@ -72,7 +131,7 @@ export function useImpactJourneyMessages(
       return true
     }
 
-    // Show increase-amount upsell on recurring donations only if there's a next preset amount
+    // Amount increase (only if next level exists)
     if (
       (freqKey === 'monthly' || freqKey === 'yearly') &&
       config.value.upsellIncreaseAmount?.enabled &&
@@ -84,33 +143,13 @@ export function useImpactJourneyMessages(
     return false
   })
 
-  // Get upsell message
-  const upsellMessage = computed<string | null>(() => {
-    if (!showUpsell.value) return null
-
-    const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
-
-    if (freqKey === 'once' && config.value.upsellOnceToRecurring?.enabled) {
-      return config.value.upsellOnceToRecurring.message
-    }
-
-    if (
-      (freqKey === 'monthly' || freqKey === 'yearly') &&
-      config.value.upsellIncreaseAmount?.enabled
-    ) {
-      return config.value.upsellIncreaseAmount.message
-    }
-
-    return null
-  })
-
-  // Get suggested target amount for upsell (converted to user's selected currency)
+  // Calculate target amount (converted to user's currency)
   const upsellTargetAmount = computed<number | undefined>(() => {
     if (!showUpsell.value) return undefined
 
     const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
 
-    // For once-to-recurring: targetAmount is in base currency, convert to selected currency
+    // One-time → recurring: use configured target amount
     if (freqKey === 'once' && config.value.upsellOnceToRecurring?.targetAmount) {
       return convertPrice(
         config.value.upsellOnceToRecurring.targetAmount,
@@ -119,7 +158,7 @@ export function useImpactJourneyMessages(
       )
     }
 
-    // For amount increase, use next preset amount from pricing config
+    // Amount increase: use next preset
     if (
       (freqKey === 'monthly' || freqKey === 'yearly') &&
       config.value.upsellIncreaseAmount?.enabled &&
@@ -131,11 +170,36 @@ export function useImpactJourneyMessages(
     return undefined
   })
 
+  // Generate CTA button text
+  const ctaCopy = computed<string>(() => {
+    const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
+    const currencySymbol = getCurrencySymbol(currency.value)
+
+    // One-time → recurring
+    if (freqKey === 'once' && targetRecurringFrequency.value) {
+      const targetAmount = upsellTargetAmount.value || amount.value
+      const targetFreq = targetRecurringFrequency.value
+      const multiplier = targetFreq === 'monthly' ? '12x' : '365 Days'
+      return `Give ${currencySymbol}${targetAmount}/${targetFreq} — ${multiplier} Impact`
+    }
+
+    // Amount increase
+    if (upsellTargetAmount.value) {
+      return `Increase to ${currencySymbol}${upsellTargetAmount.value} — Greater Impact`
+    }
+
+    return 'Increase My Impact'
+  })
+
   return {
     providedItems,
     showUpsell,
-    upsellMessage,
     upsellTargetAmount,
-    targetRecurringFrequency
+    targetRecurringFrequency,
+    timeFrameHeadline,
+    multiplierText,
+    impactListInline,
+    impactListPrefix,
+    ctaCopy
   }
 }

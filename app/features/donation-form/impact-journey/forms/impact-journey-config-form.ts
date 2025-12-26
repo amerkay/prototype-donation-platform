@@ -1,26 +1,28 @@
 import * as z from 'zod'
 import type { FormDef } from '~/features/form-builder/types'
+import { useFormConfigStore } from '~/stores/formConfig'
 
 /**
  * Create impact journey config section definition
  * Ultra-simplified: just amount + label pairs
  */
 export function createImpactJourneyConfigSection(): FormDef {
+  const store = useFormConfigStore()
+
   return {
     id: 'impactJourney',
     fields: {
       enabled: {
         type: 'toggle',
         label: 'Enable Impact Journey',
-        description:
-          'Auto-generates emotional impact messages showing what each donation amount provides',
+        description: 'Auto-generates emotional impact messages based on donation amount',
         labelClass: 'font-bold'
       },
       impactPerAmount: {
         type: 'field-group',
         label: 'Impact Per Amount',
         description:
-          'Define what each monthly amount provides. Write natural descriptions (e.g., "Fresh fruit for a week"). The system adapts messaging for one-time, monthly, and yearly donations automatically.',
+          'Define what each amount provides (max 20 chars). System auto-adapts for one-time/monthly/yearly.',
         collapsible: true,
         collapsibleDefaultOpen: false,
         visibleWhen: (values) => values.enabled === true,
@@ -59,9 +61,10 @@ export function createImpactJourneyConfigSection(): FormDef {
                 label: {
                   type: 'text',
                   label: 'What This Provides',
-                  // description: 'Short impact statement for monthly baseline',
-                  placeholder: 'Fresh fruit and vegetables for a week',
-                  rules: z.string().min(1, 'Required')
+                  description: 'Keep it short (max 20 chars) for compact inline display',
+                  placeholder: 'Fresh fruit weekly',
+                  maxLength: 20,
+                  rules: z.string().min(1, 'Required').max(20, 'Max 20 characters')
                 }
               }
             },
@@ -78,6 +81,7 @@ export function createImpactJourneyConfigSection(): FormDef {
       upsellOnceToRecurring: {
         type: 'field-group',
         label: 'One-Time to Recurring Upsell',
+        description: 'Auto-generates "12x Impact" CTA to convert one-time donors',
         collapsible: true,
         collapsibleDefaultOpen: false,
         visibleWhen: (values) => values.enabled === true && values.upsellEnabled === true,
@@ -85,47 +89,31 @@ export function createImpactJourneyConfigSection(): FormDef {
           enabled: {
             type: 'toggle',
             label: 'Enable',
-            description:
-              'Show CTA on one-time donations to switch to recurring giving (monthly or yearly)'
-          },
-          message: {
-            type: 'textarea',
-            label: 'Message',
-            placeholder:
-              'Your one-time gift helps today. Switch to recurring giving to provide ongoing care year-round.',
-            rows: 2,
-            visibleWhen: (values) => (values as Record<string, unknown>).enabled === true,
-            rules: z.string().min(1, 'Required when enabled')
+            description: 'Shows CTA on one-time tab. Adapts for monthly/yearly based on target.'
           },
           targetAmount: {
-            type: 'combobox',
-            label: 'Suggested Recurring Amount',
-            description:
-              'Select a preset amount from your recurring frequency options. Works for monthly or yearly donations.',
+            type: 'select',
+            label: 'Suggested Amount',
+            description: 'Auto-switches to correct tab (monthly/yearly) based on this amount.',
             placeholder: 'Select an amount...',
             optional: true,
             visibleWhen: (values) => (values as Record<string, unknown>).enabled === true,
-            options: (values) => {
-              // Get recurring frequency preset amounts from pricing config
-              const pricing = (values as Record<string, unknown>).pricing as
-                | Record<string, unknown>
-                | undefined
+            options: () => {
+              // Get pricing config from store
+              const pricing = store.formSettings?.pricing
               if (!pricing?.frequencies) return []
 
-              const frequencies = pricing.frequencies as Record<string, unknown>
               const baseCurrency =
-                ((pricing.baseCurrency as string) || 'GBP') === 'USD'
-                  ? '$'
-                  : ((pricing.baseCurrency as string) || 'GBP') === 'EUR'
-                    ? '€'
-                    : '£'
+                pricing.baseCurrency === 'USD' ? '$' : pricing.baseCurrency === 'EUR' ? '€' : '£'
 
               const options: Array<{ value: number; label: string }> = []
 
               // Add monthly presets
-              const monthly = frequencies.monthly as Record<string, unknown> | undefined
-              if (monthly?.enabled && Array.isArray(monthly.presetAmounts)) {
-                monthly.presetAmounts.forEach((amt: number) => {
+              if (
+                pricing.frequencies.monthly?.enabled &&
+                pricing.frequencies.monthly.presetAmounts
+              ) {
+                pricing.frequencies.monthly.presetAmounts.forEach((amt) => {
                   options.push({
                     value: amt,
                     label: `Monthly: ${baseCurrency}${amt}`
@@ -134,9 +122,8 @@ export function createImpactJourneyConfigSection(): FormDef {
               }
 
               // Add yearly presets
-              const yearly = frequencies.yearly as Record<string, unknown> | undefined
-              if (yearly?.enabled && Array.isArray(yearly.presetAmounts)) {
-                yearly.presetAmounts.forEach((amt: number) => {
+              if (pricing.frequencies.yearly?.enabled && pricing.frequencies.yearly.presetAmounts) {
+                pricing.frequencies.yearly.presetAmounts.forEach((amt) => {
                   options.push({
                     value: amt,
                     label: `Yearly: ${baseCurrency}${amt}`
@@ -144,7 +131,7 @@ export function createImpactJourneyConfigSection(): FormDef {
                 })
               }
 
-              return options.sort((a, b) => a.value - b.value)
+              return options
             }
           }
         }
@@ -152,6 +139,7 @@ export function createImpactJourneyConfigSection(): FormDef {
       upsellIncreaseAmount: {
         type: 'field-group',
         label: 'Amount Increase Prompt',
+        description: 'Auto-generates "Greater Impact" CTA with next preset amount',
         collapsible: true,
         collapsibleDefaultOpen: false,
         visibleWhen: (values) => values.enabled === true && values.upsellEnabled === true,
@@ -159,15 +147,8 @@ export function createImpactJourneyConfigSection(): FormDef {
           enabled: {
             type: 'toggle',
             label: 'Enable',
-            description: 'Show CTA on monthly/yearly donations to increase amount'
-          },
-          message: {
-            type: 'textarea',
-            label: 'Message',
-            placeholder: 'Want to help even more? Consider increasing your monthly support.',
-            rows: 2,
-            visibleWhen: (values) => (values as Record<string, unknown>).enabled === true,
-            rules: z.string().min(1, 'Required when enabled')
+            description:
+              'Shows CTA with next higher preset (e.g., "Increase to £50 — Greater Impact").'
           }
         }
       }

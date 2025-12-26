@@ -50,25 +50,22 @@ export const formConfig = {
       enabled: true,
       impactPerAmount: {
         items: [
-          { amount: 5, label: 'Fresh fruit and vegetables for a week' },
-          { amount: 10, label: 'Medical check and vaccinations' },
-          { amount: 15, label: 'Enrichment activities and comfort items' },
-          { amount: 25, label: 'Complete care for one orangutan' },
-          { amount: 50, label: 'Comprehensive care for multiple orangutans' },
-          { amount: 75, label: 'Rescue mission equipment and transport' },
-          { amount: 100, label: 'Habitat preservation and forest protection' }
+          { amount: 5, label: 'Fresh fruit' },
+          { amount: 10, label: 'Medical checkup' },
+          { amount: 15, label: 'Enrichment toys' },
+          { amount: 25, label: 'Complete care' },
+          { amount: 50, label: 'Multiple orangutans' },
+          { amount: 75, label: 'Rescue equipment' },
+          { amount: 100, label: 'Habitat protection' }
         ]
       },
       upsellEnabled: true,
       upsellOnceToRecurring: {
         enabled: true,
-        message:
-          'Your one-time gift makes an immediate difference. Switch to recurring giving to provide ongoing care year-round.',
         targetAmount: 10
       },
       upsellIncreaseAmount: {
-        enabled: true,
-        message: 'Want to help even more orangutans? Consider increasing your monthly support.'
+        enabled: true
       }
     },
     coverCosts: {

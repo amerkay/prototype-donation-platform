@@ -127,6 +127,7 @@ export interface FieldEmits<TValue = unknown> {
  */
 export interface TextFieldMeta extends BaseFieldMeta {
   type: 'text'
+  maxLength?: number
 }
 
 /**

@@ -11,42 +11,23 @@
  */
 export interface ImpactPerAmount {
   amount: number // Amount in base currency
-  label: string // What this amount provides (e.g., "Daily fresh fruit and vegetables")
-}
-
-/**
- * Upsell prompt settings
- * Optional CTA to encourage monthly giving or amount increases
- */
-export interface UpsellSettings {
-  enabled: boolean
-  onceToMonthly?: {
-    enabled: boolean
-    message: string // e.g., "Make your impact last - switch to monthly giving"
-    targetAmount?: number // Optional suggested monthly amount
-  }
-  increaseAmount?: {
-    enabled: boolean
-    message: string // e.g., "Want to provide even more? Increase your monthly gift"
-  }
+  label: string // What this amount provides (e.g., "Fresh fruit weekly")
 }
 
 /**
  * Complete Impact Journey configuration
  */
 export interface ImpactJourneySettings {
-  enabled: boolean // Master toggle
+  enabled: boolean
   impactPerAmount: {
-    items: ImpactPerAmount[] // Impact items at each amount level
+    items: ImpactPerAmount[]
   }
-  upsellEnabled?: boolean // Enable upsell prompts
+  upsellEnabled?: boolean
   upsellOnceToRecurring?: {
     enabled: boolean
-    message: string // e.g., "Make your impact last - switch to recurring giving"
-    targetAmount?: number // Optional suggested recurring amount (in base currency)
+    targetAmount?: number // In base currency
   }
   upsellIncreaseAmount?: {
     enabled: boolean
-    message: string // e.g., "Want to provide even more? Increase your monthly gift"
   }
 }
