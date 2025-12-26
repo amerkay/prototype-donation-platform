@@ -41,20 +41,21 @@ watch(
   (newValue, oldValue) => {
     localAmount.value = newValue
 
+    // Always sync selectedAmount when value matches a preset
+    if (props.amounts.includes(newValue)) {
+      selectedAmount.value = newValue
+    } else {
+      selectedAmount.value = null
+    }
+
     // Only auto-switch mode on initial load (oldValue === undefined)
     // Don't interfere when user is actively using the slider
     if (oldValue === undefined) {
-      // Check if modelValue matches one of the preset amounts
       if (props.amounts.includes(newValue)) {
-        selectedAmount.value = newValue
         showSlider.value = false
       } else if (newValue > 0) {
-        // Has a custom value, show slider
-        selectedAmount.value = null
         showSlider.value = true
       } else {
-        // No value selected
-        selectedAmount.value = null
         showSlider.value = false
       }
     }
