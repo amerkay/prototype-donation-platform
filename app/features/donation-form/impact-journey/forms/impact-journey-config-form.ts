@@ -138,8 +138,17 @@ export function createImpactJourneyConfigSection(): FormDef {
           upsellIncreaseAmount: {
             type: 'toggle',
             label: 'Amount Increase',
-            description:
-              'Shows "Greater Impact" CTA with next preset amount (e.g., "Increase to £50")'
+            description: 'Shows upsell CTA with next preset amount (e.g., "Increase to £50")'
+          },
+          upsellIncreaseCtaCopy: {
+            type: 'text',
+            label: 'CTA Text',
+            description: 'Button text for amount increase. Default: "Greater Impact"',
+            placeholder: 'Greater Impact',
+            maxLength: 20,
+            optional: true,
+            visibleWhen: (values) =>
+              (values as Record<string, unknown>).upsellIncreaseAmount === true
           }
         }
       }

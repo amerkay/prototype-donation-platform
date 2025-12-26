@@ -194,7 +194,8 @@ export function useImpactJourneyMessages(
 
     // Amount increase
     if (upsellTargetAmount.value) {
-      return `${emojiStr} Increase to ${currencySymbol}${upsellTargetAmount.value} – Greater Impact`
+      const ctaText = config.value.upsells?.upsellIncreaseCtaCopy || 'Greater Impact'
+      return `${emojiStr} Increase to ${currencySymbol}${upsellTargetAmount.value} – ${ctaText}`
     }
 
     return `${emojiStr} Increase My Impact`

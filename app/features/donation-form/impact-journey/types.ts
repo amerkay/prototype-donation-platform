@@ -32,5 +32,6 @@ export interface ImpactJourneySettings {
     upsellOnceToRecurring?: boolean
     upsellCtaCopy?: string // Default: "Be Their Constant" (max 20 chars)
     upsellIncreaseAmount?: boolean
+    upsellIncreaseCtaCopy?: string // Default: "Greater Impact" (max 20 chars)
   }
 }
