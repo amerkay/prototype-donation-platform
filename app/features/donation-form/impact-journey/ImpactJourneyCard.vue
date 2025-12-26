@@ -34,6 +34,7 @@ const {
   showUpsell,
   upsellTargetAmount,
   targetRecurringFrequency,
+  emoji,
   timeFrameHeadline,
   multiplierText,
   impactListInline,
@@ -68,11 +69,11 @@ const handleUpsellClick = () => {
 
 <template>
   <div v-if="impactListInline && frequency !== 'multiple'" class="border-t pt-4">
-    <!-- Compact Impact Card: Multiplication Emphasis Design -->
+    <!-- Compact Impact Card: Emotional Reliability Design -->
     <div class="rounded-lg border bg-muted/30 p-5 space-y-4">
-      <!-- Bold All-Caps Headline -->
+      <!-- Bold Headline with Emoji -->
       <h3 class="text-lg font-bold tracking-tight text-foreground">
-        {{ timeFrameHeadline }}
+        {{ emoji }} {{ timeFrameHeadline }}
       </h3>
 
       <!-- Compact Multiplier Subtitle -->

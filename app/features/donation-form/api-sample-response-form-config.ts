@@ -24,7 +24,7 @@ export const formConfig = {
         customAmount: { min: 3, max: 500 }
       },
       yearly: {
-        enabled: true,
+        enabled: false,
         label: 'Yearly',
         presetAmounts: [50, 100, 250, 500, 1000, 1500],
         customAmount: { min: 25, max: 2000 }
@@ -48,9 +48,15 @@ export const formConfig = {
     },
     impactJourney: {
       enabled: true,
+      messaging: {
+        emoji: '🌱',
+        onceHeadline: 'Your Support Today',
+        monthlyHeadline: "Every Day You're There",
+        yearlyHeadline: "Every Day You're There"
+      },
       impactPerAmount: {
         items: [
-          { amount: 5, label: 'Fresh fruit' },
+          { amount: 3, label: 'Fresh fruit' },
           { amount: 10, label: 'Medical checkup' },
           { amount: 15, label: 'Enrichment toys' },
           { amount: 25, label: 'Complete care' },

@@ -41,11 +41,19 @@ export function useImpactJourneyMessages(
   // STEP 2: Generate display content (headline, subtitle, list)
   // ============================================================================
 
+  const emoji = computed<string>(() => config.value.messaging?.emoji || '🌱')
+
   const timeFrameHeadline = computed<string>(() => {
     const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
-    if (freqKey === 'monthly') return '12 Months of Care'
-    if (freqKey === 'yearly') return '365 Days of Care'
-    return 'Your Donation Today'
+    const messaging = config.value.messaging
+
+    if (freqKey === 'monthly') {
+      return messaging?.monthlyHeadline || "Every Day You're There"
+    }
+    if (freqKey === 'yearly') {
+      return messaging?.yearlyHeadline || "Every Day You're There"
+    }
+    return messaging?.onceHeadline || 'Your Support Today'
   })
 
   const multiplierText = computed<string | null>(() => {
@@ -54,12 +62,12 @@ export function useImpactJourneyMessages(
     const formattedAmount = `${currencySymbol}${amount.value}`
 
     if (freqKey === 'monthly') {
-      return `Your ${formattedAmount}/month becomes 12x the impact`
+      return `Monthly support = reliable care they count on`
     }
     if (freqKey === 'yearly') {
-      return `Your ${formattedAmount}/year provides 365 days of support`
+      return `Yearly support = consistent care all year long`
     }
-    return `Your ${formattedAmount} helps today`
+    return `Your ${formattedAmount} provides immediate care`
   })
 
   const impactListInline = computed<string | null>(() => {
@@ -68,10 +76,7 @@ export function useImpactJourneyMessages(
   })
 
   const impactListPrefix = computed<string>(() => {
-    const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
-    if (freqKey === 'monthly') return 'Each month:'
-    if (freqKey === 'yearly') return 'All year:'
-    return 'Provides:'
+    return 'Today:'
   })
 
   // ============================================================================
@@ -174,21 +179,22 @@ export function useImpactJourneyMessages(
   const ctaCopy = computed<string>(() => {
     const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
     const currencySymbol = getCurrencySymbol(currency.value)
+    const emojiStr = emoji.value
 
     // One-time → recurring
     if (freqKey === 'once' && targetRecurringFrequency.value) {
       const targetAmount = upsellTargetAmount.value || amount.value
       const targetFreq = targetRecurringFrequency.value
-      const multiplier = targetFreq === 'monthly' ? '12x' : '365 Days'
-      return `Give ${currencySymbol}${targetAmount}/${targetFreq} — ${multiplier} Impact`
+      const freqLabel = targetFreq === 'monthly' ? 'Monthly' : 'Yearly'
+      return `${emojiStr} Give ${currencySymbol}${targetAmount}/${freqLabel} — Be Their Constant`
     }
 
     // Amount increase
     if (upsellTargetAmount.value) {
-      return `Increase to ${currencySymbol}${upsellTargetAmount.value} — Greater Impact`
+      return `${emojiStr} Increase to ${currencySymbol}${upsellTargetAmount.value} — Greater Impact`
     }
 
-    return 'Increase My Impact'
+    return `${emojiStr} Increase My Impact`
   })
 
   return {
@@ -196,6 +202,7 @@ export function useImpactJourneyMessages(
     showUpsell,
     upsellTargetAmount,
     targetRecurringFrequency,
+    emoji,
     timeFrameHeadline,
     multiplierText,
     impactListInline,

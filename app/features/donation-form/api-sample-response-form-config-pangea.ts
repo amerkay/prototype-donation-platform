@@ -48,6 +48,12 @@ export const formConfig = {
     },
     impactJourney: {
       enabled: true,
+      messaging: {
+        emoji: '🌱',
+        onceHeadline: 'Your Support Today',
+        monthlyHeadline: "Every Day You're There",
+        yearlyHeadline: "Every Day You're There"
+      },
       impactPerAmount: {
         items: [
           { amount: 5, label: 'Fresh fruit weekly' },

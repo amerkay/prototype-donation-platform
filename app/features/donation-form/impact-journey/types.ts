@@ -22,6 +22,12 @@ export interface ImpactJourneySettings {
   impactPerAmount: {
     items: ImpactPerAmount[]
   }
+  messaging?: {
+    emoji?: string // Default: 🌱
+    onceHeadline?: string // Default: "Your Support Today"
+    monthlyHeadline?: string // Default: "Every Day You're There"
+    yearlyHeadline?: string // Default: "Every Day You're There"
+  }
   upsellEnabled?: boolean
   upsellOnceToRecurring?: {
     enabled: boolean

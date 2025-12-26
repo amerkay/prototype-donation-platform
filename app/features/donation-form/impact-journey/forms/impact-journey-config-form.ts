@@ -18,6 +18,47 @@ export function createImpactJourneyConfigSection(): FormDef {
         description: 'Auto-generates emotional impact messages based on donation amount',
         labelClass: 'font-bold'
       },
+      messaging: {
+        type: 'field-group',
+        label: 'Messaging',
+        description: 'Customize emotional messaging and visual identity',
+        collapsible: true,
+        collapsibleDefaultOpen: false,
+        visibleWhen: (values) => values.enabled === true,
+        fields: {
+          emoji: {
+            type: 'emoji',
+            label: 'Emoji',
+            description: 'Shown in headline and CTA button',
+            placeholder: '🌱',
+            optional: true
+          },
+          onceHeadline: {
+            type: 'text',
+            label: 'One-Time Headline',
+            description: 'Default: "Your Support Today"',
+            placeholder: 'Your Support Today',
+            maxLength: 40,
+            optional: true
+          },
+          monthlyHeadline: {
+            type: 'text',
+            label: 'Monthly Headline',
+            description: 'Default: "Every Day You\'re There"',
+            placeholder: "Every Day You're There",
+            maxLength: 40,
+            optional: true
+          },
+          yearlyHeadline: {
+            type: 'text',
+            label: 'Yearly Headline',
+            description: 'Default: "Every Day You\'re There"',
+            placeholder: "Every Day You're There",
+            maxLength: 40,
+            optional: true
+          }
+        }
+      },
       impactPerAmount: {
         type: 'field-group',
         label: 'Impact Per Amount',
@@ -81,7 +122,7 @@ export function createImpactJourneyConfigSection(): FormDef {
       upsellOnceToRecurring: {
         type: 'field-group',
         label: 'One-Time to Recurring Upsell',
-        description: 'Auto-generates "12x Impact" CTA to convert one-time donors',
+        description: 'Auto-generates "Be Their Constant" CTA to convert one-time donors',
         collapsible: true,
         collapsibleDefaultOpen: false,
         visibleWhen: (values) => values.enabled === true && values.upsellEnabled === true,
