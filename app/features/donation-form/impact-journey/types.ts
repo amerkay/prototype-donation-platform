@@ -40,10 +40,10 @@ export interface ImpactJourneySettings {
     items: ImpactPerAmount[] // Impact items at each amount level
   }
   upsellEnabled?: boolean // Enable upsell prompts
-  upsellOnceToMonthly?: {
+  upsellOnceToRecurring?: {
     enabled: boolean
-    message: string // e.g., "Make your impact last - switch to monthly giving"
-    targetAmount?: number // Optional suggested monthly amount
+    message: string // e.g., "Make your impact last - switch to recurring giving"
+    targetAmount?: number // Optional suggested recurring amount (in base currency)
   }
   upsellIncreaseAmount?: {
     enabled: boolean

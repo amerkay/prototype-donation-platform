@@ -30,14 +30,15 @@ const configRef = toRef(props, 'config')
 const pricingConfigRef = toRef(props, 'pricingConfig')
 
 // Get impact items provided at this donation level
-const { providedItems, showUpsell, upsellMessage, upsellTargetAmount } = useImpactJourneyMessages(
-  frequencyRef,
-  amountRef,
-  currencyRef,
-  props.baseCurrency,
-  configRef,
-  pricingConfigRef
-)
+const { providedItems, showUpsell, upsellMessage, upsellTargetAmount, targetRecurringFrequency } =
+  useImpactJourneyMessages(
+    frequencyRef,
+    amountRef,
+    currencyRef,
+    props.baseCurrency,
+    configRef,
+    pricingConfigRef
+  )
 
 // Handle upsell CTA click
 const handleUpsellClick = () => {
@@ -45,10 +46,10 @@ const handleUpsellClick = () => {
 
   const freqKey = props.frequency
 
-  // One-time to monthly conversion
-  if (freqKey === 'once') {
+  // One-time to recurring conversion - use determined target frequency
+  if (freqKey === 'once' && targetRecurringFrequency.value) {
     const targetAmount = upsellTargetAmount.value || props.donationAmount
-    emit('switch-to-tab', 'monthly', targetAmount)
+    emit('switch-to-tab', targetRecurringFrequency.value, targetAmount)
   }
   // Increase amount on same tab - use next level amount
   else if (upsellTargetAmount.value) {
@@ -61,7 +62,13 @@ const handleUpsellClick = () => {
   <div v-if="providedItems.length > 0" class="border-t pt-4 space-y-3">
     <!-- Impact Items Checklist -->
     <div class="rounded-lg border bg-card p-4 space-y-3">
-      <h4 class="font-semibold text-sm">Your donation provides:</h4>
+      <!-- Frequency-aware heading -->
+      <h4 class="font-semibold text-sm">
+        <template v-if="frequency === 'once'">Your donation provides:</template>
+        <template v-else-if="frequency === 'monthly'">Your monthly donation provides:</template>
+        <template v-else-if="frequency === 'yearly'">Your yearly donation provides:</template>
+        <template v-else>Your donation provides:</template>
+      </h4>
 
       <!-- Auto-generated list of all items up to this amount -->
       <ul class="space-y-2">
@@ -75,8 +82,19 @@ const handleUpsellClick = () => {
         </li>
       </ul>
 
+      <!-- Frequency context summary -->
+      <p v-if="frequency === 'monthly'" class="text-sm text-foreground font-medium pt-2 border-t">
+        These benefits repeat every month for as long as you give.
+      </p>
+      <p v-if="frequency === 'yearly'" class="text-sm text-foreground font-medium pt-2 border-t">
+        These benefits continue all year (12 months of ongoing impact).
+      </p>
+
       <!-- Thank you message -->
-      <p class="text-sm text-foreground font-medium pt-2 border-t">
+      <p
+        class="text-sm text-foreground font-medium"
+        :class="{ 'pt-2 border-t': frequency === 'once' }"
+      >
         Thank you for making this impact possible.
       </p>
     </div>
@@ -85,7 +103,7 @@ const handleUpsellClick = () => {
     <div v-if="showUpsell && upsellMessage" class="rounded-lg border bg-muted/50 p-4 space-y-3">
       <p class="text-sm text-muted-foreground">{{ upsellMessage }}</p>
       <Button variant="outline" size="sm" class="w-full" @click="handleUpsellClick">
-        <template v-if="frequency === 'once'"> Switch to Monthly → </template>
+        <template v-if="frequency === 'once'"> Switch to Recurring → </template>
         <template v-else-if="upsellTargetAmount">
           Increase to {{ currency }}{{ upsellTargetAmount }} →
         </template>

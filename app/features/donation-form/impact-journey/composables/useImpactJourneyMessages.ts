@@ -22,7 +22,13 @@ export function useImpactJourneyMessages(
     if (!config.value.enabled || !config.value.impactPerAmount?.items) return []
 
     // Convert amount from selected currency to base currency
-    const baseAmount = convertPrice(amount.value, baseCurrency, currency.value)
+    let baseAmount = convertPrice(amount.value, baseCurrency, currency.value)
+
+    // For yearly donations, convert to monthly equivalent so impact messages make sense
+    // e.g., £120/year = £10/month → show impact items up to £10
+    if (frequency.value === 'yearly') {
+      baseAmount = baseAmount / 12
+    }
 
     // Return all items where amount <= donation amount
     return config.value.impactPerAmount.items
@@ -44,14 +50,25 @@ export function useImpactJourneyMessages(
     return sorted.find((preset) => preset > baseAmount) || null
   })
 
+  // Determine target recurring frequency (prefer monthly, fallback to yearly)
+  const targetRecurringFrequency = computed<'monthly' | 'yearly' | null>(() => {
+    if (pricingConfig.value.frequencies.monthly?.enabled) return 'monthly'
+    if (pricingConfig.value.frequencies.yearly?.enabled) return 'yearly'
+    return null
+  })
+
   // Check if upsell should be shown
   const showUpsell = computed<boolean>(() => {
     if (!config.value.upsellEnabled) return false
 
     const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
 
-    // Show once-to-monthly upsell on one-time donations
-    if (freqKey === 'once' && config.value.upsellOnceToMonthly?.enabled) {
+    // Show once-to-recurring upsell on one-time donations (only if recurring frequency available)
+    if (
+      freqKey === 'once' &&
+      config.value.upsellOnceToRecurring?.enabled &&
+      targetRecurringFrequency.value
+    ) {
       return true
     }
 
@@ -73,8 +90,8 @@ export function useImpactJourneyMessages(
 
     const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
 
-    if (freqKey === 'once' && config.value.upsellOnceToMonthly?.enabled) {
-      return config.value.upsellOnceToMonthly.message
+    if (freqKey === 'once' && config.value.upsellOnceToRecurring?.enabled) {
+      return config.value.upsellOnceToRecurring.message
     }
 
     if (
@@ -87,14 +104,19 @@ export function useImpactJourneyMessages(
     return null
   })
 
-  // Get suggested target amount for upsell
+  // Get suggested target amount for upsell (converted to user's selected currency)
   const upsellTargetAmount = computed<number | undefined>(() => {
     if (!showUpsell.value) return undefined
 
     const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
 
-    if (freqKey === 'once' && config.value.upsellOnceToMonthly?.targetAmount) {
-      return config.value.upsellOnceToMonthly.targetAmount
+    // For once-to-recurring: targetAmount is in base currency, convert to selected currency
+    if (freqKey === 'once' && config.value.upsellOnceToRecurring?.targetAmount) {
+      return convertPrice(
+        config.value.upsellOnceToRecurring.targetAmount,
+        currency.value,
+        baseCurrency
+      )
     }
 
     // For amount increase, use next preset amount from pricing config
@@ -113,6 +135,7 @@ export function useImpactJourneyMessages(
     providedItems,
     showUpsell,
     upsellMessage,
-    upsellTargetAmount
+    upsellTargetAmount,
+    targetRecurringFrequency
   }
 }

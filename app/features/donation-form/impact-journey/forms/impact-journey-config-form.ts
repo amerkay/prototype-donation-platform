@@ -20,7 +20,7 @@ export function createImpactJourneyConfigSection(): FormDef {
         type: 'field-group',
         label: 'Impact Per Amount',
         description:
-          'Define what each amount level provides. System automatically shows all items up to the donation amount.',
+          'Define what each monthly amount provides. Write natural descriptions (e.g., "Fresh fruit for a week"). The system adapts messaging for one-time, monthly, and yearly donations automatically.',
         collapsible: true,
         collapsibleDefaultOpen: false,
         visibleWhen: (values) => values.enabled === true,
@@ -59,8 +59,8 @@ export function createImpactJourneyConfigSection(): FormDef {
                 label: {
                   type: 'text',
                   label: 'What This Provides',
-                  // description: 'Short impact statement (e.g., "Daily fresh fruit and vegetables")',
-                  placeholder: 'Complete care for one elephant',
+                  // description: 'Short impact statement for monthly baseline',
+                  placeholder: 'Fresh fruit and vegetables for a week',
                   rules: z.string().min(1, 'Required')
                 }
               }
@@ -75,9 +75,9 @@ export function createImpactJourneyConfigSection(): FormDef {
         description: 'Show CTAs to encourage recurring donations or higher amounts',
         visibleWhen: (values) => values.enabled === true
       },
-      upsellOnceToMonthly: {
+      upsellOnceToRecurring: {
         type: 'field-group',
-        label: 'One-Time to Monthly Upsell',
+        label: 'One-Time to Recurring Upsell',
         collapsible: true,
         collapsibleDefaultOpen: false,
         visibleWhen: (values) => values.enabled === true && values.upsellEnabled === true,
@@ -85,23 +85,67 @@ export function createImpactJourneyConfigSection(): FormDef {
           enabled: {
             type: 'toggle',
             label: 'Enable',
-            description: 'Show CTA on one-time donations to switch to monthly'
+            description:
+              'Show CTA on one-time donations to switch to recurring giving (monthly or yearly)'
           },
           message: {
             type: 'textarea',
             label: 'Message',
             placeholder:
-              'Your one-time gift helps today. Switch to monthly giving to provide ongoing care year-round.',
+              'Your one-time gift helps today. Switch to recurring giving to provide ongoing care year-round.',
             rows: 2,
             visibleWhen: (values) => (values as Record<string, unknown>).enabled === true,
             rules: z.string().min(1, 'Required when enabled')
           },
           targetAmount: {
-            type: 'number',
-            label: 'Suggested Monthly Amount',
-            description: 'Optional preset amount to suggest (leave blank for current amount)',
+            type: 'combobox',
+            label: 'Suggested Recurring Amount',
+            description:
+              'Select a preset amount from your recurring frequency options. Works for monthly or yearly donations.',
+            placeholder: 'Select an amount...',
             optional: true,
-            visibleWhen: (values) => (values as Record<string, unknown>).enabled === true
+            visibleWhen: (values) => (values as Record<string, unknown>).enabled === true,
+            options: (values) => {
+              // Get recurring frequency preset amounts from pricing config
+              const pricing = (values as Record<string, unknown>).pricing as
+                | Record<string, unknown>
+                | undefined
+              if (!pricing?.frequencies) return []
+
+              const frequencies = pricing.frequencies as Record<string, unknown>
+              const baseCurrency =
+                ((pricing.baseCurrency as string) || 'GBP') === 'USD'
+                  ? '$'
+                  : ((pricing.baseCurrency as string) || 'GBP') === 'EUR'
+                    ? '€'
+                    : '£'
+
+              const options: Array<{ value: number; label: string }> = []
+
+              // Add monthly presets
+              const monthly = frequencies.monthly as Record<string, unknown> | undefined
+              if (monthly?.enabled && Array.isArray(monthly.presetAmounts)) {
+                monthly.presetAmounts.forEach((amt: number) => {
+                  options.push({
+                    value: amt,
+                    label: `Monthly: ${baseCurrency}${amt}`
+                  })
+                })
+              }
+
+              // Add yearly presets
+              const yearly = frequencies.yearly as Record<string, unknown> | undefined
+              if (yearly?.enabled && Array.isArray(yearly.presetAmounts)) {
+                yearly.presetAmounts.forEach((amt: number) => {
+                  options.push({
+                    value: amt,
+                    label: `Yearly: ${baseCurrency}${amt}`
+                  })
+                })
+              }
+
+              return options.sort((a, b) => a.value - b.value)
+            }
           }
         }
       },

@@ -50,19 +50,19 @@ export const formConfig = {
       enabled: true,
       impactPerAmount: {
         items: [
-          { amount: 5, label: 'Fresh fruit and vegetables' },
-          { amount: 10, label: 'Medical supplies and health monitoring' },
+          { amount: 5, label: 'Fresh fruit and vegetables for a week' },
+          { amount: 10, label: 'Medical check and health monitoring' },
           { amount: 15, label: 'Enrichment activities and comfort items' },
-          { amount: 25, label: 'Complete daily care for one elephant' },
+          { amount: 25, label: 'Complete care for one elephant' },
           { amount: 50, label: 'Comprehensive care for multiple elephants' },
-          { amount: 75, label: 'Sanctuary maintenance and long-term improvements' }
+          { amount: 75, label: 'Sanctuary maintenance and improvements' }
         ]
       },
       upsellEnabled: true,
-      upsellOnceToMonthly: {
+      upsellOnceToRecurring: {
         enabled: true,
         message:
-          'Your one-time gift helps today. Switch to monthly giving to provide ongoing sanctuary care and comfort for our elderly elephants year-round.',
+          'Your one-time gift helps today. Switch to recurring giving to provide ongoing sanctuary care and comfort for our elderly elephants year-round.',
         targetAmount: 5
       },
       upsellIncreaseAmount: {

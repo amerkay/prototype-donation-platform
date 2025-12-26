@@ -24,9 +24,9 @@ export const formConfig = {
         customAmount: { min: 3, max: 500 }
       },
       yearly: {
-        enabled: false,
+        enabled: true,
         label: 'Yearly',
-        presetAmounts: [50, 100, 250, 500, 1000],
+        presetAmounts: [50, 100, 250, 500, 1000, 1500],
         customAmount: { min: 25, max: 2000 }
       }
     }
@@ -50,20 +50,20 @@ export const formConfig = {
       enabled: true,
       impactPerAmount: {
         items: [
-          { amount: 5, label: 'Daily fresh fruit and vegetables' },
-          { amount: 10, label: 'Medical supplies and health checks' },
-          { amount: 15, label: 'Enrichment activities and mental stimulation' },
-          { amount: 25, label: 'Complete daily care for one orangutan' },
+          { amount: 5, label: 'Fresh fruit and vegetables for a week' },
+          { amount: 10, label: 'Medical check and vaccinations' },
+          { amount: 15, label: 'Enrichment activities and comfort items' },
+          { amount: 25, label: 'Complete care for one orangutan' },
           { amount: 50, label: 'Comprehensive care for multiple orangutans' },
           { amount: 75, label: 'Rescue mission equipment and transport' },
-          { amount: 100, label: 'Habitat maintenance and forest protection programs' }
+          { amount: 100, label: 'Habitat preservation and forest protection' }
         ]
       },
       upsellEnabled: true,
-      upsellOnceToMonthly: {
+      upsellOnceToRecurring: {
         enabled: true,
         message:
-          'Your one-time gift makes an immediate difference. Switch to monthly giving to provide ongoing care year-round.',
+          'Your one-time gift makes an immediate difference. Switch to recurring giving to provide ongoing care year-round.',
         targetAmount: 10
       },
       upsellIncreaseAmount: {

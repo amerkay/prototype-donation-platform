@@ -39,9 +39,6 @@ const selectedAmount = ref<number | null>(null)
 watch(
   () => props.modelValue,
   (newValue) => {
-    // Only update local state if value actually changed
-    if (localAmount.value === newValue) return
-
     localAmount.value = newValue
     // Check if modelValue matches one of the preset amounts
     if (props.amounts.includes(newValue)) {
