@@ -76,7 +76,7 @@ export function useImpactJourneyMessages(
   })
 
   const impactListPrefix = computed<string>(() => {
-    return 'Today:'
+    return 'Provides:'
   })
 
   // ============================================================================
@@ -96,29 +96,37 @@ export function useImpactJourneyMessages(
 
   // Determine which recurring frequency to suggest (monthly or yearly)
   const targetRecurringFrequency = computed<'monthly' | 'yearly' | null>(() => {
-    const targetAmount = config.value.upsells?.upsellOnceToRecurringTarget
-
-    // If specific target amount set, check which frequency it belongs to
-    if (targetAmount) {
-      if (
-        pricingConfig.value.frequencies.yearly?.enabled &&
-        pricingConfig.value.frequencies.yearly.presetAmounts?.includes(targetAmount)
-      ) {
-        return 'yearly'
-      }
-
-      if (
-        pricingConfig.value.frequencies.monthly?.enabled &&
-        pricingConfig.value.frequencies.monthly.presetAmounts?.includes(targetAmount)
-      ) {
-        return 'monthly'
-      }
-    }
-
-    // Fallback: prefer monthly, then yearly
+    // Prefer monthly, fallback to yearly if monthly disabled
     if (pricingConfig.value.frequencies.monthly?.enabled) return 'monthly'
     if (pricingConfig.value.frequencies.yearly?.enabled) return 'yearly'
     return null
+  })
+
+  // Helper: Find closest preset to a target value
+  const findClosestPreset = (target: number, presets: number[]): number | null => {
+    if (!presets || presets.length === 0) return null
+    return presets.reduce((closest, preset) => {
+      return Math.abs(preset - target) < Math.abs(closest - target) ? preset : closest
+    })
+  }
+
+  // Auto-calculate target recurring amount
+  // Monthly: 66.6% of one-time amount | Yearly: closest to one-time amount
+  const autoCalculatedRecurringAmount = computed<number | null>(() => {
+    const targetFreq = targetRecurringFrequency.value
+    if (!targetFreq) return null
+
+    const freqConfig = pricingConfig.value.frequencies[targetFreq]
+    if (!freqConfig?.enabled || !freqConfig.presetAmounts) return null
+
+    // Convert current amount to base currency
+    const baseAmount = convertPrice(amount.value, baseCurrency, currency.value)
+
+    // Calculate target: 66.6% for monthly, 100% for yearly
+    const targetAmount = targetFreq === 'monthly' ? baseAmount * (2 / 3) : baseAmount
+
+    // Find closest preset
+    return findClosestPreset(targetAmount, freqConfig.presetAmounts)
   })
 
   // Check if upsell CTA should be shown
@@ -152,13 +160,9 @@ export function useImpactJourneyMessages(
 
     const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
 
-    // One-time → recurring: use configured target amount
-    if (freqKey === 'once' && config.value.upsells?.upsellOnceToRecurringTarget) {
-      return convertPrice(
-        config.value.upsells.upsellOnceToRecurringTarget,
-        currency.value,
-        baseCurrency
-      )
+    // One-time → recurring: use auto-calculated amount
+    if (freqKey === 'once' && autoCalculatedRecurringAmount.value) {
+      return convertPrice(autoCalculatedRecurringAmount.value, currency.value, baseCurrency)
     }
 
     // Amount increase: use next preset
@@ -183,13 +187,14 @@ export function useImpactJourneyMessages(
     if (freqKey === 'once' && targetRecurringFrequency.value) {
       const targetAmount = upsellTargetAmount.value || amount.value
       const targetFreq = targetRecurringFrequency.value
-      const freqLabel = targetFreq === 'monthly' ? 'Monthly' : 'Yearly'
-      return `${emojiStr} Give ${currencySymbol}${targetAmount}/${freqLabel} — Be Their Constant`
+      const freqLabel = targetFreq === 'monthly' ? 'month' : 'year'
+      const ctaText = config.value.upsells?.upsellCtaCopy || 'Be Their Constant'
+      return `${emojiStr} Give ${currencySymbol}${targetAmount}/${freqLabel} – ${ctaText}`
     }
 
     // Amount increase
     if (upsellTargetAmount.value) {
-      return `${emojiStr} Increase to ${currencySymbol}${upsellTargetAmount.value} — Greater Impact`
+      return `${emojiStr} Increase to ${currencySymbol}${upsellTargetAmount.value} – Greater Impact`
     }
 
     return `${emojiStr} Increase My Impact`

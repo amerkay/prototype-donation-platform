@@ -66,7 +66,7 @@ export const formConfig = {
       },
       upsells: {
         upsellOnceToRecurring: true,
-        upsellOnceToRecurringTarget: 5,
+        upsellCtaCopy: 'Be Their Constant',
         upsellIncreaseAmount: true
       }
     },

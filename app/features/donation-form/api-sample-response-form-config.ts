@@ -49,7 +49,7 @@ export const formConfig = {
     impactJourney: {
       enabled: true,
       messaging: {
-        emoji: '🌱',
+        emoji: '❤️',
         onceHeadline: 'Your Support Today',
         monthlyHeadline: "Every Day You're There",
         yearlyHeadline: "Every Day You're There"
@@ -67,7 +67,7 @@ export const formConfig = {
       },
       upsells: {
         upsellOnceToRecurring: true,
-        upsellOnceToRecurringTarget: 10,
+        upsellCtaCopy: 'Be Their Constant',
         upsellIncreaseAmount: true
       }
     },

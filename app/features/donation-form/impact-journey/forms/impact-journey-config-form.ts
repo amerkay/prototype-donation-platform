@@ -1,14 +1,11 @@
 import * as z from 'zod'
 import type { FormDef } from '~/features/form-builder/types'
-import { useFormConfigStore } from '~/stores/formConfig'
 
 /**
  * Create impact journey config section definition
  * Ultra-simplified: just amount + label pairs
  */
 export function createImpactJourneyConfigSection(): FormDef {
-  const store = useFormConfigStore()
-
   return {
     id: 'impactJourney',
     fields: {
@@ -63,7 +60,7 @@ export function createImpactJourneyConfigSection(): FormDef {
         type: 'field-group',
         label: 'Impact Per Amount',
         description:
-          'Define what each amount provides (max 20 chars). System auto-adapts for one-time/monthly/yearly.',
+          'Define what each amount provides (max 30 chars). System auto-adapts for one-time/monthly/yearly.',
         collapsible: true,
         collapsibleDefaultOpen: false,
         visibleWhen: (values) => values.enabled === true,
@@ -102,10 +99,10 @@ export function createImpactJourneyConfigSection(): FormDef {
                 label: {
                   type: 'text',
                   label: 'What This Provides',
-                  description: 'Keep it short (max 20 chars) for compact inline display',
+                  description: 'Keep it short (max 30 chars) for compact inline display',
                   placeholder: 'Fresh fruit weekly',
-                  maxLength: 20,
-                  rules: z.string().min(1, 'Required').max(20, 'Max 20 characters')
+                  maxLength: 30,
+                  rules: z.string().min(1, 'Required').max(30, 'Max 30 characters')
                 }
               }
             },
@@ -125,51 +122,18 @@ export function createImpactJourneyConfigSection(): FormDef {
             type: 'toggle',
             label: 'One-Time to Recurring',
             description:
-              'Shows "Be Their Constant" CTA on one-time tab to convert to monthly/yearly'
+              'Shows upsell CTA on one-time tab. Auto-calculates target as ~66% of one-time amount, matches to closest monthly/yearly preset.'
           },
-          upsellOnceToRecurringTarget: {
-            type: 'select',
-            label: 'Suggested Recurring Amount',
-            description: 'Auto-switches to correct tab (monthly/yearly) based on this amount',
-            placeholder: 'Select an amount...',
+          upsellCtaCopy: {
+            type: 'text',
+            label: 'CTA Text',
+            description:
+              'Button text for one-time to recurring conversion. Default: "Be Their Constant"',
+            placeholder: 'Be Their Constant',
+            maxLength: 25,
             optional: true,
             visibleWhen: (values) =>
-              (values as Record<string, unknown>).upsellOnceToRecurring === true,
-            options: () => {
-              // Get pricing config from store
-              const pricing = store.formSettings?.pricing
-              if (!pricing?.frequencies) return []
-
-              const baseCurrency =
-                pricing.baseCurrency === 'USD' ? '$' : pricing.baseCurrency === 'EUR' ? '€' : '£'
-
-              const options: Array<{ value: number; label: string }> = []
-
-              // Add monthly presets
-              if (
-                pricing.frequencies.monthly?.enabled &&
-                pricing.frequencies.monthly.presetAmounts
-              ) {
-                pricing.frequencies.monthly.presetAmounts.forEach((amt) => {
-                  options.push({
-                    value: amt,
-                    label: `Monthly: ${baseCurrency}${amt}`
-                  })
-                })
-              }
-
-              // Add yearly presets
-              if (pricing.frequencies.yearly?.enabled && pricing.frequencies.yearly.presetAmounts) {
-                pricing.frequencies.yearly.presetAmounts.forEach((amt) => {
-                  options.push({
-                    value: amt,
-                    label: `Yearly: ${baseCurrency}${amt}`
-                  })
-                })
-              }
-
-              return options
-            }
+              (values as Record<string, unknown>).upsellOnceToRecurring === true
           },
           upsellIncreaseAmount: {
             type: 'toggle',
