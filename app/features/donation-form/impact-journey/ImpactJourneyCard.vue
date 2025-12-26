@@ -3,6 +3,7 @@ import { toRef } from 'vue'
 import { Button } from '@/components/ui/button'
 import { useImpactJourneyMessages } from './composables/useImpactJourneyMessages'
 import type { ImpactJourneySettings } from './types'
+import type { PricingSettings } from '~/features/donation-form/types'
 
 interface Props {
   frequency: 'once' | 'monthly' | 'yearly' | 'multiple'
@@ -10,6 +11,7 @@ interface Props {
   currency: string // Selected currency
   baseCurrency: string // For amount conversion
   config: ImpactJourneySettings // From formConfig
+  pricingConfig: PricingSettings // For preset amounts
   enabledFrequencies: Array<'once' | 'monthly' | 'yearly'>
 }
 
@@ -25,15 +27,17 @@ const frequencyRef = toRef(props, 'frequency')
 const amountRef = toRef(props, 'donationAmount')
 const currencyRef = toRef(props, 'currency')
 const configRef = toRef(props, 'config')
+const pricingConfigRef = toRef(props, 'pricingConfig')
 
 // Get impact items provided at this donation level
-const {
-  providedItems,
-  nextImpactLevel: _nextImpactLevel,
-  showUpsell,
-  upsellMessage,
-  upsellTargetAmount
-} = useImpactJourneyMessages(frequencyRef, amountRef, currencyRef, props.baseCurrency, configRef)
+const { providedItems, showUpsell, upsellMessage, upsellTargetAmount } = useImpactJourneyMessages(
+  frequencyRef,
+  amountRef,
+  currencyRef,
+  props.baseCurrency,
+  configRef,
+  pricingConfigRef
+)
 
 // Handle upsell CTA click
 const handleUpsellClick = () => {

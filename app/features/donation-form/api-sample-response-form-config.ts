@@ -59,18 +59,16 @@ export const formConfig = {
           { amount: 100, label: 'Habitat maintenance and forest protection programs' }
         ]
       },
-      upsell: {
+      upsellEnabled: true,
+      upsellOnceToMonthly: {
         enabled: true,
-        onceToMonthly: {
-          enabled: true,
-          message:
-            'Your one-time gift makes an immediate difference. Switch to monthly giving to provide ongoing care year-round.',
-          targetAmount: 10
-        },
-        increaseAmount: {
-          enabled: true,
-          message: 'Want to help even more orangutans? Consider increasing your monthly support.'
-        }
+        message:
+          'Your one-time gift makes an immediate difference. Switch to monthly giving to provide ongoing care year-round.',
+        targetAmount: 10
+      },
+      upsellIncreaseAmount: {
+        enabled: true,
+        message: 'Want to help even more orangutans? Consider increasing your monthly support.'
       }
     },
     coverCosts: {

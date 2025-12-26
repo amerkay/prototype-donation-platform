@@ -34,16 +34,13 @@ const emit = defineEmits<Emits>()
 const localAmount = ref(props.modelValue)
 const showSlider = ref(false)
 const selectedAmount = ref<number | null>(null)
-const isInternalUpdate = ref(false)
 
 // Initialize based on modelValue
 watch(
   () => props.modelValue,
   (newValue) => {
-    if (isInternalUpdate.value) {
-      isInternalUpdate.value = false
-      return
-    }
+    // Only update local state if value actually changed
+    if (localAmount.value === newValue) return
 
     localAmount.value = newValue
     // Check if modelValue matches one of the preset amounts
@@ -63,10 +60,12 @@ watch(
   { immediate: true }
 )
 
-// Emit changes to parent
-watch(localAmount, (newValue) => {
-  isInternalUpdate.value = true
-  emit('update:modelValue', newValue)
+// Emit changes to parent only when localAmount changes internally
+watch(localAmount, (newValue, oldValue) => {
+  // Skip initial setup and when value hasn't actually changed
+  if (oldValue !== undefined && newValue !== props.modelValue) {
+    emit('update:modelValue', newValue)
+  }
 })
 
 const selectAmount = (amount: number) => {

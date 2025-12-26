@@ -136,6 +136,7 @@ defineExpose({
       :currency="currency"
       :base-currency="formConfig.pricing.baseCurrency"
       :config="formConfig.features.impactJourney"
+      :pricing-config="formConfig.pricing"
       :enabled-frequencies="enabledFrequencies"
       @switch-to-tab="handleSwitchToTab"
       @update-amount="handleUpdateAmount"

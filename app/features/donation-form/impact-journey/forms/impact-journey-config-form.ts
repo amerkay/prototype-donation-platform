@@ -45,7 +45,7 @@ export function createImpactJourneyConfigSection(): FormDef {
                 amount: {
                   type: 'currency',
                   label: 'Amount',
-                  description: 'Amount in base currency',
+                  // description: 'Amount in base currency',
                   placeholder: '10',
                   currencySymbol: (values) => {
                     // Traverse up to get base currency from pricing config
@@ -59,7 +59,7 @@ export function createImpactJourneyConfigSection(): FormDef {
                 label: {
                   type: 'text',
                   label: 'What This Provides',
-                  description: 'Short impact statement (e.g., "Daily fresh fruit and vegetables")',
+                  // description: 'Short impact statement (e.g., "Daily fresh fruit and vegetables")',
                   placeholder: 'Complete care for one elephant',
                   rules: z.string().min(1, 'Required')
                 }
@@ -69,68 +69,61 @@ export function createImpactJourneyConfigSection(): FormDef {
           }
         }
       },
-      upsell: {
+      upsellEnabled: {
+        type: 'toggle',
+        label: 'Enable Upsell Prompts',
+        description: 'Show CTAs to encourage recurring donations or higher amounts',
+        visibleWhen: (values) => values.enabled === true
+      },
+      upsellOnceToMonthly: {
         type: 'field-group',
-        label: 'Optional Upsell Prompts',
-        description: 'Encourage monthly giving or amount increases',
+        label: 'One-Time to Monthly Upsell',
         collapsible: true,
         collapsibleDefaultOpen: false,
-        visibleWhen: (values) => values.enabled === true,
+        visibleWhen: (values) => values.enabled === true && values.upsellEnabled === true,
         fields: {
           enabled: {
             type: 'toggle',
-            label: 'Enable Upsell Prompts',
-            description: 'Show CTAs to encourage recurring donations or higher amounts'
+            label: 'Enable',
+            description: 'Show CTA on one-time donations to switch to monthly'
           },
-          onceToMonthly: {
-            type: 'field-group',
-            label: 'One-Time to Monthly Upsell',
-            collapsible: true,
+          message: {
+            type: 'textarea',
+            label: 'Message',
+            placeholder:
+              'Your one-time gift helps today. Switch to monthly giving to provide ongoing care year-round.',
+            rows: 2,
             visibleWhen: (values) => (values as Record<string, unknown>).enabled === true,
-            fields: {
-              enabled: {
-                type: 'toggle',
-                label: 'Enable',
-                description: 'Show CTA on one-time donations to switch to monthly'
-              },
-              message: {
-                type: 'textarea',
-                label: 'Message',
-                placeholder:
-                  'Your one-time gift helps today. Switch to monthly giving to provide ongoing care year-round.',
-                rows: 2,
-                visibleWhen: (values) => (values as Record<string, unknown>).enabled === true,
-                rules: z.string().min(1, 'Required when enabled')
-              },
-              targetAmount: {
-                type: 'number',
-                label: 'Suggested Monthly Amount',
-                description: 'Optional preset amount to suggest (leave blank for current amount)',
-                optional: true,
-                visibleWhen: (values) => (values as Record<string, unknown>).enabled === true
-              }
-            }
+            rules: z.string().min(1, 'Required when enabled')
           },
-          increaseAmount: {
-            type: 'field-group',
-            label: 'Amount Increase Prompt',
-            collapsible: true,
+          targetAmount: {
+            type: 'number',
+            label: 'Suggested Monthly Amount',
+            description: 'Optional preset amount to suggest (leave blank for current amount)',
+            optional: true,
+            visibleWhen: (values) => (values as Record<string, unknown>).enabled === true
+          }
+        }
+      },
+      upsellIncreaseAmount: {
+        type: 'field-group',
+        label: 'Amount Increase Prompt',
+        collapsible: true,
+        collapsibleDefaultOpen: false,
+        visibleWhen: (values) => values.enabled === true && values.upsellEnabled === true,
+        fields: {
+          enabled: {
+            type: 'toggle',
+            label: 'Enable',
+            description: 'Show CTA on monthly/yearly donations to increase amount'
+          },
+          message: {
+            type: 'textarea',
+            label: 'Message',
+            placeholder: 'Want to help even more? Consider increasing your monthly support.',
+            rows: 2,
             visibleWhen: (values) => (values as Record<string, unknown>).enabled === true,
-            fields: {
-              enabled: {
-                type: 'toggle',
-                label: 'Enable',
-                description: 'Show CTA on monthly/yearly donations to increase amount'
-              },
-              message: {
-                type: 'textarea',
-                label: 'Message',
-                placeholder: 'Want to help even more? Consider increasing your monthly support.',
-                rows: 2,
-                visibleWhen: (values) => (values as Record<string, unknown>).enabled === true,
-                rules: z.string().min(1, 'Required when enabled')
-              }
-            }
+            rules: z.string().min(1, 'Required when enabled')
           }
         }
       }

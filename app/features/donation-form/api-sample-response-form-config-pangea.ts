@@ -58,19 +58,17 @@ export const formConfig = {
           { amount: 75, label: 'Sanctuary maintenance and long-term improvements' }
         ]
       },
-      upsell: {
+      upsellEnabled: true,
+      upsellOnceToMonthly: {
         enabled: true,
-        onceToMonthly: {
-          enabled: true,
-          message:
-            'Your one-time gift helps today. Switch to monthly giving to provide ongoing sanctuary care and comfort for our elderly elephants year-round.',
-          targetAmount: 5
-        },
-        increaseAmount: {
-          enabled: true,
-          message:
-            'Want to provide even more care and comfort? Consider increasing your monthly support to help more elephants.'
-        }
+        message:
+          'Your one-time gift helps today. Switch to monthly giving to provide ongoing sanctuary care and comfort for our elderly elephants year-round.',
+        targetAmount: 5
+      },
+      upsellIncreaseAmount: {
+        enabled: true,
+        message:
+          'Want to provide even more care and comfort? Consider increasing your monthly support to help more elephants.'
       }
     },
     coverCosts: {
