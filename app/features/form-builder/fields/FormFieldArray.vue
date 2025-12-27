@@ -12,6 +12,7 @@ import { useChildFieldErrors } from '~/features/form-builder/composables/useChil
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 import { resolveVeeFieldPath } from '~/features/form-builder/composables/useFieldPath'
+import { getFieldDefaultValue } from '~/features/form-builder/utils'
 
 interface Props {
   modelValue?: unknown[]
@@ -131,35 +132,8 @@ const [arrayContainer] = isSortable.value
     })
   : [ref<HTMLElement>()]
 
-/**
- * Recursively create default values for field structures
- */
-function createDefaultValue(fieldMeta: typeof props.meta.itemField): unknown {
-  if (fieldMeta.type === 'field-group') {
-    const groupDefaults: Record<string, unknown> = {}
-    if (fieldMeta.fields) {
-      for (const [key, nestedField] of Object.entries(fieldMeta.fields)) {
-        groupDefaults[key] = createDefaultValue(nestedField)
-      }
-    }
-    return groupDefaults
-  } else if (fieldMeta.type === 'array') {
-    return []
-  } else if (
-    fieldMeta.type === 'number' ||
-    fieldMeta.type === 'currency' ||
-    fieldMeta.type === 'slider'
-  ) {
-    return undefined
-  } else if (fieldMeta.type === 'toggle') {
-    return false
-  } else {
-    return ''
-  }
-}
-
 function addItem() {
-  const defaultValue = createDefaultValue(props.meta.itemField)
+  const defaultValue = getFieldDefaultValue(props.meta.itemField)
   push(defaultValue)
   validateArrayField()
 }

@@ -38,6 +38,7 @@ export const useDonationFormStore = defineStore(
       donorInfo: {},
       shipping: {},
       giftAid: {},
+      customFields: {},
       preferences: {}
     })
 
@@ -104,7 +105,13 @@ export const useDonationFormStore = defineStore(
       selectedProducts.value = { monthly: null, yearly: null }
       tributeData.value = { once: undefined, monthly: undefined, yearly: undefined }
       coverCosts.value = null
-      formSections.value = { donorInfo: {}, shipping: {}, giftAid: {}, preferences: {} }
+      formSections.value = {
+        donorInfo: {},
+        shipping: {},
+        giftAid: {},
+        customFields: {},
+        preferences: {}
+      }
     }
 
     // Persistence methods (called by plugin after hydration)

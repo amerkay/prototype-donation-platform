@@ -9,6 +9,7 @@ import {
   checkFieldVisibility
 } from '~/features/form-builder/composables/useFieldPath'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
+import { isTextLikeField, isBooleanField } from '~/features/form-builder/utils'
 import { cn } from '@/lib/utils'
 import FormFieldText from './fields/FormFieldText.vue'
 import FormFieldTextarea from './fields/FormFieldTextarea.vue'
@@ -99,15 +100,13 @@ const fieldRules = computed(() => {
     typeof props.meta.rules === 'function' ? props.meta.rules(formValues.value) : props.meta.rules
 
   // Preprocess fields to handle undefined/null values
-  const isTextLikeField = ['text', 'textarea', 'autocomplete', 'select', 'emoji'].includes(
-    props.meta.type
-  )
-  const isBooleanField = props.meta.type === 'toggle'
+  const isTextLike = isTextLikeField(props.meta.type)
+  const isBoolean = isBooleanField(props.meta.type)
 
-  if (isTextLikeField || isBooleanField) {
+  if (isTextLike || isBoolean) {
     rules = z.preprocess((val) => {
       if (val === undefined || val === null) {
-        return isBooleanField ? false : ''
+        return isBoolean ? false : ''
       }
       return val
     }, rules)

@@ -18,6 +18,7 @@ import { useScrollOnVisible } from '../composables/useScrollOnVisible'
 interface Props {
   meta: FieldGroupMeta
   name: string
+  class?: string
 }
 
 const props = defineProps<Props>()
@@ -63,7 +64,7 @@ watch(isOpen, (newIsOpen) => {
     v-model="accordionValue"
     type="single"
     collapsible
-    class="w-full -mt-2"
+    :class="cn('w-full -mt-2', props.class)"
   >
     <AccordionItem
       :ref="(el: any) => setElementRef(props.name, el)"
@@ -128,7 +129,7 @@ watch(isOpen, (newIsOpen) => {
   </Accordion>
 
   <!-- Non-collapsible version -->
-  <FieldSet v-else v-show="isGroupVisible" class="gap-4">
+  <FieldSet v-else v-show="isGroupVisible" :class="cn('gap-4', props.class)">
     <FieldLegend v-if="meta.legend || resolvedLabel" :class="cn(meta.labelClass)">{{
       meta.legend || resolvedLabel
     }}</FieldLegend>

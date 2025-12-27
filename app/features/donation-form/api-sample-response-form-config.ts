@@ -113,6 +113,60 @@ export const formConfig = {
         title: 'Gift or In Memory',
         subtitle: 'Make this donation in honor or memory of someone special'
       }
+    },
+    customFields: {
+      enabled: true,
+      fields: [
+        {
+          id: 'company_name',
+          type: 'text',
+          label: 'Company Name (Optional)',
+          placeholder: 'Enter your company name',
+          optional: true,
+          textConfig: {
+            maxLength: 100
+          }
+        },
+        {
+          id: 'dedication_message',
+          type: 'textarea',
+          label: 'Dedication Message',
+          placeholder: 'Write a personal message...',
+          optional: true,
+          textareaConfig: {
+            rows: 4,
+            maxLength: 500
+          }
+        },
+        {
+          id: 'involvement_level',
+          type: 'slider',
+          label: 'How involved do you want to be?',
+          optional: false,
+          sliderConfig: {
+            min: 0,
+            max: 100,
+            step: 10,
+            suffix: '%'
+          }
+        },
+        {
+          id: 'hear_about_us',
+          type: 'select',
+          label: 'How did you hear about us?',
+          placeholder: 'Select an option',
+          optional: false,
+          selectConfig: {
+            options: [
+              { value: 'search', label: 'Search Engine' },
+              { value: 'social', label: 'Social Media' },
+              { value: 'friend', label: 'Friend or Family' },
+              { value: 'event', label: 'Event or Conference' },
+              { value: 'other', label: 'Other' }
+            ]
+          }
+        }
+      ]
     }
   }
 }

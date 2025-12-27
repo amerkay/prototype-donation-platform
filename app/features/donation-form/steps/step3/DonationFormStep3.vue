@@ -7,6 +7,7 @@ import CoverCostsUpsellModal from '~/features/donation-form/cover-costs/CoverCos
 import { giftAidFormSection } from '../../gift-aid/forms/gift-aid-declaration-form'
 import { createEmailOptInField } from '~/features/donation-form/contact-consent/forms/email-opt-in-field'
 import { createTermsAcceptanceField } from '~/features/donation-form/terms/forms/terms-acceptance-field'
+import { createCustomFieldsFormSection } from '~/features/donation-form/custom-fields/utils'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import Separator from '~/components/ui/separator/Separator.vue'
 import { useFormConfigStore } from '~/stores/formConfig'
@@ -15,6 +16,23 @@ import type { FormDef } from '~/features/form-builder/types'
 // Get shared form config from store
 const configStore = useFormConfigStore()
 const formConfig = computed(() => configStore.fullConfig)
+
+// Custom fields section (dynamically generated from config)
+const customFieldsFormSection = computed(() => {
+  if (!formConfig.value?.features.customFields.enabled) return null
+  const fields = formConfig.value.features.customFields.fields
+  if (fields.length === 0) return null
+  return createCustomFieldsFormSection(fields)
+})
+
+// Generate unique key for FormRenderer to force re-mount when fields change
+// This ensures FormRenderer picks up all field changes (not just ID changes)
+const customFieldsKey = computed(() => {
+  if (!formConfig.value?.features.customFields.enabled) return 'disabled'
+  const fields = formConfig.value.features.customFields.fields
+  // Create a stable key from field configurations
+  return JSON.stringify(fields)
+})
 
 // Preferences form section (email opt-in, terms acceptance)
 const preferencesFormSection: FormDef = {
@@ -40,6 +58,12 @@ const giftAidSection = computed({
     store.updateFormSection('giftAid', value ?? {})
   }
 })
+const customFieldsSection = computed({
+  get: () => store.formSections.customFields || {},
+  set: (value) => {
+    store.updateFormSection('customFields', value ?? {})
+  }
+})
 const preferencesSection = computed({
   get: () => store.formSections.preferences || {},
   set: (value) => {
@@ -49,6 +73,7 @@ const preferencesSection = computed({
 
 // Form renderer references for validation
 const giftAidFormRef = ref<InstanceType<typeof FormRenderer> | null>(null)
+const customFieldsFormRef = ref<InstanceType<typeof FormRenderer> | null>(null)
 const preferencesFormRef = ref<InstanceType<typeof FormRenderer> | null>(null)
 const formContainerRef = ref<HTMLElement | null>(null)
 
@@ -166,6 +191,20 @@ const handleNext = () => {
 
     <Separator />
 
+    <!-- Custom Fields (dynamically generated from admin config) -->
+    <div v-if="customFieldsFormSection">
+      <FormRenderer
+        :key="customFieldsKey"
+        ref="customFieldsFormRef"
+        v-model="customFieldsSection"
+        :section="customFieldsFormSection"
+        :keep-values-on-unmount="true"
+        @submit="handleNext"
+      />
+    </div>
+
+    <Separator v-if="customFieldsFormSection" />
+
     <!-- Preferences Form (email opt-in, terms) -->
     <div>
       <FormRenderer
@@ -179,7 +218,7 @@ const handleNext = () => {
 
     <!-- Navigation Buttons -->
     <NextButton
-      :form-refs="[giftAidFormRef, preferencesFormRef]"
+      :form-refs="[giftAidFormRef, customFieldsFormRef, preferencesFormRef].filter(Boolean)"
       :parent-container-ref="formContainerRef"
       @click="handleNext"
     >

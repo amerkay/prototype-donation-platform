@@ -6,6 +6,7 @@ import { createProductSelectorConfigSection } from '../donation-form/product-sel
 import { createImpactJourneyConfigSection } from '../donation-form/impact-journey/forms/impact-journey-config-form'
 import { createCoverCostsConfigSection } from '../donation-form/cover-costs/forms/cover-costs-config-form'
 import { createTributeConfigSection } from '../donation-form/tribute/forms/tribute-config-form'
+import { createCustomFieldsConfigSection } from '../donation-form/custom-fields/forms/custom-fields-config-form'
 import { useFormConfigStore } from '~/stores/formConfig'
 
 // Get shared reactive config store - mutations propagate automatically
@@ -18,6 +19,7 @@ const productSelectorSection = createProductSelectorConfigSection()
 const impactJourneySection = createImpactJourneyConfigSection()
 const coverCostsSection = createCoverCostsConfigSection()
 const tributeSection = createTributeConfigSection()
+const customFieldsSection = createCustomFieldsConfigSection()
 </script>
 
 <template>
@@ -58,6 +60,11 @@ const tributeSection = createTributeConfigSection()
     <!-- Tribute Settings -->
     <div v-if="store.tribute" class="config-section">
       <FormRenderer v-model="store.tribute" :section="tributeSection" validate-on-mount />
+    </div>
+
+    <!-- Custom Fields -->
+    <div v-if="store.customFields" class="config-section">
+      <FormRenderer v-model="store.customFields" :section="customFieldsSection" validate-on-mount />
     </div>
   </div>
 </template>
