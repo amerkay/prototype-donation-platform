@@ -12,7 +12,6 @@ import { useChildFieldErrors } from '~/features/form-builder/composables/useChil
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 import { resolveVeeFieldPath } from '~/features/form-builder/composables/useFieldPath'
-import { getFieldDefaultValue } from '~/features/form-builder/utils'
 
 interface Props {
   modelValue?: unknown[]
@@ -133,7 +132,9 @@ const [arrayContainer] = isSortable.value
   : [ref<HTMLElement>()]
 
 function addItem() {
-  const defaultValue = getFieldDefaultValue(props.meta.itemField)
+  // Use explicit defaultValue from itemField metadata, fallback to empty string
+  const defaultValue =
+    'defaultValue' in props.meta.itemField ? props.meta.itemField.defaultValue : ''
   push(defaultValue)
   validateArrayField()
 }

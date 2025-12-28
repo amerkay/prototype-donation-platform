@@ -21,6 +21,7 @@ export const donorInfoFormSection: FormDef = {
           label: 'First Name',
           placeholder: 'John',
           autocomplete: 'given-name',
+          defaultValue: '',
           rules: z.string().min(2, 'First name is required')
         },
         lastName: {
@@ -28,6 +29,7 @@ export const donorInfoFormSection: FormDef = {
           label: 'Last Name',
           placeholder: 'Doe',
           autocomplete: 'family-name',
+          defaultValue: '',
           rules: z.string().min(2, 'Last name is required')
         }
       }
@@ -39,6 +41,7 @@ export const donorInfoFormSection: FormDef = {
       description: "We'll send your donation receipt here",
       autocomplete: 'email',
       isNoSeparatorAfter: true,
+      defaultValue: '',
       rules: z.string().min(1, 'Email is required').email('Enter a valid email address')
     },
     phone: {
@@ -48,6 +51,7 @@ export const donorInfoFormSection: FormDef = {
       description: 'Optional - for order updates',
       autocomplete: 'tel',
       optional: true,
+      defaultValue: '',
       visibleWhen: (values) => {
         if (!values.email || typeof values.email !== 'string') return false
         return z.string().email().safeParse(values.email).success
@@ -63,7 +67,8 @@ export const donorInfoFormSection: FormDef = {
           ? 'Your name will show as "Anonymous" on our crowdfunding pages'
           : 'Your first name and last initial will be displayed on our crowdfunding pages'
       },
-      optional: true
+      optional: true,
+      defaultValue: false
     },
 
     // Message fields (toggle + textarea)

@@ -31,7 +31,8 @@ export function createMessageFields(
       description: 'Why are you donating today?',
       optional: true,
       visibleWhen,
-      isNoSeparatorAfter: true
+      isNoSeparatorAfter: true,
+      defaultValue: false
     },
     message: {
       type: 'textarea',
@@ -42,6 +43,7 @@ export function createMessageFields(
         const msgLength = ((values.message as string) || '').length
         return `${msgLength}/250 characters`
       },
+      defaultValue: '',
       visibleWhen: (values: Record<string, unknown>) => {
         // First check parent visibility condition
         if (visibleWhen && !visibleWhen(values)) {

@@ -26,6 +26,7 @@ export function createTermsAcceptanceField(
       label: 'I accept the terms and conditions',
       description: 'I agree to the Terms of Service and Privacy Policy.',
       visibleWhen,
+      defaultValue: false,
       rules: z.boolean().refine((val) => val === true, {
         message: 'You must accept the terms and conditions to continue'
       })

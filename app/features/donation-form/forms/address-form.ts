@@ -184,6 +184,7 @@ export function createAddressFields(
       label: 'Address Line 1',
       placeholder: '123 High Street',
       autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-line1`,
+      defaultValue: '',
       visibleWhen,
       rules: z.string().min(5, 'Address is required'),
       isNoSeparatorAfter: true
@@ -194,6 +195,7 @@ export function createAddressFields(
       label: 'Address Line 2',
       placeholder: 'Flat 4B',
       autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-line2`,
+      defaultValue: '',
       optional: true,
       // visibleWhen: (values) => {
       //   if (visibleWhen && !visibleWhen(values)) return false
@@ -210,6 +212,7 @@ export function createAddressFields(
       label: 'City/Town',
       placeholder: 'London',
       autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level2`,
+      defaultValue: '',
       visibleWhen,
       rules: z.string().min(2, 'Town/City is required'),
       isNoSeparatorAfter: true
@@ -232,6 +235,7 @@ export function createAddressFields(
             return getCountryLabels(country).regionPlaceholder
           },
           autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level1`,
+          defaultValue: '',
           rules: z.string().min(2, 'State/Region is required')
         },
         postcode: {
@@ -245,6 +249,7 @@ export function createAddressFields(
             return getCountryLabels(country).postcodePlaceholder
           },
           autocomplete: `section-${autocompleteSection} ${autocompleteSection} postal-code`,
+          defaultValue: '',
           rules: z.string().min(3, 'Postcode is required')
         }
       }
@@ -256,6 +261,7 @@ export function createAddressFields(
       placeholder: 'Select country...',
       searchPlaceholder: 'Search countries...',
       notFoundText: 'No country found.',
+      defaultValue: '',
       options: [
         { value: 'GB', label: 'United Kingdom' },
         { value: 'US', label: 'United States' },

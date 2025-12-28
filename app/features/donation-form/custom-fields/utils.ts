@@ -17,10 +17,28 @@ function customFieldToFieldMeta(field: CustomFieldDefinition): FieldMetaMap {
       [field.id]: {
         type: 'text',
         label: field.label,
-        defaultValue: config.defaultValue as string | undefined,
+        defaultValue: (config.defaultValue as string) ?? '',
         visibleWhen: () => false,
         rules: z.string().optional()
       }
+    }
+  }
+
+  // Determine defaultValue based on field type
+  const getDefaultValue = () => {
+    if (config.defaultValue !== undefined) {
+      return config.defaultValue
+    }
+    // Provide type-appropriate defaults when not specified
+    switch (field.type) {
+      case 'text':
+      case 'textarea':
+      case 'select':
+        return ''
+      case 'slider':
+        return config.min ?? 0
+      default:
+        return undefined
     }
   }
 
@@ -28,7 +46,7 @@ function customFieldToFieldMeta(field: CustomFieldDefinition): FieldMetaMap {
     label: field.label,
     placeholder: config.placeholder,
     optional,
-    defaultValue: config.defaultValue
+    defaultValue: getDefaultValue()
   }
 
   switch (field.type) {
@@ -95,7 +113,7 @@ function customFieldToFieldMeta(field: CustomFieldDefinition): FieldMetaMap {
           label: field.label,
           placeholder: config.placeholder,
           optional,
-          defaultValue: config.defaultValue as string | undefined,
+          defaultValue: (config.defaultValue as string) ?? '',
           options,
           rules: optional ? z.string().optional() : z.string().min(1, `${field.label} is required`)
         }

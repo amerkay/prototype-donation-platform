@@ -24,6 +24,7 @@ export function createEmailOptInField(
       type: 'toggle',
       label: 'Join our email list',
       description: 'Get updates on our impact and latest news. Unsubscribe anytime.',
+      defaultValue: false,
       optional: true,
       visibleWhen,
       isNoSeparatorAfter: true

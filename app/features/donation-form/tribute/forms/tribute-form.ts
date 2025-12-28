@@ -73,12 +73,14 @@ export function createTributeFormSection(config: TributeSettings): FormDef {
             type: 'text',
             label: 'Honoree First Name',
             placeholder: 'First name',
+            defaultValue: '',
             rules: z.string().min(2, 'First name must be at least 2 characters')
           },
           honoreeLastName: {
             type: 'text',
             label: 'Last Name',
             placeholder: 'Last name',
+            defaultValue: '',
             optional: true
           }
         }
@@ -87,6 +89,7 @@ export function createTributeFormSection(config: TributeSettings): FormDef {
         type: 'select',
         label: 'Relationship',
         placeholder: 'Select relationship...',
+        defaultValue: '',
         optional: true,
         options: config.relationships.map((r) => ({ value: r.value, label: r.label })),
         searchPlaceholder: 'Search relationship...',
@@ -99,6 +102,7 @@ export function createTributeFormSection(config: TributeSettings): FormDef {
         label: '📧 Send an eCard notification',
         labelClass: 'font-semibold',
         description: 'Send an eCard about your donation',
+        defaultValue: false,
         visibleWhen: (values) => values.type !== 'none',
         isNoSeparatorAfter: true,
         onChange: (value, allValues, setValue) => {
@@ -121,6 +125,7 @@ export function createTributeFormSection(config: TributeSettings): FormDef {
         type: 'toggle',
         label: 'Same Name as Honoree',
         description: 'The recipient is the same as the honoree',
+        defaultValue: false,
         visibleWhen: (values) => values.type === 'gift' && values.sendECard === true,
         isNoSeparatorAfter: true
       },
@@ -138,12 +143,14 @@ export function createTributeFormSection(config: TributeSettings): FormDef {
             type: 'text',
             label: 'Recipient First Name',
             placeholder: 'First name',
+            defaultValue: '',
             rules: z.string().min(2, 'First name must be at least 2 characters')
           },
           recipientLastName: {
             type: 'text',
             label: 'Last Name',
             placeholder: 'Last name',
+            defaultValue: '',
             optional: true
           }
         }
@@ -155,6 +162,7 @@ export function createTributeFormSection(config: TributeSettings): FormDef {
         label: 'Email Address',
         placeholder: 'name@example.com',
         autocomplete: 'email',
+        defaultValue: '',
         visibleWhen: (values) => values.type !== 'none' && values.sendECard === true,
         isNoSeparatorAfter: true,
         rules: z

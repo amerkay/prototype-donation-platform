@@ -41,6 +41,7 @@ export function createCoverCostsField(options: {
     coverCostsValue: {
       type: 'slider',
       label: 'Operational Cost Contribution',
+      defaultValue: 0,
 
       // Dynamic description based on mode
       description: (values: Record<string, unknown>) => {

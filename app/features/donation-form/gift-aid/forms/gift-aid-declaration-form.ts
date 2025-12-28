@@ -96,6 +96,7 @@ export function createGiftAidFields(
       label: 'Yes, I want to Gift Aid my donation',
       description:
         'I confirm I am a UK taxpayer and have paid sufficient tax to cover this Gift Aid claim.',
+      defaultValue: false,
       optional: true,
       visibleWhen: shouldShow,
       isNoSeparatorAfter: true
@@ -111,6 +112,7 @@ export function createGiftAidFields(
         return `${shippingAddress}`
       },
       descriptionClass: 'truncate',
+      defaultValue: false,
       optional: true,
       visibleWhen: (values) => {
         // First check parent visibility

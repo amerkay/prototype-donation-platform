@@ -9,7 +9,6 @@ import {
   checkFieldVisibility
 } from '~/features/form-builder/composables/useFieldPath'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
-import { isTextLikeField, isBooleanField } from '~/features/form-builder/utils'
 import { cn } from '@/lib/utils'
 import FormFieldText from './fields/FormFieldText.vue'
 import FormFieldTextarea from './fields/FormFieldTextarea.vue'
@@ -99,17 +98,11 @@ const fieldRules = computed(() => {
   let rules =
     typeof props.meta.rules === 'function' ? props.meta.rules(formValues.value) : props.meta.rules
 
-  // Preprocess fields to handle undefined/null values
-  const isTextLike = isTextLikeField(props.meta.type)
-  const isBoolean = isBooleanField(props.meta.type)
-
-  if (isTextLike || isBoolean) {
-    rules = z.preprocess((val) => {
-      if (val === undefined || val === null) {
-        return isBoolean ? false : ''
-      }
-      return val
-    }, rules)
+  // Apply smart preprocessing: if field has explicit defaultValue, ensure undefined → defaultValue
+  // This prevents "expected string, received undefined" errors when fields are cleared
+  if ('defaultValue' in props.meta && props.meta.defaultValue !== undefined) {
+    const defaultValue = props.meta.defaultValue
+    rules = z.preprocess((val) => (val === undefined || val === null ? defaultValue : val), rules)
   }
 
   return toTypedSchema(rules)

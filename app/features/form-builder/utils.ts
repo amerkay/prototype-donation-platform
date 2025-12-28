@@ -1,83 +1,53 @@
 import type { FieldMeta } from './types'
 
 /**
- * Returns the default value for a field based on its type.
- * This ensures consistency across form initialization, validation preprocessing,
- * and array item creation.
- */
-export function getFieldDefaultValue(fieldMeta: FieldMeta): unknown {
-  // Priority 1: Use custom defaultValue if provided
-  if ('defaultValue' in fieldMeta && fieldMeta.defaultValue !== undefined) {
-    return fieldMeta.defaultValue
-  }
-
-  // Priority 2: Fall back to type-based defaults
-  switch (fieldMeta.type) {
-    case 'field-group': {
-      const groupDefaults: Record<string, unknown> = {}
-      if ('fields' in fieldMeta && fieldMeta.fields) {
-        for (const [key, nestedField] of Object.entries(fieldMeta.fields)) {
-          groupDefaults[key] = getFieldDefaultValue(nestedField)
-        }
-      }
-      return groupDefaults
-    }
-
-    case 'array':
-      return []
-
-    case 'toggle':
-      return false
-
-    case 'number':
-    case 'currency':
-    case 'slider':
-      return undefined
-
-    case 'text':
-    case 'textarea':
-    case 'autocomplete':
-    case 'select':
-    case 'emoji':
-    default:
-      return ''
-  }
-}
-
-/**
- * Checks if a field type should use string preprocessing for validation
- */
-export function isTextLikeField(type: string): boolean {
-  return ['text', 'textarea', 'autocomplete', 'select', 'emoji'].includes(type)
-}
-
-/**
- * Checks if a field type should use boolean preprocessing for validation
- */
-export function isBooleanField(type: string): boolean {
-  return type === 'toggle'
-}
-
-/**
- * Extract default values from a FormDef's field definitions
- * Recursively traverses field-groups and returns an object with default values
+ * Extract default values from field metadata
+ * Only extracts explicitly defined defaultValue properties from field definitions
+ * Recursively traverses field-groups and arrays
  *
  * @param fields - FieldMetaMap from a FormDef
- * @returns Object with default values for each field
+ * @returns Object with default values for each field that has defaultValue defined
+ *
+ * @example
+ * ```ts
+ * const fields = {
+ *   name: { type: 'text', defaultValue: '', rules: z.string().min(1) },
+ *   age: { type: 'number', defaultValue: 18, rules: z.number() },
+ *   optional: { type: 'text', rules: z.string().optional() } // No default
+ * }
+ *
+ * extractDefaultValues(fields) // { name: '', age: 18 }
+ * ```
  */
 export function extractDefaultValues(fields: Record<string, FieldMeta>): Record<string, unknown> {
   const defaults: Record<string, unknown> = {}
 
   for (const [key, fieldMeta] of Object.entries(fields)) {
-    const defaultValue = getFieldDefaultValue(fieldMeta)
+    // Container fields: recursively extract from children
+    if (fieldMeta.type === 'field-group' && 'fields' in fieldMeta && fieldMeta.fields) {
+      // Always include field-groups to maintain nested structure
+      defaults[key] = extractDefaultValues(fieldMeta.fields)
+      continue
+    }
 
-    // Only include non-empty defaults (skip empty strings, undefined, empty objects)
-    if (
-      defaultValue !== undefined &&
-      defaultValue !== '' &&
-      !(typeof defaultValue === 'object' && Object.keys(defaultValue as object).length === 0)
-    ) {
-      defaults[key] = defaultValue
+    if (fieldMeta.type === 'tabs' && 'tabs' in fieldMeta) {
+      const tabsDefaults: Record<string, unknown> = {}
+      for (const tab of fieldMeta.tabs) {
+        // Always include tabs to maintain structure
+        tabsDefaults[tab.value] = extractDefaultValues(tab.fields)
+      }
+      defaults[key] = tabsDefaults
+      continue
+    }
+
+    if (fieldMeta.type === 'array') {
+      defaults[key] = []
+      continue
+    }
+
+    // Leaf fields: use explicit defaultValue
+    if ('defaultValue' in fieldMeta && fieldMeta.defaultValue !== undefined) {
+      defaults[key] = fieldMeta.defaultValue
     }
   }
 
