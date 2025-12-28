@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, nextTick, toRaw } from 'vue'
+import { computed, watch, nextTick, ref, type Ref } from 'vue'
 import { useFieldArray, useValidateField } from 'vee-validate'
 import { useDragAndDrop } from '@formkit/drag-and-drop/vue'
 import { vAutoAnimate } from '@formkit/auto-animate'
@@ -27,8 +27,7 @@ const props = defineProps<Props>()
 // Inject common form builder context
 const { sectionId, fieldPrefix } = useFormBuilderContext()
 
-// Resolve the full vee-validate field path (same pattern as FormField.vue)
-// This is needed for useChildFieldErrors to correctly match error keys
+// Resolve the full vee-validate field path
 const resolvedVeeName = computed(() => {
   return resolveVeeFieldPath({
     name: props.name,
@@ -37,45 +36,28 @@ const resolvedVeeName = computed(() => {
   })
 })
 
-// Check if any child items have validation errors
-// Use resolved vee-validate path to match error keys correctly
+// Child error detection uses resolved vee path
 const { hasChildErrors } = useChildFieldErrors(resolvedVeeName)
 
-// Combine own errors with child errors indicator
 const allErrors = computed(() => {
-  // If there are child errors, show friendly message
-  if (hasChildErrors.value) {
+  if (hasChildErrors.value) return ['One or more errors above, please fix']
+  if (props.errors.length > 0 && fields.value.length > 0)
     return ['One or more errors above, please fix']
-  }
-
-  // If array has items but array-level validation fails, it's likely because of invalid child values
-  // Show friendly message instead of raw Zod error (e.g., "expected number, received undefined")
-  if (props.errors.length > 0 && fields.value.length > 0) {
-    return ['One or more errors above, please fix']
-  }
-
-  // Show array-level validation errors only when array is empty (e.g., "at least one item required")
   if (props.errors.length > 0) return props.errors
-
   return []
 })
 
-// Mark array label as red when there are any errors (array-level OR child errors)
-// This matches the allErrors behavior for visual consistency
 const arrayLabelClass = computed(() =>
   cn(props.meta.labelClass, allErrors.value.length > 0 && 'text-destructive')
 )
 
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
 
-// Use vee-validate's useFieldArray for proper array management with error cleanup
-const { fields, push, move, replace } = useFieldArray(resolvedVeeName)
-
-// Get validation function for this array field to handle array-level validation
+// --- vee-validate array state ---
+const { fields, push, move, remove } = useFieldArray(resolvedVeeName)
 const validateArrayField = useValidateField(resolvedVeeName)
 
-// Watch for value changes and trigger array validation to clear stale array-level errors
-// This ensures array-level schemas (like z.array(z.number())) stay in sync
+// Keep array-level schema in sync with edits (NOT reorders)
 watch(
   () => fields.value.map((f) => f.value),
   () => {
@@ -84,11 +66,23 @@ watch(
   { deep: true }
 )
 
-// Check if drag-and-drop is enabled (default: false)
 const isSortable = computed(() => props.meta.sortable === true)
 
-// Create array of values for drag-and-drop (synced from vee-validate fields)
-const draggableValues = computed(() => fields.value.map((f) => f.value))
+// --- Drag & Drop (data-first) ---
+//
+// Best practice in Vue: the values you v-for should be the values returned by useDragAndDrop.
+// To integrate with vee-validate (index-based field paths), we drag a list of stable keys,
+// and only commit the new order to vee-validate on drop.
+type DndKey = string
+
+const isDragging = ref(false)
+
+// Helper: build stable key list from vee field items
+const veeKeys = computed<DndKey[]>(() => fields.value.map((f) => String(f.key)))
+
+// DnD setup (only if sortable)
+let arrayContainer: Ref<HTMLElement | undefined>
+let dndKeys: Ref<DndKey[]>
 
 function insertPoint() {
   const el = document.createElement('div')
@@ -97,42 +91,109 @@ function insertPoint() {
   return el
 }
 
-// Setup drag-and-drop only if sortable is enabled
-// Use toRaw() to pass plain values, preventing readonly proxy issues
-// The parent ref is returned from useDragAndDrop and assigned to the container element
-const [arrayContainer] = isSortable.value
-  ? useDragAndDrop(toRaw(draggableValues.value), {
-      dragHandle: '.drag-handle',
-      insertConfig: { insertPoint },
+if (isSortable.value) {
+  ;[arrayContainer, dndKeys] = useDragAndDrop<DndKey>(veeKeys.value, {
+    dragHandle: '.drag-handle',
+    draggable: (el) => !el.classList.contains('ff-array__insert'),
+    insertConfig: { insertPoint },
 
-      // Small, maintainable hooks for styling
-      draggingClass: 'ff-array__dragging',
-      dragPlaceholderClass: 'ff-array__placeholder',
-      synthDragPlaceholderClass: 'ff-array__placeholder',
-      dropZoneParentClass: 'ff-array__zone',
-      synthDropZoneParentClass: 'ff-array__zone',
+    draggingClass: 'ff-array__dragging',
+    dragPlaceholderClass: 'ff-array__placeholder',
+    synthDragPlaceholderClass: 'ff-array__placeholder',
+    dropZoneParentClass: 'ff-array__zone',
+    synthDropZoneParentClass: 'ff-array__zone',
 
-      onSort(e: { previousPosition?: number; position?: number }) {
-        const from = e.previousPosition
-        const to = e.position
-        if (Number.isInteger(from) && Number.isInteger(to)) {
-          move(from!, to!)
-          // Recalculate error paths after reorder
-          nextTick(() => {
-            const currentValues = fields.value.map((f) => toRaw(f.value))
-            replace(currentValues)
-          })
-        }
-      },
+    // Do NOT sync vee-validate here — keep drag smooth.
+    onSort() {
+      isDragging.value = true
+    },
 
-      onDragend() {
-        validateArrayField()
-      }
+    // Sync once, at the end.
+    onDragend() {
+      isDragging.value = false
+      commitDndOrderToVee()
+    }
+  })
+} else {
+  arrayContainer = ref<HTMLElement>()
+  dndKeys = ref<DndKey[]>(veeKeys.value)
+}
+
+// Keep the DnD key list in sync with add/remove coming from vee-validate.
+// Preserve current DnD order when possible; append new keys at the end.
+watch(
+  veeKeys,
+  (newKeys) => {
+    const current = dndKeys.value.slice()
+    const newKeySet = new Set(newKeys)
+
+    // Remove keys that no longer exist
+    const next = current.filter((k) => newKeySet.has(k))
+
+    // Append any new keys
+    const nextSet = new Set(next)
+    for (const k of newKeys) {
+      if (!nextSet.has(k)) next.push(k)
+    }
+
+    // Ensure lengths match exactly
+    dndKeys.value = next.length === newKeys.length ? next : newKeys.slice()
+  },
+  { immediate: true }
+)
+
+// Map key -> current vee index so inputs stay bound to correct index during drag
+const keyToVeeIndex = computed(() => {
+  const map = new Map<DndKey, number>()
+  fields.value.forEach((f, i) => {
+    map.set(String(f.key), i)
+  })
+  return map
+})
+
+// Render model: ordered list of { key, fieldItem, veeIndex }
+const orderedItems = computed(() => {
+  return dndKeys.value
+    .map((k) => {
+      const idx = keyToVeeIndex.value.get(k)
+      if (idx === undefined) return null
+      return { key: k, veeIndex: idx, fieldItem: fields.value[idx] }
     })
-  : [ref<HTMLElement>()]
+    .filter(Boolean) as Array<{
+    key: DndKey
+    veeIndex: number
+    fieldItem: (typeof fields.value)[number]
+  }>
+})
+
+// Commit order to vee-validate ONCE (drop), using move() so vee-validate can reindex cleanly.
+function commitDndOrderToVee() {
+  if (!isSortable.value) return
+
+  const desired = dndKeys.value.slice()
+  const current = fields.value.map((f) => String(f.key))
+
+  // Transform current -> desired with minimal move() operations
+  const working = current.slice()
+  for (let targetIndex = 0; targetIndex < desired.length; targetIndex++) {
+    const key = desired[targetIndex]
+    if (!key) continue
+    const fromIndex = working.indexOf(key)
+    if (fromIndex === -1) continue
+    if (fromIndex !== targetIndex) {
+      move(fromIndex, targetIndex)
+      const [moved] = working.splice(fromIndex, 1)
+      working.splice(targetIndex, 0, moved!)
+    }
+  }
+
+  // Validate after vee has settled
+  nextTick(() => {
+    validateArrayField()
+  })
+}
 
 function addItem() {
-  // Use explicit defaultValue from itemField metadata, fallback to empty string
   const defaultValue =
     'defaultValue' in props.meta.itemField ? props.meta.itemField.defaultValue : ''
   push(defaultValue)
@@ -140,9 +201,7 @@ function addItem() {
 }
 
 function removeItem(index: number) {
-  // Use replace() to properly reindex fields and clear orphaned errors
-  const newArray = fields.value.map((f) => toRaw(f.value)).filter((_, i) => i !== index)
-  replace(newArray)
+  remove(index)
   validateArrayField()
 }
 </script>
@@ -161,12 +220,12 @@ function removeItem(index: number) {
     <div class="space-y-2">
       <div
         ref="arrayContainer"
-        v-auto-animate="{ duration: 180 }"
+        v-auto-animate="isSortable ? { duration: isDragging ? 0 : 180 } : { duration: 180 }"
         :class="cn('grid gap-2', meta.class)"
       >
         <div
-          v-for="(fieldItem, index) in fields"
-          :key="fieldItem.key"
+          v-for="item in orderedItems"
+          :key="item.key"
           :class="isSortable ? 'ff-array__item' : 'ff-array__item--simple'"
         >
           <span v-if="isSortable" class="drag-handle ff-array__handle">
@@ -174,8 +233,15 @@ function removeItem(index: number) {
           </span>
 
           <div class="min-w-0 flex-1">
+            <!-- IMPORTANT:
+                 Bind to veeIndex so values don't "swap" during drag.
+                 After drop, we commit ordering to vee-validate once.
+                 Wrapper key is stable (item.key) for DnD node tracking.
+                 FormField key includes veeIndex to force component re-creation on reorder,
+                 ensuring FormFieldGroup labels resolve with fresh scoped values. -->
             <FormField
-              :name="`${name}[${index}]`"
+              :key="`${item.key}-${item.veeIndex}`"
+              :name="`${name}[${item.veeIndex}]`"
               :meta="meta.itemField"
               :class="
                 cn(
@@ -194,7 +260,7 @@ function removeItem(index: number) {
             size="icon"
             class="ff-array__remove"
             :aria-label="meta.removeButtonText || 'Remove item'"
-            @click="removeItem(index)"
+            @click="removeItem(item.veeIndex)"
           >
             <Icon name="lucide:x" class="h-4 w-4" />
           </Button>
@@ -212,7 +278,6 @@ function removeItem(index: number) {
 <style scoped>
 @reference '@/assets/css/main.css';
 
-/* Keep Tailwind usage centralized + readable */
 .ff-array__item {
   @apply relative flex items-start rounded-lg border bg-card px-0 transition-colors hover:bg-accent/5;
 }
