@@ -120,9 +120,10 @@ export const formConfig = {
           id: 'organization',
           type: 'text',
           label: 'Organization Name',
-          placeholder: 'Your organization or company',
-          optional: true,
-          textConfig: {
+          fieldConfig: {
+            optional: true,
+            placeholder: 'Your organization or company',
+            defaultValue: 'Pangolin Conservation Society',
             maxLength: 150
           }
         },
@@ -130,9 +131,9 @@ export const formConfig = {
           id: 'pangolin_interest',
           type: 'textarea',
           label: 'Why are you passionate about pangolins?',
-          placeholder: 'Share your story...',
-          optional: false,
-          textareaConfig: {
+          fieldConfig: {
+            optional: false,
+            placeholder: 'Share your story...',
             rows: 3,
             maxLength: 300
           }
@@ -141,11 +142,12 @@ export const formConfig = {
           id: 'commitment_level',
           type: 'slider',
           label: 'Monthly commitment level',
-          optional: false,
-          sliderConfig: {
+          fieldConfig: {
+            optional: false,
             min: 1,
             max: 10,
             step: 1,
+            defaultValue: 5,
             prefix: 'Level '
           }
         },
@@ -153,15 +155,19 @@ export const formConfig = {
           id: 'contact_preference',
           type: 'select',
           label: 'Preferred contact method',
-          placeholder: 'Choose your preference',
-          optional: false,
-          selectConfig: {
-            options: [
-              { value: 'email', label: 'Email' },
-              { value: 'phone', label: 'Phone' },
-              { value: 'mail', label: 'Postal Mail' },
-              { value: 'none', label: 'Do not contact me' }
-            ]
+          fieldConfig: {
+            optional: false,
+            placeholder: 'Choose your preference',
+            defaultValue: 'Email',
+            options: ['Email', 'Phone', 'Postal Mail', 'Do not contact me']
+          }
+        },
+        {
+          id: 'campaign_code',
+          type: 'hidden',
+          label: 'Campaign Code',
+          fieldConfig: {
+            defaultValue: 'PANGOLIN2025'
           }
         }
       ]

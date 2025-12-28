@@ -62,6 +62,7 @@ export interface BaseFieldMeta {
   label?: string | ((values: Record<string, unknown>) => string)
   description?: string | ((values: Record<string, unknown>) => string)
   placeholder?: string | ((values: Record<string, unknown>) => string)
+  defaultValue?: unknown
   optional?: boolean
   disabled?: boolean
   visibleWhen?: (values: Record<string, unknown>) => boolean

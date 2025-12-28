@@ -9,42 +9,32 @@
 export interface CustomFieldDefinition {
   // Field identification
   id: string
-  type: 'text' | 'textarea' | 'slider' | 'select'
+  type: 'text' | 'textarea' | 'slider' | 'select' | 'hidden'
 
   // Common properties (all field types)
   label: string
-  placeholder?: string
-  optional?: boolean
-  hidden?: boolean // For hidden tracking fields
 
-  // Type-specific configs (nested in form, but we support both for backward compatibility)
-  textConfig?: {
-    maxLength?: number
-  }
-  textareaConfig?: {
+  // Unified field configuration (adapts to field type)
+  fieldConfig?: {
+    // Common across multiple types
+    optional?: boolean // Defaults to true
+    placeholder?: string // text, textarea, select
+    defaultValue?: unknown // text, textarea, slider, hidden
+    maxLength?: number // text, textarea
+
+    // Textarea-specific
     rows?: number
-    maxLength?: number
-  }
-  sliderConfig?: {
+
+    // Slider-specific
     min?: number
     max?: number
     step?: number
     prefix?: string
     suffix?: string
-  }
-  selectConfig?: {
-    options?: Array<{ value: string; label: string }>
-  }
 
-  // Legacy top-level properties (for backward compatibility)
-  maxLength?: number
-  rows?: number
-  min?: number
-  max?: number
-  step?: number
-  prefix?: string
-  suffix?: string
-  options?: Array<{ value: string; label: string }>
+    // Select-specific
+    options?: string[] // Array of option labels (values auto-generated)
+  }
 }
 
 /**

@@ -7,51 +7,58 @@ import type { CustomFieldDefinition } from './types'
  * Maps admin config structure to runtime form field structure
  */
 function customFieldToFieldMeta(field: CustomFieldDefinition): FieldMetaMap {
+  // Get unified field config
+  const config = field.fieldConfig || {}
+  const optional = config.optional ?? true // Default to true
+
+  // Hidden fields are never visible to users
+  if (field.type === 'hidden') {
+    return {
+      [field.id]: {
+        type: 'text',
+        label: field.label,
+        defaultValue: config.defaultValue as string | undefined,
+        visibleWhen: () => false,
+        rules: z.string().optional()
+      }
+    }
+  }
+
   const baseProps = {
     label: field.label,
-    placeholder: field.placeholder,
-    optional: field.optional ?? false,
-    visibleWhen: field.hidden ? () => false : undefined
+    placeholder: config.placeholder,
+    optional,
+    defaultValue: config.defaultValue
   }
 
   switch (field.type) {
     case 'text': {
-      // Read from textConfig if it exists, otherwise fall back to top-level
-      const textConfig = field.textConfig || {}
       return {
         [field.id]: {
           type: 'text',
           ...baseProps,
-          maxLength: textConfig.maxLength ?? field.maxLength,
-          rules: field.optional
-            ? z.string().optional()
-            : z.string().min(1, `${field.label} is required`)
+          maxLength: config.maxLength,
+          rules: optional ? z.string().optional() : z.string().min(1, `${field.label} is required`)
         }
       }
     }
 
     case 'textarea': {
-      // Read from textareaConfig if it exists, otherwise fall back to top-level
-      const textareaConfig = field.textareaConfig || {}
       return {
         [field.id]: {
           type: 'textarea',
           ...baseProps,
-          rows: textareaConfig.rows ?? field.rows,
-          maxLength: textareaConfig.maxLength ?? field.maxLength,
-          rules: field.optional
-            ? z.string().optional()
-            : z.string().min(1, `${field.label} is required`)
+          rows: config.rows,
+          maxLength: config.maxLength,
+          rules: optional ? z.string().optional() : z.string().min(1, `${field.label} is required`)
         }
       }
     }
 
     case 'slider': {
-      // Read from sliderConfig if it exists, otherwise fall back to top-level
-      const sliderConfig = field.sliderConfig || {}
-      const min = sliderConfig.min ?? field.min ?? 0
-      const max = sliderConfig.max ?? field.max ?? 100
-      const step = sliderConfig.step ?? field.step ?? 1
+      const min = config.min ?? 0
+      const max = config.max ?? 100
+      const step = config.step ?? 1
 
       return {
         [field.id]: {
@@ -60,10 +67,10 @@ function customFieldToFieldMeta(field: CustomFieldDefinition): FieldMetaMap {
           min,
           max,
           step,
-          prefix: sliderConfig.prefix ?? field.prefix,
-          suffix: sliderConfig.suffix ?? field.suffix,
+          prefix: config.prefix,
+          suffix: config.suffix,
           showMinMax: true,
-          rules: field.optional
+          rules: optional
             ? z.number().min(min).max(max).optional()
             : z.number().min(min, `Must be at least ${min}`).max(max, `Must be at most ${max}`)
         }
@@ -71,18 +78,26 @@ function customFieldToFieldMeta(field: CustomFieldDefinition): FieldMetaMap {
     }
 
     case 'select': {
-      // Read from selectConfig if it exists, otherwise fall back to top-level
-      const selectConfig = field.selectConfig || {}
-      const options = selectConfig.options ?? field.options ?? []
+      const optionLabels = config.options ?? []
+
+      // Convert string array to {value, label} objects (auto-generate values from labels)
+      const options = optionLabels.map((label) => ({
+        value: String(label)
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '_')
+          .replace(/^_+|_+$/g, ''),
+        label: String(label)
+      }))
 
       return {
         [field.id]: {
           type: 'select',
-          ...baseProps,
+          label: field.label,
+          placeholder: config.placeholder,
+          optional,
+          defaultValue: config.defaultValue as string | undefined,
           options,
-          rules: field.optional
-            ? z.string().optional()
-            : z.string().min(1, `${field.label} is required`)
+          rules: optional ? z.string().optional() : z.string().min(1, `${field.label} is required`)
         }
       }
     }
@@ -119,4 +134,28 @@ export function createCustomFieldsFormSection(customFields: CustomFieldDefinitio
     // title: 'Additional Information',
     fields
   }
+}
+
+/**
+ * Extract default values from custom field definitions
+ * Returns an object with field IDs as keys and default values
+ *
+ * @param customFields - Array of custom field definitions from admin config
+ * @returns Object with default values for each field that has one
+ */
+export function extractCustomFieldDefaults(
+  customFields: CustomFieldDefinition[]
+): Record<string, unknown> {
+  const defaults: Record<string, unknown> = {}
+
+  for (const field of customFields) {
+    const config = field.fieldConfig || {}
+    const defaultValue = config.defaultValue
+
+    if (defaultValue !== undefined) {
+      defaults[field.id] = defaultValue
+    }
+  }
+
+  return defaults
 }

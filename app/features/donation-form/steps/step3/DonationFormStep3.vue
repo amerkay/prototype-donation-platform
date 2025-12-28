@@ -7,7 +7,10 @@ import CoverCostsUpsellModal from '~/features/donation-form/cover-costs/CoverCos
 import { giftAidFormSection } from '../../gift-aid/forms/gift-aid-declaration-form'
 import { createEmailOptInField } from '~/features/donation-form/contact-consent/forms/email-opt-in-field'
 import { createTermsAcceptanceField } from '~/features/donation-form/terms/forms/terms-acceptance-field'
-import { createCustomFieldsFormSection } from '~/features/donation-form/custom-fields/utils'
+import {
+  createCustomFieldsFormSection,
+  extractCustomFieldDefaults
+} from '~/features/donation-form/custom-fields/utils'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import Separator from '~/components/ui/separator/Separator.vue'
 import { useFormConfigStore } from '~/stores/formConfig'
@@ -59,7 +62,18 @@ const giftAidSection = computed({
   }
 })
 const customFieldsSection = computed({
-  get: () => store.formSections.customFields || {},
+  get: () => {
+    const existingData = store.formSections.customFields || {}
+
+    // On first load, merge default values from config
+    if (Object.keys(existingData).length === 0 && formConfig.value?.features.customFields.enabled) {
+      const fields = formConfig.value.features.customFields.fields
+      const defaults = extractCustomFieldDefaults(fields)
+      return defaults
+    }
+
+    return existingData
+  },
   set: (value) => {
     store.updateFormSection('customFields', value ?? {})
   }

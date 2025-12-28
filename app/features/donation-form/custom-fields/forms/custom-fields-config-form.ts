@@ -46,91 +46,194 @@ export function createCustomFieldsConfigSection(): FormDef {
           collapsible: true,
           collapsibleDefaultOpen: false,
           fields: {
-            // Field identification
-            id: {
-              type: 'text',
-              label: 'Field ID',
-              description: 'Unique identifier (no spaces, letters and underscores only)',
-              placeholder: 'field_name',
-              rules: z
-                .string()
-                .min(1, 'Field ID is required')
-                .regex(/^[a-z_]+$/, 'Only lowercase letters and underscores allowed')
-            },
-
-            // Type selector
+            // Type selector (FIRST - everything else depends on this)
             type: {
               type: 'select',
               label: 'Field Type',
-              placeholder: 'Select field type',
               options: [
                 { value: 'text', label: 'Text (single line)' },
                 { value: 'textarea', label: 'Textarea (multi-line)' },
                 { value: 'slider', label: 'Slider (number range)' },
-                { value: 'select', label: 'Dropdown (select options)' }
+                { value: 'select', label: 'Dropdown (select options)' },
+                { value: 'hidden', label: 'Hidden (tracking field)' }
               ],
-              rules: z.enum(['text', 'textarea', 'slider', 'select'], {
+              rules: z.enum(['text', 'textarea', 'slider', 'select', 'hidden'], {
                 message: 'Please select a field type'
               })
             },
 
-            // Common fields (all types)
+            // Field identification (auto-generated from label)
+            id: {
+              type: 'text',
+              label: '',
+              visibleWhen: () => false, // Hidden - auto-generated
+              rules: z.string().min(1)
+            },
+
+            // Common fields (shown after type is selected)
             label: {
               type: 'text',
               label: 'Field Label',
               placeholder: 'What is your question?',
-              rules: z.string().min(1, 'Label is required')
-            },
-            placeholder: {
-              type: 'text',
-              label: 'Placeholder Text',
-              description: 'Hint text shown inside the field',
-              placeholder: 'Enter your answer...',
-              optional: true,
-              visibleWhen: (values) =>
-                ['text', 'textarea', 'select'].includes(values.type as string)
-            },
-            optional: {
-              type: 'toggle',
-              label: 'Optional Field',
-              description: 'Allow donors to skip this field',
-              optional: true
-            },
-            hidden: {
-              type: 'toggle',
-              label: 'Hidden Field',
-              description: 'Field is hidden from donors (for tracking purposes)',
-              optional: true
-            },
-
-            // Text-specific config
-            textConfig: {
-              type: 'field-group',
-              label: 'Text Field Settings',
-              visibleWhen: (values) => values.type === 'text',
-              collapsible: true,
-              collapsibleDefaultOpen: false,
-              fields: {
-                maxLength: {
-                  type: 'number',
-                  label: 'Maximum Length',
-                  description: 'Maximum number of characters allowed',
-                  placeholder: '100',
-                  min: 1,
-                  max: 500,
-                  optional: true
-                }
+              visibleWhen: (values) => !!values.type,
+              rules: z.string().min(1, 'Label is required'),
+              onChange: (value, _allValues, setValue) => {
+                // Auto-generate ID from label (slugify)
+                const label = (value as string) || ''
+                const slugified =
+                  label
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '_')
+                    .replace(/^_+|_+$/g, '')
+                    .substring(0, 50) || 'field'
+                setValue('id', slugified)
               }
             },
 
-            // Textarea-specific config
-            textareaConfig: {
+            // Dropdown options (select only) - must come before defaultValue for reactivity
+            'fieldConfig.options': {
+              type: 'array',
+              label: 'Dropdown Options',
+              description: 'Define the options available in the dropdown (values auto-generated)',
+              visibleWhen: (values) => values.type === 'select',
+              addButtonText: 'Add Option',
+              sortable: true,
+              rules: z
+                .array(z.string().min(1, 'Option is required'))
+                .min(1, 'At least one option is required'),
+              itemField: {
+                type: 'text',
+                label: '',
+                placeholder: 'Option name',
+                rules: z.string().min(1, 'Option is required')
+              }
+            },
+
+            // Unified field configuration (adapts to field type)
+            fieldConfig: {
               type: 'field-group',
-              label: 'Textarea Settings',
-              visibleWhen: (values) => values.type === 'textarea',
+              label: 'Field Settings',
+              visibleWhen: (values) => !!values.type && values.type !== 'hidden',
               collapsible: true,
               collapsibleDefaultOpen: false,
+              rules: (values) => {
+                // Apply slider-specific validation when type is slider
+                if ((values as Record<string, unknown>).type === 'slider') {
+                  return z
+                    .object({
+                      min: z.number(),
+                      max: z.number(),
+                      step: z.number().optional(),
+                      defaultValue: z.number().optional(),
+                      prefix: z.string().optional(),
+                      suffix: z.string().optional()
+                    })
+                    .refine(
+                      (data) => {
+                        if (data.defaultValue !== undefined) {
+                          return data.defaultValue >= data.min && data.defaultValue <= data.max
+                        }
+                        return true
+                      },
+                      {
+                        message: 'Default value must be between min and max',
+                        path: ['defaultValue']
+                      }
+                    )
+                    .refine((data) => data.min < data.max, {
+                      message: 'Minimum must be less than maximum',
+                      path: ['min']
+                    })
+                }
+                return z.object({}).optional()
+              },
               fields: {
+                // Optional toggle (all types except hidden)
+                optional: {
+                  type: 'toggle',
+                  label: 'Optional Field',
+                  description: 'Allow donors to skip this field',
+                  optional: true,
+                  visibleWhen: (values) => {
+                    const type = (values as Record<string, unknown>).type
+                    return type !== 'hidden'
+                  }
+                },
+
+                // Placeholder (text, textarea, select)
+                placeholder: {
+                  type: 'text',
+                  label: 'Placeholder Text',
+                  description: (values) => {
+                    const type = (values as Record<string, unknown>).type as string
+                    if (type === 'select') return 'Hint text shown when no option is selected'
+                    return 'Hint text shown inside the field'
+                  },
+                  placeholder: (values) => {
+                    const type = (values as Record<string, unknown>).type as string
+                    if (type === 'select') return 'Select an option...'
+                    return 'Enter your answer...'
+                  },
+                  optional: true,
+                  visibleWhen: (values) => {
+                    const type = (values as Record<string, unknown>).type
+                    return type === 'text' || type === 'textarea' || type === 'select'
+                  }
+                },
+
+                // Default value (text, textarea)
+                defaultValue: {
+                  type: 'text',
+                  label: 'Default Value',
+                  description: 'Pre-fill this value when the form loads',
+                  placeholder: 'Enter default value...',
+                  optional: true,
+                  visibleWhen: (values) => {
+                    const type = (values as Record<string, unknown>).type
+                    return type === 'text' || type === 'textarea'
+                  }
+                },
+
+                // Default value for slider (needs to be separate since it's a slider type)
+                'defaultValue-slider': {
+                  type: 'slider',
+                  label: 'Default Value',
+                  description: 'Pre-set the slider to this value',
+                  optional: true,
+                  visibleWhen: (values) => (values as Record<string, unknown>).type === 'slider',
+                  min: (values) => ((values as Record<string, unknown>).min as number) || 0,
+                  max: (values) => ((values as Record<string, unknown>).max as number) || 100,
+                  step: (values) => ((values as Record<string, unknown>).step as number) || 1,
+                  showMinMax: true,
+                  onChange: (value, _allValues, setValue) => {
+                    // Sync to actual defaultValue field
+                    setValue('defaultValue', value)
+                  }
+                },
+
+                // Default value for select (needs to be select type with dynamic options)
+                'defaultValue-select': {
+                  type: 'select',
+                  label: 'Default Value',
+                  description: 'Pre-select this option when the form loads',
+                  placeholder: 'Select default option...',
+                  optional: true,
+                  visibleWhen: (values) => (values as Record<string, unknown>).type === 'select',
+                  options: (values) => {
+                    const config = values as Record<string, unknown>
+                    const options = (config.options as string[]) || []
+                    return options.map((option) => ({
+                      value: option,
+                      label: option
+                    }))
+                  },
+                  onChange: (value, _allValues, setValue) => {
+                    // Sync to actual defaultValue field
+                    setValue('defaultValue', value)
+                  }
+                },
+
+                // Rows (textarea only)
                 rows: {
                   type: 'number',
                   label: 'Number of Rows',
@@ -138,49 +241,40 @@ export function createCustomFieldsConfigSection(): FormDef {
                   placeholder: '3',
                   min: 2,
                   max: 10,
-                  optional: true
+                  optional: true,
+                  visibleWhen: (values) => (values as Record<string, unknown>).type === 'textarea'
                 },
+
+                // Max length (text, textarea)
                 maxLength: {
                   type: 'number',
                   label: 'Maximum Length',
                   description: 'Maximum number of characters allowed',
-                  placeholder: '500',
+                  placeholder: (values) =>
+                    (values as Record<string, unknown>).type === 'textarea' ? '500' : '100',
                   min: 1,
                   max: 2000,
-                  optional: true
-                }
-              }
-            },
+                  optional: true,
+                  visibleWhen: (values) => {
+                    const type = (values as Record<string, unknown>).type
+                    return type === 'text' || type === 'textarea'
+                  }
+                },
 
-            // Slider-specific config
-            sliderConfig: {
-              type: 'field-group',
-              label: 'Slider Settings',
-              visibleWhen: (values) => values.type === 'slider',
-              collapsible: true,
-              collapsibleDefaultOpen: false,
-              rules: z
-                .object({
-                  min: z.number(),
-                  max: z.number(),
-                  step: z.number().optional()
-                })
-                .refine((data) => data.min < data.max, {
-                  message: 'Minimum must be less than maximum',
-                  path: ['min']
-                }),
-              fields: {
+                // Slider-specific fields
                 min: {
                   type: 'number',
                   label: 'Minimum Value',
                   placeholder: '0',
-                  rules: z.number()
+                  rules: z.number(),
+                  visibleWhen: (values) => (values as Record<string, unknown>).type === 'slider'
                 },
                 max: {
                   type: 'number',
                   label: 'Maximum Value',
                   placeholder: '100',
-                  rules: z.number()
+                  rules: z.number(),
+                  visibleWhen: (values) => (values as Record<string, unknown>).type === 'slider'
                 },
                 step: {
                   type: 'number',
@@ -188,7 +282,8 @@ export function createCustomFieldsConfigSection(): FormDef {
                   description: 'Increment value for slider',
                   placeholder: '1',
                   min: 1,
-                  optional: true
+                  optional: true,
+                  visibleWhen: (values) => (values as Record<string, unknown>).type === 'slider'
                 },
                 prefix: {
                   type: 'text',
@@ -196,7 +291,8 @@ export function createCustomFieldsConfigSection(): FormDef {
                   description: 'Text before the value (e.g., "$")',
                   placeholder: '$',
                   maxLength: 5,
-                  optional: true
+                  optional: true,
+                  visibleWhen: (values) => (values as Record<string, unknown>).type === 'slider'
                 },
                 suffix: {
                   type: 'text',
@@ -204,53 +300,20 @@ export function createCustomFieldsConfigSection(): FormDef {
                   description: 'Text after the value (e.g., "%")',
                   placeholder: '%',
                   maxLength: 10,
-                  optional: true
+                  optional: true,
+                  visibleWhen: (values) => (values as Record<string, unknown>).type === 'slider'
                 }
               }
             },
 
-            // Select-specific config
-            selectConfig: {
-              type: 'field-group',
-              label: 'Dropdown Settings',
-              visibleWhen: (values) => values.type === 'select',
-              collapsible: true,
-              collapsibleDefaultOpen: false,
-              fields: {
-                options: {
-                  type: 'array',
-                  label: 'Dropdown Options',
-                  description: 'Define the options available in the dropdown',
-                  addButtonText: 'Add Option',
-                  sortable: true,
-                  rules: z
-                    .array(
-                      z.object({
-                        value: z.string(),
-                        label: z.string()
-                      })
-                    )
-                    .min(1, 'At least one option is required'),
-                  itemField: {
-                    type: 'field-group',
-                    class: 'grid grid-cols-2 gap-2',
-                    fields: {
-                      value: {
-                        type: 'text',
-                        label: 'Value',
-                        placeholder: 'option_value',
-                        rules: z.string().min(1, 'Value is required')
-                      },
-                      label: {
-                        type: 'text',
-                        label: 'Label',
-                        placeholder: 'Option Label',
-                        rules: z.string().min(1, 'Label is required')
-                      }
-                    }
-                  }
-                }
-              }
+            // Hidden field value (required) - outside fieldConfig since it's special
+            'fieldConfig.defaultValue': {
+              type: 'text',
+              label: 'Value',
+              description: 'The value stored for this hidden tracking field',
+              placeholder: 'utm_source',
+              visibleWhen: (values) => values.type === 'hidden',
+              rules: z.string().min(1, 'Value is required for hidden fields')
             }
           }
         }

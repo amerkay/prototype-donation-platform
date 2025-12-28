@@ -120,10 +120,11 @@ export const formConfig = {
         {
           id: 'company_name',
           type: 'text',
-          label: 'Company Name (Optional)',
-          placeholder: 'Enter your company name',
-          optional: true,
-          textConfig: {
+          label: 'Company Name',
+          fieldConfig: {
+            optional: false,
+            placeholder: 'Enter your company name',
+            // defaultValue: 'Wildlife Foundation',
             maxLength: 100
           }
         },
@@ -131,9 +132,10 @@ export const formConfig = {
           id: 'dedication_message',
           type: 'textarea',
           label: 'Dedication Message',
-          placeholder: 'Write a personal message...',
-          optional: true,
-          textareaConfig: {
+          fieldConfig: {
+            optional: false,
+            placeholder: 'Write a personal message...',
+            // defaultValue: 'In honor of...',
             rows: 4,
             maxLength: 500
           }
@@ -142,11 +144,12 @@ export const formConfig = {
           id: 'involvement_level',
           type: 'slider',
           label: 'How involved do you want to be?',
-          optional: false,
-          sliderConfig: {
+          fieldConfig: {
+            optional: false,
             min: 0,
             max: 100,
             step: 10,
+            // defaultValue: 50,
             suffix: '%'
           }
         },
@@ -154,16 +157,25 @@ export const formConfig = {
           id: 'hear_about_us',
           type: 'select',
           label: 'How did you hear about us?',
-          placeholder: 'Select an option',
-          optional: false,
-          selectConfig: {
+          fieldConfig: {
+            optional: false,
+            placeholder: 'Select an option',
+            // defaultValue: 'event_or_conference',
             options: [
-              { value: 'search', label: 'Search Engine' },
-              { value: 'social', label: 'Social Media' },
-              { value: 'friend', label: 'Friend or Family' },
-              { value: 'event', label: 'Event or Conference' },
-              { value: 'other', label: 'Other' }
+              'Search Engine',
+              'Social Media',
+              'Friend or Family',
+              'Event or Conference',
+              'Other'
             ]
+          }
+        },
+        {
+          id: 'utm_source',
+          type: 'hidden',
+          label: 'UTM Source',
+          fieldConfig: {
+            defaultValue: 'website'
           }
         }
       ]
