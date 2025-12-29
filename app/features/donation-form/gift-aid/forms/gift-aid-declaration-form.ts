@@ -63,29 +63,11 @@ export function createGiftAidFields(
     // Gift Aid Information Card (UK only)
     giftAidInfo: {
       type: 'card',
-      label: 'Boost Your Donation by 25% at No Cost to You',
+      label: 'Boost your donations by 25% at no cost to you!',
       imageSrc: '/imgs/gift-aid.svg',
       imageAlt: 'Gift Aid',
-      imageClass: 'h-16 w-auto mb-4 dark:invert',
-      content: `
-        <p class="mb-3">
-          Gift Aid is a UK tax incentive that enables us to reclaim 25p for every £1 you donate 
-          at no extra cost to you. This means your donation can go even further in supporting our work.
-        </p>
-        <p class="mb-3">
-          <strong>To qualify, you must:</strong>
-        </p>
-        <ul class="list-disc list-inside space-y-1 mb-3 text-sm">
-          <li>Be a UK taxpayer</li>
-          <li>Have paid at least as much Income Tax or Capital Gains Tax as we will reclaim</li>
-          <li>Provide your home address (required by HMRC)</li>
-        </ul>
-        <p class="text-xs text-muted-foreground">
-          Please note: If you pay less Income Tax and/or Capital Gains Tax than the amount of 
-          Gift Aid claimed on all your donations in that tax year, it is your responsibility to 
-          pay any difference.
-        </p>
-      `,
+      imageClass: 'h-10 w-auto mb-4 dark:invert',
+      content: '',
       visibleWhen: shouldShow,
       isNoSeparatorAfter: true
     },
@@ -93,9 +75,10 @@ export function createGiftAidFields(
     // Gift Aid consent toggle
     giftAidConsent: {
       type: 'toggle',
-      label: 'Yes, I want to Gift Aid my donation',
+      label:
+        'Yes, I am a UK taxpayer and I would like to reclaim the tax on all qualifying donations I have made, as well as any future donations, until I notify them otherwise.',
       description:
-        'I confirm I am a UK taxpayer and have paid sufficient tax to cover this Gift Aid claim.',
+        'I understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of Gift Aid claimed on all my donations in that tax year it is my responsibility to pay any difference.',
       defaultValue: false,
       optional: true,
       visibleWhen: shouldShow,

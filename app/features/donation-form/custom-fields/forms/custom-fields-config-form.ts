@@ -50,6 +50,7 @@ export function createCustomFieldsConfigSection(): FormDef {
             type: {
               type: 'select',
               label: 'Field Type',
+              defaultValue: 'text', // Default to text so label/id fields are immediately visible
               options: [
                 { value: 'text', label: 'Text (single line)' },
                 { value: 'textarea', label: 'Textarea (multi-line)' },
@@ -66,6 +67,7 @@ export function createCustomFieldsConfigSection(): FormDef {
             id: {
               type: 'text',
               label: '',
+              defaultValue: '', // Initialize as empty so setValue can update it
               visibleWhen: () => false, // Hidden - auto-generated
               rules: z.string().min(1)
             },
@@ -77,16 +79,17 @@ export function createCustomFieldsConfigSection(): FormDef {
               placeholder: 'What is your question?',
               visibleWhen: (values) => !!values.type,
               rules: z.string().min(1, 'Label is required'),
-              onChange: (value, _allValues, setValue) => {
-                // Auto-generate ID from label (slugify)
+              onChange: (value, allValues, setValue) => {
+                // Auto-generate ID from label with field type prefix (e.g., text_company_name)
                 const label = (value as string) || ''
+                const type = ((allValues as Record<string, unknown>).type as string) || 'field'
                 const slugified =
                   label
                     .toLowerCase()
                     .replace(/[^a-z0-9]+/g, '_')
                     .replace(/^_+|_+$/g, '')
-                    .substring(0, 50) || 'field'
-                setValue('id', slugified)
+                    .substring(0, 50) || 'question'
+                setValue('id', `${type}_${slugified}`)
               }
             },
 

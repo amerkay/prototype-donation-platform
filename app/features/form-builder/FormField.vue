@@ -6,7 +6,8 @@ import * as z from 'zod'
 import type { FieldMeta, SetFieldValueFn } from '~/features/form-builder/types'
 import {
   resolveVeeFieldPath,
-  checkFieldVisibility
+  checkFieldVisibility,
+  joinPath
 } from '~/features/form-builder/composables/useFieldPath'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { cn } from '@/lib/utils'
@@ -130,7 +131,14 @@ const fieldValue = computed({
       fieldBinding.value.value = val
       // Trigger onChange callback if provided
       if (props.meta.onChange) {
-        props.meta.onChange(val, formValues.value, setFieldValue)
+        // Create scoped setFieldValue that prepends current field prefix
+        // This allows onChange to use relative paths (e.g., 'id') that resolve correctly
+        // even inside nested field-groups or array items (same pattern as FormFieldAutocomplete)
+        const scopedSetFieldValue: SetFieldValueFn = (relativePath, value) => {
+          const absolutePath = joinPath(fieldPrefix, relativePath)
+          setFieldValue(absolutePath, value)
+        }
+        props.meta.onChange(val, formValues.value, scopedSetFieldValue)
       }
     }
   }
