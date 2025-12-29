@@ -80,6 +80,9 @@ export const formConfig = {
         defaultPercentage: 10
       }
     },
+    giftAid: {
+      enabled: false
+    },
     tribute: {
       enabled: true,
       icons: {

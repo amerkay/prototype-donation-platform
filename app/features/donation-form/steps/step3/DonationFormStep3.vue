@@ -4,7 +4,7 @@ import NextButton from '~/features/donation-form/components/NextButton.vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
 import CoverCostsField from '~/features/donation-form/cover-costs/CoverCostsField.vue'
 import CoverCostsUpsellModal from '~/features/donation-form/cover-costs/CoverCostsUpsellModal.vue'
-import { giftAidFormSection } from '../../gift-aid/forms/gift-aid-declaration-form'
+import { createGiftAidFields } from '../../gift-aid/forms/gift-aid-declaration-form'
 import { createEmailOptInField } from '~/features/donation-form/contact-consent/forms/email-opt-in-field'
 import { createTermsAcceptanceField } from '~/features/donation-form/terms/forms/terms-acceptance-field'
 import {
@@ -19,6 +19,12 @@ import type { FormDef } from '~/features/form-builder/types'
 // Get shared form config from store
 const configStore = useFormConfigStore()
 const formConfig = computed(() => configStore.fullConfig)
+
+// Gift Aid form section (dynamically enabled from config)
+const giftAidFormSection = computed(() => ({
+  id: 'gift-aid',
+  fields: createGiftAidFields(formConfig.value?.features.giftAid.enabled ?? true)
+}))
 
 // Custom fields section (dynamically generated from config)
 const customFieldsFormSection = computed(() => {
@@ -187,7 +193,7 @@ const handleNext = () => {
     </div>
 
     <!-- Gift Aid Form (wrapped for click delegation) -->
-    <div @click="handleFormClick">
+    <div v-if="formConfig?.features.giftAid.enabled" @click="handleFormClick">
       <FormRenderer
         ref="giftAidFormRef"
         v-model="giftAidDataWithContext"
@@ -196,7 +202,7 @@ const handleNext = () => {
       />
     </div>
 
-    <Separator v-if="formConfig?.features.coverCosts.enabled" />
+    <Separator v-if="formConfig?.features.giftAid.enabled" />
 
     <!-- Cover Costs Field (separate component for dynamic percentage/amount switching) -->
     <div v-if="formConfig?.features.coverCosts.enabled" @click="handleFormClick">

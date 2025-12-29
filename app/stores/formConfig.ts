@@ -8,6 +8,7 @@ import type { ImpactCartSettings } from '~/features/donation-form/impact-cart/ty
 import type { ProductSelectorSettings } from '~/features/donation-form/product-selector/types'
 import type { ImpactJourneySettings } from '~/features/donation-form/impact-journey/types'
 import type { CoverCostsSettings } from '~/features/donation-form/cover-costs/types'
+import type { GiftAidSettings } from '~/features/donation-form/gift-aid/types'
 import type { TributeSettings } from '~/features/donation-form/tribute/types'
 import type { CustomFieldsSettings } from '~/features/donation-form/custom-fields/types'
 import type { Product } from '~/features/donation-form/product/types'
@@ -42,6 +43,7 @@ export const useFormConfigStore = defineStore('formConfig', {
     productSelector: null as ProductSelectorSettings | null,
     impactJourney: null as ImpactJourneySettings | null,
     coverCosts: null as CoverCostsSettings | null,
+    giftAid: null as GiftAidSettings | null,
     tribute: null as TributeSettings | null,
     customFields: null as CustomFieldsSettings | null,
 
@@ -69,6 +71,7 @@ export const useFormConfigStore = defineStore('formConfig', {
           productSelector: state.productSelector!,
           impactJourney: state.impactJourney!,
           coverCosts: state.coverCosts!,
+          giftAid: state.giftAid!,
           tribute: state.tribute!,
           customFields: state.customFields!
         }
@@ -92,6 +95,7 @@ export const useFormConfigStore = defineStore('formConfig', {
       this.productSelector = config.features.productSelector
       this.impactJourney = config.features.impactJourney
       this.coverCosts = config.features.coverCosts
+      this.giftAid = config.features.giftAid
       this.tribute = config.features.tribute
       this.customFields = config.features.customFields
       this.products = productList
@@ -123,6 +127,7 @@ export interface FullFormConfig {
     productSelector: ProductSelectorSettings
     impactJourney: ImpactJourneySettings
     coverCosts: CoverCostsSettings
+    giftAid: GiftAidSettings
     tribute: TributeSettings
     customFields: CustomFieldsSettings
   }

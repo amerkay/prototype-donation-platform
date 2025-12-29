@@ -81,6 +81,9 @@ export const formConfig = {
         defaultPercentage: 10
       }
     },
+    giftAid: {
+      enabled: false
+    },
     tribute: {
       enabled: true,
       icons: {
@@ -115,7 +118,7 @@ export const formConfig = {
       }
     },
     customFields: {
-      enabled: true,
+      enabled: false,
       fields: [
         {
           id: 'company_name',

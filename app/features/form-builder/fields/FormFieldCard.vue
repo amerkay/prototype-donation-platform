@@ -2,24 +2,27 @@
 import { computed } from 'vue'
 import { cn } from '@/lib/utils'
 import type { CardFieldMeta } from '~/features/form-builder/types'
-import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { resolveText } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useContainerFieldSetup } from '~/features/form-builder/composables/useContainerFieldSetup'
 
 interface Props {
   meta: CardFieldMeta
+  name: string
 }
 
 const props = defineProps<Props>()
 
-// Get form values for dynamic descriptions
-const { formValues } = useFormBuilderContext()
+// Use unified container setup composable
+const { isVisible, scopedFormValues } = useContainerFieldSetup(props.name, props.meta.visibleWhen)
 
 // Resolve description using utility
-const resolvedDescription = computed(() => resolveText(props.meta.description, formValues.value))
+const resolvedDescription = computed(() =>
+  resolveText(props.meta.description, scopedFormValues.value)
+)
 </script>
 
 <template>
-  <div class="rounded-lg border text-card-foreground p-6 bg-background/30">
+  <div v-show="isVisible" class="rounded-lg border text-card-foreground p-6 bg-background/30">
     <!-- Optional image -->
     <img
       v-if="meta.imageSrc"

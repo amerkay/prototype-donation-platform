@@ -5,6 +5,7 @@ import { createMultipleProductsConfigSection } from '../donation-form/impact-car
 import { createProductSelectorConfigSection } from '../donation-form/product-selector/forms/product-selector-config-form'
 import { createImpactJourneyConfigSection } from '../donation-form/impact-journey/forms/impact-journey-config-form'
 import { createCoverCostsConfigSection } from '../donation-form/cover-costs/forms/cover-costs-config-form'
+import { createGiftAidConfigSection } from '../donation-form/gift-aid/forms/gift-aid-config-form'
 import { createTributeConfigSection } from '../donation-form/tribute/forms/tribute-config-form'
 import { createCustomFieldsConfigSection } from '../donation-form/custom-fields/forms/custom-fields-config-form'
 import { useFormConfigStore } from '~/stores/formConfig'
@@ -18,6 +19,7 @@ const impactCartSection = createMultipleProductsConfigSection()
 const productSelectorSection = createProductSelectorConfigSection()
 const impactJourneySection = createImpactJourneyConfigSection()
 const coverCostsSection = createCoverCostsConfigSection()
+const giftAidSection = createGiftAidConfigSection()
 const tributeSection = createTributeConfigSection()
 const customFieldsSection = createCustomFieldsConfigSection()
 </script>
@@ -55,6 +57,11 @@ const customFieldsSection = createCustomFieldsConfigSection()
     <!-- Cover Costs -->
     <div v-if="store.coverCosts" class="config-section">
       <FormRenderer v-model="store.coverCosts" :section="coverCostsSection" validate-on-mount />
+    </div>
+
+    <!-- Gift Aid -->
+    <div v-if="store.giftAid" class="config-section">
+      <FormRenderer v-model="store.giftAid" :section="giftAidSection" validate-on-mount />
     </div>
 
     <!-- Tribute Settings -->
