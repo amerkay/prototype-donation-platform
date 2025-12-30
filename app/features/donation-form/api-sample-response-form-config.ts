@@ -118,14 +118,14 @@ export const formConfig = {
       }
     },
     customFields: {
-      enabled: false,
+      enabled: true,
       fields: [
         {
           id: 'company_name',
           type: 'text',
           label: 'Company Name',
           fieldConfig: {
-            optional: false,
+            optional: true,
             placeholder: 'Enter your company name',
             // defaultValue: 'Wildlife Foundation',
             maxLength: 100
@@ -136,7 +136,7 @@ export const formConfig = {
           type: 'textarea',
           label: 'Dedication Message',
           fieldConfig: {
-            optional: false,
+            optional: true,
             placeholder: 'Write a personal message...',
             // defaultValue: 'In honor of...',
             rows: 4,
@@ -148,7 +148,7 @@ export const formConfig = {
           type: 'slider',
           label: 'How involved do you want to be?',
           fieldConfig: {
-            optional: false,
+            optional: true,
             min: 0,
             max: 100,
             step: 10,
@@ -161,7 +161,7 @@ export const formConfig = {
           type: 'select',
           label: 'How did you hear about us?',
           fieldConfig: {
-            optional: false,
+            optional: true,
             placeholder: 'Select an option',
             // defaultValue: 'event_or_conference',
             options: [

@@ -118,6 +118,7 @@ export function createCustomFieldsConfigSection(): FormDef {
             fieldConfig: {
               type: 'field-group',
               label: 'Field Settings',
+              defaultValue: { optional: true },
               visibleWhen: (values) => !!values.type && values.type !== 'hidden',
               collapsible: true,
               collapsibleDefaultOpen: false,
