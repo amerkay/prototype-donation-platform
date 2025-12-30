@@ -82,7 +82,7 @@ export const formConfig = {
       }
     },
     giftAid: {
-      enabled: false
+      enabled: true
     },
     tribute: {
       enabled: true,

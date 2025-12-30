@@ -15,7 +15,8 @@ export function createCoverCostsConfigSection(): FormDef {
         type: 'toggle',
         label: 'Enable Cover Costs Feature',
         description: 'Allow donors to optionally cover operational costs',
-        labelClass: 'font-bold'
+        labelClass: 'font-bold',
+        isSeparatorAfter: true
       },
       settings: {
         type: 'field-group',
@@ -23,6 +24,7 @@ export function createCoverCostsConfigSection(): FormDef {
         visibleWhen: (values) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
+        isSeparatorAfter: true,
 
         fields: {
           heading: {

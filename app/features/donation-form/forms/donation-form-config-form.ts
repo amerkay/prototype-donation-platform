@@ -57,6 +57,7 @@ export function createFormConfigSection(): FormDef {
         label: 'Basic Settings',
         collapsible: true,
         collapsibleDefaultOpen: false,
+        isSeparatorAfter: true,
 
         fields: {
           title: {
@@ -80,13 +81,15 @@ export function createFormConfigSection(): FormDef {
         collapsibleDefaultOpen: false,
         badgeLabel: 'On my TODO list',
         badgeVariant: 'secondary',
-        isDisabled: true
+        isDisabled: true,
+        isSeparatorAfter: true
       },
       localization: {
         type: 'field-group',
         label: 'Currency Settings',
         collapsible: true,
         collapsibleDefaultOpen: false,
+        isSeparatorAfter: true,
 
         fields: {
           supportedCurrencies: {
@@ -137,6 +140,7 @@ export function createFormConfigSection(): FormDef {
         label: 'Pricing Configuration',
         collapsible: true,
         collapsibleDefaultOpen: false,
+        isSeparatorAfter: true,
 
         fields: {
           baseCurrency: {

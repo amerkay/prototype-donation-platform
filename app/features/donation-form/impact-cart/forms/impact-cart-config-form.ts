@@ -15,7 +15,8 @@ export function createMultipleProductsConfigSection(): FormDef {
         type: 'toggle',
         label: 'Enable Multiple Products',
         description: 'Allow donors to add multiple products to their cart',
-        labelClass: 'font-bold'
+        labelClass: 'font-bold',
+        isSeparatorAfter: true
       },
       productList: {
         type: 'field-group',
@@ -26,7 +27,8 @@ export function createMultipleProductsConfigSection(): FormDef {
         collapsibleDefaultOpen: false,
         badgeLabel: 'On my TODO list',
         badgeVariant: 'secondary',
-        isDisabled: true
+        isDisabled: true,
+        isSeparatorAfter: true
       },
       settings: {
         type: 'field-group',
@@ -34,6 +36,7 @@ export function createMultipleProductsConfigSection(): FormDef {
         visibleWhen: (values) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
+        isSeparatorAfter: true,
 
         fields: {
           initialDisplay: {

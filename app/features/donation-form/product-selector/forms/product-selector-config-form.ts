@@ -15,7 +15,8 @@ export function createProductSelectorConfigSection(): FormDef {
         type: 'toggle',
         label: 'Enable Product Selector',
         description: 'Show product selector interface to donors',
-        labelClass: 'font-bold'
+        labelClass: 'font-bold',
+        isSeparatorAfter: true
       },
       productList: {
         type: 'field-group',
@@ -25,7 +26,8 @@ export function createProductSelectorConfigSection(): FormDef {
         collapsibleDefaultOpen: false,
         badgeLabel: 'On my TODO list',
         badgeVariant: 'secondary',
-        isDisabled: true
+        isDisabled: true,
+        isSeparatorAfter: true
       },
       config: {
         type: 'field-group',
@@ -33,6 +35,7 @@ export function createProductSelectorConfigSection(): FormDef {
         visibleWhen: (values) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
+        isSeparatorAfter: true,
 
         fields: {
           icon: {

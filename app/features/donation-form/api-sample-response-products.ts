@@ -23,16 +23,16 @@ export const products: Product[] = [
     thumbnail: '🦧',
     icon: '🦧'
   },
-  {
-    id: 'plush-toy',
-    name: 'Plush Baby Orangutan Toy',
-    description: 'Adorable plush toy to support our mission',
-    frequency: 'once',
-    image: '🧸',
-    thumbnail: '🧸',
-    icon: '🧸',
-    isShippingRequired: true
-  },
+  // {
+  //   id: 'plush-toy',
+  //   name: 'Plush Baby Orangutan Toy',
+  //   description: 'Adorable plush toy to support our mission',
+  //   frequency: 'once',
+  //   image: '🧸',
+  //   thumbnail: '🧸',
+  //   icon: '🧸',
+  //   isShippingRequired: true
+  // },
   // {
   //   id: 'adopt-kit',
   //   name: 'Adoption Welcome Kit',

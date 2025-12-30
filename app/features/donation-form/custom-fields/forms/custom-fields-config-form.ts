@@ -13,7 +13,8 @@ export function createCustomFieldsConfigSection(): FormDef {
         type: 'toggle',
         label: 'Enable Custom Fields',
         description: 'Add extra questions to step 3 of the donation form',
-        labelClass: 'font-bold'
+        labelClass: 'font-bold',
+        isSeparatorAfter: true
       },
       fields: {
         type: 'array',
@@ -22,6 +23,7 @@ export function createCustomFieldsConfigSection(): FormDef {
         visibleWhen: (values) => values.enabled === true,
         sortable: true,
         addButtonText: 'Add Custom Field',
+        isSeparatorAfter: true,
         itemField: {
           type: 'field-group',
           label: (values) => {

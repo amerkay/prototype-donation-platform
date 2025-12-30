@@ -71,8 +71,7 @@ export function createGiftAidFields(
       imageAlt: 'Gift Aid',
       imageClass: 'h-10 w-auto mb-4 dark:invert',
       content: '',
-      visibleWhen: shouldShow,
-      isNoSeparatorAfter: true
+      visibleWhen: shouldShow
     },
 
     // Gift Aid consent toggle
@@ -85,7 +84,7 @@ export function createGiftAidFields(
       defaultValue: false,
       optional: true,
       visibleWhen: shouldShow,
-      isNoSeparatorAfter: true
+      isSeparatorAfter: true
     },
 
     // Option to use shipping address (if available)
@@ -136,7 +135,7 @@ export function createGiftAidFields(
           })
         }
       },
-      isNoSeparatorAfter: true
+      isSeparatorAfter: true
     },
 
     // Home Address Collection (for Gift Aid)
@@ -152,8 +151,7 @@ export function createGiftAidFields(
         // Show if Gift Aid consent is given AND not using shipping address
         return values.giftAidConsent === true && values.useSameAsShipping !== true
       },
-      fields: createAddressFields(undefined, 'shipping'),
-      isNoSeparatorAfter: true
+      fields: createAddressFields(undefined, 'shipping')
     }
   }
 }

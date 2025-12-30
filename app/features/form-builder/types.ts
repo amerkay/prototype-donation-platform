@@ -66,7 +66,7 @@ export interface BaseFieldMeta {
   optional?: boolean
   disabled?: boolean
   visibleWhen?: (values: Record<string, unknown>) => boolean
-  isNoSeparatorAfter?: boolean
+  isSeparatorAfter?: boolean
   class?: string
   labelClass?: string
   descriptionClass?: string

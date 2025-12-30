@@ -725,7 +725,7 @@ Every field type supports these:
   visibleWhen?: (values) => boolean
   rules?: z.ZodTypeAny | (values) => z.ZodTypeAny
   onChange?: (value, allValues, setValue) => void
-  isNoSeparatorAfter?: boolean     // Skip separator after this field
+  isSeparatorAfter?: boolean       // Show separator after this field
   class?: string                   // CSS classes for input element
   labelClass?: string              // CSS classes for label
   descriptionClass?: string        // CSS classes for description
@@ -762,7 +762,7 @@ onChange: (value, allValues, setValue) => {
 
 **Extract patterns:** If you use the same fields in 3+ places, make a factory function. Your future self will thank you.
 
-**Remove separators for tight groups:** Add `isNoSeparatorAfter: true` to the first field in a pair that should feel like one unit (e.g., first name / last name).
+**Add separators between fields:** Add `isSeparatorAfter: true` to show a separator after a field. By default, separators are not shown.
 
 **Error indicators work automatically:** Collapsible field-groups and tabs automatically display error badges when child fields have validation errors. You don't need to manage this manually.
 

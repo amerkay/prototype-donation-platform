@@ -7,7 +7,6 @@ type FormValues = Record<string, unknown>
 
 /**
  * Composable to handle all shared setup logic for container fields (field-group, tabs)
- * Eliminates 40+ lines of duplication between FormFieldGroup and FormFieldTabs
  *
  * Responsibilities:
  * - Compute and provide field paths with proper nesting

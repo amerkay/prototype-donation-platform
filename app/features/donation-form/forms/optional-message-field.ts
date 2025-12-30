@@ -31,7 +31,6 @@ export function createMessageFields(
       description: 'Why are you donating today?',
       optional: true,
       visibleWhen,
-      isNoSeparatorAfter: true,
       defaultValue: false
     },
     message: {

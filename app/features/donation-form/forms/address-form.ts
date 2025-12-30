@@ -186,8 +186,7 @@ export function createAddressFields(
       autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-line1`,
       defaultValue: '',
       visibleWhen,
-      rules: z.string().min(5, 'Address is required'),
-      isNoSeparatorAfter: true
+      rules: z.string().min(5, 'Address is required')
     },
 
     address2: {
@@ -203,8 +202,7 @@ export function createAddressFields(
       //   if (!values['address1'] || typeof values['address1'] !== 'string') return false
       //   return z.string().min(5).safeParse(values['address1']).success
       // },
-      rules: z.string().optional(),
-      isNoSeparatorAfter: true
+      rules: z.string().optional()
     },
 
     city: {
@@ -214,15 +212,13 @@ export function createAddressFields(
       autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level2`,
       defaultValue: '',
       visibleWhen,
-      rules: z.string().min(2, 'Town/City is required'),
-      isNoSeparatorAfter: true
+      rules: z.string().min(2, 'Town/City is required')
     },
 
     regionPostcode: {
       type: 'field-group',
       class: 'grid grid-cols-2 gap-x-3',
       visibleWhen,
-      isNoSeparatorAfter: true,
       fields: {
         region: {
           type: 'text',
@@ -285,7 +281,8 @@ export function createAddressFields(
       rules: z.string().min(1, 'Country is required'),
       disabled: !!forcedCountry,
       autocomplete: `section-${autocompleteSection} ${autocompleteSection} country`,
-      visibleWhen: visibleWhen
+      visibleWhen: visibleWhen,
+      isSeparatorAfter: true
     }
   }
 }

@@ -12,7 +12,8 @@ export function createGiftAidConfigSection(): FormDef {
         type: 'toggle',
         label: 'Enable Gift Aid Feature',
         description: 'Show Gift Aid consent for UK donors (GBP currency only)',
-        labelClass: 'font-bold'
+        labelClass: 'font-bold',
+        isSeparatorAfter: true
       }
     }
   }

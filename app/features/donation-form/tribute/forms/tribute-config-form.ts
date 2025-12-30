@@ -15,7 +15,8 @@ export function createTributeConfigSection(): FormDef {
         type: 'toggle',
         label: 'Enable Tribute Feature',
         description: 'Allow donors to dedicate donations as gifts or memorials',
-        labelClass: 'font-bold'
+        labelClass: 'font-bold',
+        isSeparatorAfter: true
       },
       ecardTemplate: {
         type: 'field-group',
@@ -25,7 +26,8 @@ export function createTributeConfigSection(): FormDef {
         collapsibleDefaultOpen: false,
         badgeLabel: 'On my TODO list',
         badgeVariant: 'secondary',
-        isDisabled: true
+        isDisabled: true,
+        isSeparatorAfter: true
       },
       types: {
         type: 'field-group',
@@ -34,6 +36,7 @@ export function createTributeConfigSection(): FormDef {
         visibleWhen: (values) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
+        isSeparatorAfter: true,
 
         rules: z
           .object({
@@ -63,6 +66,7 @@ export function createTributeConfigSection(): FormDef {
         visibleWhen: (values) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
+        isSeparatorAfter: true,
 
         fields: {
           title: {
@@ -85,6 +89,7 @@ export function createTributeConfigSection(): FormDef {
         collapsible: true,
         collapsibleDefaultOpen: false,
         class: 'sm:grid sm:grid-cols-3 sm:gap-3',
+        isSeparatorAfter: true,
         fields: {
           gift: {
             type: 'emoji',

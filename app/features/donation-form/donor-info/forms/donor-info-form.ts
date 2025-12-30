@@ -14,7 +14,6 @@ export const donorInfoFormSection: FormDef = {
       type: 'field-group',
       // label: 'Name',
       class: 'grid grid-cols-2 gap-x-3',
-      isNoSeparatorAfter: true,
       fields: {
         firstName: {
           type: 'text',
@@ -40,7 +39,6 @@ export const donorInfoFormSection: FormDef = {
       placeholder: 'john@example.com',
       description: "We'll send your donation receipt here",
       autocomplete: 'email',
-      isNoSeparatorAfter: true,
       defaultValue: '',
       rules: z.string().min(1, 'Email is required').email('Enter a valid email address')
     },
@@ -52,6 +50,7 @@ export const donorInfoFormSection: FormDef = {
       autocomplete: 'tel',
       optional: true,
       defaultValue: '',
+      isSeparatorAfter: true,
       visibleWhen: (values) => {
         if (!values.email || typeof values.email !== 'string') return false
         return z.string().email().safeParse(values.email).success

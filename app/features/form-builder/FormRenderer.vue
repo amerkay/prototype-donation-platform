@@ -107,11 +107,11 @@ const shouldShowSeparator = (
 
   if (visibleFieldsBefore.length === 0) return false
 
-  // Check if the previous visible field has isNoSeparatorAfter flag
+  // Check if the previous visible field has isSeparatorAfter flag
   const lastVisibleField = visibleFieldsBefore[visibleFieldsBefore.length - 1]
   if (!lastVisibleField) return false
 
-  return !lastVisibleField[1].isNoSeparatorAfter
+  return lastVisibleField[1].isSeparatorAfter === true
 }
 
 // Check if a field is a visible collapsible accordion

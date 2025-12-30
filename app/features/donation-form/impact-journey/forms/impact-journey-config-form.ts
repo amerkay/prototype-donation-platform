@@ -13,7 +13,8 @@ export function createImpactJourneyConfigSection(): FormDef {
         type: 'toggle',
         label: 'Enable Impact Journey',
         description: 'Auto-generates emotional impact messages based on donation amount',
-        labelClass: 'font-bold'
+        labelClass: 'font-bold',
+        isSeparatorAfter: true
       },
       messaging: {
         type: 'field-group',
@@ -22,6 +23,7 @@ export function createImpactJourneyConfigSection(): FormDef {
         collapsible: true,
         collapsibleDefaultOpen: false,
         visibleWhen: (values) => values.enabled === true,
+        isSeparatorAfter: true,
         fields: {
           emoji: {
             type: 'emoji',
@@ -64,6 +66,7 @@ export function createImpactJourneyConfigSection(): FormDef {
         collapsible: true,
         collapsibleDefaultOpen: false,
         visibleWhen: (values) => values.enabled === true,
+        isSeparatorAfter: true,
         fields: {
           items: {
             type: 'array',
@@ -117,6 +120,7 @@ export function createImpactJourneyConfigSection(): FormDef {
         collapsible: true,
         collapsibleDefaultOpen: false,
         visibleWhen: (values) => values.enabled === true,
+        isSeparatorAfter: true,
         fields: {
           upsellOnceToRecurring: {
             type: 'toggle',

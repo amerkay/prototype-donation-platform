@@ -34,8 +34,7 @@ export function createCoverCostsField(options: {
             See cost breakdown
           </button>
         </p>
-      `,
-      isNoSeparatorAfter: true
+      `
     },
 
     coverCostsValue: {
