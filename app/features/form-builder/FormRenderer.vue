@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, provide, nextTick, toRaw } from 'vue'
+import { computed, watch, provide, toRaw } from 'vue'
 import { useForm } from 'vee-validate'
 import { FieldSeparator } from '@/components/ui/field'
 import FormField from './FormField.vue'
@@ -22,11 +22,18 @@ interface Props {
    * @default false
    */
   validateOnMount?: boolean
+  /**
+   * Only emit update:modelValue when form is valid.
+   * Useful for admin configs where invalid state shouldn't propagate.
+   * @default false
+   */
+  updateOnlyWhenValid?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   keepValuesOnUnmount: false,
-  validateOnMount: false
+  validateOnMount: false,
+  updateOnlyWhenValid: false
 })
 
 const emit = defineEmits<{
@@ -34,13 +41,22 @@ const emit = defineEmits<{
   submit: []
 }>()
 
+function safeCloneRecord(value: Record<string, unknown>): Record<string, unknown> {
+  return JSON.parse(JSON.stringify(value)) as Record<string, unknown>
+}
+
+const emitSectionValue = (value: Record<string, unknown>) => {
+  emit('update:modelValue', safeCloneRecord(toRaw(value) as Record<string, unknown>))
+}
+
 // Transform initial values to nest under section ID for unique field names
 const initialFormValues = computed(() => ({
-  [props.section.id]: props.modelValue
+  // IMPORTANT: clone to avoid vee-validate mutating the Pinia store by reference
+  [props.section.id]: safeCloneRecord(toRaw(props.modelValue) as Record<string, unknown>)
 }))
 
 // Use the composition API to access form context
-const { values, meta, setValues, handleSubmit, setFieldValue, setFieldTouched } = useForm({
+const { values, meta, validate, handleSubmit, setFieldValue, setFieldTouched } = useForm({
   initialValues: initialFormValues.value,
   keepValuesOnUnmount: props.keepValuesOnUnmount,
   validateOnMount: props.validateOnMount
@@ -138,33 +154,27 @@ const { setElementRef } = useScrollOnVisible(allFields, {
   getKey: ([key]) => key
 })
 
-// Watch for external changes to modelValue
-let isUpdatingFromProp = false
-watch(
-  () => props.modelValue,
-  (newValue) => {
-    isUpdatingFromProp = true
-    // Use toRaw() to prevent vee-validate from caching readonly proxies
-    const rawValue = toRaw(newValue)
-    setValues({ [props.section.id]: rawValue }, false)
-    nextTick(() => {
-      isUpdatingFromProp = false
-    })
-  },
-  { deep: true }
-)
-
 // Emit changes when form values update
 watch(
-  values,
-  (newValues) => {
-    if (!isUpdatingFromProp) {
-      const currentSectionValues =
-        ((newValues as Record<string, unknown>)[props.section.id] as Record<string, unknown>) || {}
-      emit('update:modelValue', currentSectionValues)
+  sectionValues,
+  async (value, _oldValue, onCleanup) => {
+    if (!props.updateOnlyWhenValid) {
+      emitSectionValue(value)
+      return
     }
+
+    // If values change again while we're validating, cancel this run.
+    // This avoids stale async validations emitting to the store.
+    let cancelled = false
+    onCleanup(() => {
+      cancelled = true
+    })
+
+    const { valid } = await validate()
+    if (cancelled) return
+    if (valid) emitSectionValue(value)
   },
-  { deep: true }
+  { deep: true, flush: 'post' }
 )
 
 // Handle form submission
@@ -172,7 +182,7 @@ const onSubmit = handleSubmit((submittedValues) => {
   const currentSectionValues =
     ((submittedValues as Record<string, unknown>)[props.section.id] as Record<string, unknown>) ||
     {}
-  emit('update:modelValue', currentSectionValues)
+  emitSectionValue(currentSectionValues)
   emit('submit')
 })
 

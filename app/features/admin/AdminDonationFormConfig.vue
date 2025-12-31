@@ -28,7 +28,12 @@ const customFieldsSection = createCustomFieldsConfigSection()
   <div v-if="store.formSettings" class="w-full mx-auto space-y-6">
     <!-- Form Settings (includes form, localization, pricing) -->
     <div class="config-section">
-      <FormRenderer v-model="store.formSettings" :section="formSection" validate-on-mount />
+      <FormRenderer
+        v-model="store.formSettings"
+        :section="formSection"
+        validate-on-mount
+        update-only-when-valid
+      />
     </div>
 
     <!-- Impact Journey -->
@@ -37,12 +42,18 @@ const customFieldsSection = createCustomFieldsConfigSection()
         v-model="store.impactJourney"
         :section="impactJourneySection"
         validate-on-mount
+        update-only-when-valid
       />
     </div>
 
     <!-- Multiple Products -->
     <div v-if="store.impactCart" class="config-section">
-      <FormRenderer v-model="store.impactCart" :section="impactCartSection" validate-on-mount />
+      <FormRenderer
+        v-model="store.impactCart"
+        :section="impactCartSection"
+        validate-on-mount
+        update-only-when-valid
+      />
     </div>
 
     <!-- Product Selector -->
@@ -51,27 +62,48 @@ const customFieldsSection = createCustomFieldsConfigSection()
         v-model="store.productSelector"
         :section="productSelectorSection"
         validate-on-mount
+        update-only-when-valid
       />
     </div>
 
     <!-- Cover Costs -->
     <div v-if="store.coverCosts" class="config-section">
-      <FormRenderer v-model="store.coverCosts" :section="coverCostsSection" validate-on-mount />
+      <FormRenderer
+        v-model="store.coverCosts"
+        :section="coverCostsSection"
+        validate-on-mount
+        update-only-when-valid
+      />
     </div>
 
     <!-- Gift Aid -->
     <div v-if="store.giftAid" class="config-section">
-      <FormRenderer v-model="store.giftAid" :section="giftAidSection" validate-on-mount />
+      <FormRenderer
+        v-model="store.giftAid"
+        :section="giftAidSection"
+        validate-on-mount
+        update-only-when-valid
+      />
     </div>
 
     <!-- Tribute Settings -->
     <div v-if="store.tribute" class="config-section">
-      <FormRenderer v-model="store.tribute" :section="tributeSection" validate-on-mount />
+      <FormRenderer
+        v-model="store.tribute"
+        :section="tributeSection"
+        validate-on-mount
+        update-only-when-valid
+      />
     </div>
 
     <!-- Custom Fields -->
     <div v-if="store.customFields" class="config-section">
-      <FormRenderer v-model="store.customFields" :section="customFieldsSection" validate-on-mount />
+      <FormRenderer
+        v-model="store.customFields"
+        :section="customFieldsSection"
+        validate-on-mount
+        update-only-when-valid
+      />
     </div>
   </div>
 </template>

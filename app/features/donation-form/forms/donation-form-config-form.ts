@@ -64,7 +64,7 @@ export function createFormConfigSection(): FormDef {
             type: 'text',
             label: 'Form Title',
             placeholder: 'Enter form title',
-            rules: z.string().min(1, 'Title is required')
+            rules: z.string().min(5, 'Title is required')
           },
           subtitle: {
             type: 'text',
