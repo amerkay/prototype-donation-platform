@@ -12,6 +12,7 @@ import { useChildFieldErrors } from '~/features/form-builder/composables/useChil
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
 import { resolveVeeFieldPath } from '~/features/form-builder/composables/useFieldPath'
+import { extractDefaultValues } from '~/features/form-builder/utils'
 
 interface Props {
   modelValue?: unknown[]
@@ -200,15 +201,10 @@ function addItem() {
   if ('defaultValue' in props.meta.itemField) {
     defaultValue = props.meta.itemField.defaultValue
   } else if (props.meta.itemField.type === 'field-group') {
-    // For field-groups, create an object with default values for all fields
+    // For field-groups, recursively extract defaults from all nested fields
     defaultValue = {}
     if ('fields' in props.meta.itemField && props.meta.itemField.fields) {
-      const fields = props.meta.itemField.fields
-      for (const [key, fieldMeta] of Object.entries(fields)) {
-        if ('defaultValue' in fieldMeta) {
-          ;(defaultValue as Record<string, unknown>)[key] = fieldMeta.defaultValue
-        }
-      }
+      defaultValue = extractDefaultValues(props.meta.itemField.fields)
     }
   }
 

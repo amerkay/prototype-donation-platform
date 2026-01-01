@@ -121,60 +121,58 @@ export const formConfig = {
       enabled: true,
       fields: [
         {
-          id: 'company_name',
+          id: 'text_company_name',
           type: 'text',
           label: 'Company Name',
           fieldConfig: {
             optional: true,
             placeholder: 'Enter your company name',
-            // defaultValue: 'Wildlife Foundation',
             maxLength: 100
           }
         },
         {
-          id: 'dedication_message',
+          id: 'textarea_dedication_message',
           type: 'textarea',
           label: 'Dedication Message',
           fieldConfig: {
-            optional: true,
+            optional: false,
             placeholder: 'Write a personal message...',
-            // defaultValue: 'In honor of...',
             rows: 4,
             maxLength: 500
           }
         },
         {
-          id: 'involvement_level',
+          id: 'slider_how_involved_do_you_want_to_be',
           type: 'slider',
           label: 'How involved do you want to be?',
           fieldConfig: {
-            optional: true,
+            optional: false,
             min: 0,
             max: 100,
             step: 10,
-            // defaultValue: 50,
+            defaultValue: 55,
             suffix: '%'
           }
         },
         {
-          id: 'hear_about_us',
+          id: 'select_how_did_you_hear_about_us',
           type: 'select',
           label: 'How did you hear about us?',
           fieldConfig: {
-            optional: true,
+            optional: false,
             placeholder: 'Select an option',
-            // defaultValue: 'event_or_conference',
             options: [
               'Search Engine',
               'Social Media',
               'Friend or Family',
               'Event or Conference',
               'Other'
-            ]
+            ],
+            defaultValue: 'social_media'
           }
         },
         {
-          id: 'utm_source',
+          id: 'hidden_utm_source',
           type: 'hidden',
           label: 'UTM Source',
           fieldConfig: {

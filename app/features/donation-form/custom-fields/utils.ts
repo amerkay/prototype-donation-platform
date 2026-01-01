@@ -157,9 +157,10 @@ export function createCustomFieldsFormSection(customFields: CustomFieldDefinitio
 /**
  * Extract default values from custom field definitions
  * Returns an object with field IDs as keys and default values
+ * All fields are included to ensure hidden fields appear in output
  *
  * @param customFields - Array of custom field definitions from admin config
- * @returns Object with default values for each field that has one
+ * @returns Object with default values for each field
  */
 export function extractCustomFieldDefaults(
   customFields: CustomFieldDefinition[]
@@ -168,10 +169,23 @@ export function extractCustomFieldDefaults(
 
   for (const field of customFields) {
     const config = field.fieldConfig || {}
-    const defaultValue = config.defaultValue
 
-    if (defaultValue !== undefined) {
-      defaults[field.id] = defaultValue
+    // Always include all fields with appropriate defaults
+    if (config.defaultValue !== undefined) {
+      defaults[field.id] = config.defaultValue
+    } else {
+      // Provide type-appropriate fallback defaults
+      switch (field.type) {
+        case 'slider':
+          defaults[field.id] = config.min ?? 0
+          break
+        case 'hidden':
+          defaults[field.id] = ''
+          break
+        // text, textarea, select default to empty string
+        default:
+          defaults[field.id] = ''
+      }
     }
   }
 

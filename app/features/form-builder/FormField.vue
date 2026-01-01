@@ -120,7 +120,8 @@ const fieldBinding = isContainerField.value
   ? null
   : useField(() => resolvedVeeName.value, fieldRules, {
       validateOnValueUpdate: true,
-      syncVModel: false
+      syncVModel: false,
+      keepValueOnUnmount: true
     })
 
 // Extract field value and validation attrs
@@ -215,7 +216,6 @@ const fieldProps = computed(() => {
 
 <template>
   <Transition
-    v-show="isVisible"
     enter-active-class="transition-all duration-300 ease-out"
     leave-active-class="transition-all duration-200 ease-in"
     enter-from-class="opacity-0 -translate-y-2"
@@ -225,11 +225,11 @@ const fieldProps = computed(() => {
   >
     <component
       :is="fieldComponent"
-      v-if="fieldComponent"
+      v-if="fieldComponent && isVisible"
       v-bind="fieldProps"
       @update:model-value="fieldValue = $event"
     />
-    <div v-else class="text-destructive text-sm">
+    <div v-else-if="isVisible" class="text-destructive text-sm">
       Unknown field type: {{ (meta as { type: string }).type }}
     </div>
   </Transition>

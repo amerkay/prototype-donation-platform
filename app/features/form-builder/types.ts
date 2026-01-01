@@ -261,8 +261,8 @@ export interface SliderFieldMeta extends BaseFieldMeta {
   formatValue?: (value: number, formValues?: Record<string, unknown>) => string
   minMaxFormatter?: (value: number, formValues?: Record<string, unknown>) => string
   showMinMax?: boolean
-  prefix?: string
-  suffix?: string
+  prefix?: string | ((values: Record<string, unknown>) => string | undefined)
+  suffix?: string | ((values: Record<string, unknown>) => string | undefined)
 }
 
 // --- Container & Layout Fields ---

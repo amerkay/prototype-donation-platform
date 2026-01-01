@@ -155,24 +155,32 @@ const { setElementRef } = useScrollOnVisible(allFields, {
 })
 
 // Emit changes when form values update
+// Use debounce to let rapid changes settle before validating
+let validationTimeout: ReturnType<typeof setTimeout> | null = null
+
 watch(
   sectionValues,
-  async (value, _oldValue, onCleanup) => {
+  (value) => {
     if (!props.updateOnlyWhenValid) {
       emitSectionValue(value)
       return
     }
 
-    // If values change again while we're validating, cancel this run.
-    // This avoids stale async validations emitting to the store.
-    let cancelled = false
-    onCleanup(() => {
-      cancelled = true
-    })
+    // Clear any pending validation - we'll use the latest value
+    if (validationTimeout) {
+      clearTimeout(validationTimeout)
+    }
 
-    const { valid } = await validate()
-    if (cancelled) return
-    if (valid) emitSectionValue(value)
+    // Debounce validation to let rapid changes settle
+    validationTimeout = setTimeout(async () => {
+      validationTimeout = null
+      const { valid } = await validate()
+
+      if (valid) {
+        // Emit current sectionValues (not stale closure value)
+        emitSectionValue(sectionValues.value)
+      }
+    }, 0) // Use 0ms - just moves to next tick to batch synchronous changes
   },
   { deep: true, flush: 'post' }
 )

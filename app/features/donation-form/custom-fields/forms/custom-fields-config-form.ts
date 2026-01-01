@@ -187,7 +187,7 @@ export function createCustomFieldsConfigSection(): FormDef {
                   }
                 },
 
-                // Default value (text, textarea)
+                // Default value for text/textarea
                 defaultValue: {
                   type: 'text',
                   label: 'Default Value',
@@ -200,8 +200,8 @@ export function createCustomFieldsConfigSection(): FormDef {
                   }
                 },
 
-                // Default value for slider (needs to be separate since it's a slider type)
-                'defaultValue-slider': {
+                // Default value for slider (slider field that respects min/max/step/prefix/suffix)
+                sliderDefault: {
                   type: 'slider',
                   label: 'Default Value',
                   description: 'Pre-set the slider to this value',
@@ -210,15 +210,19 @@ export function createCustomFieldsConfigSection(): FormDef {
                   min: (values) => ((values as Record<string, unknown>).min as number) || 0,
                   max: (values) => ((values as Record<string, unknown>).max as number) || 100,
                   step: (values) => ((values as Record<string, unknown>).step as number) || 1,
+                  prefix: (values) =>
+                    ((values as Record<string, unknown>).prefix as string) || undefined,
+                  suffix: (values) =>
+                    ((values as Record<string, unknown>).suffix as string) || undefined,
                   showMinMax: true,
                   onChange: (value, _allValues, setValue) => {
-                    // Sync to actual defaultValue field
+                    // Sync to actual defaultValue that gets stored in API
                     setValue('defaultValue', value)
                   }
                 },
 
-                // Default value for select (needs to be select type with dynamic options)
-                'defaultValue-select': {
+                // Default value for select (dropdown showing available options)
+                selectDefault: {
                   type: 'select',
                   label: 'Default Value',
                   description: 'Pre-select this option when the form loads',
@@ -227,14 +231,18 @@ export function createCustomFieldsConfigSection(): FormDef {
                   visibleWhen: (values) => (values as Record<string, unknown>).type === 'select',
                   options: (values) => {
                     const config = values as Record<string, unknown>
-                    const options = (config.options as string[]) || []
-                    return options.map((option) => ({
-                      value: option,
-                      label: option
+                    const optionLabels = (config.options as string[]) || []
+                    // Map to {value: slugified, label: original} for display
+                    return optionLabels.map((label) => ({
+                      value: String(label)
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '_')
+                        .replace(/^_+|_+$/g, ''),
+                      label: String(label)
                     }))
                   },
                   onChange: (value, _allValues, setValue) => {
-                    // Sync to actual defaultValue field
+                    // Sync slugified value to defaultValue
                     setValue('defaultValue', value)
                   }
                 },
@@ -272,6 +280,7 @@ export function createCustomFieldsConfigSection(): FormDef {
                   type: 'number',
                   label: 'Minimum Value',
                   placeholder: '0',
+                  defaultValue: 0,
                   rules: z.number(),
                   visibleWhen: (values) => (values as Record<string, unknown>).type === 'slider'
                 },
@@ -279,6 +288,7 @@ export function createCustomFieldsConfigSection(): FormDef {
                   type: 'number',
                   label: 'Maximum Value',
                   placeholder: '100',
+                  defaultValue: 100,
                   rules: z.number(),
                   visibleWhen: (values) => (values as Record<string, unknown>).type === 'slider'
                 },
@@ -287,6 +297,7 @@ export function createCustomFieldsConfigSection(): FormDef {
                   label: 'Step Size',
                   description: 'Increment value for slider',
                   placeholder: '1',
+                  defaultValue: 5,
                   min: 1,
                   optional: true,
                   visibleWhen: (values) => (values as Record<string, unknown>).type === 'slider'

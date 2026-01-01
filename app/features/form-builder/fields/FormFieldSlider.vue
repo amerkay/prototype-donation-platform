@@ -30,6 +30,16 @@ const resolvedStep = computed(() => {
   return typeof step === 'function' ? step(formValues.value) : (step ?? 1)
 })
 
+const resolvedPrefix = computed(() => {
+  const prefix = props.meta.prefix
+  return typeof prefix === 'function' ? prefix(formValues.value) : prefix
+})
+
+const resolvedSuffix = computed(() => {
+  const suffix = props.meta.suffix
+  return typeof suffix === 'function' ? suffix(formValues.value) : suffix
+})
+
 const numberValue = computed(() => {
   const val = props.modelValue
   if (typeof val === 'number') return val
@@ -65,8 +75,8 @@ const handleSliderChange = (value: number[] | undefined) => {
       <!-- Formatted value display -->
       <div class="flex items-center justify-between">
         <span class="text-2xl font-semibold">
-          <span v-if="meta.prefix">{{ meta.prefix }}</span
-          >{{ formattedValue }}<span v-if="meta.suffix">{{ meta.suffix }}</span>
+          <span v-if="resolvedPrefix">{{ resolvedPrefix }}</span
+          >{{ formattedValue }}<span v-if="resolvedSuffix">{{ resolvedSuffix }}</span>
         </span>
       </div>
 
