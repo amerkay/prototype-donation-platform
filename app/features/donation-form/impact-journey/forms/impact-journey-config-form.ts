@@ -88,7 +88,7 @@ export function createImpactJourneyConfigSection(): FormDef {
                 amount: {
                   type: 'currency',
                   label: 'Amount',
-                  // description: 'Amount in base currency',
+                  description: 'Amount threshold',
                   placeholder: '10',
                   currencySymbol: ({ values }) => {
                     // Traverse up to get base currency from pricing config
