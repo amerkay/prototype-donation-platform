@@ -22,7 +22,7 @@ export function createImpactJourneyConfigSection(): FormDef {
         description: 'Customize emotional messaging and visual identity',
         collapsible: true,
         collapsibleDefaultOpen: false,
-        visibleWhen: (values) => values.enabled === true,
+        visibleWhen: ({ values }) => values.enabled === true,
         isSeparatorAfter: true,
         fields: {
           emoji: {
@@ -65,7 +65,7 @@ export function createImpactJourneyConfigSection(): FormDef {
           'Define what each amount provides (max 30 chars). System auto-adapts for one-time/monthly/yearly.',
         collapsible: true,
         collapsibleDefaultOpen: false,
-        visibleWhen: (values) => values.enabled === true,
+        visibleWhen: ({ values }) => values.enabled === true,
         isSeparatorAfter: true,
         fields: {
           items: {
@@ -73,7 +73,7 @@ export function createImpactJourneyConfigSection(): FormDef {
             label: '',
             itemField: {
               type: 'field-group',
-              label: (values) => {
+              label: ({ values }) => {
                 const amt = ((values as Record<string, unknown>)?.amount as number) || 0
                 const text = ((values as Record<string, unknown>)?.label as string) || ''
                 if (!amt && !text) return 'New Impact Level'
@@ -90,7 +90,7 @@ export function createImpactJourneyConfigSection(): FormDef {
                   label: 'Amount',
                   // description: 'Amount in base currency',
                   placeholder: '10',
-                  currencySymbol: (values) => {
+                  currencySymbol: ({ values }) => {
                     // Traverse up to get base currency from pricing config
                     const baseCurrency =
                       ((values as Record<string, unknown>)?.pricing as Record<string, unknown>)
@@ -119,7 +119,7 @@ export function createImpactJourneyConfigSection(): FormDef {
         description: 'CTAs to encourage recurring donations or higher amounts',
         collapsible: true,
         collapsibleDefaultOpen: false,
-        visibleWhen: (values) => values.enabled === true,
+        visibleWhen: ({ values }) => values.enabled === true,
         isSeparatorAfter: true,
         fields: {
           upsellOnceToRecurring: {
@@ -136,7 +136,7 @@ export function createImpactJourneyConfigSection(): FormDef {
             placeholder: 'Be Their Constant',
             maxLength: 20,
             optional: true,
-            visibleWhen: (values) =>
+            visibleWhen: ({ values }) =>
               (values as Record<string, unknown>).upsellOnceToRecurring === true
           },
           upsellIncreaseAmount: {
@@ -151,7 +151,7 @@ export function createImpactJourneyConfigSection(): FormDef {
             placeholder: 'Greater Impact',
             maxLength: 20,
             optional: true,
-            visibleWhen: (values) =>
+            visibleWhen: ({ values }) =>
               (values as Record<string, unknown>).upsellIncreaseAmount === true
           }
         }

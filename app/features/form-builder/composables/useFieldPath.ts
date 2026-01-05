@@ -1,8 +1,12 @@
 import { computed } from 'vue'
+import type { FieldContext } from '~/features/form-builder/types'
 
 /**
  * Unified field path and visibility utilities
  */
+
+import type { ConditionGroup } from '~/features/form-builder/conditions'
+import { evaluateConditionGroup } from '~/features/form-builder/conditions'
 
 // ============================================================================
 // PATH UTILITIES
@@ -40,6 +44,21 @@ export function resolveVeeFieldPath(params: {
 
   const relativePath = joinPath(fieldPrefix, name)
   return joinPath(sectionId, relativePath)
+}
+
+/**
+ * Convert vee-validate field path to valid HTML ID
+ * Replaces dots, brackets to ensure uniqueness and HTML validity
+ *
+ * @example
+ * sanitizePathToId('test-section.testArray[0].name') // 'test-section_testArray_0__name'
+ * sanitizePathToId('address.city') // 'address_city'
+ */
+export function sanitizePathToId(path: string): string {
+  return path
+    .replace(/\./g, '_') // dots to underscores
+    .replace(/\[/g, '_') // opening brackets to underscores
+    .replace(/\]/g, '') // remove closing brackets
 }
 
 /**
@@ -138,28 +157,32 @@ export function pathExistsInValues(path: string, values: unknown): boolean {
  * Check if a field should be visible based on its visibility condition and context
  * Unified visibility logic used across FormField, FormRenderer, and composables
  *
- * @param field - Field metadata containing optional visibleWhen function
- * @param formValues - Current form values to evaluate condition against
+ * Supports both function-based and declarative (ConditionGroup) visibility conditions:
+ * - Function: `(ctx: FieldContext) => boolean` - Evaluated directly
+ * - ConditionGroup: Declarative object with conditions array - Evaluated using evaluateConditionGroup
+ *
+ * @param field - Field metadata containing optional visibleWhen function or ConditionGroup
+ * @param ctx - Field context with values to evaluate condition against
  * @param options - Additional visibility context
  * @returns True if field should be visible
  *
  * @example
  * ```ts
  * // Simple visibility check
- * const visible = checkFieldVisibility(fieldMeta, formValues)
+ * const visible = checkFieldVisibility(fieldMeta, ctx)
  *
  * // With parent visibility
- * const visible = checkFieldVisibility(fieldMeta, formValues, { parentVisible: false })
+ * const visible = checkFieldVisibility(fieldMeta, ctx, { parentVisible: false })
  *
  * // Skip container validation (for validation rules)
- * const visible = checkFieldVisibility(fieldMeta, formValues, {
+ * const visible = checkFieldVisibility(fieldMeta, ctx, {
  *   skipContainerValidation: true
  * })
  * ```
  */
 export function checkFieldVisibility(
-  field: { type?: string; visibleWhen?: (values: Record<string, unknown>) => boolean },
-  formValues: Record<string, unknown>,
+  field: { type?: string; visibleWhen?: ((ctx: FieldContext) => boolean) | ConditionGroup },
+  ctx: FieldContext,
   options: { parentVisible?: boolean; skipContainerValidation?: boolean } = {}
 ): boolean {
   const { parentVisible = true, skipContainerValidation = false } = options
@@ -177,8 +200,14 @@ export function checkFieldVisibility(
   // No visibility condition means always visible
   if (!field.visibleWhen) return true
 
-  // Evaluate visibility condition
-  return field.visibleWhen(formValues)
+  // Evaluate visibility condition based on type
+  if (typeof field.visibleWhen === 'function') {
+    // Function-based condition (existing behavior)
+    return field.visibleWhen(ctx)
+  } else {
+    // Declarative ConditionGroup (new behavior)
+    return evaluateConditionGroup(field.visibleWhen, ctx.values)
+  }
 }
 
 // ============================================================================

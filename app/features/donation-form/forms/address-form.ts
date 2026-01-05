@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import type { FormDef, FieldMetaMap } from '~/features/form-builder/types'
+import type { FormDef, FieldMetaMap, FieldContext } from '~/features/form-builder/types'
 
 /**
  * Country-specific label configuration
@@ -164,7 +164,7 @@ function getCountryLabels(country: string | undefined) {
  *
  * // With visibility condition
  * const fields = {
- *   ...createAddressFields((values) => values.needsAddress === true)
+ *   ...createAddressFields(({ values }) => values.needsAddress === true)
  * }
  *
  * // Force UK only (e.g., for Gift Aid)
@@ -174,7 +174,7 @@ function getCountryLabels(country: string | undefined) {
  * ```
  */
 export function createAddressFields(
-  visibleWhen?: (values: Record<string, unknown>) => boolean,
+  visibleWhen?: (ctx: FieldContext) => boolean,
   autocompleteSection = 'shipping',
   forcedCountry?: string
 ): FieldMetaMap {
@@ -215,18 +215,18 @@ export function createAddressFields(
       rules: z.string().min(2, 'Town/City is required')
     },
 
-    regionPostcode: {
+    group1: {
       type: 'field-group',
       class: 'grid grid-cols-2 gap-x-3',
       visibleWhen,
       fields: {
         region: {
           type: 'text',
-          label: (values) => {
+          label: ({ values }) => {
             const country = values['country'] as string | undefined
             return getCountryLabels(country).region
           },
-          placeholder: (values) => {
+          placeholder: ({ values }) => {
             const country = values['country'] as string | undefined
             return getCountryLabels(country).regionPlaceholder
           },
@@ -236,11 +236,11 @@ export function createAddressFields(
         },
         postcode: {
           type: 'text',
-          label: (values) => {
+          label: ({ values }) => {
             const country = values['country'] as string | undefined
             return getCountryLabels(country).postcode
           },
-          placeholder: (values) => {
+          placeholder: ({ values }) => {
             const country = values['country'] as string | undefined
             return getCountryLabels(country).postcodePlaceholder
           },

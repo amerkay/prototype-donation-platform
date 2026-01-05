@@ -18,7 +18,7 @@ import type { FieldMetaMap } from '~/features/form-builder/types'
  * ```
  */
 export function createTermsAcceptanceField(
-  visibleWhen?: (values: Record<string, unknown>) => boolean
+  visibleWhen?: (ctx: { values: Record<string, unknown> }) => boolean
 ): FieldMetaMap {
   return {
     acceptTerms: {

@@ -1,4 +1,4 @@
-import type { FormDef, FieldMetaMap, SetFieldValueFn } from '~/features/form-builder/types'
+import type { FormDef, FieldMetaMap } from '~/features/form-builder/types'
 import { createAddressFields } from '../../forms/address-form'
 
 /**
@@ -51,10 +51,10 @@ function formatAddress(values: Record<string, unknown>, fieldPath = ''): string 
  */
 export function createGiftAidFields(
   enabled = true,
-  visibleWhen?: (values: Record<string, unknown>) => boolean
+  visibleWhen?: (ctx: { values: Record<string, unknown> }) => boolean
 ): FieldMetaMap {
   // Default visibility: only show for GBP currency (UK donors) AND if enabled
-  const defaultVisibility = (values: Record<string, unknown>) => {
+  const defaultVisibility = ({ values }: { values: Record<string, unknown> }) => {
     if (!enabled) return false
     const currency = values.currency as string | undefined
     return currency === 'GBP'
@@ -71,7 +71,7 @@ export function createGiftAidFields(
       imageAlt: 'Gift Aid',
       imageClass: 'h-10 w-auto mb-4 dark:invert',
       content: '',
-      visibleWhen: shouldShow
+      visibleWhen: ({ values }) => shouldShow({ values })
     },
 
     // Gift Aid consent toggle
@@ -83,7 +83,7 @@ export function createGiftAidFields(
         'I understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of Gift Aid claimed on all my donations in that tax year it is my responsibility to pay any difference.',
       defaultValue: false,
       optional: true,
-      visibleWhen: shouldShow,
+      visibleWhen: ({ values }) => shouldShow({ values }),
       isSeparatorAfter: true
     },
 
@@ -91,7 +91,7 @@ export function createGiftAidFields(
     useSameAsShipping: {
       type: 'toggle',
       label: 'Home address same as shipping',
-      description: (values) => {
+      description: ({ values }) => {
         // Show truncated shipping address
         const shippingAddress = formatAddress(values, 'shippingAddress')
         return `${shippingAddress}`
@@ -99,9 +99,9 @@ export function createGiftAidFields(
       descriptionClass: 'truncate',
       defaultValue: false,
       optional: true,
-      visibleWhen: (values) => {
+      visibleWhen: ({ values }) => {
         // First check parent visibility
-        if (!shouldShow(values)) return false
+        if (!shouldShow({ values })) return false
 
         // Show if Gift Aid consent is given AND shipping address exists
         if (values.giftAidConsent !== true) return false
@@ -110,7 +110,7 @@ export function createGiftAidFields(
         const hasShippingAddress = !!(values['shippingAddress.address1'] as string | undefined)
         return hasShippingAddress
       },
-      onChange: (value, allValues, setValue: SetFieldValueFn) => {
+      onChange: ({ value, values, setValue }) => {
         // If toggled on, copy shipping address to homeAddress
         if (value === true) {
           // List of address fields to copy
@@ -128,7 +128,7 @@ export function createGiftAidFields(
 
           // Copy each field from shippingAddress to homeAddress
           fieldsToCopy.forEach((field) => {
-            const shippingValue = allValues[`shippingAddress.${field}`]
+            const shippingValue = values[`shippingAddress.${field}`]
             if (shippingValue !== undefined) {
               setValue(`homeAddress.${field}`, shippingValue)
             }
@@ -144,9 +144,9 @@ export function createGiftAidFields(
       label: 'Home Address',
       description:
         'Required by HMRC for Gift Aid claims (UK taxpayers living abroad can use their overseas address)',
-      visibleWhen: (values) => {
+      visibleWhen: ({ values }) => {
         // First check parent visibility
-        if (!shouldShow(values)) return false
+        if (!shouldShow({ values })) return false
 
         // Show if Gift Aid consent is given AND not using shipping address
         return values.giftAidConsent === true && values.useSameAsShipping !== true

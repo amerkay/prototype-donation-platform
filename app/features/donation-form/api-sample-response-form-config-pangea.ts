@@ -120,57 +120,60 @@ export const formConfig = {
       enabled: true,
       fields: [
         {
-          id: 'organization',
-          type: 'text',
-          label: 'Organization Name',
-          fieldConfig: {
+          id: 'text_company_name',
+          type: 'text' as const,
+          label: 'Company Name',
+          advancedSettings: {
             optional: true,
-            placeholder: 'Your organization or company',
-            defaultValue: 'Pangolin Conservation Society',
-            maxLength: 150
+            placeholder: 'Enter your company name',
+            maxLength: 100
           }
         },
         {
-          id: 'pangolin_interest',
-          type: 'textarea',
-          label: 'Why are you passionate about pangolins?',
-          fieldConfig: {
-            optional: false,
-            placeholder: 'Share your story...',
-            rows: 3,
-            maxLength: 300
+          id: 'text_premium_code',
+          type: 'text' as const,
+          label: 'Premium Access Code',
+          advancedSettings: {
+            optional: true,
+            placeholder: 'Enter your premium code'
+          },
+          // Only visible for premium tier users
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [
+                {
+                  field: 'subscriptionTier',
+                  operator: 'equals',
+                  value: 'premium'
+                }
+              ],
+              match: 'all'
+            }
           }
         },
         {
-          id: 'commitment_level',
-          type: 'slider',
-          label: 'Monthly commitment level',
-          fieldConfig: {
-            optional: false,
-            min: 1,
-            max: 10,
-            step: 1,
-            defaultValue: 5,
-            prefix: 'Level '
-          }
-        },
-        {
-          id: 'contact_preference',
-          type: 'select',
-          label: 'Preferred contact method',
-          fieldConfig: {
-            optional: false,
-            placeholder: 'Choose your preference',
-            defaultValue: 'Email',
-            options: ['Email', 'Phone', 'Postal Mail', 'Do not contact me']
-          }
-        },
-        {
-          id: 'campaign_code',
-          type: 'hidden',
-          label: 'Campaign Code',
-          fieldConfig: {
-            defaultValue: 'PANGOLIN2025'
+          id: 'textarea_special_message',
+          type: 'textarea' as const,
+          label: 'Special Message',
+          advancedSettings: {
+            optional: true,
+            placeholder: 'Tell us something special...',
+            rows: 3
+          },
+          // Only visible for enterprise tier users
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [
+                {
+                  field: 'subscriptionTier',
+                  operator: 'equals',
+                  value: 'enterprise'
+                }
+              ],
+              match: 'all'
+            }
           }
         }
       ]

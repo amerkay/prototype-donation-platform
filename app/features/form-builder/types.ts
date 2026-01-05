@@ -1,8 +1,35 @@
 import type { z } from 'zod'
+import type { ConditionGroup } from './conditions'
 
 // ============================================================================
 // CORE TYPES - Shared across all form builder features
 // ============================================================================
+
+/**
+ * Context object passed to dynamic field functions
+ * Provides access to form values at different scopes
+ */
+export interface FieldContext {
+  /** Current field or group's values (includes external context) */
+  values: Record<string, unknown>
+  /** Parent container's values (for nested fields in field-groups) */
+  parent?: Record<string, unknown>
+  /** Root form values (all fields, includes external context) */
+  root: Record<string, unknown>
+  /** Pure form values without external context (for submission) */
+  form?: Record<string, unknown>
+}
+
+/**
+ * Context object passed to onChange callbacks
+ * Extends FieldContext with guaranteed value and setValue
+ */
+export interface OnChangeContext extends FieldContext {
+  /** Current field's new value */
+  value: unknown
+  /** Function to set field values using relative paths */
+  setValue: SetFieldValueFn
+}
 
 /**
  * Field types supported by the form builder
@@ -13,6 +40,7 @@ export type FieldType =
   | 'number'
   | 'currency'
   | 'toggle'
+  | 'checkbox'
   | 'select'
   | 'combobox'
   | 'autocomplete'
@@ -20,6 +48,7 @@ export type FieldType =
   | 'array'
   | 'emoji'
   | 'slider'
+  | 'condition-builder'
   | 'field-group'
   | 'card'
   | 'separator'
@@ -58,39 +87,42 @@ export type SetFieldValueFn = (relativePath: string, value: unknown) => void
  * Base field metadata - extended by all field-specific metadata interfaces
  */
 export interface BaseFieldMeta {
-  type: FieldType
-  label?: string | ((values: Record<string, unknown>) => string)
-  description?: string | ((values: Record<string, unknown>) => string)
-  placeholder?: string | ((values: Record<string, unknown>) => string)
+  type: FieldType | ((ctx: FieldContext) => FieldType)
+  label?: string | ((ctx: FieldContext) => string)
+  description?: string | ((ctx: FieldContext) => string)
+  placeholder?: string | ((ctx: FieldContext) => string)
   defaultValue?: unknown
   optional?: boolean
-  disabled?: boolean
-  visibleWhen?: (values: Record<string, unknown>) => boolean
+  disabled?: boolean | ((ctx: FieldContext) => boolean)
+  visibleWhen?: ((ctx: FieldContext) => boolean) | ConditionGroup
   isSeparatorAfter?: boolean
   class?: string
   labelClass?: string
   descriptionClass?: string
   autocomplete?: string // HTML autocomplete attribute
-  rules?: z.ZodTypeAny | ((values: Record<string, unknown>) => z.ZodTypeAny)
+  rules?: z.ZodTypeAny | ((ctx: FieldContext) => z.ZodTypeAny)
   /**
    * Callback triggered when field value changes
    *
-   * @param value - The new field value
-   * @param allValues - Current form values (scoped to field-group if nested)
-   * @param setValue - Function to set sibling/child field values using relative paths
+   * @param ctx - Unified field context with guaranteed value and setValue
+   * @returns Optional FieldMeta to apply defaults from (useful for dynamic field configs)
    *
    * @example
    * ```typescript
-   * onChange: (value, allValues, setValue) => {
-   *   // Set sibling field
+   * // Set other fields based on current value
+   * onChange: ({ value, values, setValue }) => {
    *   setValue('siblingField', 'newValue')
+   *   // Access parent: destructure parent property
+   *   // Access root: destructure root property
+   * }
    *
-   *   // Set nested field
-   *   setValue('nested.field', 123)
+   * // Return metadata approach - framework auto-applies defaults
+   * onChange: ({ value }) => {
+   *   return FIELD_FACTORIES[value].createAdminConfig()
    * }
    * ```
    */
-  onChange?: (value: unknown, allValues: Record<string, unknown>, setValue: SetFieldValueFn) => void
+  onChange?: (ctx: OnChangeContext) => unknown
 }
 
 // ============================================================================
@@ -106,6 +138,7 @@ export interface FieldProps<TValue = unknown, TMeta = unknown> {
   errors: string[]
   meta: TMeta
   name: string
+  id?: string
   onBlur?: (e?: Event) => void
   class?: string
 }
@@ -158,10 +191,8 @@ export interface CurrencyFieldMeta extends BaseFieldMeta {
   min?: number
   max?: number
   step?: number
-  currencySymbol: string | ((values: Record<string, unknown>) => string)
+  currencySymbol: string | ((ctx: FieldContext) => string)
 }
-
-// --- Selection Fields ---
 
 /**
  * Toggle/Switch field metadata
@@ -171,13 +202,28 @@ export interface ToggleFieldMeta extends BaseFieldMeta {
 }
 
 /**
+ * Checkbox field metadata
+ * Supports both single checkbox (boolean) and checkbox array (string[])
+ */
+export interface CheckboxFieldMeta extends BaseFieldMeta {
+  type: 'checkbox'
+  /**
+   * For checkbox arrays: list of options
+   * For single checkbox: omit this property
+   */
+  options?: ReadonlyArray<{ value: string; label: string }>
+}
+
+// --- Selection Fields ---
+
+/**
  * Select field metadata - native HTML select dropdown
  */
 export interface SelectFieldMeta extends BaseFieldMeta {
   type: 'select'
   options:
     | Array<{ value: string | number; label: string }>
-    | ((values: Record<string, unknown>) => Array<{ value: string | number; label: string }>)
+    | ((ctx: FieldContext) => Array<{ value: string | number; label: string }>)
   searchPlaceholder?: string // Not used in native select, kept for API compatibility
   notFoundText?: string // Not used in native select, kept for API compatibility
 }
@@ -194,7 +240,7 @@ export interface ComboboxFieldMeta extends BaseFieldMeta {
         description?: string
         disabled?: boolean
       }>
-    | ((values: Record<string, unknown>) => Array<{
+    | ((ctx: FieldContext) => Array<{
         value: string | number
         label: string
         description?: string
@@ -255,24 +301,34 @@ export interface EmojiFieldMeta extends BaseFieldMeta {
  */
 export interface SliderFieldMeta extends BaseFieldMeta {
   type: 'slider'
-  min?: number | ((values: Record<string, unknown>) => number)
-  max?: number | ((values: Record<string, unknown>) => number)
-  step?: number | ((values: Record<string, unknown>) => number)
-  formatValue?: (value: number, formValues?: Record<string, unknown>) => string
-  minMaxFormatter?: (value: number, formValues?: Record<string, unknown>) => string
+  min?: number | ((ctx: FieldContext) => number)
+  max?: number | ((ctx: FieldContext) => number)
+  step?: number | ((ctx: FieldContext) => number)
+  formatValue?: (value: number, ctx?: FieldContext) => string
+  minMaxFormatter?: (value: number, ctx?: FieldContext) => string
   showMinMax?: boolean
-  prefix?: string | ((values: Record<string, unknown>) => string | undefined)
-  suffix?: string | ((values: Record<string, unknown>) => string | undefined)
+  prefix?: string | ((ctx: FieldContext) => string | undefined)
+  suffix?: string | ((ctx: FieldContext) => string | undefined)
 }
 
 // --- Container & Layout Fields ---
+
+/**
+ * Array context provided to itemField function
+ */
+export interface ArrayItemContext {
+  /** Current item index in the array */
+  index: number
+  /** All items in the array */
+  items: Record<string, unknown>[]
+}
 
 /**
  * Array field metadata
  */
 export interface ArrayFieldMeta extends BaseFieldMeta {
   type: 'array'
-  itemField: FieldMeta
+  itemField: FieldMeta | ((values: Record<string, unknown>, context: ArrayItemContext) => FieldMeta)
   addButtonText?: string
   removeButtonText?: string
   sortable?: boolean // Enable drag-and-drop reordering (default: false)
@@ -286,11 +342,16 @@ export interface FieldGroupMeta extends BaseFieldMeta {
   fields?: FieldMetaMap
   legend?: string
   collapsible?: boolean
-  collapsibleDefaultOpen?: boolean
+  collapsibleDefaultOpen?: boolean | ((ctx: FieldContext) => boolean)
   badgeLabel?: string
   badgeVariant?: 'default' | 'outline' | 'secondary' | 'destructive'
   isDisabled?: boolean
-  rules?: z.ZodTypeAny | ((values: Record<string, unknown>) => z.ZodTypeAny)
+  /**
+   * Control whether default values should be extracted from this group's children
+   * Set to `false` to skip default extraction (useful for conditional type-specific configs)
+   * @default true
+   */
+  extractDefaultsWhen?: boolean
 }
 
 /**
@@ -298,9 +359,9 @@ export interface FieldGroupMeta extends BaseFieldMeta {
  */
 export interface TabDefinition {
   value: string
-  label: string | ((values: Record<string, unknown>) => string)
+  label: string | ((ctx: FieldContext) => string)
   fields: FieldMetaMap
-  badgeLabel?: string | ((values: Record<string, unknown>) => string)
+  badgeLabel?: string | ((ctx: FieldContext) => string)
   badgeVariant?: 'default' | 'outline' | 'secondary' | 'destructive'
 }
 
@@ -312,7 +373,6 @@ export interface TabsFieldMeta extends BaseFieldMeta {
   tabs: TabDefinition[]
   defaultValue?: string // Default active tab value
   tabsListClass?: string
-  rules?: z.ZodTypeAny | ((values: Record<string, unknown>) => z.ZodTypeAny)
 }
 
 // --- Display-Only Fields ---
@@ -336,6 +396,14 @@ export interface SeparatorFieldMeta extends BaseFieldMeta {
   orientation?: 'horizontal' | 'vertical'
 }
 
+/**
+ * Condition builder field metadata - UI for building ConditionGroup objects
+ */
+export interface ConditionBuilderFieldMeta extends BaseFieldMeta {
+  type: 'condition-builder'
+  formFields?: FieldMetaMap // Form fields available for condition selection
+}
+
 // ============================================================================
 // UNION TYPES - Aggregates for type-safe field handling
 // ============================================================================
@@ -346,6 +414,7 @@ export type FieldMeta =
   | NumberFieldMeta
   | CurrencyFieldMeta
   | ToggleFieldMeta
+  | CheckboxFieldMeta
   | SelectFieldMeta
   | ComboboxFieldMeta
   | AutocompleteFieldMeta
@@ -357,6 +426,7 @@ export type FieldMeta =
   | SeparatorFieldMeta
   | FieldGroupMeta
   | TabsFieldMeta
+  | ConditionBuilderFieldMeta
 
 /**
  * Map of field paths to their metadata

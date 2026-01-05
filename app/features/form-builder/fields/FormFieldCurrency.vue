@@ -13,7 +13,7 @@ import {
   useFieldWrapper,
   preventEnterSubmit
 } from '~/features/form-builder/composables/useFieldWrapper'
-import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
+import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 import { cn } from '@/lib/utils'
 
 interface Props extends FieldProps<number | string | null, CurrencyFieldMeta> {
@@ -23,15 +23,15 @@ interface Props extends FieldProps<number | string | null, CurrencyFieldMeta> {
 const props = defineProps<Props>()
 const emit = defineEmits<FieldEmits<number | string>>()
 
-// Get form values for dynamic currencySymbol resolution
-const { formValues } = useFormBuilderContext()
+// Get form context for dynamic currencySymbol resolution
+const { fieldContext } = useFormBuilderContext()
 
 const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors)
 
 // Resolve currency symbol dynamically
 const currencySymbol = computed(() => {
   if (typeof props.meta.currencySymbol === 'function') {
-    return props.meta.currencySymbol(formValues.value)
+    return props.meta.currencySymbol(fieldContext.value)
   }
   return props.meta.currencySymbol
 })
@@ -49,12 +49,12 @@ const handleUpdate = (value: string | number) => {
 
 <template>
   <FormFieldWrapper v-bind="wrapperProps">
-    <InputGroup :class="cn(props.class, meta.class)">
+    <InputGroup :class="cn('bg-background', props.class, meta.class)">
       <InputGroupAddon>
         <InputGroupText>{{ currencySymbol }}</InputGroupText>
       </InputGroupAddon>
       <InputGroupInput
-        :id="name"
+        :id="id || name"
         type="number"
         :model-value="modelValue"
         :min="meta.min"
@@ -62,6 +62,7 @@ const handleUpdate = (value: string | number) => {
         :step="meta.step ?? 1"
         :placeholder="meta.placeholder"
         :aria-invalid="!!errors.length"
+        :class="cn(meta.class)"
         @update:model-value="handleUpdate"
         @blur="onBlur"
         @keydown.enter="preventEnterSubmit"

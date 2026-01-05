@@ -21,7 +21,7 @@ export function createProductSelectorConfigSection(): FormDef {
       productList: {
         type: 'field-group',
         label: 'Products Available',
-        visibleWhen: (values) => values.enabled === true,
+        visibleWhen: ({ values }) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
         badgeLabel: 'On my TODO list',
@@ -32,7 +32,7 @@ export function createProductSelectorConfigSection(): FormDef {
       config: {
         type: 'field-group',
         label: 'Selector Configuration',
-        visibleWhen: (values) => values.enabled === true,
+        visibleWhen: ({ values }) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
         isSeparatorAfter: true,

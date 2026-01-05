@@ -51,7 +51,7 @@ export const donorInfoFormSection: FormDef = {
       optional: true,
       defaultValue: '',
       isSeparatorAfter: true,
-      visibleWhen: (values) => {
+      visibleWhen: ({ values }) => {
         if (!values.email || typeof values.email !== 'string') return false
         return z.string().email().safeParse(values.email).success
       },
@@ -60,7 +60,7 @@ export const donorInfoFormSection: FormDef = {
     anonymous: {
       type: 'toggle',
       label: 'Donate Anonymously',
-      description: (values) => {
+      description: ({ values }) => {
         const isAnonymous = values.anonymous === true
         return isAnonymous
           ? 'Your name will show as "Anonymous" on our crowdfunding pages'

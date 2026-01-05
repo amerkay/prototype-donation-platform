@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
 import type { TextareaFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
-import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
+import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 
 type Props = FieldProps<string | number, TextareaFieldMeta>
 
@@ -19,13 +20,13 @@ const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
 <template>
   <FormFieldWrapper v-bind="wrapperProps">
     <Textarea
-      :id="name"
+      :id="id || name"
       :model-value="modelValue"
       :placeholder="resolvedPlaceholder"
       :rows="meta.rows"
       :maxlength="meta.maxLength"
       :aria-invalid="!!errors.length"
-      :class="meta.class"
+      :class="cn('bg-background', meta.class)"
       @update:model-value="$emit('update:modelValue', $event)"
       @blur="onBlur"
     />

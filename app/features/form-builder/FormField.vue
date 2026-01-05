@@ -3,30 +3,33 @@ import { computed, inject, type Component } from 'vue'
 import { useField, useFormErrors } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
-import type { FieldMeta, SetFieldValueFn } from '~/features/form-builder/types'
+import type { FieldMeta, SetFieldValueFn, FieldType } from '~/features/form-builder/types'
 import {
   resolveVeeFieldPath,
   checkFieldVisibility,
-  joinPath
+  joinPath,
+  sanitizePathToId
 } from '~/features/form-builder/composables/useFieldPath'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
+import { extractDefaultValues } from '~/features/form-builder/utils'
 import { cn } from '@/lib/utils'
 import FormFieldText from './fields/FormFieldText.vue'
 import FormFieldTextarea from './fields/FormFieldTextarea.vue'
 import FormFieldNumber from './fields/FormFieldNumber.vue'
 import FormFieldCurrency from './fields/FormFieldCurrency.vue'
 import FormFieldToggle from './fields/FormFieldToggle.vue'
+import FormFieldCheckbox from './fields/FormFieldCheckbox.vue'
 import FormFieldSelect from './fields/FormFieldSelect.vue'
 import FormFieldCombobox from './fields/FormFieldCombobox.vue'
 import FormFieldRadioGroup from './fields/FormFieldRadioGroup.vue'
 import FormFieldSlider from './fields/FormFieldSlider.vue'
-import FormFieldCard from './fields/FormFieldCard.vue'
-import FormFieldSeparator from './fields/FormFieldSeparator.vue'
-import FormFieldGroup from './fields/FormFieldGroup.vue'
-import FormFieldTabs from './fields/FormFieldTabs.vue'
 import FormFieldAutocomplete from './fields/FormFieldAutocomplete.vue'
 import FormFieldEmoji from './fields/FormFieldEmoji.vue'
-import FormFieldArray from './fields/FormFieldArray.vue'
+import FormFieldArray from './containers/FormFieldArray.vue'
+import FormFieldGroup from './containers/FormFieldGroup.vue'
+import FormFieldTabs from './containers/FormFieldTabs.vue'
+import FormFieldCard from './layout/FormFieldCard.vue'
+import FormFieldSeparator from './layout/FormFieldSeparator.vue'
 
 interface Props {
   name: string
@@ -38,6 +41,7 @@ const props = defineProps<Props>()
 
 // Component registry - maps field types to their components
 const FIELD_COMPONENTS: Record<string, Component> = {
+  checkbox: FormFieldCheckbox,
   text: FormFieldText,
   textarea: FormFieldTextarea,
   number: FormFieldNumber,
@@ -57,10 +61,20 @@ const FIELD_COMPONENTS: Record<string, Component> = {
 }
 
 // Inject common form builder context (includes formValues via vee-validate)
-const { sectionId, fieldPrefix, formValues, parentGroupVisible } = useFormBuilderContext()
+const { sectionId, fieldPrefix, formValues, fieldContext, parentGroupVisible } =
+  useFormBuilderContext()
 
 // Inject setFieldValue function from FormRenderer
 const setFieldValue = inject<SetFieldValueFn>('setFieldValue', () => {})
+
+// Resolve dynamic field type if it's a function
+const resolvedFieldType = computed(() => {
+  const { type } = props.meta
+  if (typeof type === 'function') {
+    return (type as (values: Record<string, unknown>) => FieldType)(formValues.value)
+  }
+  return type as FieldType
+})
 
 // Resolve the vee-validate field path.
 // - Top-level fields are already passed as `${sectionId}.${fieldKey}` from FormRenderer.
@@ -73,9 +87,13 @@ const resolvedVeeName = computed(() => {
   })
 })
 
+// Generate unique HTML ID from vee-validate path
+// Ensures no duplicate IDs across array items or nested field-groups
+const fieldId = computed(() => sanitizePathToId(resolvedVeeName.value))
+
 // Check if field should be visible using unified visibility utility
 const isVisible = computed(() => {
-  return checkFieldVisibility(props.meta, formValues.value, {
+  return checkFieldVisibility(props.meta, fieldContext.value, {
     parentVisible: parentGroupVisible()
   })
 })
@@ -85,7 +103,7 @@ const isVisible = computed(() => {
 // EXCEPT for field-group/tabs - they should validate children even when collapsed
 const fieldRules = computed(() => {
   // Check visibility without container validation exception for field-level rules
-  const isVisibleForValidation = checkFieldVisibility(props.meta, formValues.value, {
+  const isVisibleForValidation = checkFieldVisibility(props.meta, fieldContext.value, {
     parentVisible: parentGroupVisible(),
     skipContainerValidation: true
   })
@@ -97,7 +115,7 @@ const fieldRules = computed(() => {
 
   // If rules is a function, call it with current form values
   let rules =
-    typeof props.meta.rules === 'function' ? props.meta.rules(formValues.value) : props.meta.rules
+    typeof props.meta.rules === 'function' ? props.meta.rules(fieldContext.value) : props.meta.rules
 
   // Apply smart preprocessing: if field has explicit defaultValue, ensure undefined → defaultValue
   // This prevents "expected string, received undefined" errors when fields are cleared
@@ -111,7 +129,7 @@ const fieldRules = computed(() => {
 
 // Container fields don't need field binding (they manage children)
 const isContainerField = computed(() => {
-  return ['field-group', 'tabs', 'card', 'separator'].includes(props.meta.type)
+  return ['field-group', 'tabs', 'card', 'separator'].includes(resolvedFieldType.value)
 })
 
 // Use vee-validate's useField composition API for non-container fields
@@ -139,7 +157,19 @@ const fieldValue = computed({
           const absolutePath = joinPath(fieldPrefix, relativePath)
           setFieldValue(absolutePath, value)
         }
-        props.meta.onChange(val, formValues.value, scopedSetFieldValue)
+        const result = props.meta.onChange({
+          value: val,
+          ...fieldContext.value,
+          setValue: scopedSetFieldValue
+        })
+
+        // If onChange returns field metadata, auto-apply defaults from it
+        if (result && typeof result === 'object') {
+          const defaults = extractDefaultValues(result as Record<string, FieldMeta>)
+          for (const [fieldKey, fieldValue] of Object.entries(defaults)) {
+            scopedSetFieldValue(fieldKey, fieldValue)
+          }
+        }
       }
     }
   }
@@ -170,7 +200,7 @@ const fieldMeta = computed(() => ({
 
 // Resolve the component for this field type
 const fieldComponent = computed(() => {
-  return FIELD_COMPONENTS[props.meta.type] || null
+  return FIELD_COMPONENTS[resolvedFieldType.value] || null
 })
 
 // Props to pass to field components
@@ -183,13 +213,13 @@ const fieldProps = computed(() => {
     onBlur: fieldAttrs.value.onBlur
   }
 
-  // Container fields (group, tabs, card, separator) don't need v-model
+  // Container fields (group, tabs, card, separator) don't need v-model or id
   if (isContainerField.value) {
     return baseProps
   }
 
-  // Array field needs touched state
-  if (props.meta.type === 'array') {
+  // Array field needs v-model and touched but NOT id (it's a container wrapper)
+  if (resolvedFieldType.value === 'array') {
     return {
       ...baseProps,
       modelValue: fieldValue.value,
@@ -197,10 +227,16 @@ const fieldProps = computed(() => {
     }
   }
 
+  // Add id for input fields (needed for label/input association)
+  const propsWithId = {
+    ...baseProps,
+    id: fieldId.value
+  }
+
   // Autocomplete needs fieldPrefix
-  if (props.meta.type === 'autocomplete') {
+  if (resolvedFieldType.value === 'autocomplete') {
     return {
-      ...baseProps,
+      ...propsWithId,
       modelValue: fieldValue.value,
       fieldPrefix
     }
@@ -208,7 +244,7 @@ const fieldProps = computed(() => {
 
   // Standard fields with v-model
   return {
-    ...baseProps,
+    ...propsWithId,
     modelValue: fieldValue.value
   }
 })
@@ -230,7 +266,7 @@ const fieldProps = computed(() => {
       @update:model-value="fieldValue = $event"
     />
     <div v-else-if="isVisible" class="text-destructive text-sm">
-      Unknown field type: {{ (meta as { type: string }).type }}
+      Unknown field type: {{ resolvedFieldType }}
     </div>
   </Transition>
 </template>

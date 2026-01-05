@@ -4,40 +4,40 @@ import { Slider } from '@/components/ui/slider'
 import type { SliderFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
-import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
+import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 
 type Props = FieldProps<number, SliderFieldMeta>
 
 const props = defineProps<Props>()
 const emit = defineEmits<FieldEmits<number>>()
 
-const { formValues } = useFormBuilderContext()
+const { fieldContext } = useFormBuilderContext()
 const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors)
 
 // Resolve dynamic min/max/step values
 const resolvedMin = computed(() => {
   const min = props.meta.min
-  return typeof min === 'function' ? min(formValues.value) : (min ?? 0)
+  return typeof min === 'function' ? min(fieldContext.value) : (min ?? 0)
 })
 
 const resolvedMax = computed(() => {
   const max = props.meta.max
-  return typeof max === 'function' ? max(formValues.value) : (max ?? 100)
+  return typeof max === 'function' ? max(fieldContext.value) : (max ?? 100)
 })
 
 const resolvedStep = computed(() => {
   const step = props.meta.step
-  return typeof step === 'function' ? step(formValues.value) : (step ?? 1)
+  return typeof step === 'function' ? step(fieldContext.value) : (step ?? 1)
 })
 
 const resolvedPrefix = computed(() => {
   const prefix = props.meta.prefix
-  return typeof prefix === 'function' ? prefix(formValues.value) : prefix
+  return typeof prefix === 'function' ? prefix(fieldContext.value) : prefix
 })
 
 const resolvedSuffix = computed(() => {
   const suffix = props.meta.suffix
-  return typeof suffix === 'function' ? suffix(formValues.value) : suffix
+  return typeof suffix === 'function' ? suffix(fieldContext.value) : suffix
 })
 
 const numberValue = computed(() => {
@@ -49,14 +49,14 @@ const numberValue = computed(() => {
 
 const formattedValue = computed(() => {
   if (props.meta.formatValue) {
-    return props.meta.formatValue(numberValue.value, formValues.value)
+    return props.meta.formatValue(numberValue.value, fieldContext.value)
   }
   return String(numberValue.value)
 })
 
 const minMaxFormat = (value: number) => {
   if (props.meta.minMaxFormatter) {
-    return props.meta.minMaxFormatter(value, formValues.value)
+    return props.meta.minMaxFormatter(value, fieldContext.value)
   }
   return String(value)
 }
@@ -83,7 +83,7 @@ const handleSliderChange = (value: number[] | undefined) => {
       <!-- Slider -->
       <!-- <div class="py-3 px-1"> -->
       <Slider
-        :id="name"
+        :id="id || name"
         :model-value="[numberValue]"
         :min="resolvedMin"
         :max="resolvedMax"

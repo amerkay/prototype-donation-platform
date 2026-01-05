@@ -1,6 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import type { BaseFieldMeta } from '~/features/form-builder/types'
 import { useResolvedFieldMeta } from './useResolvedFieldMeta'
+import { useFormBuilderContext } from './useFormBuilderContext'
 
 type WrapperOptions = {
   orientation?: 'horizontal' | 'vertical'
@@ -30,24 +31,38 @@ type WrapperOptions = {
 export function useFieldWrapper(
   meta: Pick<
     BaseFieldMeta,
-    'label' | 'description' | 'placeholder' | 'optional' | 'labelClass' | 'descriptionClass'
+    | 'label'
+    | 'description'
+    | 'placeholder'
+    | 'optional'
+    | 'disabled'
+    | 'labelClass'
+    | 'descriptionClass'
   >,
   name: string,
   errors: MaybeRefOrGetter<string[]>,
   options: WrapperOptions = {}
 ) {
+  const { fieldContext } = useFormBuilderContext()
   const { resolvedLabel, resolvedDescription, resolvedPlaceholder } = useResolvedFieldMeta(meta)
   const isFieldset = options.variant === 'fieldset'
+
+  const resolvedDisabled = computed(() => {
+    if (typeof meta.disabled === 'function') {
+      return meta.disabled(fieldContext.value)
+    }
+    return meta.disabled ?? false
+  })
 
   const wrapperProps = computed(() => {
     const errorsArray = toValue(errors)
     const baseProps = {
-      [isFieldset ? 'legend' : 'label']: resolvedLabel.value,
+      label: resolvedLabel.value,
       description: resolvedDescription.value,
       optional: meta.optional,
       errors: errorsArray,
       invalid: errorsArray.length > 0,
-      [isFieldset ? 'legendClass' : 'labelClass']: meta.labelClass,
+      labelClass: meta.labelClass,
       descriptionClass: meta.descriptionClass
     }
 
@@ -68,7 +83,8 @@ export function useFieldWrapper(
     wrapperProps,
     resolvedLabel,
     resolvedDescription,
-    resolvedPlaceholder
+    resolvedPlaceholder,
+    resolvedDisabled
   }
 }
 

@@ -12,6 +12,7 @@ import {
 } from 'reka-ui'
 import { Spinner } from '@/components/ui/spinner'
 import { Check } from 'lucide-vue-next'
+import { cn } from '@/lib/utils'
 import type {
   AutocompleteFieldMeta,
   AutocompleteOption,
@@ -22,7 +23,7 @@ import type {
 import { joinPath } from '~/features/form-builder/composables/useFieldPath'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
-import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
+import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 
 interface Props extends FieldProps<AutocompleteOption | null, AutocompleteFieldMeta> {
   fieldPrefix?: string
@@ -136,7 +137,13 @@ const handleValueChange = (value: AutocompleteOption | null) => {
       setFieldValue(absolutePath, val)
     }
 
-    props.meta.onChange(value, formValues.value, scopedSetFieldValue)
+    // Get field context for onChange callback
+    const { fieldContext } = useFormBuilderContext()
+    props.meta.onChange({
+      value,
+      ...fieldContext.value,
+      setValue: scopedSetFieldValue
+    })
   }
 
   // Clear search after selection
@@ -167,11 +174,17 @@ const notFoundText = computed(() => props.meta.notFoundText ?? 'No results found
       @update:model-value="handleValueChange"
     >
       <ComboboxAnchor
-        class="inline-flex w-full items-center justify-between rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-within:outline-none focus-within:ring-1 focus-within:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-        :class="[meta.class, errors.length && 'border-destructive']"
+        :class="
+          cn(
+            'inline-flex w-full items-center justify-between rounded-lg border border-input px-3 py-2 text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-within:outline-none focus-within:ring-1 focus-within:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+            'bg-background',
+            meta.class,
+            errors.length && 'border-destructive'
+          )
+        "
       >
         <ComboboxInput
-          :id="name"
+          :id="id || name"
           :placeholder="resolvedPlaceholder"
           :autocomplete="meta.autocomplete"
           :aria-invalid="!!errors.length"

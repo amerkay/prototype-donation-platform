@@ -122,61 +122,59 @@ export const formConfig = {
       fields: [
         {
           id: 'text_company_name',
-          type: 'text',
+          type: 'text' as const,
           label: 'Company Name',
-          fieldConfig: {
+          advancedSettings: {
             optional: true,
             placeholder: 'Enter your company name',
             maxLength: 100
           }
         },
         {
-          id: 'textarea_dedication_message',
-          type: 'textarea',
-          label: 'Dedication Message',
-          fieldConfig: {
-            optional: false,
-            placeholder: 'Write a personal message...',
-            rows: 4,
-            maxLength: 500
+          id: 'text_premium_code',
+          type: 'text' as const,
+          label: 'Premium Access Code',
+          advancedSettings: {
+            optional: true,
+            placeholder: 'Enter your premium code'
+          },
+          // Only visible for premium tier users
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [
+                {
+                  field: 'subscriptionTier',
+                  operator: 'equals',
+                  value: 'premium'
+                }
+              ],
+              match: 'all'
+            }
           }
         },
         {
-          id: 'slider_how_involved_do_you_want_to_be',
-          type: 'slider',
-          label: 'How involved do you want to be?',
-          fieldConfig: {
-            optional: false,
-            min: 0,
-            max: 100,
-            step: 10,
-            defaultValue: 55,
-            suffix: '%'
-          }
-        },
-        {
-          id: 'select_how_did_you_hear_about_us',
-          type: 'select',
-          label: 'How did you hear about us?',
-          fieldConfig: {
-            optional: false,
-            placeholder: 'Select an option',
-            options: [
-              'Search Engine',
-              'Social Media',
-              'Friend or Family',
-              'Event or Conference',
-              'Other'
-            ],
-            defaultValue: 'social_media'
-          }
-        },
-        {
-          id: 'hidden_utm_source',
-          type: 'hidden',
-          label: 'UTM Source',
-          fieldConfig: {
-            defaultValue: 'website'
+          id: 'textarea_special_message',
+          type: 'textarea' as const,
+          label: 'Special Message',
+          advancedSettings: {
+            optional: true,
+            placeholder: 'Tell us something special...',
+            rows: 3
+          },
+          // Only visible for enterprise tier users
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [
+                {
+                  field: 'subscriptionTier',
+                  operator: 'equals',
+                  value: 'enterprise'
+                }
+              ],
+              match: 'all'
+            }
           }
         }
       ]

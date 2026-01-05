@@ -1,0 +1,370 @@
+<script setup lang="ts">
+import { computed, watch, nextTick, ref } from 'vue'
+import { useFieldArray, useValidateField } from 'vee-validate'
+import { vAutoAnimate } from '@formkit/auto-animate'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import type { ArrayFieldMeta, FieldMeta } from '~/features/form-builder/types'
+import FormField from '../FormField.vue'
+import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
+import { useChildFieldErrors } from '~/features/form-builder/composables/useChildFieldErrors'
+import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
+import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
+import { resolveVeeFieldPath } from '~/features/form-builder/composables/useFieldPath'
+import { extractDefaultValues } from '~/features/form-builder/utils'
+
+interface Props {
+  modelValue?: unknown[]
+  errors: string[]
+  meta: ArrayFieldMeta
+  name: string
+  touched: boolean
+  onBlur?: (e?: Event) => void
+}
+
+const props = defineProps<Props>()
+
+// Inject common form builder context
+const { sectionId, fieldPrefix } = useFormBuilderContext()
+
+// Resolve the full vee-validate field path
+const resolvedVeeName = computed(() => {
+  return resolveVeeFieldPath({
+    name: props.name,
+    sectionId,
+    fieldPrefix
+  })
+})
+
+// Child error detection uses resolved vee path
+const { hasChildErrors } = useChildFieldErrors(resolvedVeeName)
+
+const allErrors = computed(() => {
+  if (hasChildErrors.value) return ['One or more errors above, please fix']
+  if (props.errors.length > 0 && fields.value.length > 0)
+    return ['One or more errors above, please fix']
+  if (props.errors.length > 0) return props.errors
+  return []
+})
+
+const arrayLabelClass = computed(() =>
+  cn(props.meta.labelClass, allErrors.value.length > 0 && 'text-destructive')
+)
+
+const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
+
+// --- vee-validate array state ---
+const { fields, push, move, remove } = useFieldArray(resolvedVeeName)
+const validateArrayField = useValidateField(resolvedVeeName)
+
+// Keep array-level schema in sync with edits (NOT reorders)
+watch(
+  () => fields.value.map((f) => f.value),
+  () => {
+    validateArrayField()
+  },
+  { deep: true }
+)
+
+const isSortable = computed(() => props.meta.sortable === true)
+
+// --- Native HTML5 Drag & Drop ---
+const arrayContainer = ref<HTMLElement>()
+const draggedIndex = ref<number | null>(null)
+const dragOverIndex = ref<number | null>(null)
+const isDragging = ref(false)
+
+// Base keys from vee-validate fields
+const baseKeys = computed(() => fields.value.map((f) => String(f.key)))
+
+// Visual order during drag - reorders items in real-time for smooth UX
+const visualOrder = ref<string[]>([])
+
+// Initialize visual order
+watch(
+  baseKeys,
+  (keys) => {
+    if (!isDragging.value) {
+      visualOrder.value = keys.slice()
+    }
+  },
+  { immediate: true }
+)
+
+// Map key -> vee index for stable value binding
+const keyToVeeIndex = computed(() => {
+  const map = new Map<string, number>()
+  fields.value.forEach((f, i) => {
+    map.set(String(f.key), i)
+  })
+  return map
+})
+
+// Render model: uses visual order during drag, base order otherwise
+const orderedItems = computed(() => {
+  const keys = isDragging.value ? visualOrder.value : baseKeys.value
+  return keys
+    .map((k) => {
+      const idx = keyToVeeIndex.value.get(k)
+      if (idx === undefined) return null
+      return { key: k, veeIndex: idx }
+    })
+    .filter(Boolean) as Array<{ key: string; veeIndex: number }>
+})
+
+// Drag event handlers
+function onDragStart(event: DragEvent, veeIndex: number) {
+  try {
+    if (!isSortable.value) return
+
+    const draggedKey = baseKeys.value[veeIndex]
+    if (!draggedKey) return
+
+    draggedIndex.value = veeIndex
+    isDragging.value = true
+
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move'
+      event.dataTransfer.setData('text/plain', draggedKey)
+      // Make drag image semi-transparent (optional, not supported in test environments)
+      if (typeof event.dataTransfer.setDragImage === 'function') {
+        const target = (event.target as HTMLElement).closest('.ff-array__item')
+        if (target) {
+          event.dataTransfer.setDragImage(target as HTMLElement, 20, 20)
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Error in onDragStart:', e)
+  }
+}
+
+function onDragEnd() {
+  try {
+    // Commit the visual order to vee-validate
+    if (draggedIndex.value !== null) {
+      const currentOrder = baseKeys.value
+      const desiredOrder = visualOrder.value
+
+      // Calculate the moves needed
+      const draggedKey = currentOrder[draggedIndex.value]
+      const newIndex = desiredOrder.indexOf(draggedKey!)
+
+      if (newIndex !== -1 && newIndex !== draggedIndex.value) {
+        move(draggedIndex.value, newIndex)
+        nextTick(() => {
+          validateArrayField()
+        })
+      }
+    }
+  } catch (e) {
+    console.error('Error in onDragEnd:', e)
+  } finally {
+    isDragging.value = false
+    draggedIndex.value = null
+    dragOverIndex.value = null
+  }
+}
+
+function onDragOver(event: DragEvent, targetVeeIndex: number) {
+  try {
+    if (!isSortable.value || draggedIndex.value === null) return
+    event.preventDefault()
+
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move'
+    }
+
+    // Update visual order for instant feedback
+    if (draggedIndex.value !== targetVeeIndex) {
+      const draggedKey = baseKeys.value[draggedIndex.value]
+      if (!draggedKey) return
+
+      const newOrder = baseKeys.value.filter((k) => k !== draggedKey)
+      const targetKey = baseKeys.value[targetVeeIndex]
+      let insertIndex = newOrder.indexOf(targetKey!)
+
+      if (insertIndex !== -1) {
+        // Insert after target when dragging downward, before when dragging upward
+        if (draggedIndex.value < targetVeeIndex) {
+          insertIndex++
+        }
+        newOrder.splice(insertIndex, 0, draggedKey)
+        visualOrder.value = newOrder
+      }
+    }
+
+    dragOverIndex.value = targetVeeIndex
+  } catch (e) {
+    console.error('Error in onDragOver:', e)
+  }
+}
+
+function onDragLeave() {
+  dragOverIndex.value = null
+}
+
+function onDrop(event: DragEvent) {
+  event.preventDefault()
+  event.stopPropagation()
+}
+
+// Memoized item field metadata - prevents infinite re-render loop
+// Maps each item's index to its resolved field metadata
+const itemFieldMetaMap = computed(() => {
+  const map = new Map<number, FieldMeta>()
+
+  fields.value.forEach((field, index) => {
+    const itemField = props.meta.itemField
+    if (typeof itemField === 'function') {
+      // Call function with the specific item's values plus array context
+      map.set(
+        index,
+        itemField(field.value as Record<string, unknown>, {
+          index,
+          items: fields.value.map((f) => f.value) as Record<string, unknown>[]
+        })
+      )
+    } else {
+      // Static itemField definition
+      map.set(index, itemField)
+    }
+  })
+
+  return map
+})
+
+// Helper function to get resolved itemField metadata for a specific item index
+function getItemFieldMeta(index: number) {
+  return itemFieldMetaMap.value.get(index)!
+}
+
+function addItem() {
+  let defaultValue: unknown = ''
+
+  // Resolve itemField to get default value
+  const itemFieldMeta =
+    typeof props.meta.itemField === 'function'
+      ? props.meta.itemField(
+          {}, // Call with empty object for new items
+          {
+            index: fields.value.length,
+            items: fields.value.map((f) => f.value) as Record<string, unknown>[]
+          }
+        )
+      : props.meta.itemField
+
+  // Check if explicit defaultValue is provided at the top level
+  if ('defaultValue' in itemFieldMeta && itemFieldMeta.defaultValue !== undefined) {
+    defaultValue = itemFieldMeta.defaultValue
+  } else if (itemFieldMeta.type === 'field-group') {
+    // For field-groups, recursively extract defaults from all nested fields
+    // This handles factory fields like min, max, step, etc.
+    if ('fields' in itemFieldMeta && itemFieldMeta.fields) {
+      defaultValue = extractDefaultValues(itemFieldMeta.fields)
+    } else {
+      defaultValue = {}
+    }
+  } else if (itemFieldMeta.type === 'tabs') {
+    // For tabs, extract defaults from all tab fields
+    if ('tabs' in itemFieldMeta) {
+      const tabsDefaults: Record<string, unknown> = {}
+      for (const tab of itemFieldMeta.tabs) {
+        tabsDefaults[tab.value] = extractDefaultValues(tab.fields)
+      }
+      defaultValue = tabsDefaults
+    } else {
+      defaultValue = {}
+    }
+  }
+
+  push(defaultValue)
+  validateArrayField()
+}
+
+function removeItem(index: number) {
+  remove(index)
+  validateArrayField()
+}
+</script>
+
+<template>
+  <FormFieldWrapper
+    :label="resolvedLabel"
+    :description="resolvedDescription"
+    :optional="meta.optional"
+    :errors="allErrors"
+    :invalid="false"
+    :class="cn('space-y-1')"
+    :label-class="arrayLabelClass"
+    :description-class="meta.descriptionClass"
+  >
+    <div class="space-y-2">
+      <div
+        ref="arrayContainer"
+        v-auto-animate="{ duration: 180 }"
+        :class="cn('grid gap-2', meta.class)"
+      >
+        <div
+          v-for="item in orderedItems"
+          :key="`${item.key}-${item.veeIndex}`"
+          :class="
+            cn(
+              'relative flex items-start rounded-lg border bg-card transition-colors',
+              isSortable ? 'ff-array__item px-0 pr-9' : 'ff-array__item--simple px-3 pr-10',
+              draggedIndex === item.veeIndex && 'ff-array__item--dragged opacity-40 scale-95'
+            )
+          "
+          @dragover="onDragOver($event, item.veeIndex)"
+          @dragleave="onDragLeave"
+          @drop="onDrop"
+        >
+          <span
+            v-if="isSortable"
+            class="drag-handle shrink-0 py-1.5 mt-1 px-2 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none"
+            draggable="true"
+            @dragstart="onDragStart($event, item.veeIndex)"
+            @dragend="onDragEnd"
+          >
+            <Icon name="lucide:grip-vertical" class="size-4!" />
+          </span>
+
+          <div class="min-w-0 flex-1">
+            <!-- Bind to veeIndex for stable value binding.
+                 key includes veeIndex to force re-creation on reorder for fresh scoped values. -->
+            <FormField
+              :key="`${item.key}-${item.veeIndex}`"
+              :name="`${name}[${item.veeIndex}]`"
+              :meta="getItemFieldMeta(item.veeIndex)"
+              :class="
+                (() => {
+                  const meta = getItemFieldMeta(item.veeIndex)
+                  return cn(
+                    'border-0 bg-transparent rounded-none',
+                    meta.type === 'field-group' ? 'my-2.5' : ''
+                  )
+                })()
+              "
+            />
+          </div>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            class="absolute top-0.5 right-0.5 h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            :aria-label="meta.removeButtonText || 'Remove item'"
+            @click="removeItem(item.veeIndex)"
+          >
+            <Icon name="lucide:x" class="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      <Button type="button" variant="outline" size="sm" class="w-full gap-2" @click="addItem">
+        <Icon name="lucide:plus" class="h-4 w-4" />
+        {{ meta.addButtonText || 'Add Item' }}
+      </Button>
+    </div>
+  </FormFieldWrapper>
+</template>

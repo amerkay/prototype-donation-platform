@@ -47,11 +47,11 @@ export function createTributeFormSection(config: TributeSettings): FormDef {
         label: 'Dedicate this donation',
         description: 'Make this donation a tribute to someone special',
         options,
-        onChange: (value, allValues, setValue) => {
+        onChange: ({ value, values, setValue }) => {
           // When switching to gift with eCard enabled, default sameAsHonoree to true
           // BUT only if recipient name is empty or matches honoree
-          if (value === 'gift' && allValues.sendECard === true) {
-            if (shouldDefaultSameAsHonoree(allValues)) {
+          if (value === 'gift' && values.sendECard === true) {
+            if (shouldDefaultSameAsHonoree(values)) {
               setValue('sameAsHonoree', true)
             }
           }
@@ -66,7 +66,7 @@ export function createTributeFormSection(config: TributeSettings): FormDef {
         type: 'field-group',
         // label: 'Honoree',
         class: 'grid grid-cols-2 gap-x-3',
-        visibleWhen: (values) => values.type !== 'none',
+        visibleWhen: ({ values }) => values.type !== 'none',
         fields: {
           honoreeFirstName: {
             type: 'text',
@@ -93,7 +93,7 @@ export function createTributeFormSection(config: TributeSettings): FormDef {
         options: config.relationships.map((r) => ({ value: r.value, label: r.label })),
         searchPlaceholder: 'Search relationship...',
         notFoundText: 'No relationship found.',
-        visibleWhen: (values) => values.type !== 'none',
+        visibleWhen: ({ values }) => values.type !== 'none',
         isSeparatorAfter: true
       },
       // eCard toggle - visible when type is not 'none'
@@ -103,13 +103,13 @@ export function createTributeFormSection(config: TributeSettings): FormDef {
         labelClass: 'font-semibold',
         description: 'Send an eCard about your donation',
         defaultValue: false,
-        visibleWhen: (values) => values.type !== 'none',
+        visibleWhen: ({ values }) => values.type !== 'none',
         isSeparatorAfter: false,
-        onChange: (value, allValues, setValue) => {
+        onChange: ({ value, values, setValue }) => {
           // When enabling eCard for gift, default sameAsHonoree to true
           // BUT only if recipient name is empty or matches honoree
-          if (value === true && allValues.type === 'gift') {
-            if (shouldDefaultSameAsHonoree(allValues)) {
+          if (value === true && values.type === 'gift') {
+            if (shouldDefaultSameAsHonoree(values)) {
               setValue('sameAsHonoree', true)
             }
           }
@@ -126,7 +126,7 @@ export function createTributeFormSection(config: TributeSettings): FormDef {
         label: 'Same Name as Honoree',
         description: 'The recipient is the same as the honoree',
         defaultValue: false,
-        visibleWhen: (values) => values.type === 'gift' && values.sendECard === true
+        visibleWhen: ({ values }) => values.type === 'gift' && values.sendECard === true
       },
 
       // Recipient name fields - visible when sendECard is true and NOT sameAsHonoree
@@ -134,7 +134,7 @@ export function createTributeFormSection(config: TributeSettings): FormDef {
         type: 'field-group',
         // label: 'eCard Reci pient',
         class: 'grid grid-cols-2 gap-x-3',
-        visibleWhen: (values) =>
+        visibleWhen: ({ values }) =>
           values.type !== 'none' && values.sendECard === true && values.sameAsHonoree !== true,
         fields: {
           recipientFirstName: {
@@ -161,16 +161,13 @@ export function createTributeFormSection(config: TributeSettings): FormDef {
         placeholder: 'name@example.com',
         autocomplete: 'email',
         defaultValue: '',
-        visibleWhen: (values) => values.type !== 'none' && values.sendECard === true,
+        visibleWhen: ({ values }) => values.type !== 'none' && values.sendECard === true,
         isSeparatorAfter: false,
-        rules: z
-          .string({ error: 'Email is required' })
-          .min(1, 'Email is required')
-          .email('Enter a valid email address')
+        rules: z.string().min(1, 'Email is required').email('Enter a valid email address')
       },
 
       // Message fields - visible when sendECard is true
-      ...createMessageFields((values) => values.type !== 'none' && values.sendECard === true)
+      ...createMessageFields(({ values }) => values.type !== 'none' && values.sendECard === true)
     }
   }
 }

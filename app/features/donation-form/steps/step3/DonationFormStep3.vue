@@ -10,7 +10,7 @@ import { createTermsAcceptanceField } from '~/features/donation-form/terms/forms
 import {
   createCustomFieldsFormSection,
   extractCustomFieldDefaults
-} from '~/features/donation-form/custom-fields/utils'
+} from '~/features/custom-fields/utils'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import Separator from '~/components/ui/separator/Separator.vue'
 import { useFormConfigStore } from '~/stores/formConfig'

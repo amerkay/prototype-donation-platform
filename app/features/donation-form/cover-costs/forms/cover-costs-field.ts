@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import type { FieldMetaMap } from '~/features/form-builder/types'
+import type { FieldMetaMap, FieldContext } from '~/features/form-builder/types'
 import { getCurrencySymbol } from '../../composables/useCurrency'
 
 /**
@@ -43,7 +43,7 @@ export function createCoverCostsField(options: {
       defaultValue: 0,
 
       // Dynamic description based on mode
-      description: (values: Record<string, unknown>) => {
+      description: ({ values }) => {
         const value = (values.coverCostsValue as number) || 0
         const donationAmount = (values.donationAmount as number) || 0
         const currency = (values.currency as string) || 'GBP'
@@ -68,38 +68,38 @@ export function createCoverCostsField(options: {
 
       // Dynamic min/max/step based on mode
       min: 0,
-      max: (values: Record<string, unknown>) => {
+      max: ({ values }) => {
         const donationAmount = (values.donationAmount as number) || 0
         return donationAmount >= thresholdAmount ? 30 : 5
       },
-      step: (values: Record<string, unknown>) => {
+      step: ({ values }) => {
         const donationAmount = (values.donationAmount as number) || 0
         return donationAmount >= thresholdAmount ? 1 : 0.5
       },
 
       // Dynamic value formatting
-      formatValue: (value: number, formValues?: Record<string, unknown>) => {
-        const donationAmount = (formValues?.donationAmount as number) || 0
+      formatValue: (value: number, ctx?: FieldContext) => {
+        const donationAmount = (ctx?.values?.donationAmount as number) || 0
         const isPercentageMode = donationAmount >= thresholdAmount
 
         if (isPercentageMode) {
           return `${value}%`
         } else {
-          const currency = (formValues?.currency as string) || 'GBP'
+          const currency = (ctx?.values?.currency as string) || 'GBP'
           const symbol = getCurrencySymbol(currency)
           return `${symbol}${value.toFixed(2)}`
         }
       },
 
       showMinMax: true,
-      minMaxFormatter: (value: number, formValues?: Record<string, unknown>) => {
-        const donationAmount = (formValues?.donationAmount as number) || 0
+      minMaxFormatter: (value: number, ctx?: FieldContext) => {
+        const donationAmount = (ctx?.values?.donationAmount as number) || 0
         const isPercentageMode = donationAmount >= thresholdAmount
 
         if (isPercentageMode) {
           return `${value}%`
         } else {
-          const currency = (formValues?.currency as string) || 'GBP'
+          const currency = (ctx?.values?.currency as string) || 'GBP'
           const symbol = getCurrencySymbol(currency)
           return `${symbol}${value.toFixed(2)}`
         }

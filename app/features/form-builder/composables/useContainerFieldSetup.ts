@@ -2,8 +2,8 @@ import { computed, provide } from 'vue'
 import { getRecordAtPath, useFieldPath, checkFieldVisibility } from './useFieldPath'
 import { useFormBuilderContext } from './useFormBuilderContext'
 import { useChildFieldErrors } from './useChildFieldErrors'
-
-type FormValues = Record<string, unknown>
+import type { FieldContext } from '~/features/form-builder/types'
+import type { ConditionGroup } from '~/features/form-builder/conditions'
 
 /**
  * Composable to handle all shared setup logic for container fields (field-group, tabs)
@@ -16,7 +16,7 @@ type FormValues = Record<string, unknown>
  * - Update parent visibility context
  *
  * @param name - Container field name
- * @param visibleWhen - Optional visibility condition function
+ * @param visibleWhen - Optional visibility condition (function or ConditionGroup)
  * @returns Object with computed paths, visibility, error state, and resolved metadata
  *
  * @example
@@ -29,7 +29,7 @@ type FormValues = Record<string, unknown>
  */
 export function useContainerFieldSetup(
   name: string,
-  visibleWhen?: (values: FormValues) => boolean
+  visibleWhen?: ((ctx: FieldContext) => boolean) | ConditionGroup
 ) {
   const {
     sectionId,
@@ -47,9 +47,13 @@ export function useContainerFieldSetup(
 
   // Compute visibility for this container
   const isVisible = computed(() => {
-    return checkFieldVisibility({ visibleWhen }, formValues.value, {
-      parentVisible: parentGroupVisible()
-    })
+    return checkFieldVisibility(
+      { visibleWhen },
+      { values: formValues.value, root: formValues.value },
+      {
+        parentVisible: parentGroupVisible()
+      }
+    )
   })
 
   // Update parent visibility context for children
@@ -59,23 +63,37 @@ export function useContainerFieldSetup(
   provide('fieldPrefix', currentFieldPrefix.value)
 
   // Provide scoped form values to child fields
-  // Merges container-specific values into the root form values for child access
-  // Special case: if we're inside an array item (path contains [N]), use the item values directly
+  // Creates FieldContext with proper scoping for nested containers
   const scopedFormValues = computed(() => {
     // Convert bracket notation to dot notation for getRecordAtPath
     // e.g., "messages[0]" -> "messages.0"
     const normalizedPath = relativePath.value.replace(/\[(\d+)\]/g, '.$1')
     const containerValue = getRecordAtPath(formValues.value, normalizedPath)
 
+    // Get parent path (remove last segment) to access parent values
+    const pathSegments = normalizedPath.split('.').filter(Boolean)
+    const parentPath = pathSegments.slice(0, -1).join('.')
+    const parentValue = parentPath
+      ? getRecordAtPath(formValues.value, parentPath)
+      : formValues.value
+
     // If we're inside an array item (detected by array index in path like "messages[0]")
     // Use the item's values as the base for resolving dynamic text (labels, descriptions)
     // This allows label functions in array itemFields to access item properties directly
     if (relativePath.value.includes('[') && containerValue) {
-      return containerValue
+      return {
+        values: containerValue || {},
+        parent: parentValue || {},
+        root: formValues.value || {}
+      }
     }
 
     // For regular containers, merge container values with root form values
-    return { ...formValues.value, ...(containerValue || {}) }
+    return {
+      values: { ...(formValues.value || {}), ...(containerValue || {}) },
+      parent: parentValue || {},
+      root: formValues.value || {}
+    }
   })
   provide('scopedFormValues', scopedFormValues)
 

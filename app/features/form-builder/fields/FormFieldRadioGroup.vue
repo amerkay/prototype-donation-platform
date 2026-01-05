@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/field'
 import type { RadioGroupFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
-import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
+import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 
 type Props = FieldProps<string | number, RadioGroupFieldMeta>
 
@@ -28,13 +28,14 @@ const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.err
       :name="name"
       :model-value="modelValue"
       :aria-invalid="!!errors.length"
-      :class="cn(meta.class, 'gap-4')"
+      :orientation="meta.orientation"
+      :class="cn(meta.orientation === 'horizontal' && 'grid-flow-col', meta.class)"
       @update:model-value="$emit('update:modelValue', $event)"
     >
       <FieldLabel
         v-for="option in meta.options"
         :key="option.value"
-        :for="`${name}-${option.value}`"
+        :for="`${id || name}-${option.value}`"
       >
         <Field orientation="horizontal" :data-invalid="!!errors.length">
           <FieldContent>
@@ -42,7 +43,7 @@ const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.err
             <FieldDescription v-if="option.description">{{ option.description }}</FieldDescription>
           </FieldContent>
           <RadioGroupItem
-            :id="`${name}-${option.value}`"
+            :id="`${id || name}-${option.value}`"
             :value="String(option.value)"
             :aria-invalid="!!errors.length"
           />

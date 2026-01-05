@@ -17,7 +17,7 @@ import type { FieldMetaMap } from '~/features/form-builder/types'
  * ```
  */
 export function createEmailOptInField(
-  visibleWhen?: (values: Record<string, unknown>) => boolean
+  visibleWhen?: (ctx: { values: Record<string, unknown> }) => boolean
 ): FieldMetaMap {
   return {
     joinEmailList: {

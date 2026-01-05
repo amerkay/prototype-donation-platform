@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, watch, provide, toRaw } from 'vue'
 import { useForm } from 'vee-validate'
-import { FieldSeparator } from '@/components/ui/field'
-import FormField from './FormField.vue'
+import FormFieldList from './internal/FormFieldList.vue'
 import type { FormDef } from '~/features/form-builder/types'
+import type { ContextSchema } from '~/features/form-builder/conditions'
 import { useScrollOnVisible } from './composables/useScrollOnVisible'
 import { checkFieldVisibility } from './composables/useFieldPath'
 
@@ -11,6 +11,17 @@ interface Props {
   section: FormDef
   modelValue: Record<string, unknown>
   class?: string
+  /**
+   * External context values to merge with form values
+   * Used for conditional visibility and dynamic options
+   * @default {}
+   */
+  context?: Record<string, unknown>
+  /**
+   * Schema describing external context fields
+   * Used by condition builder UI to show available fields
+   */
+  contextSchema?: ContextSchema
   /**
    * Keep field values in vee-validate when component unmounts.
    * Useful for multi-step wizards with v-if navigation.
@@ -31,6 +42,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  context: () => ({}),
   keepValuesOnUnmount: false,
   validateOnMount: false,
   updateOnlyWhenValid: false
@@ -64,6 +76,10 @@ const { values, meta, validate, handleSubmit, setFieldValue, setFieldTouched } =
 
 // Provide section id so nested fields can resolve absolute vee-validate names
 provide('sectionId', props.section.id)
+
+// Provide external context values and schema for condition evaluation
+provide('externalContext', props.context || {})
+provide('contextSchema', props.contextSchema || {})
 
 // Provide setFieldValue for onChange callbacks
 // Wrap to add section ID prefix and emit immediately for reactivity
@@ -101,56 +117,16 @@ const sectionValues = computed(() => {
   return ((values as Record<string, unknown>)[props.section.id] as Record<string, unknown>) || {}
 })
 
-// Track which fields are visible for separator logic (using unified visibility check)
-// Skip container validation since we want actual visibility, not validation behavior
-const isFieldVisible = (fieldMeta: (typeof props.section.fields)[string]) => {
-  return checkFieldVisibility(fieldMeta, sectionValues.value, {
-    skipContainerValidation: true
-  })
-}
-
-// Check if there's any visible field before the current index
-const shouldShowSeparator = (
-  currentIndex: number,
-  currentFieldMeta: (typeof props.section.fields)[string]
-) => {
-  if (!isFieldVisible(currentFieldMeta)) return false
-
-  // Find the last visible field before current
-  const visibleFieldsBefore = allFields.value
-    .slice(0, currentIndex)
-    .filter(([, fieldMeta]) => isFieldVisible(fieldMeta))
-
-  if (visibleFieldsBefore.length === 0) return false
-
-  // Check if the previous visible field has isSeparatorAfter flag
-  const lastVisibleField = visibleFieldsBefore[visibleFieldsBefore.length - 1]
-  if (!lastVisibleField) return false
-
-  return lastVisibleField[1].isSeparatorAfter === true
-}
-
-// Check if a field is a visible collapsible accordion
-const isVisibleCollapsibleGroup = (fieldMeta: (typeof props.section.fields)[string]) => {
-  return (
-    fieldMeta.type === 'field-group' && fieldMeta.collapsible === true && isFieldVisible(fieldMeta)
-  )
-}
-
-// Check if the current field is the last visible field
-const isLastVisibleField = (currentIndex: number) => {
-  const visibleFieldsAfter = allFields.value
-    .slice(currentIndex + 1)
-    .filter(([, fieldMeta]) => isFieldVisible(fieldMeta))
-
-  return visibleFieldsAfter.length === 0
-}
+// Create field context for visibility checks
+const sectionFieldContext = computed(() => ({
+  values: sectionValues.value,
+  root: values
+}))
 
 // Auto-scroll to newly visible fields (scroll to top of element)
-// Skip container validation since we want actual visibility for scroll behavior
 const { setElementRef } = useScrollOnVisible(allFields, {
   isVisible: ([, fieldMeta]) =>
-    checkFieldVisibility(fieldMeta, sectionValues.value, { skipContainerValidation: true }),
+    checkFieldVisibility(fieldMeta, sectionFieldContext.value, { skipContainerValidation: true }),
   getKey: ([key]) => key
 })
 
@@ -212,17 +188,11 @@ defineExpose({
       </p>
     </div>
 
-    <template v-for="([fieldKey, fieldMeta], index) in allFields" :key="`${fieldKey}-${index}`">
-      <FieldSeparator v-if="shouldShowSeparator(index, fieldMeta)" class="my-4! h-1" />
-      <div
-        :ref="(el) => setElementRef(String(fieldKey), el as HTMLElement | null)"
-        :class="[
-          isVisibleCollapsibleGroup(fieldMeta) ? '-my-2!' : '',
-          !isLastVisibleField(index) ? 'mb-4' : ''
-        ]"
-      >
-        <FormField :name="`${section.id}.${fieldKey}`" :meta="fieldMeta" />
-      </div>
-    </template>
+    <FormFieldList
+      :fields="section.fields"
+      :field-context="sectionFieldContext"
+      :name-prefix="section.id"
+      :set-element-ref="setElementRef"
+    />
   </form>
 </template>

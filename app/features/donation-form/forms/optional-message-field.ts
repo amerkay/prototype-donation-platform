@@ -22,7 +22,7 @@ import type { FieldMetaMap } from '~/features/form-builder/types'
  * ```
  */
 export function createMessageFields(
-  visibleWhen?: (values: Record<string, unknown>) => boolean
+  visibleWhen?: (ctx: { values: Record<string, unknown> }) => boolean
 ): FieldMetaMap {
   return {
     isIncludeMessage: {
@@ -38,20 +38,20 @@ export function createMessageFields(
       label: 'Your Message',
       placeholder: 'Enter your message (max 250 characters)',
       maxLength: 250,
-      description: (values: Record<string, unknown>) => {
+      description: ({ values }) => {
         const msgLength = ((values.message as string) || '').length
         return `${msgLength}/250 characters`
       },
       defaultValue: '',
-      visibleWhen: (values: Record<string, unknown>) => {
+      visibleWhen: ({ values }) => {
         // First check parent visibility condition
-        if (visibleWhen && !visibleWhen(values)) {
+        if (visibleWhen && !visibleWhen({ values })) {
           return false
         }
         // Then check if message toggle is enabled
         return values.isIncludeMessage === true
       },
-      rules: (values: Record<string, unknown>) =>
+      rules: ({ values }) =>
         values.isIncludeMessage === true
           ? z
               .string()

@@ -11,19 +11,20 @@ import {
 } from 'reka-ui'
 import { Check, ChevronsUpDown } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import type { ComboboxFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
-import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
+import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 
 type Props = FieldProps<string | number | (string | number)[], ComboboxFieldMeta>
 
 const props = defineProps<Props>()
 const emit = defineEmits<FieldEmits<string | number | (string | number)[]>>()
 
-const { formValues } = useFormBuilderContext()
+const { fieldContext } = useFormBuilderContext()
 
-const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
+const { wrapperProps, resolvedPlaceholder, resolvedDisabled } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors
@@ -39,7 +40,7 @@ const notFoundText = computed(() => props.meta.notFoundText ?? 'No results found
 // Resolve options (can be static array or function)
 const resolvedOptions = computed(() => {
   if (typeof props.meta.options === 'function') {
-    return props.meta.options(formValues.value)
+    return props.meta.options(fieldContext.value)
   }
   return props.meta.options
 })
@@ -136,17 +137,20 @@ const removeBadge = (value: string | number, event: Event) => {
       v-model:open="isOpen"
       v-model:search-term="searchValue"
       :multiple="meta.multiple"
-      :disabled="meta.disabled"
+      :disabled="resolvedDisabled"
       class="relative"
     >
       <ComboboxAnchor
-        class="inline-flex w-full items-center justify-between rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-within:outline-none focus-within:ring-1 focus-within:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
-        :class="[
-          meta.class,
-          errors.length && 'border-destructive',
-          meta.disabled && 'pointer-events-none'
-        ]"
-        @click="!meta.disabled && (isOpen = true)"
+        :class="
+          cn(
+            'inline-flex w-full items-center justify-between rounded-lg border border-input px-3 py-2 text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-within:outline-none focus-within:ring-1 focus-within:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer',
+            'bg-background',
+            meta.class,
+            errors.length && 'border-destructive',
+            resolvedDisabled && 'pointer-events-none'
+          )
+        "
+        @click="!resolvedDisabled && (isOpen = true)"
       >
         <div class="flex flex-1 flex-wrap gap-1 items-center min-w-0">
           <!-- Multiple selection badges -->
@@ -170,14 +174,14 @@ const removeBadge = (value: string | number, event: Event) => {
 
           <!-- Input for search -->
           <ComboboxInput
-            :id="name"
+            :id="id || name"
             :placeholder="displayText || resolvedPlaceholder || searchPlaceholder"
             :autocomplete="meta.autocomplete"
             :aria-invalid="!!errors.length"
-            :disabled="meta.disabled"
+            :disabled="resolvedDisabled"
             class="flex-1 min-w-30 bg-transparent outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
             @blur="onBlur"
-            @focus="!meta.disabled && (isOpen = true)"
+            @focus="!resolvedDisabled && (isOpen = true)"
           />
         </div>
 

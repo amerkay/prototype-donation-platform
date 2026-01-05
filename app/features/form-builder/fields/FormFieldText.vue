@@ -6,14 +6,14 @@ import {
   useFieldWrapper,
   preventEnterSubmit
 } from '~/features/form-builder/composables/useFieldWrapper'
-import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
+import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 
 type Props = FieldProps<string | number, TextFieldMeta>
 
 const props = defineProps<Props>()
 defineEmits<FieldEmits<string | number | undefined>>()
 
-const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
+const { wrapperProps, resolvedPlaceholder, resolvedDisabled } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors
@@ -23,13 +23,14 @@ const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
 <template>
   <FormFieldWrapper v-bind="wrapperProps">
     <Input
-      :id="name"
+      :id="id || name"
       :model-value="modelValue"
       :placeholder="resolvedPlaceholder"
       :autocomplete="meta.autocomplete"
       :maxlength="meta.maxLength"
+      :disabled="resolvedDisabled"
       :aria-invalid="!!errors.length"
-      :class="cn(meta.class, 'text-sm')"
+      :class="cn('bg-background', meta.class, 'text-sm')"
       @update:model-value="$emit('update:modelValue', $event)"
       @blur="onBlur"
       @keydown.enter="preventEnterSubmit"

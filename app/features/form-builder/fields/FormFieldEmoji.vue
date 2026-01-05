@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { X } from 'lucide-vue-next'
 import type { EmojiFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
-import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
+import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 import EmojiPicker from '../components/EmojiPicker.vue'
 
 type Props = FieldProps<string, EmojiFieldMeta>
@@ -12,7 +12,11 @@ type Props = FieldProps<string, EmojiFieldMeta>
 const props = defineProps<Props>()
 const emit = defineEmits<FieldEmits<string>>()
 
-const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors)
+const { wrapperProps, resolvedDisabled } = useFieldWrapper(
+  props.meta,
+  props.name,
+  () => props.errors
+)
 
 const pickerOpen = ref(false)
 const selectedEmoji = computed(() => props.modelValue)
@@ -34,7 +38,7 @@ onMounted(() => {
     <div class="flex items-center gap-2">
       <EmojiPicker
         v-model:open="pickerOpen"
-        :disabled="meta.disabled"
+        :disabled="resolvedDisabled"
         :class="meta.class"
         :selected-value="selectedEmoji"
         :hide-trigger="!!selectedEmoji"

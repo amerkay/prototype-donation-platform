@@ -22,7 +22,7 @@ export function createMultipleProductsConfigSection(): FormDef {
         type: 'field-group',
         label: 'Products Available',
         description: 'Define the products that donors can add to their cart',
-        visibleWhen: (values) => values.enabled === true,
+        visibleWhen: ({ values }) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
         badgeLabel: 'On my TODO list',
@@ -33,7 +33,7 @@ export function createMultipleProductsConfigSection(): FormDef {
       settings: {
         type: 'field-group',
         label: 'Display Settings',
-        visibleWhen: (values) => values.enabled === true,
+        visibleWhen: ({ values }) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
         isSeparatorAfter: true,

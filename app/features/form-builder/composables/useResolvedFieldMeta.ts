@@ -1,10 +1,8 @@
 import { computed } from 'vue'
-import type { BaseFieldMeta } from '~/features/form-builder/types'
+import type { BaseFieldMeta, FieldContext } from '~/features/form-builder/types'
 import { useFormBuilderContext } from './useFormBuilderContext'
 
-type FormValues = Record<string, unknown>
-
-type ResolvableText = string | ((values: FormValues) => string)
+type ResolvableText = string | ((ctx: FieldContext) => string)
 
 type WithResolvableText = Pick<BaseFieldMeta, 'label' | 'description' | 'placeholder'>
 
@@ -14,10 +12,10 @@ type WithResolvableText = Pick<BaseFieldMeta, 'label' | 'description' | 'placeho
  */
 export function resolveText(
   text: ResolvableText | undefined,
-  values: FormValues
+  ctx: FieldContext
 ): string | undefined {
   if (!text) return undefined
-  return typeof text === 'function' ? text(values) : text
+  return typeof text === 'function' ? text(ctx) : text
 }
 
 /**
@@ -27,9 +25,15 @@ export function resolveText(
 export function useResolvedFieldMeta(meta: WithResolvableText) {
   const { formValues } = useFormBuilderContext()
 
-  const resolvedLabel = computed(() => resolveText(meta.label, formValues.value))
-  const resolvedDescription = computed(() => resolveText(meta.description, formValues.value))
-  const resolvedPlaceholder = computed(() => resolveText(meta.placeholder, formValues.value))
+  const resolvedLabel = computed(() =>
+    resolveText(meta.label, { values: formValues.value, root: formValues.value })
+  )
+  const resolvedDescription = computed(() =>
+    resolveText(meta.description, { values: formValues.value, root: formValues.value })
+  )
+  const resolvedPlaceholder = computed(() =>
+    resolveText(meta.placeholder, { values: formValues.value, root: formValues.value })
+  )
 
   return {
     resolvedLabel,

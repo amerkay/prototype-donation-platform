@@ -7,7 +7,7 @@ import { createImpactJourneyConfigSection } from '../donation-form/impact-journe
 import { createCoverCostsConfigSection } from '../donation-form/cover-costs/forms/cover-costs-config-form'
 import { createGiftAidConfigSection } from '../donation-form/gift-aid/forms/gift-aid-config-form'
 import { createTributeConfigSection } from '../donation-form/tribute/forms/tribute-config-form'
-import { createCustomFieldsConfigSection } from '../donation-form/custom-fields/forms/custom-fields-config-form'
+import { createCustomFieldsConfigSection } from '../custom-fields/forms/custom-fields-config-form'
 import { useFormConfigStore } from '~/stores/formConfig'
 
 // Get shared reactive config store - mutations propagate automatically

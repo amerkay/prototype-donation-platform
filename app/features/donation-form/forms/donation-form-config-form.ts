@@ -101,9 +101,9 @@ export function createFormConfigSection(): FormDef {
             multiple: true,
             options: [...CURRENCY_OPTIONS],
             rules: z.array(z.string()).min(1, 'At least one currency must be supported'),
-            onChange: (value, allValues, setValue) => {
-              const defaultCurrency = allValues.defaultCurrency as string | undefined
-              const baseCurrency = (allValues.pricing as Record<string, unknown> | undefined)
+            onChange: ({ value, values, setValue }) => {
+              const defaultCurrency = values.defaultCurrency as string | undefined
+              const baseCurrency = (values.pricing as Record<string, unknown> | undefined)
                 ?.baseCurrency as string | undefined
               const supportedCurrencies = (value as string[]).filter(Boolean)
 
@@ -126,7 +126,7 @@ export function createFormConfigSection(): FormDef {
               'The default currency shown when users first load the donation form (choose from supported currencies above)',
             placeholder: 'Select default currency',
             searchPlaceholder: 'Search currencies...',
-            options: (values) => {
+            options: ({ values }) => {
               // Only show currencies that are in the supported list
               const supportedCurrencies = (values.supportedCurrencies as string[]) || []
               return CURRENCY_OPTIONS.filter((opt) => supportedCurrencies.includes(opt.value))
@@ -150,7 +150,7 @@ export function createFormConfigSection(): FormDef {
               'The currency used for internal calculations and product pricing (choose from supported currencies above)',
             placeholder: 'Select base currency',
             searchPlaceholder: 'Search currencies...',
-            options: (values) => {
+            options: ({ values }) => {
               // Only show currencies that are in the supported list
               const supportedCurrencies =
                 ((values.localization as Record<string, unknown> | undefined)
@@ -180,8 +180,8 @@ export function createFormConfigSection(): FormDef {
                     type: 'text',
                     label: 'Display Label',
                     placeholder: 'One-time',
-                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
-                    rules: (values) => {
+                    visibleWhen: ({ values }) => !!(values?.enabled as boolean | undefined),
+                    rules: ({ values }) => {
                       const enabled = values.enabled as boolean | undefined
                       return enabled ? z.string().min(1, 'Label is required') : z.string()
                     }
@@ -190,30 +190,32 @@ export function createFormConfigSection(): FormDef {
                     type: 'array',
                     label: 'Preset Amounts',
                     description: 'Preset donation amounts (in base currency)',
-                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
-                    class: 'grid grid-cols-2 gap-2 items-start',
+                    visibleWhen: ({ values }) => !!(values?.enabled as boolean | undefined),
+                    class: 'grid grid-cols-1 gap-2 items-start sm:grid-cols-2',
                     sortable: true,
                     itemField: {
                       type: 'currency',
                       placeholder: '25',
                       min: 1,
-                      currencySymbol: (values) => {
-                        const pricing = values.pricing as Record<string, unknown> | undefined
+                      currencySymbol: ({ values }) => {
+                        const pricing = (values as Record<string, unknown>).pricing as
+                          | Record<string, unknown>
+                          | undefined
                         const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
                         return getCurrencySymbol(baseCurrency)
                       },
-                      rules: (values) => {
+                      rules: ({ values }) => {
                         const minAmount = (
                           values.customAmount as Record<string, unknown> | undefined
                         )?.min as number | undefined
                         const effectiveMin = minAmount ?? 1
                         return z
-                          .number({ error: 'Amount is required' })
+                          .number({ message: 'Amount is required' })
                           .min(effectiveMin, `Must be at least ${effectiveMin}`)
                       }
                     },
                     addButtonText: 'Add Amount',
-                    rules: (values) => {
+                    rules: ({ values }) => {
                       const enabled = values.enabled as boolean | undefined
                       return enabled
                         ? z.array(z.number().min(1)).min(1, 'At least one preset required')
@@ -224,15 +226,17 @@ export function createFormConfigSection(): FormDef {
                     type: 'field-group',
                     label: 'Custom Amount Range',
                     class: 'grid grid-cols-2 gap-x-3',
-                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
+                    visibleWhen: ({ values }) => !!(values?.enabled as boolean | undefined),
                     fields: {
                       min: {
                         type: 'currency',
                         label: 'Minimum',
                         placeholder: '1',
                         min: 1,
-                        currencySymbol: (values) => {
-                          const pricing = values.pricing as Record<string, unknown> | undefined
+                        currencySymbol: ({ values }) => {
+                          const pricing = (values as Record<string, unknown>).pricing as
+                            | Record<string, unknown>
+                            | undefined
                           const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
                           return getCurrencySymbol(baseCurrency)
                         },
@@ -243,8 +247,10 @@ export function createFormConfigSection(): FormDef {
                         label: 'Maximum',
                         placeholder: '1000000',
                         min: 1,
-                        currencySymbol: (values) => {
-                          const pricing = values.pricing as Record<string, unknown> | undefined
+                        currencySymbol: ({ values }) => {
+                          const pricing = (values as Record<string, unknown>).pricing as
+                            | Record<string, unknown>
+                            | undefined
                           const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
                           return getCurrencySymbol(baseCurrency)
                         },
@@ -268,8 +274,8 @@ export function createFormConfigSection(): FormDef {
                     type: 'text',
                     label: 'Display Label',
                     placeholder: 'Monthly',
-                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
-                    rules: (values) => {
+                    visibleWhen: ({ values }) => !!(values?.enabled as boolean | undefined),
+                    rules: ({ values }) => {
                       const enabled = values.enabled as boolean | undefined
                       return enabled ? z.string().min(1, 'Label is required') : z.string()
                     }
@@ -278,30 +284,32 @@ export function createFormConfigSection(): FormDef {
                     type: 'array',
                     label: 'Preset Amounts',
                     description: 'Preset donation amounts (in base currency)',
-                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
-                    class: 'grid grid-cols-2 gap-2 items-start',
+                    visibleWhen: ({ values }) => !!(values?.enabled as boolean | undefined),
+                    class: 'grid grid-cols-1 gap-2 items-start sm:grid-cols-2',
                     sortable: true,
                     itemField: {
                       type: 'currency',
                       placeholder: '25',
                       min: 1,
-                      currencySymbol: (values) => {
-                        const pricing = values.pricing as Record<string, unknown> | undefined
+                      currencySymbol: ({ values }) => {
+                        const pricing = (values as Record<string, unknown>).pricing as
+                          | Record<string, unknown>
+                          | undefined
                         const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
                         return getCurrencySymbol(baseCurrency)
                       },
-                      rules: (values) => {
+                      rules: ({ values }) => {
                         const minAmount = (
                           values.customAmount as Record<string, unknown> | undefined
                         )?.min as number | undefined
                         const effectiveMin = minAmount ?? 1
                         return z
-                          .number({ error: 'Amount is required' })
+                          .number({ message: 'Amount is required' })
                           .min(effectiveMin, `Must be at least ${effectiveMin}`)
                       }
                     },
                     addButtonText: 'Add Amount',
-                    rules: (values) => {
+                    rules: ({ values }) => {
                       const enabled = values.enabled as boolean | undefined
                       return enabled
                         ? z.array(z.number().min(1)).min(1, 'At least one preset required')
@@ -312,15 +320,17 @@ export function createFormConfigSection(): FormDef {
                     type: 'field-group',
                     label: 'Custom Amount Range',
                     class: 'grid grid-cols-2 gap-x-3',
-                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
+                    visibleWhen: ({ values }) => !!(values?.enabled as boolean | undefined),
                     fields: {
                       min: {
                         type: 'currency',
                         label: 'Minimum',
                         placeholder: '1',
                         min: 1,
-                        currencySymbol: (values) => {
-                          const pricing = values.pricing as Record<string, unknown> | undefined
+                        currencySymbol: ({ values }) => {
+                          const pricing = (values as Record<string, unknown>).pricing as
+                            | Record<string, unknown>
+                            | undefined
                           const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
                           return getCurrencySymbol(baseCurrency)
                         },
@@ -331,8 +341,10 @@ export function createFormConfigSection(): FormDef {
                         label: 'Maximum',
                         placeholder: '1000000',
                         min: 1,
-                        currencySymbol: (values) => {
-                          const pricing = values.pricing as Record<string, unknown> | undefined
+                        currencySymbol: ({ values }) => {
+                          const pricing = (values as Record<string, unknown>).pricing as
+                            | Record<string, unknown>
+                            | undefined
                           const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
                           return getCurrencySymbol(baseCurrency)
                         },
@@ -356,8 +368,8 @@ export function createFormConfigSection(): FormDef {
                     type: 'text',
                     label: 'Display Label',
                     placeholder: 'Yearly',
-                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
-                    rules: (values) => {
+                    visibleWhen: ({ values }) => !!(values?.enabled as boolean | undefined),
+                    rules: ({ values }) => {
                       const enabled = values.enabled as boolean | undefined
                       return enabled ? z.string().min(1, 'Label is required') : z.string()
                     }
@@ -366,30 +378,32 @@ export function createFormConfigSection(): FormDef {
                     type: 'array',
                     label: 'Preset Amounts',
                     description: 'Preset donation amounts (in base currency)',
-                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
-                    class: 'grid grid-cols-2 gap-2 items-start',
+                    visibleWhen: ({ values }) => !!(values?.enabled as boolean | undefined),
+                    class: 'grid grid-cols-1 gap-2 items-start sm:grid-cols-2',
                     sortable: true,
                     itemField: {
                       type: 'currency',
                       placeholder: '25',
                       min: 1,
-                      currencySymbol: (values) => {
-                        const pricing = values.pricing as Record<string, unknown> | undefined
+                      currencySymbol: ({ values }) => {
+                        const pricing = (values as Record<string, unknown>).pricing as
+                          | Record<string, unknown>
+                          | undefined
                         const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
                         return getCurrencySymbol(baseCurrency)
                       },
-                      rules: (values) => {
+                      rules: ({ values }) => {
                         const minAmount = (
                           values.customAmount as Record<string, unknown> | undefined
                         )?.min as number | undefined
                         const effectiveMin = minAmount ?? 1
                         return z
-                          .number({ error: 'Amount is required' })
+                          .number({ message: 'Amount is required' })
                           .min(effectiveMin, `Must be at least ${effectiveMin}`)
                       }
                     },
                     addButtonText: 'Add Amount',
-                    rules: (values) => {
+                    rules: ({ values }) => {
                       const enabled = values.enabled as boolean | undefined
                       return enabled
                         ? z.array(z.number().min(1)).min(1, 'At least one preset required')
@@ -400,15 +414,17 @@ export function createFormConfigSection(): FormDef {
                     type: 'field-group',
                     label: 'Custom Amount Range',
                     class: 'grid grid-cols-2 gap-x-3',
-                    visibleWhen: (values) => !!(values.enabled as boolean | undefined),
+                    visibleWhen: ({ values }) => !!(values?.enabled as boolean | undefined),
                     fields: {
                       min: {
                         type: 'currency',
                         label: 'Minimum',
                         placeholder: '1',
                         min: 1,
-                        currencySymbol: (values) => {
-                          const pricing = values.pricing as Record<string, unknown> | undefined
+                        currencySymbol: ({ values }) => {
+                          const pricing = (values as Record<string, unknown>).pricing as
+                            | Record<string, unknown>
+                            | undefined
                           const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
                           return getCurrencySymbol(baseCurrency)
                         },
@@ -419,8 +435,10 @@ export function createFormConfigSection(): FormDef {
                         label: 'Maximum',
                         placeholder: '50000',
                         min: 1,
-                        currencySymbol: (values) => {
-                          const pricing = values.pricing as Record<string, unknown> | undefined
+                        currencySymbol: ({ values }) => {
+                          const pricing = (values as Record<string, unknown>).pricing as
+                            | Record<string, unknown>
+                            | undefined
                           const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
                           return getCurrencySymbol(baseCurrency)
                         },

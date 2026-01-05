@@ -4,16 +4,17 @@ import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import type { SelectFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
-import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
+import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
+import { cn } from '@/lib/utils'
 
 type Props = FieldProps<string | number, SelectFieldMeta>
 
 const props = defineProps<Props>()
 const emit = defineEmits<FieldEmits<string | number>>()
 
-const { formValues } = useFormBuilderContext()
+const { fieldContext } = useFormBuilderContext()
 
-const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
+const { wrapperProps, resolvedPlaceholder, resolvedDisabled } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors
@@ -22,7 +23,7 @@ const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
 // Resolve options (can be static array or function)
 const resolvedOptions = computed(() => {
   if (typeof props.meta.options === 'function') {
-    return props.meta.options(formValues.value)
+    return props.meta.options(fieldContext.value)
   }
   return props.meta.options
 })
@@ -42,12 +43,12 @@ const selectValue = computed({
 <template>
   <FormFieldWrapper v-bind="wrapperProps">
     <NativeSelect
-      :id="name"
+      :id="id || name"
       v-model="selectValue"
       :autocomplete="meta.autocomplete"
       :aria-invalid="!!errors.length"
-      :disabled="meta.disabled"
-      :class="meta.class"
+      :disabled="resolvedDisabled"
+      :class="cn('bg-background', meta.class)"
       @blur="onBlur"
     >
       <NativeSelectOption v-if="resolvedPlaceholder" value="">

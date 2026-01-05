@@ -158,9 +158,9 @@ city: {
   staticOptions: [
     { value: 'nyc', label: 'New York', data: { ... } }
   ],
-  onChange: (selected, allValues, setValue) => {
-    // Access the full city object via selected.data
-    const cityData = selected?.data
+  onChange: ({ value, setValue }) => {
+    // Access the full city object via value.data
+    const cityData = value?.data
     if (cityData) {
       setValue('timezone', cityData.timezone)
     }
@@ -279,18 +279,27 @@ coverCosts: {
 
 ### emoji
 
-Single emoji picker. Great for reactions or icons.
+Emoji picker. Great for reactions or icons.
 
 ```typescript
 reaction: {
   type: 'emoji',
   label: 'How do you feel?',
-  placeholder: '😊',
-  maxLength: 2
+  placeholder: '😊'
 }
 ```
 
-**Props:** `maxLength`
+**Multiple emojis:**
+
+```typescript
+favorites: {
+  type: 'emoji',
+  label: 'Favorite emojis',
+  maxLength: 3  // Allow up to 3 emojis
+}
+```
+
+**Props:** `maxLength` (controls number of emojis allowed, default: 1)
 
 ### card
 
@@ -358,8 +367,8 @@ address: {
 **Accessing nested values:**
 
 ```typescript
-onChange: (value, allValues, setValue) => {
-  const city = (allValues.address as Record<string, unknown>)?.city
+onChange: ({ value, values, setValue }) => {
+  const city = (values.address as Record<string, unknown>)?.city
   setValue('address.zip', '10001') // Use dot notation
 }
 ```
@@ -414,7 +423,8 @@ contact: {
 }
 ```
 
-**Result:** Form data is `{ contact: { emailAddress: '...', emailFrequency: '...', phone: '...' } }`
+**Result:** Form data is `{ contact: { email: { emailAddress: '...', emailFrequency: '...' }, sms: { phone: '...' } } }`  
+**Note:** Each tab's fields are nested under the tab's `value` key.
 
 **Props:** `tabs: TabDefinition[]`, `defaultValue`, `tabsListClass`, `badgeLabel` (per tab), `badgeVariant` (per tab)
 
@@ -429,6 +439,7 @@ skills: {
   type: 'array',
   label: 'Skills',
   addButtonText: 'Add Skill',
+  sortable: true,  // Enable drag-and-drop reordering
   itemField: {
     type: 'text',
     placeholder: 'e.g., JavaScript'
@@ -446,6 +457,7 @@ contacts: {
   label: 'Emergency Contacts',
   addButtonText: 'Add Contact',
   removeButtonText: 'Remove',  // Optional custom remove button text
+  sortable: true,  // Enable drag-and-drop reordering
   itemField: {
     type: 'field-group',
     class: 'grid grid-cols-2 gap-x-3',
@@ -459,8 +471,8 @@ contacts: {
 
 **Result:** `{ contacts: [{ name: 'Jane', phone: '555-0100' }, ...] }`
 
-**Props:** `itemField`, `addButtonText`, `removeButtonText`, `class` (applied to grid container)  
-**Note:** Drag handles appear automatically. Items can be reordered by dragging.
+**Props:** `itemField`, `addButtonText`, `removeButtonText`, `sortable`, `class` (applied to grid container)  
+**Note:** Drag-and-drop reordering is opt-in. Set `sortable: true` to enable drag handles.
 
 ## Making Forms Interactive
 
@@ -527,7 +539,7 @@ React to field changes. Update other fields or trigger side effects.
 sendEmail: {
   type: 'toggle',
   label: 'Send confirmation email',
-  onChange: (value, allValues, setValue) => {
+  onChange: ({ value, setValue }) => {
     if (!value) {
       setValue('emailAddress', '')  // Clear email when disabled
     }
@@ -542,7 +554,7 @@ emailAddress: {
 }
 ```
 
-**Signature:** `onChange: (newValue, allFormValues, setFieldValue) => void`
+**Signature:** `onChange: ({ value, values, setValue }) => void`
 
 **Use sparingly.** onChange is powerful but can make forms hard to reason about. Prefer `visibleWhen` and dynamic `rules` for most cases.
 
@@ -647,6 +659,7 @@ export function createMessageFields(
 - `class?: string` – CSS classes applied to form element
 - `keepValuesOnUnmount?: boolean` – Preserve form state when component unmounts (default: `false`)
 - `validateOnMount?: boolean` – Validate all fields immediately on mount (default: `false`). Useful for edit forms with pre-filled data.
+- `updateOnlyWhenValid?: boolean` – Only emit `update:modelValue` when form is valid (default: `false`). Useful for admin configs where invalid state shouldn't propagate.
 
 **Events:**
 
@@ -697,6 +710,23 @@ interface FormDef {
 }
 ```
 
+**About `defaultValue`:** Instead of manually building this object, use the `extractDefaultValues` utility to automatically extract defaults from field definitions:
+
+```typescript
+import { extractDefaultValues } from '~/features/form-builder/utils'
+
+const formSection: FormDef = {
+  id: 'contact',
+  fields: {
+    name: { type: 'text', defaultValue: '', rules: z.string() },
+    age: { type: 'number', defaultValue: 18, rules: z.number() }
+  }
+}
+
+const data = ref(extractDefaultValues(formSection.fields))
+// Result: { name: '', age: 18 }
+```
+
 **About `schema`:** Each field defines its own validation via the `rules` property. The root `schema` is only needed for cross-field validation that involves multiple fields. For example:
 
 ```typescript
@@ -717,14 +747,14 @@ Every field type supports these:
 
 ```typescript
 {
-  label?: string | (values) => string
-  description?: string | (values) => string
-  placeholder?: string | (values) => string
+  label?: string | (ctx: FieldContext) => string
+  description?: string | (ctx: FieldContext) => string
+  placeholder?: string | (ctx: FieldContext) => string
   optional?: boolean                // Shows "(optional)" badge
-  disabled?: boolean
-  visibleWhen?: (values) => boolean
-  rules?: z.ZodTypeAny | (values) => z.ZodTypeAny
-  onChange?: (value, allValues, setValue) => void
+  disabled?: boolean | (ctx: FieldContext) => boolean
+  visibleWhen?: (ctx: FieldContext) => boolean
+  rules?: z.ZodTypeAny | (ctx: FieldContext) => z.ZodTypeAny
+  onChange?: ({ value, values, setValue }) => void
   isSeparatorAfter?: boolean       // Show separator after this field
   class?: string                   // CSS classes for input element
   labelClass?: string              // CSS classes for label
@@ -744,7 +774,7 @@ type SetFieldValueFn = (relativePath: string, value: unknown) => void
 **Usage:**
 
 ```typescript
-onChange: (value, allValues, setValue) => {
+onChange: ({ value, values, setValue }) => {
   setValue('otherField', 'new value') // Sibling field
   setValue('group.nestedField', 'value') // Nested field (dot notation)
 }

@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import type { FieldGroupMeta } from '~/features/form-builder/types'
 import { resolveText } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import { useContainerFieldSetup } from '~/features/form-builder/composables/useContainerFieldSetup'
-import FormField from '../FormField.vue'
+import FormFieldList from '../internal/FormFieldList.vue'
 import { useScrollOnVisible } from '../composables/useScrollOnVisible'
 
 interface Props {
@@ -32,7 +32,13 @@ const {
 
 // Local accordion state (self-contained for nested support)
 const accordionValue = ref<string | undefined>(
-  props.meta.collapsibleDefaultOpen ? props.name : undefined
+  (() => {
+    const defaultOpen = props.meta.collapsibleDefaultOpen
+    if (typeof defaultOpen === 'function') {
+      return defaultOpen(scopedFormValues.value) ? props.name : undefined
+    }
+    return defaultOpen ? props.name : undefined
+  })()
 )
 const isOpen = computed(() => accordionValue.value === props.name)
 
@@ -64,7 +70,7 @@ watch(isOpen, (newIsOpen) => {
     v-model="accordionValue"
     type="single"
     collapsible
-    :class="cn('w-full -mt-2', props.class)"
+    :class="cn('w-full', props.class)"
   >
     <AccordionItem
       :ref="(el: any) => setElementRef(props.name, el)"
@@ -73,7 +79,7 @@ watch(isOpen, (newIsOpen) => {
       :unmount-on-hide="false"
     >
       <AccordionTrigger
-        class="hover:no-underline group py-2"
+        class="hover:no-underline group -my-4"
         :class="{ 'cursor-not-allowed opacity-60': meta.isDisabled }"
       >
         <div class="flex items-start justify-between w-full">
@@ -115,35 +121,29 @@ watch(isOpen, (newIsOpen) => {
           }}</span>
         </div>
       </AccordionTrigger>
-      <AccordionContent class="pt-2 pb-4">
-        <div :class="cn('grid grid-cols-1 gap-4', meta.class)">
-          <FormField
-            v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
-            :key="`${childFieldKey}-${index}`"
-            :name="childFieldKey"
-            :meta="fieldMeta"
-          />
-        </div>
+      <AccordionContent class="pt-4 pb-0">
+        <FormFieldList
+          :fields="meta.fields || {}"
+          :field-context="scopedFormValues"
+          :class="cn(meta.class)"
+        />
       </AccordionContent>
     </AccordionItem>
   </Accordion>
 
   <!-- Non-collapsible version -->
-  <FieldSet v-else v-show="isGroupVisible" :class="cn('gap-4', props.class)">
+  <FieldSet v-else v-show="isGroupVisible" :class="cn(props.class)">
     <FieldLegend v-if="meta.legend || resolvedLabel" :class="cn(meta.labelClass)">{{
       meta.legend || resolvedLabel
     }}</FieldLegend>
     <FieldDescription v-if="meta.description" :class="meta.descriptionClass">
       {{ meta.description }}
     </FieldDescription>
-    <div :class="cn('grid grid-cols-1 gap-4', meta.class)">
-      <FormField
-        v-for="([childFieldKey, fieldMeta], index) in Object.entries(meta.fields || {})"
-        :key="`${childFieldKey}-${index}`"
-        :name="childFieldKey"
-        :meta="fieldMeta"
-      />
-    </div>
+    <FormFieldList
+      :fields="meta.fields || {}"
+      :field-context="scopedFormValues"
+      :class="meta.class"
+    />
   </FieldSet>
 </template>
 

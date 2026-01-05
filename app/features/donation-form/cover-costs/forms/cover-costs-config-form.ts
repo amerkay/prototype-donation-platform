@@ -21,7 +21,7 @@ export function createCoverCostsConfigSection(): FormDef {
       settings: {
         type: 'field-group',
         label: 'Cover Costs Settings',
-        visibleWhen: (values) => values.enabled === true,
+        visibleWhen: ({ values }) => values.enabled === true,
         collapsible: true,
         collapsibleDefaultOpen: false,
         isSeparatorAfter: true,

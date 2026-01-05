@@ -5,7 +5,12 @@ import type { FieldMeta } from './types'
  * Only extracts explicitly defined defaultValue properties from field definitions
  * Recursively traverses field-groups and arrays
  *
+ * Supports conditional extraction: field-groups with `extractDefaultsWhen: false`
+ * will not have their children's defaults extracted. This enables type-scoped configs
+ * where only the active type's defaults are included.
+ *
  * @param fields - FieldMetaMap from a FormDef
+ * @param options - Extraction options
  * @returns Object with default values for each field that has defaultValue defined
  *
  * @example
@@ -19,14 +24,27 @@ import type { FieldMeta } from './types'
  * extractDefaultValues(fields) // { name: '', age: 18 }
  * ```
  */
-export function extractDefaultValues(fields: Record<string, FieldMeta>): Record<string, unknown> {
+export function extractDefaultValues(
+  fields: Record<string, FieldMeta>,
+  options: { skipConditionalGroups?: boolean } = {}
+): Record<string, unknown> {
+  const { skipConditionalGroups = true } = options
   const defaults: Record<string, unknown> = {}
 
   for (const [key, fieldMeta] of Object.entries(fields)) {
     // Container fields: recursively extract from children
     if (fieldMeta.type === 'field-group' && 'fields' in fieldMeta && fieldMeta.fields) {
+      // Skip conditional groups if configured (prevents extracting defaults from inactive type-specific configs)
+      if (skipConditionalGroups && 'extractDefaultsWhen' in fieldMeta) {
+        const extractDefaults = fieldMeta.extractDefaultsWhen
+        if (extractDefaults === false) {
+          // Skip this group's defaults - it's a conditional config group
+          continue
+        }
+      }
+
       // Always include field-groups to maintain nested structure
-      defaults[key] = extractDefaultValues(fieldMeta.fields)
+      defaults[key] = extractDefaultValues(fieldMeta.fields, options)
       continue
     }
 
@@ -34,7 +52,7 @@ export function extractDefaultValues(fields: Record<string, FieldMeta>): Record<
       const tabsDefaults: Record<string, unknown> = {}
       for (const tab of fieldMeta.tabs) {
         // Always include tabs to maintain structure
-        tabsDefaults[tab.value] = extractDefaultValues(tab.fields)
+        tabsDefaults[tab.value] = extractDefaultValues(tab.fields, options)
       }
       defaults[key] = tabsDefaults
       continue

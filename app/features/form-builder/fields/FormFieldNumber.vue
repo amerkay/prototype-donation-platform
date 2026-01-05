@@ -11,7 +11,8 @@ import {
   useFieldWrapper,
   preventEnterSubmit
 } from '~/features/form-builder/composables/useFieldWrapper'
-import FormFieldWrapper from '~/features/form-builder/components/FormFieldWrapper.vue'
+import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
+import { cn } from '@/lib/utils'
 
 type Props = FieldProps<number | null, NumberFieldMeta>
 
@@ -24,7 +25,7 @@ const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.err
 <template>
   <FormFieldWrapper v-bind="wrapperProps">
     <NumberField
-      :id="name"
+      :id="id || name"
       :model-value="modelValue"
       :min="meta.min"
       :max="meta.max"
@@ -35,7 +36,7 @@ const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.err
         <NumberFieldDecrement />
         <NumberFieldInput
           :aria-invalid="!!errors.length"
-          :class="meta.class"
+          :class="cn('bg-background', meta.class)"
           @keydown.enter="preventEnterSubmit"
         />
         <NumberFieldIncrement />
