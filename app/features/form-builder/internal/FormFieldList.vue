@@ -22,9 +22,10 @@ const props = defineProps<Props>()
 // All fields for iteration
 const allFields = computed(() => Object.entries(props.fields))
 
-// Check if a field is visible (use default visibility check which treats containers as visible)
+// Check if a field is visible in the UI (not just for validation)
+// Skip container validation to get actual UI visibility, not validation visibility
 const isFieldVisible = (fieldMeta: FieldMeta) => {
-  return checkFieldVisibility(fieldMeta, props.fieldContext)
+  return checkFieldVisibility(fieldMeta, props.fieldContext, { skipContainerValidation: true })
 }
 
 // Check if separator should be shown after a field
