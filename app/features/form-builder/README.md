@@ -146,7 +146,7 @@ city: {
   type: 'autocomplete',
   label: 'City',
   searchPlaceholder: 'Type to search cities...',
-  loadOptions: async (query) => {
+  fetchOptions: async (query) => {
     const res = await fetch(`/api/cities?q=${query}`)
     const cities = await res.json()
     return cities.map(c => ({
@@ -155,7 +155,7 @@ city: {
       data: c  // Store full object for later use
     }))
   },
-  staticOptions: [
+  options: [
     { value: 'nyc', label: 'New York', data: { ... } }
   ],
   onChange: ({ value, setValue }) => {
@@ -168,7 +168,7 @@ city: {
 }
 ```
 
-**Props:** `loadOptions: (query: string) => Promise<AutocompleteOption[]>`, `staticOptions`, `debounceMs`, `minQueryLength`
+**Props:** `fetchOptions: (query: string) => Promise<AutocompleteOption[]>`, `options` (static fallback), `debounceMs`, `minQueryLength`
 
 **AutocompleteOption structure:** `{ value: string | number, label: string, data?: any }`  
 The `data` property stores the full object, accessible in `onChange` callbacks.
