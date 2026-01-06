@@ -321,7 +321,12 @@ function removeItem(index: number) {
         >
           <span
             v-if="isSortable"
-            class="drag-handle shrink-0 py-1.5 mt-1 px-2 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none"
+            :class="
+              cn(
+                'drag-handle shrink-0 py-1.5 px-2 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none',
+                getItemFieldMeta(item.veeIndex).type === 'field-group' ? 'mt-2.5' : 'mt-1'
+              )
+            "
             draggable="true"
             @dragstart="onDragStart($event, item.veeIndex)"
             @dragend="onDragEnd"
@@ -337,13 +342,10 @@ function removeItem(index: number) {
               :name="`${name}[${item.veeIndex}]`"
               :meta="getItemFieldMeta(item.veeIndex)"
               :class="
-                (() => {
-                  const meta = getItemFieldMeta(item.veeIndex)
-                  return cn(
-                    'border-0 bg-transparent rounded-none',
-                    meta.type === 'field-group' ? 'my-2.5' : ''
-                  )
-                })()
+                cn(
+                  'border-0 bg-transparent rounded-none',
+                  getItemFieldMeta(item.veeIndex).type === 'field-group' ? 'my-4' : ''
+                )
               "
             />
           </div>
@@ -352,7 +354,12 @@ function removeItem(index: number) {
             type="button"
             variant="ghost"
             size="icon"
-            class="absolute top-0.5 right-0.5 h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            :class="
+              cn(
+                'absolute right-0.5 h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10',
+                getItemFieldMeta(item.veeIndex).type === 'field-group' ? 'top-2.5' : 'top-0.5'
+              )
+            "
             :aria-label="meta.removeButtonText || 'Remove item'"
             @click="removeItem(item.veeIndex)"
           >
