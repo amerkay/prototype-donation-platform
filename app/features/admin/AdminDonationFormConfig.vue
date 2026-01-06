@@ -7,11 +7,15 @@ import { createImpactJourneyConfigSection } from '../donation-form/impact-journe
 import { createCoverCostsConfigSection } from '../donation-form/cover-costs/forms/cover-costs-config-form'
 import { createGiftAidConfigSection } from '../donation-form/gift-aid/forms/gift-aid-config-form'
 import { createTributeConfigSection } from '../donation-form/tribute/forms/tribute-config-form'
-import { createCustomFieldsConfigSection } from '../custom-fields/forms/custom-fields-config-form'
+import { createDonationCustomFieldsConfigSection } from '../donation-form/custom-fields/forms/donation-custom-fields-config-form'
 import { useFormConfigStore } from '~/stores/formConfig'
+import { useDonationFormContext } from '../donation-form/composables/useDonationFormContext'
 
 // Get shared reactive config store - mutations propagate automatically
 const store = useFormConfigStore()
+
+// Get donation form context for custom fields
+const { contextSchema: donationContextSchema } = useDonationFormContext()
 
 // Create all config sections
 const formSection = createFormConfigSection()
@@ -21,7 +25,7 @@ const impactJourneySection = createImpactJourneyConfigSection()
 const coverCostsSection = createCoverCostsConfigSection()
 const giftAidSection = createGiftAidConfigSection()
 const tributeSection = createTributeConfigSection()
-const customFieldsSection = createCustomFieldsConfigSection()
+const customFieldsSection = createDonationCustomFieldsConfigSection(donationContextSchema)
 </script>
 
 <template>
@@ -101,6 +105,7 @@ const customFieldsSection = createCustomFieldsConfigSection()
       <FormRenderer
         v-model="store.customFields"
         :section="customFieldsSection"
+        :context-schema="donationContextSchema"
         validate-on-mount
         update-only-when-valid
       />

@@ -21,8 +21,11 @@ export function useFormBuilderContext() {
   const fieldPrefix = inject<string>('fieldPrefix', '')
   const parentGroupVisible = inject<() => boolean>('parentGroupVisible', () => true)
 
-  // Inject external context provided by FormRenderer
-  const externalContext = inject<Record<string, unknown>>('externalContext', {})
+  // Inject external context provided by FormRenderer (now a computed ref for reactivity)
+  const externalContextRef = inject<ComputedRef<Record<string, unknown>>>(
+    'externalContext',
+    computed(() => ({}))
+  )
 
   // Get form values from vee-validate
   const veeFormValues = useFormValues<Record<string, FormValues>>()
@@ -46,6 +49,9 @@ export function useFormBuilderContext() {
   // Provide full FieldContext for dynamic functions
   // Merges external context with form values for condition evaluation
   const fieldContext = computed<FieldContext>(() => {
+    // Get current external context value
+    const externalContext = externalContextRef.value
+
     if (scopedFieldContext) {
       // Ensure all properties are objects and merge external context
       const ctx = scopedFieldContext.value

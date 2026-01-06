@@ -20,20 +20,14 @@ export function resolveText(
 
 /**
  * Composable to resolve dynamic field metadata (label, description, placeholder)
- * Uses vee-validate's form values via useFormBuilderContext for reactivity
+ * Uses vee-validate's form values AND external context via useFormBuilderContext for reactivity
  */
 export function useResolvedFieldMeta(meta: WithResolvableText) {
-  const { formValues } = useFormBuilderContext()
+  const { fieldContext } = useFormBuilderContext()
 
-  const resolvedLabel = computed(() =>
-    resolveText(meta.label, { values: formValues.value, root: formValues.value })
-  )
-  const resolvedDescription = computed(() =>
-    resolveText(meta.description, { values: formValues.value, root: formValues.value })
-  )
-  const resolvedPlaceholder = computed(() =>
-    resolveText(meta.placeholder, { values: formValues.value, root: formValues.value })
-  )
+  const resolvedLabel = computed(() => resolveText(meta.label, fieldContext.value))
+  const resolvedDescription = computed(() => resolveText(meta.description, fieldContext.value))
+  const resolvedPlaceholder = computed(() => resolveText(meta.placeholder, fieldContext.value))
 
   return {
     resolvedLabel,

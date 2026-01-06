@@ -7,14 +7,11 @@ import CoverCostsUpsellModal from '~/features/donation-form/cover-costs/CoverCos
 import { createGiftAidFields } from '../../gift-aid/forms/gift-aid-declaration-form'
 import { createEmailOptInField } from '~/features/donation-form/contact-consent/forms/email-opt-in-field'
 import { createTermsAcceptanceField } from '~/features/donation-form/terms/forms/terms-acceptance-field'
-import {
-  createCustomFieldsFormSection,
-  extractCustomFieldDefaults
-} from '~/features/custom-fields/utils'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import Separator from '~/components/ui/separator/Separator.vue'
 import { useFormConfigStore } from '~/stores/formConfig'
 import type { FormDef } from '~/features/form-builder/types'
+import DonationCustomFields from '~/features/donation-form/custom-fields/DonationCustomFields.vue'
 
 // Get shared form config from store
 const configStore = useFormConfigStore()
@@ -25,23 +22,6 @@ const giftAidFormSection = computed(() => ({
   id: 'gift-aid',
   fields: createGiftAidFields(formConfig.value?.features.giftAid.enabled ?? true)
 }))
-
-// Custom fields section (dynamically generated from config)
-const customFieldsFormSection = computed(() => {
-  if (!formConfig.value?.features.customFields.enabled) return null
-  const fields = formConfig.value.features.customFields.fields
-  if (fields.length === 0) return null
-  return createCustomFieldsFormSection(fields)
-})
-
-// Generate unique key for FormRenderer to force re-mount when fields change
-// This ensures FormRenderer picks up all field changes (not just ID changes)
-const customFieldsKey = computed(() => {
-  if (!formConfig.value?.features.customFields.enabled) return 'disabled'
-  const fields = formConfig.value.features.customFields.fields
-  // Create a stable key from field configurations
-  return JSON.stringify(fields)
-})
 
 // Preferences form section (email opt-in, terms acceptance)
 const preferencesFormSection: FormDef = {
@@ -67,23 +47,6 @@ const giftAidSection = computed({
     store.updateFormSection('giftAid', value ?? {})
   }
 })
-const customFieldsSection = computed({
-  get: () => {
-    const existingData = store.formSections.customFields || {}
-
-    // On first load, merge default values from config
-    if (Object.keys(existingData).length === 0 && formConfig.value?.features.customFields.enabled) {
-      const fields = formConfig.value.features.customFields.fields
-      const defaults = extractCustomFieldDefaults(fields)
-      return defaults
-    }
-
-    return existingData
-  },
-  set: (value) => {
-    store.updateFormSection('customFields', value ?? {})
-  }
-})
 const preferencesSection = computed({
   get: () => store.formSections.preferences || {},
   set: (value) => {
@@ -93,8 +56,8 @@ const preferencesSection = computed({
 
 // Form renderer references for validation
 const giftAidFormRef = ref<InstanceType<typeof FormRenderer> | null>(null)
-const customFieldsFormRef = ref<InstanceType<typeof FormRenderer> | null>(null)
 const preferencesFormRef = ref<InstanceType<typeof FormRenderer> | null>(null)
+const customFieldsRef = ref<InstanceType<typeof DonationCustomFields> | null>(null)
 const formContainerRef = ref<HTMLElement | null>(null)
 
 // Cover costs upsell modal state
@@ -211,20 +174,6 @@ const handleNext = () => {
 
     <Separator />
 
-    <!-- Custom Fields (dynamically generated from admin config) -->
-    <div v-if="customFieldsFormSection">
-      <FormRenderer
-        :key="customFieldsKey"
-        ref="customFieldsFormRef"
-        v-model="customFieldsSection"
-        :section="customFieldsFormSection"
-        :keep-values-on-unmount="true"
-        @submit="handleNext"
-      />
-    </div>
-
-    <Separator v-if="customFieldsFormSection" />
-
     <!-- Preferences Form (email opt-in, terms) -->
     <div>
       <FormRenderer
@@ -236,9 +185,12 @@ const handleNext = () => {
       />
     </div>
 
+    <!-- Custom Fields (dynamically generated from admin config) -->
+    <DonationCustomFields ref="customFieldsRef" step="step3" @submit="handleNext" />
+
     <!-- Navigation Buttons -->
     <NextButton
-      :form-refs="[giftAidFormRef, customFieldsFormRef, preferencesFormRef].filter(Boolean)"
+      :form-refs="[giftAidFormRef, preferencesFormRef, customFieldsRef?.formRef].filter(Boolean)"
       :parent-container-ref="formContainerRef"
       @click="handleNext"
     >

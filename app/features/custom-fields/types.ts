@@ -43,3 +43,20 @@ export interface CustomFieldsSettings {
   enabled: boolean
   fields: CustomFieldDefinition[]
 }
+
+/**
+ * Custom fields settings for donation form with step-based tabs
+ * Used in donation form config to separate Step 2 and Step 3 custom fields
+ */
+export interface DonationCustomFieldsSettings {
+  customFieldsTabs: {
+    step2: {
+      enabled: boolean
+      fields: CustomFieldDefinition[]
+    }
+    step3: {
+      enabled: boolean
+      fields: CustomFieldDefinition[]
+    }
+  }
+}

@@ -7,6 +7,7 @@ import { donorInfoFormSection } from '../../donor-info/forms/donor-info-form'
 import { addressFormSection } from '../../forms/address-form'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
+import DonationCustomFields from '~/features/donation-form/custom-fields/DonationCustomFields.vue'
 
 interface Props {
   needsShipping: boolean
@@ -52,17 +53,21 @@ const shippingSection = computed({
 // Form refs
 const donorFormRef = ref<InstanceType<typeof FormRenderer>>()
 const shippingFormRef = ref<InstanceType<typeof FormRenderer>>()
+const customFieldsRef = ref<InstanceType<typeof DonationCustomFields>>()
 const formContainerRef = ref<HTMLElement | null>(null)
 
 addressFormSection.title = 'Shipping Address'
 
-// Compute form refs to validate (conditionally include shipping)
+// Compute form refs to validate (conditionally include shipping and custom fields)
 const formRefsToValidate = computed(() => {
   const refs = [donorFormRef.value]
   if (props.needsShipping) {
     refs.push(shippingFormRef.value)
   }
-  return refs
+  if (customFieldsRef.value?.formRef) {
+    refs.push(customFieldsRef.value.formRef)
+  }
+  return refs.filter(Boolean)
 })
 
 // Handle next - just emit complete when valid
@@ -97,6 +102,9 @@ const handleNext = () => {
         />
       </div>
     </template>
+
+    <!-- Custom Fields (dynamically generated from admin config) -->
+    <DonationCustomFields ref="customFieldsRef" step="step2" @submit="handleNext" />
 
     <!-- Next Button -->
     <NextButton

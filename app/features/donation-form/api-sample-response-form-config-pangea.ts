@@ -117,66 +117,75 @@ export const formConfig = {
       }
     },
     customFields: {
-      enabled: true,
-      fields: [
-        {
-          id: 'text_company_name',
-          type: 'text' as const,
-          label: 'Company Name',
-          advancedSettings: {
-            optional: true,
-            placeholder: 'Enter your company name',
-            maxLength: 100
-          }
-        },
-        {
-          id: 'text_premium_code',
-          type: 'text' as const,
-          label: 'Premium Access Code',
-          advancedSettings: {
-            optional: true,
-            placeholder: 'Enter your premium code'
-          },
-          // Only visible for premium tier users
-          enableVisibilityConditions: true,
-          visibilityConditions: {
-            visibleWhen: {
-              conditions: [
-                {
-                  field: 'subscriptionTier',
-                  operator: 'equals',
-                  value: 'premium'
-                }
-              ],
-              match: 'all'
+      customFieldsTabs: {
+        step2: {
+          enabled: true,
+          fields: [
+            {
+              id: 'text_company_name',
+              type: 'text' as const,
+              label: 'Company Name',
+              advancedSettings: {
+                optional: true,
+                placeholder: 'Enter your company name',
+                maxLength: 100
+              }
             }
-          }
+          ]
         },
-        {
-          id: 'textarea_special_message',
-          type: 'textarea' as const,
-          label: 'Special Message',
-          advancedSettings: {
-            optional: true,
-            placeholder: 'Tell us something special...',
-            rows: 3
-          },
-          // Only visible for enterprise tier users
-          enableVisibilityConditions: true,
-          visibilityConditions: {
-            visibleWhen: {
-              conditions: [
-                {
-                  field: 'subscriptionTier',
-                  operator: 'equals',
-                  value: 'enterprise'
+        step3: {
+          enabled: true,
+          fields: [
+            {
+              id: 'text_premium_code',
+              type: 'text' as const,
+              label: 'Premium Access Code',
+              advancedSettings: {
+                optional: true,
+                placeholder: 'Enter your premium code'
+              },
+              // Only visible for premium tier users
+              enableVisibilityConditions: true,
+              visibilityConditions: {
+                visibleWhen: {
+                  conditions: [
+                    {
+                      field: 'subscriptionTier',
+                      operator: 'equals',
+                      value: 'premium'
+                    }
+                  ],
+                  match: 'all'
                 }
-              ],
-              match: 'all'
+              }
+            },
+            {
+              id: 'textarea_special_message',
+              type: 'textarea' as const,
+              label: 'Special Message',
+              advancedSettings: {
+                optional: true,
+                placeholder: 'Tell us something special...',
+                rows: 3
+              },
+              // Only visible for enterprise tier users
+              enableVisibilityConditions: true,
+              visibilityConditions: {
+                visibleWhen: {
+                  conditions: [
+                    {
+                      field: 'subscriptionTier',
+                      operator: 'equals',
+                      value: 'enterprise'
+                    }
+                  ],
+                  match: 'all'
+                }
+              }
             }
-          }
+          ]
         }
-      ]
+      }
     }
   }
 }

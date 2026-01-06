@@ -10,7 +10,7 @@ import type { ImpactJourneySettings } from '~/features/donation-form/impact-jour
 import type { CoverCostsSettings } from '~/features/donation-form/cover-costs/types'
 import type { GiftAidSettings } from '~/features/donation-form/gift-aid/types'
 import type { TributeSettings } from '~/features/donation-form/tribute/types'
-import type { CustomFieldsSettings } from '~/features/custom-fields/types'
+import type { DonationCustomFieldsSettings } from '~/features/custom-fields/types'
 import type { Product } from '~/features/donation-form/product/types'
 
 /**
@@ -45,7 +45,7 @@ export const useFormConfigStore = defineStore('formConfig', {
     coverCosts: null as CoverCostsSettings | null,
     giftAid: null as GiftAidSettings | null,
     tribute: null as TributeSettings | null,
-    customFields: null as CustomFieldsSettings | null,
+    customFields: null as DonationCustomFieldsSettings | null,
 
     // Products (separate concern)
     products: [] as Product[]
@@ -129,6 +129,6 @@ export interface FullFormConfig {
     coverCosts: CoverCostsSettings
     giftAid: GiftAidSettings
     tribute: TributeSettings
-    customFields: CustomFieldsSettings
+    customFields: DonationCustomFieldsSettings
   }
 }

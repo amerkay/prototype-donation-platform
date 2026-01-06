@@ -9,14 +9,22 @@ import { OPERATORS } from './operators'
 /**
  * Get value at path using dot notation
  * Supports nested objects and arrays
+ * First checks for literal key match before splitting by dots
  *
  * @example
  * getValueAtPath({ user: { name: 'John' } }, 'user.name') // 'John'
  * getValueAtPath({ items: [{ id: 1 }] }, 'items.0.id') // 1
+ * getValueAtPath({ 'donation.amount': 10 }, 'donation.amount') // 10 (literal key)
  */
 function getValueAtPath(obj: Record<string, unknown>, path: string): unknown {
   if (!path) return obj
 
+  // First, check if the path exists as a literal key (for flattened contexts)
+  if (path in obj) {
+    return obj[path]
+  }
+
+  // Otherwise, navigate nested structure using dot notation
   const keys = path.split('.')
   let current: unknown = obj
 
@@ -56,7 +64,8 @@ export function evaluateCondition(condition: Condition, values: Record<string, u
 
   // Execute operator
   try {
-    return operatorFn(fieldValue, comparisonValue)
+    const result = operatorFn(fieldValue, comparisonValue)
+    return result
   } catch (error) {
     console.error(`Error evaluating condition:`, condition, error)
     return false

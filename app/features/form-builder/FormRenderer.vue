@@ -78,8 +78,12 @@ const { values, meta, validate, handleSubmit, setFieldValue, setFieldTouched } =
 provide('sectionId', props.section.id)
 
 // Provide external context values and schema for condition evaluation
-provide('externalContext', props.context || {})
-provide('contextSchema', props.contextSchema || {})
+// Use toRef/computed to make them reactive so conditions re-evaluate on changes
+const externalContext = computed(() => props.context || {})
+const contextSchemaRef = computed(() => props.contextSchema || {})
+
+provide('externalContext', externalContext)
+provide('contextSchema', contextSchemaRef)
 
 // Provide setFieldValue for onChange callbacks
 // Wrap to add section ID prefix and emit immediately for reactivity
