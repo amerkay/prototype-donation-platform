@@ -256,7 +256,7 @@ export function createCustomFieldsConfigSection(contextSchema?: ContextSchema): 
                       label: 'Conditions',
                       defaultValue: [],
                       addButtonText: 'Add Condition',
-                      optional: true,
+                      rules: z.array(z.any()).min(1, 'At least one condition is required'),
                       // Use extracted condition field builder
                       itemField: buildConditionItemField(precedingFields, contextSchema)
                     }

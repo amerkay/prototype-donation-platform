@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, type Component } from 'vue'
+import { computed, inject, watch, type Component } from 'vue'
 import { useField, useFormErrors } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
@@ -248,6 +248,23 @@ const fieldProps = computed(() => {
     modelValue: fieldValue.value
   }
 })
+
+// Auto-apply default value when field becomes visible
+watch(
+  isVisible,
+  (visible) => {
+    if (
+      visible &&
+      fieldBinding &&
+      fieldValue.value === undefined &&
+      'defaultValue' in props.meta &&
+      props.meta.defaultValue !== undefined
+    ) {
+      fieldValue.value = props.meta.defaultValue
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
