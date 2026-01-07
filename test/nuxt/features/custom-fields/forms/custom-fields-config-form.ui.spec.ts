@@ -201,6 +201,40 @@ describe('custom-fields-config-form - condition builder logic', () => {
       // Should reset value
       expect(mockSetValue).toHaveBeenCalledWith('value', '')
     })
+
+    it('operator onChange initializes value as array for in/notIn operators', () => {
+      const { contextSchema } = createTestContext()
+      const { conditionItemField } = getConditionFieldConfig(contextSchema)
+
+      const conditionConfig = conditionItemField({ field: 'amount' })
+      const operatorField = conditionConfig.fields?.operator
+
+      expect(operatorField?.onChange).toBeDefined()
+
+      // Mock setValue function
+      const mockSetValue = vi.fn()
+
+      // Test 'in' operator
+      operatorField?.onChange?.({
+        value: 'in',
+        values: {},
+        root: {},
+        setValue: mockSetValue
+      })
+
+      expect(mockSetValue).toHaveBeenCalledWith('value', [])
+
+      // Test 'notIn' operator
+      mockSetValue.mockClear()
+      operatorField?.onChange?.({
+        value: 'notIn',
+        values: {},
+        root: {},
+        setValue: mockSetValue
+      })
+
+      expect(mockSetValue).toHaveBeenCalledWith('value', [])
+    })
   })
 
   describe('Validation Requirements', () => {
@@ -263,14 +297,15 @@ describe('custom-fields-config-form - condition builder logic', () => {
       expect(valueField?.type).toBe('number')
     })
 
-    it('value field becomes array type for in/notIn operators', () => {
+    it('value field becomes array type for in/notIn operators ONLY when value is array', () => {
       const { contextSchema } = createTestContext()
       const { conditionItemField } = getConditionFieldConfig(contextSchema)
 
-      // Field with options and 'in' operator - value should be array type
+      // Field with options and 'in' operator - value should be array type only if value is []
       const conditionConfigIn = conditionItemField({
         field: 'donationType',
-        operator: 'in'
+        operator: 'in',
+        value: [] // Must provide array value
       })
       const valueFieldIn = conditionConfigIn.fields?.value
 
@@ -288,10 +323,11 @@ describe('custom-fields-config-form - condition builder logic', () => {
       )
       expect(isVisibleIn).toBe(true)
 
-      // Field with options and 'notIn' operator - value should be array type
+      // Field with options and 'notIn' operator
       const conditionConfigNotIn = conditionItemField({
         field: 'donationType',
-        operator: 'notIn'
+        operator: 'notIn',
+        value: [] // Must provide array value
       })
       const valueFieldNotIn = conditionConfigNotIn.fields?.value
 
@@ -306,6 +342,24 @@ describe('custom-fields-config-form - condition builder logic', () => {
         mockContextNotIn
       )
       expect(isVisibleNotIn).toBe(true)
+    })
+
+    it('value field is hidden/text placeholder if operator is in/notIn but value is not array', () => {
+      const { contextSchema } = createTestContext()
+      const { conditionItemField } = getConditionFieldConfig(contextSchema)
+
+      // 'in' operator but value is string (transition state)
+      const conditionConfigTransition = conditionItemField({
+        field: 'donationType',
+        operator: 'in',
+        value: '' // Invalid value for array
+      })
+
+      const valueField = conditionConfigTransition.fields?.value
+      expect(valueField?.type).toBe('text') // Should fallback to text
+
+      const isVisible = (valueField?.visibleWhen as () => boolean)()
+      expect(isVisible).toBe(false) // Should be hidden
     })
 
     it('value field is hidden for operators that do not require a value', () => {

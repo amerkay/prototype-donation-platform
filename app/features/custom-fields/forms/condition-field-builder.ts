@@ -83,9 +83,14 @@ export function buildConditionItemField(
           })),
           rules: z.string().min(1, 'Operator is required'),
           visibleWhen: () => !!selectedField,
-          onChange: ({ setValue }: OnChangeContext) => {
+          onChange: ({ value, setValue }: OnChangeContext) => {
             // Clear value when operator changes
-            setValue('value', '')
+            const op = value as ComparisonOperator
+            if (op === 'in' || op === 'notIn') {
+              setValue('value', [])
+            } else {
+              setValue('value', '')
+            }
           }
         },
 
@@ -109,6 +114,15 @@ function buildValueField(
 
   // For 'in'/'notIn' operators, use array field
   if (currentOp === 'in' || currentOp === 'notIn') {
+    // Ensure value is an array before rendering array field to avoid type mismatch errors during transition
+    const currentValue = conditionValues.value
+    if (!Array.isArray(currentValue)) {
+      return {
+        type: 'text',
+        visibleWhen: () => false
+      }
+    }
+
     if (fieldMeta?.options) {
       // Array of selects for enum fields
       return {
