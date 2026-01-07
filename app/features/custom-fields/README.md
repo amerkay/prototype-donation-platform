@@ -1,6 +1,6 @@
 # Custom Fields
 
-Add dynamic form fields to your donation forms without writing code. Admins configure, users fill out—no developer intervention needed.
+Add dynamic form fields to your forms without writing code. Admins configure, users fill out—no developer intervention needed.
 
 ## Overview
 
@@ -30,8 +30,6 @@ Form automatically renders with validation, conditional logic, and proper access
 ```vue
 <FormRenderer :section="customFieldsSection" v-model="donorData" />
 ```
-
-The field appears in step 3 of the donation form. No code changes required.
 
 ## Quick Start
 

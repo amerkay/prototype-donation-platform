@@ -1,4 +1,4 @@
-import type { FieldMeta } from './types'
+import type { FieldMeta } from '../types'
 
 /**
  * Extract default values from field metadata

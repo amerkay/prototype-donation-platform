@@ -21,11 +21,14 @@ function customFieldToFieldMeta(field: CustomFieldDefinition): FieldMetaMap {
   // Factory handles all type-specific logic
   const fieldMeta = factory.toFieldMeta(field as never) // Type assertion safe: discriminated union
 
-  // Extract visibility condition from admin config if present
-  const visibilityConditions = (field as unknown as Record<string, unknown>)
-    .visibilityConditions as Record<string, unknown> | undefined
+  // Extract visibility condition from admin config if present AND enabled
+  const fieldRecord = field as unknown as Record<string, unknown>
+  const enableVisibilityConditions = fieldRecord.enableVisibilityConditions as boolean | undefined
+  const visibilityConditions = fieldRecord.visibilityConditions as
+    | Record<string, unknown>
+    | undefined
 
-  if (visibilityConditions) {
+  if (enableVisibilityConditions && visibilityConditions) {
     const visibleWhen = visibilityConditions.visibleWhen as ConditionGroup | undefined
     if (visibleWhen && typeof visibleWhen === 'object' && 'conditions' in visibleWhen) {
       fieldMeta.visibleWhen = visibleWhen
@@ -39,7 +42,7 @@ function customFieldToFieldMeta(field: CustomFieldDefinition): FieldMetaMap {
 
 /**
  * Convert array of custom field definitions to a FormDef section
- * Used to dynamically generate form fields for step 3
+ * Used to dynamically generate form fields
  *
  * @param customFields - Array of custom field definitions from admin config
  * @returns FormDef object ready for FormRenderer

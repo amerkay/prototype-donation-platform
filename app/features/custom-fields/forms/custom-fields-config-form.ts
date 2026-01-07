@@ -3,18 +3,13 @@ import type {
   FormDef,
   FieldMeta,
   ArrayItemContext,
-  FieldContext,
-  OnChangeContext
+  FieldContext
 } from '~/features/form-builder/types'
 import { FIELD_FACTORIES, type CustomFieldType, slugify } from '~/features/custom-fields/fields'
-import {
-  getOperatorsForType,
-  operatorRequiresValue,
-  OPERATOR_LABELS,
-  type ComparisonOperator,
-  type ContextSchema
-} from '~/features/form-builder/conditions'
+import type { ContextSchema } from '~/features/form-builder/conditions'
 import type { AvailableField } from '~/features/form-builder/composables/useAvailableFields'
+import { buildConditionItemField } from './condition-field-builder'
+import { validateCustomFieldConditions } from './validation-helpers'
 
 /**
  * Extract field metadata from preceding custom fields in the array
@@ -91,12 +86,20 @@ export function createCustomFieldsConfigSection(contextSchema?: ContextSchema): 
       enabled: {
         type: 'toggle',
         label: 'Enable Custom Fields',
-        description: 'Add extra questions to step 3 of the donation form',
+        description: 'Add extra questions to form',
         labelClass: 'font-bold',
         isSeparatorAfter: true
       },
       fields: {
         type: 'array',
+        onChange: ({ value, setFieldError, setFieldTouched, path }) => {
+          if (Array.isArray(value) && setFieldError && setFieldTouched && path) {
+            validateCustomFieldConditions(value as Record<string, unknown>[], contextSchema, path, {
+              setFieldError,
+              setFieldTouched
+            })
+          }
+        },
         label: 'Custom Fields',
         description: 'Define additional form fields for donors to fill out',
         visibleWhen: ({ values }) => values.enabled === true,
@@ -237,13 +240,14 @@ export function createCustomFieldsConfigSection(contextSchema?: ContextSchema): 
                   optional: true,
                   fields: {
                     match: {
-                      type: 'select',
+                      type: 'radio-group',
                       label: 'Match',
                       defaultValue: 'all',
+                      orientation: 'horizontal',
                       options: [
-                        { value: 'all', label: 'All conditions match' },
-                        { value: 'any', label: 'Any condition matches' },
-                        { value: 'none', label: 'No conditions match' }
+                        { value: 'all', label: 'All match' },
+                        { value: 'any', label: 'Any match' },
+                        { value: 'none', label: 'None match' }
                       ]
                     },
 
@@ -253,107 +257,8 @@ export function createCustomFieldsConfigSection(contextSchema?: ContextSchema): 
                       defaultValue: [],
                       addButtonText: 'Add Condition',
                       optional: true,
-                      itemField: (conditionValues: Record<string, unknown>) => {
-                        const selectedField = conditionValues.field as string | undefined
-
-                        // Merge preceding custom fields + external context fields
-                        const allAvailableFields: AvailableField[] = [
-                          ...precedingFields,
-                          // Add external context fields if available
-                          ...(contextSchema
-                            ? Object.entries(contextSchema).map(([key, schema]) => ({
-                                key,
-                                label: schema.label,
-                                type: schema.type,
-                                options: schema.options,
-                                group: 'External Context' as const
-                              }))
-                            : [])
-                        ]
-
-                        // Find the field metadata for operator filtering and value input
-                        const fieldMeta = allAvailableFields.find((f) => f.key === selectedField)
-                        const availableOperators = fieldMeta
-                          ? getOperatorsForType(fieldMeta.type)
-                          : (['equals', 'notEquals'] as ComparisonOperator[])
-
-                        // Build flattened field selector options
-                        const fieldOptions: Array<{ value: string; label: string }> =
-                          allAvailableFields.map((f) => ({
-                            value: f.key,
-                            label: f.label
-                          }))
-
-                        return {
-                          type: 'field-group',
-                          label: 'Condition',
-                          fields: {
-                            field: {
-                              type: 'select',
-                              label: 'Field',
-                              placeholder: 'Select a field',
-                              options: fieldOptions,
-                              rules: z.string().min(1, 'Field is required'),
-                              onChange: ({ setValue }: OnChangeContext) => {
-                                setValue('operator', 'equals')
-                                setValue('value', '')
-                              }
-                            },
-
-                            operator: {
-                              type: 'select',
-                              label: 'Condition',
-                              defaultValue: 'equals',
-                              options: availableOperators.map((op) => ({
-                                value: op,
-                                label: OPERATOR_LABELS[op]
-                              })),
-                              rules: z.string().min(1, 'Operator is required'),
-                              onChange: ({ setValue }: OnChangeContext) => {
-                                setValue('value', '')
-                              }
-                            },
-
-                            ...(fieldMeta?.options
-                              ? {
-                                  value: {
-                                    type: 'select' as const,
-                                    label: 'Value',
-                                    placeholder: 'Select a value',
-                                    optional: true,
-                                    options: [
-                                      { value: '', label: 'Select a value' },
-                                      ...fieldMeta.options.filter(
-                                        (opt): opt is { value: string | number; label: string } =>
-                                          typeof opt.value === 'string' ||
-                                          typeof opt.value === 'number'
-                                      )
-                                    ],
-                                    visibleWhen: ({ values }: FieldContext) => {
-                                      const op = values.operator as ComparisonOperator | undefined
-                                      return op ? operatorRequiresValue(op) : true
-                                    }
-                                  }
-                                }
-                              : {
-                                  value: {
-                                    type: 'text' as const,
-                                    label: 'Value',
-                                    placeholder: 'Enter value',
-                                    optional: true,
-                                    inputType:
-                                      fieldMeta?.type === 'number'
-                                        ? ('number' as const)
-                                        : undefined,
-                                    visibleWhen: ({ values }: FieldContext) => {
-                                      const op = values.operator as ComparisonOperator | undefined
-                                      return op ? operatorRequiresValue(op) : true
-                                    }
-                                  }
-                                })
-                          }
-                        }
-                      }
+                      // Use extracted condition field builder
+                      itemField: buildConditionItemField(precedingFields, contextSchema)
                     }
                   }
                 }

@@ -8,6 +8,7 @@ type FormContext = {
   errors: ReturnType<typeof useForm>['errors']
   meta: ReturnType<typeof useForm>['meta']
   validate: ReturnType<typeof useForm>['validate']
+  setFieldError: ReturnType<typeof useForm>['setFieldError']
 }
 
 /**
@@ -39,6 +40,8 @@ function createFormBuilderTestProvider(
       // Initialize vee-validate form (same as FormRenderer)
       const {
         setFieldValue: veeSetFieldValue,
+        setFieldTouched: veeSetFieldTouched,
+        setFieldError: veeSetFieldError,
         values: formValues,
         errors,
         meta,
@@ -49,7 +52,13 @@ function createFormBuilderTestProvider(
 
       // Pass form context to callback for test access
       if (onFormContextCreated) {
-        onFormContextCreated({ values: formValues, errors, meta, validate })
+        onFormContextCreated({
+          values: formValues,
+          errors,
+          meta,
+          validate,
+          setFieldError: veeSetFieldError
+        })
       }
 
       // Explicitly register array field paths to prevent vee-validate warnings
@@ -84,6 +93,10 @@ function createFormBuilderTestProvider(
         veeSetFieldValue(fullPath, value as any)
       }
       provide('setFieldValue', providedSetFieldValue)
+
+      // Provide setFieldError and setFieldTouched (same as FormRenderer)
+      provide('setFieldError', veeSetFieldError)
+      provide('setFieldTouched', veeSetFieldTouched)
 
       // Provide submit function (no-op for tests, same as FormRenderer)
       provide('submitForm', () => {})
@@ -185,7 +198,8 @@ export async function mountFormField<T extends Record<string, unknown>>(
     formValues: capturedFormContext!.values,
     formErrors: capturedFormContext!.errors,
     formMeta: capturedFormContext!.meta,
-    validate: capturedFormContext!.validate
+    validate: capturedFormContext!.validate,
+    setFieldError: capturedFormContext!.setFieldError
   }
 }
 

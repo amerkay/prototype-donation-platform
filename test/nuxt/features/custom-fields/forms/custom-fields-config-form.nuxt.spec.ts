@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createCustomFieldsConfigSection } from '~/features/custom-fields/forms/custom-fields-config-form'
 import type {
   ArrayFieldMeta,
@@ -299,6 +299,276 @@ describe('custom-fields-config-form', () => {
       const donationCountOption = options.find((o) => o.value === 'donationCount')
       expect(donationCountOption).toBeDefined()
       expect(donationCountOption?.label).toBe('Total Donations')
+    })
+
+    it('clears invalid condition references when fields are reordered', () => {
+      const formDef = createCustomFieldsConfigSection()
+      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+
+      expect(fieldsArray.onChange).toBeDefined()
+      expect(typeof fieldsArray.onChange).toBe('function')
+
+      // Create two fields: fieldA and fieldB where fieldB has a condition referencing fieldA
+      const fieldA = {
+        id: 'field_a',
+        type: 'text',
+        label: 'Field A'
+      }
+
+      const fieldB = {
+        id: 'field_b',
+        type: 'text',
+        label: 'Field B',
+        enableVisibilityConditions: true,
+        visibilityConditions: {
+          visibleWhen: {
+            match: 'all',
+            conditions: [
+              {
+                field: 'field_a', // References fieldA
+                operator: 'equals',
+                value: 'test'
+              }
+            ]
+          }
+        }
+      }
+
+      // Simulate reordering: move fieldB before fieldA (making the condition invalid)
+      const reorderedFields = [fieldB, fieldA]
+
+      const mockSetFieldError = vi.fn()
+      const mockSetFieldTouched = vi.fn()
+      const mockSetValue = vi.fn()
+
+      fieldsArray.onChange?.({
+        value: reorderedFields,
+        values: { fields: reorderedFields },
+        root: { fields: reorderedFields },
+        setValue: mockSetValue,
+        setFieldError: mockSetFieldError,
+        setFieldTouched: mockSetFieldTouched,
+        path: 'customFields.fields'
+      })
+
+      // Should set error on the invalid condition field
+      // Logic: fieldB is now at index 0, so precedingFields is empty.
+      // But fieldB references 'field_a'. 'field_a' is not in precedingFields (it's at index 1 now).
+      expect(mockSetFieldError).toHaveBeenCalled()
+      expect(mockSetFieldTouched).toHaveBeenCalled()
+
+      // The path format should be: customFields.fields[index].visibilityConditions.visibleWhen.conditions[cIndex].field
+      // fieldB is at index 0. The condition is at index 0.
+      const expectedPath =
+        'customFields.fields[0].visibilityConditions.visibleWhen.conditions[0].field'
+
+      const calls = mockSetFieldError.mock.calls
+      const errorCall = calls.find((call: unknown[]) => call[0] === expectedPath) as unknown[]
+
+      expect(errorCall).toBeDefined()
+      expect(errorCall[1]).toContain('This field is no longer available')
+
+      // Should not mutate values anymore
+      expect(mockSetValue).not.toHaveBeenCalled()
+    })
+
+    it('preserves valid conditions when fields are reordered but remain valid', () => {
+      const formDef = createCustomFieldsConfigSection()
+      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+
+      expect(fieldsArray.onChange).toBeDefined()
+
+      // Create three fields: A, B, C where C has a condition referencing A
+      const fieldA = {
+        id: 'field_a',
+        type: 'text',
+        label: 'Field A'
+      }
+
+      const fieldB = {
+        id: 'field_b',
+        type: 'text',
+        label: 'Field B'
+      }
+
+      const fieldC = {
+        id: 'field_c',
+        type: 'text',
+        label: 'Field C',
+        enableVisibilityConditions: true,
+        visibilityConditions: {
+          visibleWhen: {
+            match: 'all',
+            conditions: [
+              {
+                field: 'field_a', // References fieldA
+                operator: 'equals',
+                value: 'test'
+              }
+            ]
+          }
+        }
+      }
+
+      // Swap fieldB and fieldC - fieldA is still before fieldC, so condition remains valid
+      const reorderedFields = [fieldA, fieldC, fieldB]
+
+      const mockSetFieldError = vi.fn()
+      const mockSetFieldTouched = vi.fn()
+      const mockSetValue = vi.fn()
+
+      fieldsArray.onChange?.({
+        value: reorderedFields,
+        values: { fields: reorderedFields },
+        root: { fields: reorderedFields },
+        setValue: mockSetValue,
+        setFieldError: mockSetFieldError,
+        setFieldTouched: mockSetFieldTouched,
+        path: 'customFields.fields'
+      })
+
+      // Should verify valid fields and clear errors if any existed
+      expect(mockSetFieldError).toHaveBeenCalled()
+
+      // Check that it calls setFieldError with undefined for valid fields
+      const expectedPath =
+        'customFields.fields[1].visibilityConditions.visibleWhen.conditions[0].field'
+      const call = mockSetFieldError.mock.calls.find(
+        (call: unknown[]) => call[0] === expectedPath
+      ) as unknown[]
+
+      expect(call).toBeDefined()
+      expect(call[1]).toBeUndefined() // Clears error
+
+      expect(mockSetValue).not.toHaveBeenCalled()
+    })
+
+    it('flags condition as error when referenced field is deleted', () => {
+      const formDef = createCustomFieldsConfigSection()
+      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+
+      expect(fieldsArray.onChange).toBeDefined()
+
+      const fieldB = {
+        id: 'field_b',
+        type: 'text',
+        label: 'Field B',
+        enableVisibilityConditions: true,
+        visibilityConditions: {
+          visibleWhen: {
+            match: 'all',
+            conditions: [
+              {
+                field: 'field_a', // References fieldA
+                operator: 'equals',
+                value: 'test'
+              }
+            ]
+          }
+        }
+      }
+
+      // Simulate deletion: remove fieldA, leaving only fieldB
+      const fieldsAfterDeletion = [fieldB]
+
+      const mockSetFieldError = vi.fn()
+      const mockSetFieldTouched = vi.fn()
+      const mockSetValue = vi.fn()
+
+      fieldsArray.onChange?.({
+        value: fieldsAfterDeletion,
+        values: { fields: fieldsAfterDeletion },
+        root: { fields: fieldsAfterDeletion },
+        setValue: mockSetValue,
+        setFieldError: mockSetFieldError,
+        setFieldTouched: mockSetFieldTouched,
+        path: 'customFields.fields'
+      })
+
+      // Should set error on the invalid condition field
+      expect(mockSetFieldError).toHaveBeenCalled()
+
+      const expectedPath =
+        'customFields.fields[0].visibilityConditions.visibleWhen.conditions[0].field'
+      const call = mockSetFieldError.mock.calls.find(
+        (call: unknown[]) => call[0] === expectedPath
+      ) as unknown[]
+
+      expect(call).toBeDefined()
+      expect(call[1]).toContain('This field is no longer available')
+
+      // Should not mutate values
+      expect(mockSetValue).not.toHaveBeenCalled()
+    })
+
+    it('preserves conditions referencing external context when fields are reordered', () => {
+      const contextSchema = {
+        userTier: {
+          label: 'User Tier',
+          type: 'string' as const
+        }
+      }
+
+      const formDef = createCustomFieldsConfigSection(contextSchema)
+      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+
+      expect(fieldsArray.onChange).toBeDefined()
+
+      const fieldA = {
+        id: 'field_a',
+        type: 'text',
+        label: 'Field A',
+        enableVisibilityConditions: true,
+        visibilityConditions: {
+          visibleWhen: {
+            match: 'all',
+            conditions: [
+              {
+                field: 'userTier', // References external context
+                operator: 'equals',
+                value: 'premium'
+              }
+            ]
+          }
+        }
+      }
+
+      const fieldB = {
+        id: 'field_b',
+        type: 'text',
+        label: 'Field B'
+      }
+
+      // Reorder fields - condition should remain valid because it references external context
+      const reorderedFields = [fieldB, fieldA]
+
+      const mockSetFieldError = vi.fn()
+      const mockSetFieldTouched = vi.fn()
+      const mockSetValue = vi.fn()
+
+      fieldsArray.onChange?.({
+        value: reorderedFields,
+        values: { fields: reorderedFields },
+        root: { fields: reorderedFields },
+        setValue: mockSetValue,
+        setFieldError: mockSetFieldError,
+        setFieldTouched: mockSetFieldTouched,
+        path: 'customFields.fields'
+      })
+
+      // Should check errors but clear them since they are valid
+      expect(mockSetFieldError).toHaveBeenCalled()
+
+      const expectedPath =
+        'customFields.fields[1].visibilityConditions.visibleWhen.conditions[0].field'
+      const call = mockSetFieldError.mock.calls.find(
+        (call: unknown[]) => call[0] === expectedPath
+      ) as unknown[]
+
+      expect(call).toBeDefined()
+      expect(call[1]).toBeUndefined() // Valid
+
+      expect(mockSetValue).not.toHaveBeenCalled()
     })
   })
 })

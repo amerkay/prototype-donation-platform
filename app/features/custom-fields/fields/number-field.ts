@@ -4,7 +4,7 @@
  */
 import * as z from 'zod'
 import type { FieldMeta } from '~/features/form-builder/types'
-import { createBaseFieldMeta, createOptionalSchema } from './field-base'
+import { createBaseFieldMeta, createOptionalSchema, extractFieldValue } from './field-base'
 
 /**
  * Number field configuration (admin-editable)
@@ -75,16 +75,12 @@ export function createNumberFieldAdminConfig(): Record<string, FieldMeta> {
  * Convert admin config to runtime field metadata
  */
 export function numberFieldToFieldMeta(config: NumberFieldConfig): FieldMeta {
-  const advancedSettings =
-    ((config as unknown as Record<string, unknown>).advancedSettings as
-      | Record<string, unknown>
-      | undefined) || {}
-  const min = config.min ?? (advancedSettings.min as number | undefined)
-  const max = config.max ?? (advancedSettings.max as number | undefined)
-  const step = config.step ?? (advancedSettings.step as number | undefined)
-  const optional = config.optional ?? (advancedSettings.optional as boolean | undefined) ?? true
-  const defaultValue =
-    config.defaultValue ?? (advancedSettings.defaultValue as number | undefined) ?? undefined
+  const configObj = config as unknown as Record<string, unknown>
+  const min = extractFieldValue<number>(configObj, 'min')
+  const max = extractFieldValue<number>(configObj, 'max')
+  const step = extractFieldValue<number>(configObj, 'step')
+  const optional = extractFieldValue<boolean>(configObj, 'optional', true)
+  const defaultValue = extractFieldValue<number>(configObj, 'defaultValue')
 
   // Build validation schema with constraints
   let schema = z.number()
@@ -106,11 +102,7 @@ export function numberFieldToFieldMeta(config: NumberFieldConfig): FieldMeta {
  * Extract default value from number field config
  */
 export function getNumberFieldDefaultValue(config: NumberFieldConfig): number | undefined {
-  const advancedSettings =
-    ((config as unknown as Record<string, unknown>).advancedSettings as
-      | Record<string, unknown>
-      | undefined) || {}
-  return config.defaultValue ?? (advancedSettings.defaultValue as number | undefined)
+  return extractFieldValue<number>(config as unknown as Record<string, unknown>, 'defaultValue')
 }
 
 /**

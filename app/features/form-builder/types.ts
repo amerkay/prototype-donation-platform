@@ -29,6 +29,12 @@ export interface OnChangeContext extends FieldContext {
   value: unknown
   /** Function to set field values using relative paths */
   setValue: SetFieldValueFn
+  /** Full path to the current field */
+  path?: string
+  /** Function to set a field's error message */
+  setFieldError?: (field: string, message: string | string[] | undefined) => void
+  /** Function to set a field's touched state */
+  setFieldTouched?: (field: string, isTouched?: boolean) => void
 }
 
 /**

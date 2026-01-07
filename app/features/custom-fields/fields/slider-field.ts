@@ -4,7 +4,7 @@
  */
 import * as z from 'zod'
 import type { FieldMeta } from '~/features/form-builder/types'
-import { createBaseFieldMeta, createOptionalSchema } from './field-base'
+import { createBaseFieldMeta, createOptionalSchema, extractFieldValue } from './field-base'
 
 /**
  * Slider field configuration (admin-editable)
@@ -106,18 +106,14 @@ export function createSliderFieldAdminConfig(): Record<string, FieldMeta> {
  * Convert admin config to runtime field metadata
  */
 export function sliderFieldToFieldMeta(config: SliderFieldConfig): FieldMeta {
-  const advancedSettings =
-    ((config as unknown as Record<string, unknown>).advancedSettings as
-      | Record<string, unknown>
-      | undefined) || {}
+  const configObj = config as unknown as Record<string, unknown>
   const min = config.min
   const max = config.max
-  const step = config.step ?? (advancedSettings.step as number | undefined) ?? 1
-  const prefix = config.prefix ?? (advancedSettings.prefix as string | undefined)
-  const suffix = config.suffix ?? (advancedSettings.suffix as string | undefined)
-  const optional = config.optional ?? (advancedSettings.optional as boolean | undefined) ?? true
-  const defaultValue =
-    config.defaultValue ?? (advancedSettings.defaultValue as number | undefined) ?? min
+  const step = extractFieldValue<number>(configObj, 'step', 1)
+  const prefix = extractFieldValue<string>(configObj, 'prefix')
+  const suffix = extractFieldValue<string>(configObj, 'suffix')
+  const optional = extractFieldValue<boolean>(configObj, 'optional', true)
+  const defaultValue = extractFieldValue<number>(configObj, 'defaultValue', min)
 
   return {
     ...createBaseFieldMeta({ ...config, optional, defaultValue }),
@@ -139,11 +135,11 @@ export function sliderFieldToFieldMeta(config: SliderFieldConfig): FieldMeta {
  * Extract default value from slider field config
  */
 export function getSliderFieldDefaultValue(config: SliderFieldConfig): number {
-  const advancedSettings =
-    ((config as unknown as Record<string, unknown>).advancedSettings as
-      | Record<string, unknown>
-      | undefined) || {}
-  return config.defaultValue ?? (advancedSettings.defaultValue as number | undefined) ?? config.min
+  return extractFieldValue<number>(
+    config as unknown as Record<string, unknown>,
+    'defaultValue',
+    config.min
+  )
 }
 
 /**

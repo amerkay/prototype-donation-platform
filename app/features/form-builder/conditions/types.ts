@@ -24,6 +24,9 @@ export type ComparisonOperator =
   // Existence checks
   | 'empty'
   | 'notEmpty'
+  // Boolean checks
+  | 'isTrue'
+  | 'isFalse'
   // Array membership
   | 'in'
   | 'notIn'

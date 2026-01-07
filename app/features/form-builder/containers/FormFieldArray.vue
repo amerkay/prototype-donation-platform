@@ -4,14 +4,16 @@ import { useFieldArray, useValidateField } from 'vee-validate'
 import { vAutoAnimate } from '@formkit/auto-animate'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import type { ArrayFieldMeta, FieldMeta } from '~/features/form-builder/types'
+import type { ArrayFieldMeta, FieldMeta, OnChangeContext } from '~/features/form-builder/types'
 import FormField from '../FormField.vue'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import { useChildFieldErrors } from '~/features/form-builder/composables/useChildFieldErrors'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
+import { useFormActions } from '~/features/form-builder/composables/useFormActions'
 import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 import { resolveVeeFieldPath } from '~/features/form-builder/composables/useFieldPath'
-import { extractDefaultValues } from '~/features/form-builder/utils'
+import { extractDefaultValues } from '~/features/form-builder/utils/defaults'
+import { useAccordionGroup } from '~/features/form-builder/composables/useAccordionGroup'
 
 interface Props {
   modelValue?: unknown[]
@@ -25,7 +27,32 @@ interface Props {
 const props = defineProps<Props>()
 
 // Inject common form builder context
-const { sectionId, fieldPrefix } = useFormBuilderContext()
+const { sectionId, fieldPrefix, formValues } = useFormBuilderContext()
+
+// Inject validation helpers via composable
+const formActions = useFormActions()
+
+// Provide accordion group for child collapsible field-groups
+const { provideAccordionGroup } = useAccordionGroup()
+provideAccordionGroup()
+
+// Trigger onChange callback if defined in meta
+function triggerOnChange() {
+  if (typeof props.meta.onChange === 'function' && formActions) {
+    const currentValues = fields.value.map((f) => f.value)
+    props.meta.onChange({
+      values: formValues.value,
+      value: currentValues,
+      parent: {}, // parent context not easily available here
+      root: formValues.value,
+      form: formValues.value,
+      setValue: formActions.setFieldValue,
+      setFieldError: formActions.setFieldError,
+      setFieldTouched: formActions.setFieldTouched,
+      path: resolvedVeeName.value
+    } as OnChangeContext)
+  }
+}
 
 // Resolve the full vee-validate field path
 const resolvedVeeName = computed(() => {
@@ -154,6 +181,7 @@ function onDragEnd() {
         move(draggedIndex.value, newIndex)
         nextTick(() => {
           validateArrayField()
+          triggerOnChange()
         })
       }
     }
@@ -280,11 +308,17 @@ function addItem() {
 
   push(defaultValue)
   validateArrayField()
+  nextTick(() => {
+    triggerOnChange()
+  })
 }
 
 function removeItem(index: number) {
   remove(index)
   validateArrayField()
+  nextTick(() => {
+    triggerOnChange()
+  })
 }
 </script>
 

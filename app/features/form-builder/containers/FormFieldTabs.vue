@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card'
 import type { TabsFieldMeta, FieldGroupMeta } from '~/features/form-builder/types'
 import { resolveText } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import { useContainerFieldSetup } from '~/features/form-builder/composables/useContainerFieldSetup'
-import { useChildFieldErrors } from '../composables/useChildFieldErrors'
+import { useCachedChildErrors } from '../composables/useCachedChildErrors'
 import FormFieldGroup from './FormFieldGroup.vue'
 
 interface Props {
@@ -28,11 +28,35 @@ const {
 // Active tab state - initialize from defaultValue or first tab
 const activeTab = ref(props.meta.defaultValue || props.meta.tabs[0]?.value || '')
 
-// Check if each tab has validation errors in its child fields
+// Pre-compute error tracking for all tabs with caching
+// This is initialized once and caches errors for each tab independently
+const tabErrorTrackers = Object.fromEntries(
+  props.meta.tabs.map((tab) => {
+    const tabPath = computed(() => `${fullTabsPath.value}.${tab.value}`)
+    const isTabActive = computed(() => activeTab.value === tab.value)
+
+    // Create tab-specific scoped values - must be scoped to the tab's values, not the parent
+    const tabScopedFormValues = computed(() => {
+      const parentValues = scopedFormValues.value.values as Record<string, unknown> | undefined
+      const tabValues = parentValues?.[tab.value] as Record<string, unknown> | undefined
+      return {
+        values: tabValues || {},
+        parent: parentValues,
+        root: scopedFormValues.value.root
+      }
+    })
+
+    const { hasChildErrors } = useCachedChildErrors(tabPath, isTabActive, {
+      fields: tab.fields,
+      scopedFormValues: tabScopedFormValues
+    })
+    return [tab.value, hasChildErrors]
+  })
+)
+
+// Check if a tab has validation errors (uses cached tracker)
 const tabHasErrors = (tabValue: string) => {
-  const tabPath = computed(() => `${fullTabsPath.value}.${tabValue}`)
-  const { hasChildErrors } = useChildFieldErrors(tabPath)
-  return { hasChildErrors }
+  return tabErrorTrackers[tabValue]?.value ?? false
 }
 
 const resolvedLabel = computed(() => resolveText(props.meta.label, scopedFormValues.value))
@@ -58,13 +82,13 @@ const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
         {{ meta.description }}
       </FieldDescription>
 
-      <Tabs v-model="activeTab" :unmount-on-hide="false">
+      <Tabs v-model="activeTab" :unmount-on-hide="true">
         <TabsList :class="cn('w-full', meta.tabsListClass)">
           <TabsTrigger v-for="tab in meta.tabs" :key="tab.value" :value="tab.value" class="gap-2">
             {{ resolveTabLabel(tab) }}
             <!-- Error badge takes priority -->
             <Badge
-              v-if="tabHasErrors(tab.value).hasChildErrors.value"
+              v-if="tabHasErrors(tab.value)"
               variant="destructive"
               class="ml-1 size-5 p-0 text-xs gap-1"
             >

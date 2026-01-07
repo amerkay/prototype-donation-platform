@@ -4,6 +4,7 @@
  */
 
 import type { ComparisonOperator } from './types'
+import { slugify } from '~/features/custom-fields/fields/field-base'
 
 /**
  * Operator function signature
@@ -42,21 +43,48 @@ function toString(value: unknown): string {
 }
 
 /**
+ * Smart string equality that handles both exact matches and slugified matches
+ * This handles cases where select/radio/checkbox fields store slugified values
+ * but conditions may reference the original display labels
+ */
+function smartStringEquals(fieldValue: unknown, conditionValue: unknown): boolean {
+  const field = toString(fieldValue)
+  const condition = toString(conditionValue)
+
+  // Try exact match first (most common case, fastest)
+  if (field === condition) return true
+
+  // If both are non-empty strings, try slugified comparison
+  if (field && condition) {
+    return slugify(field) === slugify(condition)
+  }
+
+  return false
+}
+
+/**
  * Registry of all supported comparison operators
  */
 export const OPERATORS: Record<ComparisonOperator, OperatorFn> = {
   /**
-   * Strict equality comparison
+   * Smart equality comparison
+   * Handles both exact matches and slugified matches for select/radio/checkbox fields
    */
   equals: (fieldValue, conditionValue) => {
-    return fieldValue === conditionValue
+    // For non-string values, use strict equality
+    if (typeof fieldValue !== 'string' || typeof conditionValue !== 'string') {
+      return fieldValue === conditionValue
+    }
+
+    // For strings, use smart comparison (exact or slugified match)
+    return smartStringEquals(fieldValue, conditionValue)
   },
 
   /**
-   * Strict inequality comparison
+   * Smart inequality comparison
    */
   notEquals: (fieldValue, conditionValue) => {
-    return fieldValue !== conditionValue
+    return !OPERATORS.equals(fieldValue, conditionValue)
   },
 
   /**
@@ -153,11 +181,33 @@ export const OPERATORS: Record<ComparisonOperator, OperatorFn> = {
   },
 
   /**
+   * Check if boolean value is true
+   */
+  isTrue: (fieldValue) => {
+    return fieldValue === true
+  },
+
+  /**
+   * Check if boolean value is false
+   */
+  isFalse: (fieldValue) => {
+    return fieldValue === false
+  },
+
+  /**
    * Check if fieldValue is in array of allowed values
    * conditionValue should be an array
+   * Uses smart string matching to handle slugified values
    */
   in: (fieldValue, conditionValue) => {
     if (!Array.isArray(conditionValue)) return false
+
+    // For string values, try smart matching against each array item
+    if (typeof fieldValue === 'string') {
+      return conditionValue.some((item) => smartStringEquals(fieldValue, item))
+    }
+
+    // For non-string values, use strict includes
     return conditionValue.includes(fieldValue)
   },
 
@@ -206,7 +256,7 @@ export function getOperatorsForType(
       ]
 
     case 'boolean':
-      return ['equals', 'notEquals', 'empty', 'notEmpty']
+      return ['isTrue', 'isFalse']
 
     case 'array':
       return ['contains', 'notContains', 'empty', 'notEmpty']
@@ -218,10 +268,10 @@ export function getOperatorsForType(
 
 /**
  * Check if operator requires a value input
- * Some operators like 'empty' and 'notEmpty' don't need a value
+ * Some operators like 'empty', 'notEmpty', 'isTrue', 'isFalse' don't need a value
  */
 export function operatorRequiresValue(operator: ComparisonOperator): boolean {
-  return operator !== 'empty' && operator !== 'notEmpty'
+  return !['empty', 'notEmpty', 'isTrue', 'isFalse'].includes(operator)
 }
 
 /**
@@ -241,6 +291,8 @@ export const OPERATOR_LABELS: Record<ComparisonOperator, string> = {
   lessOrEqual: 'Less Than or Equal',
   empty: 'Is Empty',
   notEmpty: 'Is Not Empty',
+  isTrue: 'Is True',
+  isFalse: 'Is False',
   in: 'Is One Of',
   notIn: 'Is Not One Of'
 }

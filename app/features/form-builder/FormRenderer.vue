@@ -6,6 +6,7 @@ import type { FormDef } from '~/features/form-builder/types'
 import type { ContextSchema } from '~/features/form-builder/conditions'
 import { useScrollOnVisible } from './composables/useScrollOnVisible'
 import { checkFieldVisibility } from './composables/useFieldPath'
+import { useAccordionGroup } from './composables/useAccordionGroup'
 
 interface Props {
   section: FormDef
@@ -68,7 +69,16 @@ const initialFormValues = computed(() => ({
 }))
 
 // Use the composition API to access form context
-const { values, meta, validate, handleSubmit, setFieldValue, setFieldTouched } = useForm({
+const {
+  values,
+  meta,
+  validate,
+  handleSubmit,
+  setFieldValue,
+  setFieldTouched,
+  setFieldError,
+  errors
+} = useForm({
   initialValues: initialFormValues.value,
   keepValuesOnUnmount: props.keepValuesOnUnmount,
   validateOnMount: props.validateOnMount
@@ -76,6 +86,10 @@ const { values, meta, validate, handleSubmit, setFieldValue, setFieldTouched } =
 
 // Provide section id so nested fields can resolve absolute vee-validate names
 provide('sectionId', props.section.id)
+
+// Provide accordion group for top-level collapsible field-groups
+const { provideAccordionGroup } = useAccordionGroup()
+provideAccordionGroup()
 
 // Provide external context values and schema for condition evaluation
 // Use toRef/computed to make them reactive so conditions re-evaluate on changes
@@ -105,6 +119,11 @@ const providedSetFieldValue = (path: string, value: unknown): void => {
 }
 
 provide('setFieldValue', providedSetFieldValue)
+
+// Provide setFieldError and setFieldTouched for restoring cached validation errors
+// Used by useCachedChildErrors to restore errors when accordion opens
+provide('setFieldError', setFieldError)
+provide('setFieldTouched', setFieldTouched)
 
 // Provide submit function for Enter key handling in text fields
 provide('submitForm', () => {
@@ -154,9 +173,23 @@ watch(
     // Debounce validation to let rapid changes settle
     validationTimeout = setTimeout(async () => {
       validationTimeout = null
-      const { valid } = await validate()
+      await validate()
 
-      if (valid) {
+      // Filter errors to only those from visible fields - hidden fields should not block updates
+      const visibleFieldErrors = Object.keys(errors.value).filter((errorPath) => {
+        // Remove section prefix to match field keys
+        const fieldPath = errorPath.replace(`${props.section.id}.`, '')
+        const fieldKey = fieldPath.split(/[.[\]]/)[0] || '' // Extract top-level field key
+        const fieldMeta = props.section.fields[fieldKey]
+        if (!fieldMeta) return true // Keep errors for unknown fields (shouldn't happen)
+
+        return checkFieldVisibility(fieldMeta, sectionFieldContext.value, {
+          skipContainerValidation: true
+        })
+      })
+
+      // Only check visible field errors - ignore valid flag as it includes hidden fields
+      if (visibleFieldErrors.length === 0) {
         // Emit current sectionValues (not stale closure value)
         emitSectionValue(sectionValues.value)
       }

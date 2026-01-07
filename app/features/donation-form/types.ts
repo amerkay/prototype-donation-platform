@@ -1,3 +1,5 @@
+import type { CustomFieldDefinition } from '~/features/custom-fields/types'
+
 /**
  * Core donation form configuration types
  * These types define the main form settings, localization, and pricing structure
@@ -29,5 +31,22 @@ export interface PricingSettings {
     once: FrequencySettings
     monthly: FrequencySettings
     yearly: FrequencySettings
+  }
+}
+
+/**
+ * Donation form custom fields configuration
+ * Maps custom fields to specific donation flow steps (step2, step3)
+ */
+export interface DonationCustomFieldsSettings {
+  customFieldsTabs: {
+    step2?: {
+      enabled: boolean
+      fields: CustomFieldDefinition[]
+    }
+    step3?: {
+      enabled: boolean
+      fields: CustomFieldDefinition[]
+    }
   }
 }

@@ -4,7 +4,7 @@
  */
 import * as z from 'zod'
 import type { FieldMeta } from '~/features/form-builder/types'
-import { createBaseFieldMeta, createOptionalSchema, slugify } from './field-base'
+import { createBaseFieldMeta, createOptionalSchema, slugify, extractFieldValue } from './field-base'
 
 /**
  * Select field configuration (admin-editable)
@@ -87,15 +87,11 @@ export function createSelectFieldAdminConfig(): Record<string, FieldMeta> {
  * Convert admin config to runtime field metadata
  */
 export function selectFieldToFieldMeta(config: SelectFieldConfig): FieldMeta {
-  const advancedSettings =
-    ((config as unknown as Record<string, unknown>).advancedSettings as
-      | Record<string, unknown>
-      | undefined) || {}
+  const configObj = config as unknown as Record<string, unknown>
   const optionLabels = config.options || []
-  const placeholder = config.placeholder ?? (advancedSettings.placeholder as string | undefined)
-  const optional = config.optional ?? (advancedSettings.optional as boolean | undefined) ?? true
-  const defaultValue =
-    config.defaultValue ?? (advancedSettings.defaultValue as string | undefined) ?? ''
+  const placeholder = extractFieldValue<string>(configObj, 'placeholder')
+  const optional = extractFieldValue<boolean>(configObj, 'optional', true)
+  const defaultValue = extractFieldValue<string>(configObj, 'defaultValue', '')
 
   // Convert string array to {value, label} objects (auto-generate values from labels)
   const options = optionLabels.map((label) => ({
@@ -119,11 +115,7 @@ export function selectFieldToFieldMeta(config: SelectFieldConfig): FieldMeta {
  * Extract default value from select field config
  */
 export function getSelectFieldDefaultValue(config: SelectFieldConfig): string {
-  const advancedSettings =
-    ((config as unknown as Record<string, unknown>).advancedSettings as
-      | Record<string, unknown>
-      | undefined) || {}
-  return config.defaultValue ?? (advancedSettings.defaultValue as string | undefined) ?? ''
+  return extractFieldValue<string>(config as unknown as Record<string, unknown>, 'defaultValue', '')
 }
 
 /**

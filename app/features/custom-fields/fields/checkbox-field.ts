@@ -4,7 +4,7 @@
  */
 import * as z from 'zod'
 import type { FieldMeta } from '~/features/form-builder/types'
-import { createBaseFieldMeta, slugify } from './field-base'
+import { createBaseFieldMeta, slugify, extractFieldValue } from './field-base'
 
 /**
  * Checkbox field configuration (admin-editable)
@@ -58,12 +58,9 @@ export function createCheckboxFieldAdminConfig(): Record<string, FieldMeta> {
  * Convert admin config to runtime field metadata
  */
 export function checkboxFieldToFieldMeta(config: CheckboxFieldConfig): FieldMeta {
-  const advancedSettings =
-    ((config as unknown as Record<string, unknown>).advancedSettings as
-      | Record<string, unknown>
-      | undefined) || {}
-  const optionLabels = config.options ?? (advancedSettings.options as string[] | undefined) ?? []
-  const optional = config.optional ?? (advancedSettings.optional as boolean | undefined) ?? true
+  const configObj = config as unknown as Record<string, unknown>
+  const optionLabels = extractFieldValue<string[]>(configObj, 'options', [])
+  const optional = extractFieldValue<boolean>(configObj, 'optional', true)
   const isArrayMode = optionLabels.length > 0
 
   // Convert string array to {value, label} objects for array mode
@@ -95,11 +92,11 @@ export function checkboxFieldToFieldMeta(config: CheckboxFieldConfig): FieldMeta
  * Extract default value from checkbox field config
  */
 export function getCheckboxFieldDefaultValue(config: CheckboxFieldConfig): boolean | string[] {
-  const advancedSettings =
-    ((config as unknown as Record<string, unknown>).advancedSettings as
-      | Record<string, unknown>
-      | undefined) || {}
-  const optionLabels = config.options ?? (advancedSettings.options as string[] | undefined) ?? []
+  const optionLabels = extractFieldValue<string[]>(
+    config as unknown as Record<string, unknown>,
+    'options',
+    []
+  )
   return optionLabels.length > 0 ? [] : false
 }
 

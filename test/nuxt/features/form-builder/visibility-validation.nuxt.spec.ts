@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest'
+import { defineComponent, h, ref, nextTick } from 'vue'
+import { mountSuspended } from '@nuxt/test-utils/runtime'
 import * as z from 'zod'
 import FormField from '~/features/form-builder/FormField.vue'
+import FormRenderer from '~/features/form-builder/FormRenderer.vue'
 import type { FieldMeta } from '~/features/form-builder/types'
 import { mountFormField, getSectionValues } from './test-utils'
 
@@ -176,5 +179,85 @@ describe('FormField - Visibility and Validation Integration', () => {
 
     // No error badge should appear
     expect(wrapper.text()).not.toContain('Error')
+  })
+
+  /**
+   * Regression test: updateOnlyWhenValid should not block emit when fields become hidden
+   *
+   * Bug: When enabled=true with invalid child field errors, toggling enabled=false
+   * would not emit update:modelValue because updateOnlyWhenValid blocked it (errors
+   * still counted before visibility check).
+   *
+   * Fix: Filter errors by field visibility before checking hasErrors in FormRenderer.
+   *
+   * This test MUST use FormRenderer (not FormField) to test the emit behavior.
+   */
+  it('emits update when toggle hides invalid field with updateOnlyWhenValid', async () => {
+    const modelValue = ref({
+      enabled: true,
+      config: 'ab' // Invalid: only 2 chars
+    })
+
+    const TestWrapper = defineComponent({
+      setup() {
+        return () =>
+          h(FormRenderer, {
+            section: {
+              id: 'feature',
+              fields: {
+                enabled: {
+                  type: 'toggle',
+                  label: 'Enable Feature',
+                  rules: z.boolean()
+                },
+                config: {
+                  type: 'text',
+                  label: 'Configuration',
+                  placeholder: 'Required config',
+                  rules: z.string().min(3, 'At least 3 characters'),
+                  visibleWhen: (ctx) => ctx.values.enabled === true
+                }
+              }
+            },
+            modelValue: modelValue.value,
+            updateOnlyWhenValid: true, // CRITICAL: This is what triggers the bug
+            'onUpdate:modelValue': (value: Record<string, unknown>) => {
+              modelValue.value = value as typeof modelValue.value
+            }
+          })
+      }
+    })
+
+    const wrapper = await mountSuspended(TestWrapper)
+    await waitForUpdate()
+
+    // Verify invalid field is visible
+    const input = wrapper.find('input[placeholder="Required config"]')
+    expect(input.exists()).toBe(true)
+
+    // Type and then clear to trigger error (value starts at 'ab')
+    await input.setValue('abc')
+    await waitForUpdate()
+    await input.setValue('ab')
+    await input.trigger('blur')
+    await waitForUpdate()
+
+    // Should show error (updateOnlyWhenValid blocks emit when invalid)
+    expect(wrapper.text()).toContain('At least 3 characters')
+
+    // Toggle OFF - this MUST emit despite error on now-hidden field
+    const toggle = wrapper.find('[role="switch"]')
+    await toggle.trigger('click')
+
+    // Wait for FormRenderer's debounced validation + emit (setTimeout 0 + validation + emit)
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    await waitForUpdate()
+
+    // CRITICAL: modelValue should have been updated to enabled=false
+    // Without the fix, this test fails because visibleFieldErrors.length > 0 blocks emit
+    expect(modelValue.value.enabled).toBe(false)
+
+    // Config field should be hidden now
+    expect(wrapper.find('input[placeholder="Required config"]').exists()).toBe(false)
   })
 })

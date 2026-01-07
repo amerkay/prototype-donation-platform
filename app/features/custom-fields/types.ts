@@ -1,6 +1,6 @@
 /**
  * Custom fields configuration types (V3 - Factory-Based)
- * Allows admins to add extra form fields to step 3
+ * Allows admins to add extra form fields to forms
  *
  * Uses field-specific factory modules for type-specific configs.
  * Each field type (text, slider, select, etc.) has its own factory with:
@@ -42,21 +42,4 @@ export type CustomFieldDefinition =
 export interface CustomFieldsSettings {
   enabled: boolean
   fields: CustomFieldDefinition[]
-}
-
-/**
- * Custom fields settings for donation form with step-based tabs
- * Used in donation form config to separate Step 2 and Step 3 custom fields
- */
-export interface DonationCustomFieldsSettings {
-  customFieldsTabs: {
-    step2: {
-      enabled: boolean
-      fields: CustomFieldDefinition[]
-    }
-    step3: {
-      enabled: boolean
-      fields: CustomFieldDefinition[]
-    }
-  }
 }

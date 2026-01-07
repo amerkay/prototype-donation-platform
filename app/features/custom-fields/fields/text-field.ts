@@ -4,7 +4,7 @@
  */
 import * as z from 'zod'
 import type { FieldMeta } from '~/features/form-builder/types'
-import { createBaseFieldMeta, createOptionalSchema } from './field-base'
+import { createBaseFieldMeta, createOptionalSchema, extractFieldValue } from './field-base'
 
 /**
  * Text field configuration (admin-editable)
@@ -70,15 +70,11 @@ export function createTextFieldAdminConfig(): Record<string, FieldMeta> {
  * Used when rendering the actual form
  */
 export function textFieldToFieldMeta(config: TextFieldConfig): FieldMeta {
-  const advancedSettings =
-    ((config as unknown as Record<string, unknown>).advancedSettings as
-      | Record<string, unknown>
-      | undefined) || {}
-  const placeholder = config.placeholder ?? (advancedSettings.placeholder as string | undefined)
-  const maxLength = config.maxLength ?? (advancedSettings.maxLength as number | undefined)
-  const optional = config.optional ?? (advancedSettings.optional as boolean | undefined) ?? true
-  const defaultValue =
-    config.defaultValue ?? (advancedSettings.defaultValue as string | undefined) ?? ''
+  const configObj = config as unknown as Record<string, unknown>
+  const placeholder = extractFieldValue<string>(configObj, 'placeholder')
+  const maxLength = extractFieldValue<number>(configObj, 'maxLength')
+  const optional = extractFieldValue<boolean>(configObj, 'optional', true)
+  const defaultValue = extractFieldValue<string>(configObj, 'defaultValue', '')
 
   return {
     ...createBaseFieldMeta({ ...config, optional, defaultValue }),
@@ -96,11 +92,7 @@ export function textFieldToFieldMeta(config: TextFieldConfig): FieldMeta {
  * Extract default value from text field config
  */
 export function getTextFieldDefaultValue(config: TextFieldConfig): string {
-  const advancedSettings =
-    ((config as unknown as Record<string, unknown>).advancedSettings as
-      | Record<string, unknown>
-      | undefined) || {}
-  return config.defaultValue ?? (advancedSettings.defaultValue as string | undefined) ?? ''
+  return extractFieldValue<string>(config as unknown as Record<string, unknown>, 'defaultValue', '')
 }
 
 /**

@@ -11,7 +11,7 @@ import {
   sanitizePathToId
 } from '~/features/form-builder/composables/useFieldPath'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
-import { extractDefaultValues } from '~/features/form-builder/utils'
+import { extractDefaultValues } from '~/features/form-builder/utils/defaults'
 import { cn } from '@/lib/utils'
 import FormFieldText from './fields/FormFieldText.vue'
 import FormFieldTextarea from './fields/FormFieldTextarea.vue'

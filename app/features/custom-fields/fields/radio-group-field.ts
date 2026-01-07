@@ -4,7 +4,7 @@
  */
 import * as z from 'zod'
 import type { FieldMeta } from '~/features/form-builder/types'
-import { createBaseFieldMeta, createOptionalSchema, slugify } from './field-base'
+import { createBaseFieldMeta, createOptionalSchema, slugify, extractFieldValue } from './field-base'
 
 /**
  * Radio group field configuration (admin-editable)
@@ -87,18 +87,15 @@ export function createRadioGroupFieldAdminConfig(): Record<string, FieldMeta> {
  * Convert admin config to runtime field metadata
  */
 export function radioGroupFieldToFieldMeta(config: RadioGroupFieldConfig): FieldMeta {
-  const advancedSettings =
-    ((config as unknown as Record<string, unknown>).advancedSettings as
-      | Record<string, unknown>
-      | undefined) || {}
+  const configObj = config as unknown as Record<string, unknown>
   const optionLabels = config.options || []
-  const orientation =
-    config.orientation ??
-    (advancedSettings.orientation as 'vertical' | 'horizontal' | undefined) ??
+  const orientation = extractFieldValue<'vertical' | 'horizontal'>(
+    configObj,
+    'orientation',
     'vertical'
-  const optional = config.optional ?? (advancedSettings.optional as boolean | undefined) ?? true
-  const defaultValue =
-    config.defaultValue ?? (advancedSettings.defaultValue as string | undefined) ?? ''
+  )
+  const optional = extractFieldValue<boolean>(configObj, 'optional', true)
+  const defaultValue = extractFieldValue<string>(configObj, 'defaultValue', '')
 
   // Convert string array to {value, label} objects
   const options = optionLabels.map((label) => ({
@@ -122,11 +119,7 @@ export function radioGroupFieldToFieldMeta(config: RadioGroupFieldConfig): Field
  * Extract default value from radio group field config
  */
 export function getRadioGroupFieldDefaultValue(config: RadioGroupFieldConfig): string {
-  const advancedSettings =
-    ((config as unknown as Record<string, unknown>).advancedSettings as
-      | Record<string, unknown>
-      | undefined) || {}
-  return config.defaultValue ?? (advancedSettings.defaultValue as string | undefined) ?? ''
+  return extractFieldValue<string>(config as unknown as Record<string, unknown>, 'defaultValue', '')
 }
 
 /**

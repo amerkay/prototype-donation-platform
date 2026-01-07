@@ -1,6 +1,6 @@
-import { computed, unref, type ComputedRef, type MaybeRefOrGetter } from 'vue'
+import { computed, type ComputedRef, type MaybeRefOrGetter } from 'vue'
 import { useFormErrors, useFormValues } from 'vee-validate'
-import { pathExistsInValues } from './useFieldPath'
+import { getChildErrorsMap } from '../utils/errors'
 
 /**
  * Composable to detect if any child fields within a container (group/array/tabs) have validation errors
@@ -25,44 +25,12 @@ import { pathExistsInValues } from './useFieldPath'
 export function useChildFieldErrors(containerPath: MaybeRefOrGetter<string>): {
   hasChildErrors: ComputedRef<boolean>
 } {
-  // Use vee-validate's useFormErrors() and useFormValues() directly for proper reactivity
   const formErrors = useFormErrors<Record<string, string | undefined>>()
   const formValues = useFormValues()
 
-  // Computed filtered errors (only valid child errors)
-  const filteredErrors = computed(() => {
-    const resolvedPath = unref(containerPath)
-    const errorsObj = formErrors.value
-    const values = formValues.value
+  const childErrorsMap = getChildErrorsMap(containerPath, formErrors, formValues)
 
-    // Match both dot notation children (.field) and bracket notation children ([index])
-    const dotPrefix = `${resolvedPath}.`
-    const bracketPrefix = `${resolvedPath}[`
-
-    const filtered: Record<string, string | undefined> = {}
-
-    for (const [errorKey, errorValue] of Object.entries(errorsObj)) {
-      const hasError = errorValue && errorValue.length > 0
-      // Check if error is a child using either dot or bracket notation
-      const isChild = errorKey.startsWith(dotPrefix) || errorKey.startsWith(bracketPrefix)
-
-      if (!hasError || !isChild) continue
-
-      // Convert bracket notation to dot notation for path validation
-      const dotNotationPath = errorKey.replace(/\[(\d+)\]/g, '.$1')
-      const pathExists = pathExistsInValues(dotNotationPath, values)
-
-      if (pathExists) {
-        filtered[errorKey] = errorValue
-      }
-    }
-
-    return filtered
-  })
-
-  const hasChildErrors = computed(() => {
-    return Object.keys(filteredErrors.value).length > 0
-  })
+  const hasChildErrors = computed(() => childErrorsMap.value.size > 0)
 
   return {
     hasChildErrors

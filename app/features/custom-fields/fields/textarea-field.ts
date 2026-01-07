@@ -4,7 +4,7 @@
  */
 import * as z from 'zod'
 import type { FieldMeta } from '~/features/form-builder/types'
-import { createBaseFieldMeta, createOptionalSchema } from './field-base'
+import { createBaseFieldMeta, createOptionalSchema, extractFieldValue } from './field-base'
 
 /**
  * Textarea field configuration (admin-editable)
@@ -80,16 +80,12 @@ export function createTextareaFieldAdminConfig(): Record<string, FieldMeta> {
  * Convert admin config to runtime field metadata
  */
 export function textareaFieldToFieldMeta(config: TextareaFieldConfig): FieldMeta {
-  const advancedSettings =
-    ((config as unknown as Record<string, unknown>).advancedSettings as
-      | Record<string, unknown>
-      | undefined) || {}
-  const placeholder = config.placeholder ?? (advancedSettings.placeholder as string | undefined)
-  const rows = config.rows ?? (advancedSettings.rows as number | undefined)
-  const maxLength = config.maxLength ?? (advancedSettings.maxLength as number | undefined)
-  const optional = config.optional ?? (advancedSettings.optional as boolean | undefined) ?? true
-  const defaultValue =
-    config.defaultValue ?? (advancedSettings.defaultValue as string | undefined) ?? ''
+  const configObj = config as unknown as Record<string, unknown>
+  const placeholder = extractFieldValue<string>(configObj, 'placeholder')
+  const rows = extractFieldValue<number>(configObj, 'rows')
+  const maxLength = extractFieldValue<number>(configObj, 'maxLength')
+  const optional = extractFieldValue<boolean>(configObj, 'optional', true)
+  const defaultValue = extractFieldValue<string>(configObj, 'defaultValue', '')
 
   return {
     ...createBaseFieldMeta({ ...config, optional, defaultValue }),
@@ -108,11 +104,7 @@ export function textareaFieldToFieldMeta(config: TextareaFieldConfig): FieldMeta
  * Extract default value from textarea field config
  */
 export function getTextareaFieldDefaultValue(config: TextareaFieldConfig): string {
-  const advancedSettings =
-    ((config as unknown as Record<string, unknown>).advancedSettings as
-      | Record<string, unknown>
-      | undefined) || {}
-  return config.defaultValue ?? (advancedSettings.defaultValue as string | undefined) ?? ''
+  return extractFieldValue<string>(config as unknown as Record<string, unknown>, 'defaultValue', '')
 }
 
 /**
