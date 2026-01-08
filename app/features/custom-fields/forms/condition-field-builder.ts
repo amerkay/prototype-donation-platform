@@ -7,7 +7,6 @@ import type { FieldMeta, FieldContext, OnChangeContext } from '~/features/form-b
 import type { AvailableField } from '~/features/form-builder/composables/useAvailableFields'
 import type { ContextSchema, ComparisonOperator } from '~/features/form-builder/conditions'
 import {
-  COMPARISON_OPERATORS,
   getOperatorsForType,
   operatorRequiresValue,
   OPERATOR_LABELS
@@ -82,10 +81,14 @@ export function buildConditionItemField(
             value: op,
             label: OPERATOR_LABELS[op]
           })),
-          rules: z.enum(COMPARISON_OPERATORS, {
-            errorMap: () => ({ message: 'Invalid operator' })
-          }),
-          visibleWhen: () => !!selectedField,
+          rules: z
+            .string()
+            .refine((val) => availableOperators.includes(val as ComparisonOperator), {
+              message: 'Invalid operator'
+            }),
+          // CRITICAL: Check current form values, not captured variable
+          // This ensures visibility is reactive and validation runs correctly
+          visibleWhen: (ctx) => !!(ctx.values as Record<string, unknown>).field,
           onChange: ({ value, setValue }: OnChangeContext) => {
             // Clear value when operator changes
             const op = value as ComparisonOperator
@@ -98,7 +101,7 @@ export function buildConditionItemField(
         },
 
         // Dynamic value field - changes based on operator and field metadata
-        value: buildValueField(conditionValues, fieldMeta, selectedField)
+        value: buildValueField(conditionValues, fieldMeta, availableOperators)
       }
     }
   }
@@ -111,9 +114,14 @@ export function buildConditionItemField(
 function buildValueField(
   conditionValues: Record<string, unknown>,
   fieldMeta: AvailableField | undefined,
-  selectedField: string | undefined
+  availableOperators: ComparisonOperator[]
 ): FieldMeta {
   const currentOp = conditionValues.operator as ComparisonOperator | undefined
+
+  // Common visibility check that ensures operator is valid for the current field
+  const isOperatorValid = (op: ComparisonOperator | undefined): op is ComparisonOperator => {
+    return !!op && availableOperators.includes(op)
+  }
 
   // For 'in'/'notIn' operators, use array field
   if (currentOp === 'in' || currentOp === 'notIn') {
@@ -145,9 +153,10 @@ function buildValueField(
           })
         },
         visibleWhen: ({ values }: FieldContext) => {
-          if (!selectedField) return false
+          const field = (values as Record<string, unknown>).field as string | undefined
+          if (!field) return false
           const op = values.operator as ComparisonOperator | undefined
-          if (!op) return false
+          if (!isOperatorValid(op)) return false
           return op === 'in' || op === 'notIn'
         }
       }
@@ -173,9 +182,10 @@ function buildValueField(
                 rules: z.string().min(1, 'Value is required')
               },
         visibleWhen: ({ values }: FieldContext) => {
-          if (!selectedField) return false
+          const field = (values as Record<string, unknown>).field as string | undefined
+          if (!field) return false
           const op = values.operator as ComparisonOperator | undefined
-          if (!op) return false
+          if (!isOperatorValid(op)) return false
           return op === 'in' || op === 'notIn'
         }
       }
@@ -197,9 +207,10 @@ function buildValueField(
         message: 'Value is required'
       }),
       visibleWhen: ({ values }: FieldContext) => {
-        if (!selectedField) return false
+        const field = (values as Record<string, unknown>).field as string | undefined
+        if (!field) return false
         const op = values.operator as ComparisonOperator | undefined
-        if (!op || op === 'in' || op === 'notIn') return false
+        if (!isOperatorValid(op) || op === 'in' || op === 'notIn') return false
         return operatorRequiresValue(op)
       }
     }
@@ -211,9 +222,10 @@ function buildValueField(
       placeholder: 'Enter value',
       rules: z.number({ message: 'Value is required' }),
       visibleWhen: ({ values }: FieldContext) => {
-        if (!selectedField) return false
+        const field = (values as Record<string, unknown>).field as string | undefined
+        if (!field) return false
         const op = values.operator as ComparisonOperator | undefined
-        if (!op) return false
+        if (!isOperatorValid(op)) return false
         return operatorRequiresValue(op)
       }
     }
@@ -225,9 +237,10 @@ function buildValueField(
       placeholder: 'Enter value',
       rules: z.string().min(1, 'Value is required'),
       visibleWhen: ({ values }: FieldContext) => {
-        if (!selectedField) return false
+        const field = (values as Record<string, unknown>).field as string | undefined
+        if (!field) return false
         const op = values.operator as ComparisonOperator | undefined
-        if (!op) return false
+        if (!isOperatorValid(op)) return false
         return operatorRequiresValue(op)
       }
     }

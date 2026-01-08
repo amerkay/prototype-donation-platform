@@ -98,7 +98,11 @@ describe('custom-fields-config-form - condition builder logic', () => {
       expect(operatorField?.visibleWhen).toBeDefined()
 
       // Should return false when no field is selected
-      const isVisible = (operatorField?.visibleWhen as () => boolean)()
+      const mockContext: FieldContext = {
+        values: {},
+        root: {}
+      }
+      const isVisible = (operatorField?.visibleWhen as (ctx: FieldContext) => boolean)(mockContext)
       expect(isVisible).toBe(false)
     })
 
@@ -113,7 +117,11 @@ describe('custom-fields-config-form - condition builder logic', () => {
       expect(operatorField?.visibleWhen).toBeDefined()
 
       // Should return true when field is selected
-      const isVisible = (operatorField?.visibleWhen as () => boolean)()
+      const mockContext: FieldContext = {
+        values: { field: 'isRecurring' },
+        root: {}
+      }
+      const isVisible = (operatorField?.visibleWhen as (ctx: FieldContext) => boolean)(mockContext)
       expect(isVisible).toBe(true)
     })
 
@@ -129,7 +137,7 @@ describe('custom-fields-config-form - condition builder logic', () => {
 
       // Should return false when no operator
       const mockContext: FieldContext = {
-        values: {},
+        values: { field: 'amount' },
         root: {}
       }
       const isVisible = (valueField?.visibleWhen as (ctx: FieldContext) => boolean)(mockContext)
@@ -148,11 +156,30 @@ describe('custom-fields-config-form - condition builder logic', () => {
 
       // Should return true when both field and operator are set
       const mockContext: FieldContext = {
-        values: { operator: 'greaterThan' },
+        values: { field: 'amount', operator: 'greaterThan' },
         root: {}
       }
       const isVisible = (valueField?.visibleWhen as (ctx: FieldContext) => boolean)(mockContext)
       expect(isVisible).toBe(true)
+    })
+
+    it('value field remains hidden when operator is invalid', () => {
+      const { contextSchema } = createTestContext()
+      const { conditionItemField } = getConditionFieldConfig(contextSchema)
+
+      // Condition with field
+      const conditionConfig = conditionItemField({ field: 'amount' })
+      const valueField = conditionConfig.fields?.value
+
+      expect(valueField?.visibleWhen).toBeDefined()
+
+      // Should return false when operator is invalid/unknown
+      const mockContext: FieldContext = {
+        values: { field: 'amount', operator: 'invalidOperator' },
+        root: {}
+      }
+      const isVisible = (valueField?.visibleWhen as (ctx: FieldContext) => boolean)(mockContext)
+      expect(isVisible).toBe(false)
     })
   })
 
@@ -315,7 +342,7 @@ describe('custom-fields-config-form - condition builder logic', () => {
 
       // Should be visible for 'in' operator
       const mockContextIn: FieldContext = {
-        values: { operator: 'in' },
+        values: { field: 'donationType', operator: 'in' },
         root: {}
       }
       const isVisibleIn = (valueFieldIn?.visibleWhen as (ctx: FieldContext) => boolean)(
@@ -335,7 +362,7 @@ describe('custom-fields-config-form - condition builder logic', () => {
 
       // Should be visible for 'notIn' operator
       const mockContextNotIn: FieldContext = {
-        values: { operator: 'notIn' },
+        values: { field: 'donationType', operator: 'notIn' },
         root: {}
       }
       const isVisibleNotIn = (valueFieldNotIn?.visibleWhen as (ctx: FieldContext) => boolean)(
@@ -373,7 +400,7 @@ describe('custom-fields-config-form - condition builder logic', () => {
 
       // Should be hidden for 'empty' operator (doesn't require value)
       const mockContext: FieldContext = {
-        values: { operator: 'empty' },
+        values: { field: 'amount', operator: 'empty' },
         root: {}
       }
       const isVisible = (valueField?.visibleWhen as (ctx: FieldContext) => boolean)(mockContext)
@@ -389,13 +416,25 @@ describe('custom-fields-config-form - condition builder logic', () => {
       // Without field
       const conditionConfigEmpty = conditionItemField({})
       const operatorFieldEmpty = conditionConfigEmpty.fields?.operator
-      const isVisibleEmpty = (operatorFieldEmpty?.visibleWhen as () => boolean)()
+      const mockContextEmpty: FieldContext = {
+        values: {},
+        root: {}
+      }
+      const isVisibleEmpty = (operatorFieldEmpty?.visibleWhen as (ctx: FieldContext) => boolean)(
+        mockContextEmpty
+      )
       expect(isVisibleEmpty).toBe(false)
 
       // With field
       const conditionConfigWithField = conditionItemField({ field: 'amount' })
       const operatorFieldWithField = conditionConfigWithField.fields?.operator
-      const isVisibleWithField = (operatorFieldWithField?.visibleWhen as () => boolean)()
+      const mockContextWithField: FieldContext = {
+        values: { field: 'amount' },
+        root: {}
+      }
+      const isVisibleWithField = (
+        operatorFieldWithField?.visibleWhen as (ctx: FieldContext) => boolean
+      )(mockContextWithField)
       expect(isVisibleWithField).toBe(true)
     })
 
@@ -419,7 +458,7 @@ describe('custom-fields-config-form - condition builder logic', () => {
       const conditionConfigNoOp = conditionItemField({ field: 'amount' })
       const valueFieldNoOp = conditionConfigNoOp.fields?.value
       const mockContextNoOp: FieldContext = {
-        values: {},
+        values: { field: 'amount' },
         root: {}
       }
       const isVisibleNoOp = (valueFieldNoOp?.visibleWhen as (ctx: FieldContext) => boolean)(
@@ -431,7 +470,7 @@ describe('custom-fields-config-form - condition builder logic', () => {
       const conditionConfigBoth = conditionItemField({ field: 'amount' })
       const valueFieldBoth = conditionConfigBoth.fields?.value
       const mockContextBoth: FieldContext = {
-        values: { operator: 'greaterThan' },
+        values: { field: 'amount', operator: 'greaterThan' },
         root: {}
       }
       const isVisibleBoth = (valueFieldBoth?.visibleWhen as (ctx: FieldContext) => boolean)(

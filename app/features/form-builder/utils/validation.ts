@@ -85,15 +85,18 @@ export function validateField(
     const arrayValue = Array.isArray(fieldValue) ? fieldValue : []
 
     for (let i = 0; i < arrayValue.length; i++) {
+      const itemValue = arrayValue[i]
+
+      // Resolve itemField metadata - pass the ITEM's values, not parent context values
+      // This ensures dynamic field builders like buildConditionItemField receive correct data
       const itemMeta =
         typeof fieldMeta.itemField === 'function'
-          ? fieldMeta.itemField(fieldContext.values as Record<string, unknown>, {
+          ? fieldMeta.itemField(itemValue as Record<string, unknown>, {
               index: i,
               items: arrayValue as Record<string, unknown>[]
             })
           : fieldMeta.itemField
 
-      const itemValue = arrayValue[i]
       const itemContext =
         typeof itemValue === 'object' && itemValue !== null
           ? buildNestedContext(fieldContext, itemValue as Record<string, unknown>)
