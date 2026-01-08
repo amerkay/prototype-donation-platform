@@ -5,6 +5,7 @@ import Separator from '~/components/ui/separator/Separator.vue'
 import { useFormConfigStore } from '~/stores/formConfig'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import { useDonationFormContext } from '~/features/donation-form/composables/useDonationFormContext'
+import { checkFieldVisibility } from '~/features/form-builder/composables/useFieldPath'
 import {
   createCustomFieldsFormSection,
   extractCustomFieldDefaults
@@ -79,6 +80,29 @@ const customFieldsSection = computed({
   }
 })
 
+// Check if there are any visible custom fields
+// This considers both field existence and visibility conditions
+const hasVisibleFields = computed(() => {
+  if (!customFieldsFormSection.value) return false
+
+  const section = customFieldsFormSection.value
+  const fields = Object.values(section.fields)
+  if (fields.length === 0) return false
+
+  // Create field context for visibility checks
+  // Use donation context as primary source (for conditions like currency, amount, etc.)
+  // Merge with custom field values (for conditions that reference other custom fields)
+  const fieldContext = {
+    values: { ...donationContext.value, ...customFieldsSection.value },
+    root: {}
+  }
+
+  // Check if at least one field is visible
+  return fields.some((fieldMeta) =>
+    checkFieldVisibility(fieldMeta, fieldContext, { skipContainerValidation: true })
+  )
+})
+
 // Form renderer reference for validation
 const formRef = ref<InstanceType<typeof FormRenderer>>()
 
@@ -95,7 +119,7 @@ defineExpose({
 </script>
 
 <template>
-  <template v-if="customFieldsFormSection">
+  <template v-if="hasVisibleFields && customFieldsFormSection">
     <Separator v-if="showSeparator" />
     <div class="rounded-lg border border-transparent px-4 py-6 bg-background/40">
       <FormRenderer

@@ -219,8 +219,9 @@ export const formConfig = {
                 visibleWhen: {
                   conditions: [
                     {
-                      field: 'coveringCosts',
-                      operator: 'isTrue'
+                      field: 'costCoveragePercentage',
+                      operator: 'greaterThan',
+                      value: 5
                     }
                   ],
                   match: 'all'

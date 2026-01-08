@@ -41,8 +41,9 @@ export function useDonationFormContext() {
       (store.tributeData.monthly?.type && store.tributeData.monthly.type !== 'none') ||
       (store.tributeData.yearly?.type && store.tributeData.yearly.type !== 'none')
 
-    // Compute coveringCosts (whether donor is covering costs)
-    const coveringCosts = !!(store.coverCosts && store.coverCosts.value > 0)
+    // Compute costCoveragePercentage (percentage of costs donor is covering)
+    const costCoveragePercentage =
+      store.coverCosts?.type === 'percentage' ? store.coverCosts.value : 0
 
     return {
       donationFrequency: store.activeTab,
@@ -55,7 +56,7 @@ export function useDonationFormContext() {
       'donorInfo.includeMessage': store.formSections.donorInfo?.includeMessage,
       // Step 3 fields
       giftAidConsent: store.formSections.giftAid?.giftAidConsent,
-      coveringCosts,
+      costCoveragePercentage,
       joinMailingList: store.formSections.preferences?.joinEmailList
     }
   })
@@ -137,10 +138,10 @@ export function useDonationFormContext() {
       description: 'Whether donor consented to Gift Aid (UK taxpayers only, Step 3)',
       availableFromStep: 3
     },
-    coveringCosts: {
-      label: 'Covering Costs',
-      type: 'boolean',
-      description: 'Whether donor is covering transaction/processing costs (Step 3)',
+    costCoveragePercentage: {
+      label: 'Cost Coverage Percentage',
+      type: 'number',
+      description: 'Percentage of transaction/processing costs donor is covering (0-100, Step 3)',
       availableFromStep: 3
     },
     joinMailingList: {
