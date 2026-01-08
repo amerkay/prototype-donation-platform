@@ -175,7 +175,7 @@ export const formConfig = {
                   conditions: [
                     {
                       field: 'donationAmount',
-                      operator: 'greaterThanOrEqual',
+                      operator: 'greaterOrEqual',
                       value: 100
                     }
                   ],
@@ -198,8 +198,7 @@ export const formConfig = {
                   conditions: [
                     {
                       field: 'isTribute',
-                      operator: 'equals',
-                      value: true
+                      operator: 'isTrue'
                     }
                   ],
                   match: 'all'
@@ -221,8 +220,7 @@ export const formConfig = {
                   conditions: [
                     {
                       field: 'coveringCosts',
-                      operator: 'equals',
-                      value: true
+                      operator: 'isTrue'
                     }
                   ],
                   match: 'all'

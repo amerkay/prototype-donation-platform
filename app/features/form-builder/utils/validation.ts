@@ -93,7 +93,8 @@ export function validateField(
         typeof fieldMeta.itemField === 'function'
           ? fieldMeta.itemField(itemValue as Record<string, unknown>, {
               index: i,
-              items: arrayValue as Record<string, unknown>[]
+              items: arrayValue as Record<string, unknown>[],
+              root: fieldContext.root
             })
           : fieldMeta.itemField
 

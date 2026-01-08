@@ -327,6 +327,8 @@ export interface ArrayItemContext {
   index: number
   /** All items in the array */
   items: Record<string, unknown>[]
+  /** Root form values (all fields, includes external context) */
+  root: Record<string, unknown>
 }
 
 /**

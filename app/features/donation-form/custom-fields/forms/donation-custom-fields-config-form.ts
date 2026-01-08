@@ -1,6 +1,7 @@
 import type { FormDef } from '~/features/form-builder/types'
 import type { ContextSchema } from '~/features/form-builder/conditions'
 import { createCustomFieldsConfigSection } from '~/features/custom-fields/forms/custom-fields-config-form'
+import { extractAvailableFields } from '~/features/custom-fields/forms/field-extraction'
 
 /**
  * Filter context schema to only include fields available at or before the given step
@@ -51,8 +52,28 @@ export function createDonationCustomFieldsConfigSection(contextSchema?: ContextS
     throw new Error('Expected step2 fields to be an array field')
   }
 
-  // Create step 3 config with filtered schema
-  const step3Config = createCustomFieldsConfigSection(step3Schema)
+  // Create step 3 config with filtered schema and step 2 fields resolver
+  const step3Config = createCustomFieldsConfigSection(
+    step3Schema,
+    (rootValues: Record<string, unknown>) => {
+      // Extract fields from Step 2 configuration
+      // Try multiple potential paths to handle nesting
+      const customFieldsTabs =
+        (rootValues.customFieldsTabs as Record<string, unknown>) ||
+        ((rootValues.customFields as Record<string, unknown>)?.customFieldsTabs as Record<
+          string,
+          unknown
+        >)
+
+      const step2Data = customFieldsTabs?.step2 as Record<string, unknown> | undefined
+      const step2Fields = step2Data?.fields
+
+      if (Array.isArray(step2Fields)) {
+        return extractAvailableFields(step2Fields as Record<string, unknown>[])
+      }
+      return []
+    }
+  )
   const step3FieldsArrayConfig = step3Config.fields.fields
   if (!step3FieldsArrayConfig || step3FieldsArrayConfig.type !== 'array') {
     throw new Error('Expected step3 fields to be an array field')

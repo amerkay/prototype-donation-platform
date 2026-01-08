@@ -250,7 +250,8 @@ const itemFieldMetaMap = computed(() => {
         index,
         itemField(field.value as Record<string, unknown>, {
           index,
-          items: fields.value.map((f) => f.value) as Record<string, unknown>[]
+          items: fields.value.map((f) => f.value) as Record<string, unknown>[],
+          root: formValues.value
         })
       )
     } else {
@@ -277,7 +278,8 @@ function addItem() {
           {}, // Call with empty object for new items
           {
             index: fields.value.length,
-            items: fields.value.map((f) => f.value) as Record<string, unknown>[]
+            items: fields.value.map((f) => f.value) as Record<string, unknown>[],
+            root: formValues.value
           }
         )
       : props.meta.itemField

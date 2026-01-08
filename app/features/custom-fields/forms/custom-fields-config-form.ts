@@ -10,65 +10,7 @@ import type { ContextSchema } from '~/features/form-builder/conditions'
 import type { AvailableField } from '~/features/form-builder/composables/useAvailableFields'
 import { buildConditionItemField } from './condition-field-builder'
 import { validateCustomFieldConditions } from './validation-helpers'
-
-/**
- * Extract field metadata from preceding custom fields in the array
- * This allows condition builder to reference fields that come before the current one
- */
-function extractPrecedingFields(
-  items: Record<string, unknown>[],
-  currentIndex: number
-): AvailableField[] {
-  const fields: AvailableField[] = []
-
-  // Only include fields that come BEFORE the current one
-  for (let i = 0; i < currentIndex; i++) {
-    const item = items[i]
-    if (!item) continue
-
-    const fieldType = item.type as CustomFieldType | undefined
-    const fieldId = item.id as string | undefined
-    const fieldLabel = item.label as string | undefined
-
-    // Only include fields that have been properly configured
-    if (!fieldType || !fieldId || !fieldLabel) continue
-
-    // Map custom field types to form builder types
-    let type: 'string' | 'number' | 'boolean' | 'array' = 'string'
-    let options: Array<{ value: string | number; label: string }> | undefined = undefined
-
-    if (fieldType === 'number' || fieldType === 'slider') {
-      type = 'number'
-    } else if (fieldType === 'checkbox' && !item.options) {
-      type = 'boolean'
-    } else if (
-      (fieldType === 'select' || fieldType === 'radio-group' || fieldType === 'checkbox') &&
-      item.options
-    ) {
-      const opts = item.options as string[] | Array<{ value: string; label: string }>
-      if (Array.isArray(opts) && opts.length > 0) {
-        if (typeof opts[0] === 'string') {
-          options = (opts as string[]).map((opt) => ({
-            value: opt,
-            label: opt
-          }))
-        } else {
-          options = opts as Array<{ value: string; label: string }>
-        }
-      }
-    }
-
-    fields.push({
-      key: fieldId,
-      label: fieldLabel,
-      type,
-      group: 'Form Fields',
-      options
-    })
-  }
-
-  return fields
-}
+import { extractAvailableFields } from './field-extraction'
 
 /**
  * Create custom fields config section definition (V3 - Factory-Based with Function itemField)
@@ -78,8 +20,12 @@ function extractPrecedingFields(
  * Each field type's configuration is loaded from its own factory module.
  *
  * @param contextSchema - Optional external context schema for condition builder
+ * @param resolveExternalFields - Optional function to resolve external fields from root form values
  */
-export function createCustomFieldsConfigSection(contextSchema?: ContextSchema): FormDef {
+export function createCustomFieldsConfigSection(
+  contextSchema?: ContextSchema,
+  resolveExternalFields?: (rootValues: Record<string, unknown>) => AvailableField[]
+): FormDef {
   return {
     id: 'customFields',
     fields: {
@@ -112,7 +58,11 @@ export function createCustomFieldsConfigSection(contextSchema?: ContextSchema): 
           const label = (values.label as string) || ''
 
           // Extract preceding fields for condition builder
-          const precedingFields = extractPrecedingFields(context.items, context.index)
+          // Combine external fields (if resolved) + fields preceding this one in the current array
+          const precedingFields: AvailableField[] = [
+            ...(resolveExternalFields && context.root ? resolveExternalFields(context.root) : []),
+            ...extractAvailableFields(context.items, context.index)
+          ]
 
           // Generate dynamic label for accordion
           const displayLabel = (() => {

@@ -48,7 +48,7 @@ describe('custom-fields-config-form', () => {
           v: Record<string, unknown>,
           ctx: ArrayItemContext
         ) => FieldGroupMeta
-      )(emptyValues, { index: 0, items: [] })
+      )(emptyValues, { index: 0, items: [], root: {} })
 
       expect(fieldGroup.type).toBe('field-group')
       expect(fieldGroup.label).toBe('New Custom Field')
@@ -68,7 +68,7 @@ describe('custom-fields-config-form', () => {
           v: Record<string, unknown>,
           ctx: ArrayItemContext
         ) => FieldGroupMeta
-      )(emptyValues, { index: 0, items: [] })
+      )(emptyValues, { index: 0, items: [], root: {} })
 
       expect(fieldGroup.fields).toHaveProperty('type')
       expect(fieldGroup.fields?.type?.type).toBe('select')
@@ -87,7 +87,7 @@ describe('custom-fields-config-form', () => {
           v: Record<string, unknown>,
           ctx: ArrayItemContext
         ) => FieldGroupMeta
-      )(emptyValues, { index: 0, items: [] })
+      )(emptyValues, { index: 0, items: [], root: {} })
 
       expect(fieldGroup.fields).toHaveProperty('label')
       expect(fieldGroup.fields?.label?.type).toBe('text')
@@ -106,7 +106,7 @@ describe('custom-fields-config-form', () => {
           v: Record<string, unknown>,
           ctx: ArrayItemContext
         ) => FieldGroupMeta
-      )(emptyValues, { index: 0, items: [] })
+      )(emptyValues, { index: 0, items: [], root: {} })
 
       expect(fieldGroup.fields).toHaveProperty('id')
       expect(fieldGroup.fields?.id?.type).toBe('text')
@@ -125,7 +125,7 @@ describe('custom-fields-config-form', () => {
           v: Record<string, unknown>,
           ctx: ArrayItemContext
         ) => FieldGroupMeta
-      )(textFieldValues, { index: 0, items: [] })
+      )(textFieldValues, { index: 0, items: [], root: {} })
 
       expect(fieldGroup.label).toBe('Text: Username')
       expect(fieldGroup.fields).toHaveProperty('advancedSettings')
@@ -143,7 +143,7 @@ describe('custom-fields-config-form', () => {
           v: Record<string, unknown>,
           ctx: ArrayItemContext
         ) => FieldGroupMeta
-      )(sliderFieldValues, { index: 0, items: [] })
+      )(sliderFieldValues, { index: 0, items: [], root: {} })
 
       expect(fieldGroup.label).toBe('Slider: Amount')
       expect(fieldGroup.fields).toHaveProperty('min')
@@ -162,7 +162,7 @@ describe('custom-fields-config-form', () => {
           v: Record<string, unknown>,
           ctx: ArrayItemContext
         ) => FieldGroupMeta
-      )(selectFieldValues, { index: 0, items: [] })
+      )(selectFieldValues, { index: 0, items: [], root: {} })
 
       expect(fieldGroup.label).toBe('Select: Country')
       expect(fieldGroup.fields).toHaveProperty('options')
@@ -183,7 +183,7 @@ describe('custom-fields-config-form', () => {
           v: Record<string, unknown>,
           ctx: ArrayItemContext
         ) => FieldGroupMeta
-      )(longLabelValues, { index: 0, items: [] })
+      )(longLabelValues, { index: 0, items: [], root: {} })
 
       expect(fieldGroup.label).toContain('Text: This is a very long label')
       expect(fieldGroup.label).toContain('...')
@@ -202,7 +202,7 @@ describe('custom-fields-config-form', () => {
           v: Record<string, unknown>,
           ctx: ArrayItemContext
         ) => FieldGroupMeta
-      )(noLabelValues, { index: 0, items: [] })
+      )(noLabelValues, { index: 0, items: [], root: {} })
 
       expect(fieldGroup.label).toBe('Text')
     })
@@ -259,7 +259,7 @@ describe('custom-fields-config-form', () => {
           v: Record<string, unknown>,
           ctx: ArrayItemContext
         ) => FieldGroupMeta
-      )(textFieldValues, { index: 0, items: [textFieldValues] })
+      )(textFieldValues, { index: 0, items: [textFieldValues], root: {} })
 
       // Navigate to visibility conditions
       const visibilityConditions = fieldGroup.fields?.visibilityConditions as FieldGroupMeta
@@ -276,7 +276,7 @@ describe('custom-fields-config-form', () => {
       // Get a condition item to check field options
       const conditionItemField =
         typeof conditions.itemField === 'function'
-          ? conditions.itemField({}, { index: 0, items: [] })
+          ? conditions.itemField({}, { index: 0, items: [], root: {} })
           : conditions.itemField
 
       expect(conditionItemField.type).toBe('field-group')

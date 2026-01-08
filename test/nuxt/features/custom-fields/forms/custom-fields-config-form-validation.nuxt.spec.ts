@@ -27,7 +27,7 @@ describe('custom-fields-config-form - Field Reference Validation', () => {
 
     const fieldGroupMeta = (
       fieldsArray.itemField as (v: Record<string, unknown>, ctx: ArrayItemContext) => FieldGroupMeta
-    )({ type: 'text', label: 'Field C' }, { index: 2, items: [mockFieldA, mockFieldB] })
+    )({ type: 'text', label: 'Field C' }, { index: 2, items: [mockFieldA, mockFieldB], root: {} })
 
     // Navigate to the conditions array itemField
     const visibilityConditions = fieldGroupMeta.fields?.visibilityConditions as FieldGroupMeta

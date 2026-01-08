@@ -30,7 +30,7 @@ export function buildConditionItemField(
 
     // Merge preceding custom fields + external context fields
     const allAvailableFields: AvailableField[] = [
-      ...precedingFields,
+      ...precedingFields.map((f) => ({ ...f, label: `${f.label} (Custom)` })),
       // Add external context fields if available
       ...(contextSchema
         ? Object.entries(contextSchema).map(([key, schema]) => ({
