@@ -130,6 +130,29 @@ export const formConfig = {
                 placeholder: 'Enter your company name',
                 maxLength: 100
               }
+            },
+            {
+              id: 'textarea_recurring_reason',
+              type: 'textarea' as const,
+              label: 'Why choose a recurring donation?',
+              advancedSettings: {
+                optional: true,
+                placeholder: 'Tell us your motivation...',
+                rows: 2
+              },
+              enableVisibilityConditions: true,
+              visibilityConditions: {
+                visibleWhen: {
+                  conditions: [
+                    {
+                      field: 'donationFrequency',
+                      operator: 'in',
+                      value: ['monthly', 'yearly']
+                    }
+                  ],
+                  match: 'all'
+                }
+              }
             }
           ]
         },
@@ -137,22 +160,22 @@ export const formConfig = {
           enabled: true,
           fields: [
             {
-              id: 'text_premium_code',
+              id: 'text_premium_reporting',
               type: 'text' as const,
-              label: 'Premium Access Code',
+              label: 'Premium Reporting Contact',
               advancedSettings: {
                 optional: true,
-                placeholder: 'Enter your premium code'
+                placeholder: 'Email for detailed reports',
+                maxLength: 100
               },
-              // Only visible for premium tier users
               enableVisibilityConditions: true,
               visibilityConditions: {
                 visibleWhen: {
                   conditions: [
                     {
-                      field: 'subscriptionTier',
-                      operator: 'equals',
-                      value: 'premium'
+                      field: 'donationAmount',
+                      operator: 'greaterThanOrEqual',
+                      value: 100
                     }
                   ],
                   match: 'all'
@@ -160,23 +183,45 @@ export const formConfig = {
               }
             },
             {
-              id: 'textarea_special_message',
-              type: 'textarea' as const,
-              label: 'Special Message',
+              id: 'text_tribute_recipient_name',
+              type: 'text' as const,
+              label: "Tribute Recipient's Name",
               advancedSettings: {
                 optional: true,
-                placeholder: 'Tell us something special...',
-                rows: 3
+                placeholder: 'Full name',
+                maxLength: 100
               },
-              // Only visible for enterprise tier users
               enableVisibilityConditions: true,
               visibilityConditions: {
                 visibleWhen: {
                   conditions: [
                     {
-                      field: 'subscriptionTier',
+                      field: 'isTribute',
                       operator: 'equals',
-                      value: 'enterprise'
+                      value: true
+                    }
+                  ],
+                  match: 'all'
+                }
+              }
+            },
+            {
+              id: 'text_cost_coverage_notes',
+              type: 'text' as const,
+              label: 'Cost Coverage Preference',
+              advancedSettings: {
+                optional: true,
+                placeholder: 'Your coverage preference notes',
+                maxLength: 200
+              },
+              enableVisibilityConditions: true,
+              visibilityConditions: {
+                visibleWhen: {
+                  conditions: [
+                    {
+                      field: 'coveringCosts',
+                      operator: 'equals',
+                      value: true
                     }
                   ],
                   match: 'all'

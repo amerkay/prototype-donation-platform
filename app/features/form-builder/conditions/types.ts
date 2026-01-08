@@ -4,32 +4,40 @@
  */
 
 /**
- * Comparison operators for condition evaluation
+ * Valid comparison operators (const array)
+ * Single source of truth - ComparisonOperator type is derived from this
  */
-export type ComparisonOperator =
+export const COMPARISON_OPERATORS = [
   // Equality
-  | 'equals'
-  | 'notEquals'
+  'equals',
+  'notEquals',
   // String/Array membership
-  | 'contains'
-  | 'notContains'
+  'contains',
+  'notContains',
   // String prefix/suffix
-  | 'startsWith'
-  | 'endsWith'
+  'startsWith',
+  'endsWith',
   // Numeric comparison
-  | 'greaterThan'
-  | 'greaterOrEqual'
-  | 'lessThan'
-  | 'lessOrEqual'
+  'greaterThan',
+  'greaterOrEqual',
+  'lessThan',
+  'lessOrEqual',
   // Existence checks
-  | 'empty'
-  | 'notEmpty'
+  'empty',
+  'notEmpty',
   // Boolean checks
-  | 'isTrue'
-  | 'isFalse'
+  'isTrue',
+  'isFalse',
   // Array membership
-  | 'in'
-  | 'notIn'
+  'in',
+  'notIn'
+] as const
+
+/**
+ * Comparison operator type derived from COMPARISON_OPERATORS array
+ * Ensures type and runtime values stay in sync
+ */
+export type ComparisonOperator = (typeof COMPARISON_OPERATORS)[number]
 
 /**
  * Single condition definition
@@ -91,6 +99,9 @@ export interface ContextFieldSchema {
 
   /** Optional help text */
   description?: string
+
+  /** Step number when this field becomes available (optional, for multi-step forms) */
+  availableFromStep?: number
 }
 
 /**

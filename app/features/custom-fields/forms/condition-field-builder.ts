@@ -7,6 +7,7 @@ import type { FieldMeta, FieldContext, OnChangeContext } from '~/features/form-b
 import type { AvailableField } from '~/features/form-builder/composables/useAvailableFields'
 import type { ContextSchema, ComparisonOperator } from '~/features/form-builder/conditions'
 import {
+  COMPARISON_OPERATORS,
   getOperatorsForType,
   operatorRequiresValue,
   OPERATOR_LABELS
@@ -81,7 +82,9 @@ export function buildConditionItemField(
             value: op,
             label: OPERATOR_LABELS[op]
           })),
-          rules: z.string().min(1, 'Operator is required'),
+          rules: z.enum(COMPARISON_OPERATORS, {
+            errorMap: () => ({ message: 'Invalid operator' })
+          }),
           visibleWhen: () => !!selectedField,
           onChange: ({ value, setValue }: OnChangeContext) => {
             // Clear value when operator changes
