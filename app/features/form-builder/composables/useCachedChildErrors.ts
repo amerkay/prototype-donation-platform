@@ -47,6 +47,17 @@ export function useCachedChildErrors(
   const formValues = useFormValues()
   const formActions = useFormActions()
 
+  const childErrorsMap = getChildErrorsMap(containerPath, formErrors, formValues)
+
+  // Map identity changes frequently (new Map each compute). Use a stable signature instead,
+  // otherwise we end up re-running schema validation on unrelated value changes.
+  const liveErrorsSignature = computed(() => {
+    const entries = Array.from(childErrorsMap.value.entries())
+    if (entries.length === 0) return ''
+    entries.sort(([a], [b]) => a.localeCompare(b))
+    return entries.map(([path, message]) => `${path}\u0000${message}`).join('\u0001')
+  })
+
   const cachedErrors = ref<Map<string, string>>(new Map())
 
   // Compute errors via schema validation (independent of vee-validate mount state)
@@ -66,9 +77,10 @@ export function useCachedChildErrors(
   watch(
     () => ({
       mounted: isContentMounted.value,
-      liveErrors: getChildErrorsMap(containerPath, formErrors, formValues).value
+      liveErrorsSignature: liveErrorsSignature.value
     }),
-    async ({ mounted, liveErrors }, old) => {
+    async ({ mounted }, old) => {
+      const liveErrors = childErrorsMap.value
       // Restore cached errors when mounting
       if (mounted && !old?.mounted && cachedErrors.value.size > 0 && formActions) {
         await nextTick()
@@ -95,7 +107,7 @@ export function useCachedChildErrors(
 
   // Check both live (for manual errors on unmounted paths) and cached errors
   const hasChildErrors = computed(() => {
-    const liveErrors = getChildErrorsMap(containerPath, formErrors, formValues).value
+    const liveErrors = childErrorsMap.value
     return liveErrors.size > 0 || cachedErrors.value.size > 0
   })
 

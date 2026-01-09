@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, watch, nextTick, ref } from 'vue'
-import { useFieldArray, useValidateField } from 'vee-validate'
+import { useFieldArray, useFormValues, useValidateField } from 'vee-validate'
 import { vAutoAnimate } from '@formkit/auto-animate'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -15,6 +15,18 @@ import { resolveVeeFieldPath } from '~/features/form-builder/composables/useFiel
 import { extractDefaultValues } from '~/features/form-builder/utils/defaults'
 import { useAccordionGroup } from '~/features/form-builder/composables/useAccordionGroup'
 
+function getValueAtVeePath(root: unknown, veePath: string): unknown {
+  // Convert bracket notation (foo[0].bar) into dot notation (foo.0.bar)
+  const normalizedPath = veePath.replace(/\[(\d+)\]/g, '.$1')
+  const parts = normalizedPath.split('.').filter(Boolean)
+
+  return parts.reduce<unknown>((acc, part) => {
+    if (acc == null) return undefined
+    if (typeof acc !== 'object') return undefined
+    return (acc as Record<string, unknown>)[part]
+  }, root)
+}
+
 interface Props {
   modelValue?: unknown[]
   errors: string[]
@@ -25,6 +37,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Full vee-validate form values (includes sectionId prefix)
+const veeFormValues = useFormValues<Record<string, unknown>>()
 
 // Inject common form builder context
 const { sectionId, fieldPrefix, formValues } = useFormBuilderContext()
@@ -81,7 +96,7 @@ const arrayLabelClass = computed(() =>
 const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
 
 // --- vee-validate array state ---
-const { fields, push, move, remove } = useFieldArray(resolvedVeeName)
+const { fields, push, move, remove, replace } = useFieldArray(resolvedVeeName)
 const validateArrayField = useValidateField(resolvedVeeName)
 
 // Keep array-level schema in sync with edits (NOT reorders)
@@ -90,7 +105,10 @@ watch(
   () => {
     validateArrayField()
   },
-  { deep: true }
+  // IMPORTANT: don't deep-watch object items here.
+  // Deep watching causes parent arrays-of-objects to revalidate for every nested change,
+  // which can thrash dynamic itemField builders (e.g. condition builder) and appear as a loop.
+  { flush: 'post' }
 )
 
 const isSortable = computed(() => props.meta.sortable === true)
@@ -268,7 +286,36 @@ function getItemFieldMeta(index: number) {
   return itemFieldMetaMap.value.get(index)!
 }
 
-function addItem() {
+async function addItem() {
+  // Guard: the form value can temporarily be a scalar when the schema switches
+  // from scalar -> array (e.g. changing an operator to in/notIn).
+  // vee-validate's useFieldArray assumes the current value is an array.
+  // IMPORTANT: `push()` also stages initial values under the hood. If the *initial*
+  // value at this path was a scalar (e.g. 100) and later became an array, vee-validate
+  // can still crash during `push()` unless we sync the field-array state via `replace()`.
+  const sectionRelativePath = sectionId
+    ? resolvedVeeName.value.startsWith(`${sectionId}.`)
+      ? resolvedVeeName.value.slice(sectionId.length + 1)
+      : resolvedVeeName.value
+    : resolvedVeeName.value
+
+  // Read from vee-validate root values (works even when formValues is scoped).
+  let currentValue = getValueAtVeePath(veeFormValues.value, resolvedVeeName.value)
+
+  // If the value is not an array, force it to [] via the injected setter first.
+  if (!Array.isArray(currentValue) && formActions) {
+    formActions.setFieldValue(sectionRelativePath, [])
+    await nextTick()
+    currentValue = getValueAtVeePath(veeFormValues.value, resolvedVeeName.value)
+  }
+
+  // Sync useFieldArray internal state (and staged initial values) to the latest
+  // current array before pushing.
+  if (Array.isArray(currentValue)) {
+    replace(currentValue)
+    await nextTick()
+  }
+
   let defaultValue: unknown = ''
 
   // Resolve itemField to get default value
