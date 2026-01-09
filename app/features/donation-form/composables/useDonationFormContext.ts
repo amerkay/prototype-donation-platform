@@ -74,7 +74,7 @@ export function useDonationFormContext() {
   const contextSchema: ContextSchema = {
     donationFrequency: {
       label: 'Donation Frequency',
-      type: 'string',
+      type: 'array',
       description: 'Selected donation frequency',
       availableFromStep: 2,
       options: [
@@ -86,7 +86,7 @@ export function useDonationFormContext() {
     },
     currency: {
       label: 'Currency',
-      type: 'string',
+      type: 'array',
       description: 'Selected currency',
       availableFromStep: 2,
       options: supportedCurrencies.map((code) => ({

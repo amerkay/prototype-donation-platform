@@ -47,7 +47,7 @@ export function buildConditionItemField(
     const fieldMeta = allAvailableFields.find((f) => f.key === selectedField)
     const availableOperators = fieldMeta
       ? getOperatorsForType(fieldMeta.type)
-      : (['equals', 'notEquals'] as ComparisonOperator[])
+      : (['empty', 'notEmpty'] as ComparisonOperator[])
 
     // Build flattened field selector options
     const fieldOptions: Array<{ value: string; label: string }> = allAvailableFields.map((f) => ({

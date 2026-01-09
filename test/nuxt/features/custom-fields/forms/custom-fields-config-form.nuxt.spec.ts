@@ -326,7 +326,7 @@ describe('custom-fields-config-form', () => {
             conditions: [
               {
                 field: 'field_a', // References fieldA
-                operator: 'equals',
+                operator: 'contains',
                 value: 'test'
               }
             ]
@@ -402,7 +402,7 @@ describe('custom-fields-config-form', () => {
             conditions: [
               {
                 field: 'field_a', // References fieldA
-                operator: 'equals',
+                operator: 'contains',
                 value: 'test'
               }
             ]
@@ -460,7 +460,7 @@ describe('custom-fields-config-form', () => {
             conditions: [
               {
                 field: 'field_a', // References fieldA
-                operator: 'equals',
+                operator: 'contains',
                 value: 'test'
               }
             ]
@@ -525,8 +525,8 @@ describe('custom-fields-config-form', () => {
             conditions: [
               {
                 field: 'userTier', // References external context
-                operator: 'equals',
-                value: 'premium'
+                operator: 'in',
+                value: ['premium']
               }
             ]
           }

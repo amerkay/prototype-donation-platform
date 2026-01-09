@@ -220,7 +220,7 @@ export const formConfig = {
                   conditions: [
                     {
                       field: 'costCoveragePercentage',
-                      operator: 'greaterThan',
+                      operator: 'greaterOrEqual',
                       value: 5
                     }
                   ],

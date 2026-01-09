@@ -8,19 +8,11 @@
  * Single source of truth - ComparisonOperator type is derived from this
  */
 export const COMPARISON_OPERATORS = [
-  // Equality
-  'equals',
-  'notEquals',
   // String/Array membership
   'contains',
   'notContains',
-  // String prefix/suffix
-  'startsWith',
-  'endsWith',
   // Numeric comparison
-  'greaterThan',
   'greaterOrEqual',
-  'lessThan',
   'lessOrEqual',
   // Existence checks
   'empty',

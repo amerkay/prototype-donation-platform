@@ -34,6 +34,16 @@ describe('custom-fields-config-form - condition builder logic', () => {
           { value: 'annual', label: 'Annual' }
         ]
       },
+      donationFrequency: {
+        label: 'Donation Frequency',
+        type: 'array',
+        description: 'Selected donation frequency',
+        options: [
+          { value: 'once', label: 'One-time' },
+          { value: 'monthly', label: 'Monthly' },
+          { value: 'yearly', label: 'Yearly' }
+        ]
+      },
       amount: {
         label: 'Amount',
         type: 'number'
@@ -156,7 +166,7 @@ describe('custom-fields-config-form - condition builder logic', () => {
 
       // Should return true when both field and operator are set
       const mockContext: FieldContext = {
-        values: { field: 'amount', operator: 'greaterThan' },
+        values: { field: 'amount', operator: 'greaterOrEqual' },
         root: {}
       }
       const isVisible = (valueField?.visibleWhen as (ctx: FieldContext) => boolean)(mockContext)
@@ -330,7 +340,7 @@ describe('custom-fields-config-form - condition builder logic', () => {
 
       // Field with options and 'in' operator - value should be array type only if value is []
       const conditionConfigIn = conditionItemField({
-        field: 'donationType',
+        field: 'donationFrequency', // Array field for in/notIn
         operator: 'in',
         value: [] // Must provide array value
       })
@@ -342,7 +352,7 @@ describe('custom-fields-config-form - condition builder logic', () => {
 
       // Should be visible for 'in' operator
       const mockContextIn: FieldContext = {
-        values: { field: 'donationType', operator: 'in' },
+        values: { field: 'donationFrequency', operator: 'in' },
         root: {}
       }
       const isVisibleIn = (valueFieldIn?.visibleWhen as (ctx: FieldContext) => boolean)(
@@ -352,7 +362,7 @@ describe('custom-fields-config-form - condition builder logic', () => {
 
       // Field with options and 'notIn' operator
       const conditionConfigNotIn = conditionItemField({
-        field: 'donationType',
+        field: 'donationFrequency', // Array field for in/notIn
         operator: 'notIn',
         value: [] // Must provide array value
       })
@@ -446,7 +456,7 @@ describe('custom-fields-config-form - condition builder logic', () => {
       const conditionConfigNoField = conditionItemField({})
       const valueFieldNoField = conditionConfigNoField.fields?.value
       const mockContextNoField: FieldContext = {
-        values: { operator: 'greaterThan' },
+        values: { operator: 'greaterOrEqual' },
         root: {}
       }
       const isVisibleNoField = (valueFieldNoField?.visibleWhen as (ctx: FieldContext) => boolean)(
@@ -470,7 +480,7 @@ describe('custom-fields-config-form - condition builder logic', () => {
       const conditionConfigBoth = conditionItemField({ field: 'amount' })
       const valueFieldBoth = conditionConfigBoth.fields?.value
       const mockContextBoth: FieldContext = {
-        values: { field: 'amount', operator: 'greaterThan' },
+        values: { field: 'amount', operator: 'greaterOrEqual' },
         root: {}
       }
       const isVisibleBoth = (valueFieldBoth?.visibleWhen as (ctx: FieldContext) => boolean)(
@@ -489,11 +499,10 @@ describe('custom-fields-config-form - condition builder logic', () => {
     })
 
     it('operators that require values', () => {
-      expect(operatorRequiresValue('equals')).toBe(true)
-      expect(operatorRequiresValue('notEquals')).toBe(true)
-      expect(operatorRequiresValue('greaterThan')).toBe(true)
-      expect(operatorRequiresValue('lessThan')).toBe(true)
       expect(operatorRequiresValue('contains')).toBe(true)
+      expect(operatorRequiresValue('notContains')).toBe(true)
+      expect(operatorRequiresValue('greaterOrEqual')).toBe(true)
+      expect(operatorRequiresValue('lessOrEqual')).toBe(true)
       expect(operatorRequiresValue('in')).toBe(true)
       expect(operatorRequiresValue('notIn')).toBe(true)
     })

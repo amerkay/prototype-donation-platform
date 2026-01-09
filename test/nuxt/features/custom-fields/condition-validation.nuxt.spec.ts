@@ -178,7 +178,7 @@ describe('Condition Field Validation - Tests for Operator Fix', () => {
           fields: {
             condition: buildConditionField({
               field: 'amount',
-              operator: 'greaterThan', // Requires a value
+              operator: 'greaterOrEqual', // Requires a value
               value: '' // Empty - should error
             })
           }
@@ -190,7 +190,7 @@ describe('Condition Field Validation - Tests for Operator Fix', () => {
           missingValueTest: {
             condition: {
               field: 'amount',
-              operator: 'greaterThan',
+              operator: 'greaterOrEqual',
               value: ''
             }
           }
@@ -203,7 +203,7 @@ describe('Condition Field Validation - Tests for Operator Fix', () => {
     const result = await validate()
     await waitForUpdate()
 
-    // Should be invalid - value is required for 'greaterThan'
+    // Should be invalid - value is required for 'greaterOrEqual'
     expect(result.valid).toBe(false)
 
     // Check that errors were set
@@ -300,8 +300,8 @@ describe('Condition Field Validation - Error Display and Badges', () => {
         {
           meta: conditionItemField({
             field: 'nonExistentField', // Invalid field
-            operator: 'equals',
-            value: 'test'
+            operator: 'in',
+            value: ['test']
           }),
           name: 'condition'
         },
@@ -309,8 +309,8 @@ describe('Condition Field Validation - Error Display and Badges', () => {
           initialValues: {
             condition: {
               field: 'nonExistentField',
-              operator: 'equals',
-              value: 'test'
+              operator: 'in',
+              value: ['test']
             }
           }
         }
@@ -381,7 +381,7 @@ describe('Condition Field Validation - Error Display and Badges', () => {
         {
           meta: conditionItemField({
             field: 'amount', // Number field
-            operator: 'greaterThan',
+            operator: 'greaterOrEqual',
             value: 'not-a-number' // Invalid value type
           }),
           name: 'condition'
@@ -390,7 +390,7 @@ describe('Condition Field Validation - Error Display and Badges', () => {
           initialValues: {
             condition: {
               field: 'amount',
-              operator: 'greaterThan',
+              operator: 'greaterOrEqual',
               value: 'not-a-number'
             }
           }
@@ -679,7 +679,7 @@ describe('Condition Field Validation - Error Display and Badges', () => {
                   conditions: [
                     {
                       field: 'amount',
-                      operator: 'greaterThan',
+                      operator: 'greaterOrEqual',
                       value: 'not-a-number' // Invalid value for number field
                     }
                   ]
@@ -867,7 +867,7 @@ describe('Condition Field Validation - Error Display and Badges', () => {
                 conditions: [
                   {
                     field: 'invalidField', // Invalid
-                    operator: 'equals',
+                    operator: 'contains',
                     value: 'test'
                   }
                 ]
