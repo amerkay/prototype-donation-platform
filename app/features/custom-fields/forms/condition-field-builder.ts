@@ -12,6 +12,7 @@ import {
   OPERATOR_LABELS
 } from '~/features/form-builder/conditions'
 import { createFieldReferenceSchema } from './validation-helpers'
+import { validateFields, buildNestedContext } from '~/features/form-builder/utils/validation'
 
 /**
  * Build the condition item field configuration
@@ -27,6 +28,8 @@ export function buildConditionItemField(
 ): (conditionValues: Record<string, unknown>) => FieldMeta {
   return (conditionValues: Record<string, unknown>) => {
     const selectedField = conditionValues.field as string | undefined
+    const selectedOperator = conditionValues.operator as ComparisonOperator | undefined
+    const conditionValue = conditionValues.value
 
     // Merge preceding custom fields + external context fields
     const allAvailableFields: AvailableField[] = [
@@ -55,54 +58,117 @@ export function buildConditionItemField(
       label: f.label
     }))
 
-    return {
-      type: 'field-group',
-      label: 'Condition',
-      fields: {
-        field: {
-          type: 'select',
-          label: 'Field',
-          placeholder: 'Select a field',
-          options: fieldOptions,
-          // CRITICAL FIX: Dynamic validation that checks field still exists
-          rules: createFieldReferenceSchema(allAvailableFields, 'field'),
-          onChange: ({ setValue }: OnChangeContext) => {
-            // Clear dependent fields when field changes
-            setValue('operator', '')
+    // Generate meaningful trigger label
+    const displayLabel = (() => {
+      if (!selectedField) return 'New Condition'
+
+      const fieldLabel = fieldMeta?.label || selectedField
+      if (!selectedOperator) return fieldLabel
+
+      const operatorLabel = OPERATOR_LABELS[selectedOperator]
+
+      // For operators that don't require a value
+      if (!operatorRequiresValue(selectedOperator)) {
+        return `${fieldLabel} ${operatorLabel}`
+      }
+
+      // Format the value for display
+      const formatValue = (val: unknown): string => {
+        if (val === null || val === undefined || val === '') return '...'
+        if (Array.isArray(val)) {
+          if (val.length === 0) return '...'
+          return val.length === 1 ? String(val[0]) : `${val[0]} +${val.length - 1}`
+        }
+        const valStr = String(val)
+        return valStr.length > 20 ? valStr.substring(0, 20) + '...' : valStr
+      }
+
+      return `${fieldLabel} ${operatorLabel} ${formatValue(conditionValue)}`
+    })()
+
+    // Helper to compute operators for current field (DRY)
+    const getOperatorsForCurrentField = (ctx: FieldContext): ComparisonOperator[] => {
+      const currentField = (ctx.values as Record<string, unknown>).field as string | undefined
+      const currentFieldMeta = allAvailableFields.find((f) => f.key === currentField)
+      return currentFieldMeta
+        ? getOperatorsForType(currentFieldMeta.type)
+        : (['empty', 'notEmpty'] as ComparisonOperator[])
+    }
+
+    // Build the fields definition first
+    const conditionFields: Record<string, FieldMeta> = {
+      field: {
+        type: 'select',
+        label: 'Field',
+        placeholder: 'Select a field',
+        options: fieldOptions,
+        rules: createFieldReferenceSchema(allAvailableFields, 'field'),
+        onChange: ({ setValue }: OnChangeContext) => {
+          // Clear dependent fields when field changes
+          setValue('operator', '')
+          setValue('value', '')
+        }
+      },
+
+      operator: {
+        type: 'select',
+        label: 'Condition',
+        placeholder: 'Select condition',
+        // Use current snapshot of operators (gets recomputed when builder reruns)
+        options: availableOperators.map((op) => ({
+          value: op,
+          label: OPERATOR_LABELS[op]
+        })),
+        // Dynamic validation recomputes operators to avoid stale closure
+        rules: (ctx: FieldContext) => {
+          const currentOperators = getOperatorsForCurrentField(ctx)
+          return z.string().refine((val) => currentOperators.includes(val as ComparisonOperator), {
+            message: 'Invalid operator'
+          })
+        },
+        visibleWhen: (ctx) => !!(ctx.values as Record<string, unknown>).field,
+        onChange: ({ value, setValue }: OnChangeContext) => {
+          // Clear value when operator changes
+          const op = value as ComparisonOperator
+          if (op === 'in' || op === 'notIn') {
+            setValue('value', [])
+          } else {
             setValue('value', '')
           }
-        },
+        }
+      },
 
-        operator: {
-          type: 'select',
-          label: 'Condition',
-          placeholder: 'Select condition',
-          options: availableOperators.map((op) => ({
-            value: op,
-            label: OPERATOR_LABELS[op]
-          })),
-          rules: z
-            .string()
-            .refine((val) => availableOperators.includes(val as ComparisonOperator), {
-              message: 'Invalid operator'
-            }),
-          // CRITICAL: Check current form values, not captured variable
-          // This ensures visibility is reactive and validation runs correctly
-          visibleWhen: (ctx) => !!(ctx.values as Record<string, unknown>).field,
-          onChange: ({ value, setValue }: OnChangeContext) => {
-            // Clear value when operator changes
-            const op = value as ComparisonOperator
-            if (op === 'in' || op === 'notIn') {
-              setValue('value', [])
-            } else {
-              setValue('value', '')
-            }
-          }
-        },
+      // Dynamic value field - changes based on operator and field metadata
+      value: buildValueField(conditionValues, fieldMeta, availableOperators)
+    }
 
-        // Dynamic value field - changes based on operator and field metadata
-        value: buildValueField(conditionValues, fieldMeta, availableOperators)
-      }
+    // Use existing validation infrastructure to check if condition has errors
+    // This is DRY - reuses the same Zod schemas defined in field rules
+    const hasValidationErrors = (ctx: FieldContext): boolean => {
+      const values = ctx.values as Record<string, unknown>
+
+      // Quick check: if required fields are empty, it's incomplete (open it)
+      if (!values.field || !values.operator) return true
+
+      // Run actual validation using existing validateFields utility
+      // This checks all field rules (field existence, operator validity, value type, etc.)
+      const errors = validateFields(
+        conditionFields,
+        values,
+        'condition', // Dummy path prefix
+        buildNestedContext(ctx, values)
+      )
+
+      // If there are any validation errors, keep accordion open
+      return errors.size > 0
+    }
+
+    return {
+      type: 'field-group',
+      label: displayLabel,
+      collapsible: true,
+      collapsibleDefaultOpen: hasValidationErrors,
+      fields: conditionFields
     }
   }
 }

@@ -13,7 +13,130 @@ async function waitForUpdate() {
   await nextTick()
 }
 
-describe('Condition Field Validation - Tests for Operator Fix', () => {
+describe('Condition Field Validation - Stale Closure Regression Tests', () => {
+  it('REGRESSION: validates operator is valid for boolean field type (isTrue)', async () => {
+    // This test covers the bug where operator validation used stale operators list from closure.
+    // When field builder received boolean field with 'isTrue' operator, validation would fail
+    // because the rules function captured wrong operators array in its closure.
+    // The fix makes validation dynamic by recomputing operators on each validation run.
+    const contextSchema: ContextSchema = {
+      isTribute: {
+        label: 'Is Tribute',
+        type: 'boolean'
+      }
+    }
+
+    const buildConditionField = buildConditionItemField([], contextSchema)
+
+    const { validate, wrapper } = await mountFormField(
+      FormField,
+      {
+        meta: {
+          type: 'field-group',
+          label: 'Condition',
+          collapsible: true,
+          collapsibleDefaultOpen: true,
+          fields: {
+            condition: buildConditionField({
+              field: 'isTribute',
+              operator: 'isTrue',
+              value: ''
+            })
+          }
+        },
+        name: 'test'
+      },
+      {
+        initialValues: {
+          test: {
+            condition: {
+              field: 'isTribute',
+              operator: 'isTrue',
+              value: ''
+            }
+          }
+        }
+      }
+    )
+
+    await waitForUpdate()
+
+    // CRITICAL: Validation should pass - operator 'isTrue' is valid for boolean fields
+    const result = await validate()
+    await waitForUpdate()
+
+    expect(result.valid).toBe(true)
+    const errorText = wrapper.text()
+    expect(errorText).not.toContain('Invalid operator')
+
+    // Collapse and reopen to trigger re-validation (tests accordion state)
+    const trigger = wrapper.find('[data-slot="accordion-trigger"]')
+    if (trigger.exists()) {
+      await trigger.trigger('click')
+      await waitForUpdate()
+      await trigger.trigger('click')
+      await waitForUpdate()
+
+      // Should still be valid after collapse/expand
+      const result2 = await validate()
+      expect(result2.valid).toBe(true)
+      expect(wrapper.text()).not.toContain('Invalid operator')
+    }
+  })
+
+  it('REGRESSION: validates operator is valid for array field type (in)', async () => {
+    // Complementary test: array field with 'in' operator should also validate correctly
+    const contextSchema: ContextSchema = {
+      donationFrequency: {
+        label: 'Donation Frequency',
+        type: 'array',
+        options: [
+          { value: 'once', label: 'One-time' },
+          { value: 'monthly', label: 'Monthly' },
+          { value: 'yearly', label: 'Yearly' }
+        ]
+      }
+    }
+
+    const buildConditionField = buildConditionItemField([], contextSchema)
+
+    const { validate, wrapper } = await mountFormField(
+      FormField,
+      {
+        meta: {
+          type: 'field-group',
+          label: 'Condition',
+          fields: {
+            condition: buildConditionField({
+              field: 'donationFrequency',
+              operator: 'in',
+              value: ['monthly', 'yearly']
+            })
+          }
+        },
+        name: 'test'
+      },
+      {
+        initialValues: {
+          test: {
+            condition: {
+              field: 'donationFrequency',
+              operator: 'in',
+              value: ['monthly', 'yearly']
+            }
+          }
+        }
+      }
+    )
+
+    await waitForUpdate()
+
+    // Should be valid - 'in' is valid for array fields
+    const result = await validate()
+    expect(result.valid).toBe(true)
+    expect(wrapper.text()).not.toContain('Invalid operator')
+  })
+
   it('validates that operator field is required when field is selected', async () => {
     const availableFields: AvailableField[] = [
       { key: 'amount', label: 'Amount', type: 'number', group: 'Form Fields' }
