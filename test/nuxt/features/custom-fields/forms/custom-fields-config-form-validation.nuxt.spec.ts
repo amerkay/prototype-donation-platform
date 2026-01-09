@@ -1,223 +1,73 @@
-import { describe, expect, it } from 'vitest'
-import { createCustomFieldsConfigSection } from '~/features/custom-fields/forms/custom-fields-config-form'
-import type {
-  ArrayFieldMeta,
-  FieldGroupMeta,
-  ArrayItemContext
-} from '~/features/form-builder/types'
+import { describe, expect, it, vi } from 'vitest'
 import type { ContextSchema } from '~/features/form-builder/conditions'
-import { createFieldReferenceSchema } from '~/features/custom-fields/forms/validation-helpers'
+import {
+  createFieldReferenceSchema,
+  validateCustomFieldConditions
+} from '~/features/custom-fields/forms/validation-helpers'
+import type { AvailableField } from '~/features/form-builder/composables/useAvailableFields'
 
 describe('custom-fields-config-form - Field Reference Validation', () => {
-  /**
-   * Helper to get condition field configuration
-   */
-  function getConditionFieldConfig(contextSchema?: ContextSchema) {
-    const formDef = createCustomFieldsConfigSection(contextSchema)
-    const fieldsArray = formDef.fields.fields as ArrayFieldMeta
-
-    // Mock preceding fields (simulate two fields: field_a and field_b)
-    const mockFieldA = { id: 'field_a', type: 'text', label: 'Field A' }
-    const mockFieldB = {
-      id: 'field_b',
-      type: 'select',
-      label: 'Field B',
-      options: ['opt1', 'opt2']
-    }
-
-    const fieldGroupMeta = (
-      fieldsArray.itemField as (v: Record<string, unknown>, ctx: ArrayItemContext) => FieldGroupMeta
-    )({ type: 'text', label: 'Field C' }, { index: 2, items: [mockFieldA, mockFieldB], root: {} })
-
-    // Navigate to the conditions array itemField
-    const visibilityConditions = fieldGroupMeta.fields?.visibilityConditions as FieldGroupMeta
-    const visibleWhen = visibilityConditions?.fields?.visibleWhen as FieldGroupMeta
-    const conditionsArray = visibleWhen?.fields?.conditions as ArrayFieldMeta
-    const conditionItemField = conditionsArray?.itemField as (
-      v: Record<string, unknown>
-    ) => FieldGroupMeta
-
-    return { conditionItemField, mockFieldA, mockFieldB }
-  }
-
-  describe('Field Select Validation', () => {
-    it('includes Zod refine validation on field select', () => {
-      const { conditionItemField } = getConditionFieldConfig()
-
-      const conditionConfig = conditionItemField({})
-      const fieldField = conditionConfig.fields?.field
-
-      expect(fieldField?.rules).toBeDefined()
-      expect(fieldField?.type).toBe('select')
-
-      // The rules should be a Zod schema with refine
-      const rules = fieldField?.rules
-      expect(rules).toHaveProperty('_def')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((rules as any)._def.typeName).toBe('ZodEffects') // Zod.refine creates ZodEffects
-    })
-
-    it('validates that selected field exists in available fields', () => {
-      const availableFields = [
-        {
-          key: 'field_a',
-          label: 'Field A',
-          type: 'string' as const,
-          group: 'Form Fields' as const
-        },
-        {
-          key: 'field_b',
-          label: 'Field B',
-          type: 'string' as const,
-          group: 'Form Fields' as const
-        }
+  describe('createFieldReferenceSchema', () => {
+    it('accepts references to available fields', () => {
+      const availableFields: AvailableField[] = [
+        { key: 'field_a', label: 'Field A', type: 'string', group: 'Form Fields' },
+        { key: 'field_b', label: 'Field B', type: 'string', group: 'Form Fields' }
       ]
 
       const schema = createFieldReferenceSchema(availableFields, 'field')
 
-      // Valid field reference
       expect(() => schema.parse('field_a')).not.toThrow()
       expect(() => schema.parse('field_b')).not.toThrow()
+    })
 
-      // Invalid field reference
+    it('rejects references to non-existent fields with clear error message', () => {
+      const availableFields: AvailableField[] = [
+        { key: 'field_a', label: 'Field A', type: 'string', group: 'Form Fields' }
+      ]
+
+      const schema = createFieldReferenceSchema(availableFields, 'field')
+
       expect(() => schema.parse('nonexistent_field')).toThrow(/This field is no longer available/)
     })
 
-    it('shows validation error when field is removed', () => {
-      const availableFields = [
-        {
-          key: 'field_a',
-          label: 'Field A',
-          type: 'string' as const,
-          group: 'Form Fields' as const
-        }
+    it('rejects references when field is removed from available list', () => {
+      const availableFields: AvailableField[] = [
+        { key: 'field_a', label: 'Field A', type: 'string', group: 'Form Fields' }
       ]
 
       const schema = createFieldReferenceSchema(availableFields, 'field')
 
-      // Field that was valid before but removed now
+      // field_b was previously valid but has been removed
       expect(() => schema.parse('field_b')).toThrow(/This field is no longer available/)
     })
 
-    it('shows validation error when field is reordered to come after current field', () => {
-      // Simulate: Field C references field_b, but field_b is now AFTER field_c
-      const availableFieldsAfterReorder = [
-        {
-          key: 'field_a',
-          label: 'Field A',
-          type: 'string' as const,
-          group: 'Form Fields' as const
-        }
-        // field_b no longer available because it's after field_c now
-      ]
-
-      const schema = createFieldReferenceSchema(availableFieldsAfterReorder, 'field')
-
-      expect(() => schema.parse('field_b')).toThrow(/This field is no longer available/)
-    })
-
-    it('validates empty string as required', () => {
-      const availableFields = [
-        { key: 'field_a', label: 'Field A', type: 'string' as const, group: 'Form Fields' as const }
+    it('rejects empty field reference with required error', () => {
+      const availableFields: AvailableField[] = [
+        { key: 'field_a', label: 'Field A', type: 'string', group: 'Form Fields' }
       ]
 
       const schema = createFieldReferenceSchema(availableFields, 'field')
 
       expect(() => schema.parse('')).toThrow(/Field is required/)
     })
-  })
 
-  describe('External Context Field Validation', () => {
-    it('validates external context fields remain valid', () => {
-      const availableFields = [
-        {
-          key: 'field_a',
-          label: 'Field A',
-          type: 'string' as const,
-          group: 'Form Fields' as const
-        },
-        {
-          key: 'userTier',
-          label: 'User Tier',
-          type: 'string' as const,
-          group: 'External Context' as const
-        },
-        {
-          key: 'isVerified',
-          label: 'Is Verified',
-          type: 'boolean' as const,
-          group: 'External Context' as const
-        }
+    it('accepts references to external context fields', () => {
+      const availableFields: AvailableField[] = [
+        { key: 'field_a', label: 'Field A', type: 'string', group: 'Form Fields' },
+        { key: 'userTier', label: 'User Tier', type: 'string', group: 'External Context' },
+        { key: 'isVerified', label: 'Is Verified', type: 'boolean', group: 'External Context' }
       ]
 
       const schema = createFieldReferenceSchema(availableFields, 'field')
 
-      // Custom field references
       expect(() => schema.parse('field_a')).not.toThrow()
-
-      // External context references
       expect(() => schema.parse('userTier')).not.toThrow()
       expect(() => schema.parse('isVerified')).not.toThrow()
-
-      // Invalid reference
-      expect(() => schema.parse('nonexistent')).toThrow()
-    })
-  })
-
-  describe('Integration with Condition Builder', () => {
-    it('condition field select uses dynamic validation', () => {
-      const { conditionItemField } = getConditionFieldConfig()
-
-      // Create condition config
-      const conditionConfig = conditionItemField({})
-      const fieldField = conditionConfig.fields?.field
-
-      expect(fieldField?.rules).toBeDefined()
-
-      // Rules should be a Zod schema with refine
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rules = fieldField?.rules as any
-      expect(rules._def.typeName).toBe('ZodEffects')
     })
 
-    it('condition builder includes external context fields in validation', () => {
-      const contextSchema: ContextSchema = {
-        donorLevel: {
-          label: 'Donor Level',
-          type: 'string' as const,
-          options: [
-            { value: 'bronze', label: 'Bronze' },
-            { value: 'silver', label: 'Silver' },
-            { value: 'gold', label: 'Gold' }
-          ]
-        }
-      }
-
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
-      const conditionConfig = conditionItemField({})
-      const fieldField = conditionConfig.fields?.field
-
-      // Should have options including external context
-      expect(fieldField?.type).toBe('select')
-      if (fieldField?.type === 'select' && 'options' in fieldField) {
-        const options = fieldField.options as Array<{ value: string; label: string }>
-        const externalFieldOption = options.find((opt) => opt.value === 'donorLevel')
-
-        expect(externalFieldOption).toBeDefined()
-        expect(externalFieldOption?.label).toBe('Donor Level')
-      }
-    })
-  })
-
-  describe('User Experience', () => {
-    it('provides clear error message when field reference becomes invalid', () => {
-      const availableFields = [
-        {
-          key: 'field_a',
-          label: 'Field A',
-          type: 'string' as const,
-          group: 'Form Fields' as const
-        }
+    it('provides helpful error message explaining why field is unavailable', () => {
+      const availableFields: AvailableField[] = [
+        { key: 'field_a', label: 'Field A', type: 'string', group: 'Form Fields' }
       ]
 
       const schema = createFieldReferenceSchema(availableFields, 'field')
@@ -228,11 +78,281 @@ describe('custom-fields-config-form - Field Reference Validation', () => {
       } catch (error: unknown) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const zodError = error as any
-        expect(zodError.errors[0].message).toContain('This field is no longer available')
-        expect(zodError.errors[0].message).toContain(
-          'It may have been moved below this field, renamed, or removed.'
-        )
+        const message = zodError.errors[0].message
+
+        expect(message).toContain('This field is no longer available')
+        expect(message).toContain('It may have been moved below this field, renamed, or removed.')
       }
+    })
+  })
+
+  describe('validateCustomFieldConditions', () => {
+    it('sets error when condition references non-existent field', () => {
+      const setFieldError = vi.fn()
+      const setFieldTouched = vi.fn()
+
+      const items = [
+        { id: 'field_a', type: 'text' },
+        {
+          id: 'field_b',
+          type: 'text',
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [{ field: 'nonexistent_field', operator: 'equals', value: 'test' }]
+            }
+          }
+        }
+      ]
+
+      validateCustomFieldConditions(items, undefined, 'customFields.fields', {
+        setFieldError,
+        setFieldTouched
+      })
+
+      expect(setFieldError).toHaveBeenCalledWith(
+        'customFields.fields[1].visibilityConditions.visibleWhen.conditions[0].field',
+        'This field is no longer available. It may have been moved below this field, renamed, or removed.'
+      )
+    })
+
+    it('clears error when condition references valid preceding field', () => {
+      const setFieldError = vi.fn()
+      const setFieldTouched = vi.fn()
+
+      const items = [
+        { id: 'field_a', type: 'text' },
+        {
+          id: 'field_b',
+          type: 'text',
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [{ field: 'field_a', operator: 'equals', value: 'test' }]
+            }
+          }
+        }
+      ]
+
+      validateCustomFieldConditions(items, undefined, 'customFields.fields', {
+        setFieldError,
+        setFieldTouched
+      })
+
+      expect(setFieldError).toHaveBeenCalledWith(
+        'customFields.fields[1].visibilityConditions.visibleWhen.conditions[0].field',
+        undefined
+      )
+    })
+
+    it('sets error when field references itself', () => {
+      const setFieldError = vi.fn()
+      const setFieldTouched = vi.fn()
+
+      const items = [
+        { id: 'field_a', type: 'text' },
+        {
+          id: 'field_b',
+          type: 'text',
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [{ field: 'field_b', operator: 'equals', value: 'test' }]
+            }
+          }
+        }
+      ]
+
+      validateCustomFieldConditions(items, undefined, 'customFields.fields', {
+        setFieldError,
+        setFieldTouched
+      })
+
+      // field_b cannot reference itself (it's not in the preceding fields)
+      expect(setFieldError).toHaveBeenCalledWith(
+        'customFields.fields[1].visibilityConditions.visibleWhen.conditions[0].field',
+        'This field is no longer available. It may have been moved below this field, renamed, or removed.'
+      )
+    })
+
+    it('sets error when field references subsequent field', () => {
+      const setFieldError = vi.fn()
+      const setFieldTouched = vi.fn()
+
+      const items = [
+        {
+          id: 'field_a',
+          type: 'text',
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [{ field: 'field_b', operator: 'equals', value: 'test' }]
+            }
+          }
+        },
+        { id: 'field_b', type: 'text' }
+      ]
+
+      validateCustomFieldConditions(items, undefined, 'customFields.fields', {
+        setFieldError,
+        setFieldTouched
+      })
+
+      // field_a at index 0 cannot reference field_b at index 1
+      expect(setFieldError).toHaveBeenCalledWith(
+        'customFields.fields[0].visibilityConditions.visibleWhen.conditions[0].field',
+        'This field is no longer available. It may have been moved below this field, renamed, or removed.'
+      )
+    })
+
+    it('accepts references to external context fields', () => {
+      const setFieldError = vi.fn()
+      const setFieldTouched = vi.fn()
+
+      const contextSchema: ContextSchema = {
+        userTier: { label: 'User Tier', type: 'string', options: [] }
+      }
+
+      const items = [
+        {
+          id: 'field_a',
+          type: 'text',
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [{ field: 'userTier', operator: 'equals', value: 'gold' }]
+            }
+          }
+        }
+      ]
+
+      validateCustomFieldConditions(items, contextSchema, 'customFields.fields', {
+        setFieldError,
+        setFieldTouched
+      })
+
+      expect(setFieldError).toHaveBeenCalledWith(
+        'customFields.fields[0].visibilityConditions.visibleWhen.conditions[0].field',
+        undefined
+      )
+    })
+
+    it('validates all conditions in a field', () => {
+      const setFieldError = vi.fn()
+      const setFieldTouched = vi.fn()
+
+      const items = [
+        { id: 'field_a', type: 'text' },
+        {
+          id: 'field_b',
+          type: 'text',
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [
+                { field: 'field_a', operator: 'equals', value: 'test' },
+                { field: 'nonexistent', operator: 'equals', value: 'test' }
+              ]
+            }
+          }
+        }
+      ]
+
+      validateCustomFieldConditions(items, undefined, 'customFields.fields', {
+        setFieldError,
+        setFieldTouched
+      })
+
+      // First condition valid
+      expect(setFieldError).toHaveBeenCalledWith(
+        'customFields.fields[1].visibilityConditions.visibleWhen.conditions[0].field',
+        undefined
+      )
+
+      // Second condition invalid
+      expect(setFieldError).toHaveBeenCalledWith(
+        'customFields.fields[1].visibilityConditions.visibleWhen.conditions[1].field',
+        'This field is no longer available. It may have been moved below this field, renamed, or removed.'
+      )
+    })
+
+    it('sets error when field reference is empty', () => {
+      const setFieldError = vi.fn()
+      const setFieldTouched = vi.fn()
+
+      const items = [
+        {
+          id: 'field_a',
+          type: 'text',
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [{ field: '', operator: 'equals', value: 'test' }]
+            }
+          }
+        }
+      ]
+
+      validateCustomFieldConditions(items, undefined, 'customFields.fields', {
+        setFieldError,
+        setFieldTouched
+      })
+
+      expect(setFieldError).toHaveBeenCalledWith(
+        'customFields.fields[0].visibilityConditions.visibleWhen.conditions[0].field',
+        'Field is required'
+      )
+    })
+
+    it('marks fields as touched when validating', () => {
+      const setFieldError = vi.fn()
+      const setFieldTouched = vi.fn()
+
+      const items = [
+        { id: 'field_a', type: 'text' },
+        {
+          id: 'field_b',
+          type: 'text',
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [{ field: 'field_a', operator: 'equals', value: 'test' }]
+            }
+          }
+        }
+      ]
+
+      validateCustomFieldConditions(items, undefined, 'customFields.fields', {
+        setFieldError,
+        setFieldTouched
+      })
+
+      expect(setFieldTouched).toHaveBeenCalledWith(
+        'customFields.fields[1].visibilityConditions.visibleWhen.conditions[0].field',
+        true
+      )
+    })
+
+    it('skips fields without visibility conditions enabled', () => {
+      const setFieldError = vi.fn()
+      const setFieldTouched = vi.fn()
+
+      const items = [
+        { id: 'field_a', type: 'text' },
+        {
+          id: 'field_b',
+          type: 'text',
+          enableVisibilityConditions: false
+        }
+      ]
+
+      validateCustomFieldConditions(items, undefined, 'customFields.fields', {
+        setFieldError,
+        setFieldTouched
+      })
+
+      expect(setFieldError).not.toHaveBeenCalled()
+      expect(setFieldTouched).not.toHaveBeenCalled()
     })
   })
 })

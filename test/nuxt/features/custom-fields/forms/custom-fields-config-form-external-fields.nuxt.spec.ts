@@ -1,54 +1,60 @@
 import { describe, expect, it } from 'vitest'
 import { createCustomFieldsConfigSection } from '~/features/custom-fields/forms/custom-fields-config-form'
-import type {
-  ArrayFieldMeta,
-  FieldGroupMeta,
-  ArrayItemContext,
-  FieldMeta
-} from '~/features/form-builder/types'
+import type { ArrayFieldMeta, FieldGroupMeta, SelectFieldMeta } from '~/features/form-builder/types'
 import type { ContextSchema } from '~/features/form-builder/conditions'
+import type { AvailableField } from '~/features/form-builder/composables/useAvailableFields'
 
 describe('custom-fields-config-form - External Fields Resolution', () => {
   /**
-   * Helper to extract condition field options from config
-   * Tests the available fields that can be used in visibility conditions
+   * Helper to get the field selector options from condition builder
+   * This is the public API that users interact with - the list of fields
+   * available for creating conditions
    */
-  function getConditionFieldOptions(
-    config: ArrayFieldMeta,
-    itemValues: Record<string, unknown>,
-    context: ArrayItemContext
+  function getAvailableFieldsForConditions(
+    contextSchema?: ContextSchema,
+    resolver?: (root: Record<string, unknown>) => AvailableField[],
+    rootValues: Record<string, unknown> = {},
+    precedingFields: Array<Record<string, unknown>> = []
   ): Array<{ value: string; label: string }> {
-    const itemFieldFn = config.itemField as (v: unknown, c: ArrayItemContext) => FieldGroupMeta
-    const newItem = itemFieldFn(itemValues, context)
+    const section = createCustomFieldsConfigSection(contextSchema, resolver)
+    const fieldsArray = section.fields.fields as ArrayFieldMeta
 
-    // Navigate to condition field options
-    // This tests the public API of what fields are available for conditions
-    const conditionGroup = newItem.fields?.visibilityConditions as FieldGroupMeta | undefined
-    if (!conditionGroup) throw new Error('visibilityConditions not found')
+    // Create a field item with visibility conditions enabled
+    const itemFieldFn = fieldsArray.itemField as (
+      v: Record<string, unknown>,
+      c: { index: number; items: Record<string, unknown>[]; root: Record<string, unknown> }
+    ) => FieldGroupMeta
 
-    const visibleWhen = conditionGroup?.fields?.visibleWhen as FieldGroupMeta | undefined
-    if (!visibleWhen) throw new Error('visibleWhen not found')
+    const fieldItem = itemFieldFn(
+      {
+        type: 'text',
+        id: 'current_field',
+        label: 'Current Field',
+        enableVisibilityConditions: true
+      },
+      {
+        index: precedingFields.length,
+        items: precedingFields,
+        root: rootValues
+      }
+    )
 
-    const conditionsArray = visibleWhen?.fields?.conditions as ArrayFieldMeta | undefined
-    if (!conditionsArray) throw new Error('conditions array not found')
+    // Access the condition builder field selector
+    const visibilityConditions = fieldItem.fields?.visibilityConditions as FieldGroupMeta
+    const visibleWhen = visibilityConditions.fields?.visibleWhen as FieldGroupMeta
+    const conditions = visibleWhen.fields?.conditions as ArrayFieldMeta
+    const conditionItemField = conditions.itemField as (
+      v: Record<string, unknown>
+    ) => FieldGroupMeta
 
-    const conditionItemFn = conditionsArray?.itemField as
-      | ((v: unknown) => FieldGroupMeta)
-      | undefined
-    if (!conditionItemFn) throw new Error('condition itemField not found')
+    const conditionItem = conditionItemField({})
+    const fieldSelector = conditionItem.fields?.field as SelectFieldMeta
 
-    const conditionItem = conditionItemFn({})
-    const fieldSelector = conditionItem.fields?.field as FieldMeta | undefined
-    if (!fieldSelector) throw new Error('field selector not found')
-
-    return (fieldSelector as FieldMeta & { options: unknown }).options as Array<{
-      value: string
-      label: string
-    }>
+    return fieldSelector.options as Array<{ value: string; label: string }>
   }
 
-  describe('resolveExternalFields callback', () => {
-    it('calls resolveExternalFields with root context', () => {
+  describe('External field resolution', () => {
+    it('provides root context to resolver when fields are requested', () => {
       let capturedRoot: Record<string, unknown> | undefined
 
       const resolver = (root: Record<string, unknown>) => {
@@ -56,26 +62,16 @@ describe('custom-fields-config-form - External Fields Resolution', () => {
         return []
       }
 
-      const config = createCustomFieldsConfigSection(undefined, resolver)
-      const fieldsArray = config.fields.fields as ArrayFieldMeta
-
       const rootValues = { someData: 'test', otherField: 42 }
 
-      // Trigger itemField function which should invoke resolver
-      const itemFieldFn = fieldsArray.itemField as (
-        v: unknown,
-        c: ArrayItemContext
-      ) => FieldGroupMeta
-      itemFieldFn({ type: 'text', label: 'Test Field' }, { index: 0, items: [], root: rootValues })
+      getAvailableFieldsForConditions(undefined, resolver, rootValues)
 
-      // Resolver should have been called with root context
       expect(capturedRoot).toBeDefined()
       expect(capturedRoot).toEqual(rootValues)
     })
 
-    it('makes external fields available for conditions alongside preceding fields', () => {
+    it('includes resolved external fields in available condition fields', () => {
       const resolver = (root: Record<string, unknown>) => {
-        // Simulate extracting fields from another part of the form
         const externalData = root.externalSection as Record<string, unknown> | undefined
         if (externalData && Array.isArray(externalData.fields) && externalData.fields.length > 0) {
           return [
@@ -90,31 +86,24 @@ describe('custom-fields-config-form - External Fields Resolution', () => {
         return []
       }
 
-      const config = createCustomFieldsConfigSection(undefined, resolver)
-      const fieldsArray = config.fields.fields as ArrayFieldMeta
-
-      // Mock current array items (preceding fields)
       const precedingField = { id: 'field_a', type: 'text', label: 'Preceding Field' }
 
-      // Mock root with external data
       const rootValues = {
         externalSection: {
           fields: [{ id: 'external_field_1', type: 'text', label: 'External Field 1' }]
         }
       }
 
-      const options = getConditionFieldOptions(
-        fieldsArray,
-        { type: 'text', label: 'Current Field' },
-        { index: 1, items: [precedingField], root: rootValues }
-      )
+      const options = getAvailableFieldsForConditions(undefined, resolver, rootValues, [
+        precedingField
+      ])
 
-      // Should include both preceding field and external field
+      // Verify both preceding and external fields are available
       expect(options.find((o) => o.value === 'field_a')).toBeDefined()
       expect(options.find((o) => o.value === 'external_field_1')).toBeDefined()
     })
 
-    it('orders external fields before custom fields in condition options', () => {
+    it('places external fields before preceding custom fields in options', () => {
       const resolver = () => [
         {
           key: 'external_1',
@@ -124,45 +113,32 @@ describe('custom-fields-config-form - External Fields Resolution', () => {
         }
       ]
 
-      const config = createCustomFieldsConfigSection(undefined, resolver)
-      const fieldsArray = config.fields.fields as ArrayFieldMeta
-
       const precedingField = { id: 'field_a', type: 'text', label: 'Preceding Field' }
 
-      const options = getConditionFieldOptions(
-        fieldsArray,
-        { type: 'text', label: 'Current' },
-        { index: 1, items: [precedingField], root: {} }
-      )
+      const options = getAvailableFieldsForConditions(undefined, resolver, {}, [precedingField])
 
       const external1Index = options.findIndex((o) => o.value === 'external_1')
       const fieldAIndex = options.findIndex((o) => o.value === 'field_a')
 
-      // External field should come before preceding field
+      expect(external1Index).toBeGreaterThanOrEqual(0)
+      expect(fieldAIndex).toBeGreaterThanOrEqual(0)
       expect(external1Index).toBeLessThan(fieldAIndex)
     })
 
-    it('handles resolver returning empty array gracefully', () => {
+    it('handles empty resolver result without errors', () => {
       const resolver = () => []
-
-      const config = createCustomFieldsConfigSection(undefined, resolver)
-      const fieldsArray = config.fields.fields as ArrayFieldMeta
 
       const precedingField = { id: 'field_a', type: 'text', label: 'Field A' }
 
-      const options = getConditionFieldOptions(
-        fieldsArray,
-        { type: 'text', label: 'Current' },
-        { index: 1, items: [precedingField], root: {} }
-      )
+      const options = getAvailableFieldsForConditions(undefined, resolver, {}, [precedingField])
 
-      // Should still have preceding field
+      // Should still include preceding field even when resolver returns empty
       expect(options.find((o) => o.value === 'field_a')).toBeDefined()
     })
   })
 
-  describe('Label suffixes for field types', () => {
-    it('appends (Custom) to resolved external field labels', () => {
+  describe('Field label formatting', () => {
+    it('appends (Custom) suffix to resolved external field labels', () => {
       const resolver = () => [
         {
           key: 'external_1',
@@ -172,36 +148,22 @@ describe('custom-fields-config-form - External Fields Resolution', () => {
         }
       ]
 
-      const config = createCustomFieldsConfigSection(undefined, resolver)
-      const fieldsArray = config.fields.fields as ArrayFieldMeta
-
-      const options = getConditionFieldOptions(
-        fieldsArray,
-        { type: 'text', label: 'Current' },
-        { index: 0, items: [], root: {} }
-      )
+      const options = getAvailableFieldsForConditions(undefined, resolver)
 
       const externalOption = options.find((o) => o.value === 'external_1')
       expect(externalOption?.label).toBe('External Question (Custom)')
     })
 
-    it('appends (Custom) to preceding custom field labels', () => {
-      const config = createCustomFieldsConfigSection()
-      const fieldsArray = config.fields.fields as ArrayFieldMeta
-
+    it('appends (Custom) suffix to preceding custom field labels', () => {
       const precedingField = { id: 'field_a', type: 'text', label: 'Preceding Question' }
 
-      const options = getConditionFieldOptions(
-        fieldsArray,
-        { type: 'text', label: 'Current' },
-        { index: 1, items: [precedingField], root: {} }
-      )
+      const options = getAvailableFieldsForConditions(undefined, undefined, {}, [precedingField])
 
       const precedingOption = options.find((o) => o.value === 'field_a')
       expect(precedingOption?.label).toBe('Preceding Question (Custom)')
     })
 
-    it('does NOT append (Custom) to external context schema fields', () => {
+    it('does not append (Custom) suffix to context schema fields', () => {
       const contextSchema: ContextSchema = {
         donorTier: {
           label: 'Donor Tier',
@@ -213,14 +175,7 @@ describe('custom-fields-config-form - External Fields Resolution', () => {
         }
       }
 
-      const config = createCustomFieldsConfigSection(contextSchema)
-      const fieldsArray = config.fields.fields as ArrayFieldMeta
-
-      const options = getConditionFieldOptions(
-        fieldsArray,
-        { type: 'text', label: 'Current' },
-        { index: 0, items: [], root: {} }
-      )
+      const options = getAvailableFieldsForConditions(contextSchema)
 
       const contextOption = options.find((o) => o.value === 'donorTier')
       expect(contextOption?.label).toBe('Donor Tier')
@@ -244,38 +199,29 @@ describe('custom-fields-config-form - External Fields Resolution', () => {
         }
       ]
 
-      const config = createCustomFieldsConfigSection(contextSchema, resolver)
-      const fieldsArray = config.fields.fields as ArrayFieldMeta
-
       const precedingField = { id: 'field_a', type: 'text', label: 'Preceding Field' }
 
-      const options = getConditionFieldOptions(
-        fieldsArray,
-        { type: 'text', label: 'Current' },
-        { index: 1, items: [precedingField], root: {} }
-      )
+      const options = getAvailableFieldsForConditions(contextSchema, resolver, {}, [precedingField])
 
-      // Resolved external: (Custom)
+      // Verify each source has correct label format
       const externalOption = options.find((o) => o.value === 'external_1')
       expect(externalOption?.label).toBe('External Field (Custom)')
 
-      // Preceding custom: (Custom)
       const precedingOption = options.find((o) => o.value === 'field_a')
       expect(precedingOption?.label).toBe('Preceding Field (Custom)')
 
-      // Context schema: NO (Custom)
       const systemOption = options.find((o) => o.value === 'systemField')
       expect(systemOption?.label).toBe('System Field')
     })
   })
 
-  describe('Integration behavior', () => {
-    it('supports complex resolver logic based on root values', () => {
+  describe('Dynamic resolver behavior', () => {
+    it('adapts field resolution based on root values', () => {
       const resolver = (root: Record<string, unknown>) => {
         const section1 = root.section1 as Record<string, unknown> | undefined
         const section2 = root.section2 as Record<string, unknown> | undefined
 
-        const fields = []
+        const fields: AvailableField[] = []
 
         if (section1?.enabled) {
           fields.push({
@@ -298,27 +244,16 @@ describe('custom-fields-config-form - External Fields Resolution', () => {
         return fields
       }
 
-      const config = createCustomFieldsConfigSection(undefined, resolver)
-      const fieldsArray = config.fields.fields as ArrayFieldMeta
-
       // Test with only section1 enabled
       const rootWithSection1 = { section1: { enabled: true }, section2: { enabled: false } }
-      const optionsS1 = getConditionFieldOptions(
-        fieldsArray,
-        { type: 'text', label: 'Test' },
-        { index: 0, items: [], root: rootWithSection1 }
-      )
+      const optionsS1 = getAvailableFieldsForConditions(undefined, resolver, rootWithSection1)
 
       expect(optionsS1.find((o) => o.value === 'section1_field')).toBeDefined()
       expect(optionsS1.find((o) => o.value === 'section2_field')).toBeUndefined()
 
       // Test with both enabled
       const rootWithBoth = { section1: { enabled: true }, section2: { enabled: true } }
-      const optionsBoth = getConditionFieldOptions(
-        fieldsArray,
-        { type: 'text', label: 'Test' },
-        { index: 0, items: [], root: rootWithBoth }
-      )
+      const optionsBoth = getAvailableFieldsForConditions(undefined, resolver, rootWithBoth)
 
       expect(optionsBoth.find((o) => o.value === 'section1_field')).toBeDefined()
       expect(optionsBoth.find((o) => o.value === 'section2_field')).toBeDefined()

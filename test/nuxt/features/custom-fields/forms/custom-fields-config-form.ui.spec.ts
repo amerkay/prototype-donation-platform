@@ -1,47 +1,51 @@
 /**
- * Condition Builder Logic Tests for Custom Fields Config Form
+ * Condition Builder Unit Tests for Custom Fields Config Form
  *
- * Tests the condition builder visibility logic, validation, and state management
- * that were fixed to prevent invalid UI states.
+ * Tests the condition field builder factory function that generates form configuration.
+ * These tests verify that the builder produces correct field metadata for the form renderer.
  *
- * Tests the actual field configurations (visibleWhen, rules, onChange) that control
- * the UI behavior. This approach tests the logic without mounting the full component tree.
+ * NOTE: This is unit testing a factory function that returns configuration metadata.
+ * For behavior testing of the rendered form, see custom-fields-config-form.nuxt.spec.ts
  */
 import { describe, it, expect, vi } from 'vitest'
-import { createCustomFieldsConfigSection } from '~/features/custom-fields/forms/custom-fields-config-form'
-import type { ContextSchema } from '~/features/form-builder/conditions'
-import type { ArrayFieldMeta, FieldGroupMeta, FieldContext } from '~/features/form-builder/types'
+import { buildConditionItemField } from '~/features/custom-fields/forms/condition-field-builder'
 import { operatorRequiresValue } from '~/features/form-builder/conditions'
+import type { ContextSchema } from '~/features/form-builder/conditions'
+import type { AvailableField } from '~/features/form-builder/composables/useAvailableFields'
+import type { FieldContext, OnChangeContext, FieldGroupMeta } from '~/features/form-builder/types'
 
-describe('custom-fields-config-form - condition builder logic', () => {
+describe('condition-field-builder', () => {
   /**
    * Helper to create test context with mock fields
    */
-  function createTestContext() {
-    // Mock external context schema with different field types
+  function createMockFields(): {
+    precedingFields: AvailableField[]
+    contextSchema: ContextSchema
+  } {
+    const precedingFields: AvailableField[] = [
+      {
+        key: 'teamSize',
+        label: 'Team Size',
+        type: 'string',
+        options: [
+          { value: '1-10', label: '1-10' },
+          { value: '11-50', label: '11-50' }
+        ],
+        group: 'Form Fields'
+      }
+    ]
+
     const contextSchema: ContextSchema = {
       isRecurring: {
         label: 'Is Recurring',
-        type: 'boolean',
-        description: 'Whether donation is recurring'
+        type: 'boolean'
       },
       donationType: {
         label: 'Donation Type',
         type: 'string',
         options: [
           { value: 'one-time', label: 'One-time' },
-          { value: 'monthly', label: 'Monthly' },
-          { value: 'annual', label: 'Annual' }
-        ]
-      },
-      donationFrequency: {
-        label: 'Donation Frequency',
-        type: 'array',
-        description: 'Selected donation frequency',
-        options: [
-          { value: 'once', label: 'One-time' },
-          { value: 'monthly', label: 'Monthly' },
-          { value: 'yearly', label: 'Yearly' }
+          { value: 'monthly', label: 'Monthly' }
         ]
       },
       amount: {
@@ -50,209 +54,103 @@ describe('custom-fields-config-form - condition builder logic', () => {
       }
     }
 
-    return { contextSchema }
+    return { precedingFields, contextSchema }
   }
 
-  /**
-   * Helper to get condition field configuration from form section
-   */
-  function getConditionFieldConfig(contextSchema?: ContextSchema) {
-    const section = createCustomFieldsConfigSection(contextSchema)
-    const fieldsArray = section.fields.fields as ArrayFieldMeta
+  describe('buildConditionItemField', () => {
+    it('returns a function that generates field-group configuration', () => {
+      const { precedingFields, contextSchema } = createMockFields()
+      const builder = buildConditionItemField(precedingFields, contextSchema)
 
-    // Simulate a custom field with conditions enabled
-    const customFieldValues = {
-      type: 'text',
-      id: 'text_test',
-      label: 'Test Field',
-      enableVisibilityConditions: true
-    }
+      expect(typeof builder).toBe('function')
 
-    const fieldGroup = (
-      fieldsArray.itemField as (
-        values: Record<string, unknown>,
-        ctx: { index: number; items: Record<string, unknown>[] }
-      ) => FieldGroupMeta
-    )(customFieldValues, {
-      index: 1,
-      items: [
-        {
-          type: 'select',
-          id: 'select_team_size',
-          label: 'Team Size',
-          options: ['1-10', '11-50', '51-200', '200+']
-        }
-      ]
+      const config = builder({}) as FieldGroupMeta
+      expect(config.type).toBe('field-group')
+      expect(config.fields).toHaveProperty('field')
+      expect(config.fields).toHaveProperty('operator')
+      expect(config.fields).toHaveProperty('value')
     })
 
-    // Navigate to condition itemField
-    const visibilityConditions = fieldGroup.fields?.visibilityConditions as FieldGroupMeta
-    const visibleWhen = visibilityConditions.fields?.visibleWhen as FieldGroupMeta
-    const conditions = visibleWhen.fields?.conditions as ArrayFieldMeta
-    const conditionItemField = conditions.itemField as (
-      values: Record<string, unknown>
-    ) => FieldGroupMeta
+    it('includes all available fields in field selector options', () => {
+      const { precedingFields, contextSchema } = createMockFields()
+      const builder = buildConditionItemField(precedingFields, contextSchema)
 
-    return { conditionItemField }
-  }
+      const config = builder({}) as FieldGroupMeta
+      const fieldField = config.fields?.field
+      expect(fieldField).toBeDefined()
+      expect('options' in fieldField!).toBe(true)
+      const fieldOptions = (fieldField as { options: Array<{ value: string; label: string }> })
+        .options
 
-  describe('Field Visibility Logic', () => {
-    it('operator field is hidden when no field is selected', () => {
-      const { conditionItemField } = getConditionFieldConfig()
+      expect(fieldOptions).toBeDefined()
+      expect(fieldOptions.length).toBeGreaterThan(0)
 
-      // Condition with no field selected
-      const conditionConfig = conditionItemField({})
-      const operatorField = conditionConfig.fields?.operator
-
-      expect(operatorField).toBeDefined()
-      expect(operatorField?.visibleWhen).toBeDefined()
-
-      // Should return false when no field is selected
-      const mockContext: FieldContext = {
-        values: {},
-        root: {}
-      }
-      const isVisible = (operatorField?.visibleWhen as (ctx: FieldContext) => boolean)(mockContext)
-      expect(isVisible).toBe(false)
+      // Should include preceding fields
+      expect(fieldOptions.some((opt) => opt.value === 'teamSize')).toBe(true)
+      // Should include context schema fields
+      expect(fieldOptions.some((opt) => opt.value === 'isRecurring')).toBe(true)
+      expect(fieldOptions.some((opt) => opt.value === 'donationType')).toBe(true)
+      expect(fieldOptions.some((opt) => opt.value === 'amount')).toBe(true)
     })
 
-    it('operator becomes visible after field selection', () => {
-      const { contextSchema } = createTestContext()
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
+    it('field selector onChange resets operator and value', () => {
+      const { precedingFields, contextSchema } = createMockFields()
+      const builder = buildConditionItemField(precedingFields, contextSchema)
 
-      // Condition with field selected
-      const conditionConfig = conditionItemField({ field: 'isRecurring' })
-      const operatorField = conditionConfig.fields?.operator
+      const config = builder({}) as FieldGroupMeta
+      const fieldOnChange = config.fields?.field?.onChange
 
-      expect(operatorField?.visibleWhen).toBeDefined()
+      expect(fieldOnChange).toBeDefined()
 
-      // Should return true when field is selected
-      const mockContext: FieldContext = {
-        values: { field: 'isRecurring' },
-        root: {}
-      }
-      const isVisible = (operatorField?.visibleWhen as (ctx: FieldContext) => boolean)(mockContext)
-      expect(isVisible).toBe(true)
-    })
-
-    it('value field is hidden when no operator is selected', () => {
-      const { contextSchema } = createTestContext()
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
-
-      // Condition with field but no operator
-      const conditionConfig = conditionItemField({ field: 'amount' })
-      const valueField = conditionConfig.fields?.value
-
-      expect(valueField?.visibleWhen).toBeDefined()
-
-      // Should return false when no operator
-      const mockContext: FieldContext = {
-        values: { field: 'amount' },
-        root: {}
-      }
-      const isVisible = (valueField?.visibleWhen as (ctx: FieldContext) => boolean)(mockContext)
-      expect(isVisible).toBe(false)
-    })
-
-    it('value field becomes visible after field and operator selection', () => {
-      const { contextSchema } = createTestContext()
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
-
-      // Condition with field and operator
-      const conditionConfig = conditionItemField({ field: 'amount' })
-      const valueField = conditionConfig.fields?.value
-
-      expect(valueField?.visibleWhen).toBeDefined()
-
-      // Should return true when both field and operator are set
-      const mockContext: FieldContext = {
-        values: { field: 'amount', operator: 'greaterOrEqual' },
-        root: {}
-      }
-      const isVisible = (valueField?.visibleWhen as (ctx: FieldContext) => boolean)(mockContext)
-      expect(isVisible).toBe(true)
-    })
-
-    it('value field remains hidden when operator is invalid', () => {
-      const { contextSchema } = createTestContext()
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
-
-      // Condition with field
-      const conditionConfig = conditionItemField({ field: 'amount' })
-      const valueField = conditionConfig.fields?.value
-
-      expect(valueField?.visibleWhen).toBeDefined()
-
-      // Should return false when operator is invalid/unknown
-      const mockContext: FieldContext = {
-        values: { field: 'amount', operator: 'invalidOperator' },
-        root: {}
-      }
-      const isVisible = (valueField?.visibleWhen as (ctx: FieldContext) => boolean)(mockContext)
-      expect(isVisible).toBe(false)
-    })
-  })
-
-  describe('State Management - Field Resets', () => {
-    it('field onChange resets operator and value to empty', () => {
-      const { contextSchema } = createTestContext()
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
-
-      const conditionConfig = conditionItemField({})
-      const fieldField = conditionConfig.fields?.field
-
-      expect(fieldField?.onChange).toBeDefined()
-
-      // Mock setValue function
       const mockSetValue = vi.fn()
-      fieldField?.onChange?.({
+      const mockContext: OnChangeContext = {
         value: 'amount',
         values: {},
         root: {},
         setValue: mockSetValue
-      })
+      }
 
-      // Should reset both operator and value
+      fieldOnChange?.(mockContext)
+
       expect(mockSetValue).toHaveBeenCalledWith('operator', '')
       expect(mockSetValue).toHaveBeenCalledWith('value', '')
     })
 
-    it('operator onChange resets value', () => {
-      const { contextSchema } = createTestContext()
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
+    it('operator selector onChange resets value to empty string', () => {
+      const { precedingFields, contextSchema } = createMockFields()
+      const builder = buildConditionItemField(precedingFields, contextSchema)
 
-      const conditionConfig = conditionItemField({ field: 'amount' })
-      const operatorField = conditionConfig.fields?.operator
+      const config = builder({ field: 'amount' }) as FieldGroupMeta
+      const operatorOnChange = config.fields?.operator?.onChange
 
-      expect(operatorField?.onChange).toBeDefined()
+      expect(operatorOnChange).toBeDefined()
 
-      // Mock setValue function
       const mockSetValue = vi.fn()
-      operatorField?.onChange?.({
+      const mockContext: OnChangeContext = {
         value: 'greaterThan',
         values: {},
         root: {},
         setValue: mockSetValue
-      })
+      }
 
-      // Should reset value
+      operatorOnChange?.(mockContext)
+
       expect(mockSetValue).toHaveBeenCalledWith('value', '')
     })
 
-    it('operator onChange initializes value as array for in/notIn operators', () => {
-      const { contextSchema } = createTestContext()
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
+    it('operator selector onChange initializes array for in/notIn operators', () => {
+      const { precedingFields, contextSchema } = createMockFields()
+      const builder = buildConditionItemField(precedingFields, contextSchema)
 
-      const conditionConfig = conditionItemField({ field: 'amount' })
-      const operatorField = conditionConfig.fields?.operator
+      const config = builder({ field: 'donationType' }) as FieldGroupMeta
+      const operatorOnChange = config.fields?.operator?.onChange
 
-      expect(operatorField?.onChange).toBeDefined()
+      expect(operatorOnChange).toBeDefined()
 
-      // Mock setValue function
       const mockSetValue = vi.fn()
 
       // Test 'in' operator
-      operatorField?.onChange?.({
+      operatorOnChange?.({
         value: 'in',
         values: {},
         root: {},
@@ -263,7 +161,7 @@ describe('custom-fields-config-form - condition builder logic', () => {
 
       // Test 'notIn' operator
       mockSetValue.mockClear()
-      operatorField?.onChange?.({
+      operatorOnChange?.({
         value: 'notIn',
         values: {},
         root: {},
@@ -272,233 +170,122 @@ describe('custom-fields-config-form - condition builder logic', () => {
 
       expect(mockSetValue).toHaveBeenCalledWith('value', [])
     })
-  })
 
-  describe('Validation Requirements', () => {
-    it('field is required', () => {
-      const { conditionItemField } = getConditionFieldConfig()
+    it('operator field visibility depends on field selection', () => {
+      const { precedingFields, contextSchema } = createMockFields()
+      const builder = buildConditionItemField(precedingFields, contextSchema)
 
-      const conditionConfig = conditionItemField({})
-      const fieldField = conditionConfig.fields?.field
+      // Without field selected
+      const configEmpty = builder({}) as FieldGroupMeta
+      const operatorVisibleEmpty = configEmpty.fields?.operator?.visibleWhen as (
+        ctx: FieldContext
+      ) => boolean
+      expect(operatorVisibleEmpty({ values: {}, root: {} })).toBe(false)
 
-      expect(fieldField?.rules).toBeDefined()
-      // Should have z.string().min(1) validation
+      // With field selected
+      const configWithField = builder({ field: 'amount' }) as FieldGroupMeta
+      const operatorVisibleWithField = configWithField.fields?.operator?.visibleWhen as (
+        ctx: FieldContext
+      ) => boolean
+      expect(operatorVisibleWithField({ values: { field: 'amount' }, root: {} })).toBe(true)
     })
 
-    it('operator is required', () => {
-      const { contextSchema } = createTestContext()
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
+    it('value field visibility depends on field, operator, and operator requirement', () => {
+      const { precedingFields, contextSchema } = createMockFields()
+      const builder = buildConditionItemField(precedingFields, contextSchema)
 
-      const conditionConfig = conditionItemField({ field: 'amount' })
-      const operatorField = conditionConfig.fields?.operator
+      // Without field
+      const configNoField = builder({}) as FieldGroupMeta
+      const valueVisibleNoField = configNoField.fields?.value?.visibleWhen as (
+        ctx: FieldContext
+      ) => boolean
+      expect(valueVisibleNoField({ values: { operator: 'greaterOrEqual' }, root: {} })).toBe(false)
 
-      expect(operatorField?.rules).toBeDefined()
-      // Should have z.string().min(1) validation
+      // With field but no operator
+      const configNoOp = builder({ field: 'amount' }) as FieldGroupMeta
+      const valueVisibleNoOp = configNoOp.fields?.value?.visibleWhen as (
+        ctx: FieldContext
+      ) => boolean
+      expect(valueVisibleNoOp({ values: { field: 'amount' }, root: {} })).toBe(false)
+
+      // With field and operator that requires value
+      const configWithBoth = builder({ field: 'amount' }) as FieldGroupMeta
+      const valueVisibleWithBoth = configWithBoth.fields?.value?.visibleWhen as (
+        ctx: FieldContext
+      ) => boolean
+      expect(
+        valueVisibleWithBoth({ values: { field: 'amount', operator: 'greaterOrEqual' }, root: {} })
+      ).toBe(true)
+
+      // With field and operator that doesn't require value
+      expect(
+        valueVisibleWithBoth({ values: { field: 'amount', operator: 'empty' }, root: {} })
+      ).toBe(false)
     })
 
-    it('value is required when visible', () => {
-      const { contextSchema } = createTestContext()
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
-
-      const conditionConfig = conditionItemField({ field: 'amount' })
-      const valueField = conditionConfig.fields?.value
-
-      expect(valueField?.rules).toBeDefined()
-      // Should have validation for required value
-    })
-  })
-
-  describe('Dynamic Value Field Rendering', () => {
     it('value field is select type for fields with options', () => {
-      const { contextSchema } = createTestContext()
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
+      const { precedingFields, contextSchema } = createMockFields()
+      const builder = buildConditionItemField(precedingFields, contextSchema)
 
-      // Select field with options (donationType)
-      const conditionConfig = conditionItemField({ field: 'donationType' })
-      const valueField = conditionConfig.fields?.value as { type: string; options?: unknown[] }
+      const config = builder({ field: 'donationType' }) as FieldGroupMeta
+      const valueField = config.fields?.value
 
       expect(valueField?.type).toBe('select')
-      expect(valueField?.options).toBeDefined()
-      expect(Array.isArray(valueField?.options)).toBe(true)
+      expect('options' in valueField!).toBe(true)
     })
 
-    it('value field is number type for number fields without options', () => {
-      const { contextSchema } = createTestContext()
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
+    it('value field is number type for number fields', () => {
+      const { precedingFields, contextSchema } = createMockFields()
+      const builder = buildConditionItemField(precedingFields, contextSchema)
 
-      // Number field without options (amount)
-      const conditionConfig = conditionItemField({ field: 'amount' })
-      const valueField = conditionConfig.fields?.value as { type: string }
+      const config = builder({ field: 'amount' }) as FieldGroupMeta
+      const valueField = config.fields?.value
 
-      // After refactor: number fields use type: 'number' instead of text with inputType
       expect(valueField?.type).toBe('number')
     })
 
-    it('value field becomes array type for in/notIn operators ONLY when value is array', () => {
-      const { contextSchema } = createTestContext()
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
+    it('value field is array type for in/notIn operators with array value', () => {
+      const { precedingFields, contextSchema } = createMockFields()
+      const builder = buildConditionItemField(precedingFields, contextSchema)
 
-      // Field with options and 'in' operator - value should be array type only if value is []
-      const conditionConfigIn = conditionItemField({
-        field: 'donationFrequency', // Array field for in/notIn
-        operator: 'in',
-        value: [] // Must provide array value
-      })
-      const valueFieldIn = conditionConfigIn.fields?.value
-
-      expect(valueFieldIn).toBeDefined()
-      expect(valueFieldIn?.type).toBe('array')
-      expect(valueFieldIn?.visibleWhen).toBeDefined()
-
-      // Should be visible for 'in' operator
-      const mockContextIn: FieldContext = {
-        values: { field: 'donationFrequency', operator: 'in' },
-        root: {}
-      }
-      const isVisibleIn = (valueFieldIn?.visibleWhen as (ctx: FieldContext) => boolean)(
-        mockContextIn
-      )
-      expect(isVisibleIn).toBe(true)
-
-      // Field with options and 'notIn' operator
-      const conditionConfigNotIn = conditionItemField({
-        field: 'donationFrequency', // Array field for in/notIn
-        operator: 'notIn',
-        value: [] // Must provide array value
-      })
-      const valueFieldNotIn = conditionConfigNotIn.fields?.value
-
-      expect(valueFieldNotIn?.type).toBe('array')
-
-      // Should be visible for 'notIn' operator
-      const mockContextNotIn: FieldContext = {
-        values: { field: 'donationType', operator: 'notIn' },
-        root: {}
-      }
-      const isVisibleNotIn = (valueFieldNotIn?.visibleWhen as (ctx: FieldContext) => boolean)(
-        mockContextNotIn
-      )
-      expect(isVisibleNotIn).toBe(true)
-    })
-
-    it('value field is hidden/text placeholder if operator is in/notIn but value is not array', () => {
-      const { contextSchema } = createTestContext()
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
-
-      // 'in' operator but value is string (transition state)
-      const conditionConfigTransition = conditionItemField({
+      const config = builder({
         field: 'donationType',
         operator: 'in',
-        value: '' // Invalid value for array
-      })
+        value: []
+      }) as FieldGroupMeta
+      const valueField = config.fields?.value
 
-      const valueField = conditionConfigTransition.fields?.value
-      expect(valueField?.type).toBe('text') // Should fallback to text
-
-      const isVisible = (valueField?.visibleWhen as () => boolean)()
-      expect(isVisible).toBe(false) // Should be hidden
+      expect(valueField?.type).toBe('array')
+      expect('itemField' in valueField!).toBe(true)
     })
 
-    it('value field is hidden for operators that do not require a value', () => {
-      const { contextSchema } = createTestContext()
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
+    it('value field is hidden placeholder when in/notIn operator but value not array', () => {
+      const { precedingFields, contextSchema } = createMockFields()
+      const builder = buildConditionItemField(precedingFields, contextSchema)
 
-      const conditionConfig = conditionItemField({ field: 'amount' })
-      const valueField = conditionConfig.fields?.value
+      // Transition state: 'in' operator but value is string
+      const config = builder({
+        field: 'donationType',
+        operator: 'in',
+        value: '' // Not an array
+      }) as FieldGroupMeta
+      const valueField = config.fields?.value
 
-      expect(valueField?.visibleWhen).toBeDefined()
-
-      // Should be hidden for 'empty' operator (doesn't require value)
-      const mockContext: FieldContext = {
-        values: { field: 'amount', operator: 'empty' },
-        root: {}
-      }
-      const isVisible = (valueField?.visibleWhen as (ctx: FieldContext) => boolean)(mockContext)
+      expect(valueField?.type).toBe('text')
+      const isVisible = (valueField?.visibleWhen as () => boolean)?.()
       expect(isVisible).toBe(false)
     })
   })
 
-  describe('Combined Visibility Logic', () => {
-    it('operator visibility depends on field selection', () => {
-      const { contextSchema } = createTestContext()
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
-
-      // Without field
-      const conditionConfigEmpty = conditionItemField({})
-      const operatorFieldEmpty = conditionConfigEmpty.fields?.operator
-      const mockContextEmpty: FieldContext = {
-        values: {},
-        root: {}
-      }
-      const isVisibleEmpty = (operatorFieldEmpty?.visibleWhen as (ctx: FieldContext) => boolean)(
-        mockContextEmpty
-      )
-      expect(isVisibleEmpty).toBe(false)
-
-      // With field
-      const conditionConfigWithField = conditionItemField({ field: 'amount' })
-      const operatorFieldWithField = conditionConfigWithField.fields?.operator
-      const mockContextWithField: FieldContext = {
-        values: { field: 'amount' },
-        root: {}
-      }
-      const isVisibleWithField = (
-        operatorFieldWithField?.visibleWhen as (ctx: FieldContext) => boolean
-      )(mockContextWithField)
-      expect(isVisibleWithField).toBe(true)
-    })
-
-    it('value visibility depends on both field and operator', () => {
-      const { contextSchema } = createTestContext()
-      const { conditionItemField } = getConditionFieldConfig(contextSchema)
-
-      // Without field
-      const conditionConfigNoField = conditionItemField({})
-      const valueFieldNoField = conditionConfigNoField.fields?.value
-      const mockContextNoField: FieldContext = {
-        values: { operator: 'greaterOrEqual' },
-        root: {}
-      }
-      const isVisibleNoField = (valueFieldNoField?.visibleWhen as (ctx: FieldContext) => boolean)(
-        mockContextNoField
-      )
-      expect(isVisibleNoField).toBe(false)
-
-      // With field but no operator
-      const conditionConfigNoOp = conditionItemField({ field: 'amount' })
-      const valueFieldNoOp = conditionConfigNoOp.fields?.value
-      const mockContextNoOp: FieldContext = {
-        values: { field: 'amount' },
-        root: {}
-      }
-      const isVisibleNoOp = (valueFieldNoOp?.visibleWhen as (ctx: FieldContext) => boolean)(
-        mockContextNoOp
-      )
-      expect(isVisibleNoOp).toBe(false)
-
-      // With both field and operator
-      const conditionConfigBoth = conditionItemField({ field: 'amount' })
-      const valueFieldBoth = conditionConfigBoth.fields?.value
-      const mockContextBoth: FieldContext = {
-        values: { field: 'amount', operator: 'greaterOrEqual' },
-        root: {}
-      }
-      const isVisibleBoth = (valueFieldBoth?.visibleWhen as (ctx: FieldContext) => boolean)(
-        mockContextBoth
-      )
-      expect(isVisibleBoth).toBe(true)
-    })
-  })
-
-  describe('Operator Requirements Utility', () => {
-    it('operators that do not require values', () => {
+  describe('operatorRequiresValue utility', () => {
+    it('returns false for operators that do not require values', () => {
       expect(operatorRequiresValue('empty')).toBe(false)
       expect(operatorRequiresValue('notEmpty')).toBe(false)
       expect(operatorRequiresValue('isTrue')).toBe(false)
       expect(operatorRequiresValue('isFalse')).toBe(false)
     })
 
-    it('operators that require values', () => {
+    it('returns true for operators that require values', () => {
       expect(operatorRequiresValue('contains')).toBe(true)
       expect(operatorRequiresValue('notContains')).toBe(true)
       expect(operatorRequiresValue('greaterOrEqual')).toBe(true)

@@ -93,6 +93,23 @@ describe('field-extraction', () => {
       expect(result.map((f) => f.key)).toEqual(['1', '2'])
     })
 
+    it('returns empty array when limitIndex is 0', () => {
+      const input = [
+        { id: '1', type: 'text', label: 'One' },
+        { id: '2', type: 'text', label: 'Two' }
+      ]
+
+      const result = extractAvailableFields(input, 0)
+
+      expect(result).toHaveLength(0)
+    })
+
+    it('returns empty array when input is empty', () => {
+      const result = extractAvailableFields([])
+
+      expect(result).toHaveLength(0)
+    })
+
     it('skips incomplete or invalid field definitions', () => {
       const input = [
         { type: 'text', label: 'No ID' },
@@ -104,14 +121,43 @@ describe('field-extraction', () => {
       expect(result).toHaveLength(0)
     })
 
-    it('appends (Custom) suffix to labels', () => {
-      // Note: The implementation in field-extraction.ts creates the AvailableField.
-      // We need to verify if the suffix is added there or in the consumer.
-      // Based on previous files, the suffix seemed to be added in the condition-field-builder.
-      // Let's check `field-extraction.ts` content again.
-      // Reading line 37-ish...
-      // It just sets the label? I need to check the code.
-      // Re-reading code...
+    it('sets group property to "Form Fields" for all fields', () => {
+      const input = [
+        { id: 'f1', type: 'text', label: 'Field 1' },
+        { id: 'f2', type: 'number', label: 'Field 2' }
+      ]
+
+      const result = extractAvailableFields(input)
+
+      expect(result.every((f) => f.group === 'Form Fields')).toBe(true)
+    })
+
+    it('handles checkbox without options as boolean type', () => {
+      const input = [{ id: 'cb1', type: 'checkbox', label: 'Agree' }]
+
+      const result = extractAvailableFields(input)
+
+      expect(result[0]?.type).toBe('boolean')
+      expect(result[0]?.options).toBeUndefined()
+    })
+
+    it('handles checkbox with options as string type with options', () => {
+      const input = [
+        {
+          id: 'cb1',
+          type: 'checkbox',
+          label: 'Multi',
+          options: ['A', 'B']
+        }
+      ]
+
+      const result = extractAvailableFields(input)
+
+      expect(result[0]?.type).toBe('string')
+      expect(result[0]?.options).toEqual([
+        { value: 'A', label: 'A' },
+        { value: 'B', label: 'B' }
+      ])
     })
   })
 })

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createCustomFieldsConfigSection } from '~/features/custom-fields/forms/custom-fields-config-form'
 import type {
   ArrayFieldMeta,
@@ -9,163 +9,71 @@ import type {
 
 describe('custom-fields-config-form', () => {
   describe('createCustomFieldsConfigSection', () => {
-    it('returns FormDef with correct structure', () => {
+    afterEach(() => {
+      vi.clearAllMocks()
+    })
+
+    it('creates form definition with enabled toggle and fields array', () => {
       const formDef = createCustomFieldsConfigSection()
 
       expect(formDef.id).toBe('customFields')
-      expect(formDef.fields).toHaveProperty('enabled')
-      expect(formDef.fields).toHaveProperty('fields')
+      expect(formDef.fields.enabled).toBeDefined()
+      expect(formDef.fields.fields).toBeDefined()
     })
 
-    it('has enabled toggle field', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const enabledField = formDef.fields.enabled
-
-      expect(enabledField?.type).toBe('toggle')
-      expect(enabledField?.label).toBe('Enable Custom Fields')
-    })
-
-    it('has fields array with correct configuration', () => {
+    it('generates field configuration with required editor fields when no type selected', () => {
       const formDef = createCustomFieldsConfigSection()
       const fieldsArray = formDef.fields.fields as ArrayFieldMeta
 
-      expect(fieldsArray?.type).toBe('array')
-      expect(fieldsArray?.label).toBe('Custom Fields')
-      expect(fieldsArray).toHaveProperty('itemField')
-      expect(typeof fieldsArray?.itemField).toBe('function')
-    })
-
-    it('itemField function returns field-group for new field', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
-
-      expect(fieldsArray?.type).toBe('array')
-      expect(typeof fieldsArray.itemField).toBe('function')
-
-      const emptyValues = {}
       const fieldGroup = (
         fieldsArray.itemField as (
           v: Record<string, unknown>,
           ctx: ArrayItemContext
         ) => FieldGroupMeta
-      )(emptyValues, { index: 0, items: [], root: {} })
+      )({}, { index: 0, items: [], root: {} })
 
-      expect(fieldGroup.type).toBe('field-group')
-      expect(fieldGroup.label).toBe('New Custom Field')
+      // Should be collapsible and open by default for new fields
       expect(fieldGroup.collapsible).toBe(true)
       expect(fieldGroup.collapsibleDefaultOpen).toBe(true)
+      expect(fieldGroup.label).toBe('New Custom Field')
+
+      // Should have type selector, label input, and hidden id field
+      expect(fieldGroup.fields?.type).toBeDefined()
+      expect(fieldGroup.fields?.label).toBeDefined()
+      expect(fieldGroup.fields?.id).toBeDefined()
     })
 
-    it('itemField includes type selector', () => {
+    it('generates type-specific configuration when field type is selected', () => {
       const formDef = createCustomFieldsConfigSection()
       const fieldsArray = formDef.fields.fields as ArrayFieldMeta
 
-      expect(typeof fieldsArray.itemField).toBe('function')
+      // Text fields get advanced settings
+      const textField = (fieldsArray.itemField as Function)(
+        { type: 'text', label: 'Username' },
+        { index: 0, items: [], root: {} }
+      ) as FieldGroupMeta
 
-      const emptyValues = {}
-      const fieldGroup = (
-        fieldsArray.itemField as (
-          v: Record<string, unknown>,
-          ctx: ArrayItemContext
-        ) => FieldGroupMeta
-      )(emptyValues, { index: 0, items: [], root: {} })
+      expect(textField.label).toBe('Text: Username')
+      expect(textField.fields?.advancedSettings).toBeDefined()
 
-      expect(fieldGroup.fields).toHaveProperty('type')
-      expect(fieldGroup.fields?.type?.type).toBe('select')
-      expect(fieldGroup.fields?.type?.label).toBe('Field Type')
-    })
+      // Slider fields get min/max configuration
+      const sliderField = (fieldsArray.itemField as Function)(
+        { type: 'slider', label: 'Amount' },
+        { index: 0, items: [], root: {} }
+      ) as FieldGroupMeta
 
-    it('itemField includes label field', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+      expect(sliderField.label).toBe('Slider: Amount')
+      expect(sliderField.fields?.min).toBeDefined()
+      expect(sliderField.fields?.max).toBeDefined()
 
-      expect(typeof fieldsArray.itemField).toBe('function')
+      // Select fields get options array
+      const selectField = (fieldsArray.itemField as Function)(
+        { type: 'select', label: 'Country' },
+        { index: 0, items: [], root: {} }
+      ) as FieldGroupMeta
 
-      const emptyValues = {}
-      const fieldGroup = (
-        fieldsArray.itemField as (
-          v: Record<string, unknown>,
-          ctx: ArrayItemContext
-        ) => FieldGroupMeta
-      )(emptyValues, { index: 0, items: [], root: {} })
-
-      expect(fieldGroup.fields).toHaveProperty('label')
-      expect(fieldGroup.fields?.label?.type).toBe('text')
-      expect(fieldGroup.fields?.label?.label).toBe('Field Label')
-    })
-
-    it('itemField includes hidden id field', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
-
-      expect(typeof fieldsArray.itemField).toBe('function')
-
-      const emptyValues = {}
-      const fieldGroup = (
-        fieldsArray.itemField as (
-          v: Record<string, unknown>,
-          ctx: ArrayItemContext
-        ) => FieldGroupMeta
-      )(emptyValues, { index: 0, items: [], root: {} })
-
-      expect(fieldGroup.fields).toHaveProperty('id')
-      expect(fieldGroup.fields?.id?.type).toBe('text')
-      expect(fieldGroup.fields?.id?.visibleWhen).toBeDefined()
-    })
-
-    it('itemField shows type-specific config for text fields', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
-
-      expect(typeof fieldsArray.itemField).toBe('function')
-
-      const textFieldValues = { type: 'text', label: 'Username' }
-      const fieldGroup = (
-        fieldsArray.itemField as (
-          v: Record<string, unknown>,
-          ctx: ArrayItemContext
-        ) => FieldGroupMeta
-      )(textFieldValues, { index: 0, items: [], root: {} })
-
-      expect(fieldGroup.label).toBe('Text: Username')
-      expect(fieldGroup.fields).toHaveProperty('advancedSettings')
-    })
-
-    it('itemField shows type-specific config for slider fields', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
-
-      expect(typeof fieldsArray.itemField).toBe('function')
-
-      const sliderFieldValues = { type: 'slider', label: 'Amount' }
-      const fieldGroup = (
-        fieldsArray.itemField as (
-          v: Record<string, unknown>,
-          ctx: ArrayItemContext
-        ) => FieldGroupMeta
-      )(sliderFieldValues, { index: 0, items: [], root: {} })
-
-      expect(fieldGroup.label).toBe('Slider: Amount')
-      expect(fieldGroup.fields).toHaveProperty('min')
-      expect(fieldGroup.fields).toHaveProperty('max')
-    })
-
-    it('itemField shows type-specific config for select fields', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
-
-      expect(typeof fieldsArray.itemField).toBe('function')
-
-      const selectFieldValues = { type: 'select', label: 'Country' }
-      const fieldGroup = (
-        fieldsArray.itemField as (
-          v: Record<string, unknown>,
-          ctx: ArrayItemContext
-        ) => FieldGroupMeta
-      )(selectFieldValues, { index: 0, items: [], root: {} })
-
-      expect(fieldGroup.label).toBe('Select: Country')
-      expect(fieldGroup.fields).toHaveProperty('options')
+      expect(selectField.label).toBe('Select: Country')
+      expect(selectField.fields?.options).toBeDefined()
     })
 
     it('truncates long labels in display', () => {
@@ -207,7 +115,7 @@ describe('custom-fields-config-form', () => {
       expect(fieldGroup.label).toBe('Text')
     })
 
-    it('array field is visible only when enabled', () => {
+    it('shows fields array only when custom fields are enabled', () => {
       const formDef = createCustomFieldsConfigSection()
       const fieldsArray = formDef.fields.fields
 
@@ -219,18 +127,12 @@ describe('custom-fields-config-form', () => {
       }
     })
 
-    it('array field is sortable', () => {
+    it('configures array as sortable with appropriate add button text', () => {
       const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields
+      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
 
-      expect(fieldsArray).toHaveProperty('sortable', true)
-    })
-
-    it('has appropriate button text', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields
-
-      expect(fieldsArray).toHaveProperty('addButtonText', 'Add Custom Field')
+      expect(fieldsArray.sortable).toBe(true)
+      expect(fieldsArray.addButtonText).toBe('Add Custom Field')
     })
 
     it('includes external context fields in condition builder', () => {
@@ -301,14 +203,10 @@ describe('custom-fields-config-form', () => {
       expect(donationCountOption?.label).toBe('Total Donations')
     })
 
-    it('clears invalid condition references when fields are reordered', () => {
+    it('sets validation error when field references another field that comes after it', () => {
       const formDef = createCustomFieldsConfigSection()
       const fieldsArray = formDef.fields.fields as ArrayFieldMeta
 
-      expect(fieldsArray.onChange).toBeDefined()
-      expect(typeof fieldsArray.onChange).toBe('function')
-
-      // Create two fields: fieldA and fieldB where fieldB has a condition referencing fieldA
       const fieldA = {
         id: 'field_a',
         type: 'text',
@@ -325,7 +223,7 @@ describe('custom-fields-config-form', () => {
             match: 'all',
             conditions: [
               {
-                field: 'field_a', // References fieldA
+                field: 'field_a',
                 operator: 'contains',
                 value: 'test'
               }
@@ -334,7 +232,7 @@ describe('custom-fields-config-form', () => {
         }
       }
 
-      // Simulate reordering: move fieldB before fieldA (making the condition invalid)
+      // Reorder: fieldB now comes before fieldA (invalid condition)
       const reorderedFields = [fieldB, fieldA]
 
       const mockSetFieldError = vi.fn()
@@ -351,34 +249,23 @@ describe('custom-fields-config-form', () => {
         path: 'customFields.fields'
       })
 
-      // Should set error on the invalid condition field
-      // Logic: fieldB is now at index 0, so precedingFields is empty.
-      // But fieldB references 'field_a'. 'field_a' is not in precedingFields (it's at index 1 now).
-      expect(mockSetFieldError).toHaveBeenCalled()
-      expect(mockSetFieldTouched).toHaveBeenCalled()
-
-      // The path format should be: customFields.fields[index].visibilityConditions.visibleWhen.conditions[cIndex].field
-      // fieldB is at index 0. The condition is at index 0.
       const expectedPath =
         'customFields.fields[0].visibilityConditions.visibleWhen.conditions[0].field'
 
-      const calls = mockSetFieldError.mock.calls
-      const errorCall = calls.find((call: unknown[]) => call[0] === expectedPath) as unknown[]
+      const errorCall = mockSetFieldError.mock.calls.find(
+        (call: unknown[]) => call[0] === expectedPath
+      ) as unknown[]
 
       expect(errorCall).toBeDefined()
       expect(errorCall[1]).toContain('This field is no longer available')
-
-      // Should not mutate values anymore
+      expect(mockSetFieldTouched).toHaveBeenCalledWith(expectedPath, true)
       expect(mockSetValue).not.toHaveBeenCalled()
     })
 
-    it('preserves valid conditions when fields are reordered but remain valid', () => {
+    it('clears validation errors when previously invalid condition becomes valid', () => {
       const formDef = createCustomFieldsConfigSection()
       const fieldsArray = formDef.fields.fields as ArrayFieldMeta
 
-      expect(fieldsArray.onChange).toBeDefined()
-
-      // Create three fields: A, B, C where C has a condition referencing A
       const fieldA = {
         id: 'field_a',
         type: 'text',
@@ -401,7 +288,7 @@ describe('custom-fields-config-form', () => {
             match: 'all',
             conditions: [
               {
-                field: 'field_a', // References fieldA
+                field: 'field_a',
                 operator: 'contains',
                 value: 'test'
               }
@@ -410,7 +297,7 @@ describe('custom-fields-config-form', () => {
         }
       }
 
-      // Swap fieldB and fieldC - fieldA is still before fieldC, so condition remains valid
+      // Reorder: fieldA is still before fieldC, so condition remains valid
       const reorderedFields = [fieldA, fieldC, fieldB]
 
       const mockSetFieldError = vi.fn()
@@ -427,10 +314,6 @@ describe('custom-fields-config-form', () => {
         path: 'customFields.fields'
       })
 
-      // Should verify valid fields and clear errors if any existed
-      expect(mockSetFieldError).toHaveBeenCalled()
-
-      // Check that it calls setFieldError with undefined for valid fields
       const expectedPath =
         'customFields.fields[1].visibilityConditions.visibleWhen.conditions[0].field'
       const call = mockSetFieldError.mock.calls.find(
@@ -439,15 +322,12 @@ describe('custom-fields-config-form', () => {
 
       expect(call).toBeDefined()
       expect(call[1]).toBeUndefined() // Clears error
-
       expect(mockSetValue).not.toHaveBeenCalled()
     })
 
-    it('flags condition as error when referenced field is deleted', () => {
+    it('sets validation error when referenced field is deleted', () => {
       const formDef = createCustomFieldsConfigSection()
       const fieldsArray = formDef.fields.fields as ArrayFieldMeta
-
-      expect(fieldsArray.onChange).toBeDefined()
 
       const fieldB = {
         id: 'field_b',
@@ -459,7 +339,7 @@ describe('custom-fields-config-form', () => {
             match: 'all',
             conditions: [
               {
-                field: 'field_a', // References fieldA
+                field: 'field_a',
                 operator: 'contains',
                 value: 'test'
               }
@@ -468,7 +348,7 @@ describe('custom-fields-config-form', () => {
         }
       }
 
-      // Simulate deletion: remove fieldA, leaving only fieldB
+      // Simulate deletion: remove fieldA
       const fieldsAfterDeletion = [fieldB]
 
       const mockSetFieldError = vi.fn()
@@ -485,9 +365,6 @@ describe('custom-fields-config-form', () => {
         path: 'customFields.fields'
       })
 
-      // Should set error on the invalid condition field
-      expect(mockSetFieldError).toHaveBeenCalled()
-
       const expectedPath =
         'customFields.fields[0].visibilityConditions.visibleWhen.conditions[0].field'
       const call = mockSetFieldError.mock.calls.find(
@@ -496,8 +373,6 @@ describe('custom-fields-config-form', () => {
 
       expect(call).toBeDefined()
       expect(call[1]).toContain('This field is no longer available')
-
-      // Should not mutate values
       expect(mockSetValue).not.toHaveBeenCalled()
     })
 
@@ -512,8 +387,6 @@ describe('custom-fields-config-form', () => {
       const formDef = createCustomFieldsConfigSection(contextSchema)
       const fieldsArray = formDef.fields.fields as ArrayFieldMeta
 
-      expect(fieldsArray.onChange).toBeDefined()
-
       const fieldA = {
         id: 'field_a',
         type: 'text',
@@ -524,7 +397,7 @@ describe('custom-fields-config-form', () => {
             match: 'all',
             conditions: [
               {
-                field: 'userTier', // References external context
+                field: 'userTier',
                 operator: 'in',
                 value: ['premium']
               }
@@ -556,9 +429,6 @@ describe('custom-fields-config-form', () => {
         path: 'customFields.fields'
       })
 
-      // Should check errors but clear them since they are valid
-      expect(mockSetFieldError).toHaveBeenCalled()
-
       const expectedPath =
         'customFields.fields[1].visibilityConditions.visibleWhen.conditions[0].field'
       const call = mockSetFieldError.mock.calls.find(
@@ -566,9 +436,77 @@ describe('custom-fields-config-form', () => {
       ) as unknown[]
 
       expect(call).toBeDefined()
-      expect(call[1]).toBeUndefined() // Valid
-
+      expect(call[1]).toBeUndefined() // Valid - external context is always available
       expect(mockSetValue).not.toHaveBeenCalled()
+    })
+
+    it('validates multiple conditions correctly when some are valid and others invalid', () => {
+      const formDef = createCustomFieldsConfigSection()
+      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+
+      const fieldA = {
+        id: 'field_a',
+        type: 'text',
+        label: 'Field A'
+      }
+
+      const fieldB = {
+        id: 'field_b',
+        type: 'text',
+        label: 'Field B',
+        enableVisibilityConditions: true,
+        visibilityConditions: {
+          visibleWhen: {
+            match: 'all',
+            conditions: [
+              {
+                field: 'field_a', // Valid - comes before
+                operator: 'contains',
+                value: 'test'
+              },
+              {
+                field: 'field_c', // Invalid - doesn't exist
+                operator: 'equals',
+                value: 'value'
+              }
+            ]
+          }
+        }
+      }
+
+      const fields = [fieldA, fieldB]
+
+      const mockSetFieldError = vi.fn()
+      const mockSetFieldTouched = vi.fn()
+      const mockSetValue = vi.fn()
+
+      fieldsArray.onChange?.({
+        value: fields,
+        values: { fields },
+        root: { fields },
+        setValue: mockSetValue,
+        setFieldError: mockSetFieldError,
+        setFieldTouched: mockSetFieldTouched,
+        path: 'customFields.fields'
+      })
+
+      // First condition should be valid
+      const validPath =
+        'customFields.fields[1].visibilityConditions.visibleWhen.conditions[0].field'
+      const validCall = mockSetFieldError.mock.calls.find(
+        (call: unknown[]) => call[0] === validPath
+      ) as unknown[]
+      expect(validCall).toBeDefined()
+      expect(validCall[1]).toBeUndefined()
+
+      // Second condition should have error
+      const invalidPath =
+        'customFields.fields[1].visibilityConditions.visibleWhen.conditions[1].field'
+      const invalidCall = mockSetFieldError.mock.calls.find(
+        (call: unknown[]) => call[0] === invalidPath
+      ) as unknown[]
+      expect(invalidCall).toBeDefined()
+      expect(invalidCall[1]).toContain('This field is no longer available')
     })
   })
 })
