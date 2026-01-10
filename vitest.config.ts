@@ -1,8 +1,23 @@
 import { defineConfig } from 'vitest/config'
 import { defineVitestProject } from '@nuxt/test-utils/config'
 
+// Intercept stderr to suppress transformMode deprecation warning
+const originalStderrWrite = process.stderr.write.bind(process.stderr)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+process.stderr.write = ((chunk: any, encoding?: any, callback?: any) => {
+  const message = chunk.toString()
+  if (message.includes('transformMode')) {
+    return true
+  }
+  return originalStderrWrite(chunk, encoding, callback)
+}) as typeof process.stderr.write
+
 export default defineConfig({
   test: {
+    onConsoleLog(log) {
+      // Suppress Vue Suspense experimental warning
+      if (log.includes('<Suspense> is an experimental feature')) return false
+    },
     coverage: {
       exclude: [
         'app/components/ui/**',

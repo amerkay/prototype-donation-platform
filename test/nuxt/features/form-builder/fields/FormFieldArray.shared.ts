@@ -45,7 +45,7 @@ export async function mountFormFieldArray(
     ...meta
   }
 
-  const { wrapper, formValues } = await mountFormField(
+  return await mountFormField(
     FormFieldArray,
     {
       meta: defaultMeta,
@@ -63,8 +63,6 @@ export async function mountFormFieldArray(
       sectionId: options.sectionId ?? 'test-section'
     }
   )
-
-  return { wrapper, formValues }
 }
 
 /**

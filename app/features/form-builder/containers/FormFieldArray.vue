@@ -86,10 +86,8 @@ const resolvedVeeName = computed(() => {
 
 // Array items are rendered as individual fields, so we track child errors at the array level
 // This catches both mounted field errors and schema validation errors
-const hasChildErrors = computed(() => {
-  const { hasChildErrors: liveErrors } = useChildFieldErrors(resolvedVeeName)
-  return liveErrors.value
-})
+const { hasChildErrors: liveChildErrors } = useChildFieldErrors(resolvedVeeName)
+const hasChildErrors = computed(() => liveChildErrors.value)
 
 const allErrors = computed(() => {
   if (hasChildErrors.value) return ['One or more errors above, please fix']
