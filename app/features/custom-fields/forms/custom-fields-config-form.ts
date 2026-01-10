@@ -21,11 +21,36 @@ import { extractAvailableFields } from './field-extraction'
  *
  * @param contextSchema - Optional external context schema for condition builder
  * @param resolveExternalFields - Optional function to resolve external fields from root form values
+ * @param allowedFieldTypes - Optional array of allowed field types. Defaults to all types.
  */
 export function createCustomFieldsConfigSection(
   contextSchema?: ContextSchema,
-  resolveExternalFields?: (rootValues: Record<string, unknown>) => AvailableField[]
+  resolveExternalFields?: (rootValues: Record<string, unknown>) => AvailableField[],
+  allowedFieldTypes?: CustomFieldType[]
 ): FormDef {
+  // Default to all field types if not specified
+  const fieldTypes = allowedFieldTypes || (Object.keys(FIELD_FACTORIES) as CustomFieldType[])
+
+  // Build field type options and labels based on allowed types
+  const fieldTypeOptions: Array<{ value: string; label: string }> = []
+  const fieldTypeLabels: Record<string, string> = {
+    text: 'Text (single line)',
+    textarea: 'Textarea (multi-line)',
+    number: 'Number',
+    slider: 'Slider (range)',
+    select: 'Dropdown (select)',
+    checkbox: 'Checkbox',
+    'radio-group': 'Radio Group',
+    hidden: 'Hidden (tracking)'
+  }
+
+  for (const type of fieldTypes) {
+    fieldTypeOptions.push({
+      value: type,
+      label: fieldTypeLabels[type] || type
+    })
+  }
+
   return {
     id: 'customFields',
     fields: {
@@ -50,7 +75,10 @@ export function createCustomFieldsConfigSection(
         description: 'Define additional form fields for donors to fill out',
         visibleWhen: ({ values }) => values.enabled === true,
         sortable: true,
-        addButtonText: 'Add Custom Field',
+        addButtonText:
+          fieldTypes.length === 1 && fieldTypes[0]
+            ? `Add ${fieldTypeLabels[fieldTypes[0]] || fieldTypes[0]} Field`
+            : 'Add Custom Field',
         isSeparatorAfter: true,
         // Dynamic itemField based on selected type - resolved per-item using function
         itemField: (values: Record<string, unknown>, context: ArrayItemContext) => {
@@ -86,32 +114,12 @@ export function createCustomFieldsConfigSection(
               type: 'select',
               label: 'Field Type',
               placeholder: 'Choose field type...',
-              options: [
-                { value: 'text', label: 'Text (single line)' },
-                { value: 'textarea', label: 'Textarea (multi-line)' },
-                { value: 'number', label: 'Number' },
-                { value: 'slider', label: 'Slider (range)' },
-                { value: 'select', label: 'Dropdown (select)' },
-                { value: 'checkbox', label: 'Checkbox' },
-                { value: 'radio-group', label: 'Radio Group' },
-                { value: 'hidden', label: 'Hidden (tracking)' }
-              ],
+              options: fieldTypeOptions,
+              defaultValue: fieldTypes.length === 1 ? fieldTypes[0] : undefined,
               disabled: ({ values }) => !!values.type,
-              rules: z.enum(
-                [
-                  'text',
-                  'textarea',
-                  'number',
-                  'slider',
-                  'select',
-                  'checkbox',
-                  'radio-group',
-                  'hidden'
-                ],
-                {
-                  message: 'Please select a field type'
-                }
-              ),
+              rules: z.enum(fieldTypes as [CustomFieldType, ...CustomFieldType[]], {
+                message: 'Please select a field type'
+              }),
               // Return factory config - framework auto-applies defaults
               onChange: ({ value }) => {
                 const selectedType = value as CustomFieldType | undefined
@@ -173,7 +181,7 @@ export function createCustomFieldsConfigSection(
               label: 'Enable Visibility Conditions',
               description: 'Control when this field is shown based on other field values',
               defaultValue: false,
-              visibleWhen: ({ values }: FieldContext) => !!values.type,
+              visibleWhen: ({ values }: FieldContext) => !!values.type && values.type !== 'hidden',
               optional: true
             },
 
@@ -181,7 +189,9 @@ export function createCustomFieldsConfigSection(
               type: 'field-group',
               label: 'Condition Rules',
               visibleWhen: ({ values }: FieldContext) =>
-                !!values.type && values.enableVisibilityConditions === true,
+                !!values.type &&
+                values.type !== 'hidden' &&
+                values.enableVisibilityConditions === true,
               class: 'bg-muted rounded-md py-4 px-3 sm:px-4',
               fields: {
                 visibleWhen: {
@@ -220,7 +230,7 @@ export function createCustomFieldsConfigSection(
             type: 'field-group',
             label: displayLabel,
             collapsible: true,
-            collapsibleDefaultOpen: !type, // Open if no type selected yet
+            collapsibleDefaultOpen: !type || fieldTypes.length === 1, // Open if no type OR single type auto-selected
             fields
           }
         }

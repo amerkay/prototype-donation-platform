@@ -59,7 +59,7 @@ YOU MUST ALWAYS FOLLOW THESE COMMANDMENTS:
 4. **DRY PRINCIPLE**: MUST extract repeated logic. One responsibility per component. Never repeat code
 5. **MINIMAL EDITS**: MUST make the least changes to solve the problem. Remove all obsolete code immediately
 6. **FEATURE-BASED**: MUST place all feature code in `app/features/[feature-name]/`. Never violate architecture
-7. **TYPE SAFETY**: MUST use strict TypeScript. No `any` types. Mirror API structures exactly
+7. **TYPE SAFETY**: MUST use strict TypeScript. NEVER use `any` types. Mirror API structures exactly
 8. **SELF-CONTAINED LOGIC**: MUST prefer isolated, clear implementations. Avoid complex dependencies
 9. **USE shadcn-vue**: MUST use existing components or request missing ones. Do not reinvent UI
 10. **SHORT SUMMARIES**: MUST provide brief updates. End with minimal conventional commit message

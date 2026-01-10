@@ -65,11 +65,20 @@ const customFieldsSection = computed({
   get: () => {
     const existingData = donationStore.formSections.customFields || {}
 
-    // On first load, merge default values from config
-    const stepConfig = formConfig.value?.features.customFields.customFieldsTabs?.[props.step]
-    if (Object.keys(existingData).length === 0 && stepConfig?.enabled) {
-      const fields = stepConfig.fields
-      const defaults = extractCustomFieldDefaults(fields)
+    // Merge defaults from ALL tabs (step2, step3, and hidden)
+    // This ensures hidden fields are included in the store even if not rendered
+    const allTabs = formConfig.value?.features.customFields.customFieldsTabs
+    if (Object.keys(existingData).length === 0 && allTabs) {
+      const defaults: Record<string, unknown> = {}
+
+      // Merge defaults from each enabled tab
+      for (const [_tabKey, tabConfig] of Object.entries(allTabs)) {
+        if (tabConfig.enabled && Array.isArray(tabConfig.fields)) {
+          const tabDefaults = extractCustomFieldDefaults(tabConfig.fields)
+          Object.assign(defaults, tabDefaults)
+        }
+      }
+
       return defaults
     }
 

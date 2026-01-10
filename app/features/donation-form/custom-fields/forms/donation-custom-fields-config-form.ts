@@ -26,8 +26,9 @@ function filterContextSchemaByStep(schema: ContextSchema, stepNumber: number): C
 
 /**
  * Create tabbed custom fields config section for donation form
- * Splits configuration into Step 2 and Step 3 tabs
+ * Splits configuration into Step 2, Step 3, and Hidden Fields tabs
  * Each step has its own enabled toggle and fields array
+ * Hidden fields are stored but not rendered on any step
  *
  * @param contextSchema - Optional external context schema for condition builder
  */
@@ -45,14 +46,26 @@ export function createDonationCustomFieldsConfigSection(contextSchema?: ContextS
   const step2Schema = contextSchema ? filterContextSchemaByStep(contextSchema, 2) : undefined
   const step3Schema = contextSchema ? filterContextSchemaByStep(contextSchema, 3) : undefined
 
-  // Create step 2 config with filtered schema
-  const step2Config = createCustomFieldsConfigSection(step2Schema)
+  // Define allowed field types for each tab
+  const visibleFieldTypes: import('~/features/custom-fields/fields').CustomFieldType[] = [
+    'text',
+    'textarea',
+    'number',
+    'slider',
+    'select',
+    'checkbox',
+    'radio-group'
+  ]
+  const hiddenFieldTypes: import('~/features/custom-fields/fields').CustomFieldType[] = ['hidden']
+
+  // Create step 2 config with filtered schema (no hidden fields)
+  const step2Config = createCustomFieldsConfigSection(step2Schema, undefined, visibleFieldTypes)
   const step2FieldsArrayConfig = step2Config.fields.fields
   if (!step2FieldsArrayConfig || step2FieldsArrayConfig.type !== 'array') {
     throw new Error('Expected step2 fields to be an array field')
   }
 
-  // Create step 3 config with filtered schema and step 2 fields resolver
+  // Create step 3 config with filtered schema and step 2 fields resolver (no hidden fields)
   const step3Config = createCustomFieldsConfigSection(
     step3Schema,
     (rootValues: Record<string, unknown>) => {
@@ -72,11 +85,20 @@ export function createDonationCustomFieldsConfigSection(contextSchema?: ContextS
         return extractAvailableFields(step2Fields as Record<string, unknown>[])
       }
       return []
-    }
+    },
+    visibleFieldTypes
   )
   const step3FieldsArrayConfig = step3Config.fields.fields
   if (!step3FieldsArrayConfig || step3FieldsArrayConfig.type !== 'array') {
     throw new Error('Expected step3 fields to be an array field')
+  }
+
+  // Create hidden fields config (only hidden type, no context schema needed)
+  // Hidden fields can't have visibility conditions since they're never shown
+  const hiddenConfig = createCustomFieldsConfigSection(undefined, undefined, hiddenFieldTypes)
+  const hiddenFieldsArrayConfig = hiddenConfig.fields.fields
+  if (!hiddenFieldsArrayConfig || hiddenFieldsArrayConfig.type !== 'array') {
+    throw new Error('Expected hidden fields to be an array field')
   }
 
   return {
@@ -114,6 +136,21 @@ export function createDonationCustomFieldsConfigSection(contextSchema?: ContextS
                 isSeparatorAfter: true
               },
               fields: step3FieldsArrayConfig
+            }
+          },
+          {
+            value: 'hidden',
+            label: 'Hidden Fields',
+            fields: {
+              enabled: {
+                type: 'toggle',
+                label: 'Enable Hidden Fields',
+                description:
+                  'Add hidden tracking fields (stored but not shown to users on any step)',
+                labelClass: 'font-bold',
+                isSeparatorAfter: true
+              },
+              fields: hiddenFieldsArrayConfig
             }
           }
         ]

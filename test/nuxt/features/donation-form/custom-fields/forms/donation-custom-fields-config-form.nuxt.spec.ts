@@ -49,14 +49,18 @@ describe('donation-custom-fields-config-form', () => {
   }
 
   describe('createDonationCustomFieldsConfigSection', () => {
-    it('creates Step 2 and Step 3 tabs for custom fields configuration', () => {
+    it('creates Step 2, Step 3, and Hidden Fields tabs for custom fields configuration', () => {
       const config = createDonationCustomFieldsConfigSection()
 
       const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
       expect(tabsField.type).toBe('tabs')
-      expect(tabsField.tabs).toHaveLength(2)
+      expect(tabsField.tabs).toHaveLength(3)
       expect(tabsField.tabs[0]?.value).toBe('step2')
+      expect(tabsField.tabs[0]?.label).toBe('Step 2 Custom Fields')
       expect(tabsField.tabs[1]?.value).toBe('step3')
+      expect(tabsField.tabs[1]?.label).toBe('Step 3 Custom Fields')
+      expect(tabsField.tabs[2]?.value).toBe('hidden')
+      expect(tabsField.tabs[2]?.label).toBe('Hidden Fields')
     })
 
     it('restricts context fields to those available at each step', () => {
@@ -205,6 +209,181 @@ describe('donation-custom-fields-config-form', () => {
         // Should have system field WITHOUT (Custom)
         const systemOption = fieldOptions.find((o) => o.value === 'systemField')
         expect(systemOption?.label).toBe('System Field')
+      })
+    })
+
+    describe('Field Type Filtering', () => {
+      it('excludes hidden field type from Step 2 and Step 3 tabs', () => {
+        const config = createDonationCustomFieldsConfigSection()
+        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+
+        // Check Step 2
+        const step2Tab = tabsField.tabs[0]
+        const step2Fields = step2Tab!.fields.fields as ArrayFieldMeta
+        const step2ItemFn = step2Fields.itemField as (
+          v: unknown,
+          c: ArrayItemContext
+        ) => FieldGroupMeta
+        const step2Item = step2ItemFn({}, { index: 0, items: [], root: {} })
+        const step2TypeField = step2Item.fields?.type as { options: Array<{ value: string }> }
+
+        expect(step2TypeField.options.find((o) => o.value === 'hidden')).toBeUndefined()
+        expect(step2TypeField.options.find((o) => o.value === 'text')).toBeDefined()
+
+        // Check Step 3
+        const step3Tab = tabsField.tabs[1]
+        const step3Fields = step3Tab!.fields.fields as ArrayFieldMeta
+        const step3ItemFn = step3Fields.itemField as (
+          v: unknown,
+          c: ArrayItemContext
+        ) => FieldGroupMeta
+        const step3Item = step3ItemFn({}, { index: 0, items: [], root: {} })
+        const step3TypeField = step3Item.fields?.type as { options: Array<{ value: string }> }
+
+        expect(step3TypeField.options.find((o) => o.value === 'hidden')).toBeUndefined()
+        expect(step3TypeField.options.find((o) => o.value === 'text')).toBeDefined()
+      })
+
+      it('includes only hidden field type in Hidden Fields tab', () => {
+        const config = createDonationCustomFieldsConfigSection()
+        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+
+        const hiddenTab = tabsField.tabs[2]
+        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldMeta
+        const hiddenItemFn = hiddenFields.itemField as (
+          v: unknown,
+          c: ArrayItemContext
+        ) => FieldGroupMeta
+        const hiddenItem = hiddenItemFn({}, { index: 0, items: [], root: {} })
+        const hiddenTypeField = hiddenItem.fields?.type as { options: Array<{ value: string }> }
+
+        expect(hiddenTypeField.options).toHaveLength(1)
+        expect(hiddenTypeField.options[0]?.value).toBe('hidden')
+      })
+
+      it('auto-selects field type when only one type is allowed', () => {
+        const config = createDonationCustomFieldsConfigSection()
+        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+
+        const hiddenTab = tabsField.tabs[2]
+        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldMeta
+        const hiddenItemFn = hiddenFields.itemField as (
+          v: unknown,
+          c: ArrayItemContext
+        ) => FieldGroupMeta
+        const hiddenItem = hiddenItemFn({}, { index: 0, items: [], root: {} })
+        const typeField = hiddenItem.fields?.type
+
+        expect(typeField?.defaultValue).toBe('hidden')
+      })
+
+      it('keeps accordion open by default when single field type is auto-selected', () => {
+        const config = createDonationCustomFieldsConfigSection()
+        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+
+        const hiddenTab = tabsField.tabs[2]
+        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldMeta
+        const hiddenItemFn = hiddenFields.itemField as (
+          v: unknown,
+          c: ArrayItemContext
+        ) => FieldGroupMeta
+        const hiddenItem = hiddenItemFn({}, { index: 0, items: [], root: {} })
+
+        expect(hiddenItem.collapsibleDefaultOpen).toBe(true)
+      })
+
+      it('uses custom button text for single field type tabs', () => {
+        const config = createDonationCustomFieldsConfigSection()
+        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+
+        const hiddenTab = tabsField.tabs[2]
+        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldMeta
+
+        expect(hiddenFields.addButtonText).toBe('Add Hidden (tracking) Field')
+      })
+
+      it('uses generic button text for multi-type tabs', () => {
+        const config = createDonationCustomFieldsConfigSection()
+        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+
+        const step2Tab = tabsField.tabs[0]
+        const step2Fields = step2Tab!.fields.fields as ArrayFieldMeta
+
+        expect(step2Fields.addButtonText).toBe('Add Custom Field')
+      })
+    })
+
+    describe('Hidden Field Visibility Conditions', () => {
+      it('hides visibility conditions toggle for hidden field type', () => {
+        const config = createDonationCustomFieldsConfigSection()
+        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+
+        const hiddenTab = tabsField.tabs[2]
+        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldMeta
+        const hiddenItemFn = hiddenFields.itemField as (
+          v: unknown,
+          c: ArrayItemContext
+        ) => FieldGroupMeta
+        const hiddenItem = hiddenItemFn(
+          { type: 'hidden', label: 'Test' },
+          { index: 0, items: [], root: {} }
+        )
+
+        const enableVisibilityConditions = hiddenItem.fields?.enableVisibilityConditions
+        expect(enableVisibilityConditions?.visibleWhen).toBeDefined()
+
+        const isVisible = enableVisibilityConditions?.visibleWhen?.({
+          values: { type: 'hidden' }
+        } as any)
+        expect(isVisible).toBe(false)
+      })
+
+      it('shows visibility conditions toggle for non-hidden field types', () => {
+        const config = createDonationCustomFieldsConfigSection()
+        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+
+        const step2Tab = tabsField.tabs[0]
+        const step2Fields = step2Tab!.fields.fields as ArrayFieldMeta
+        const step2ItemFn = step2Fields.itemField as (
+          v: unknown,
+          c: ArrayItemContext
+        ) => FieldGroupMeta
+        const step2Item = step2ItemFn(
+          { type: 'text', label: 'Test' },
+          { index: 0, items: [], root: {} }
+        )
+
+        const enableVisibilityConditions = step2Item.fields?.enableVisibilityConditions
+        expect(enableVisibilityConditions?.visibleWhen).toBeDefined()
+
+        const isVisible = enableVisibilityConditions?.visibleWhen?.({
+          values: { type: 'text' }
+        } as any)
+        expect(isVisible).toBe(true)
+      })
+
+      it('hides visibility conditions group for hidden fields', () => {
+        const config = createDonationCustomFieldsConfigSection()
+        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+
+        const hiddenTab = tabsField.tabs[2]
+        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldMeta
+        const hiddenItemFn = hiddenFields.itemField as (
+          v: unknown,
+          c: ArrayItemContext
+        ) => FieldGroupMeta
+        const hiddenItem = hiddenItemFn(
+          { type: 'hidden', label: 'Test', enableVisibilityConditions: true },
+          { index: 0, items: [], root: {} }
+        )
+
+        const visibilityConditions = hiddenItem.fields?.visibilityConditions as FieldGroupMeta
+        expect(visibilityConditions?.visibleWhen).toBeDefined()
+
+        const isVisible = visibilityConditions?.visibleWhen?.({
+          values: { type: 'hidden', enableVisibilityConditions: true }
+        } as any)
+        expect(isVisible).toBe(false)
       })
     })
   })
