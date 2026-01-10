@@ -144,7 +144,12 @@ export function createCustomFieldsConfigSection(
             label: {
               type: 'text',
               label: 'Field Label',
-              placeholder: 'What is your question?',
+              placeholder: ({ values }) => {
+                const fieldType = values.type as CustomFieldType | undefined
+                return fieldType === 'hidden'
+                  ? 'e.g., utm_source, utm_campaign, referrer'
+                  : 'What is your question?'
+              },
               visibleWhen: ({ values }) => !!values.type,
               rules: z.string().min(1, 'Label is required'),
               isSeparatorAfter: true,

@@ -4,7 +4,8 @@ import type {
   ArrayFieldMeta,
   FieldGroupMeta,
   ArrayItemContext,
-  TabsFieldMeta
+  TabsFieldMeta,
+  FieldContext
 } from '~/features/form-builder/types'
 
 describe('donation-custom-fields-config-form', () => {
@@ -332,10 +333,13 @@ describe('donation-custom-fields-config-form', () => {
         const enableVisibilityConditions = hiddenItem.fields?.enableVisibilityConditions
         expect(enableVisibilityConditions?.visibleWhen).toBeDefined()
 
-        const isVisible = enableVisibilityConditions?.visibleWhen?.({
-          values: { type: 'hidden' }
-        } as any)
-        expect(isVisible).toBe(false)
+        if (typeof enableVisibilityConditions?.visibleWhen === 'function') {
+          const isVisible = enableVisibilityConditions.visibleWhen({
+            values: { type: 'hidden' },
+            root: {}
+          } as FieldContext)
+          expect(isVisible).toBe(false)
+        }
       })
 
       it('shows visibility conditions toggle for non-hidden field types', () => {
@@ -356,10 +360,13 @@ describe('donation-custom-fields-config-form', () => {
         const enableVisibilityConditions = step2Item.fields?.enableVisibilityConditions
         expect(enableVisibilityConditions?.visibleWhen).toBeDefined()
 
-        const isVisible = enableVisibilityConditions?.visibleWhen?.({
-          values: { type: 'text' }
-        } as any)
-        expect(isVisible).toBe(true)
+        if (typeof enableVisibilityConditions?.visibleWhen === 'function') {
+          const isVisible = enableVisibilityConditions.visibleWhen({
+            values: { type: 'text' },
+            root: {}
+          } as FieldContext)
+          expect(isVisible).toBe(true)
+        }
       })
 
       it('hides visibility conditions group for hidden fields', () => {
@@ -380,10 +387,13 @@ describe('donation-custom-fields-config-form', () => {
         const visibilityConditions = hiddenItem.fields?.visibilityConditions as FieldGroupMeta
         expect(visibilityConditions?.visibleWhen).toBeDefined()
 
-        const isVisible = visibilityConditions?.visibleWhen?.({
-          values: { type: 'hidden', enableVisibilityConditions: true }
-        } as any)
-        expect(isVisible).toBe(false)
+        if (typeof visibilityConditions?.visibleWhen === 'function') {
+          const isVisible = visibilityConditions.visibleWhen({
+            values: { type: 'hidden', enableVisibilityConditions: true },
+            root: {}
+          } as FieldContext)
+          expect(isVisible).toBe(false)
+        }
       })
     })
   })
