@@ -177,6 +177,7 @@ export interface TextareaFieldMeta extends BaseFieldMeta {
   type: 'textarea'
   rows?: number
   maxLength?: number
+  isShowMaxLengthIndicator?: boolean
 }
 
 /**

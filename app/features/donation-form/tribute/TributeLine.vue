@@ -26,25 +26,25 @@ const tributeTitle = computed(() => {
 })
 
 const honoreeName = computed(() => {
-  const honoree = props.tribute.honoree
+  const honoree = props.tribute.honoreeName
   if (!honoree) return ''
-  return [honoree.firstName, honoree.lastName].filter(Boolean).join(' ')
+  return [honoree.honoreeFirstName, honoree.honoreeLastName].filter(Boolean).join(' ')
 })
 
 const eCardRecipient = computed(() => {
-  if (!props.tribute.eCard?.send) return null
-  const recipient = props.tribute.eCard.recipient
-  if (!recipient) return null
+  if (!props.tribute.sendECard) return null
+  const recipient = props.tribute.recipientName
+  if (!recipient || !props.tribute.recipientEmail) return null
 
-  const name = [recipient.firstName, recipient.lastName].filter(Boolean).join(' ')
+  const name = [recipient.recipientFirstName, recipient.recipientLastName].filter(Boolean).join(' ')
   return {
     name,
-    email: recipient.email
+    email: props.tribute.recipientEmail
   }
 })
 
 const hasMessage = computed(() => {
-  return props.tribute.eCard?.isIncludeMessage && props.tribute.eCard?.message
+  return props.tribute.isIncludeMessage && props.tribute.message
 })
 </script>
 
@@ -57,7 +57,7 @@ const hasMessage = computed(() => {
       📧 eCard to {{ eCardRecipient.name || eCardRecipient.email }}
     </p>
     <p v-if="hasMessage" class="text-xs text-muted-foreground mt-0.5 truncate">
-      💬 "{{ tribute.eCard?.message }}"
+      💬 "{{ tribute.message }}"
     </p>
   </div>
 </template>

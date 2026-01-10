@@ -2,26 +2,30 @@
 import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import BaseDialogOrDrawer from '~/features/donation-form/components/BaseDialogOrDrawer.vue'
-import ProductTributeFormGenerated from '~/features/donation-form/tribute/ProductTributeFormGenerated.vue'
+import FormRenderer from '@/features/form-builder/FormRenderer.vue'
+import { createTributeFormSection } from '~/features/donation-form/tribute/forms/tribute-form'
 import type { TributeSettings, TributeData } from './types'
 
 interface Props {
   config: TributeSettings
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   save: [tributeData: TributeData | undefined]
 }>()
 
 const isOpen = ref(false)
-const tributeFormRef = ref<InstanceType<typeof ProductTributeFormGenerated> | null>(null)
-const tempTributeData = ref<TributeData | undefined>(undefined)
+const tributeFormRef = ref<InstanceType<typeof FormRenderer> | null>(null)
+const tempTributeData = ref<TributeData>({ type: 'none' })
+
+// Create form section from config
+const formSection = computed(() => createTributeFormSection(props.config))
 
 const isTributeFormValid = computed(() => {
-  if (!tributeFormRef.value?.formRenderer) return true
-  return tributeFormRef.value.formRenderer.isValid ?? false
+  if (!tributeFormRef.value) return true
+  return tributeFormRef.value.isValid ?? false
 })
 
 const handleSave = () => {
@@ -33,13 +37,13 @@ const handleSave = () => {
   }
 
   // Trigger validation to show errors
-  if (tributeFormRef.value?.formRenderer) {
-    tributeFormRef.value.formRenderer.onSubmit()
+  if (tributeFormRef.value) {
+    tributeFormRef.value.onSubmit()
   }
 }
 
 const handleCancel = () => {
-  tempTributeData.value = undefined
+  tempTributeData.value = { type: 'none' }
   isOpen.value = false
 }
 
@@ -47,7 +51,7 @@ defineExpose({
   open: (currentTributeData?: TributeData) => {
     tempTributeData.value = currentTributeData
       ? JSON.parse(JSON.stringify(currentTributeData))
-      : undefined
+      : { type: 'none' }
     isOpen.value = true
   }
 })
@@ -65,10 +69,11 @@ defineExpose({
       <h2 class="text-2xl font-semibold">{{ config.modal?.title ?? 'Gift or In Memory' }}</h2>
     </template>
     <template #content>
-      <ProductTributeFormGenerated
+      <FormRenderer
         ref="tributeFormRef"
         v-model="tempTributeData"
-        :config="config"
+        :validate-on-mount="false"
+        :section="formSection"
         @submit="handleSave"
       />
     </template>

@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 import BaseDialogOrDrawer from '~/features/donation-form/components/BaseDialogOrDrawer.vue'
 import AmountSelector from '~/features/donation-form/components/AmountSelector.vue'
-import ProductTributeFormGenerated from '~/features/donation-form/tribute/ProductTributeFormGenerated.vue'
+import FormRenderer from '@/features/form-builder/FormRenderer.vue'
+import { createTributeFormSection } from '~/features/donation-form/tribute/forms/tribute-form'
 import type { Product } from '~/features/donation-form/product/types'
 import type { PricingSettings } from '~/features/donation-form/types'
 import type { TributeSettings, TributeData } from '~/features/donation-form/tribute/types'
@@ -63,8 +64,14 @@ const localPrice = ref(0)
 const localQuantity = ref(1)
 const editingItemKey = ref<string | null>(null)
 const tribute = ref<TributeData>({ type: 'none' })
-const tributeFormRef = ref<InstanceType<typeof ProductTributeFormGenerated> | null>(null)
+const tributeFormRef = ref<InstanceType<typeof FormRenderer> | null>(null)
 const tributeFormKey = ref(0) // Key to force remount of tribute form
+
+// Create form section from config
+const formSection = computed(() => {
+  if (!props.tributeConfig) return null
+  return createTributeFormSection(props.tributeConfig)
+})
 
 // Computed
 const currencySymbol = computed(() => getCurrencySymbol(props.currency))
@@ -75,9 +82,9 @@ const isTributeFormValid = computed(() => {
   // If not recurring, tribute form doesn't apply
   if (!isRecurring.value) return true
   // If no tribute form ref yet, consider valid (initial state)
-  if (!tributeFormRef.value?.formRenderer) return true
+  if (!tributeFormRef.value) return true
   // Otherwise check the form's validity
-  return tributeFormRef.value.formRenderer.isValid ?? false
+  return tributeFormRef.value.isValid ?? false
 })
 
 const isRecurring = computed(
@@ -152,8 +159,8 @@ const handleConfirm = () => {
   }
 
   // Trigger validation to show errors
-  if (tributeFormRef.value?.formRenderer) {
-    tributeFormRef.value.formRenderer.onSubmit()
+  if (tributeFormRef.value) {
+    tributeFormRef.value.onSubmit()
   }
 }
 
@@ -233,12 +240,16 @@ defineExpose({
         />
 
         <!-- Tribute Form (only for recurring products) -->
-        <div v-if="isRecurring && props.tributeConfig?.enabled" class="pt-4 border-t">
-          <ProductTributeFormGenerated
+        <div
+          v-if="isRecurring && props.tributeConfig?.enabled && formSection"
+          class="pt-4 border-t"
+        >
+          <FormRenderer
             :key="tributeFormKey"
             ref="tributeFormRef"
             v-model="tribute"
-            :config="props.tributeConfig"
+            :validate-on-mount="false"
+            :section="formSection"
             @submit="handleConfirm"
           />
         </div>

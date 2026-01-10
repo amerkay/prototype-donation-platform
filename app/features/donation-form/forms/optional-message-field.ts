@@ -38,10 +38,7 @@ export function createMessageFields(
       label: 'Your Message',
       placeholder: 'Enter your message (max 250 characters)',
       maxLength: 250,
-      description: ({ values }) => {
-        const msgLength = ((values.message as string) || '').length
-        return `${msgLength}/250 characters`
-      },
+      isShowMaxLengthIndicator: true,
       defaultValue: '',
       visibleWhen: ({ values }) => {
         // First check parent visibility condition

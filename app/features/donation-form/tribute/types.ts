@@ -26,21 +26,26 @@ export interface TributeSettings {
   }
 }
 
+/**
+ * Flattened tribute data structure that matches form field structure.
+ * This allows direct usage with FormRenderer without transformation layer.
+ */
 export interface TributeData {
   type: 'none' | 'gift' | 'memorial'
-  honoree?: {
-    firstName: string
-    lastName: string
-    relationship: string
+  // Honoree name fields
+  honoreeName?: {
+    honoreeFirstName: string
+    honoreeLastName: string
   }
-  eCard?: {
-    send: boolean
-    recipient?: {
-      firstName: string
-      lastName: string
-      email: string
-    }
-    isIncludeMessage?: boolean
-    message?: string
+  relationship?: string
+  // eCard fields
+  sendECard?: boolean
+  sameAsHonoree?: boolean
+  recipientName?: {
+    recipientFirstName: string
+    recipientLastName: string
   }
+  recipientEmail?: string
+  isIncludeMessage?: boolean
+  message?: string
 }

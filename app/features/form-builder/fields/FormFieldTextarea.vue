@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import type { TextareaFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
@@ -15,6 +16,18 @@ const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
   props.name,
   () => props.errors
 )
+
+const charCount = computed(() => {
+  const value = (props.modelValue as string) || ''
+  return value.length
+})
+
+const maxLengthDisplay = computed(() => {
+  if (!props.meta.isShowMaxLengthIndicator || !props.meta.maxLength) {
+    return undefined
+  }
+  return `${charCount.value}/${props.meta.maxLength} characters`
+})
 </script>
 
 <template>
@@ -30,5 +43,8 @@ const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
       @update:model-value="$emit('update:modelValue', $event)"
       @blur="onBlur"
     />
+    <p v-if="maxLengthDisplay" class="text-xs text-muted-foreground mt-1">
+      {{ maxLengthDisplay }}
+    </p>
   </FormFieldWrapper>
 </template>
