@@ -24,7 +24,6 @@ const configSection = computed(() => createCustomFieldsConfigSection(props.conte
     :model-value="modelValue as unknown as Record<string, unknown>"
     :section="configSection"
     :context-schema="contextSchema"
-    validate-on-mount
     update-only-when-valid
     @update:model-value="emit('update:modelValue', $event as unknown as CustomFieldsSettings)"
     @submit="emit('submit')"

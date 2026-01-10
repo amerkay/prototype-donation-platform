@@ -139,6 +139,8 @@ describe('FormFieldTabs - Error Caching with unmount-on-hide', () => {
     const groupTrigger = wrapper.find('[data-slot="accordion-trigger"]')
     await groupTrigger.trigger('click')
     await waitForUpdate()
+    await nextTick() // Extra wait for validateOnMount to complete
+    await waitForUpdate()
 
     // Field-level + array-level errors should be visible
     expect(wrapper.text()).toContain('Must be at least 5')

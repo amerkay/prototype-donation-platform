@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, inject } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import {
   ComboboxAnchor,
@@ -34,8 +34,7 @@ const emit = defineEmits<FieldEmits<AutocompleteOption | null>>()
 
 // Inject form values and setFieldValue from context
 // Note: If inside a field-group, formValues are already scoped to the group
-const { formValues } = useFormBuilderContext()
-const setFieldValue = inject<SetFieldValueFn>('setFieldValue', () => {})
+const { formValues, setFieldValue } = useFormBuilderContext()
 
 // Component state
 const searchValue = ref('')

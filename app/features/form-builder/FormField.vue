@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, watch, type Component } from 'vue'
+import { computed, watch, type Component } from 'vue'
 import { useField, useFormErrors } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
@@ -61,11 +61,15 @@ const FIELD_COMPONENTS: Record<string, Component> = {
 }
 
 // Inject common form builder context (includes formValues via vee-validate)
-const { sectionId, fieldPrefix, formValues, fieldContext, parentGroupVisible } =
-  useFormBuilderContext()
-
-// Inject setFieldValue function from FormRenderer
-const setFieldValue = inject<SetFieldValueFn>('setFieldValue', () => {})
+const {
+  sectionId,
+  fieldPrefix,
+  formValues,
+  fieldContext,
+  parentGroupVisible,
+  validateOnMount,
+  setFieldValue
+} = useFormBuilderContext()
 
 // Resolve dynamic field type if it's a function
 const resolvedFieldType = computed(() => {
@@ -139,7 +143,8 @@ const fieldBinding = isContainerField.value
   : useField(() => resolvedVeeName.value, fieldRules, {
       validateOnValueUpdate: true,
       syncVModel: false,
-      keepValueOnUnmount: true
+      keepValueOnUnmount: true,
+      validateOnMount
     })
 
 // Extract field value and validation attrs
@@ -260,7 +265,14 @@ watch(
       'defaultValue' in props.meta &&
       props.meta.defaultValue !== undefined
     ) {
-      fieldValue.value = props.meta.defaultValue
+      fieldBinding.setValue(props.meta.defaultValue, false)
+    }
+
+    // Trigger validation when field becomes visible (e.g., accordion/tab opens)
+    // This ensures errors show immediately without waiting for user interaction
+    // Only validate if validateOnMount is enabled (respects form-level setting)
+    if (visible && fieldBinding && !isContainerField.value && validateOnMount) {
+      fieldBinding.validate()
     }
   },
   { immediate: true }

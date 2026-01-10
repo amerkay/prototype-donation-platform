@@ -77,5 +77,5 @@ onMounted(() => {
 </script>
 
 <template>
-  <FormRenderer v-model="formData" :section="formSection" :keep-values-on-unmount="true" />
+  <FormRenderer v-model="formData" :validate-on-mount="false" :section="formSection" />
 </template>

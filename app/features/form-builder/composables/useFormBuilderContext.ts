@@ -1,29 +1,45 @@
 import { inject, computed, type ComputedRef } from 'vue'
 import { useFormValues } from 'vee-validate'
-import type { FieldContext } from '~/features/form-builder/types'
+import type { FieldContext, SetFieldValueFn } from '~/features/form-builder/types'
+import type { ContextSchema } from '~/features/form-builder/conditions'
 
 type FormValues = Record<string, unknown>
+type SetFieldErrorFn = (field: string, message: string | string[] | undefined) => void
+type SetFieldTouchedFn = (field: string, touched: boolean) => void
 
 /**
  * Composable to access form builder context and values using vee-validate's composition API
  * Automatically unwraps section-prefixed values and handles scoped container overrides
  * Merges external context values for conditional visibility and dynamic options
+ * Provides form action setters (setFieldValue, setFieldError, setFieldTouched) and context schema
  *
- * @returns Object with all context values and unwrapped form values
+ * @returns Object with all context values, unwrapped form values, and form action setters
  *
  * @example
  * ```ts
- * const { sectionId, fieldPrefix, formValues, fieldContext, parentGroupVisible } = useFormBuilderContext()
+ * const { sectionId, fieldPrefix, formValues, fieldContext, setFieldValue } = useFormBuilderContext()
  * ```
  */
 export function useFormBuilderContext() {
   const sectionId = inject<string>('sectionId', '')
   const fieldPrefix = inject<string>('fieldPrefix', '')
   const parentGroupVisible = inject<() => boolean>('parentGroupVisible', () => true)
+  const validateOnMount = inject<boolean>('validateOnMount', true)
+
+  // Inject form action setters from FormRenderer
+  const setFieldValue = inject<SetFieldValueFn>('setFieldValue', () => {})
+  const setFieldError = inject<SetFieldErrorFn>('setFieldError', () => {})
+  const setFieldTouched = inject<SetFieldTouchedFn>('setFieldTouched', () => {})
 
   // Inject external context provided by FormRenderer (now a computed ref for reactivity)
   const externalContextRef = inject<ComputedRef<Record<string, unknown>>>(
     'externalContext',
+    computed(() => ({}))
+  )
+
+  // Inject context schema for condition builder
+  const contextSchema = inject<ComputedRef<ContextSchema>>(
+    'contextSchema',
     computed(() => ({}))
   )
 
@@ -75,6 +91,11 @@ export function useFormBuilderContext() {
     fieldPrefix,
     formValues,
     fieldContext,
-    parentGroupVisible
+    parentGroupVisible,
+    validateOnMount,
+    setFieldValue,
+    setFieldError,
+    setFieldTouched,
+    contextSchema
   }
 }

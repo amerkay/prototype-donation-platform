@@ -3,11 +3,11 @@
  * Extracts form fields and external context fields with metadata for UI display
  */
 
-import { computed, inject } from 'vue'
+import { computed } from 'vue'
 import type { FieldMeta, FieldContext } from '~/features/form-builder/types'
 import type { ContextSchema, ContextFieldOption } from '~/features/form-builder/conditions'
 import { resolveText } from './useResolvedFieldMeta'
-
+import { useFormBuilderContext } from './useFormBuilderContext'
 /**
  * Available field definition for condition builder
  */
@@ -130,25 +130,19 @@ function extractContextFields(contextSchema: ContextSchema): AvailableField[] {
  * @returns Computed array of available fields
  */
 export function useAvailableFields(formFields?: Record<string, FieldMeta>) {
-  // Inject context schema from FormRenderer
-  const contextSchema = inject<ContextSchema>('contextSchema', {})
-
-  // Get form values for resolving dynamic labels
-  const fieldContext = inject<FieldContext>('fieldContext', {
-    values: {},
-    root: {}
-  })
+  // Get context schema from FormRenderer via useFormBuilderContext
+  const { contextSchema, fieldContext } = useFormBuilderContext()
 
   const availableFields = computed<AvailableField[]>(() => {
     const fields: AvailableField[] = []
 
     // Extract form fields if provided
     if (formFields) {
-      fields.push(...extractFormFields(formFields, '', fieldContext))
+      fields.push(...extractFormFields(formFields, '', fieldContext.value))
     }
 
     // Extract external context fields
-    fields.push(...extractContextFields(contextSchema))
+    fields.push(...extractContextFields(contextSchema.value))
 
     return fields
   })

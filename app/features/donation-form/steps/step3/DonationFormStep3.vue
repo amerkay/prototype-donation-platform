@@ -160,8 +160,8 @@ const handleNext = () => {
       <FormRenderer
         ref="giftAidFormRef"
         v-model="giftAidDataWithContext"
+        :validate-on-mount="false"
         :section="giftAidFormSection"
-        :keep-values-on-unmount="true"
       />
     </div>
 
@@ -179,8 +179,8 @@ const handleNext = () => {
       <FormRenderer
         ref="preferencesFormRef"
         v-model="preferencesDataWithContext"
+        :validate-on-mount="false"
         :section="preferencesFormSection"
-        :keep-values-on-unmount="true"
         @submit="handleNext"
       />
     </div>

@@ -3,7 +3,7 @@ import { pathExistsInValues } from '../composables/useFieldPath'
 
 /**
  * Get child errors for a container path as a reactive Map
- * Shared utility used by useChildFieldErrors and useCachedChildErrors
+ * Shared utility used by useChildFieldErrors composable
  *
  * @param containerPath - The full path to the container field
  * @param formErrors - Reactive form errors object from vee-validate

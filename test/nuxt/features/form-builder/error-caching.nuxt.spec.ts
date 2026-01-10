@@ -488,8 +488,10 @@ describe('FormFieldGroup - Error Caching for Collapsible Containers', () => {
     const trigger = wrapper.find('[data-slot="accordion-trigger"]')
     await trigger.trigger('click')
     await waitForUpdate()
+    await nextTick() // Extra wait for validateOnMount to complete
+    await waitForUpdate()
 
-    // Field-level error should show (restored + touched)
+    // Field-level error should show (validated on mount)
     expect(wrapper.text()).toContain('Must be at least 5')
 
     // Array-level error should show (hasChildErrors in FormFieldArray)

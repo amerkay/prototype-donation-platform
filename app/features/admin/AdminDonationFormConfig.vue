@@ -32,12 +32,7 @@ const customFieldsSection = createDonationCustomFieldsConfigSection(donationCont
   <div v-if="store.formSettings" class="w-full mx-auto space-y-6">
     <!-- Form Settings (includes form, localization, pricing) -->
     <div class="config-section">
-      <FormRenderer
-        v-model="store.formSettings"
-        :section="formSection"
-        validate-on-mount
-        update-only-when-valid
-      />
+      <FormRenderer v-model="store.formSettings" :section="formSection" update-only-when-valid />
     </div>
 
     <!-- Impact Journey -->
@@ -45,7 +40,6 @@ const customFieldsSection = createDonationCustomFieldsConfigSection(donationCont
       <FormRenderer
         v-model="store.impactJourney"
         :section="impactJourneySection"
-        validate-on-mount
         update-only-when-valid
       />
     </div>
@@ -55,7 +49,6 @@ const customFieldsSection = createDonationCustomFieldsConfigSection(donationCont
       <FormRenderer
         v-model="store.impactCart"
         :section="impactCartSection"
-        validate-on-mount
         update-only-when-valid
       />
     </div>
@@ -65,7 +58,6 @@ const customFieldsSection = createDonationCustomFieldsConfigSection(donationCont
       <FormRenderer
         v-model="store.productSelector"
         :section="productSelectorSection"
-        validate-on-mount
         update-only-when-valid
       />
     </div>
@@ -75,29 +67,18 @@ const customFieldsSection = createDonationCustomFieldsConfigSection(donationCont
       <FormRenderer
         v-model="store.coverCosts"
         :section="coverCostsSection"
-        validate-on-mount
         update-only-when-valid
       />
     </div>
 
     <!-- Gift Aid -->
     <div v-if="store.giftAid" class="config-section">
-      <FormRenderer
-        v-model="store.giftAid"
-        :section="giftAidSection"
-        validate-on-mount
-        update-only-when-valid
-      />
+      <FormRenderer v-model="store.giftAid" :section="giftAidSection" update-only-when-valid />
     </div>
 
     <!-- Tribute Settings -->
     <div v-if="store.tribute" class="config-section">
-      <FormRenderer
-        v-model="store.tribute"
-        :section="tributeSection"
-        validate-on-mount
-        update-only-when-valid
-      />
+      <FormRenderer v-model="store.tribute" :section="tributeSection" update-only-when-valid />
     </div>
 
     <!-- Custom Fields -->
@@ -106,7 +87,6 @@ const customFieldsSection = createDonationCustomFieldsConfigSection(donationCont
         v-model="store.customFields"
         :section="customFieldsSection"
         :context-schema="donationContextSchema"
-        validate-on-mount
         update-only-when-valid
       />
     </div>

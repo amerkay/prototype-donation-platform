@@ -101,6 +101,7 @@ defineExpose({
   <FormRenderer
     ref="formRenderer"
     v-model="formValues"
+    :validate-on-mount="false"
     :section="formSection"
     @submit="handleSubmit"
   />

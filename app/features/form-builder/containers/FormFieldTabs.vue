@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card'
 import type { TabsFieldMeta, FieldGroupMeta } from '~/features/form-builder/types'
 import { resolveText } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import { useContainerFieldSetup } from '~/features/form-builder/composables/useContainerFieldSetup'
-import { useCachedChildErrors } from '../composables/useCachedChildErrors'
+import { useCombinedErrors } from '~/features/form-builder/composables/useCombinedErrors'
 import FormFieldGroup from './FormFieldGroup.vue'
 
 interface Props {
@@ -18,7 +18,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Use unified container setup composable
+// Use unified container setup composable for tabs visibility and scoped values
 const {
   isVisible: isTabsVisible,
   fullPath: fullTabsPath,
@@ -28,29 +28,24 @@ const {
 // Active tab state - initialize from defaultValue or first tab
 const activeTab = ref(props.meta.defaultValue || props.meta.tabs[0]?.value || '')
 
-// Pre-compute error tracking for all tabs with caching
-// This is initialized once and caches errors for each tab independently
+// Compute combined errors for each tab using lightweight composable
 const tabErrorTrackers = Object.fromEntries(
   props.meta.tabs.map((tab) => {
     const tabPath = computed(() => `${fullTabsPath.value}.${tab.value}`)
-    const isTabActive = computed(() => activeTab.value === tab.value)
 
-    // Create tab-specific scoped values - must be scoped to the tab's values, not the parent
-    const tabScopedFormValues = computed(() => {
+    // Create scoped context for this specific tab
+    const tabScopedValues = computed(() => {
       const parentValues = scopedFormValues.value.values as Record<string, unknown> | undefined
-      const tabValues = parentValues?.[tab.value] as Record<string, unknown> | undefined
+      const tabValues = (parentValues?.[tab.value] as Record<string, unknown>) || {}
       return {
-        values: tabValues || {},
+        values: tabValues,
         parent: parentValues,
         root: scopedFormValues.value.root
       }
     })
 
-    const { hasChildErrors } = useCachedChildErrors(tabPath, isTabActive, {
-      fields: tab.fields,
-      scopedFormValues: tabScopedFormValues
-    })
-    return [tab.value, hasChildErrors]
+    const hasErrors = useCombinedErrors(tabPath, tab.fields, tabScopedValues)
+    return [tab.value, hasErrors]
   })
 )
 

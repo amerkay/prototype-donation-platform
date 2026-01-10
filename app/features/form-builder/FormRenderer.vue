@@ -24,12 +24,6 @@ interface Props {
    */
   contextSchema?: ContextSchema
   /**
-   * Keep field values in vee-validate when component unmounts.
-   * Useful for multi-step wizards with v-if navigation.
-   * @default false
-   */
-  keepValuesOnUnmount?: boolean
-  /**
    * Validate all fields immediately on mount.
    * @default false
    */
@@ -44,7 +38,6 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   context: () => ({}),
-  keepValuesOnUnmount: false,
   validateOnMount: false,
   updateOnlyWhenValid: false
 })
@@ -80,12 +73,15 @@ const {
   errors
 } = useForm({
   initialValues: initialFormValues.value,
-  keepValuesOnUnmount: props.keepValuesOnUnmount,
+  keepValuesOnUnmount: true, // Always true - values persist through accordion/tab unmount cycles
   validateOnMount: props.validateOnMount
 })
 
 // Provide section id so nested fields can resolve absolute vee-validate names
 provide('sectionId', props.section.id)
+
+// Provide validateOnMount for all nested fields and containers
+provide('validateOnMount', props.validateOnMount)
 
 // Provide accordion group for top-level collapsible field-groups
 const { provideAccordionGroup } = useAccordionGroup()
@@ -120,15 +116,9 @@ const providedSetFieldValue = (path: string, value: unknown): void => {
 
 provide('setFieldValue', providedSetFieldValue)
 
-// Provide setFieldError and setFieldTouched for restoring cached validation errors
-// Used by useCachedChildErrors to restore errors when accordion opens
+// Provide setFieldError and setFieldTouched for programmatic validation control
 provide('setFieldError', setFieldError)
 provide('setFieldTouched', setFieldTouched)
-
-// Provide submit function for Enter key handling in text fields
-provide('submitForm', () => {
-  onSubmit()
-})
 
 // All fields - we render all of them, visibility is handled by FormField
 const allFields = computed(() => {

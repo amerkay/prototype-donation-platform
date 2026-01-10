@@ -1,7 +1,6 @@
 import { computed, provide } from 'vue'
 import { getRecordAtPath, useFieldPath, checkFieldVisibility } from './useFieldPath'
 import { useFormBuilderContext } from './useFormBuilderContext'
-import { useChildFieldErrors } from './useChildFieldErrors'
 import type { FieldContext } from '~/features/form-builder/types'
 import type { ConditionGroup } from '~/features/form-builder/conditions'
 
@@ -12,16 +11,15 @@ import type { ConditionGroup } from '~/features/form-builder/conditions'
  * - Compute and provide field paths with proper nesting
  * - Manage visibility based on parent + own conditions
  * - Provide scoped form values to children (merging container data into root)
- * - Track child field validation errors
  * - Update parent visibility context
  *
  * @param name - Container field name
  * @param visibleWhen - Optional visibility condition (function or ConditionGroup)
- * @returns Object with computed paths, visibility, error state, and resolved metadata
+ * @returns Object with computed paths, visibility, and scoped form values
  *
  * @example
  * ```ts
- * const { isVisible, hasChildErrors } = useContainerFieldSetup(
+ * const { isVisible, scopedFormValues, fullPath } = useContainerFieldSetup(
  *   props.name,
  *   props.meta.visibleWhen
  * )
@@ -97,15 +95,11 @@ export function useContainerFieldSetup(
   })
   provide('scopedFormValues', scopedFormValues)
 
-  // Check if any child fields have validation errors
-  const { hasChildErrors } = useChildFieldErrors(fullPath)
-
   return {
     relativePath,
     currentFieldPrefix,
     fullPath,
     isVisible,
-    hasChildErrors,
     scopedFormValues,
     formValues
   }

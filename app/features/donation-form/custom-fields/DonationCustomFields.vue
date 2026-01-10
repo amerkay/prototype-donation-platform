@@ -126,10 +126,10 @@ defineExpose({
         :key="customFieldsKey"
         ref="formRef"
         v-model="customFieldsSection"
+        :validate-on-mount="false"
         :section="customFieldsFormSection"
         :context="donationContext"
         :context-schema="donationContextSchema"
-        :keep-values-on-unmount="true"
         @submit="handleSubmit"
       />
     </div>

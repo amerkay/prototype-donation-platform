@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import type { FieldGroupMeta } from '~/features/form-builder/types'
 import { resolveText } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import { useContainerFieldSetup } from '~/features/form-builder/composables/useContainerFieldSetup'
-import { useCachedChildErrors } from '~/features/form-builder/composables/useCachedChildErrors'
+import { useCombinedErrors } from '~/features/form-builder/composables/useCombinedErrors'
 import FormFieldList from '../internal/FormFieldList.vue'
 import { useScrollOnVisible } from '../composables/useScrollOnVisible'
 import { useAccordionGroup } from '~/features/form-builder/composables/useAccordionGroup'
@@ -25,16 +25,6 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Use unified container setup composable
-const {
-  isVisible: isGroupVisible,
-  hasChildErrors: liveChildErrors,
-  scopedFormValues,
-  fullPath
-} = useContainerFieldSetup(props.name, props.meta.visibleWhen)
-
-const resolvedLabel = computed(() => resolveText(props.meta.label, scopedFormValues.value))
-
 // Only set up accordion state if this field-group is collapsible
 let accordionValue: Ref<string | undefined>
 let isOpen: ComputedRef<boolean>
@@ -43,17 +33,28 @@ if (props.meta.collapsible) {
   const defaultOpen = computed(() => {
     const defaultOpenValue = props.meta.collapsibleDefaultOpen
     if (typeof defaultOpenValue === 'function') {
-      return defaultOpenValue(scopedFormValues.value)
+      // Need scopedFormValues for dynamic defaultOpen - defer to after setup
+      return defaultOpenValue
     }
     return defaultOpenValue ?? false
   })
 
   const { registerAccordion, hasAccordionGroup, provideAccordionGroup } = useAccordionGroup()
 
+  // For dynamic defaultOpen, we need to resolve it with scopedFormValues
   // Register with parent accordion group if available, otherwise use local state
   accordionValue = hasAccordionGroup()
-    ? registerAccordion(props.name, defaultOpen.value)
-    : ref<string | undefined>(defaultOpen.value ? props.name : undefined)
+    ? registerAccordion(
+        props.name,
+        typeof defaultOpen.value === 'function' ? false : defaultOpen.value
+      )
+    : ref<string | undefined>(
+        typeof defaultOpen.value === 'function'
+          ? undefined
+          : defaultOpen.value
+            ? props.name
+            : undefined
+      )
 
   // Provide accordion group context for nested collapsible children
   provideAccordionGroup()
@@ -65,20 +66,38 @@ if (props.meta.collapsible) {
   isOpen = computed(() => false)
 }
 
-// For collapsible groups, use cached errors to preserve error badge when collapsed
-// Pass field metadata for initial validation when starting collapsed
-const { hasChildErrors: cachedChildErrors } = useCachedChildErrors(fullPath, isOpen, {
-  fields: props.meta.fields,
-  scopedFormValues
-})
+// Use unified container setup composable
+const {
+  isVisible: isGroupVisible,
+  scopedFormValues,
+  fullPath
+} = useContainerFieldSetup(props.name, props.meta.visibleWhen)
 
-// Use cached errors for collapsible, live errors for non-collapsible
-const hasChildErrors = computed(() => {
-  if (props.meta.collapsible) {
-    return cachedChildErrors.value
-  }
-  return liveChildErrors.value
-})
+// Compute combined errors if fields are provided
+const hasChildErrors = props.meta.fields
+  ? useCombinedErrors(fullPath, props.meta.fields, scopedFormValues)
+  : computed(() => false)
+
+// Resolve dynamic defaultOpen after scopedFormValues is available
+if (props.meta.collapsible && typeof props.meta.collapsibleDefaultOpen === 'function') {
+  watch(
+    scopedFormValues,
+    (ctx) => {
+      if (accordionValue.value === undefined && props.meta.collapsibleDefaultOpen) {
+        const shouldOpen =
+          typeof props.meta.collapsibleDefaultOpen === 'function'
+            ? props.meta.collapsibleDefaultOpen(ctx)
+            : props.meta.collapsibleDefaultOpen
+        if (shouldOpen) {
+          accordionValue.value = props.name
+        }
+      }
+    },
+    { immediate: true }
+  )
+}
+
+const resolvedLabel = computed(() => resolveText(props.meta.label, scopedFormValues.value))
 
 // Setup scroll tracking for collapsible
 const { setElementRef, scrollToElement } = useScrollOnVisible(
@@ -89,13 +108,14 @@ const { setElementRef, scrollToElement } = useScrollOnVisible(
   }
 )
 
-// Watch accordion state changes
-watch(isOpen, (newIsOpen) => {
-  if (newIsOpen) {
-    // Scroll to element and refresh error state
-    scrollToElement(props.name)
-  }
-})
+// Watch accordion state to scroll when opened
+if (props.meta.collapsible) {
+  watch(isOpen, (newIsOpen) => {
+    if (newIsOpen) {
+      scrollToElement(props.name)
+    }
+  })
+}
 </script>
 
 <template>

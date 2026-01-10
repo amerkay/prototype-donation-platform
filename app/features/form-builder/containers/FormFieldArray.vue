@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, nextTick, ref } from 'vue'
+import { computed, watch, nextTick, ref, provide } from 'vue'
 import { useFieldArray, useFormValues, useValidateField } from 'vee-validate'
 import { vAutoAnimate } from '@formkit/auto-animate'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,6 @@ import FormField from '../FormField.vue'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import { useChildFieldErrors } from '~/features/form-builder/composables/useChildFieldErrors'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
-import { useFormActions } from '~/features/form-builder/composables/useFormActions'
 import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 import { resolveVeeFieldPath } from '~/features/form-builder/composables/useFieldPath'
 import { extractDefaultValues } from '~/features/form-builder/utils/defaults'
@@ -41,11 +40,18 @@ const props = defineProps<Props>()
 // Full vee-validate form values (includes sectionId prefix)
 const veeFormValues = useFormValues<Record<string, unknown>>()
 
-// Inject common form builder context
-const { sectionId, fieldPrefix, formValues } = useFormBuilderContext()
+// Inject common form builder context (includes validation setters)
+const { sectionId, fieldPrefix, formValues, setFieldValue, setFieldError, setFieldTouched } =
+  useFormBuilderContext()
 
-// Inject validation helpers via composable
-const formActions = useFormActions()
+// Provide scoped context for child fields (array items)
+// This allows item field rules to access parent values (e.g., customAmount for validation)
+const scopedFormValues = computed(() => ({
+  values: formValues.value,
+  parent: formValues.value,
+  root: formValues.value
+}))
+provide('scopedFormValues', scopedFormValues)
 
 // Provide accordion group for child collapsible field-groups
 const { provideAccordionGroup } = useAccordionGroup()
@@ -53,7 +59,7 @@ provideAccordionGroup()
 
 // Trigger onChange callback if defined in meta
 function triggerOnChange() {
-  if (typeof props.meta.onChange === 'function' && formActions) {
+  if (typeof props.meta.onChange === 'function') {
     const currentValues = fields.value.map((f) => f.value)
     props.meta.onChange({
       values: formValues.value,
@@ -61,9 +67,9 @@ function triggerOnChange() {
       parent: {}, // parent context not easily available here
       root: formValues.value,
       form: formValues.value,
-      setValue: formActions.setFieldValue,
-      setFieldError: formActions.setFieldError,
-      setFieldTouched: formActions.setFieldTouched,
+      setValue: setFieldValue,
+      setFieldError,
+      setFieldTouched,
       path: resolvedVeeName.value
     } as OnChangeContext)
   }
@@ -78,8 +84,12 @@ const resolvedVeeName = computed(() => {
   })
 })
 
-// Child error detection uses resolved vee path
-const { hasChildErrors } = useChildFieldErrors(resolvedVeeName)
+// Array items are rendered as individual fields, so we track child errors at the array level
+// This catches both mounted field errors and schema validation errors
+const hasChildErrors = computed(() => {
+  const { hasChildErrors: liveErrors } = useChildFieldErrors(resolvedVeeName)
+  return liveErrors.value
+})
 
 const allErrors = computed(() => {
   if (hasChildErrors.value) return ['One or more errors above, please fix']
@@ -303,8 +313,8 @@ async function addItem() {
   let currentValue = getValueAtVeePath(veeFormValues.value, resolvedVeeName.value)
 
   // If the value is not an array, force it to [] via the injected setter first.
-  if (!Array.isArray(currentValue) && formActions) {
-    formActions.setFieldValue(sectionRelativePath, [])
+  if (!Array.isArray(currentValue)) {
+    setFieldValue(sectionRelativePath, [])
     await nextTick()
     currentValue = getValueAtVeePath(veeFormValues.value, resolvedVeeName.value)
   }
