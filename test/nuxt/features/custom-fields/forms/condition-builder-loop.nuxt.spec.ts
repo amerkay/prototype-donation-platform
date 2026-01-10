@@ -245,11 +245,15 @@ describe('Condition builder loop regression', () => {
 
     const lastCall = onUpdate.mock.lastCall
     expect(lastCall).toBeTruthy()
-    const lastModel = lastCall![0] as any
+    const lastModel = lastCall![0] as Record<string, unknown>
 
-    const value = lastModel?.items?.[0]?.conditions?.[0]?.value
+    const value = (
+      (
+        ((lastModel?.items as unknown[])?.[0] as Record<string, unknown>)?.conditions as unknown[]
+      )?.[0] as Record<string, unknown>
+    )?.value
     expect(Array.isArray(value)).toBe(true)
-    expect(value.length).toBe(2)
+    expect((value as unknown[]).length).toBe(2)
   })
 
   it('switches from number condition to `in` without crashing on Add Value', async () => {
@@ -334,10 +338,10 @@ describe('Condition builder loop regression', () => {
 
     const lastCall = onUpdate.mock.lastCall
     expect(lastCall).toBeTruthy()
-    const lastModel = lastCall![0] as any
-    const value = lastModel?.conditions?.[0]?.value
+    const lastModel = lastCall![0] as Record<string, unknown>
+    const value = ((lastModel?.conditions as unknown[])?.[0] as Record<string, unknown>)?.value
     expect(Array.isArray(value)).toBe(true)
-    expect(value.length).toBeGreaterThanOrEqual(1)
+    expect((value as unknown[]).length).toBeGreaterThanOrEqual(1)
 
     consoleError.mockRestore()
   })

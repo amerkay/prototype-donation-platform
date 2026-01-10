@@ -48,29 +48,35 @@ describe('custom-fields-config-form', () => {
       const fieldsArray = formDef.fields.fields as ArrayFieldMeta
 
       // Text fields get advanced settings
-      const textField = (fieldsArray.itemField as Function)(
-        { type: 'text', label: 'Username' },
-        { index: 0, items: [], root: {} }
-      ) as FieldGroupMeta
+      const textField = (
+        fieldsArray.itemField as (
+          values: Record<string, unknown>,
+          context: ArrayItemContext
+        ) => FieldMeta
+      )({ type: 'text', label: 'Username' }, { index: 0, items: [], root: {} }) as FieldGroupMeta
 
       expect(textField.label).toBe('Text: Username')
       expect(textField.fields?.advancedSettings).toBeDefined()
 
       // Slider fields get min/max configuration
-      const sliderField = (fieldsArray.itemField as Function)(
-        { type: 'slider', label: 'Amount' },
-        { index: 0, items: [], root: {} }
-      ) as FieldGroupMeta
+      const sliderField = (
+        fieldsArray.itemField as (
+          values: Record<string, unknown>,
+          context: ArrayItemContext
+        ) => FieldMeta
+      )({ type: 'slider', label: 'Amount' }, { index: 0, items: [], root: {} }) as FieldGroupMeta
 
       expect(sliderField.label).toBe('Slider: Amount')
       expect(sliderField.fields?.min).toBeDefined()
       expect(sliderField.fields?.max).toBeDefined()
 
       // Select fields get options array
-      const selectField = (fieldsArray.itemField as Function)(
-        { type: 'select', label: 'Country' },
-        { index: 0, items: [], root: {} }
-      ) as FieldGroupMeta
+      const selectField = (
+        fieldsArray.itemField as (
+          values: Record<string, unknown>,
+          context: ArrayItemContext
+        ) => FieldMeta
+      )({ type: 'select', label: 'Country' }, { index: 0, items: [], root: {} }) as FieldGroupMeta
 
       expect(selectField.label).toBe('Select: Country')
       expect(selectField.fields?.options).toBeDefined()
