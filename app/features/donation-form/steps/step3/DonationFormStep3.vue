@@ -23,13 +23,16 @@ const giftAidFormSection = computed(() => ({
   fields: createGiftAidFields(formConfig.value?.features.giftAid.enabled ?? true)
 }))
 
-// Preferences form section (email opt-in, terms acceptance)
-const preferencesFormSection: FormDef = {
-  id: 'preferences',
-  fields: {
-    ...createEmailOptInField(),
-    ...createTermsAcceptanceField()
-  }
+// Email opt-in form section
+const emailOptInFormSection: FormDef = {
+  id: 'email-opt-in',
+  fields: createEmailOptInField()
+}
+
+// Terms acceptance form section (should be last)
+const termsFormSection: FormDef = {
+  id: 'terms',
+  fields: createTermsAcceptanceField()
 }
 
 const emit = defineEmits<{
@@ -47,16 +50,23 @@ const giftAidSection = computed({
     store.updateFormSection('giftAid', value ?? {})
   }
 })
-const preferencesSection = computed({
-  get: () => store.formSections.preferences || {},
+const emailOptInSection = computed({
+  get: () => store.formSections.emailOptIn || {},
   set: (value) => {
-    store.updateFormSection('preferences', value ?? {})
+    store.updateFormSection('emailOptIn', value ?? {})
+  }
+})
+const termsSection = computed({
+  get: () => store.formSections.terms || {},
+  set: (value) => {
+    store.updateFormSection('terms', value ?? {})
   }
 })
 
 // Form renderer references for validation
 const giftAidFormRef = ref<InstanceType<typeof FormRenderer> | null>(null)
-const preferencesFormRef = ref<InstanceType<typeof FormRenderer> | null>(null)
+const emailOptInFormRef = ref<InstanceType<typeof FormRenderer> | null>(null)
+const termsFormRef = ref<InstanceType<typeof FormRenderer> | null>(null)
 const customFieldsRef = ref<InstanceType<typeof DonationCustomFields> | null>(null)
 const formContainerRef = ref<HTMLElement | null>(null)
 
@@ -126,18 +136,31 @@ const giftAidDataWithContext = computed({
 })
 
 /**
- * Preferences form data (email opt-in, terms acceptance)
- * Simple pass-through with default values
+ * Email opt-in form data with default value
  */
-const preferencesDataWithContext = computed({
+const emailOptInDataWithContext = computed({
   get: () => {
     return {
       joinEmailList: true, // Default to opted in
-      ...preferencesSection.value
+      ...emailOptInSection.value
     }
   },
   set: (value) => {
-    preferencesSection.value = { ...preferencesSection.value, ...value }
+    emailOptInSection.value = { ...emailOptInSection.value, ...value }
+  }
+})
+
+/**
+ * Terms acceptance form data
+ */
+const termsDataWithContext = computed({
+  get: () => {
+    return {
+      ...termsSection.value
+    }
+  },
+  set: (value) => {
+    termsSection.value = { ...termsSection.value, ...value }
   }
 })
 
@@ -172,25 +195,35 @@ const handleNext = () => {
       <CoverCostsField :config="formConfig.features.coverCosts" />
     </div>
 
-    <Separator />
+    <!-- Custom Fields (dynamically generated from admin config) -->
+    <DonationCustomFields ref="customFieldsRef" step="step3" @submit="handleNext" />
 
-    <!-- Preferences Form (email opt-in, terms) -->
+    <!-- Email Opt-in -->
     <div>
       <FormRenderer
-        ref="preferencesFormRef"
-        v-model="preferencesDataWithContext"
+        ref="emailOptInFormRef"
+        v-model="emailOptInDataWithContext"
         :validate-on-mount="false"
-        :section="preferencesFormSection"
+        :section="emailOptInFormSection"
+      />
+    </div>
+
+    <!-- Terms Acceptance (last item before navigation) -->
+    <div>
+      <FormRenderer
+        ref="termsFormRef"
+        v-model="termsDataWithContext"
+        :validate-on-mount="false"
+        :section="termsFormSection"
         @submit="handleNext"
       />
     </div>
 
-    <!-- Custom Fields (dynamically generated from admin config) -->
-    <DonationCustomFields ref="customFieldsRef" step="step3" @submit="handleNext" />
-
     <!-- Navigation Buttons -->
     <NextButton
-      :form-refs="[giftAidFormRef, preferencesFormRef, customFieldsRef?.formRef].filter(Boolean)"
+      :form-refs="
+        [giftAidFormRef, emailOptInFormRef, customFieldsRef?.formRef, termsFormRef].filter(Boolean)
+      "
       :parent-container-ref="formContainerRef"
       @click="handleNext"
     >

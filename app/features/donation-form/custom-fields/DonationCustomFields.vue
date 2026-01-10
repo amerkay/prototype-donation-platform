@@ -121,17 +121,17 @@ defineExpose({
 <template>
   <template v-if="hasVisibleFields && customFieldsFormSection">
     <Separator v-if="showSeparator" />
-    <div class="rounded-lg border border-transparent px-4 py-6 bg-background/40">
-      <FormRenderer
-        :key="customFieldsKey"
-        ref="formRef"
-        v-model="customFieldsSection"
-        :validate-on-mount="false"
-        :section="customFieldsFormSection"
-        :context="donationContext"
-        :context-schema="donationContextSchema"
-        @submit="handleSubmit"
-      />
-    </div>
+    <!-- <div class="rounded-lg border border-transparent px-4 py-6 bg-background/40"> -->
+    <FormRenderer
+      :key="customFieldsKey"
+      ref="formRef"
+      v-model="customFieldsSection"
+      :validate-on-mount="false"
+      :section="customFieldsFormSection"
+      :context="donationContext"
+      :context-schema="donationContextSchema"
+      @submit="handleSubmit"
+    />
+    <!-- </div> -->
   </template>
 </template>

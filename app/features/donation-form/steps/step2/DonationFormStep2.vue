@@ -79,28 +79,28 @@ const handleNext = () => {
 <template>
   <div ref="formContainerRef" class="space-y-4">
     <!-- Donor Information Form -->
-    <div class="rounded-lg border border-transparent px-4 py-6 bg-background/40">
-      <FormRenderer
-        ref="donorFormRef"
-        v-model="donorInfoSection"
-        :validate-on-mount="false"
-        :section="donorInfoFormSection"
-        @submit="handleNext"
-      />
-    </div>
+    <!-- <div class="rounded-lg border border-transparent px-4 py-6 bg-background/40"> -->
+    <FormRenderer
+      ref="donorFormRef"
+      v-model="donorInfoSection"
+      :validate-on-mount="false"
+      :section="donorInfoFormSection"
+      @submit="handleNext"
+    />
+    <!-- </div> -->
 
     <!-- Shipping Address Form (conditional) -->
     <template v-if="needsShipping">
       <ShippingNotice :requires-shipping="true" :cart-count="shippingCounts.cartCount" />
-      <div class="rounded-lg border border-transparent px-4 py-6 bg-background/40">
-        <FormRenderer
-          ref="shippingFormRef"
-          v-model="shippingSection"
-          :validate-on-mount="false"
-          :section="addressFormSection"
-          @submit="handleNext"
-        />
-      </div>
+      <!-- <div class="rounded-lg border border-transparent px-4 py-6 bg-background/40"> -->
+      <FormRenderer
+        ref="shippingFormRef"
+        v-model="shippingSection"
+        :validate-on-mount="false"
+        :section="addressFormSection"
+        @submit="handleNext"
+      />
+      <!-- </div> -->
     </template>
 
     <!-- Custom Fields (dynamically generated from admin config) -->

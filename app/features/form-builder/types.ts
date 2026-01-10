@@ -57,7 +57,6 @@ export type FieldType =
   | 'condition-builder'
   | 'field-group'
   | 'card'
-  | 'separator'
   | 'tabs'
 
 /**
@@ -395,14 +394,8 @@ export interface CardFieldMeta extends BaseFieldMeta {
   imageAlt?: string // Alt text for image
   imageClass?: string // Custom classes for image element
   content?: string // Rich HTML content (use with caution)
-}
-
-/**
- * Separator field metadata - visual divider
- */
-export interface SeparatorFieldMeta extends BaseFieldMeta {
-  type: 'separator'
-  orientation?: 'horizontal' | 'vertical'
+  showBorder?: boolean // Whether to show border (default: true)
+  class?: string // Custom classes for card container
 }
 
 /**
@@ -432,7 +425,6 @@ export type FieldMeta =
   | EmojiFieldMeta
   | SliderFieldMeta
   | CardFieldMeta
-  | SeparatorFieldMeta
   | FieldGroupMeta
   | TabsFieldMeta
   | ConditionBuilderFieldMeta

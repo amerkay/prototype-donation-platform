@@ -19,10 +19,20 @@ const { isVisible, scopedFormValues } = useContainerFieldSetup(props.name, props
 const resolvedDescription = computed(() =>
   resolveText(props.meta.description, scopedFormValues.value)
 )
+
+// Resolve card styling based on meta props
+const cardClasses = computed(() => {
+  const showBorder = props.meta.showBorder !== false
+
+  return cn(
+    showBorder && 'border rounded-lg text-card-foreground p-6 bg-background',
+    props.meta.class
+  )
+})
 </script>
 
 <template>
-  <div v-show="isVisible" class="rounded-lg border text-card-foreground p-6 bg-background/30">
+  <div v-show="isVisible" :class="cardClasses">
     <!-- Optional image -->
     <img
       v-if="meta.imageSrc"

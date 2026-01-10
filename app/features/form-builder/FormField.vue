@@ -29,7 +29,6 @@ import FormFieldArray from './containers/FormFieldArray.vue'
 import FormFieldGroup from './containers/FormFieldGroup.vue'
 import FormFieldTabs from './containers/FormFieldTabs.vue'
 import FormFieldCard from './layout/FormFieldCard.vue'
-import FormFieldSeparator from './layout/FormFieldSeparator.vue'
 
 interface Props {
   name: string
@@ -54,7 +53,6 @@ const FIELD_COMPONENTS: Record<string, Component> = {
   emoji: FormFieldEmoji,
   slider: FormFieldSlider,
   card: FormFieldCard,
-  separator: FormFieldSeparator,
   'field-group': FormFieldGroup,
   array: FormFieldArray,
   tabs: FormFieldTabs
@@ -133,7 +131,7 @@ const fieldRules = computed(() => {
 
 // Container fields don't need field binding (they manage children)
 const isContainerField = computed(() => {
-  return ['field-group', 'tabs', 'card', 'separator'].includes(resolvedFieldType.value)
+  return ['field-group', 'tabs', 'card'].includes(resolvedFieldType.value)
 })
 
 // Use vee-validate's useField composition API for non-container fields
@@ -218,7 +216,7 @@ const fieldProps = computed(() => {
     onBlur: fieldAttrs.value.onBlur
   }
 
-  // Container fields (group, tabs, card, separator) don't need v-model or id
+  // Container fields (group, tabs, card) don't need v-model or id
   if (isContainerField.value) {
     return baseProps
   }

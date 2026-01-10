@@ -330,16 +330,6 @@ tips: {
 
 **Custom content:** Card fields support slots for complete layout control. Use `FormField` component with custom template when needed.
 
-### separator
-
-Visual divider between fields.
-
-```typescript
-divider: {
-  type: 'separator'
-}
-```
-
 ## Container Fields
 
 Organize and group related fields.

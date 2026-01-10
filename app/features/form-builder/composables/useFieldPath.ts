@@ -193,7 +193,7 @@ export function checkFieldVisibility(
   // Container fields (field-group, tabs) should validate children even when collapsed
   // This ensures validation errors are tracked even if the container is hidden
   if (!skipContainerValidation) {
-    const isContainerField = ['field-group', 'tabs', 'card', 'separator'].includes(field.type || '')
+    const isContainerField = ['field-group', 'tabs', 'card'].includes(field.type || '')
     if (isContainerField) return true
   }
 

@@ -67,10 +67,12 @@ export function createGiftAidFields(
     giftAidInfo: {
       type: 'card',
       label: 'Boost your donations by 25% at no cost to you!',
+      class: 'flex gap-8 flex-row-reverse items-center',
       imageSrc: '/imgs/gift-aid.svg',
       imageAlt: 'Gift Aid',
       imageClass: 'h-10 w-auto mb-4 dark:invert',
       content: '',
+      showBorder: false,
       visibleWhen: ({ values }) => shouldShow({ values })
     },
 
