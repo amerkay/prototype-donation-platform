@@ -1,12 +1,10 @@
 # Custom Fields
 
-Add dynamic form fields to your forms without writing code. Admins configure, users fill out—no developer intervention needed.
+Add dynamic form fields without code. Admins configure via UI, forms render automatically with validation and conditional logic.
 
 ## Overview
 
-**What admins configure:**
-
-Enable custom fields, add a text input for "Company Name", make it optional:
+**Admin config:**
 
 ```typescript
 customFields: {
@@ -23,105 +21,253 @@ customFields: {
 }
 ```
 
-**What users see:**
-
-Form automatically renders with validation, conditional logic, and proper accessibility:
+**Runtime usage:**
 
 ```vue
-<FormRenderer :section="customFieldsSection" v-model="donorData" />
+<script setup>
+import { createCustomFieldsFormSection } from '~/features/custom-fields/utils'
+
+const section = createCustomFieldsFormSection(config.customFields.fields)
+</script>
+
+<FormRenderer :section="section" v-model="donorData" />
 ```
 
 ## Quick Start
 
-**Step 1:** Enable custom fields in admin UI
+**1. Setup admin form:**
 
-**Step 2:** Use the visual configurator to add fields—select type, set label, configure options. The admin UI generates the config structure automatically.
+```typescript
+import { createCustomFieldsConfigSection } from '~/features/custom-fields/forms/custom-fields-config-form'
 
-**Step 3:** Form renders the fields:
+const adminForm = createCustomFieldsConfigSection(
+  contextSchema, // Optional: external fields for conditions
+  resolveExternalFields, // Optional: dynamic field resolver
+  allowedFieldTypes // Optional: restrict available types
+)
+```
+
+**2. Render runtime form:**
 
 ```typescript
 import { createCustomFieldsFormSection } from '~/features/custom-fields/utils'
 
-const formSection = createCustomFieldsFormSection(config.customFields.fields)
+const userForm = createCustomFieldsFormSection(config.customFields.fields)
 ```
 
-```vue
-<FormRenderer :section="formSection" v-model="donorData" />
-```
-
-No code changes needed—admins configure everything through the UI.
-
-## Available Field Types
-
-The admin UI generates these config structures. Examples show the generated output:
-
-| Type            | Use Case                    | Key Options                      |
-| --------------- | --------------------------- | -------------------------------- |
-| **text**        | Single-line input           | `placeholder`, `maxLength`       |
-| **textarea**    | Multi-line input            | `rows`, `maxLength`              |
-| **number**      | Numeric input               | `min`, `max`, `step`             |
-| **slider**      | Visual range selector       | `min`, `max`, `prefix`, `suffix` |
-| **select**      | Dropdown                    | `options[]`, `placeholder`       |
-| **radio-group** | Radio buttons (2-5 options) | `options[]`, `orientation`       |
-| **checkbox**    | Boolean or multi-select     | `options[]` (omit for single)    |
-| **hidden**      | Tracking data               | `defaultValue`                   |
-
-**Example generated config:**
-
-```typescript
-// Admin selects "Text" type, fills in label and options
-// Generator creates:
-{
-  type: 'text',
-  id: 'company_name',
-  label: 'Company Name',
-  placeholder: 'Acme Inc.',
-  optional: true
-}
-```
-
-All types support `optional` (default: `true`) and `defaultValue`.
-
-## Configuration & Validation
-
-Validation is automatic:
-
-- Required fields (`optional: false`) must have values
-- Type/range/length constraints enforced per field type
-- Error messages generated from config
-
-## Advanced Features
-
-**Visibility Conditions:** Show/hide fields based on other values. Operators: `equals`, `contains`, `greater_than`, `is_empty`, etc.
-
-**Context Schema:** Pass external data (products, cart state) to make fields conditional on app state.
-
-**Default Values:**
+**3. Extract defaults (optional):**
 
 ```typescript
 import { extractCustomFieldDefaults } from '~/features/custom-fields/utils'
 
-const defaults = extractCustomFieldDefaults(config.fields)
-// { company_name: '', team_size: 0, ... }
+const defaults = extractCustomFieldDefaults(config.customFields.fields)
+// { company_name: '', team_size: 0, newsletter: false }
 ```
 
-## Extending: Add Field Types
+## Field Types
 
-4 steps to add a new field type:
+| Type            | Use Case              | Key Options                                                | Notes                             |
+| --------------- | --------------------- | ---------------------------------------------------------- | --------------------------------- |
+| **text**        | Single-line input     | `placeholder`, `maxLength`                                 | Auto-trims whitespace             |
+| **textarea**    | Multi-line input      | `placeholder`, `rows`, `maxLength`                         | Default 4 rows                    |
+| **number**      | Numeric input         | `min`, `max`, `step`                                       | Enter key submits form            |
+| **slider**      | Visual range selector | `min`\*, `max`\*, `step`, `prefix`, `suffix`, `showMinMax` | \*Required fields                 |
+| **select**      | Dropdown              | `options[]`\*, `placeholder`                               | Values auto-slugified from labels |
+| **radio-group** | Radio buttons         | `options[]`\*, `orientation`                               | Values auto-slugified from labels |
+| **checkbox**    | Boolean/multi-select  | `options[]` (optional)                                     | No options = boolean mode         |
+| **hidden**      | Tracking data         | `defaultValue`\*                                           | Always excluded from validation   |
 
-1. **Create factory** (`fields/my-field.ts`) with `createAdminConfig()`, `toFieldMeta()`, `getDefaultValue()`
-2. **Register** in `FIELD_FACTORIES` (`fields/index.ts`)
-3. **Add type** to `CustomFieldDefinition` union (`types.ts`)
-4. **Add option** to type selector (`forms/custom-fields-config-form.ts`)
+All types support `optional` (default: `true`). Options with \* are required.
 
-See existing fields like [text-field.ts](./fields/text-field.ts) for reference. Factory pattern handles UI generation and conversion automatically.
+**Example configs:**
+
+```typescript
+// Text field
+{ type: 'text', id: 'company', label: 'Company', placeholder: 'Acme Inc.', maxLength: 100 }
+
+// Slider with display
+{ type: 'slider', id: 'amount', label: 'Amount', min: 10, max: 1000, step: 10, prefix: '$', showMinMax: true }
+
+// Select with auto-slugified values
+{ type: 'select', id: 'country', label: 'Country', options: ['United States', 'Canada', 'Mexico'] }
+// Generates: [{ value: 'united_states', label: 'United States' }, ...]
+
+// Checkbox group
+{ type: 'checkbox', id: 'interests', label: 'Interests', options: ['Tech', 'Science', 'Art'] }
+
+// Single checkbox (boolean)
+{ type: 'checkbox', id: 'newsletter', label: 'Subscribe to newsletter' }
+```
+
+## Validation
+
+Automatic validation per field type:
+
+- **Required fields:** `optional: false` → must have value (except hidden fields)
+- **Type constraints:** Numbers validate min/max, strings validate maxLength
+- **Hidden fields:** Always excluded from validation (use `visibleWhen: () => false`)
+- **Conditional fields:** Hidden fields skip validation automatically
+
+Field-specific rules applied via Zod schemas in each factory.
+
+## Visibility Conditions
+
+Control field visibility based on other field values:
+
+**Enable conditions:**
+
+```typescript
+{
+  type: 'text',
+  id: 'other_reason',
+  label: 'Please specify',
+  enableVisibilityConditions: true,  // ← Required toggle
+  visibilityConditions: {
+    visibleWhen: {
+      match: 'all',  // 'all' | 'any' | 'none'
+      conditions: [
+        { field: 'reason', operator: 'equals', value: 'other' }
+      ]
+    }
+  }
+}
+```
+
+**Available operators:**
+
+`equals`, `notEquals`, `contains`, `notContains`, `startsWith`, `endsWith`, `greaterThan`, `lessThan`, `greaterThanOrEqual`, `lessThanOrEqual`, `in`, `notIn`, `empty`, `notEmpty`
+
+**Context Schema:**
+
+Pass external fields for cross-form conditions:
+
+```typescript
+const contextSchema = {
+  cart_total: { label: 'Cart Total', type: 'number' },
+  product_type: { label: 'Product Type', type: 'string', options: [...] }
+}
+
+createCustomFieldsConfigSection(contextSchema)
+```
+
+Fields can reference both custom fields (preceding only) and context schema fields.
+
+**Dynamic external fields:**
+
+```typescript
+const resolveExternalFields = (rootValues) => {
+  const products = rootValues.selectedProducts || []
+  return products.map((p) => ({
+    key: `product_${p.id}`,
+    label: p.name,
+    type: 'boolean',
+    group: 'Selected Products'
+  }))
+}
+
+createCustomFieldsConfigSection(contextSchema, resolveExternalFields)
+```
+
+## Extending: Add Field Type
+
+**1. Create factory** (`fields/my-field.ts`):
+
+```typescript
+export interface MyFieldConfig {
+  id: string
+  label: string
+  optional?: boolean
+  myOption: string
+}
+
+export function createMyFieldAdminConfig(): Record<string, FieldMeta> {
+  return {
+    myOption: { type: 'text', label: 'My Option', rules: z.string() }
+  }
+}
+
+export function myFieldToFieldMeta(config: MyFieldConfig): FieldMeta {
+  return {
+    type: 'text',
+    label: config.label
+    // ... convert config to runtime FieldMeta
+  }
+}
+
+export function getMyFieldDefaultValue(config: MyFieldConfig): string {
+  return config.myOption || ''
+}
+
+export const myField = {
+  createAdminConfig: createMyFieldAdminConfig,
+  toFieldMeta: myFieldToFieldMeta,
+  getDefaultValue: getMyFieldDefaultValue
+}
+```
+
+**2. Register in `fields/index.ts`:**
+
+```typescript
+import { myField, type MyFieldConfig } from './my-field'
+
+export type { MyFieldConfig }
+
+export const FIELD_FACTORIES = {
+  // ... existing
+  'my-field': myField
+} as const
+```
+
+**3. Add to union in `types.ts`:**
+
+```typescript
+export type CustomFieldDefinition =
+  | ({ type: 'text' } & TextFieldConfig)
+  | ({ type: 'my-field' } & MyFieldConfig)
+// ...
+```
+
+**4. Update config form labels (`forms/custom-fields-config-form.ts`):**
+
+```typescript
+const fieldTypeLabels: Record<string, string> = {
+  // ... existing
+  'my-field': 'My Field (description)'
+}
+```
+
+See [text-field.ts](./fields/text-field.ts) for reference implementation.
+
+## API Reference
+
+**Functions:**
+
+- `createCustomFieldsFormSection(fields)` → `FormDef` — Convert config to runtime form
+- `extractCustomFieldDefaults(fields)` → `Record<string, unknown>` — Extract default values
+- `createCustomFieldsConfigSection(contextSchema?, resolveExternalFields?, allowedFieldTypes?)` → `FormDef` — Create admin form
+
+**Types:**
+
+- `CustomFieldDefinition` — Discriminated union of all field configs
+- `CustomFieldType` — Union of field type strings
+- `CustomFieldsSettings` — Top-level settings object (`{enabled, fields}`)
+
+**Utilities:**
+
+- `slugify(text, maxLength?)` — Convert to URL-friendly ID
+- `extractFieldValue(config, key, default?)` — Safe config value extraction
+- `validateCustomFieldConditions()` — Validate field references after reorder
 
 ## Architecture
 
-**Factory Pattern:** Each field type = one factory file with admin config, runtime conversion, and defaults. Avoids duplication.
+**Factory Pattern:** Each field type = isolated module with admin UI generator, runtime converter, and default extractor. Eliminates duplication.
 
-**Dynamic itemField:** Admin UI uses function-based `itemField` to show/hide options based on selected type.
+**Dynamic itemField:** Config form uses function-based `itemField` to show/hide options based on selected type. Enables per-type configuration.
 
-**Type Safety:** Discriminated union (`CustomFieldDefinition`) enforces valid properties per type.
+**Type Safety:** `CustomFieldDefinition` discriminated union enforces valid properties per type. TypeScript catches config errors at compile time.
 
-**See Also:** [Form Builder](../form-builder/README.md) · [FormFieldArray](../form-builder/fields/FormFieldArray.vue) · [Conditions](../form-builder/conditions/README.md)
+**Validation Helpers:** Cross-field validation ensures condition field references remain valid after array reordering.
+
+**Field Extraction:** Converts custom field configs to `AvailableField` format for condition builder integration.
+
+**See Also:** [Form Builder](../form-builder/README.md) · [FormFieldArray](../form-builder/fields/FormFieldArray.vue)
