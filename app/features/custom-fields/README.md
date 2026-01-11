@@ -270,4 +270,4 @@ See [text-field.ts](./fields/text-field.ts) for reference implementation.
 
 **Field Extraction:** Converts custom field configs to `AvailableField` format for condition builder integration.
 
-**See Also:** [Form Builder](../form-builder/README.md) · [FormFieldArray](../form-builder/fields/FormFieldArray.vue)
+**See Also:** [Form Builder](../form-builder/README.md) · [FormFieldArray](../form-builder/containers/FormFieldArray.vue)
