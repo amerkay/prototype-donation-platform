@@ -37,7 +37,7 @@ function scrollToElement(element: HTMLElement, offset: number = 50) {
       const clampedTargetPosition = Math.min(targetPosition, maxPositionToKeepTopVisible)
       scrollContainer.scrollTo({ top: clampedTargetPosition, behavior: 'smooth' })
     }
-  } else {
+  } else if (typeof window !== 'undefined') {
     const topIsVisible = rect.top >= offset
     const bottomIsVisible = rect.bottom <= window.innerHeight - offset
 
