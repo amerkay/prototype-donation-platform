@@ -1,13 +1,9 @@
 # Form Builder
 
-Build type-safe forms with minimal code. Define structure in config, get validation and conditional logic for free.
-
-## Overview
-
-**What you write:**
+Type-safe forms with minimal code. Define structure, get validation and conditional logic for free.
 
 ```typescript
-const formSection: FormDef = {
+const form: FormDef = {
   id: 'contact',
   fields: {
     name: { type: 'text', label: 'Name', rules: z.string().min(2) },
@@ -16,53 +12,33 @@ const formSection: FormDef = {
 }
 ```
 
-**What you get:**
-
 ```vue
-<FormRenderer :section="formSection" v-model="data" @submit="handleSubmit" />
+<FormRenderer :section="form" v-model="data" @submit="handleSubmit" />
 ```
-
-Full validation, error messages, accessibility, and reactive state management. No form boilerplate.
 
 ## Essential Fields
 
-The workhorses you'll use daily.
-
-### text
-
-Single-line text input.
+### text / textarea
 
 ```typescript
 email: {
   type: 'text',
-  label: 'Email Address',
+  label: 'Email',
   placeholder: 'john@example.com',
-  autocomplete: 'email',
-  rules: z.string().email('Invalid email')
+  autocomplete: 'email',  // Standard HTML autocomplete
+  rules: z.string().email()
 }
-```
 
-**Props:** `placeholder`, `autocomplete`, `maxLength`
-
-### textarea
-
-Multi-line text input.
-
-```typescript
 message: {
   type: 'textarea',
-  label: 'Your Message',
-  rows: 5,
-  maxLength: 500,
+  label: 'Message',
+  rows: 5,                 // Height control
+  maxLength: 500,          // Character limit
   rules: z.string().min(10)
 }
 ```
 
-**Props:** `rows`, `maxLength`
-
-### number
-
-Number input with increment/decrement buttons.
+### number / currency
 
 ```typescript
 quantity: {
@@ -73,406 +49,241 @@ quantity: {
   step: 1,
   rules: z.number().min(1)
 }
+
+amount: {
+  type: 'currency',
+  label: 'Donation',
+  currencySymbol: '$',     // Or dynamic: (values) => values.currency === 'USD' ? '$' : '£'
+  min: 1,
+  rules: z.number().min(1)
+}
 ```
 
-**Props:** `min`, `max`, `step`
-
-### toggle
-
-Boolean switch. Perfect for yes/no options.
+### toggle / checkbox
 
 ```typescript
 subscribe: {
   type: 'toggle',
   label: 'Subscribe to newsletter',
   description: 'Get weekly updates',
-  optional: true
+  optional: true           // Shows "(optional)" badge, no validation required
+}
+
+// Single checkbox (boolean)
+acceptTerms: {
+  type: 'checkbox',
+  label: 'I accept terms',
+  rules: z.boolean().refine(val => val === true, 'Required')
+}
+
+// Multiple checkboxes (array)
+interests: {
+  type: 'checkbox',
+  label: 'Interests',
+  options: [
+    { value: 'tech', label: 'Technology' },
+    { value: 'music', label: 'Music' }
+  ],
+  rules: z.array(z.string()).min(1)
 }
 ```
 
-**Note:** Toggles don't need `rules` unless you require them to be true.
-
 ## Selection Fields
 
-When users pick from options.
-
-### select
-
-Native HTML dropdown. Fast and familiar.
-
 ```typescript
+// Native dropdown - fast, familiar
 country: {
   type: 'select',
   label: 'Country',
   options: [
     { value: 'US', label: 'United States' },
-    { value: 'CA', label: 'Canada' },
-    { value: 'GB', label: 'United Kingdom' }
+    { value: 'CA', label: 'Canada' }
   ],
-  rules: z.string().min(1, 'Please select a country')
+  rules: z.string().min(1)
 }
-```
 
-**Props:** `options: Array<{ value: string, label: string }>`
-
-### combobox
-
-Searchable select with single or multiple selection. Better UX for long lists.
-
-```typescript
+// Searchable select - better for long lists
 tags: {
   type: 'combobox',
   label: 'Tags',
   placeholder: 'Select tags',
   searchPlaceholder: 'Search...',
-  multiple: true,
-  options: [
-    { value: 'bug', label: 'Bug' },
-    { value: 'feature', label: 'Feature' },
-    { value: 'docs', label: 'Documentation' }
-  ]
+  multiple: true,          // Single or multiple selection
+  options: [/* ... */],
+  // Dynamic options from context:
+  // options: (ctx) => ctx.values.availableTags?.map(t => ({ value: t.id, label: t.name }))
 }
-```
 
-**Props:** `options`, `multiple`, `searchPlaceholder`  
-**Dynamic options:** Use a function for `options: (values) => computedOptions`
-
-### autocomplete
-
-Async typeahead with debounced search. For remote data sources.
-
-```typescript
+// Async typeahead with remote search
 city: {
   type: 'autocomplete',
   label: 'City',
-  searchPlaceholder: 'Type to search cities...',
+  searchPlaceholder: 'Type to search...',
   fetchOptions: async (query) => {
     const res = await fetch(`/api/cities?q=${query}`)
     const cities = await res.json()
     return cities.map(c => ({
       value: c.id,
       label: c.name,
-      data: c  // Store full object for later use
+      data: c              // Store full object for onChange access
     }))
   },
-  options: [
-    { value: 'nyc', label: 'New York', data: { ... } }
-  ],
   onChange: ({ value, setValue }) => {
-    // Access the full city object via value.data
-    const cityData = value?.data
-    if (cityData) {
-      setValue('timezone', cityData.timezone)
+    if (value?.data) {
+      setValue('timezone', value.data.timezone)
     }
   }
 }
-```
 
-**Props:** `fetchOptions: (query: string) => Promise<AutocompleteOption[]>`, `options` (static fallback), `debounceMs`, `minQueryLength`
-
-**AutocompleteOption structure:** `{ value: string | number, label: string, data?: any }`  
-The `data` property stores the full object, accessible in `onChange` callbacks.
-
-### radio-group
-
-Radio buttons for mutually exclusive choices.
-
-```typescript
+// Radio buttons
 plan: {
   type: 'radio-group',
-  label: 'Choose a plan',
+  label: 'Choose plan',
   options: [
     { value: 'free', label: 'Free' },
     { value: 'pro', label: 'Pro - $10/mo' }
   ],
-  orientation: 'vertical',
+  orientation: 'vertical', // or 'horizontal'
   rules: z.enum(['free', 'pro'])
 }
 ```
 
-**Props:** `options`, `orientation: 'horizontal' | 'vertical'`
-
 ## Specialized Fields
 
-For specific use cases.
-
-### currency
-
-Number input with currency symbol.
-
 ```typescript
-amount: {
-  type: 'currency',
-  label: 'Donation Amount',
-  currencySymbol: '$',
-  min: 1,
-  step: 1,
-  rules: z.number().min(1)
-}
-```
-
-**Dynamic currency symbol:**
-
-```typescript
-fields: {
-  currency: {
-    type: 'select',
-    label: 'Currency',
-    options: [
-      { value: 'USD', label: 'US Dollar' },
-      { value: 'GBP', label: 'British Pound' },
-      { value: 'EUR', label: 'Euro' }
-    ]
-  },
-  amount: {
-    type: 'currency',
-    label: 'Amount',
-    currencySymbol: (values) => {
-      const symbols = { USD: '$', GBP: '£', EUR: '€' }
-      return symbols[values.currency as string] || '$'
-    },
-    min: 1
-  }
-}
-```
-
-**Props:** `currencySymbol`, `min`, `max`, `step`  
-**Dynamic symbol:** `currencySymbol` accepts a function that receives form values
-
-### slider
-
-Range slider for selecting values on a scale.
-
-```typescript
+// Range slider with dynamic props
 volume: {
   type: 'slider',
   label: 'Volume',
-  min: 0,
+  min: 0,                  // Or dynamic: (values) => values.mode === 'pro' ? 0 : 10
   max: 100,
   step: 1,
-  formatValue: (val) => `${val}%`
+  formatValue: (val) => `${val}%`,
+  showMinMax: true,        // Display min/max labels
+  prefix: 'Set',           // Text before value
+  suffix: 'level'          // Text after value
 }
-```
 
-**Advanced slider with dynamic formatting:**
-
-```typescript
-coverCosts: {
-  type: 'slider',
-  label: 'Cover Transaction Costs',
-  min: (values) => values.donationAmount >= 100 ? 0 : 0,
-  max: (values) => values.donationAmount >= 100 ? 15 : 5.50,
-  step: (values) => values.donationAmount >= 100 ? 1 : 0.5,
-  formatValue: (value, formValues) => {
-    // Show percentage for large donations, currency for small
-    return formValues?.donationAmount >= 100 ? `${value}%` : `$${value.toFixed(2)}`
-  },
-  showMinMax: true,  // Display min/max labels below slider
-  minMaxFormatter: (value, formValues) => `${value}%`,  // Custom min/max format
-  prefix: 'Add',     // Text before value label
-  suffix: 'extra'    // Text after value label
-}
-```
-
-**Props:** `min`, `max`, `step`, `formatValue`, `showMinMax`, `minMaxFormatter`, `prefix`, `suffix`  
-**Dynamic props:** All numeric props (`min`, `max`, `step`) accept functions for conditional behavior
-
-### emoji
-
-Emoji picker. Great for reactions or icons.
-
-```typescript
+// Emoji picker
 reaction: {
   type: 'emoji',
   label: 'How do you feel?',
-  placeholder: '😊'
+  placeholder: '😊',
+  maxLength: 3             // Allow multiple emojis
 }
-```
 
-**Multiple emojis:**
-
-```typescript
-favorites: {
-  type: 'emoji',
-  label: 'Favorite emojis',
-  maxLength: 3  // Allow up to 3 emojis
-}
-```
-
-**Props:** `maxLength` (controls number of emojis allowed, default: 1)
-
-### card
-
-Display-only card. For instructions or context.
-
-```typescript
+// Display-only card
 info: {
   type: 'card',
-  label: 'Important Notice',
-  description: 'Your data is encrypted and never shared.',
-  imageSrc: '/icon-shield.svg',
+  label: 'Important',
+  description: 'Your data is encrypted.',
+  imageSrc: '/icon.svg',
   imageAlt: 'Security',
-  imageClass: 'w-16 h-16 mb-4'
+  content: '<p>Rich HTML content</p>'  // Optional raw HTML
+}
+
+// Admin-only: visual condition builder
+visibilityRules: {
+  type: 'condition-builder',
+  label: 'Show when',
+  optional: true,
+  formFields: otherFields  // Available fields for dropdown
 }
 ```
-
-**With rich HTML content:**
-
-```typescript
-tips: {
-  type: 'card',
-  label: 'Pro Tips',
-  content: '<ul><li>Use strong passwords</li><li>Enable 2FA</li></ul>'
-}
-```
-
-**Props:** `label`, `description`, `content` (raw HTML), `imageSrc`, `imageAlt`, `imageClass`
-
-**Custom content:** Card fields support slots for complete layout control. Use `FormField` component with custom template when needed.
 
 ## Container Fields
 
-Organize and group related fields.
+**Which container?**
 
-### field-group
-
-Group fields with shared layout. Values nest under the group name.
+- `field-group` → Related fields with nested data (address, contact)
+- `tabs` → Exclusive sections, one active (payment methods, preferences)
+- `array` → Repeating user-added items (skills, contacts)
+- `card` → Display-only, no nesting (instructions, tips)
 
 ```typescript
+// Group fields with layout
 address: {
   type: 'field-group',
-  label: 'Shipping Address',
-  class: 'grid grid-cols-2 gap-x-3',
+  label: 'Address',
+  class: 'grid grid-cols-2 gap-3',
+  collapsible: true,       // Optional accordion
+  collapsibleDefaultOpen: false,
+  badgeLabel: 'Optional',
   fields: {
     street: { type: 'text', label: 'Street' },
     city: { type: 'text', label: 'City' },
-    zip: { type: 'text', label: 'ZIP' },
-    country: { type: 'select', label: 'Country', options: [...] }
+    zip: { type: 'text', label: 'ZIP' }
   }
 }
-```
+// Data: { address: { street, city, zip } }
 
-**Result:** Form data is `{ address: { street: '...', city: '...', ... } }`
-
-**Accessing nested values:**
-
-```typescript
-onChange: ({ value, values, setValue }) => {
-  const city = (values.address as Record<string, unknown>)?.city
-  setValue('address.zip', '10001') // Use dot notation
-}
-```
-
-#### Collapsible Groups
-
-Accordion-style for admin panels or optional sections.
-
-```typescript
-advanced: {
-  type: 'field-group',
-  label: 'Advanced Options',
-  collapsible: true,
-  collapsibleDefaultOpen: false,
-  badgeLabel: 'Optional',
-  badgeVariant: 'secondary',
-  fields: { /* ... */ }
-}
-```
-
-**Props:** `collapsible`, `collapsibleDefaultOpen`, `badgeLabel`, `badgeVariant`
-
-**Automatic error indicators:** When any child field has validation errors, collapsible groups automatically show a red error badge. The badge text changes to "X errors" (where X is the count). This helps users locate problems in collapsed sections.
-
-### tabs
-
-Organize fields into tabbed sections. Like field-groups, but with tab navigation.
-
-```typescript
+// Tabbed sections
 contact: {
   type: 'tabs',
-  label: 'Contact Preferences',
-  defaultValue: 'email',  // Initial active tab
+  label: 'Contact',
+  defaultValue: 'email',
   tabs: [
     {
       value: 'email',
       label: 'Email',
-      badgeLabel: 'Primary',  // Optional badge on tab
+      badgeLabel: 'Primary',  // Optional tab badge
       fields: {
-        emailAddress: { type: 'text', label: 'Email' },
-        emailFrequency: { type: 'select', label: 'Frequency', options: [...] }
+        emailAddress: { type: 'text', label: 'Email' }
       }
     },
     {
       value: 'sms',
       label: 'SMS',
       fields: {
-        phone: { type: 'text', label: 'Phone Number' }
+        phone: { type: 'text', label: 'Phone' }
       }
     }
   ]
 }
-```
+// Data: { contact: { email: { emailAddress }, sms: { phone } } }
 
-**Result:** Form data is `{ contact: { email: { emailAddress: '...', emailFrequency: '...' }, sms: { phone: '...' } } }`  
-**Note:** Each tab's fields are nested under the tab's `value` key.
-
-**Props:** `tabs: TabDefinition[]`, `defaultValue`, `tabsListClass`, `badgeLabel` (per tab), `badgeVariant` (per tab)
-
-**Automatic error indicators:** Tabs with validation errors automatically show a red error badge on the tab trigger. This helps users identify which tabs need attention without switching between them.
-
-### array
-
-Dynamic list of items. Users can add/remove entries. **Supports drag-and-drop reordering.**
-
-```typescript
+// Dynamic arrays with drag-and-drop
 skills: {
   type: 'array',
   label: 'Skills',
   addButtonText: 'Add Skill',
-  sortable: true,  // Enable drag-and-drop reordering
+  removeButtonText: 'Remove',  // Optional custom text
+  sortable: true,              // Enable drag-to-reorder
   itemField: {
     type: 'text',
     placeholder: 'e.g., JavaScript'
   }
 }
-```
+// Data: { skills: ['JavaScript', 'TypeScript'] }
 
-**Result:** Form data is `{ skills: ['JavaScript', 'TypeScript', ...] }`
-
-**Complex items:**
-
-```typescript
+// Complex array items
 contacts: {
   type: 'array',
-  label: 'Emergency Contacts',
-  addButtonText: 'Add Contact',
-  removeButtonText: 'Remove',  // Optional custom remove button text
-  sortable: true,  // Enable drag-and-drop reordering
+  label: 'Contacts',
+  addButtonText: 'Add',
+  sortable: true,
   itemField: {
     type: 'field-group',
-    class: 'grid grid-cols-2 gap-x-3',
+    class: 'grid grid-cols-2 gap-3',
     fields: {
       name: { type: 'text', label: 'Name' },
       phone: { type: 'text', label: 'Phone' }
     }
   }
 }
+// Data: { contacts: [{ name, phone }, ...] }
 ```
 
-**Result:** `{ contacts: [{ name: 'Jane', phone: '555-0100' }, ...] }`
-
-**Props:** `itemField`, `addButtonText`, `removeButtonText`, `sortable`, `class` (applied to grid container)  
-**Note:** Drag-and-drop reordering is opt-in. Set `sortable: true` to enable drag handles.
+**Auto error indicators:** Collapsible groups and tabs show red error badges when children have validation errors.
 
 ## Making Forms Interactive
 
-The real power: smart forms that adapt to user input.
-
 ### Conditional Visibility
 
-Show/hide fields based on form values. Hidden fields skip validation.
+Hidden fields are excluded from validation—won't block submission.
 
 ```typescript
+// Function-based (simple)
 fields: {
   accountType: {
     type: 'radio-group',
@@ -484,189 +295,176 @@ fields: {
   companyName: {
     type: 'text',
     label: 'Company Name',
-    visibleWhen: (values) => values.accountType === 'business',
-    rules: z.string().min(1, 'Required')
-  },
-  taxId: {
-    type: 'text',
-    label: 'Tax ID',
-    visibleWhen: (values) => values.accountType === 'business',
-    rules: z.string().regex(/^\d{2}-\d{7}$/)
+    visibleWhen: (ctx) => ctx.values.accountType === 'business',
+    rules: z.string().min(1)
   }
+}
+
+// Declarative (serializable for database storage)
+companyName: {
+  type: 'text',
+  label: 'Company Name',
+  visibleWhen: {
+    match: 'all',          // 'all' (AND), 'any' (OR), 'none' (NOT)
+    conditions: [
+      { field: 'accountType', operator: 'in', value: ['business'] }
+    ]
+  },
+  rules: z.string().min(1)
+}
+// Operators: contains, notContains, greaterOrEqual, lessOrEqual,
+//            empty, notEmpty, isTrue, isFalse, in, notIn
+```
+
+### External Context
+
+Inject external data into form logic without adding to form fields. Context values merge at root level in `ctx.values`.
+
+```vue
+<FormRenderer
+  :section="form"
+  v-model="data"
+  :context="{ donationTotal: 100, userCountry: 'US' }"
+  :context-schema="{
+    donationTotal: { label: 'Donation Total', type: 'number' },
+    userCountry: { label: 'User Country', type: 'text' }
+  }"
+/>
+```
+
+```typescript
+coverCosts: {
+  type: 'slider',
+  label: 'Cover Costs',
+  max: (ctx) => ctx.values.donationTotal * 0.03,  // Access context
+  visibleWhen: (ctx) => ctx.values.donationTotal > 10
 }
 ```
 
-The `visibleWhen` function receives all form values. Return `true` to show, `false` to hide.
+**Note:** Context in `ctx.values` but NOT in emitted `modelValue` or submission data.
 
-### Dynamic Validation
-
-Validation rules that change based on form state.
+### Dynamic Validation & Text
 
 ```typescript
 phone: {
   type: 'text',
   label: 'Phone',
-  description: (values) =>
-    values.country === 'US'
+  description: (ctx) =>
+    ctx.values.country === 'US'
       ? 'Format: (555) 123-4567'
-      : 'Include your country code',
-  rules: (values) => {
-    if (values.country === 'US') {
-      return z.string().regex(/^\(\d{3}\) \d{3}-\d{4}$/, 'Invalid US phone format')
+      : 'Include country code',
+  rules: (ctx) => {
+    if (ctx.values.country === 'US') {
+      return z.string().regex(/^\(\d{3}\) \d{3}-\d{4}$/)
     }
-    return z.string().min(1, 'Phone is required')
+    return z.string().min(1)
   }
 }
+// All text props accept functions: label, description, placeholder
 ```
-
-**Dynamic text:** All text fields (`label`, `description`, `placeholder`) accept functions.
 
 ### onChange Callbacks
 
-React to field changes. Update other fields or trigger side effects.
+React to field changes, update other fields.
 
 ```typescript
 sendEmail: {
   type: 'toggle',
-  label: 'Send confirmation email',
+  label: 'Send email',
   onChange: ({ value, setValue }) => {
     if (!value) {
-      setValue('emailAddress', '')  // Clear email when disabled
+      setValue('emailAddress', '')  // Clear related field
     }
   }
 },
 emailAddress: {
   type: 'text',
-  label: 'Email Address',
-  visibleWhen: (values) => values.sendEmail === true,
-  rules: (values) =>
-    values.sendEmail ? z.string().email() : z.string().optional()
+  label: 'Email',
+  visibleWhen: (ctx) => ctx.values.sendEmail === true,
+  rules: (ctx) =>
+    ctx.values.sendEmail ? z.string().email() : z.string().optional()
 }
 ```
 
-**Signature:** `onChange: ({ value, values, setValue }) => void`
+**OnChangeContext:**
 
-**Use sparingly.** onChange is powerful but can make forms hard to reason about. Prefer `visibleWhen` and dynamic `rules` for most cases.
+- `value` → New field value
+- `values` → Form values + context
+- `setValue(path, value)` → Update field (relative paths)
+- `setFieldError(field, message)` → Set validation error
+- `setFieldTouched(field, touched)` → Mark touched
+- `parent`, `root`, `form` → Context variants
+
+**Use sparingly.** Prefer `visibleWhen` and dynamic `rules` for maintainability.
 
 ## Reusable Field Sets
 
-Extract repeated field patterns into factory functions.
-
-### Creating a Field Set
+Extract repeated patterns into factory functions.
 
 ```typescript
 // app/features/forms/address-fields.ts
-import type { FieldMetaMap } from '~/features/form-builder/form-builder-types'
+import type { FieldMetaMap } from '~/features/form-builder/types'
 
-export function createAddressFields(autocompleteSection = 'shipping'): FieldMetaMap {
+export function createAddressFields(section = 'shipping'): FieldMetaMap {
   return {
     street: {
       type: 'text',
-      label: 'Street Address',
-      autocomplete: `${autocompleteSection} address-line1`
+      label: 'Street',
+      autocomplete: `${section} address-line1`
     },
     city: {
       type: 'text',
       label: 'City',
-      autocomplete: `${autocompleteSection} address-level2`
-    },
-    state: {
-      type: 'text',
-      label: 'State',
-      autocomplete: `${autocompleteSection} address-level1`
+      autocomplete: `${section} address-level2`
     },
     zip: {
       type: 'text',
-      label: 'ZIP Code',
-      autocomplete: `${autocompleteSection} postal-code`
+      label: 'ZIP',
+      autocomplete: `${section} postal-code`
     }
   }
 }
-```
 
-### Using Field Sets
-
-**Spread into fields:**
-
-```typescript
+// Usage
 fields: {
-  name: { type: 'text', label: 'Name' },
-  ...createAddressFields()
-}
-```
-
-**Or nest in a group:**
-
-```typescript
-fields: {
-  shippingAddress: {
+  ...createAddressFields('shipping'),  // Flat
+  billingAddress: {                    // Or nested in group
     type: 'field-group',
-    label: 'Shipping Address',
-    fields: createAddressFields('shipping')
-  },
-  billingAddress: {
-    type: 'field-group',
-    label: 'Billing Address',
+    label: 'Billing',
     fields: createAddressFields('billing')
-  }
-}
-```
-
-**With visibility:**
-
-```typescript
-export function createMessageFields(
-  condition?: (values: Record<string, unknown>) => boolean
-): FieldMetaMap {
-  return {
-    includeMessage: {
-      type: 'toggle',
-      label: 'Include a message',
-      visibleWhen: condition,
-      optional: true
-    },
-    message: {
-      type: 'textarea',
-      label: 'Message',
-      maxLength: 250,
-      visibleWhen: (values) => {
-        if (condition && !condition(values)) return false
-        return values.includeMessage === true
-      }
-    }
   }
 }
 ```
 
 ## API Reference
 
-### FormRenderer
+### FormRenderer Props
 
-**Props:**
-
-- `section: FormDef` – Form configuration object
-- `modelValue: Record<string, unknown>` – Form values (use with `v-model`)
-- `class?: string` – CSS classes applied to form element
-- `keepValuesOnUnmount?: boolean` – Preserve form state when component unmounts (default: `false`)
-- `validateOnMount?: boolean` – Validate all fields immediately on mount (default: `false`). Useful for edit forms with pre-filled data.
-- `updateOnlyWhenValid?: boolean` – Only emit `update:modelValue` when form is valid (default: `false`). Useful for admin configs where invalid state shouldn't propagate.
+```typescript
+interface FormRendererProps {
+  section: FormDef // Form config
+  modelValue: Record<string, unknown> // v-model binding
+  context?: Record<string, unknown> // External values (default: {})
+  contextSchema?: ContextSchema // Context field descriptions for condition-builder
+  class?: string // CSS classes
+  validateOnMount?: boolean // Validate immediately (default: false)
+  updateOnlyWhenValid?: boolean // Only emit valid state (default: false)
+}
+```
 
 **Events:**
 
-- `update:modelValue` – Emitted on any field change
-- `submit` – Emitted when form is submitted (Enter key in text fields or manual `onSubmit()`)
+- `update:modelValue` → Field changed
+- `submit` → Form submitted and valid (Enter in text fields or `onSubmit()`)
 
-**Exposed Properties:**
+**Exposed:**
 
-- `isValid` – Computed ref with current form validation state
-- `onSubmit()` – Function to manually trigger form submission
-
-**Example:**
+- `isValid: ComputedRef<boolean>`
+- `onSubmit(): void`
 
 ```vue
 <script setup lang="ts">
 const formRef = ref<InstanceType<typeof FormRenderer>>()
-const data = ref({})
 
 function manualSubmit() {
   if (formRef.value?.isValid) {
@@ -683,7 +481,6 @@ function manualSubmit() {
     validate-on-mount
     @submit="handleSubmit"
   />
-  <Button @click="manualSubmit">Submit</Button>
 </template>
 ```
 
@@ -691,33 +488,35 @@ function manualSubmit() {
 
 ```typescript
 interface FormDef {
-  id: string // Unique form identifier
-  title?: string // Form title
-  description?: string // Form description
+  id: string // Unique identifier
+  title?: string
+  description?: string
   fields: FieldMetaMap // Field definitions
-  schema?: z.ZodTypeAny // Root-level Zod schema (rarely needed)
-  defaultValue?: Record<string, unknown> // Initial form values
+  schema?: z.ZodTypeAny // Root schema (cross-field validation only)
+  defaultValue?: Record<string, unknown> // Use extractDefaultValues() utility instead
 }
+
+type FieldMetaMap = Record<string, FieldMeta>
 ```
 
-**About `defaultValue`:** Instead of manually building this object, use the `extractDefaultValues` utility to automatically extract defaults from field definitions:
+**Extract defaults:**
 
 ```typescript
-import { extractDefaultValues } from '~/features/form-builder/utils'
+import { extractDefaultValues } from '~/features/form-builder/utils/defaults'
 
-const formSection: FormDef = {
+const form: FormDef = {
   id: 'contact',
   fields: {
-    name: { type: 'text', defaultValue: '', rules: z.string() },
-    age: { type: 'number', defaultValue: 18, rules: z.number() }
+    name: { type: 'text', defaultValue: '' },
+    age: { type: 'number', defaultValue: 18 }
   }
 }
 
-const data = ref(extractDefaultValues(formSection.fields))
-// Result: { name: '', age: 18 }
+const data = ref(extractDefaultValues(form.fields))
+// { name: '', age: 18 }
 ```
 
-**About `schema`:** Each field defines its own validation via the `rules` property. The root `schema` is only needed for cross-field validation that involves multiple fields. For example:
+**Root schema:** Only needed for cross-field validation after all field validations pass.
 
 ```typescript
 schema: z.object({
@@ -729,61 +528,63 @@ schema: z.object({
 })
 ```
 
-For most forms, field-level `rules` are sufficient.
-
 ### Common Field Properties
 
-Every field type supports these:
+All fields support:
 
 ```typescript
 {
   label?: string | (ctx: FieldContext) => string
   description?: string | (ctx: FieldContext) => string
   placeholder?: string | (ctx: FieldContext) => string
-  optional?: boolean                // Shows "(optional)" badge
+  defaultValue?: unknown
+  optional?: boolean               // "(optional)" badge
   disabled?: boolean | (ctx: FieldContext) => boolean
-  visibleWhen?: (ctx: FieldContext) => boolean
+  visibleWhen?: ((ctx: FieldContext) => boolean) | ConditionGroup
   rules?: z.ZodTypeAny | (ctx: FieldContext) => z.ZodTypeAny
-  onChange?: ({ value, values, setValue }) => void
-  isSeparatorAfter?: boolean       // Show separator after this field
-  class?: string                   // CSS classes for input element
-  labelClass?: string              // CSS classes for label
-  descriptionClass?: string        // CSS classes for description
-  autocomplete?: string            // HTML autocomplete attribute
+  onChange?: (ctx: OnChangeContext) => void
+  isSeparatorAfter?: boolean       // Show separator after field
+  class?: string                   // Input CSS classes
+  labelClass?: string
+  descriptionClass?: string
+  autocomplete?: string            // HTML autocomplete
 }
 ```
 
-### SetFieldValueFn
-
-Used in `onChange` callbacks to update other fields.
+### FieldContext
 
 ```typescript
-type SetFieldValueFn = (relativePath: string, value: unknown) => void
+interface FieldContext {
+  values: Record<string, unknown> // Form values + external context (merged)
+  parent?: Record<string, unknown> // Parent container values
+  root: Record<string, unknown> // All values + context at top level
+  form?: Record<string, unknown> // Pure form values (no context), for submission
+}
 ```
 
-**Usage:**
+### ConditionGroup
 
 ```typescript
-onChange: ({ value, values, setValue }) => {
-  setValue('otherField', 'new value') // Sibling field
-  setValue('group.nestedField', 'value') // Nested field (dot notation)
+interface ConditionGroup {
+  conditions: Condition[]
+  match: 'all' | 'any' | 'none' // AND, OR, NOT
+}
+
+interface Condition {
+  field: string // Field path (dot notation)
+  operator: ComparisonOperator // contains, in, greaterOrEqual, etc.
+  value?: unknown // Static comparison
+  valueFromField?: string // Compare against another field
 }
 ```
 
 ## Best Practices
 
-**Progressive disclosure:** Use `visibleWhen` to show fields only when relevant. Better UX than overwhelming users.
-
-**Keep groups nested:** Field-group values nest in form data. Access them as `allValues.groupName.fieldName`.
-
-**Dynamic when needed:** Use function-based `rules`, `description`, and `options` only when they depend on other fields. Static is simpler.
-
-**onChange sparingly:** It's powerful but can make forms brittle. Most cross-field logic works better with `visibleWhen` and dynamic `rules`.
-
-**Extract patterns:** If you use the same fields in 3+ places, make a factory function. Your future self will thank you.
-
-**Add separators between fields:** Add `isSeparatorAfter: true` to show a separator after a field. By default, separators are not shown.
-
-**Error indicators work automatically:** Collapsible field-groups and tabs automatically display error badges when child fields have validation errors. You don't need to manage this manually.
-
-**Form submission:** Text-based fields (text, textarea, number, currency) submit the form when Enter is pressed. This is standard form behavior. For multi-line textareas, Shift+Enter adds a new line.
+- **Progressive disclosure:** Use `visibleWhen` to show fields only when relevant
+- **Nested data:** Field-group values nest: `values.groupName.fieldName`
+- **Dynamic when needed:** Use functions only when depending on other fields
+- **onChange sparingly:** Most logic better served by `visibleWhen` + dynamic `rules`
+- **Extract patterns:** Reuse common field sets via factory functions
+- **Separators:** Add `isSeparatorAfter: true` for visual separation
+- **Validation on edit forms:** Set `validate-on-mount` for pre-filled forms
+- **Form submission:** Text fields submit on Enter; textareas use Shift+Enter for newline
