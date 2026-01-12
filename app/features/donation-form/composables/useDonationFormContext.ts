@@ -57,7 +57,7 @@ export function useDonationFormContext() {
       // Step 3 fields
       giftAidConsent: store.formSections.giftAid?.giftAidConsent,
       costCoveragePercentage,
-      joinMailingList: store.formSections.preferences?.joinEmailList
+      joinMailingList: store.formSections.emailOptIn?.joinEmailList
     }
   })
 

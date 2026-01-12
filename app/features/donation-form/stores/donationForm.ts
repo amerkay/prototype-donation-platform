@@ -39,7 +39,8 @@ export const useDonationFormStore = defineStore(
       shipping: {},
       giftAid: {},
       customFields: {},
-      preferences: {}
+      emailOptIn: {},
+      terms: {}
     })
 
     // ==================== GETTERS ====================
@@ -110,7 +111,8 @@ export const useDonationFormStore = defineStore(
         shipping: {},
         giftAid: {},
         customFields: {},
-        preferences: {}
+        emailOptIn: {},
+        terms: {}
       }
     }
 
