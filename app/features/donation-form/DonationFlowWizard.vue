@@ -24,19 +24,19 @@ store.initialize(props.config?.localization.defaultCurrency || 'USD')
 
 const cartStore = useImpactCartStore()
 
-// Centralized computed: Check if shipping is required based on current tab
-const needsShipping = computed(() => {
-  // Check single tab product selections
-  if (store.activeTab !== 'multiple') {
-    const product = store.selectedProducts[store.activeTab as 'monthly' | 'yearly']
-    if (product?.isShippingRequired) return true
-  }
+// Sync impactCart multipleCart to donationForm store for persistence
+watch(
+  () => cartStore.multipleCart,
+  (cart) => {
+    store.syncMultipleCart(cart)
+  },
+  { deep: true, immediate: true }
+)
 
-  // Check multiple cart items
-  if (cartStore.multipleCart.some((item) => item.isShippingRequired)) return true
-
-  return false
-})
+// Restore impactCart from donationForm on mount
+if (store.multipleCart.length > 0) {
+  cartStore.restoreState(store.multipleCart)
+}
 
 // Ref for the container element
 const wizardContainer = ref<HTMLElement | null>(null)
@@ -103,7 +103,7 @@ const handleBack = () => {
       <!-- Order Summary (shown from step 2 onwards) -->
       <OrderSummary
         v-if="store.currentStep >= 2"
-        :needs-shipping="needsShipping"
+        :needs-shipping="store.needsShipping"
         class="mb-4"
         @back="handleBack"
         @edit="handleEdit"
@@ -119,7 +119,7 @@ const handleBack = () => {
       <!-- Step 2: Donor Information & Shipping -->
       <DonationFormStep2
         v-if="store.currentStep === 2"
-        :needs-shipping="needsShipping"
+        :needs-shipping="store.needsShipping"
         @complete="handleStep2Complete"
       />
 

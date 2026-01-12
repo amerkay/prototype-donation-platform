@@ -5,7 +5,6 @@ import { Button } from '~/components/ui/button'
 import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
-import { useCoverCostsManager } from '~/features/donation-form/cover-costs/composables/useCoverCostsManager'
 import { useFormConfigStore } from '~/stores/formConfig'
 
 interface Props {
@@ -27,25 +26,14 @@ const cartStore = useImpactCartStore()
 const store = useDonationFormStore()
 const { getCurrencySymbol } = useCurrency()
 
-// Use centralized cover costs manager
-const { coverCostsAmount, coverCostsType, coverCostsValue } = useCoverCostsManager()
-
-// Determine total amount
-const totalAmount = computed(() => {
-  if (store.activeTab === 'multiple') {
-    return cartStore.cartTotal('multiple')
-  }
-  return store.donationAmounts[store.activeTab as 'once' | 'monthly' | 'yearly']
-})
-
 // Cover costs calculation (only shown from step 3 onwards AND if enabled)
 const displayCoverFeesAmount = computed(() => {
   if (store.currentStep < 3 || !formConfig.value?.features.coverCosts.enabled) return 0
-  return coverCostsAmount.value
+  return store.coverCostsAmount
 })
 
 const totalWithFees = computed(() => {
-  return totalAmount.value + displayCoverFeesAmount.value
+  return store.totalBeforeCoveredFees + displayCoverFeesAmount.value
 })
 
 const frequencyLabel = computed(() => {
@@ -74,14 +62,14 @@ const formattedBreakdown = computed(() => {
 
   // Show percentage if available, otherwise indicate fixed amount
   const costsDisplay =
-    coverCostsType.value === 'percentage'
-      ? `${coverCostsValue.value}`
-      : coverCostsType.value === 'amount'
+    store.coverCosts?.type === 'percentage'
+      ? `${store.coverCosts.value}`
+      : store.coverCosts?.type === 'amount'
         ? 'fixed'
         : '0'
 
   return {
-    donation: `${symbol}${totalAmount.value.toFixed(2)}`,
+    donation: `${symbol}${store.totalBeforeCoveredFees.toFixed(2)}`,
     costs: costsDisplay
   }
 })

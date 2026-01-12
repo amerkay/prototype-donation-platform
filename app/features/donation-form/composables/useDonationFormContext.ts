@@ -6,7 +6,6 @@
 import { computed } from 'vue'
 import type { ContextSchema } from '~/features/form-builder/conditions'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
-import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
 import { useFormConfigStore } from '~/stores/formConfig'
 
 /**
@@ -15,7 +14,6 @@ import { useFormConfigStore } from '~/stores/formConfig'
  */
 export function useDonationFormContext() {
   const store = useDonationFormStore()
-  const cartStore = useImpactCartStore()
   const configStore = useFormConfigStore()
 
   /**
@@ -23,40 +21,18 @@ export function useDonationFormContext() {
    * Used as `context` prop in FormRenderer for custom fields
    */
   const context = computed(() => {
-    // Compute needsShipping like in DonationFlowWizard
-    const needsShipping =
-      (store.activeTab !== 'multiple' &&
-        store.selectedProducts[store.activeTab as 'monthly' | 'yearly']?.isShippingRequired) ||
-      cartStore.multipleCart.some((item) => item.isShippingRequired)
-
-    // Compute donation amount (includes multiple cart total)
-    const donationAmount =
-      store.activeTab === 'multiple'
-        ? cartStore.multipleCartTotal
-        : store.donationAmounts[store.activeTab as 'once' | 'monthly' | 'yearly']
-
-    // Compute isTribute (any tribute type other than 'none')
-    const isTribute =
-      (store.tributeData.once?.type && store.tributeData.once.type !== 'none') ||
-      (store.tributeData.monthly?.type && store.tributeData.monthly.type !== 'none') ||
-      (store.tributeData.yearly?.type && store.tributeData.yearly.type !== 'none')
-
-    // Compute costCoveragePercentage (percentage of costs donor is covering)
-    const costCoveragePercentage =
-      store.coverCosts?.type === 'percentage' ? store.coverCosts.value : 0
-
     return {
       donationFrequency: store.activeTab,
       currency: store.selectedCurrency,
-      donationAmount,
-      needsShipping,
-      isTribute,
+      donationAmount: store.totalDonationAmount,
+      needsShipping: store.needsShipping,
+      isTribute: store.isTribute,
       'donorInfo.phone': store.formSections.donorInfo?.phone,
       'donorInfo.anonymous': store.formSections.donorInfo?.anonymous,
       'donorInfo.includeMessage': store.formSections.donorInfo?.includeMessage,
       // Step 3 fields
       giftAidConsent: store.formSections.giftAid?.giftAidConsent,
-      costCoveragePercentage,
+      costCoveragePercentage: store.costCoveragePercentage,
       joinMailingList: store.formSections.emailOptIn?.joinEmailList
     }
   })

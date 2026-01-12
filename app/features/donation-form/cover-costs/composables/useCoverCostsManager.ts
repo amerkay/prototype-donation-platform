@@ -1,6 +1,5 @@
 import { computed } from 'vue'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
-import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
 import { useCurrency } from '~/features/donation-form/composables/useCurrency'
 
 /**
@@ -22,16 +21,10 @@ type CoverCostsType = 'percentage' | 'amount' | null
 
 export function useCoverCostsManager() {
   const store = useDonationFormStore()
-  const cartStore = useImpactCartStore()
   const { convertPrice } = useCurrency('GBP')
 
-  // Current donation amount
-  const donationAmount = computed(() => {
-    if (store.activeTab === 'multiple') {
-      return cartStore.cartTotal('multiple')
-    }
-    return store.donationAmounts[store.activeTab as 'once' | 'monthly' | 'yearly'] || 0
-  })
+  // Current donation amount (use store getter)
+  const donationAmount = computed(() => store.totalDonationAmount)
 
   // Threshold in current currency
   const thresholdInCurrentCurrency = computed(() => {

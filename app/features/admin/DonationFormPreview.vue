@@ -15,7 +15,7 @@ const isDev = import.meta.dev
       <DonationFlowWizard :config="store.fullConfig" />
     </div>
     <pre v-if="isDev" class="bg-muted/50 rounded-xl p-4 text-xs overflow-auto max-h-96">{{
-      JSON.stringify(donationStore.$state, null, 2)
+      JSON.stringify(donationStore.completeState, null, 2)
     }}</pre>
   </div>
 </template>
