@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest'
 import type { ZodTypeAny } from 'zod'
 import {
   createTextFieldAdminConfig,
-  textFieldToFieldMeta,
-  getTextFieldDefaultValue,
-  type TextFieldConfig
+  textFieldToComposable,
+  getTextFieldDefaultValue
 } from '~/features/custom-fields/fields/text-field'
-import type { FieldGroupMeta, TextFieldMeta } from '~/features/form-builder/types'
+import type { TextFieldConfig } from '~/features/custom-fields/types'
+import type { FieldGroupDef, TextFieldDef } from '~/features/form-builder/types'
 
 describe('text-field factory', () => {
   describe('createTextFieldAdminConfig', () => {
@@ -14,7 +14,7 @@ describe('text-field factory', () => {
       const adminConfig = createTextFieldAdminConfig()
 
       expect(adminConfig).toHaveProperty('advancedSettings')
-      const advancedSettings = adminConfig.advancedSettings as FieldGroupMeta
+      const advancedSettings = adminConfig.advancedSettings as FieldGroupDef
       expect(advancedSettings.type).toBe('field-group')
       expect(advancedSettings.fields).toHaveProperty('placeholder')
       expect(advancedSettings.fields).toHaveProperty('maxLength')
@@ -24,7 +24,7 @@ describe('text-field factory', () => {
 
     it('includes validation rules for each field', () => {
       const adminConfig = createTextFieldAdminConfig()
-      const advancedSettings = adminConfig.advancedSettings as FieldGroupMeta
+      const advancedSettings = adminConfig.advancedSettings as FieldGroupDef
       const fields = advancedSettings.fields!
 
       expect(fields.placeholder?.rules).toBeDefined()
@@ -35,7 +35,7 @@ describe('text-field factory', () => {
 
     it('sets correct field types in admin config', () => {
       const adminConfig = createTextFieldAdminConfig()
-      const advancedSettings = adminConfig.advancedSettings as FieldGroupMeta
+      const advancedSettings = adminConfig.advancedSettings as FieldGroupDef
       const fields = advancedSettings.fields!
 
       expect(fields.placeholder?.type).toBe('text')
@@ -45,14 +45,14 @@ describe('text-field factory', () => {
     })
   })
 
-  describe('textFieldToFieldMeta', () => {
+  describe('textFieldToComposable', () => {
     it('converts basic config to FieldMeta', () => {
       const config: TextFieldConfig = {
         id: 'username',
         label: 'Username'
       }
 
-      const fieldMeta = textFieldToFieldMeta(config)
+      const fieldMeta = textFieldToComposable(config)
 
       expect(fieldMeta.type).toBe('text')
       expect(fieldMeta.label).toBe('Username')
@@ -67,7 +67,7 @@ describe('text-field factory', () => {
         optional: false
       }
 
-      const fieldMeta = textFieldToFieldMeta(config)
+      const fieldMeta = textFieldToComposable(config)
 
       expect(fieldMeta.optional).toBe(false)
       expect(fieldMeta.rules).toBeDefined()
@@ -88,7 +88,7 @@ describe('text-field factory', () => {
         optional: true
       }
 
-      const fieldMeta = textFieldToFieldMeta(config)
+      const fieldMeta = textFieldToComposable(config)
 
       expect(fieldMeta.optional).toBe(true)
 
@@ -105,7 +105,7 @@ describe('text-field factory', () => {
         placeholder: 'Acme Corp'
       }
 
-      const fieldMeta = textFieldToFieldMeta(config) as TextFieldMeta
+      const fieldMeta = textFieldToComposable(config) as TextFieldDef
 
       expect(fieldMeta.placeholder).toBe('Acme Corp')
     })
@@ -117,7 +117,7 @@ describe('text-field factory', () => {
         maxLength: 5
       }
 
-      const fieldMeta = textFieldToFieldMeta(config) as TextFieldMeta
+      const fieldMeta = textFieldToComposable(config) as TextFieldDef
 
       expect(fieldMeta.maxLength).toBe(5)
     })
@@ -129,7 +129,7 @@ describe('text-field factory', () => {
         defaultValue: 'USA'
       }
 
-      const fieldMeta = textFieldToFieldMeta(config)
+      const fieldMeta = textFieldToComposable(config)
 
       expect(fieldMeta.defaultValue).toBe('USA')
     })
@@ -146,7 +146,7 @@ describe('text-field factory', () => {
         }
       } as unknown as TextFieldConfig
 
-      const fieldMeta = textFieldToFieldMeta(config) as TextFieldMeta
+      const fieldMeta = textFieldToComposable(config) as TextFieldDef
 
       expect(fieldMeta.placeholder).toBe('Enter your address')
       expect(fieldMeta.maxLength).toBe(200)
@@ -166,7 +166,7 @@ describe('text-field factory', () => {
         }
       } as unknown as TextFieldConfig
 
-      const fieldMeta = textFieldToFieldMeta(config) as TextFieldMeta
+      const fieldMeta = textFieldToComposable(config) as TextFieldDef
 
       expect(fieldMeta.placeholder).toBe('Top level')
       expect(fieldMeta.optional).toBe(false)
@@ -178,7 +178,7 @@ describe('text-field factory', () => {
         label: 'Simple Field'
       }
 
-      const fieldMeta = textFieldToFieldMeta(config)
+      const fieldMeta = textFieldToComposable(config)
 
       expect(fieldMeta.type).toBe('text')
       expect(fieldMeta.label).toBe('Simple Field')
@@ -193,7 +193,7 @@ describe('text-field factory', () => {
         defaultValue: ''
       }
 
-      const fieldMeta = textFieldToFieldMeta(config) as TextFieldMeta
+      const fieldMeta = textFieldToComposable(config) as TextFieldDef
 
       expect(fieldMeta.placeholder).toBe('')
       expect(fieldMeta.defaultValue).toBe('')
@@ -206,7 +206,7 @@ describe('text-field factory', () => {
         optional: false
       }
 
-      const fieldMeta = textFieldToFieldMeta(config)
+      const fieldMeta = textFieldToComposable(config)
 
       expect(fieldMeta.label).toBe('Field with "quotes" & <tags>')
 
@@ -226,7 +226,7 @@ describe('text-field factory', () => {
         optional: false
       }
 
-      const fieldMeta = textFieldToFieldMeta(config)
+      const fieldMeta = textFieldToComposable(config)
 
       expect(fieldMeta.label).toBe('名前 (Name) 🎉')
 
@@ -323,7 +323,7 @@ describe('text-field factory', () => {
       }
 
       // 3. Convert to runtime FieldMeta
-      const fieldMeta = textFieldToFieldMeta(userConfig) as TextFieldMeta
+      const fieldMeta = textFieldToComposable(userConfig) as TextFieldDef
       expect(fieldMeta.type).toBe('text')
       expect(fieldMeta.label).toBe('Full Name')
       expect(fieldMeta.placeholder).toBe('John Doe')

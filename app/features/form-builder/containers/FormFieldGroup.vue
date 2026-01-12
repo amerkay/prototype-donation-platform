@@ -9,7 +9,7 @@ import {
   AccordionTrigger
 } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
-import type { FieldGroupMeta } from '~/features/form-builder/types'
+import type { FieldGroupDef } from '~/features/form-builder/types'
 import { resolveText } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import { useContainerFieldSetup } from '~/features/form-builder/composables/useContainerFieldSetup'
 import { useCombinedErrors } from '~/features/form-builder/composables/useCombinedErrors'
@@ -18,7 +18,7 @@ import { useScrollOnVisible } from '../composables/useScrollOnVisible'
 import { useAccordionGroup } from '~/features/form-builder/composables/useAccordionGroup'
 
 interface Props {
-  meta: FieldGroupMeta
+  meta: FieldGroupDef
   name: string
   class?: string
 }
@@ -32,6 +32,10 @@ let isOpen: ComputedRef<boolean>
 if (props.meta.collapsible) {
   const defaultOpen = computed(() => {
     const defaultOpenValue = props.meta.collapsibleDefaultOpen
+    // Handle ComputedRef
+    if (defaultOpenValue && typeof defaultOpenValue === 'object' && 'value' in defaultOpenValue) {
+      return unref(defaultOpenValue)
+    }
     if (typeof defaultOpenValue === 'function') {
       // Need scopedFormValues for dynamic defaultOpen - defer to after setup
       return defaultOpenValue
@@ -46,7 +50,7 @@ if (props.meta.collapsible) {
   accordionValue = hasAccordionGroup()
     ? registerAccordion(
         props.name,
-        typeof defaultOpen.value === 'function' ? false : defaultOpen.value
+        typeof defaultOpen.value === 'function' ? false : Boolean(defaultOpen.value)
       )
     : ref<string | undefined>(
         typeof defaultOpen.value === 'function'

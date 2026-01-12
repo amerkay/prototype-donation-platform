@@ -1,13 +1,23 @@
 import { describe, expect, it } from 'vitest'
+import { computed } from 'vue'
 import {
-  createCustomFieldsFormSection,
-  extractCustomFieldDefaults
+  useCustomFieldsForm,
+  extractCustomFieldDefaults,
+  hasAnyVisibleCustomFields
 } from '~/features/custom-fields/utils'
 import type { CustomFieldDefinition } from '~/features/custom-fields/types'
+import type { FormContext } from '~/features/form-builder/types'
+
+function createMockFormContext(values: Record<string, unknown> = {}): FormContext {
+  return {
+    values: computed(() => values),
+    form: computed(() => values)
+  }
+}
 
 describe('custom-fields utils', () => {
-  describe('createCustomFieldsFormSection', () => {
-    it('returns FormDef with customFields id and fields map', () => {
+  describe('useCustomFieldsForm', () => {
+    it('returns ComposableForm with customFields id and fields map', () => {
       const customFields: CustomFieldDefinition[] = [
         {
           type: 'text',
@@ -17,12 +27,13 @@ describe('custom-fields utils', () => {
         }
       ]
 
-      const formDef = createCustomFieldsFormSection(customFields)
+      const formDef = useCustomFieldsForm(customFields)
 
       expect(formDef.id).toBe('customFields')
-      expect(formDef.fields.full_name).toBeDefined()
-      expect(formDef.fields.full_name?.type).toBe('text')
-      expect(formDef.fields.full_name?.label).toBe('Full Name')
+      const fields = formDef.setup(createMockFormContext())
+      expect(fields.full_name).toBeDefined()
+      expect(fields.full_name?.type).toBe('text')
+      expect(fields.full_name?.label).toBe('Full Name')
     })
 
     it.each([
@@ -85,22 +96,20 @@ describe('custom-fields utils', () => {
         id: 'utm_source',
         label: 'UTM Source',
         defaultValue: 'newsletter',
-        expectedType: 'text'
+        expectedType: 'hidden'
       }
-    ])(
-      'transforms $type field to form-builder FieldMeta with type $expectedType',
-      (fieldConfig) => {
-        const { expectedType, ...customField } = fieldConfig
-        const customFields: CustomFieldDefinition[] = [customField as CustomFieldDefinition]
+    ])('transforms $type field to form-builder FieldDef with type $expectedType', (fieldConfig) => {
+      const { expectedType, ...customField } = fieldConfig
+      const customFields: CustomFieldDefinition[] = [customField as CustomFieldDefinition]
 
-        const formDef = createCustomFieldsFormSection(customFields)
-        const field = formDef.fields[customField.id]
+      const formDef = useCustomFieldsForm(customFields)
+      const fields = formDef.setup(createMockFormContext())
+      const field = fields[customField.id]
 
-        expect(field).toBeDefined()
-        expect(field?.type).toBe(expectedType)
-        expect(field?.label).toBe(customField.label)
-      }
-    )
+      expect(field).toBeDefined()
+      expect(field?.type).toBe(expectedType)
+      expect(field?.label).toBe(customField.label)
+    })
 
     it('transforms all fields when multiple provided', () => {
       const customFields: CustomFieldDefinition[] = [
@@ -109,18 +118,36 @@ describe('custom-fields utils', () => {
         { type: 'select', id: 'country', label: 'Country', options: ['USA', 'Canada'] }
       ]
 
-      const formDef = createCustomFieldsFormSection(customFields)
+      const formDef = useCustomFieldsForm(customFields)
+      const fields = formDef.setup(createMockFormContext())
 
-      expect(formDef.fields.name?.type).toBe('text')
-      expect(formDef.fields.age?.type).toBe('number')
-      expect(formDef.fields.country?.type).toBe('select')
+      expect(fields.name?.type).toBe('text')
+      expect(fields.age?.type).toBe('number')
+      expect(fields.country?.type).toBe('select')
     })
 
     it('returns empty fields map when no fields provided', () => {
-      const formDef = createCustomFieldsFormSection([])
+      const formDef = useCustomFieldsForm([])
+      const fields = formDef.setup(createMockFormContext())
 
       expect(formDef.id).toBe('customFields')
-      expect(formDef.fields).toEqual({})
+      expect(fields).toEqual({})
+    })
+
+    it('gracefully skips incomplete fields without type', () => {
+      const customFields: CustomFieldDefinition[] = [
+        { type: 'text', id: 'name', label: 'Name' },
+        { id: 'incomplete', label: 'Incomplete' } as CustomFieldDefinition, // Missing type
+        { type: 'number', id: 'age', label: 'Age' }
+      ]
+
+      const formDef = useCustomFieldsForm(customFields)
+      const fields = formDef.setup(createMockFormContext())
+
+      // Should only include complete fields
+      expect(fields.name?.type).toBe('text')
+      expect(fields.age?.type).toBe('number')
+      expect(fields.incomplete).toBeUndefined()
     })
   })
 
@@ -221,10 +248,27 @@ describe('custom-fields utils', () => {
 
       expect(defaults).toEqual({})
     })
+
+    it('gracefully skips incomplete fields without type', () => {
+      const customFields: CustomFieldDefinition[] = [
+        { type: 'text', id: 'name', label: 'Name', defaultValue: 'John' },
+        { id: 'incomplete', label: 'Incomplete' } as CustomFieldDefinition, // Missing type
+        { type: 'number', id: 'age', label: 'Age', defaultValue: 30 }
+      ]
+
+      const defaults = extractCustomFieldDefaults(customFields)
+
+      // Should only include complete fields
+      expect(defaults).toEqual({
+        name: 'John',
+        age: 30
+      })
+      expect(defaults.incomplete).toBeUndefined()
+    })
   })
 
-  describe('integration: createFormSection + extractDefaults', () => {
-    it('produces matching keys in FormDef fields and defaults object', () => {
+  describe('integration: useCustomFieldsForm + extractDefaults', () => {
+    it('produces matching keys in ComposableForm fields and defaults object', () => {
       const customFields: CustomFieldDefinition[] = [
         { type: 'text', id: 'username', label: 'Username', defaultValue: 'user123' },
         { type: 'slider', id: 'amount', label: 'Amount', min: 0, max: 100, defaultValue: 25 },
@@ -237,27 +281,292 @@ describe('custom-fields utils', () => {
         }
       ]
 
-      const formDef = createCustomFieldsFormSection(customFields)
+      const formDef = useCustomFieldsForm(customFields)
+      const fields = formDef.setup(createMockFormContext())
       const defaults = extractCustomFieldDefaults(customFields)
 
       // Both functions should create entries for the same field IDs
-      const formKeys = Object.keys(formDef.fields).sort()
+      const formKeys = Object.keys(fields).sort()
       const defaultKeys = Object.keys(defaults).sort()
       expect(formKeys).toEqual(defaultKeys)
     })
 
-    it('ensures FormDef defaultValue matches extracted default', () => {
+    it('ensures ComposableForm defaultValue matches extracted default', () => {
       const customFields: CustomFieldDefinition[] = [
         { type: 'text', id: 'username', label: 'Username', defaultValue: 'user123' },
         { type: 'slider', id: 'amount', label: 'Amount', min: 0, max: 100, defaultValue: 25 }
       ]
 
-      const formDef = createCustomFieldsFormSection(customFields)
+      const formDef = useCustomFieldsForm(customFields)
+      const fields = formDef.setup(createMockFormContext())
       const defaults = extractCustomFieldDefaults(customFields)
 
       // Verify that what we extract as a default matches what the form field declares
-      expect(formDef.fields.username?.defaultValue).toBe(defaults.username)
-      expect(formDef.fields.amount?.defaultValue).toBe(defaults.amount)
+      expect(fields.username?.defaultValue).toBe(defaults.username)
+      expect(fields.amount?.defaultValue).toBe(defaults.amount)
+    })
+  })
+
+  describe('hasAnyVisibleCustomFields', () => {
+    it('returns false when no fields provided', () => {
+      const hasVisible = hasAnyVisibleCustomFields([])
+      expect(hasVisible).toBe(false)
+    })
+
+    it('returns true when field has no visibility conditions', () => {
+      const customFields: CustomFieldDefinition[] = [
+        {
+          type: 'text',
+          id: 'name',
+          label: 'Name',
+          optional: false
+        }
+      ]
+
+      const hasVisible = hasAnyVisibleCustomFields(customFields, {})
+      expect(hasVisible).toBe(true)
+    })
+
+    it('returns true when field has visibility conditions disabled', () => {
+      const customFields: CustomFieldDefinition[] = [
+        {
+          type: 'text',
+          id: 'name',
+          label: 'Name',
+          optional: false,
+          enableVisibilityConditions: false,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [{ field: 'test', operator: 'isTrue' }],
+              match: 'all'
+            }
+          }
+        }
+      ]
+
+      const hasVisible = hasAnyVisibleCustomFields(customFields, {})
+      expect(hasVisible).toBe(true)
+    })
+
+    it('returns true when at least one field meets visibility conditions', () => {
+      const customFields: CustomFieldDefinition[] = [
+        {
+          type: 'text',
+          id: 'company_name',
+          label: 'Company Name',
+          optional: false,
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [{ field: 'companyMatch', operator: 'isTrue' }],
+              match: 'all'
+            }
+          }
+        }
+      ]
+
+      const hasVisible = hasAnyVisibleCustomFields(customFields, { companyMatch: true })
+      expect(hasVisible).toBe(true)
+    })
+
+    it('returns false when all fields fail visibility conditions', () => {
+      const customFields: CustomFieldDefinition[] = [
+        {
+          type: 'text',
+          id: 'company_name',
+          label: 'Company Name',
+          optional: false,
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [{ field: 'companyMatch', operator: 'isTrue' }],
+              match: 'all'
+            }
+          }
+        }
+      ]
+
+      const hasVisible = hasAnyVisibleCustomFields(customFields, { companyMatch: false })
+      expect(hasVisible).toBe(false)
+    })
+
+    it('returns true when any field in a list is visible', () => {
+      const customFields: CustomFieldDefinition[] = [
+        {
+          type: 'text',
+          id: 'company_name',
+          label: 'Company Name',
+          optional: false,
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [{ field: 'companyMatch', operator: 'isTrue' }],
+              match: 'all'
+            }
+          }
+        },
+        {
+          type: 'text',
+          id: 'personal_note',
+          label: 'Personal Note',
+          optional: false,
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [{ field: 'donorLevel', operator: 'in', value: ['gold'] }],
+              match: 'all'
+            }
+          }
+        }
+      ]
+
+      // First field hidden, second field visible
+      const hasVisible = hasAnyVisibleCustomFields(customFields, {
+        companyMatch: false,
+        donorLevel: 'gold'
+      })
+      expect(hasVisible).toBe(true)
+    })
+
+    it('supports multiple conditions with "all" match', () => {
+      const customFields: CustomFieldDefinition[] = [
+        {
+          type: 'text',
+          id: 'company_name',
+          label: 'Company Name',
+          optional: false,
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [
+                { field: 'companyMatch', operator: 'isTrue' },
+                { field: 'country', operator: 'in', value: ['US', 'CA'] }
+              ],
+              match: 'all'
+            }
+          }
+        }
+      ]
+
+      // Both conditions must be true
+      expect(hasAnyVisibleCustomFields(customFields, { companyMatch: true, country: 'US' })).toBe(
+        true
+      )
+      expect(hasAnyVisibleCustomFields(customFields, { companyMatch: true, country: 'FR' })).toBe(
+        false
+      )
+      expect(hasAnyVisibleCustomFields(customFields, { companyMatch: false, country: 'US' })).toBe(
+        false
+      )
+    })
+
+    it('supports multiple conditions with "any" match', () => {
+      const customFields: CustomFieldDefinition[] = [
+        {
+          type: 'text',
+          id: 'special_field',
+          label: 'Special Field',
+          optional: false,
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [
+                { field: 'companyMatch', operator: 'isTrue' },
+                { field: 'donorLevel', operator: 'in', value: ['gold'] }
+              ],
+              match: 'any'
+            }
+          }
+        }
+      ]
+
+      // Any condition can be true
+      expect(
+        hasAnyVisibleCustomFields(customFields, { companyMatch: true, donorLevel: 'bronze' })
+      ).toBe(true)
+      expect(
+        hasAnyVisibleCustomFields(customFields, { companyMatch: false, donorLevel: 'gold' })
+      ).toBe(true)
+      expect(
+        hasAnyVisibleCustomFields(customFields, { companyMatch: false, donorLevel: 'bronze' })
+      ).toBe(false)
+    })
+
+    it('supports field-to-field visibility conditions', () => {
+      const customFields: CustomFieldDefinition[] = [
+        {
+          type: 'text',
+          id: 'first_field',
+          label: 'First Field',
+          optional: false,
+          defaultValue: 'visible'
+        },
+        {
+          type: 'text',
+          id: 'second_field',
+          label: 'Second Field',
+          optional: false,
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [{ field: 'first_field', operator: 'notEmpty' }],
+              match: 'all'
+            }
+          }
+        }
+      ]
+
+      // Second field depends on first field having a value
+      const hasVisible = hasAnyVisibleCustomFields(customFields, {})
+      expect(hasVisible).toBe(true) // First field is always visible, and second depends on its default
+    })
+
+    it('returns false when no external context provided and all fields require it', () => {
+      const customFields: CustomFieldDefinition[] = [
+        {
+          type: 'text',
+          id: 'premium_field',
+          label: 'Premium Field',
+          optional: false,
+          enableVisibilityConditions: true,
+          visibilityConditions: {
+            visibleWhen: {
+              conditions: [{ field: 'isPremium', operator: 'isTrue' }],
+              match: 'all'
+            }
+          }
+        }
+      ]
+
+      const hasVisible = hasAnyVisibleCustomFields(customFields)
+      expect(hasVisible).toBe(false)
+    })
+
+    it('gracefully skips incomplete fields without type', () => {
+      const customFields: CustomFieldDefinition[] = [
+        { id: 'incomplete1', label: 'Incomplete 1' } as CustomFieldDefinition, // Missing type
+        { id: 'incomplete2', label: 'Incomplete 2' } as CustomFieldDefinition, // Missing type
+        {
+          type: 'text',
+          id: 'complete_field',
+          label: 'Complete Field',
+          optional: false
+        }
+      ]
+
+      const hasVisible = hasAnyVisibleCustomFields(customFields, {})
+      // Should find the complete field and return true
+      expect(hasVisible).toBe(true)
+    })
+
+    it('returns false when all fields are incomplete', () => {
+      const customFields: CustomFieldDefinition[] = [
+        { id: 'incomplete1', label: 'Incomplete 1' } as CustomFieldDefinition, // Missing type
+        { id: 'incomplete2', label: 'Incomplete 2' } as CustomFieldDefinition // Missing type
+      ]
+
+      const hasVisible = hasAnyVisibleCustomFields(customFields, {})
+      expect(hasVisible).toBe(false)
     })
   })
 })

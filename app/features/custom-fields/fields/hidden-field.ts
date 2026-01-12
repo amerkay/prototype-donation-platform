@@ -3,43 +3,35 @@
  * Invisible tracking field for analytics/UTM parameters
  */
 import * as z from 'zod'
-import type { FieldMeta } from '~/features/form-builder/types'
-
-/**
- * Hidden field configuration (admin-editable)
- */
-export interface HiddenFieldConfig {
-  id: string
-  label: string
-  defaultValue: string // Required for hidden fields
-}
+import type { HiddenFieldConfig } from '../types'
+import { textField, hiddenField as hiddenFieldComposable } from '~/features/form-builder/api'
+import type { FieldDef } from '~/features/form-builder/types'
 
 /**
  * Create admin configuration fields for hidden field
  */
-export function createHiddenFieldAdminConfig(): Record<string, FieldMeta> {
+export function createHiddenFieldAdminConfig(): Record<string, FieldDef> {
   return {
-    defaultValue: {
-      type: 'text',
+    defaultValue: textField('defaultValue', {
       label: 'Hidden Value',
       placeholder: 'Value to track (e.g., utm_source)',
       description: 'This value will be submitted with the form but not shown to users',
       rules: z.string().min(1, 'Hidden value is required')
-    }
+    })
   }
 }
 
 /**
- * Convert admin config to runtime field metadata
+ * Convert admin config to composable field definition
+ * Note: visibleWhen is NOT set here - it will be added by the conditions system
+ * if the admin configured conditions. This allows hidden fields to be conditionally included.
  */
-export function hiddenFieldToFieldMeta(config: HiddenFieldConfig): FieldMeta {
-  return {
-    type: 'text' as const,
+export function hiddenFieldToComposable(config: HiddenFieldConfig): FieldDef {
+  return hiddenFieldComposable(config.id, {
     label: config.label,
     defaultValue: config.defaultValue,
-    visibleWhen: () => false,
     rules: z.string().optional()
-  }
+  })
 }
 
 /**
@@ -54,6 +46,6 @@ export function getHiddenFieldDefaultValue(config: HiddenFieldConfig): string {
  */
 export const hiddenField = {
   createAdminConfig: createHiddenFieldAdminConfig,
-  toFieldMeta: hiddenFieldToFieldMeta,
+  toComposable: hiddenFieldToComposable,
   getDefaultValue: getHiddenFieldDefaultValue
 }

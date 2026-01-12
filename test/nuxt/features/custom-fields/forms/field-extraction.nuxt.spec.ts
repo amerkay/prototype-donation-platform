@@ -40,7 +40,7 @@ describe('field-extraction', () => {
       expect(check?.type).toBe('boolean')
 
       const select = result.find((f) => f.key === 'select1')
-      expect(select?.type).toBe('string')
+      expect(select?.type).toBe('array') // Choice fields use 'array' type for in/notIn operators
       expect(select?.options).toBeDefined()
     })
 
@@ -57,9 +57,10 @@ describe('field-extraction', () => {
       const result = extractAvailableFields(input)
       const field = result[0]
 
+      // Values should be slugified to match runtime field behavior
       expect(field?.options).toEqual([
-        { value: 'Red', label: 'Red' },
-        { value: 'Blue', label: 'Blue' }
+        { value: 'red', label: 'Red' },
+        { value: 'blue', label: 'Blue' }
       ])
     })
 
@@ -153,10 +154,11 @@ describe('field-extraction', () => {
 
       const result = extractAvailableFields(input)
 
-      expect(result[0]?.type).toBe('string')
+      expect(result[0]?.type).toBe('array') // Choice fields use 'array' type for in/notIn operators
+      // Values should be slugified to match runtime field behavior
       expect(result[0]?.options).toEqual([
-        { value: 'A', label: 'A' },
-        { value: 'B', label: 'B' }
+        { value: 'a', label: 'A' },
+        { value: 'b', label: 'B' }
       ])
     })
   })

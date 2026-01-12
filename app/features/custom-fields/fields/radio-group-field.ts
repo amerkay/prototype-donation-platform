@@ -3,47 +3,40 @@
  * Single-select options with radio buttons
  */
 import * as z from 'zod'
-import type { FieldMeta } from '~/features/form-builder/types'
-import { createBaseFieldMeta, createOptionalSchema, slugify, extractFieldValue } from './field-base'
-
-/**
- * Radio group field configuration (admin-editable)
- */
-export interface RadioGroupFieldConfig {
-  id: string
-  label: string
-  optional?: boolean
-  defaultValue?: string
-  options: string[] // Array of option labels (values auto-generated)
-  orientation?: 'vertical' | 'horizontal'
-}
+import type { RadioGroupFieldConfig } from '../types'
+import { slugify, extractFieldValue } from './field-base'
+import {
+  fieldGroup,
+  textField,
+  toggleField,
+  selectField,
+  radioGroupField as radioGroupFieldConstructor,
+  arrayField
+} from '~/features/form-builder/api'
+import type { FieldDef } from '~/features/form-builder/types'
 
 /**
  * Create admin configuration fields for radio group field
  */
-export function createRadioGroupFieldAdminConfig(): Record<string, FieldMeta> {
+export function createRadioGroupFieldAdminConfig(): Record<string, FieldDef> {
   return {
-    options: {
-      type: 'array',
+    options: arrayField('options', {
       label: 'Options',
       sortable: true,
       description: 'Add options for the radio group',
       addButtonText: 'Add Option',
-      itemField: {
-        type: 'text',
+      itemField: textField('', {
         placeholder: 'Enter option text',
         rules: z.string().min(1, 'Option text is required')
-      },
+      }),
       rules: z.array(z.string().min(1)).min(2, 'At least two options are required')
-    },
-    advancedSettings: {
-      type: 'field-group',
+    }),
+    advancedSettings: fieldGroup('advancedSettings', {
       label: 'Advanced Settings',
       collapsible: true,
       collapsibleDefaultOpen: false,
       fields: {
-        orientation: {
-          type: 'radio-group',
+        orientation: radioGroupFieldConstructor('orientation', {
           label: 'Layout',
           options: [
             { value: 'vertical', label: 'Vertical' },
@@ -51,42 +44,40 @@ export function createRadioGroupFieldAdminConfig(): Record<string, FieldMeta> {
           ],
           defaultValue: 'vertical',
           rules: z.enum(['vertical', 'horizontal']).optional()
-        },
-        optional: {
-          type: 'toggle',
+        }),
+        optional: toggleField('optional', {
           label: 'Optional',
           description: 'Allow users to skip this field',
           defaultValue: true,
           rules: z.boolean().optional()
-        },
-        defaultValue: {
-          type: 'select',
+        }),
+        defaultValue: selectField('defaultValue', {
           label: 'Default Value',
           description: 'Select which option should be pre-selected',
           placeholder: 'No default selected',
           optional: true,
-          options: ({ parent }) => {
+          options: ({ parent }: { parent?: Record<string, unknown> }) => {
             const optionLabels = (parent?.options as string[]) ?? []
             return optionLabels.map((label) => ({
               value: slugify(label),
               label: String(label)
             }))
           },
-          visibleWhen: ({ parent }) => {
+          visibleWhen: ({ parent }: { parent?: Record<string, unknown> }) => {
             const optionLabels = (parent?.options as string[]) ?? []
             return optionLabels.length >= 2
           },
           rules: z.string().optional()
-        }
+        })
       }
-    }
+    })
   }
 }
 
 /**
- * Convert admin config to runtime field metadata
+ * Convert admin config to composable field definition
  */
-export function radioGroupFieldToFieldMeta(config: RadioGroupFieldConfig): FieldMeta {
+export function radioGroupFieldToComposable(config: RadioGroupFieldConfig): FieldDef {
   const configObj = config as unknown as Record<string, unknown>
   const optionLabels = config.options || []
   const orientation = extractFieldValue<'vertical' | 'horizontal'>(
@@ -103,16 +94,13 @@ export function radioGroupFieldToFieldMeta(config: RadioGroupFieldConfig): Field
     label: String(label)
   }))
 
-  return {
-    ...createBaseFieldMeta({ ...config, optional, defaultValue }),
-    type: 'radio-group' as const,
+  return radioGroupFieldConstructor(config.id, {
+    label: config.label,
     options,
     orientation,
     defaultValue,
-    rules: optional
-      ? createOptionalSchema(z.string(), true)
-      : z.string().min(1, `${config.label} is required`)
-  }
+    rules: optional ? z.string().optional() : z.string().min(1, `${config.label} is required`)
+  })
 }
 
 /**
@@ -127,6 +115,6 @@ export function getRadioGroupFieldDefaultValue(config: RadioGroupFieldConfig): s
  */
 export const radioGroupField = {
   createAdminConfig: createRadioGroupFieldAdminConfig,
-  toFieldMeta: radioGroupFieldToFieldMeta,
+  toComposable: radioGroupFieldToComposable,
   getDefaultValue: getRadioGroupFieldDefaultValue
 }

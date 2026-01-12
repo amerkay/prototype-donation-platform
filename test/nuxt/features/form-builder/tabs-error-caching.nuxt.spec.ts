@@ -2,7 +2,14 @@ import { describe, it, expect } from 'vitest'
 import { nextTick } from 'vue'
 import * as z from 'zod'
 import FormField from '~/features/form-builder/FormField.vue'
-import type { FieldMeta, FieldGroupMeta } from '~/features/form-builder/types'
+import {
+  fieldGroup,
+  tabsField,
+  numberField,
+  arrayField,
+  textField,
+  toggleField
+} from '~/features/form-builder/api'
 import { mountFormField } from './test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 
@@ -24,14 +31,12 @@ describe('FormFieldTabs - Error Caching with unmount-on-hide', () => {
     const { wrapper } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('pricing', {
           label: 'Pricing',
           collapsible: true,
           collapsibleDefaultOpen: false,
           fields: {
-            frequencies: {
-              type: 'tabs',
+            frequencies: tabsField('frequencies', {
               label: 'Frequencies',
               defaultValue: 'once',
               tabs: [
@@ -39,76 +44,68 @@ describe('FormFieldTabs - Error Caching with unmount-on-hide', () => {
                   value: 'once',
                   label: 'Once',
                   fields: {
-                    customAmount: {
-                      type: 'field-group',
+                    customAmount: fieldGroup('customAmount', {
                       label: 'Custom Amount',
                       collapsible: false,
                       fields: {
-                        min: {
-                          type: 'number',
+                        min: numberField('min', {
                           label: 'Min',
                           defaultValue: 5,
                           rules: z.coerce.number().min(1)
-                        }
+                        })
                       }
-                    } as FieldGroupMeta,
-                    presetAmounts: {
-                      type: 'array',
+                    }),
+                    presetAmounts: arrayField('presetAmounts', {
                       label: 'Preset Amounts',
-                      itemField: {
-                        type: 'number',
-                        rules: ({ values }) => {
+                      itemField: numberField('', {
+                        rules: (ctx) => {
                           const minAmount = (
-                            values.customAmount as Record<string, unknown> | undefined
+                            ctx.values.customAmount as Record<string, unknown> | undefined
                           )?.min as number | undefined
                           const effectiveMin = minAmount ?? 1
                           return z.coerce
                             .number()
                             .min(effectiveMin, `Must be at least ${effectiveMin}`)
                         }
-                      }
-                    }
+                      })
+                    })
                   }
                 },
                 {
                   value: 'monthly',
                   label: 'Monthly',
                   fields: {
-                    customAmount: {
-                      type: 'field-group',
+                    customAmount: fieldGroup('customAmount', {
                       label: 'Custom Amount',
                       collapsible: false,
                       fields: {
-                        min: {
-                          type: 'number',
+                        min: numberField('min', {
                           label: 'Min',
                           defaultValue: 5,
                           rules: z.coerce.number().min(1)
-                        }
+                        })
                       }
-                    } as FieldGroupMeta,
-                    presetAmounts: {
-                      type: 'array',
+                    }),
+                    presetAmounts: arrayField('presetAmounts', {
                       label: 'Preset Amounts',
-                      itemField: {
-                        type: 'number',
-                        rules: ({ values }) => {
+                      itemField: numberField('', {
+                        rules: (ctx) => {
                           const minAmount = (
-                            values.customAmount as Record<string, unknown> | undefined
+                            ctx.values.customAmount as Record<string, unknown> | undefined
                           )?.min as number | undefined
                           const effectiveMin = minAmount ?? 1
                           return z.coerce
                             .number()
                             .min(effectiveMin, `Must be at least ${effectiveMin}`)
                         }
-                      }
-                    }
+                      })
+                    })
                   }
                 }
               ]
-            }
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'pricing'
       },
@@ -172,14 +169,12 @@ describe('FormFieldTabs - Error Caching with unmount-on-hide', () => {
     const { wrapper, validate } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('pricing', {
           label: 'Pricing',
           collapsible: true,
           collapsibleDefaultOpen: true,
           fields: {
-            frequencies: {
-              type: 'tabs',
+            frequencies: tabsField('frequencies', {
               label: 'Frequencies',
               defaultValue: 'once',
               tabs: [
@@ -187,55 +182,49 @@ describe('FormFieldTabs - Error Caching with unmount-on-hide', () => {
                   value: 'once',
                   label: 'Once',
                   fields: {
-                    customAmount: {
-                      type: 'field-group',
+                    customAmount: fieldGroup('customAmount', {
                       label: 'Custom Amount',
                       collapsible: false,
                       fields: {
-                        min: {
-                          type: 'number',
+                        min: numberField('min', {
                           label: 'Min',
                           defaultValue: 5,
                           rules: z.number().min(1)
-                        }
+                        })
                       }
-                    } as FieldGroupMeta,
-                    presetAmounts: {
-                      type: 'array',
+                    }),
+                    presetAmounts: arrayField('presetAmounts', {
                       label: 'Preset Amounts',
-                      itemField: {
-                        type: 'number',
-                        rules: ({ values }) => {
+                      itemField: numberField('', {
+                        rules: (ctx) => {
                           const minAmount = (
-                            values.customAmount as Record<string, unknown> | undefined
+                            ctx.values.customAmount as Record<string, unknown> | undefined
                           )?.min as number | undefined
                           const effectiveMin = minAmount ?? 1
                           return z.coerce
                             .number()
                             .min(effectiveMin, `Must be at least ${effectiveMin}`)
                         }
-                      }
-                    }
+                      })
+                    })
                   }
                 },
                 {
                   value: 'monthly',
                   label: 'Monthly',
                   fields: {
-                    presetAmounts: {
-                      type: 'array',
+                    presetAmounts: arrayField('presetAmounts', {
                       label: 'Preset Amounts',
-                      itemField: {
-                        type: 'number',
+                      itemField: numberField('', {
                         rules: z.coerce.number().min(1)
-                      }
-                    }
+                      })
+                    })
                   }
                 }
               ]
-            }
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'pricing'
       },
@@ -293,20 +282,17 @@ describe('FormFieldTabs - Error Caching with unmount-on-hide', () => {
     const { wrapper, validate } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('settings', {
           label: 'Settings',
           collapsible: true,
           collapsibleDefaultOpen: true,
           fields: {
-            advanced: {
-              type: 'toggle',
+            advanced: toggleField('advanced', {
               label: 'Advanced',
               defaultValue: false,
               rules: z.boolean()
-            },
-            tabs: {
-              type: 'tabs',
+            }),
+            tabs: tabsField('tabs', {
               label: 'Advanced Tabs',
               defaultValue: 'a',
               tabs: [
@@ -314,20 +300,19 @@ describe('FormFieldTabs - Error Caching with unmount-on-hide', () => {
                   value: 'a',
                   label: 'Tab A',
                   fields: {
-                    hiddenSetting: {
-                      type: 'text',
+                    hiddenSetting: textField('hiddenSetting', {
                       label: 'Hidden Setting',
                       placeholder: 'Hidden',
                       defaultValue: '',
                       rules: z.string().min(1, 'Required'),
                       visibleWhen: (ctx) => ctx.values.advanced === true
-                    }
+                    })
                   }
                 }
               ]
-            }
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'settings'
       },

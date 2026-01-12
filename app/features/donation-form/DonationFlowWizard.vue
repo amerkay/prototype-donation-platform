@@ -5,6 +5,7 @@ import OrderSummary from '~/features/donation-form/components/OrderSummary.vue'
 import DonationFormStep1 from '~/features/donation-form/steps/step1/DonationFormStep1.vue'
 import DonationFormStep2 from '~/features/donation-form/steps/step2/DonationFormStep2.vue'
 import DonationFormStep3 from '~/features/donation-form/steps/step3/DonationFormStep3.vue'
+import DonationCustomFields from '~/features/donation-form/custom-fields/DonationCustomFields.vue'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
 import type { FullFormConfig } from '~/stores/formConfig'
@@ -92,6 +93,9 @@ const handleBack = () => {
 
 <template>
   <div ref="wizardContainer" class="relative w-full">
+    <!-- Hidden custom fields: Always mounted for visibility condition evaluation -->
+    <DonationCustomFields tab="hidden" :show-separator="false" />
+
     <!-- Progress Bar -->
     <ProgressBar :current-step="store.currentStep" :total-steps="TOTAL_STEPS" />
 

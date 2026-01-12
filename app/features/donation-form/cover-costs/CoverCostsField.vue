@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
+import { defineForm } from '~/features/form-builder/api'
 import { createCoverCostsField } from './forms/cover-costs-field'
 import { useCoverCostsManager } from './composables/useCoverCostsManager'
 import type { CoverCostsSettings } from './types'
@@ -23,13 +24,14 @@ const {
 } = useCoverCostsManager()
 
 // Single form section - no switching needed
-const formSection = computed(() => ({
-  id: 'coverCosts',
-  fields: createCoverCostsField({
-    heading: props.config.settings.heading,
-    description: props.config.settings.description
-  })
-}))
+const formSection = computed(() =>
+  defineForm('coverCosts', () =>
+    createCoverCostsField({
+      heading: props.config.settings.heading,
+      description: props.config.settings.description
+    })
+  )
+)
 
 // Form data with context
 const formData = computed({

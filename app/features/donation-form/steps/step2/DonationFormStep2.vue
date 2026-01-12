@@ -3,8 +3,8 @@ import { ref, computed } from 'vue'
 import NextButton from '~/features/donation-form/components/NextButton.vue'
 import ShippingNotice from '~/features/donation-form/shipping-notice/ShippingNotice.vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
-import { donorInfoFormSection } from '../../donor-info/forms/donor-info-form'
-import { addressFormSection } from '../../forms/address-form'
+import { useDonorInfoFormSection } from '../../donor-info/forms/donor-info-form'
+import { useAddressForm } from '../../forms/address-form'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/impact-cart/stores/impactCart'
 import DonationCustomFields from '~/features/donation-form/custom-fields/DonationCustomFields.vue'
@@ -56,7 +56,7 @@ const shippingFormRef = ref<InstanceType<typeof FormRenderer>>()
 const customFieldsRef = ref<InstanceType<typeof DonationCustomFields>>()
 const formContainerRef = ref<HTMLElement | null>(null)
 
-addressFormSection.title = 'Shipping Address'
+// Note: Address form title is set via the composable's ctx.title
 
 // Compute form refs to validate (conditionally include shipping and custom fields)
 const formRefsToValidate = computed(() => {
@@ -84,7 +84,7 @@ const handleNext = () => {
       ref="donorFormRef"
       v-model="donorInfoSection"
       :validate-on-mount="false"
-      :section="donorInfoFormSection"
+      :section="useDonorInfoFormSection"
       @submit="handleNext"
     />
     <!-- </div> -->
@@ -97,14 +97,14 @@ const handleNext = () => {
         ref="shippingFormRef"
         v-model="shippingSection"
         :validate-on-mount="false"
-        :section="addressFormSection"
+        :section="useAddressForm"
         @submit="handleNext"
       />
       <!-- </div> -->
     </template>
 
     <!-- Custom Fields (dynamically generated from admin config) -->
-    <DonationCustomFields ref="customFieldsRef" step="step2" @submit="handleNext" />
+    <DonationCustomFields ref="customFieldsRef" tab="step2" @submit="handleNext" />
 
     <!-- Next Button -->
     <NextButton

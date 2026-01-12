@@ -2,8 +2,7 @@
  * Base utilities for field factories
  * Shared helpers to keep field factories DRY
  */
-import type { z } from 'zod'
-import type { FieldMeta } from '~/features/form-builder/types'
+import type { ConditionGroup } from '~/features/form-builder/conditions'
 
 /**
  * Base configuration shared by all custom fields
@@ -13,29 +12,14 @@ export interface BaseFieldConfig {
   label: string
   optional?: boolean
   defaultValue?: unknown
-}
-
-/**
- * Create base field metadata shared by all field types
- * Reduces boilerplate in individual field factories
- */
-export function createBaseFieldMeta(config: BaseFieldConfig): Partial<FieldMeta> {
-  return {
-    label: config.label,
-    optional: config.optional ?? true,
-    defaultValue: config.defaultValue
+  /** Nested advanced settings from admin form (contains field-specific config) */
+  advancedSettings?: Record<string, unknown>
+  /** Whether visibility conditions are enabled for this field */
+  enableVisibilityConditions?: boolean
+  /** Visibility condition configuration */
+  visibilityConditions?: {
+    visibleWhen?: ConditionGroup
   }
-}
-
-/**
- * Create Zod schema with optional handling
- * Applies optional() wrapper if field is optional
- */
-export function createOptionalSchema<T extends z.ZodTypeAny>(
-  schema: T,
-  optional: boolean = true
-): z.ZodOptional<T> | T {
-  return optional ? schema.optional() : schema
 }
 
 /**
@@ -67,9 +51,9 @@ export function slugify(text: string, maxLength?: number): string {
  * Generate field ID from label (for auto-ID generation in admin)
  * Creates URL-friendly slugs
  */
-export function generateFieldId(type: string, label: string): string {
-  return `${type}_${slugify(label, 50)}`
-}
+// export function generateFieldId(type: string, label: string): string {
+//   return `${type}_${slugify(label, 50)}`
+// }
 
 /**
  * Extract advancedSettings object from field config
@@ -105,30 +89,4 @@ export function extractFieldValue<T>(
 ): T | undefined {
   const advancedSettings = getAdvancedSettings(config)
   return (config[key] as T | undefined) ?? (advancedSettings[key] as T | undefined) ?? defaultValue
-}
-
-/**
- * Admin config field factory - creates the field-group definition
- * for configuring this field type in the admin panel
- *
- * Each field factory exports this to define its admin UI
- */
-export interface AdminConfigFactory<TConfig = Record<string, unknown>> {
-  /**
-   * Field-group definition for admin configuration panel
-   * Shown when this field type is selected in the array
-   */
-  createAdminConfig: () => Record<string, FieldMeta>
-
-  /**
-   * Convert admin config to runtime field metadata
-   * Used by utils.ts to generate actual form fields
-   */
-  toFieldMeta: (config: TConfig) => FieldMeta
-
-  /**
-   * Extract default value from admin config
-   * Used to populate form with initial values
-   */
-  getDefaultValue: (config: TConfig) => unknown
 }

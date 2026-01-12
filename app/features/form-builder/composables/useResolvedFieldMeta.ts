@@ -1,13 +1,18 @@
-import { computed } from 'vue'
-import type { BaseFieldMeta, FieldContext } from '~/features/form-builder/types'
+import { computed, unref } from 'vue'
+import type { ComputedRef } from 'vue'
+import type { FieldContext } from '~/features/form-builder/types'
 import { useFormBuilderContext } from './useFormBuilderContext'
 
-type ResolvableText = string | ((ctx: FieldContext) => string)
+export type ResolvableText = string | ((ctx: FieldContext) => string) | ComputedRef<string>
 
-type WithResolvableText = Pick<BaseFieldMeta, 'label' | 'description' | 'placeholder'>
+export type WithResolvableText = {
+  label?: ResolvableText
+  description?: ResolvableText
+  placeholder?: ResolvableText
+}
 
 /**
- * Utility to resolve text that can be static string or dynamic function
+ * Utility to resolve text that can be static string or dynamic function or ComputedRef
  * Exported for reuse in other components (e.g., tab labels, badges)
  */
 export function resolveText(
@@ -15,6 +20,10 @@ export function resolveText(
   ctx: FieldContext
 ): string | undefined {
   if (!text) return undefined
+  if (typeof text === 'object' && 'value' in text) {
+    // It's a ComputedRef
+    return unref(text)
+  }
   return typeof text === 'function' ? text(ctx) : text
 }
 

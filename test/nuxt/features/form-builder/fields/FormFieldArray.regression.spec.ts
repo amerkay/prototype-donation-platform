@@ -20,12 +20,9 @@ describe('FormFieldArray - Nested Arrays with fieldPrefix', () => {
       {
         meta: {
           type: 'array',
+          name: '',
           label: 'Nested Array',
-          itemField: {
-            type: 'text',
-            label: 'Item',
-            rules: z.string()
-          }
+          itemField: { type: 'text', name: '', label: 'Item', rules: z.string() }
         },
         modelValue: [],
         errors: [],
@@ -83,24 +80,28 @@ describe('FormFieldArray - Nested Array Reordering Bug', () => {
         sortable: true,
         itemField: {
           type: 'field-group',
+          name: '',
           label: 'Field Config',
           collapsible: false, // Keep it expanded for easier testing
           fields: {
             fieldId: {
               type: 'text',
+              name: '',
               label: 'Field ID',
               rules: z.string().min(1)
             },
             conditions: {
               type: 'array',
+              name: '',
               label: 'Visibility Conditions',
               itemField: {
                 type: 'field-group',
+                name: '',
                 collapsible: false,
                 fields: {
-                  field: { type: 'text', label: 'Field' },
-                  operator: { type: 'text', label: 'Operator' },
-                  value: { type: 'text', label: 'Value' }
+                  field: { type: 'text', name: '', label: 'Field' },
+                  operator: { type: 'text', name: '', label: 'Operator' },
+                  value: { type: 'text', name: '', label: 'Value' }
                 }
               }
             }
@@ -235,14 +236,17 @@ describe('FormFieldArray - Advanced Field Interactions (Continued)', () => {
       {
         meta: {
           type: 'array',
+          name: '',
           label: 'Nested Array',
           itemField: {
             type: 'field-group',
+            name: '',
             label: 'Container',
             collapsible: false,
             fields: {
               nestedValue: {
                 type: 'text',
+                name: '',
                 label: 'Nested Value',
                 rules: z.string()
               }
@@ -307,17 +311,20 @@ describe('FormFieldArray - Advanced Field Interactions (Continued)', () => {
         sortable: false,
         itemField: {
           type: 'field-group',
+          name: '',
           label: 'Item Settings',
           collapsible: true,
           collapsibleDefaultOpen: false,
           fields: {
             name: {
               type: 'text',
+              name: '',
               label: 'Name',
               rules: z.string().min(1)
             },
             description: {
               type: 'textarea',
+              name: '',
               label: 'Description',
               optional: true
             }

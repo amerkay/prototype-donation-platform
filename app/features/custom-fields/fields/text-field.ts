@@ -3,89 +3,77 @@
  * Single-line text input with optional validation
  */
 import * as z from 'zod'
-import type { FieldMeta } from '~/features/form-builder/types'
-import { createBaseFieldMeta, createOptionalSchema, extractFieldValue } from './field-base'
-
-/**
- * Text field configuration (admin-editable)
- */
-export interface TextFieldConfig {
-  id: string
-  label: string
-  optional?: boolean
-  defaultValue?: string
-  placeholder?: string
-  maxLength?: number
-}
+import type { TextFieldConfig } from '../types'
+import { extractFieldValue } from './field-base'
+import {
+  fieldGroup,
+  textField as textFieldConstructor,
+  numberField,
+  toggleField
+} from '~/features/form-builder/api'
+import type { FieldDef } from '~/features/form-builder/types'
 
 /**
  * Create admin configuration fields for text field
- * Returns field-group definition for admin panel
+ * Returns composable field definitions for admin panel
  */
-export function createTextFieldAdminConfig(): Record<string, FieldMeta> {
+export function createTextFieldAdminConfig(): Record<string, FieldDef> {
   return {
-    advancedSettings: {
-      type: 'field-group',
+    advancedSettings: fieldGroup('advancedSettings', {
       label: 'Advanced Settings',
       collapsible: true,
       collapsibleDefaultOpen: false,
       fields: {
-        placeholder: {
-          type: 'text',
+        placeholder: textFieldConstructor('placeholder', {
           label: 'Placeholder',
           placeholder: 'Enter placeholder text...',
           optional: true,
           rules: z.string().optional()
-        },
-        maxLength: {
-          type: 'number',
+        }),
+        maxLength: numberField('maxLength', {
           label: 'Maximum Length',
           placeholder: '100',
           optional: true,
           min: 1,
           max: 10000,
           rules: z.number().min(1).max(10000).optional()
-        },
-        optional: {
-          type: 'toggle',
+        }),
+        optional: toggleField('optional', {
           label: 'Optional',
           description: 'Allow users to skip this field',
           defaultValue: true,
           rules: z.boolean().optional()
-        },
-        defaultValue: {
-          type: 'text',
+        }),
+        defaultValue: textFieldConstructor('defaultValue', {
           label: 'Default Value',
           placeholder: 'Optional default text',
           optional: true,
           rules: z.string().optional()
-        }
+        })
       }
-    }
+    })
   }
 }
 
 /**
- * Convert admin config to runtime field metadata
- * Used when rendering the actual form
+ * Convert admin config to composable field definition
+ * Used when rendering the actual form from custom field config
  */
-export function textFieldToFieldMeta(config: TextFieldConfig): FieldMeta {
+export function textFieldToComposable(config: TextFieldConfig): FieldDef {
   const configObj = config as unknown as Record<string, unknown>
   const placeholder = extractFieldValue<string>(configObj, 'placeholder')
   const maxLength = extractFieldValue<number>(configObj, 'maxLength')
   const optional = extractFieldValue<boolean>(configObj, 'optional', true)
   const defaultValue = extractFieldValue<string>(configObj, 'defaultValue', '')
 
-  return {
-    ...createBaseFieldMeta({ ...config, optional, defaultValue }),
-    type: 'text' as const,
+  return textFieldConstructor(config.id, {
+    label: config.label,
     placeholder,
     maxLength,
     defaultValue,
-    rules: optional
-      ? createOptionalSchema(z.string(), true)
-      : z.string().min(1, `${config.label} is required`)
-  }
+    optional,
+    rules: optional ? z.string().optional() : z.string().min(1, `${config.label} is required`)
+  })
 }
 
 /**
@@ -100,6 +88,6 @@ export function getTextFieldDefaultValue(config: TextFieldConfig): string {
  */
 export const textField = {
   createAdminConfig: createTextFieldAdminConfig,
-  toFieldMeta: textFieldToFieldMeta,
+  toComposable: textFieldToComposable,
   getDefaultValue: getTextFieldDefaultValue
 }

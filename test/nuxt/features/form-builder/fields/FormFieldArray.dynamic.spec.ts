@@ -125,6 +125,7 @@ describe('FormFieldArray - Tabs Support', () => {
     const { wrapper, formValues } = await mountFormFieldArray({
       itemField: {
         type: 'tabs',
+        name: '',
         tabs: [
           {
             value: 'basic',
@@ -132,12 +133,14 @@ describe('FormFieldArray - Tabs Support', () => {
             fields: {
               name: {
                 type: 'text',
+                name: '',
                 label: 'Name',
                 defaultValue: 'Default Name',
                 rules: z.string()
               },
               email: {
                 type: 'text',
+                name: '',
                 label: 'Email',
                 defaultValue: 'default@example.com',
                 rules: z.string().email()
@@ -150,12 +153,14 @@ describe('FormFieldArray - Tabs Support', () => {
             fields: {
               priority: {
                 type: 'number',
+                name: '',
                 label: 'Priority',
                 defaultValue: 10,
                 rules: z.number()
               },
               enabled: {
                 type: 'toggle',
+                name: '',
                 label: 'Enabled',
                 defaultValue: true,
                 rules: z.boolean()
@@ -202,6 +207,7 @@ describe('FormFieldArray - Tabs Support', () => {
     const { wrapper, formValues } = await mountFormFieldArray({
       itemField: {
         type: 'tabs',
+        name: '',
         tabs: [
           {
             value: 'tab1',
@@ -209,6 +215,7 @@ describe('FormFieldArray - Tabs Support', () => {
             fields: {
               field1: {
                 type: 'text',
+                name: '',
                 label: 'Field 1',
                 rules: z.string().optional()
               }
@@ -240,22 +247,26 @@ describe('FormFieldArray - Advanced Field Interactions', () => {
 
         return {
           type: 'field-group',
+          name: '',
           label: 'Item',
           collapsible: false,
           fields: {
             showAdvanced: {
               type: 'toggle',
+              name: '',
               label: 'Show Advanced Options',
               defaultValue: false,
               rules: z.boolean()
             },
             name: {
               type: 'text',
+              name: '',
               label: 'Name',
               rules: z.string().min(1, 'Name is required')
             },
             advancedOption: {
               type: 'text',
+              name: '',
               label: 'Advanced Option',
               placeholder: 'Only visible when toggle is on',
               visibleWhen: () => showAdvanced === true,
@@ -300,11 +311,13 @@ describe('FormFieldArray - Advanced Field Interactions', () => {
 
         return {
           type: 'field-group',
+          name: '',
           label: 'Field Configuration',
           collapsible: false,
           fields: {
             type: {
               type: 'select',
+              name: '',
               label: 'Field Type',
               placeholder: 'Choose type...',
               options: [
@@ -316,6 +329,7 @@ describe('FormFieldArray - Advanced Field Interactions', () => {
             },
             label: {
               type: 'text',
+              name: '',
               label: 'Label',
               visibleWhen: () => hasType,
               rules: z.string().min(1)
@@ -360,11 +374,13 @@ describe('FormFieldArray - Advanced Field Interactions', () => {
 
         return {
           type: 'field-group',
+          name: '',
           label: hasMode ? `${itemMode} Configuration` : 'Configure Item',
           collapsible: false,
           fields: {
             itemMode: {
               type: 'select',
+              name: '',
               label: 'Mode',
               placeholder: 'Select mode...',
               options: [
@@ -375,6 +391,7 @@ describe('FormFieldArray - Advanced Field Interactions', () => {
             },
             description: {
               type: 'text',
+              name: '',
               label: 'Description',
               placeholder: itemMode === 'advanced' ? 'Advanced description' : 'Simple description',
               visibleWhen: () => hasMode,
@@ -419,6 +436,7 @@ describe('FormFieldArray - Advanced Field Interactions', () => {
     const { wrapper, formValues } = await mountFormFieldArray({
       itemField: {
         type: 'tabs',
+        name: '',
         tabs: [
           {
             value: 'basic',
@@ -426,18 +444,21 @@ describe('FormFieldArray - Advanced Field Interactions', () => {
             fields: {
               basicGroup: {
                 type: 'field-group',
+                name: '',
                 label: 'Basic Settings',
                 collapsible: true,
                 collapsibleDefaultOpen: true,
                 fields: {
                   name: {
                     type: 'text',
+                    name: '',
                     label: 'Name',
                     defaultValue: 'Default Name',
                     rules: z.string().min(1)
                   },
                   enabled: {
                     type: 'toggle',
+                    name: '',
                     label: 'Enabled',
                     defaultValue: true,
                     rules: z.boolean()
@@ -452,12 +473,14 @@ describe('FormFieldArray - Advanced Field Interactions', () => {
             fields: {
               advancedGroup: {
                 type: 'field-group',
+                name: '',
                 label: 'Advanced Settings',
                 collapsible: true,
                 collapsibleDefaultOpen: false,
                 fields: {
                   priority: {
                     type: 'number',
+                    name: '',
                     label: 'Priority',
                     defaultValue: 5,
                     min: 1,
@@ -466,6 +489,7 @@ describe('FormFieldArray - Advanced Field Interactions', () => {
                   },
                   config: {
                     type: 'text',
+                    name: '',
                     label: 'Config',
                     defaultValue: '{}',
                     rules: z.string()
@@ -523,12 +547,14 @@ describe('FormFieldArray - Advanced Field Interactions', () => {
 
         return {
           type: 'field-group',
+          name: '',
           label: hasType ? `${fieldType} Field Configuration` : 'New Field',
           collapsible: true,
           collapsibleDefaultOpen: !hasType,
           fields: {
             fieldType: {
               type: 'select',
+              name: '',
               label: 'Type',
               placeholder: 'Select type...',
               options: [
@@ -541,6 +567,7 @@ describe('FormFieldArray - Advanced Field Interactions', () => {
             // Text-specific fields
             maxLength: {
               type: 'number',
+              name: '',
               label: 'Max Length',
               defaultValue: 100,
               visibleWhen: () => fieldType === 'text',
@@ -549,6 +576,7 @@ describe('FormFieldArray - Advanced Field Interactions', () => {
             // Number-specific fields
             min: {
               type: 'number',
+              name: '',
               label: 'Minimum',
               defaultValue: 0,
               visibleWhen: () => fieldType === 'number' || fieldType === 'slider',
@@ -556,6 +584,7 @@ describe('FormFieldArray - Advanced Field Interactions', () => {
             },
             max: {
               type: 'number',
+              name: '',
               label: 'Maximum',
               defaultValue: 100,
               visibleWhen: () => fieldType === 'number' || fieldType === 'slider',
@@ -564,6 +593,7 @@ describe('FormFieldArray - Advanced Field Interactions', () => {
             // Slider-specific fields
             step: {
               type: 'number',
+              name: '',
               label: 'Step',
               defaultValue: 1,
               visibleWhen: () => fieldType === 'slider',

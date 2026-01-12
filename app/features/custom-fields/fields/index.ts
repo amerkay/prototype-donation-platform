@@ -3,16 +3,16 @@
  * Single import point for all custom field factories
  */
 
-import { textField, type TextFieldConfig } from './text-field'
-import { textareaField, type TextareaFieldConfig } from './textarea-field'
-import { sliderField, type SliderFieldConfig } from './slider-field'
-import { selectField, type SelectFieldConfig } from './select-field'
-import { hiddenField, type HiddenFieldConfig } from './hidden-field'
-import { checkboxField, type CheckboxFieldConfig } from './checkbox-field'
-import { numberField, type NumberFieldConfig } from './number-field'
-import { radioGroupField, type RadioGroupFieldConfig } from './radio-group-field'
+import { textField } from './text-field'
+import { textareaField } from './textarea-field'
+import { sliderField } from './slider-field'
+import { selectField } from './select-field'
+import { hiddenField } from './hidden-field'
+import { checkboxField } from './checkbox-field'
+import { numberField } from './number-field'
+import { radioGroupField } from './radio-group-field'
 
-// Re-export types
+// Re-export types from types.ts
 export type {
   TextFieldConfig,
   TextareaFieldConfig,
@@ -21,8 +21,9 @@ export type {
   HiddenFieldConfig,
   CheckboxFieldConfig,
   NumberFieldConfig,
-  RadioGroupFieldConfig
-}
+  RadioGroupFieldConfig,
+  BaseFieldConfig
+} from '../types'
 export * from './field-base'
 
 /**

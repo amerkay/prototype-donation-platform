@@ -1,13 +1,14 @@
 import { describe, it, expect, vi } from 'vitest'
 import { nextTick } from 'vue'
 import FormFieldText from '~/features/form-builder/fields/FormFieldText.vue'
-import type { TextFieldMeta, FieldContext } from '~/features/form-builder/types'
+import type { TextFieldDef, FieldContext } from '~/features/form-builder/types'
 import { mountFormField } from '../test-utils'
 
 // Helper to mount FormFieldText with complete form-builder context
-async function mountFormFieldText(meta: Partial<TextFieldMeta> = {}, modelValue?: string) {
-  const defaultMeta: TextFieldMeta = {
+async function mountFormFieldText(meta: Partial<TextFieldDef> = {}, modelValue?: string) {
+  const defaultMeta: TextFieldDef = {
     type: 'text',
+    name: 'testField',
     label: 'Test Field',
     ...meta
   }
@@ -112,7 +113,7 @@ describe('FormFieldText - Normal Operation', () => {
 describe('FormFieldText - Dynamic Properties', () => {
   it('resolves dynamic label from function', async () => {
     const wrapper = await mountFormFieldText({
-      label: (ctx) => `Dynamic Label: ${ctx.values.type || 'default'}`
+      label: (ctx: FieldContext) => `Dynamic Label: ${ctx.values.type || 'default'}`
     })
 
     expect(wrapper.find('label').text()).toContain('Dynamic Label: default')
@@ -120,7 +121,7 @@ describe('FormFieldText - Dynamic Properties', () => {
 
   it('resolves dynamic description from function', async () => {
     const wrapper = await mountFormFieldText({
-      description: (ctx) => `Count: ${ctx.values.count || 0}`
+      description: (ctx: FieldContext) => `Count: ${ctx.values.count || 0}`
     })
 
     expect(wrapper.text()).toContain('Count: 0')
@@ -128,7 +129,7 @@ describe('FormFieldText - Dynamic Properties', () => {
 
   it('resolves dynamic placeholder from function', async () => {
     const wrapper = await mountFormFieldText({
-      placeholder: (ctx) => `Enter ${ctx.values.fieldType || 'value'}`
+      placeholder: (ctx: FieldContext) => `Enter ${ctx.values.fieldType || 'value'}`
     })
 
     const input = wrapper.find('input')
@@ -137,7 +138,7 @@ describe('FormFieldText - Dynamic Properties', () => {
 
   it('resolves dynamic disabled from function', async () => {
     const wrapper = await mountFormFieldText({
-      disabled: (ctx) => ctx.values.locked === true
+      disabled: (ctx: FieldContext) => ctx.values.locked === true
     })
 
     const input = wrapper.find('input')

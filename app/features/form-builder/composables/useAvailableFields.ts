@@ -4,7 +4,7 @@
  */
 
 import { computed } from 'vue'
-import type { FieldMeta, FieldContext } from '~/features/form-builder/types'
+import type { FieldDef, FieldContext } from '~/features/form-builder/types'
 import type { ContextSchema, ContextFieldOption } from '~/features/form-builder/conditions'
 import { resolveText } from './useResolvedFieldMeta'
 import { useFormBuilderContext } from './useFormBuilderContext'
@@ -33,30 +33,30 @@ export interface AvailableField {
  * Flattens nested field-groups and tabs with dot-notation paths
  */
 function extractFormFields(
-  fields: Record<string, FieldMeta>,
+  fields: Record<string, FieldDef>,
   prefix: string = '',
   ctx: FieldContext
 ): AvailableField[] {
   const result: AvailableField[] = []
 
-  for (const [key, meta] of Object.entries(fields)) {
+  for (const [key, fieldDef] of Object.entries(fields)) {
     const fullKey = prefix ? `${prefix}.${key}` : key
 
     // Skip container fields (field-group, tabs, array, card)
     if (
-      meta.type === 'field-group' ||
-      meta.type === 'tabs' ||
-      meta.type === 'array' ||
-      meta.type === 'card'
+      fieldDef.type === 'field-group' ||
+      fieldDef.type === 'tabs' ||
+      fieldDef.type === 'array' ||
+      fieldDef.type === 'card'
     ) {
       // Recursively extract children for field-group
-      if (meta.type === 'field-group' && 'fields' in meta && meta.fields) {
-        result.push(...extractFormFields(meta.fields, fullKey, ctx))
+      if (fieldDef.type === 'field-group' && 'fields' in fieldDef && fieldDef.fields) {
+        result.push(...extractFormFields(fieldDef.fields, fullKey, ctx))
       }
 
       // Recursively extract children for tabs
-      if (meta.type === 'tabs' && 'tabs' in meta) {
-        for (const tab of meta.tabs) {
+      if (fieldDef.type === 'tabs' && 'tabs' in fieldDef) {
+        for (const tab of fieldDef.tabs) {
           const tabKey = `${fullKey}.${tab.value}`
           result.push(...extractFormFields(tab.fields, tabKey, ctx))
         }
@@ -66,23 +66,27 @@ function extractFormFields(
     }
 
     // Extract label (resolve dynamic functions)
-    const label = resolveText(meta.label, ctx) || key
+    const label = resolveText(fieldDef.label, ctx) || key
 
     // Map form field type to condition type
     let conditionType: 'string' | 'number' | 'boolean' | 'array' = 'string'
-    if (meta.type === 'number' || meta.type === 'currency' || meta.type === 'slider') {
+    if (fieldDef.type === 'number' || fieldDef.type === 'currency' || fieldDef.type === 'slider') {
       conditionType = 'number'
-    } else if (meta.type === 'toggle') {
+    } else if (fieldDef.type === 'toggle') {
       conditionType = 'boolean'
-    } else if (meta.type === 'checkbox' && 'options' in meta && Array.isArray(meta.options)) {
+    } else if (
+      fieldDef.type === 'checkbox' &&
+      'options' in fieldDef &&
+      Array.isArray(fieldDef.options)
+    ) {
       // Multi-select checkbox
       conditionType = 'array'
     }
 
     // Extract options for select/radio/checkbox fields
     let options: ContextFieldOption[] | undefined
-    if ('options' in meta && Array.isArray(meta.options)) {
-      options = meta.options.map((opt) => {
+    if ('options' in fieldDef && Array.isArray(fieldDef.options)) {
+      options = fieldDef.options.map((opt) => {
         if (typeof opt === 'string') {
           return { value: opt, label: opt }
         }
@@ -128,7 +132,7 @@ function extractContextFields(contextSchema: ContextSchema): AvailableField[] {
  * @param formFields - Optional form field definitions (if not provided, uses injected context)
  * @returns Computed array of available fields
  */
-export function useAvailableFields(formFields?: Record<string, FieldMeta>) {
+export function useAvailableFields(formFields?: Record<string, FieldDef>) {
   // Get context schema from FormRenderer via useFormBuilderContext
   const { contextSchema, fieldContext } = useFormBuilderContext()
 

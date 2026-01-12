@@ -1,5 +1,7 @@
-import type { FormDef, FieldMetaMap } from '~/features/form-builder/types'
-import { createAddressFields } from '../../forms/address-form'
+import type { ComposableForm, OnChangeContext, FieldDef } from '~/features/form-builder/types'
+import { useAddressFields } from '../../forms/address-form'
+
+import { defineForm } from '~/features/form-builder/api'
 
 /**
  * Helper to format address for display
@@ -52,7 +54,7 @@ function formatAddress(values: Record<string, unknown>, fieldPath = ''): string 
 export function createGiftAidFields(
   enabled = true,
   visibleWhen?: (ctx: { values: Record<string, unknown> }) => boolean
-): FieldMetaMap {
+): Record<string, unknown> {
   // Default visibility: only show for GBP currency (UK donors) AND if enabled
   const defaultVisibility = ({ values }: { values: Record<string, unknown> }) => {
     if (!enabled) return false
@@ -73,7 +75,7 @@ export function createGiftAidFields(
       imageClass: 'h-10 w-auto mb-4 dark:invert',
       content: '',
       showBorder: false,
-      visibleWhen: ({ values }) => shouldShow({ values })
+      visibleWhen: ({ values }: { values: Record<string, unknown> }) => shouldShow({ values })
     },
 
     // Gift Aid consent toggle
@@ -85,7 +87,7 @@ export function createGiftAidFields(
         'I understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of Gift Aid claimed on all my donations in that tax year it is my responsibility to pay any difference.',
       defaultValue: false,
       optional: true,
-      visibleWhen: ({ values }) => shouldShow({ values }),
+      visibleWhen: ({ values }: { values: Record<string, unknown> }) => shouldShow({ values }),
       isSeparatorAfter: true
     },
 
@@ -93,7 +95,7 @@ export function createGiftAidFields(
     useSameAsShipping: {
       type: 'toggle',
       label: 'Home address same as shipping',
-      description: ({ values }) => {
+      description: ({ values }: { values: Record<string, unknown> }) => {
         // Show truncated shipping address
         const shippingAddress = formatAddress(values, 'shippingAddress')
         return `${shippingAddress}`
@@ -101,7 +103,7 @@ export function createGiftAidFields(
       descriptionClass: 'truncate',
       defaultValue: false,
       optional: true,
-      visibleWhen: ({ values }) => {
+      visibleWhen: ({ values }: { values: Record<string, unknown> }) => {
         // First check parent visibility
         if (!shouldShow({ values })) return false
 
@@ -112,7 +114,7 @@ export function createGiftAidFields(
         const hasShippingAddress = !!(values['shippingAddress.address1'] as string | undefined)
         return hasShippingAddress
       },
-      onChange: ({ value, values, setValue }) => {
+      onChange: ({ value, values, setValue }: OnChangeContext) => {
         // If toggled on, copy shipping address to homeAddress
         if (value === true) {
           // List of address fields to copy
@@ -146,14 +148,14 @@ export function createGiftAidFields(
       label: 'Home Address',
       description:
         'Required by HMRC for Gift Aid claims (UK taxpayers living abroad can use their overseas address)',
-      visibleWhen: ({ values }) => {
+      visibleWhen: ({ values }: { values: Record<string, unknown> }) => {
         // First check parent visibility
         if (!shouldShow({ values })) return false
 
         // Show if Gift Aid consent is given AND not using shipping address
         return values.giftAidConsent === true && values.useSameAsShipping !== true
       },
-      fields: createAddressFields(undefined, 'shipping')
+      fields: useAddressFields()
     }
   }
 }
@@ -170,8 +172,7 @@ export function createGiftAidFields(
  * - Home address collection (required by HMRC)
  * - Option to copy from shipping address
  */
-export const giftAidFormSection: FormDef = {
-  id: 'gift-aid',
-  //   title: 'Gift Aid (UK Taxpayers Only)',
-  fields: createGiftAidFields()
-}
+export const useGiftAidFormSection: ComposableForm = defineForm('gift-aid', (_ctx) => {
+  //   ctx.title = 'Gift Aid (UK Taxpayers Only)'
+  return createGiftAidFields() as Record<string, FieldDef>
+})

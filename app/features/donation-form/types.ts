@@ -36,7 +36,7 @@ export interface PricingSettings {
 
 /**
  * Donation form custom fields configuration
- * Maps custom fields to specific donation flow steps (step2, step3)
+ * Maps custom fields to specific donation flow steps (step2, step3) and hidden fields
  */
 export interface DonationCustomFieldsSettings {
   customFieldsTabs: {
@@ -45,6 +45,10 @@ export interface DonationCustomFieldsSettings {
       fields: CustomFieldDefinition[]
     }
     step3?: {
+      enabled: boolean
+      fields: CustomFieldDefinition[]
+    }
+    hidden?: {
       enabled: boolean
       fields: CustomFieldDefinition[]
     }

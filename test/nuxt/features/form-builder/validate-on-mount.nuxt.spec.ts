@@ -3,20 +3,22 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { z } from 'zod'
 import { nextTick } from 'vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
-import type { FormDef } from '~/features/form-builder/types'
+import {
+  defineForm,
+  textField,
+  fieldGroup,
+  tabsField,
+  arrayField
+} from '~/features/form-builder/api'
 
 describe('FormRenderer validateOnMount prop', () => {
   it('validates on mount by default (validateOnMount=true)', async () => {
-    const schema: FormDef = {
-      id: 'test-section',
-      fields: {
-        email: {
-          type: 'text',
-          label: 'Email',
-          rules: z.string().email('Invalid email').min(1, 'Email is required')
-        }
-      }
-    }
+    const schema = defineForm('test-section', () => ({
+      email: textField('email', {
+        label: 'Email',
+        rules: z.string().email('Invalid email').min(1, 'Email is required')
+      })
+    }))
 
     const wrapper = await mountSuspended(FormRenderer, {
       props: {
@@ -37,16 +39,12 @@ describe('FormRenderer validateOnMount prop', () => {
   })
 
   it('does not validate on mount when validateOnMount=false', async () => {
-    const schema: FormDef = {
-      id: 'test-section',
-      fields: {
-        email: {
-          type: 'text',
-          label: 'Email',
-          rules: z.string().email('Invalid email').min(1, 'Email is required')
-        }
-      }
-    }
+    const schema = defineForm('test-section', () => ({
+      email: textField('email', {
+        label: 'Email',
+        rules: z.string().email('Invalid email').min(1, 'Email is required')
+      })
+    }))
 
     const wrapper = await mountSuspended(FormRenderer, {
       props: {
@@ -66,28 +64,22 @@ describe('FormRenderer validateOnMount prop', () => {
   })
 
   it('does not validate nested fields on mount when validateOnMount=false', async () => {
-    const schema: FormDef = {
-      id: 'test-section',
-      fields: {
-        personalInfo: {
-          type: 'field-group',
-          label: 'Personal Info',
-          collapsible: true,
-          fields: {
-            firstName: {
-              type: 'text',
-              label: 'First Name',
-              rules: z.string().min(1, 'First name is required')
-            },
-            lastName: {
-              type: 'text',
-              label: 'Last Name',
-              rules: z.string().min(1, 'Last name is required')
-            }
-          }
+    const schema = defineForm('test-section', () => ({
+      personalInfo: fieldGroup('personalInfo', {
+        label: 'Personal Info',
+        collapsible: true,
+        fields: {
+          firstName: textField('firstName', {
+            label: 'First Name',
+            rules: z.string().min(1, 'First name is required')
+          }),
+          lastName: textField('lastName', {
+            label: 'Last Name',
+            rules: z.string().min(1, 'Last name is required')
+          })
         }
-      }
-    }
+      })
+    }))
 
     const wrapper = await mountSuspended(FormRenderer, {
       props: {
@@ -112,39 +104,33 @@ describe('FormRenderer validateOnMount prop', () => {
   })
 
   it('does not validate tab fields on mount when validateOnMount=false', async () => {
-    const schema: FormDef = {
-      id: 'test-section',
-      fields: {
-        details: {
-          type: 'tabs',
-          label: 'Details',
-          tabs: [
-            {
-              value: 'personal',
-              label: 'Personal',
-              fields: {
-                firstName: {
-                  type: 'text',
-                  label: 'First Name',
-                  rules: z.string().min(1, 'First name is required')
-                }
-              }
-            },
-            {
-              value: 'contact',
-              label: 'Contact',
-              fields: {
-                email: {
-                  type: 'text',
-                  label: 'Email',
-                  rules: z.string().email('Invalid email').min(1, 'Email is required')
-                }
-              }
+    const schema = defineForm('test-section', () => ({
+      details: tabsField('details', {
+        label: 'Details',
+        tabs: [
+          {
+            value: 'personal',
+            label: 'Personal',
+            fields: {
+              firstName: textField('firstName', {
+                label: 'First Name',
+                rules: z.string().min(1, 'First name is required')
+              })
             }
-          ]
-        }
-      }
-    }
+          },
+          {
+            value: 'contact',
+            label: 'Contact',
+            fields: {
+              email: textField('email', {
+                label: 'Email',
+                rules: z.string().email('Invalid email').min(1, 'Email is required')
+              })
+            }
+          }
+        ]
+      })
+    }))
 
     const wrapper = await mountSuspended(FormRenderer, {
       props: {
@@ -169,25 +155,19 @@ describe('FormRenderer validateOnMount prop', () => {
   })
 
   it('does not validate array items on mount when validateOnMount=false', async () => {
-    const schema: FormDef = {
-      id: 'test-section',
-      fields: {
-        addresses: {
-          type: 'array',
-          label: 'Addresses',
-          itemField: {
-            type: 'field-group',
-            fields: {
-              street: {
-                type: 'text',
-                label: 'Street',
-                rules: z.string().min(1, 'Street is required')
-              }
-            }
+    const schema = defineForm('test-section', () => ({
+      addresses: arrayField('addresses', {
+        label: 'Addresses',
+        itemField: fieldGroup('', {
+          fields: {
+            street: textField('street', {
+              label: 'Street',
+              rules: z.string().min(1, 'Street is required')
+            })
           }
-        }
-      }
-    }
+        })
+      })
+    }))
 
     const wrapper = await mountSuspended(FormRenderer, {
       props: {
@@ -209,17 +189,13 @@ describe('FormRenderer validateOnMount prop', () => {
   })
 
   it('does not validate field with default value on mount when validateOnMount=false', async () => {
-    const schema: FormDef = {
-      id: 'test-section',
-      fields: {
-        name: {
-          type: 'text',
-          label: 'Name',
-          defaultValue: '', // This was the trigger for the bug
-          rules: z.string().min(1, 'Name is required')
-        }
-      }
-    }
+    const schema = defineForm('test-section', () => ({
+      name: textField('name', {
+        label: 'Name',
+        defaultValue: '', // This was the trigger for the bug
+        rules: z.string().min(1, 'Name is required')
+      })
+    }))
 
     const wrapper = await mountSuspended(FormRenderer, {
       props: {

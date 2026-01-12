@@ -1,35 +1,44 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createCustomFieldsConfigSection } from '~/features/custom-fields/forms/custom-fields-config-form'
+import { computed } from 'vue'
+import { useCustomFieldsConfigForm } from '~/features/custom-fields/forms/custom-fields-config-form'
 import type {
-  ArrayFieldMeta,
-  FieldGroupMeta,
+  ArrayFieldDef,
+  FieldGroupDef,
   ArrayItemContext,
-  FieldMeta
+  FormContext,
+  FieldDef
 } from '~/features/form-builder/types'
 
+function createMockFormContext(values: Record<string, unknown> = {}): FormContext {
+  return {
+    values: computed(() => values),
+    form: computed(() => values)
+  }
+}
+
 describe('custom-fields-config-form', () => {
-  describe('createCustomFieldsConfigSection', () => {
+  describe('useCustomFieldsConfigForm', () => {
     afterEach(() => {
       vi.clearAllMocks()
     })
 
     it('creates form definition with enabled toggle and fields array', () => {
-      const formDef = createCustomFieldsConfigSection()
+      const formDef = useCustomFieldsConfigForm()
 
       expect(formDef.id).toBe('customFields')
-      expect(formDef.fields.enabled).toBeDefined()
-      expect(formDef.fields.fields).toBeDefined()
+      expect(formDef.setup(createMockFormContext()).enabled).toBeDefined()
+      expect(formDef.setup(createMockFormContext()).fields).toBeDefined()
     })
 
     it('generates field configuration with required editor fields when no type selected', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+      const formDef = useCustomFieldsConfigForm()
+      const fieldsArray = formDef.setup(createMockFormContext()).fields as ArrayFieldDef
 
       const fieldGroup = (
         fieldsArray.itemField as (
           v: Record<string, unknown>,
           ctx: ArrayItemContext
-        ) => FieldGroupMeta
+        ) => FieldGroupDef
       )({}, { index: 0, items: [], root: {} })
 
       // Should be collapsible and open by default for new fields
@@ -44,16 +53,16 @@ describe('custom-fields-config-form', () => {
     })
 
     it('generates type-specific configuration when field type is selected', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+      const formDef = useCustomFieldsConfigForm()
+      const fieldsArray = formDef.setup(createMockFormContext()).fields as ArrayFieldDef
 
       // Text fields get advanced settings
       const textField = (
         fieldsArray.itemField as (
           values: Record<string, unknown>,
           context: ArrayItemContext
-        ) => FieldMeta
-      )({ type: 'text', label: 'Username' }, { index: 0, items: [], root: {} }) as FieldGroupMeta
+        ) => FieldDef
+      )({ type: 'text', label: 'Username' }, { index: 0, items: [], root: {} }) as FieldGroupDef
 
       expect(textField.label).toBe('Text: Username')
       expect(textField.fields?.advancedSettings).toBeDefined()
@@ -63,8 +72,8 @@ describe('custom-fields-config-form', () => {
         fieldsArray.itemField as (
           values: Record<string, unknown>,
           context: ArrayItemContext
-        ) => FieldMeta
-      )({ type: 'slider', label: 'Amount' }, { index: 0, items: [], root: {} }) as FieldGroupMeta
+        ) => FieldDef
+      )({ type: 'slider', label: 'Amount' }, { index: 0, items: [], root: {} }) as FieldGroupDef
 
       expect(sliderField.label).toBe('Slider: Amount')
       expect(sliderField.fields?.min).toBeDefined()
@@ -75,16 +84,16 @@ describe('custom-fields-config-form', () => {
         fieldsArray.itemField as (
           values: Record<string, unknown>,
           context: ArrayItemContext
-        ) => FieldMeta
-      )({ type: 'select', label: 'Country' }, { index: 0, items: [], root: {} }) as FieldGroupMeta
+        ) => FieldDef
+      )({ type: 'select', label: 'Country' }, { index: 0, items: [], root: {} }) as FieldGroupDef
 
       expect(selectField.label).toBe('Select: Country')
       expect(selectField.fields?.options).toBeDefined()
     })
 
     it('truncates long labels in display', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+      const formDef = useCustomFieldsConfigForm()
+      const fieldsArray = formDef.setup(createMockFormContext()).fields as ArrayFieldDef
 
       expect(typeof fieldsArray.itemField).toBe('function')
 
@@ -96,17 +105,17 @@ describe('custom-fields-config-form', () => {
         fieldsArray.itemField as (
           v: Record<string, unknown>,
           ctx: ArrayItemContext
-        ) => FieldGroupMeta
+        ) => FieldGroupDef
       )(longLabelValues, { index: 0, items: [], root: {} })
 
       expect(fieldGroup.label).toContain('Text: This is a very long label')
       expect(fieldGroup.label).toContain('...')
-      expect(fieldGroup.label?.length).toBeLessThan(50)
+      expect((fieldGroup.label as string)?.length).toBeLessThan(50)
     })
 
     it('handles empty label gracefully', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+      const formDef = useCustomFieldsConfigForm()
+      const fieldsArray = formDef.setup(createMockFormContext()).fields as ArrayFieldDef
 
       expect(typeof fieldsArray.itemField).toBe('function')
 
@@ -115,15 +124,15 @@ describe('custom-fields-config-form', () => {
         fieldsArray.itemField as (
           v: Record<string, unknown>,
           ctx: ArrayItemContext
-        ) => FieldGroupMeta
+        ) => FieldGroupDef
       )(noLabelValues, { index: 0, items: [], root: {} })
 
       expect(fieldGroup.label).toBe('Text')
     })
 
     it('shows fields array only when custom fields are enabled', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields
+      const formDef = useCustomFieldsConfigForm()
+      const fieldsArray = formDef.setup(createMockFormContext()).fields
 
       expect(fieldsArray?.visibleWhen).toBeDefined()
 
@@ -134,8 +143,8 @@ describe('custom-fields-config-form', () => {
     })
 
     it('configures array as sortable with appropriate add button text', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+      const formDef = useCustomFieldsConfigForm()
+      const fieldsArray = formDef.setup(createMockFormContext()).fields as ArrayFieldDef
 
       expect(fieldsArray.sortable).toBe(true)
       expect(fieldsArray.addButtonText).toBe('Add Custom Field')
@@ -157,8 +166,8 @@ describe('custom-fields-config-form', () => {
         }
       }
 
-      const formDef = createCustomFieldsConfigSection(contextSchema)
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+      const formDef = useCustomFieldsConfigForm(contextSchema)
+      const fieldsArray = formDef.setup(createMockFormContext()).fields as ArrayFieldDef
 
       // Get the itemField function and call it with a text field config
       const textFieldValues = { type: 'text', label: 'Test Field', id: 'test_field' }
@@ -166,18 +175,18 @@ describe('custom-fields-config-form', () => {
         fieldsArray.itemField as (
           v: Record<string, unknown>,
           ctx: ArrayItemContext
-        ) => FieldGroupMeta
+        ) => FieldGroupDef
       )(textFieldValues, { index: 0, items: [textFieldValues], root: {} })
 
       // Navigate to visibility conditions
-      const visibilityConditions = fieldGroup.fields?.visibilityConditions as FieldGroupMeta
+      const visibilityConditions = fieldGroup.fields?.visibilityConditions as FieldGroupDef
       expect(visibilityConditions).toBeDefined()
       expect(visibilityConditions.type).toBe('field-group')
 
-      const visibleWhen = visibilityConditions.fields?.visibleWhen as FieldGroupMeta
+      const visibleWhen = visibilityConditions.fields?.visibleWhen as FieldGroupDef
       expect(visibleWhen).toBeDefined()
 
-      const conditions = visibleWhen.fields?.conditions as ArrayFieldMeta
+      const conditions = visibleWhen.fields?.conditions as ArrayFieldDef
       expect(conditions).toBeDefined()
       expect(conditions.type).toBe('array')
 
@@ -189,12 +198,12 @@ describe('custom-fields-config-form', () => {
 
       expect(conditionItemField.type).toBe('field-group')
 
-      const fieldSelector = (conditionItemField as FieldGroupMeta).fields?.field
+      const fieldSelector = (conditionItemField as FieldGroupDef).fields?.field
       expect(fieldSelector).toBeDefined()
       expect(fieldSelector?.type).toBe('select')
 
       // Check that options include external context fields
-      const options = (fieldSelector as FieldMeta & { options?: unknown }).options as Array<{
+      const options = (fieldSelector as FieldDef & { options?: unknown }).options as Array<{
         value: string
         label: string
       }>
@@ -210,8 +219,8 @@ describe('custom-fields-config-form', () => {
     })
 
     it('sets validation error when field references another field that comes after it', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+      const formDef = useCustomFieldsConfigForm()
+      const fieldsArray = formDef.setup(createMockFormContext()).fields as ArrayFieldDef
 
       const fieldA = {
         id: 'field_a',
@@ -269,8 +278,8 @@ describe('custom-fields-config-form', () => {
     })
 
     it('clears validation errors when previously invalid condition becomes valid', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+      const formDef = useCustomFieldsConfigForm()
+      const fieldsArray = formDef.setup(createMockFormContext()).fields as ArrayFieldDef
 
       const fieldA = {
         id: 'field_a',
@@ -332,8 +341,8 @@ describe('custom-fields-config-form', () => {
     })
 
     it('sets validation error when referenced field is deleted', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+      const formDef = useCustomFieldsConfigForm()
+      const fieldsArray = formDef.setup(createMockFormContext()).fields as ArrayFieldDef
 
       const fieldB = {
         id: 'field_b',
@@ -390,8 +399,8 @@ describe('custom-fields-config-form', () => {
         }
       }
 
-      const formDef = createCustomFieldsConfigSection(contextSchema)
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+      const formDef = useCustomFieldsConfigForm(contextSchema)
+      const fieldsArray = formDef.setup(createMockFormContext()).fields as ArrayFieldDef
 
       const fieldA = {
         id: 'field_a',
@@ -447,8 +456,8 @@ describe('custom-fields-config-form', () => {
     })
 
     it('validates multiple conditions correctly when some are valid and others invalid', () => {
-      const formDef = createCustomFieldsConfigSection()
-      const fieldsArray = formDef.fields.fields as ArrayFieldMeta
+      const formDef = useCustomFieldsConfigForm()
+      const fieldsArray = formDef.setup(createMockFormContext()).fields as ArrayFieldDef
 
       const fieldA = {
         id: 'field_a',

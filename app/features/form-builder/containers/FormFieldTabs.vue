@@ -5,14 +5,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Field, FieldLegend, FieldDescription } from '@/components/ui/field'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
-import type { TabsFieldMeta, FieldGroupMeta } from '~/features/form-builder/types'
+import type { TabsFieldDef, TabDefinitionConfig } from '~/features/form-builder/types'
 import { resolveText } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import { useContainerFieldSetup } from '~/features/form-builder/composables/useContainerFieldSetup'
 import { useCombinedErrors } from '~/features/form-builder/composables/useCombinedErrors'
 import FormFieldGroup from './FormFieldGroup.vue'
 
 interface Props {
-  meta: TabsFieldMeta
+  meta: TabsFieldDef
   name: string
 }
 
@@ -30,7 +30,7 @@ const activeTab = ref(props.meta.defaultValue || props.meta.tabs[0]?.value || ''
 
 // Compute combined errors for each tab using lightweight composable
 const tabErrorTrackers = Object.fromEntries(
-  props.meta.tabs.map((tab) => {
+  props.meta.tabs.map((tab: TabDefinitionConfig) => {
     const tabPath = computed(() => `${fullTabsPath.value}.${tab.value}`)
 
     // Create scoped context for this specific tab
@@ -105,7 +105,7 @@ const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
           <Card class="px-4 bg-muted/50">
             <FormFieldGroup
               :name="tab.value"
-              :meta="{ type: 'field-group', fields: tab.fields } as FieldGroupMeta"
+              :meta="{ type: 'field-group', name: tab.value, fields: tab.fields }"
             />
           </Card>
         </TabsContent>

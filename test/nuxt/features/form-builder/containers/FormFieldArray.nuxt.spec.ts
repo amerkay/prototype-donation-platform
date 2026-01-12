@@ -2,26 +2,21 @@ import { describe, it, expect, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { nextTick } from 'vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
-import type { FormDef } from '~/features/form-builder/types'
+import { defineForm, arrayField, textField } from '~/features/form-builder/api'
 
 describe('FormFieldArray', () => {
   it('normalizes scalar value to array before addItem', async () => {
     const sectionId = 'testSection'
 
-    const schema: FormDef = {
-      id: sectionId,
-      fields: {
-        value: {
-          type: 'array',
-          label: 'Values',
-          addButtonText: 'Add Value',
-          itemField: {
-            type: 'text',
-            label: 'Value'
-          }
-        }
-      }
-    }
+    const schema = defineForm(sectionId, () => ({
+      value: arrayField('value', {
+        label: 'Values',
+        addButtonText: 'Add Value',
+        itemField: textField('', {
+          label: 'Value'
+        })
+      })
+    }))
 
     const onUpdate = vi.fn()
 
@@ -63,20 +58,15 @@ describe('FormFieldArray', () => {
   it('adds items without clearing existing array', async () => {
     const sectionId = 'testSection'
 
-    const schema: FormDef = {
-      id: sectionId,
-      fields: {
-        value: {
-          type: 'array',
-          label: 'Values',
-          addButtonText: 'Add Value',
-          itemField: {
-            type: 'text',
-            label: 'Value'
-          }
-        }
-      }
-    }
+    const schema = defineForm(sectionId, () => ({
+      value: arrayField('value', {
+        label: 'Values',
+        addButtonText: 'Add Value',
+        itemField: textField('', {
+          label: 'Value'
+        })
+      })
+    }))
 
     const onUpdate = vi.fn()
 

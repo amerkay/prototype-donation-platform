@@ -25,6 +25,7 @@ describe('FormFieldArray - Drag and Drop', () => {
         sortable: true,
         itemField: {
           type: 'text',
+          name: '',
           label: 'Name',
           rules: z.string()
         }
@@ -55,6 +56,7 @@ describe('FormFieldArray - Drag and Drop', () => {
         sortable: false,
         itemField: {
           type: 'text',
+          name: '',
           label: 'Name',
           rules: z.string()
         }
@@ -87,11 +89,12 @@ describe('FormFieldArray - Drag and Drop', () => {
         sortable: true,
         itemField: {
           type: 'field-group',
+          name: '',
           label: 'Item',
           collapsible: false,
           fields: {
-            name: { type: 'text', label: 'Name', rules: z.string() },
-            value: { type: 'number', label: 'Value', rules: z.number() }
+            name: { type: 'text', name: '', label: 'Name', rules: z.string() },
+            value: { type: 'number', name: '', label: 'Value', rules: z.number() }
           }
         }
       },
@@ -144,6 +147,7 @@ describe('FormFieldArray - Drag and Drop', () => {
         sortable: true,
         itemField: {
           type: 'text',
+          name: '',
           label: 'Item',
           rules: z.string()
         }
@@ -184,6 +188,7 @@ describe('FormFieldArray - Drag and Drop', () => {
         sortable: true,
         itemField: {
           type: 'text',
+          name: '',
           label: 'Item',
           rules: z.string()
         }
@@ -238,11 +243,12 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
         sortable: true,
         itemField: {
           type: 'field-group',
+          name: '',
           label: 'Item',
           collapsible: false,
           fields: {
-            name: { type: 'text', label: 'Name', rules: z.string() },
-            order: { type: 'number', label: 'Order', rules: z.number() }
+            name: { type: 'text', name: '', label: 'Name', rules: z.string() },
+            order: { type: 'number', name: '', label: 'Order', rules: z.number() }
           }
         }
       },
@@ -325,11 +331,12 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
         sortable: true,
         itemField: {
           type: 'field-group',
+          name: '',
           label: 'Item',
           collapsible: false,
           fields: {
-            id: { type: 'text', label: 'ID', rules: z.string() },
-            value: { type: 'number', label: 'Value', rules: z.number() }
+            id: { type: 'text', name: '', label: 'ID', rules: z.string() },
+            value: { type: 'number', name: '', label: 'Value', rules: z.number() }
           }
         }
       },
@@ -404,6 +411,7 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
       sortable: true,
       itemField: {
         type: 'text',
+        name: '',
         label: 'Item',
         rules: z.string()
       }
@@ -486,6 +494,7 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
       const fields: Record<string, any> = {
         type: {
           type: 'select',
+          name: '',
           label: 'Type',
           options: [
             { value: 'text', label: 'Text' },
@@ -496,6 +505,7 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
         },
         label: {
           type: 'text',
+          name: '',
           label: 'Label',
           rules: z.string().min(1)
         }
@@ -505,35 +515,42 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
       if (type === 'slider') {
         fields.min = {
           type: 'number',
+          name: '',
           label: 'Min',
           rules: z.number()
         }
         fields.max = {
           type: 'number',
+          name: '',
           label: 'Max',
           rules: z.number()
         }
         fields.step = {
           type: 'number',
+          name: '',
           label: 'Step',
           rules: z.number()
         }
         fields.prefix = {
           type: 'text',
+          name: '',
           label: 'Prefix',
           rules: z.string().optional()
         }
         fields.suffix = {
           type: 'text',
+          name: '',
           label: 'Suffix',
           rules: z.string().optional()
         }
       } else if (type === 'select') {
         fields.options = {
           type: 'array',
+          name: '',
           label: 'Options',
           itemField: {
             type: 'text',
+            name: '',
             label: 'Option',
             rules: z.string()
           },
@@ -542,11 +559,13 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
       } else if (type === 'text') {
         fields.placeholder = {
           type: 'text',
+          name: '',
           label: 'Placeholder',
           rules: z.string().optional()
         }
         fields.maxLength = {
           type: 'number',
+          name: '',
           label: 'Max Length',
           rules: z.number().optional()
         }
@@ -554,6 +573,7 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
 
       return {
         type: 'field-group',
+        name: '',
         label: `${type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Field'}: ${label}`,
         collapsible: true,
         collapsibleDefaultOpen: false,

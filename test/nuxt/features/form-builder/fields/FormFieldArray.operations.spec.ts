@@ -17,6 +17,7 @@ describe('FormFieldArray - Adding Items', () => {
     const { wrapper, formValues } = await mountFormFieldArray({
       itemField: {
         type: 'text',
+        name: '',
         label: 'Name',
         placeholder: 'Enter name',
         rules: z.string().optional()
@@ -63,12 +64,14 @@ describe('FormFieldArray - Adding Items', () => {
     const { wrapper, formValues } = await mountFormFieldArray({
       itemField: {
         type: 'field-group',
+        name: '',
         label: 'Item',
         // Non-collapsible so fields are always visible
         collapsible: false,
         fields: {
           name: {
             type: 'text',
+            name: '',
             label: 'Name',
             defaultValue: 'Default Name',
             placeholder: 'Enter name',
@@ -76,6 +79,7 @@ describe('FormFieldArray - Adding Items', () => {
           },
           count: {
             type: 'number',
+            name: '',
             label: 'Count',
             defaultValue: 5,
             rules: z.number()
@@ -129,6 +133,7 @@ describe('FormFieldArray - Adding Items', () => {
     const { wrapper, formValues } = await mountFormFieldArray({
       itemField: {
         type: 'text',
+        name: '',
         label: 'Item',
         rules: z.string().optional()
       }
@@ -168,17 +173,20 @@ describe('FormFieldArray - Removing Items', () => {
       {
         itemField: {
           type: 'field-group',
+          name: '',
           label: 'Item',
           // Non-collapsible so we can access inputs reliably
           collapsible: false,
           fields: {
             name: {
               type: 'text',
+              name: '',
               label: 'Name',
               rules: z.string()
             },
             value: {
               type: 'number',
+              name: '',
               label: 'Value',
               rules: z.number()
             }
@@ -252,11 +260,12 @@ describe('FormFieldArray - Removing Items', () => {
       {
         itemField: {
           type: 'field-group',
+          name: '',
           label: 'Item',
           collapsible: false,
           fields: {
-            name: { type: 'text', label: 'Name', rules: z.string() },
-            value: { type: 'number', label: 'Value', rules: z.number() }
+            name: { type: 'text', name: '', label: 'Name', rules: z.string() },
+            value: { type: 'number', name: '', label: 'Value', rules: z.number() }
           }
         }
       },
@@ -293,11 +302,12 @@ describe('FormFieldArray - Removing Items', () => {
       {
         itemField: {
           type: 'field-group',
+          name: '',
           label: 'Item',
           collapsible: false,
           fields: {
-            name: { type: 'text', label: 'Name', rules: z.string() },
-            value: { type: 'number', label: 'Value', rules: z.number() }
+            name: { type: 'text', name: '', label: 'Name', rules: z.string() },
+            value: { type: 'number', name: '', label: 'Value', rules: z.number() }
           }
         }
       },
@@ -330,6 +340,7 @@ describe('FormFieldArray - Removing Items', () => {
       {
         itemField: {
           type: 'text',
+          name: '',
           label: 'Item',
           rules: z.string()
         }
@@ -363,6 +374,7 @@ describe('FormFieldArray - Custom Button Text', () => {
       addButtonText: 'Add New Entry',
       itemField: {
         type: 'text',
+        name: '',
         label: 'Item',
         rules: z.string()
       }
@@ -379,6 +391,7 @@ describe('FormFieldArray - Custom Button Text', () => {
         removeButtonText: 'Delete Entry',
         itemField: {
           type: 'text',
+          name: '',
           label: 'Item',
           rules: z.string()
         }
@@ -400,6 +413,7 @@ describe('FormFieldArray - Edge Cases', () => {
     const { wrapper, formValues } = await mountFormFieldArray({
       itemField: {
         type: 'text',
+        name: '',
         label: 'Item',
         rules: z.string()
       }
@@ -451,6 +465,7 @@ describe('FormFieldArray - Edge Cases', () => {
     const { wrapper, formValues } = await mountFormFieldArray({
       itemField: {
         type: 'text',
+        name: '',
         label: 'Item',
         rules: z.string()
       }
@@ -482,6 +497,7 @@ describe('FormFieldArray - Edge Cases', () => {
       {
         itemField: {
           type: 'text',
+          name: '',
           label: 'Item',
           rules: z.string().nullable().optional()
         }

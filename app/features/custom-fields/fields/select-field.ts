@@ -3,67 +3,56 @@
  * Dropdown selector with predefined options
  */
 import * as z from 'zod'
-import type { FieldMeta } from '~/features/form-builder/types'
-import { createBaseFieldMeta, createOptionalSchema, slugify, extractFieldValue } from './field-base'
-
-/**
- * Select field configuration (admin-editable)
- */
-export interface SelectFieldConfig {
-  id: string
-  label: string
-  optional?: boolean
-  defaultValue?: string
-  placeholder?: string
-  options: string[] // Array of option labels (values auto-generated)
-}
+import type { SelectFieldConfig } from '../types'
+import { slugify, extractFieldValue } from './field-base'
+import {
+  fieldGroup,
+  textField,
+  toggleField,
+  selectField as selectFieldConstructor,
+  arrayField
+} from '~/features/form-builder/api'
+import type { FieldDef } from '~/features/form-builder/types'
 
 /**
  * Create admin configuration fields for select field
  */
-export function createSelectFieldAdminConfig(): Record<string, FieldMeta> {
+export function createSelectFieldAdminConfig(): Record<string, FieldDef> {
   return {
-    options: {
-      type: 'array',
+    options: arrayField('options', {
       label: 'Options',
       sortable: true,
       description: 'Add options for the dropdown',
       addButtonText: 'Add Option',
-      itemField: {
-        type: 'text',
-        // label: 'Option',
+      itemField: textField('', {
         placeholder: 'Enter option text',
         rules: z.string().min(1, 'Option text is required')
-      },
+      }),
       rules: z.array(z.string().min(1)).min(1, 'At least one option is required')
-    },
-    advancedSettings: {
-      type: 'field-group',
+    }),
+    advancedSettings: fieldGroup('advancedSettings', {
       label: 'Advanced Settings',
       collapsible: true,
       collapsibleDefaultOpen: false,
       fields: {
-        placeholder: {
-          type: 'text',
+        placeholder: textField('placeholder', {
           label: 'Placeholder',
           placeholder: 'Select an option...',
           optional: true,
           rules: z.string().optional()
-        },
-        optional: {
-          type: 'toggle',
+        }),
+        optional: toggleField('optional', {
           label: 'Optional',
           description: 'Allow users to skip this field',
           defaultValue: true,
           rules: z.boolean().optional()
-        },
-        defaultValue: {
-          type: 'select',
+        }),
+        defaultValue: selectFieldConstructor('defaultValue', {
           label: 'Default Value',
           placeholder: 'Select default option...',
           description: 'Preview your dropdown options',
           optional: true,
-          options: ({ parent }) => {
+          options: ({ parent }: { parent?: Record<string, unknown> }) => {
             const optionLabels = (parent?.options as string[]) ?? []
 
             // Convert string array to {value, label} objects (same logic as runtime conversion)
@@ -72,21 +61,21 @@ export function createSelectFieldAdminConfig(): Record<string, FieldMeta> {
               label: String(label)
             }))
           },
-          visibleWhen: ({ parent }) => {
+          visibleWhen: ({ parent }: { parent?: Record<string, unknown> }) => {
             const optionLabels = (parent?.options as string[]) ?? []
             return optionLabels.length > 0
           },
           rules: z.string().optional()
-        }
+        })
       }
-    }
+    })
   }
 }
 
 /**
- * Convert admin config to runtime field metadata
+ * Convert admin config to composable field definition
  */
-export function selectFieldToFieldMeta(config: SelectFieldConfig): FieldMeta {
+export function selectFieldToComposable(config: SelectFieldConfig): FieldDef {
   const configObj = config as unknown as Record<string, unknown>
   const optionLabels = config.options || []
   const placeholder = extractFieldValue<string>(configObj, 'placeholder')
@@ -99,16 +88,13 @@ export function selectFieldToFieldMeta(config: SelectFieldConfig): FieldMeta {
     label: String(label)
   }))
 
-  return {
-    ...createBaseFieldMeta({ ...config, optional, defaultValue }),
-    type: 'select' as const,
+  return selectFieldConstructor(config.id, {
+    label: config.label,
     placeholder,
     options,
     defaultValue,
-    rules: optional
-      ? createOptionalSchema(z.string(), true)
-      : z.string().min(1, `${config.label} is required`)
-  }
+    rules: optional ? z.string().optional() : z.string().min(1, `${config.label} is required`)
+  })
 }
 
 /**
@@ -123,6 +109,6 @@ export function getSelectFieldDefaultValue(config: SelectFieldConfig): string {
  */
 export const selectField = {
   createAdminConfig: createSelectFieldAdminConfig,
-  toFieldMeta: selectFieldToFieldMeta,
+  toComposable: selectFieldToComposable,
   getDefaultValue: getSelectFieldDefaultValue
 }

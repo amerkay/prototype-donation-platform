@@ -1,5 +1,13 @@
 import * as z from 'zod'
-import type { FormDef } from '~/features/form-builder/types'
+import {
+  defineForm,
+  radioGroupField,
+  fieldGroup,
+  textField,
+  selectField,
+  toggleField
+} from '~/features/form-builder/api'
+import type { ComposableForm } from '~/features/form-builder/types'
 import type { TributeSettings } from '../types'
 import { createMessageFields } from '~/features/donation-form/forms/optional-message-field'
 
@@ -27,7 +35,7 @@ function shouldDefaultSameAsHonoree(allValues: Record<string, unknown>): boolean
  * Form fields, labels, placeholders, and validation are hardcoded here.
  * Only display config (icons, labels, modal title) comes from API config.
  */
-export function createTributeFormSection(config: TributeSettings): FormDef {
+export function createTributeFormSection(config: TributeSettings): ComposableForm {
   // Build options based on enabled flags
   const options = [{ value: 'none', label: config.types.none.label }]
   if (config.types.giftEnabled) {
@@ -37,137 +45,133 @@ export function createTributeFormSection(config: TributeSettings): FormDef {
     options.push({ value: 'memorial', label: '🕊️ In memory of someone' })
   }
 
-  return {
-    id: 'tribute-form',
-    // title: config.modal.title,
-    // description: config.modal.subtitle,
-    fields: {
-      type: {
-        type: 'radio-group',
-        label: 'Dedicate this donation',
-        description: 'Make this donation a tribute to someone special',
-        options,
-        onChange: ({ value, values, setValue }) => {
-          // When switching to gift with eCard enabled, default sameAsHonoree to true
-          // BUT only if recipient name is empty or matches honoree
-          if (value === 'gift' && values.sendECard === true) {
-            if (shouldDefaultSameAsHonoree(values)) {
-              setValue('sameAsHonoree', true)
-            }
-          }
-          // When switching to memorial, clear sameAsHonoree (field is hidden)
-          else if (value === 'memorial') {
-            setValue('sameAsHonoree', false)
+  return defineForm('tribute-form', (_ctx) => {
+    // ctx.title = config.modal.title
+    // ctx.description = config.modal.subtitle
+
+    const type = radioGroupField('type', {
+      label: 'Dedicate this donation',
+      description: 'Make this donation a tribute to someone special',
+      options,
+      onChange: ({ value, values, setValue }) => {
+        // When switching to gift with eCard enabled, default sameAsHonoree to true
+        // BUT only if recipient name is empty or matches honoree
+        if (value === 'gift' && values.sendECard === true) {
+          if (shouldDefaultSameAsHonoree(values)) {
+            setValue('sameAsHonoree', true)
           }
         }
-      },
-      // Honoree section - visible when type is not 'none'
-      honoreeName: {
-        type: 'field-group',
-        // label: 'Honoree',
-        class: 'grid grid-cols-2 gap-x-3',
-        visibleWhen: ({ values }) => values.type !== 'none',
-        fields: {
-          honoreeFirstName: {
-            type: 'text',
-            label: 'Honoree First Name',
-            placeholder: 'First name',
-            defaultValue: '',
-            rules: z.string().min(2, 'First name must be at least 2 characters')
-          },
-          honoreeLastName: {
-            type: 'text',
-            label: 'Last Name',
-            placeholder: 'Last name',
-            defaultValue: '',
-            optional: true
+        // When switching to memorial, clear sameAsHonoree (field is hidden)
+        else if (value === 'memorial') {
+          setValue('sameAsHonoree', false)
+        }
+      }
+    })
+
+    const honoreeFirstName = textField('honoreeFirstName', {
+      label: 'Honoree First Name',
+      placeholder: 'First name',
+      defaultValue: '',
+      rules: z.string().min(2, 'First name must be at least 2 characters')
+    })
+
+    const honoreeLastName = textField('honoreeLastName', {
+      label: 'Last Name',
+      placeholder: 'Last name',
+      defaultValue: '',
+      optional: true
+    })
+
+    const honoreeName = fieldGroup('honoreeName', {
+      // label: 'Honoree',
+      class: 'grid grid-cols-2 gap-x-3',
+      visibleWhen: ({ values }) => values.type !== 'none',
+      fields: { honoreeFirstName, honoreeLastName }
+    })
+
+    const relationship = selectField('relationship', {
+      label: 'Relationship',
+      placeholder: 'Select relationship...',
+      defaultValue: '',
+      optional: true,
+      options: config.relationships.map((r) => ({ value: r.value, label: r.label })),
+      searchPlaceholder: 'Search relationship...',
+      notFoundText: 'No relationship found.',
+      visibleWhen: ({ values }) => values.type !== 'none',
+      isSeparatorAfter: true
+    })
+
+    const sendECard = toggleField('sendECard', {
+      label: '📧 Send an eCard notification',
+      labelClass: 'font-semibold',
+      description: 'Send an eCard about your donation',
+      defaultValue: false,
+      visibleWhen: ({ values }) => values.type !== 'none',
+      isSeparatorAfter: false,
+      onChange: ({ value, values, setValue }) => {
+        // When enabling eCard for gift, default sameAsHonoree to true
+        // BUT only if recipient name is empty or matches honoree
+        if (value === true && values.type === 'gift') {
+          if (shouldDefaultSameAsHonoree(values)) {
+            setValue('sameAsHonoree', true)
           }
         }
-      },
-      relationship: {
-        type: 'select',
-        label: 'Relationship',
-        placeholder: 'Select relationship...',
-        defaultValue: '',
-        optional: true,
-        options: config.relationships.map((r) => ({ value: r.value, label: r.label })),
-        searchPlaceholder: 'Search relationship...',
-        notFoundText: 'No relationship found.',
-        visibleWhen: ({ values }) => values.type !== 'none',
-        isSeparatorAfter: true
-      },
-      // eCard toggle - visible when type is not 'none'
-      sendECard: {
-        type: 'toggle',
-        label: '📧 Send an eCard notification',
-        labelClass: 'font-semibold',
-        description: 'Send an eCard about your donation',
-        defaultValue: false,
-        visibleWhen: ({ values }) => values.type !== 'none',
-        isSeparatorAfter: false,
-        onChange: ({ value, values, setValue }) => {
-          // When enabling eCard for gift, default sameAsHonoree to true
-          // BUT only if recipient name is empty or matches honoree
-          if (value === true && values.type === 'gift') {
-            if (shouldDefaultSameAsHonoree(values)) {
-              setValue('sameAsHonoree', true)
-            }
-          }
-          // When disabling eCard, clear sameAsHonoree
-          else if (value === false) {
-            setValue('sameAsHonoree', false)
-          }
+        // When disabling eCard, clear sameAsHonoree
+        else if (value === false) {
+          setValue('sameAsHonoree', false)
         }
-      },
+      }
+    })
 
-      // Same as honoree toggle - visible when sendECard is true and type is 'gift' only
-      sameAsHonoree: {
-        type: 'toggle',
-        label: 'Same Name as Honoree',
-        description: 'The recipient is the same as the honoree',
-        defaultValue: false,
-        visibleWhen: ({ values }) => values.type === 'gift' && values.sendECard === true
-      },
+    const sameAsHonoree = toggleField('sameAsHonoree', {
+      label: 'Same Name as Honoree',
+      description: 'The recipient is the same as the honoree',
+      defaultValue: false,
+      visibleWhen: ({ values }) => values.type === 'gift' && values.sendECard === true
+    })
 
-      // Recipient name fields - visible when sendECard is true and NOT sameAsHonoree
-      recipientName: {
-        type: 'field-group',
-        // label: 'eCard Reci pient',
-        class: 'grid grid-cols-2 gap-x-3',
-        visibleWhen: ({ values }) =>
-          values.type !== 'none' && values.sendECard === true && values.sameAsHonoree !== true,
-        fields: {
-          recipientFirstName: {
-            type: 'text',
-            label: 'Recipient First Name',
-            placeholder: 'First name',
-            defaultValue: '',
-            rules: z.string().min(2, 'First name must be at least 2 characters')
-          },
-          recipientLastName: {
-            type: 'text',
-            label: 'Last Name',
-            placeholder: 'Last name',
-            defaultValue: '',
-            optional: true
-          }
-        }
-      },
+    const recipientFirstName = textField('recipientFirstName', {
+      label: 'Recipient First Name',
+      placeholder: 'First name',
+      defaultValue: '',
+      rules: z.string().min(2, 'First name must be at least 2 characters')
+    })
 
-      // Email - visible when sendECard is true
-      recipientEmail: {
-        type: 'text',
-        label: 'Email Address',
-        placeholder: 'name@example.com',
-        autocomplete: 'email',
-        defaultValue: '',
-        visibleWhen: ({ values }) => values.type !== 'none' && values.sendECard === true,
-        isSeparatorAfter: false,
-        rules: z.string().min(1, 'Email is required').email('Enter a valid email address')
-      },
+    const recipientLastName = textField('recipientLastName', {
+      label: 'Last Name',
+      placeholder: 'Last name',
+      defaultValue: '',
+      optional: true
+    })
 
+    const recipientName = fieldGroup('recipientName', {
+      // label: 'eCard Recipient',
+      class: 'grid grid-cols-2 gap-x-3',
+      visibleWhen: ({ values }) =>
+        values.type !== 'none' && values.sendECard === true && values.sameAsHonoree !== true,
+      fields: { recipientFirstName, recipientLastName }
+    })
+
+    const recipientEmail = textField('recipientEmail', {
+      label: 'Email Address',
+      placeholder: 'name@example.com',
+      autocomplete: 'email',
+      defaultValue: '',
+      visibleWhen: ({ values }) => values.type !== 'none' && values.sendECard === true,
+      isSeparatorAfter: false,
+      rules: z.string().min(1, 'Email is required').email('Enter a valid email address')
+    })
+
+    return {
+      type,
+      honoreeName,
+      relationship,
+      sendECard,
+      sameAsHonoree,
+      recipientName,
+      recipientEmail,
       // Message fields - visible when sendECard is true
       ...createMessageFields(({ values }) => values.type !== 'none' && values.sendECard === true)
     }
-  }
+  })
 }

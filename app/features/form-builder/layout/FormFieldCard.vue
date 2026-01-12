@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { cn } from '@/lib/utils'
-import type { CardFieldMeta } from '~/features/form-builder/types'
+import type { CardFieldDef } from '~/features/form-builder/types'
 import { resolveText } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import { useContainerFieldSetup } from '~/features/form-builder/composables/useContainerFieldSetup'
 
 interface Props {
-  meta: CardFieldMeta
+  meta: CardFieldDef
   name: string
 }
 

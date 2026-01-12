@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import type { FieldContext } from '~/features/form-builder/types'
+import type { FieldContext, VisibilityFn } from '~/features/form-builder/types'
 
 /**
  * Unified field path and visibility utilities
@@ -161,7 +161,7 @@ export function pathExistsInValues(path: string, values: unknown): boolean {
  * - Function: `(ctx: FieldContext) => boolean` - Evaluated directly
  * - ConditionGroup: Declarative object with conditions array - Evaluated using evaluateConditionGroup
  *
- * @param field - Field metadata containing optional visibleWhen function or ConditionGroup
+ * @param field - Field definition containing optional visibleWhen function or ConditionGroup
  * @param ctx - Field context with values to evaluate condition against
  * @param options - Additional visibility context
  * @returns True if field should be visible
@@ -169,19 +169,22 @@ export function pathExistsInValues(path: string, values: unknown): boolean {
  * @example
  * ```ts
  * // Simple visibility check
- * const visible = checkFieldVisibility(fieldMeta, ctx)
+ * const visible = checkFieldVisibility(fieldDef, ctx)
  *
  * // With parent visibility
- * const visible = checkFieldVisibility(fieldMeta, ctx, { parentVisible: false })
+ * const visible = checkFieldVisibility(fieldDef, ctx, { parentVisible: false })
  *
  * // Skip container validation (for validation rules)
- * const visible = checkFieldVisibility(fieldMeta, ctx, {
+ * const visible = checkFieldVisibility(fieldDef, ctx, {
  *   skipContainerValidation: true
  * })
  * ```
  */
 export function checkFieldVisibility(
-  field: { type?: string; visibleWhen?: ((ctx: FieldContext) => boolean) | ConditionGroup },
+  field: {
+    type?: string
+    visibleWhen?: VisibilityFn | ConditionGroup
+  },
   ctx: FieldContext,
   options: { parentVisible?: boolean; skipContainerValidation?: boolean } = {}
 ): boolean {
@@ -193,7 +196,8 @@ export function checkFieldVisibility(
   // Container fields (field-group, tabs) should validate children even when collapsed
   // This ensures validation errors are tracked even if the container is hidden
   if (!skipContainerValidation) {
-    const isContainerField = ['field-group', 'tabs', 'card'].includes(field.type || '')
+    const fieldType = field.type || ''
+    const isContainerField = ['field-group', 'tabs', 'card'].includes(fieldType)
     if (isContainerField) return true
   }
 
@@ -204,6 +208,9 @@ export function checkFieldVisibility(
   if (typeof field.visibleWhen === 'function') {
     // Function-based condition (existing behavior)
     return field.visibleWhen(ctx)
+  } else if ('value' in field.visibleWhen) {
+    // ComputedRef<boolean>
+    return field.visibleWhen.value
   } else {
     // Declarative ConditionGroup (new behavior)
     return evaluateConditionGroup(field.visibleWhen, ctx.values)

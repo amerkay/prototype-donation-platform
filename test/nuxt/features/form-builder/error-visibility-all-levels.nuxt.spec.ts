@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { nextTick } from 'vue'
 import * as z from 'zod'
 import FormField from '~/features/form-builder/FormField.vue'
-import type { FieldMeta, FieldGroupMeta } from '~/features/form-builder/types'
+import { fieldGroup, tabsField, numberField, arrayField } from '~/features/form-builder/api'
 import { mountFormField } from './test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 
@@ -40,14 +40,12 @@ describe('Error Visibility - All Nested Levels (Regression Prevention)', () => {
     const { wrapper } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('pricing', {
           label: 'Pricing Configuration',
           collapsible: true,
           collapsibleDefaultOpen: false, // Start CLOSED
           fields: {
-            frequencies: {
-              type: 'tabs',
+            frequencies: tabsField('frequencies', {
               label: 'Donation Frequencies',
               defaultValue: 'once',
               tabs: [
@@ -55,77 +53,69 @@ describe('Error Visibility - All Nested Levels (Regression Prevention)', () => {
                   value: 'once',
                   label: 'One-time',
                   fields: {
-                    customAmount: {
-                      type: 'field-group',
+                    customAmount: fieldGroup('customAmount', {
                       label: 'Custom Amount',
                       collapsible: false,
                       fields: {
-                        min: {
-                          type: 'number',
+                        min: numberField('min', {
                           label: 'Min',
                           defaultValue: 5,
                           rules: z.coerce.number().min(1)
-                        }
+                        })
                       }
-                    } as FieldGroupMeta,
-                    presetAmounts: {
-                      type: 'array',
+                    }),
+                    presetAmounts: arrayField('presetAmounts', {
                       label: 'Preset Amounts',
-                      itemField: {
-                        type: 'number',
+                      itemField: numberField('', {
                         placeholder: 'Amount',
-                        rules: ({ values }) => {
+                        rules: (ctx) => {
                           const minAmount = (
-                            values.customAmount as Record<string, unknown> | undefined
+                            ctx.values.customAmount as Record<string, unknown> | undefined
                           )?.min as number | undefined
                           const effectiveMin = minAmount ?? 1
                           return z.coerce
                             .number()
                             .min(effectiveMin, `Must be at least ${effectiveMin}`)
                         }
-                      }
-                    }
+                      })
+                    })
                   }
                 },
                 {
                   value: 'monthly',
                   label: 'Monthly',
                   fields: {
-                    customAmount: {
-                      type: 'field-group',
+                    customAmount: fieldGroup('customAmount', {
                       label: 'Custom Amount',
                       collapsible: false,
                       fields: {
-                        min: {
-                          type: 'number',
+                        min: numberField('min', {
                           label: 'Min',
                           defaultValue: 5,
                           rules: z.coerce.number().min(1)
-                        }
+                        })
                       }
-                    } as FieldGroupMeta,
-                    presetAmounts: {
-                      type: 'array',
+                    }),
+                    presetAmounts: arrayField('presetAmounts', {
                       label: 'Preset Amounts',
-                      itemField: {
-                        type: 'number',
-                        rules: ({ values }) => {
+                      itemField: numberField('', {
+                        rules: (ctx) => {
                           const minAmount = (
-                            values.customAmount as Record<string, unknown> | undefined
+                            ctx.values.customAmount as Record<string, unknown> | undefined
                           )?.min as number | undefined
                           const effectiveMin = minAmount ?? 1
                           return z.coerce
                             .number()
                             .min(effectiveMin, `Must be at least ${effectiveMin}`)
                         }
-                      }
-                    }
+                      })
+                    })
                   }
                 }
               ]
-            }
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'pricing'
       },
@@ -215,24 +205,23 @@ describe('Error Visibility - All Nested Levels (Regression Prevention)', () => {
     const { wrapper } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('settings', {
           label: 'Settings',
           collapsible: true,
           collapsibleDefaultOpen: false,
           fields: {
-            items: {
-              type: 'array',
+            items: arrayField('items', {
               label: 'Required Items',
               itemField: {
                 type: 'text',
+                name: '',
                 label: 'Item Name',
                 placeholder: 'Enter name',
                 rules: z.string().min(3, 'Name must be at least 3 characters')
               }
-            }
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'settings'
       },
@@ -275,14 +264,12 @@ describe('Error Visibility - All Nested Levels (Regression Prevention)', () => {
     const { wrapper, validate } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('pricing', {
           label: 'Pricing',
           collapsible: true,
           collapsibleDefaultOpen: true, // Start OPEN for this test
           fields: {
-            frequencies: {
-              type: 'tabs',
+            frequencies: tabsField('frequencies', {
               label: 'Frequencies',
               defaultValue: 'once',
               tabs: [
@@ -290,41 +277,37 @@ describe('Error Visibility - All Nested Levels (Regression Prevention)', () => {
                   value: 'once',
                   label: 'Once',
                   fields: {
-                    customAmount: {
-                      type: 'field-group',
+                    customAmount: fieldGroup('customAmount', {
                       label: 'Custom Amount',
                       collapsible: false,
                       fields: {
-                        min: {
-                          type: 'number',
+                        min: numberField('min', {
                           label: 'Min',
                           defaultValue: 5,
                           rules: z.number().min(1)
-                        }
+                        })
                       }
-                    } as FieldGroupMeta,
-                    presetAmounts: {
-                      type: 'array',
+                    }),
+                    presetAmounts: arrayField('presetAmounts', {
                       label: 'Preset Amounts',
-                      itemField: {
-                        type: 'number',
-                        rules: ({ values }) => {
+                      itemField: numberField('', {
+                        rules: (ctx) => {
                           const minAmount = (
-                            values.customAmount as Record<string, unknown> | undefined
+                            ctx.values.customAmount as Record<string, unknown> | undefined
                           )?.min as number | undefined
                           const effectiveMin = minAmount ?? 1
                           return z.coerce
                             .number()
                             .min(effectiveMin, `Must be at least ${effectiveMin}`)
                         }
-                      }
-                    }
+                      })
+                    })
                   }
                 }
               ]
-            }
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'pricing'
       },
@@ -374,36 +357,33 @@ describe('Error Visibility - All Nested Levels (Regression Prevention)', () => {
     const { wrapper } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('complex', {
           label: 'Complex Structure',
           collapsible: true,
           collapsibleDefaultOpen: false,
           fields: {
-            items: {
-              type: 'array',
+            items: arrayField('items', {
               label: 'Items',
-              itemField: {
-                type: 'field-group',
+              itemField: fieldGroup('', {
                 label: 'Item Details',
                 collapsible: false,
                 fields: {
                   name: {
                     type: 'text',
+                    name: 'name',
                     label: 'Name',
                     placeholder: 'Enter name',
                     rules: z.string().min(1, 'Name required')
                   },
-                  value: {
-                    type: 'number',
+                  value: numberField('value', {
                     label: 'Value',
                     rules: z.number().min(1, 'Value must be positive')
-                  }
+                  })
                 }
-              }
-            }
+              })
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'complex'
       },

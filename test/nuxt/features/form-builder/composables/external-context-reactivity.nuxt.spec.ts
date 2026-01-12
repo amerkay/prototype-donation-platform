@@ -10,9 +10,9 @@
 import { describe, it, expect } from 'vitest'
 import { ref, nextTick } from 'vue'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
-import * as z from 'zod'
+import { z } from 'zod'
 import FormRenderer from '@/features/form-builder/FormRenderer.vue'
-import type { FormDef, FieldContext } from '@/features/form-builder/types'
+import { defineForm, textField } from '@/features/form-builder/api'
 
 async function waitForUpdate() {
   await nextTick()
@@ -36,27 +36,23 @@ describe('external context reactivity', () => {
     })
 
     // Form with conditional field based on external context
-    const formSection: FormDef = {
-      id: 'test-form',
-      fields: {
-        gmailBonus: {
-          type: 'text',
-          label: 'Gmail Bonus Code',
-          placeholder: 'Enter bonus code',
-          rules: z.string().min(5),
-          visibleWhen: {
-            match: 'all',
-            conditions: [
-              {
-                field: 'donorInfo.email',
-                operator: 'contains',
-                value: 'gmail'
-              }
-            ]
-          }
+    const formSection = defineForm('test-form', () => ({
+      gmailBonus: textField('gmailBonus', {
+        label: 'Gmail Bonus Code',
+        placeholder: 'Enter bonus code',
+        rules: z.string().min(5),
+        visibleWhen: {
+          match: 'all',
+          conditions: [
+            {
+              field: 'donorInfo.email',
+              operator: 'contains',
+              value: 'gmail'
+            }
+          ]
         }
-      }
-    }
+      })
+    }))
 
     const modelValue = ref({})
 
@@ -113,19 +109,15 @@ describe('external context reactivity', () => {
     // Start with empty context (Guest user scenario)
     const externalContext = ref<Record<string, unknown>>({})
 
-    const formSection: FormDef = {
-      id: 'test-form',
-      fields: {
-        thankYouMessage: {
-          type: 'text',
-          // Dynamic label based on external context
-          label: (ctx: FieldContext) =>
-            `Message for ${ctx.values.donorName || 'Guest'} ($${ctx.values['donation.amount'] || 0} donation)`,
-          placeholder: 'Enter your message',
-          rules: z.string()
-        }
-      }
-    }
+    const formSection = defineForm('test-form', () => ({
+      thankYouMessage: textField('thankYouMessage', {
+        // Dynamic label based on external context
+        label: (ctx) =>
+          `Message for ${ctx.values.donorName || 'Guest'} ($${ctx.values['donation.amount'] || 0} donation)`,
+        placeholder: 'Enter your message',
+        rules: z.string()
+      })
+    }))
 
     const wrapper = await mountSuspended(FormRenderer, {
       props: {

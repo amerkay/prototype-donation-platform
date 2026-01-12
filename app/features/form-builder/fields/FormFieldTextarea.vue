@@ -2,11 +2,11 @@
 import { computed } from 'vue'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
-import type { TextareaFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
+import type { FieldProps, FieldEmits, TextareaFieldDef } from '~/features/form-builder/types'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 
-type Props = FieldProps<string | number, TextareaFieldMeta>
+type Props = FieldProps<string | number, TextareaFieldDef>
 
 const props = defineProps<Props>()
 defineEmits<FieldEmits<string | number | undefined>>()

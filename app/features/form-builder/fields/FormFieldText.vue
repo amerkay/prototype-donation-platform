@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import type { TextFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
+import type { FieldProps, FieldEmits, TextFieldDef } from '~/features/form-builder/types'
 import {
   useFieldWrapper,
   preventEnterSubmit
 } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 
-type Props = FieldProps<string | number, TextFieldMeta>
+type Props = FieldProps<string | number, TextFieldDef>
 
 const props = defineProps<Props>()
 defineEmits<FieldEmits<string | number | undefined>>()

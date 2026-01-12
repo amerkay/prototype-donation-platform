@@ -1,5 +1,6 @@
 import * as z from 'zod'
-import type { FieldMetaMap } from '~/features/form-builder/types'
+import type { FieldDef } from '~/features/form-builder/types'
+import { toggleField } from '~/features/form-builder/api'
 
 /**
  * Create reusable terms acceptance toggle field
@@ -7,7 +8,7 @@ import type { FieldMetaMap } from '~/features/form-builder/types'
  * Provides a consistent required terms acceptance pattern with Zod validation.
  *
  * @param visibleWhen - Function that determines when field should be visible
- * @returns FieldMetaMap object with acceptTerms field
+ * @returns Record with acceptTerms field
  *
  * @example
  * ```typescript
@@ -19,17 +20,16 @@ import type { FieldMetaMap } from '~/features/form-builder/types'
  */
 export function createTermsAcceptanceField(
   visibleWhen?: (ctx: { values: Record<string, unknown> }) => boolean
-): FieldMetaMap {
-  return {
-    acceptTerms: {
-      type: 'toggle',
-      label: 'I accept the terms and conditions',
-      description: 'I agree to the Terms of Service and Privacy Policy.',
-      visibleWhen,
-      defaultValue: false,
-      rules: z.boolean().refine((val) => val === true, {
-        message: 'You must accept the terms and conditions to continue'
-      })
-    }
-  }
+): Record<string, FieldDef> {
+  const acceptTerms = toggleField('acceptTerms', {
+    label: 'I accept the terms and conditions',
+    description: 'I agree to the Terms of Service and Privacy Policy.',
+    visibleWhen,
+    defaultValue: false,
+    rules: z.boolean().refine((val) => val === true, {
+      message: 'You must accept the terms and conditions to continue'
+    })
+  })
+
+  return { acceptTerms }
 }

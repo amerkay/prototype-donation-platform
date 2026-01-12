@@ -3,7 +3,7 @@ import { computed, watch, type Component } from 'vue'
 import { useField, useFormErrors } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
-import type { FieldMeta, SetFieldValueFn, FieldType } from '~/features/form-builder/types'
+import type { FieldDef, SetFieldValueFn, FieldType } from '~/features/form-builder/types'
 import {
   resolveVeeFieldPath,
   checkFieldVisibility,
@@ -17,6 +17,7 @@ import FormFieldText from './fields/FormFieldText.vue'
 import FormFieldTextarea from './fields/FormFieldTextarea.vue'
 import FormFieldNumber from './fields/FormFieldNumber.vue'
 import FormFieldCurrency from './fields/FormFieldCurrency.vue'
+import FormFieldHidden from './fields/FormFieldHidden.vue'
 import FormFieldToggle from './fields/FormFieldToggle.vue'
 import FormFieldCheckbox from './fields/FormFieldCheckbox.vue'
 import FormFieldSelect from './fields/FormFieldSelect.vue'
@@ -32,7 +33,7 @@ import FormFieldCard from './layout/FormFieldCard.vue'
 
 interface Props {
   name: string
-  meta: FieldMeta
+  meta: FieldDef
   class?: string
 }
 
@@ -45,6 +46,7 @@ const FIELD_COMPONENTS: Record<string, Component> = {
   textarea: FormFieldTextarea,
   number: FormFieldNumber,
   currency: FormFieldCurrency,
+  hidden: FormFieldHidden,
   toggle: FormFieldToggle,
   select: FormFieldSelect,
   combobox: FormFieldCombobox,
@@ -115,9 +117,13 @@ const fieldRules = computed(() => {
 
   if (!props.meta.rules) return undefined
 
-  // If rules is a function, call it with current form values
+  // If rules is a function/computed, resolve it with current form values
   let rules =
-    typeof props.meta.rules === 'function' ? props.meta.rules(fieldContext.value) : props.meta.rules
+    typeof props.meta.rules === 'function'
+      ? props.meta.rules(fieldContext.value)
+      : 'value' in props.meta.rules
+        ? props.meta.rules.value
+        : props.meta.rules
 
   // Apply smart preprocessing: if field has explicit defaultValue, ensure undefined → defaultValue
   // This prevents "expected string, received undefined" errors when fields are cleared
@@ -145,33 +151,42 @@ const fieldBinding = isContainerField.value
       validateOnMount
     })
 
+// Helper: Create scoped setValue that resolves relative paths
+const createScopedSetValue = (): SetFieldValueFn => {
+  return (relativePath: string, value: unknown) => {
+    const absolutePath = joinPath(fieldPrefix, relativePath)
+    setFieldValue(absolutePath, value)
+  }
+}
+
+// Helper: Clear field without validation (for onVisibilityChange)
+const clearFieldSilently = () => {
+  if (!fieldBinding) return
+  fieldBinding.setValue(undefined, false)
+  fieldBinding.resetField({ value: undefined })
+}
+
 // Extract field value and validation attrs
 const fieldValue = computed({
   get: () => (fieldBinding ? fieldBinding.value.value : undefined),
   set: (val) => {
-    if (fieldBinding) {
-      fieldBinding.value.value = val
-      // Trigger onChange callback if provided
-      if (props.meta.onChange) {
-        // Create scoped setFieldValue that prepends current field prefix
-        // This allows onChange to use relative paths (e.g., 'id') that resolve correctly
-        // even inside nested field-groups or array items (same pattern as FormFieldAutocomplete)
-        const scopedSetFieldValue: SetFieldValueFn = (relativePath, value) => {
-          const absolutePath = joinPath(fieldPrefix, relativePath)
-          setFieldValue(absolutePath, value)
-        }
-        const result = props.meta.onChange({
-          value: val,
-          ...fieldContext.value,
-          setValue: scopedSetFieldValue
-        })
+    if (!fieldBinding) return
 
-        // If onChange returns field metadata, auto-apply defaults from it
-        if (result && typeof result === 'object') {
-          const defaults = extractDefaultValues(result as Record<string, FieldMeta>)
-          for (const [fieldKey, fieldValue] of Object.entries(defaults)) {
-            scopedSetFieldValue(fieldKey, fieldValue)
-          }
+    fieldBinding.value.value = val
+
+    if (props.meta.onChange) {
+      const result = props.meta.onChange({
+        value: val,
+        ...fieldContext.value,
+        setValue: createScopedSetValue()
+      })
+
+      // Auto-apply defaults from returned field metadata
+      if (result && typeof result === 'object') {
+        const defaults = extractDefaultValues(result as Record<string, FieldDef>)
+        const scopedSetValue = createScopedSetValue()
+        for (const [key, value] of Object.entries(defaults)) {
+          scopedSetValue(key, value)
         }
       }
     }
@@ -252,25 +267,32 @@ const fieldProps = computed(() => {
   }
 })
 
-// Auto-apply default value when field becomes visible
+// Handle field visibility changes
 watch(
   isVisible,
-  (visible) => {
-    if (
-      visible &&
-      fieldBinding &&
-      fieldValue.value === undefined &&
-      'defaultValue' in props.meta &&
-      props.meta.defaultValue !== undefined
-    ) {
+  (visible, wasVisible) => {
+    if (!fieldBinding) return
+
+    // Apply default value when field becomes visible
+    if (visible && fieldValue.value === undefined && 'defaultValue' in props.meta) {
       fieldBinding.setValue(props.meta.defaultValue, false)
     }
 
-    // Trigger validation when field becomes visible (e.g., accordion/tab opens)
-    // This ensures errors show immediately without waiting for user interaction
-    // Only validate if validateOnMount is enabled (respects form-level setting)
-    if (visible && fieldBinding && !isContainerField.value && validateOnMount) {
+    // Validate on visibility if validateOnMount enabled
+    if (visible && !isContainerField.value && validateOnMount) {
       fieldBinding.validate()
+    }
+
+    // Call visibility change callback
+    if (props.meta.onVisibilityChange && visible !== wasVisible) {
+      props.meta.onVisibilityChange({
+        visible,
+        value: fieldValue.value,
+        setValue: createScopedSetValue(),
+        clearValue: clearFieldSilently,
+        path: props.name,
+        ...fieldContext.value
+      })
     }
   },
   { immediate: true }

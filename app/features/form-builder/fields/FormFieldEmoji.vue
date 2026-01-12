@@ -2,12 +2,12 @@
 import { computed, onMounted, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-vue-next'
-import type { EmojiFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
+import type { FieldProps, FieldEmits, EmojiFieldDef } from '~/features/form-builder/types'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 import EmojiPicker from '../components/EmojiPicker.vue'
 
-type Props = FieldProps<string, EmojiFieldMeta>
+type Props = FieldProps<string, EmojiFieldDef>
 
 const props = defineProps<Props>()
 const emit = defineEmits<FieldEmits<string>>()

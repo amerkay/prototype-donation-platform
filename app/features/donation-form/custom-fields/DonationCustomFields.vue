@@ -6,17 +6,15 @@ import { useFormConfigStore } from '~/stores/formConfig'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import { useDonationFormContext } from '~/features/donation-form/composables/useDonationFormContext'
 import { checkFieldVisibility } from '~/features/form-builder/composables/useFieldPath'
-import {
-  createCustomFieldsFormSection,
-  extractCustomFieldDefaults
-} from '~/features/custom-fields/utils'
+import { useCustomFieldsForm, extractCustomFieldDefaults } from '~/features/custom-fields/utils'
+import type { FormContext } from '~/features/form-builder/types'
 
 interface Props {
   /**
-   * Which step's custom fields to render
+   * Which custom fields tab to render (matches customFieldsTabs keys)
    * @default 'step3'
    */
-  step?: 'step2' | 'step3'
+  tab?: 'step2' | 'step3' | 'hidden'
   /**
    * Whether to show a separator before the custom fields section
    * @default true
@@ -25,7 +23,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  step: 'step3',
+  tab: 'step3',
   showSeparator: true
 })
 
@@ -45,18 +43,18 @@ const { context: donationContext, contextSchema: donationContextSchema } = useDo
 
 // Custom fields section (dynamically generated from config)
 const customFieldsFormSection = computed(() => {
-  const stepConfig = formConfig.value?.features.customFields.customFieldsTabs[props.step]
-  if (!stepConfig?.enabled) return null
-  const fields = stepConfig.fields
+  const tabConfig = formConfig.value?.features.customFields.customFieldsTabs[props.tab]
+  if (!tabConfig?.enabled) return null
+  const fields = tabConfig.fields
   if (fields.length === 0) return null
-  return createCustomFieldsFormSection(fields)
+  return useCustomFieldsForm(fields)
 })
 
 // Generate unique key for FormRenderer to force re-mount when fields change
 const customFieldsKey = computed(() => {
-  const stepConfig = formConfig.value?.features.customFields.customFieldsTabs[props.step]
-  if (!stepConfig?.enabled) return 'disabled'
-  const fields = stepConfig.fields
+  const tabConfig = formConfig.value?.features.customFields.customFieldsTabs[props.tab]
+  if (!tabConfig?.enabled) return 'disabled'
+  const fields = tabConfig.fields
   return JSON.stringify(fields)
 })
 
@@ -95,7 +93,11 @@ const hasVisibleFields = computed(() => {
   if (!customFieldsFormSection.value) return false
 
   const section = customFieldsFormSection.value
-  const fields = Object.values(section.fields)
+  const mockContext = {
+    values: computed(() => ({})),
+    form: computed(() => ({}))
+  } as FormContext
+  const fields = Object.values(section.setup(mockContext))
   if (fields.length === 0) return false
 
   // Create field context for visibility checks
@@ -128,7 +130,22 @@ defineExpose({
 </script>
 
 <template>
-  <template v-if="hasVisibleFields && customFieldsFormSection">
+  <!-- Hidden fields: always render but keep invisible for visibility condition evaluation -->
+  <FormRenderer
+    v-if="tab === 'hidden' && customFieldsFormSection"
+    :key="customFieldsKey"
+    ref="formRef"
+    v-model="customFieldsSection"
+    :validate-on-mount="false"
+    :section="customFieldsFormSection"
+    :context="donationContext"
+    :context-schema="donationContextSchema"
+    class="hidden"
+    @submit="handleSubmit"
+  />
+
+  <!-- Visible fields: only render if there are visible fields -->
+  <template v-else-if="hasVisibleFields && customFieldsFormSection">
     <Separator v-if="showSeparator" />
     <!-- <div class="rounded-lg border border-transparent px-4 py-6 bg-background/40"> -->
     <FormRenderer

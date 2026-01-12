@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { nextTick } from 'vue'
 import * as z from 'zod'
 import FormField from '~/features/form-builder/FormField.vue'
-import type { FieldMeta, FieldGroupMeta } from '~/features/form-builder/types'
+import { fieldGroup, textField, numberField, arrayField } from '~/features/form-builder/api'
 import { mountFormField } from './test-utils'
 
 /**
@@ -41,21 +41,19 @@ describe('FormFieldGroup - Error Caching for Collapsible Containers', () => {
     const { wrapper, validate } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('testGroup', {
           label: 'Collapsible Group',
           collapsible: true,
           collapsibleDefaultOpen: true,
           fields: {
-            requiredField: {
-              type: 'text',
+            requiredField: textField('requiredField', {
               label: 'Required Field',
               placeholder: 'Enter value',
               defaultValue: '',
               rules: z.string().min(1, 'Required')
-            }
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'testGroup'
       },
@@ -102,21 +100,19 @@ describe('FormFieldGroup - Error Caching for Collapsible Containers', () => {
     const { wrapper } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('testGroup', {
           label: 'Collapsed Group',
           collapsible: true,
           collapsibleDefaultOpen: false, // Starts collapsed
           fields: {
-            requiredField: {
-              type: 'text',
+            requiredField: textField('requiredField', {
               label: 'Required Field',
               placeholder: 'Enter value',
               defaultValue: '',
               rules: z.string().min(1, 'Required')
-            }
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'testGroup'
       },
@@ -146,21 +142,19 @@ describe('FormFieldGroup - Error Caching for Collapsible Containers', () => {
     const { wrapper, validate } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('testGroup', {
           label: 'Toggle Group',
           collapsible: true,
           collapsibleDefaultOpen: true,
           fields: {
-            requiredField: {
-              type: 'text',
+            requiredField: textField('requiredField', {
               label: 'Required Field',
               placeholder: 'Enter value',
               defaultValue: '',
               rules: z.string().min(1, 'Required')
-            }
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'testGroup'
       },
@@ -211,21 +205,19 @@ describe('FormFieldGroup - Error Caching for Collapsible Containers', () => {
     const { wrapper } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('testGroup', {
           label: 'Initially Collapsed',
           collapsible: true,
           collapsibleDefaultOpen: false, // Starts collapsed
           fields: {
-            requiredField: {
-              type: 'text',
+            requiredField: textField('requiredField', {
               label: 'Required Field',
               placeholder: 'Enter value',
               defaultValue: '',
               rules: z.string().min(1, 'Required')
-            }
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'testGroup'
       },
@@ -266,21 +258,19 @@ describe('FormFieldGroup - Error Caching for Collapsible Containers', () => {
     const { wrapper, validate } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('testGroup', {
           label: 'Fixable Group',
           collapsible: true,
           collapsibleDefaultOpen: true,
           fields: {
-            textField: {
-              type: 'text',
+            textField: textField('textField', {
               label: 'Text Field',
               placeholder: 'Enter value',
               defaultValue: '',
               rules: z.string().min(1, 'Field is required')
-            }
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'testGroup'
       },
@@ -326,28 +316,25 @@ describe('FormFieldGroup - Error Caching for Collapsible Containers', () => {
     const { wrapper, validate } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('testGroup', {
           label: 'Multi Field Group',
           collapsible: true,
           collapsibleDefaultOpen: true,
           fields: {
-            validField: {
-              type: 'text',
+            validField: textField('validField', {
               label: 'Valid Field',
               placeholder: 'Valid placeholder',
               defaultValue: 'valid',
               rules: z.string().min(1, 'Required')
-            },
-            invalidField: {
-              type: 'text',
+            }),
+            invalidField: textField('invalidField', {
               label: 'Invalid Field',
               placeholder: 'Invalid placeholder',
               defaultValue: '',
               rules: z.string().min(1, 'Required')
-            }
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'testGroup'
       },
@@ -385,28 +372,25 @@ describe('FormFieldGroup - Error Caching for Collapsible Containers', () => {
     const { wrapper } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('testGroup', {
           label: 'Parent Group',
           collapsible: true,
           collapsibleDefaultOpen: false, // Starts collapsed
           fields: {
-            nested: {
-              type: 'field-group',
+            nested: fieldGroup('nested', {
               label: 'Nested Group',
               collapsible: false,
               fields: {
-                deepField: {
-                  type: 'text',
+                deepField: textField('deepField', {
                   label: 'Deep Field',
                   placeholder: 'Deep placeholder',
                   defaultValue: '',
                   rules: z.string().min(1, 'Required')
-                }
+                })
               }
-            } as FieldGroupMeta
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'testGroup'
       },
@@ -431,41 +415,36 @@ describe('FormFieldGroup - Error Caching for Collapsible Containers', () => {
     const { wrapper, validate } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('testGroup', {
           label: 'Array Group',
           collapsible: true,
           collapsibleDefaultOpen: false,
           fields: {
-            customAmount: {
-              type: 'field-group',
+            customAmount: fieldGroup('customAmount', {
               label: 'Custom Amount',
               collapsible: false,
               fields: {
-                min: {
-                  type: 'number',
+                min: numberField('min', {
                   label: 'Min',
                   defaultValue: 5,
                   rules: z.coerce.number().min(1)
-                }
+                })
               }
-            } as FieldGroupMeta,
-            presetAmounts: {
-              type: 'array',
+            }),
+            presetAmounts: arrayField('presetAmounts', {
               label: 'Preset Amounts',
-              itemField: {
-                type: 'number',
+              itemField: numberField('', {
                 placeholder: 'Amount',
-                rules: ({ values }) => {
-                  const minAmount = (values.customAmount as Record<string, unknown> | undefined)
+                rules: (ctx) => {
+                  const minAmount = (ctx.values.customAmount as Record<string, unknown> | undefined)
                     ?.min as number | undefined
                   const effectiveMin = minAmount ?? 1
                   return z.coerce.number().min(effectiveMin, `Must be at least ${effectiveMin}`)
                 }
-              }
-            }
+              })
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'testGroup'
       },
@@ -526,18 +505,16 @@ describe('FormFieldGroup - Error Caching for Collapsible Containers', () => {
     const { wrapper, setFieldError } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('testGroup', {
           label: 'Collapsible Group',
           collapsible: true, // Needs to be collapsible to unmount content
           collapsibleDefaultOpen: false, // Start unmounted (collapsed)
           fields: {
-            childField: {
-              type: 'text',
+            childField: textField('childField', {
               label: 'Child Field'
-            }
+            })
           }
-        },
+        }),
         name: 'testGroup'
       },
       {
@@ -577,30 +554,26 @@ describe('FormFieldGroup - Error Caching for Collapsible Containers', () => {
     const { wrapper } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('container', {
           label: 'Collapsible Container',
           collapsible: true,
           collapsibleDefaultOpen: false, // Start collapsed
           fields: {
-            items: {
-              type: 'array',
+            items: arrayField('items', {
               label: 'Items',
               addButtonText: 'Add Item',
-              itemField: {
-                type: 'field-group',
+              itemField: fieldGroup('', {
                 label: 'Item',
                 fields: {
-                  nestedField: {
-                    type: 'text',
+                  nestedField: textField('nestedField', {
                     label: 'Nested Field',
                     rules: z.string().min(3, 'Must be at least 3 characters')
-                  }
+                  })
                 }
-              }
-            }
+              })
+            })
           }
-        },
+        }),
         name: 'container'
       },
       {

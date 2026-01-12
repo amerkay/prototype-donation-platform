@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, unref } from 'vue'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
-import type { SelectFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
+import type { FieldProps, FieldEmits, SelectFieldDef } from '~/features/form-builder/types'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 import { cn } from '@/lib/utils'
 
-type Props = FieldProps<string | number, SelectFieldMeta>
+type Props = FieldProps<string | number, SelectFieldDef>
 
 const props = defineProps<Props>()
 const emit = defineEmits<FieldEmits<string | number>>()
@@ -20,19 +20,26 @@ const { wrapperProps, resolvedPlaceholder, resolvedDisabled } = useFieldWrapper(
   () => props.errors
 )
 
-// Resolve options (can be static array or function)
+// Resolve options (can be static array, function, or ComputedRef)
 const resolvedOptions = computed(() => {
-  if (typeof props.meta.options === 'function') {
-    return props.meta.options(fieldContext.value)
+  const opts = props.meta.options
+  // Handle ComputedRef
+  if (opts && typeof opts === 'object' && 'value' in opts) {
+    return unref(opts)
   }
-  return props.meta.options
+  if (typeof opts === 'function') {
+    return opts(fieldContext.value)
+  }
+  return opts
 })
 
 const selectValue = computed({
   get: () => props.modelValue,
   set: (value) => {
     // Find the original option to preserve correct type
-    const option = resolvedOptions.value.find((o) => String(o.value) === String(value))
+    const option = resolvedOptions.value.find(
+      (o: { value: string | number }) => String(o.value) === String(value)
+    )
     if (option) {
       emit('update:modelValue', option.value)
     }

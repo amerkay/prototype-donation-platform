@@ -1,7 +1,9 @@
-import type { FormDef } from '~/features/form-builder/types'
+import { defineForm, toggleField, tabsField } from '~/features/form-builder/api'
+import type { ComposableForm, FormContext } from '~/features/form-builder/types'
 import type { ContextSchema } from '~/features/form-builder/conditions'
-import { createCustomFieldsConfigSection } from '~/features/custom-fields/forms/custom-fields-config-form'
+import { useCustomFieldsConfigForm } from '~/features/custom-fields/forms/custom-fields-config-form'
 import { extractAvailableFields } from '~/features/custom-fields/forms/field-extraction'
+import { computed } from 'vue'
 
 /**
  * Filter context schema to only include fields available at or before the given step
@@ -32,16 +34,9 @@ function filterContextSchemaByStep(schema: ContextSchema, stepNumber: number): C
  *
  * @param contextSchema - Optional external context schema for condition builder
  */
-export function createDonationCustomFieldsConfigSection(contextSchema?: ContextSchema): FormDef {
-  // Get the base custom fields config (we'll reuse the fields structure)
-  const baseConfig = createCustomFieldsConfigSection(contextSchema)
-  const fieldsArrayConfig = baseConfig.fields.fields // The array field config
-
-  // Extract fields array config with proper type
-  if (!fieldsArrayConfig || fieldsArrayConfig.type !== 'array') {
-    throw new Error('Expected fields to be an array field')
-  }
-
+export function createDonationCustomFieldsConfigSection(
+  contextSchema?: ContextSchema
+): ComposableForm {
   // Filter context schema for each step
   const step2Schema = contextSchema ? filterContextSchemaByStep(contextSchema, 2) : undefined
   const step3Schema = contextSchema ? filterContextSchemaByStep(contextSchema, 3) : undefined
@@ -58,15 +53,22 @@ export function createDonationCustomFieldsConfigSection(contextSchema?: ContextS
   ]
   const hiddenFieldTypes: import('~/features/custom-fields/fields').CustomFieldType[] = ['hidden']
 
+  // Mock form context for setup calls
+  const mockFormContext: FormContext = {
+    values: computed(() => ({})),
+    form: computed(() => ({}))
+  }
+
   // Create step 2 config with filtered schema (no hidden fields)
-  const step2Config = createCustomFieldsConfigSection(step2Schema, undefined, visibleFieldTypes)
-  const step2FieldsArrayConfig = step2Config.fields.fields
+  const step2Config = useCustomFieldsConfigForm(step2Schema, undefined, visibleFieldTypes)
+  const step2Fields = step2Config.setup(mockFormContext)
+  const step2FieldsArrayConfig = step2Fields.fields
   if (!step2FieldsArrayConfig || step2FieldsArrayConfig.type !== 'array') {
     throw new Error('Expected step2 fields to be an array field')
   }
 
   // Create step 3 config with filtered schema and step 2 fields resolver (no hidden fields)
-  const step3Config = createCustomFieldsConfigSection(
+  const step3Config = useCustomFieldsConfigForm(
     step3Schema,
     (rootValues: Record<string, unknown>) => {
       // Extract fields from Step 2 configuration
@@ -88,73 +90,99 @@ export function createDonationCustomFieldsConfigSection(contextSchema?: ContextS
     },
     visibleFieldTypes
   )
-  const step3FieldsArrayConfig = step3Config.fields.fields
+  const step3Fields = step3Config.setup(mockFormContext)
+  const step3FieldsArrayConfig = step3Fields.fields
   if (!step3FieldsArrayConfig || step3FieldsArrayConfig.type !== 'array') {
     throw new Error('Expected step3 fields to be an array field')
   }
 
-  // Create hidden fields config (only hidden type, no context schema needed)
-  // Hidden fields can't have visibility conditions since they're never shown
-  const hiddenConfig = createCustomFieldsConfigSection(undefined, undefined, hiddenFieldTypes)
-  const hiddenFieldsArrayConfig = hiddenConfig.fields.fields
+  // Create hidden fields config with full context and access to step2+step3 fields
+  // Hidden fields CAN have visibility conditions to control when they're included in submission
+  const hiddenConfig = useCustomFieldsConfigForm(
+    contextSchema, // Use full context schema (not filtered by step)
+    (rootValues: Record<string, unknown>) => {
+      // Extract fields from BOTH Step 2 and Step 3 configurations
+      const customFieldsTabs =
+        (rootValues.customFieldsTabs as Record<string, unknown>) ||
+        ((rootValues.customFields as Record<string, unknown>)?.customFieldsTabs as Record<
+          string,
+          unknown
+        >)
+
+      const fieldsFromBothSteps = []
+
+      // Extract Step 2 fields
+      const step2Data = customFieldsTabs?.step2 as Record<string, unknown> | undefined
+      const step2Fields = step2Data?.fields
+      if (Array.isArray(step2Fields)) {
+        fieldsFromBothSteps.push(
+          ...extractAvailableFields(step2Fields as Record<string, unknown>[])
+        )
+      }
+
+      // Extract Step 3 fields
+      const step3Data = customFieldsTabs?.step3 as Record<string, unknown> | undefined
+      const step3Fields = step3Data?.fields
+      if (Array.isArray(step3Fields)) {
+        fieldsFromBothSteps.push(
+          ...extractAvailableFields(step3Fields as Record<string, unknown>[])
+        )
+      }
+
+      return fieldsFromBothSteps
+    },
+    hiddenFieldTypes
+  )
+  const hiddenFields = hiddenConfig.setup(mockFormContext)
+  const hiddenFieldsArrayConfig = hiddenFields.fields
   if (!hiddenFieldsArrayConfig || hiddenFieldsArrayConfig.type !== 'array') {
     throw new Error('Expected hidden fields to be an array field')
   }
 
-  return {
-    id: 'customFields',
-    fields: {
-      customFieldsTabs: {
-        type: 'tabs',
-        label: 'Custom Fields Configuration',
-        description: 'Add extra questions to different steps of the donation form',
-        tabs: [
-          {
-            value: 'step2',
-            label: 'Step 2 Custom Fields',
-            fields: {
-              enabled: {
-                type: 'toggle',
-                label: 'Enable Step 2 Custom Fields',
-                description: 'Add extra questions to Step 2 (after donor info, before payment)',
-                labelClass: 'font-bold',
-                isSeparatorAfter: true
-              },
-              fields: step2FieldsArrayConfig
-            }
-          },
-          {
-            value: 'step3',
-            label: 'Step 3 Custom Fields',
-            fields: {
-              enabled: {
-                type: 'toggle',
-                label: 'Enable Step 3 Custom Fields',
-                description:
-                  'Add extra questions to Step 3 (with Gift Aid, cover costs, and preferences)',
-                labelClass: 'font-bold',
-                isSeparatorAfter: true
-              },
-              fields: step3FieldsArrayConfig
-            }
-          },
-          {
-            value: 'hidden',
-            label: 'Hidden Fields',
-            fields: {
-              enabled: {
-                type: 'toggle',
-                label: 'Enable Hidden Fields',
-                description:
-                  'Add hidden tracking fields (stored but not shown to users on any step)',
-                labelClass: 'font-bold',
-                isSeparatorAfter: true
-              },
-              fields: hiddenFieldsArrayConfig
-            }
-          }
-        ]
-      }
-    }
-  }
+  return defineForm('customFields', () => {
+    const step2Enabled = toggleField('enabled', {
+      label: 'Enable Step 2 Custom Fields',
+      description: 'Add extra questions to Step 2 (after donor info, before payment)',
+      labelClass: 'font-bold',
+      isSeparatorAfter: true
+    })
+
+    const step3Enabled = toggleField('enabled', {
+      label: 'Enable Step 3 Custom Fields',
+      description: 'Add extra questions to Step 3 (with Gift Aid, cover costs, and preferences)',
+      labelClass: 'font-bold',
+      isSeparatorAfter: true
+    })
+
+    const hiddenEnabled = toggleField('enabled', {
+      label: 'Enable Hidden Fields',
+      description: 'Add hidden tracking fields (stored but not shown to users on any step)',
+      labelClass: 'font-bold',
+      isSeparatorAfter: true
+    })
+
+    const customFieldsTabs = tabsField('customFieldsTabs', {
+      label: 'Custom Fields Configuration',
+      description: 'Add extra questions to different steps of the donation form',
+      tabs: [
+        {
+          value: 'step2',
+          label: 'Step 2 Custom Fields',
+          fields: { enabled: step2Enabled, fields: step2FieldsArrayConfig }
+        },
+        {
+          value: 'step3',
+          label: 'Step 3 Custom Fields',
+          fields: { enabled: step3Enabled, fields: step3FieldsArrayConfig }
+        },
+        {
+          value: 'hidden',
+          label: 'Hidden Fields',
+          fields: { enabled: hiddenEnabled, fields: hiddenFieldsArrayConfig }
+        }
+      ]
+    })
+
+    return { customFieldsTabs }
+  })
 }

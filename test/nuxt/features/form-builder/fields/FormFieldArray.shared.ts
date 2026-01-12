@@ -2,7 +2,7 @@ import { vi } from 'vitest'
 import { nextTick } from 'vue'
 import * as z from 'zod'
 import FormFieldArray from '~/features/form-builder/containers/FormFieldArray.vue'
-import type { ArrayFieldMeta, FieldMeta } from '~/features/form-builder/types'
+import type { ArrayFieldDef, FieldDef } from '~/features/form-builder/types'
 import { mountFormField } from '../test-utils'
 
 /**
@@ -26,18 +26,20 @@ export async function waitForArrayUpdate() {
  * Provides flexible configuration for different test scenarios
  */
 export async function mountFormFieldArray(
-  meta: Partial<ArrayFieldMeta> = {},
+  meta: Partial<ArrayFieldDef> = {},
   modelValue: unknown[] = [],
   options: {
     initialValues?: Record<string, unknown>
     sectionId?: string
   } = {}
 ) {
-  const defaultMeta: ArrayFieldMeta = {
+  const defaultMeta: ArrayFieldDef = {
     type: 'array',
+    name: 'testArray',
     label: 'Test Array Field',
     itemField: {
       type: 'text',
+      name: '',
       label: 'Item',
       rules: z.string().optional()
     },
@@ -69,7 +71,7 @@ export async function mountFormFieldArray(
  * Helper to create dynamic itemField function (like custom fields)
  * Returns different fields based on item values
  */
-export function createDynamicItemField(): (values: Record<string, unknown>) => FieldMeta {
+export function createDynamicItemField(): (values: Record<string, unknown>) => FieldDef {
   return (values: Record<string, unknown>) => {
     const type = values.type as string | undefined
     const name = values.name as string | undefined
@@ -77,9 +79,10 @@ export function createDynamicItemField(): (values: Record<string, unknown>) => F
     // Dynamic label based on item data
     const displayLabel = name ? `Item: ${name}` : 'New Item'
 
-    const fields: Record<string, FieldMeta> = {
+    const fields: Record<string, FieldDef> = {
       type: {
         type: 'select',
+        name: '',
         label: 'Type',
         options: [
           { value: 'text', label: 'Text' },
@@ -89,6 +92,7 @@ export function createDynamicItemField(): (values: Record<string, unknown>) => F
       },
       name: {
         type: 'text',
+        name: '',
         label: 'Name',
         rules: z.string().min(1, 'Name is required')
       }
@@ -98,6 +102,7 @@ export function createDynamicItemField(): (values: Record<string, unknown>) => F
     if (type === 'text') {
       fields.maxLength = {
         type: 'number',
+        name: '',
         label: 'Max Length',
         min: 1,
         max: 1000,
@@ -107,12 +112,14 @@ export function createDynamicItemField(): (values: Record<string, unknown>) => F
     } else if (type === 'number') {
       fields.min = {
         type: 'number',
+        name: '',
         label: 'Minimum',
         optional: true,
         rules: z.number().optional()
       }
       fields.max = {
         type: 'number',
+        name: '',
         label: 'Maximum',
         optional: true,
         rules: z.number().optional()
@@ -121,6 +128,7 @@ export function createDynamicItemField(): (values: Record<string, unknown>) => F
 
     return {
       type: 'field-group',
+      name: '',
       label: displayLabel,
       collapsible: true,
       collapsibleDefaultOpen: !type,

@@ -3,61 +3,54 @@
  * Single checkbox (boolean) or checkbox array (string[]) with options
  */
 import * as z from 'zod'
-import type { FieldMeta } from '~/features/form-builder/types'
-import { createBaseFieldMeta, slugify, extractFieldValue } from './field-base'
-
-/**
- * Checkbox field configuration (admin-editable)
- */
-export interface CheckboxFieldConfig {
-  id: string
-  label: string
-  optional?: boolean
-  defaultValue?: boolean | string[]
-  options?: string[] // If provided, renders checkbox array; otherwise single checkbox
-}
+import type { CheckboxFieldConfig } from '../types'
+import { slugify, extractFieldValue } from './field-base'
+import {
+  fieldGroup,
+  textField,
+  toggleField,
+  checkboxField as checkboxFieldConstructor,
+  arrayField
+} from '~/features/form-builder/api'
+import type { FieldDef } from '~/features/form-builder/types'
 
 /**
  * Create admin configuration fields for checkbox field
  */
-export function createCheckboxFieldAdminConfig(): Record<string, FieldMeta> {
+export function createCheckboxFieldAdminConfig(): Record<string, FieldDef> {
   return {
-    advancedSettings: {
-      type: 'field-group',
+    advancedSettings: fieldGroup('advancedSettings', {
       label: 'Advanced Settings',
       collapsible: true,
       collapsibleDefaultOpen: false,
       fields: {
-        options: {
-          type: 'array',
+        options: arrayField('options', {
           label: 'Checkbox Options',
           description: 'Leave empty for a single checkbox, or add options for a checkbox group',
           sortable: true,
           addButtonText: 'Add Option',
           optional: true,
-          itemField: {
-            type: 'text',
+          itemField: textField('', {
             placeholder: 'Enter option text',
             rules: z.string().min(1, 'Option text is required')
-          },
+          }),
           rules: z.array(z.string().min(1)).optional()
-        },
-        optional: {
-          type: 'toggle',
+        }),
+        optional: toggleField('optional', {
           label: 'Optional',
           description: 'Allow users to skip this field',
           defaultValue: true,
           rules: z.boolean().optional()
-        }
+        })
       }
-    }
+    })
   }
 }
 
 /**
- * Convert admin config to runtime field metadata
+ * Convert admin config to composable field definition
  */
-export function checkboxFieldToFieldMeta(config: CheckboxFieldConfig): FieldMeta {
+export function checkboxFieldToComposable(config: CheckboxFieldConfig): FieldDef {
   const configObj = config as unknown as Record<string, unknown>
   const optionLabels = extractFieldValue<string[]>(configObj, 'options', [])
   const optional = extractFieldValue<boolean>(configObj, 'optional', true)
@@ -73,9 +66,8 @@ export function checkboxFieldToFieldMeta(config: CheckboxFieldConfig): FieldMeta
 
   const defaultValue = isArrayMode ? [] : false
 
-  return {
-    ...createBaseFieldMeta({ ...config, optional, defaultValue }),
-    type: 'checkbox' as const,
+  return checkboxFieldConstructor(config.id, {
+    label: config.label,
     options,
     defaultValue,
     rules: isArrayMode
@@ -85,7 +77,7 @@ export function checkboxFieldToFieldMeta(config: CheckboxFieldConfig): FieldMeta
       : optional
         ? z.boolean().optional()
         : z.boolean().refine((v) => v === true, { message: `${config.label} is required` })
-  }
+  })
 }
 
 /**
@@ -105,6 +97,6 @@ export function getCheckboxFieldDefaultValue(config: CheckboxFieldConfig): boole
  */
 export const checkboxField = {
   createAdminConfig: createCheckboxFieldAdminConfig,
-  toFieldMeta: checkboxFieldToFieldMeta,
+  toComposable: checkboxFieldToComposable,
   getDefaultValue: getCheckboxFieldDefaultValue
 }

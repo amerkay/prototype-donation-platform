@@ -1,8 +1,21 @@
 import { describe, expect, it } from 'vitest'
-import { createCustomFieldsConfigSection } from '~/features/custom-fields/forms/custom-fields-config-form'
-import type { ArrayFieldMeta, FieldGroupMeta, SelectFieldMeta } from '~/features/form-builder/types'
+import { computed } from 'vue'
+import { useCustomFieldsConfigForm } from '~/features/custom-fields/forms/custom-fields-config-form'
+import type {
+  ArrayFieldDef,
+  FieldGroupDef,
+  SelectFieldDef,
+  FormContext
+} from '~/features/form-builder/types'
 import type { ContextSchema } from '~/features/form-builder/conditions'
 import type { AvailableField } from '~/features/form-builder/composables/useAvailableFields'
+
+function createMockFormContext(values: Record<string, unknown> = {}): FormContext {
+  return {
+    values: computed(() => values),
+    form: computed(() => values)
+  }
+}
 
 describe('custom-fields-config-form - External Fields Resolution', () => {
   /**
@@ -16,14 +29,15 @@ describe('custom-fields-config-form - External Fields Resolution', () => {
     rootValues: Record<string, unknown> = {},
     precedingFields: Array<Record<string, unknown>> = []
   ): Array<{ value: string; label: string }> {
-    const section = createCustomFieldsConfigSection(contextSchema, resolver)
-    const fieldsArray = section.fields.fields as ArrayFieldMeta
+    const section = useCustomFieldsConfigForm(contextSchema, resolver)
+    const fields = section.setup(createMockFormContext())
+    const fieldsArray = fields.fields as ArrayFieldDef
 
     // Create a field item with visibility conditions enabled
     const itemFieldFn = fieldsArray.itemField as (
       v: Record<string, unknown>,
       c: { index: number; items: Record<string, unknown>[]; root: Record<string, unknown> }
-    ) => FieldGroupMeta
+    ) => FieldGroupDef
 
     const fieldItem = itemFieldFn(
       {
@@ -40,15 +54,13 @@ describe('custom-fields-config-form - External Fields Resolution', () => {
     )
 
     // Access the condition builder field selector
-    const visibilityConditions = fieldItem.fields?.visibilityConditions as FieldGroupMeta
-    const visibleWhen = visibilityConditions.fields?.visibleWhen as FieldGroupMeta
-    const conditions = visibleWhen.fields?.conditions as ArrayFieldMeta
-    const conditionItemField = conditions.itemField as (
-      v: Record<string, unknown>
-    ) => FieldGroupMeta
+    const visibilityConditions = fieldItem.fields?.visibilityConditions as FieldGroupDef
+    const visibleWhen = visibilityConditions.fields?.visibleWhen as FieldGroupDef
+    const conditions = visibleWhen.fields?.conditions as ArrayFieldDef
+    const conditionItemField = conditions.itemField as (v: Record<string, unknown>) => FieldGroupDef
 
     const conditionItem = conditionItemField({})
-    const fieldSelector = conditionItem.fields?.field as SelectFieldMeta
+    const fieldSelector = conditionItem.fields?.field as SelectFieldDef
 
     return fieldSelector.options as Array<{ value: string; label: string }>
   }

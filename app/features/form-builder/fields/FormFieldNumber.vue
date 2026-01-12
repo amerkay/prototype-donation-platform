@@ -7,7 +7,7 @@ import {
   NumberFieldIncrement,
   NumberFieldInput
 } from '@/components/ui/number-field'
-import type { NumberFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
+import type { FieldProps, FieldEmits, NumberFieldDef } from '~/features/form-builder/types'
 import {
   useFieldWrapper,
   preventEnterSubmit
@@ -15,7 +15,7 @@ import {
 import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 import { cn } from '@/lib/utils'
 
-type Props = FieldProps<number | null | string, NumberFieldMeta>
+type Props = FieldProps<number | null | string, NumberFieldDef>
 
 const props = defineProps<Props>()
 defineEmits<FieldEmits<number | null | string | undefined>>()

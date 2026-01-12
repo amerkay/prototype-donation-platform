@@ -1,20 +1,16 @@
-import type { FormDef } from '~/features/form-builder/types'
+import { defineForm, toggleField } from '~/features/form-builder/api'
 
 /**
  * Create Gift Aid config section definition
  * Returns the form configuration for editing Gift Aid settings
  */
-export function createGiftAidConfigSection(): FormDef {
-  return {
-    id: 'giftAid',
-    fields: {
-      enabled: {
-        type: 'toggle',
-        label: 'Enable Gift Aid Feature',
-        description: 'Show Gift Aid consent for UK donors (GBP currency only)',
-        labelClass: 'font-bold',
-        isSeparatorAfter: true
-      }
-    }
-  }
-}
+export const useGiftAidConfigSection = defineForm('giftAid', (_ctx) => {
+  const enabled = toggleField('enabled', {
+    label: 'Enable Gift Aid Feature',
+    description: 'Show Gift Aid consent for UK donors (GBP currency only)',
+    labelClass: 'font-bold',
+    isSeparatorAfter: true
+  })
+
+  return { enabled }
+})

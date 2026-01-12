@@ -1,7 +1,7 @@
 import { computed, provide } from 'vue'
 import { getRecordAtPath, useFieldPath, checkFieldVisibility } from './useFieldPath'
 import { useFormBuilderContext } from './useFormBuilderContext'
-import type { FieldContext } from '~/features/form-builder/types'
+import type { VisibilityFn } from '~/features/form-builder/types'
 import type { ConditionGroup } from '~/features/form-builder/conditions'
 
 /**
@@ -14,7 +14,7 @@ import type { ConditionGroup } from '~/features/form-builder/conditions'
  * - Update parent visibility context
  *
  * @param name - Container field name
- * @param visibleWhen - Optional visibility condition (function or ConditionGroup)
+ * @param visibleWhen - Optional visibility condition (function, ComputedRef, or ConditionGroup)
  * @returns Object with computed paths, visibility, and scoped form values
  *
  * @example
@@ -25,10 +25,7 @@ import type { ConditionGroup } from '~/features/form-builder/conditions'
  * )
  * ```
  */
-export function useContainerFieldSetup(
-  name: string,
-  visibleWhen?: ((ctx: FieldContext) => boolean) | ConditionGroup
-) {
+export function useContainerFieldSetup(name: string, visibleWhen?: VisibilityFn | ConditionGroup) {
   const {
     sectionId,
     fieldPrefix: parentFieldPrefix,

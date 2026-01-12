@@ -1,5 +1,6 @@
 import * as z from 'zod'
-import type { FormDef, FieldMetaMap, FieldContext } from '~/features/form-builder/types'
+import { defineForm, textField, selectField, fieldGroup } from '~/features/form-builder/api'
+import type { VisibilityFn, FieldDef, FieldContext } from '~/features/form-builder/types'
 
 /**
  * Country-specific label configuration
@@ -145,146 +146,126 @@ function getCountryLabels(country: string | undefined) {
  * @param visibleWhen - Optional function to control when address fields are visible
  * @param autocompleteSection - HTML autocomplete section attribute (default: 'shipping')
  * @param forcedCountry - Optional country code to pre-set and hide the country selector (e.g., 'GB' for UK-only forms)
- * @returns FieldMetaMap with all address fields
+ * @returns Object with all address field definitions
  *
  * @example
  * ```typescript
  * // Basic usage
- * const fields = {
- *   ...createAddressFields()
- * }
+ * const addressFields = useAddressFields()
+ * return { ...addressFields }
  *
- * // Inside a field-group (automatic prefix handling)
- * const fields = {
- *   homeAddress: {
- *     type: 'field-group',
- *     fields: createAddressFields()
- *   }
- * }
+ * // Inside a field-group
+ * const homeAddress = fieldGroup('homeAddress', {
+ *   fields: useAddressFields()
+ * })
  *
  * // With visibility condition
- * const fields = {
- *   ...createAddressFields(({ values }) => values.needsAddress === true)
- * }
+ * const addressFields = useAddressFields(({ values }) => values.needsAddress === true)
  *
  * // Force UK only (e.g., for Gift Aid)
- * const fields = {
- *   ...createAddressFields(undefined, 'billing', 'GB')
- * }
+ * const addressFields = useAddressFields(undefined, 'billing', 'GB')
  * ```
  */
-export function createAddressFields(
-  visibleWhen?: (ctx: FieldContext) => boolean,
+export function useAddressFields(
+  visibleWhen?: VisibilityFn,
   autocompleteSection = 'shipping',
   forcedCountry?: string
-): FieldMetaMap {
-  return {
-    address1: {
-      type: 'text',
-      label: 'Address Line 1',
-      placeholder: '123 High Street',
-      autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-line1`,
-      defaultValue: '',
-      visibleWhen,
-      rules: z.string().min(5, 'Address is required')
+): Record<string, FieldDef> {
+  const address1 = textField('address1', {
+    label: 'Address Line 1',
+    placeholder: '123 High Street',
+    autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-line1`,
+    defaultValue: '',
+    visibleWhen,
+    rules: z.string().min(5, 'Address is required')
+  })
+
+  const address2 = textField('address2', {
+    label: 'Address Line 2',
+    placeholder: 'Flat 4B',
+    autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-line2`,
+    defaultValue: '',
+    optional: true,
+    rules: z.string().optional()
+  })
+
+  const city = textField('city', {
+    label: 'City/Town',
+    placeholder: 'London',
+    autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level2`,
+    defaultValue: '',
+    visibleWhen,
+    rules: z.string().min(2, 'Town/City is required')
+  })
+
+  const region = textField('region', {
+    label: (ctx: FieldContext) => {
+      const country = ctx.values.country as string | undefined
+      return getCountryLabels(country).region
     },
-
-    address2: {
-      type: 'text',
-      label: 'Address Line 2',
-      placeholder: 'Flat 4B',
-      autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-line2`,
-      defaultValue: '',
-      optional: true,
-      // visibleWhen: (values) => {
-      //   if (visibleWhen && !visibleWhen(values)) return false
-
-      //   if (!values['address1'] || typeof values['address1'] !== 'string') return false
-      //   return z.string().min(5).safeParse(values['address1']).success
-      // },
-      rules: z.string().optional()
+    placeholder: (ctx: FieldContext) => {
+      const country = ctx.values.country as string | undefined
+      return getCountryLabels(country).regionPlaceholder
     },
+    autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level1`,
+    defaultValue: '',
+    rules: z.string().min(2, 'State/Region is required')
+  })
 
-    city: {
-      type: 'text',
-      label: 'City/Town',
-      placeholder: 'London',
-      autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level2`,
-      defaultValue: '',
-      visibleWhen,
-      rules: z.string().min(2, 'Town/City is required')
+  const postcode = textField('postcode', {
+    label: (ctx: FieldContext) => {
+      const country = ctx.values.country as string | undefined
+      return getCountryLabels(country).postcode
     },
-
-    group1: {
-      type: 'field-group',
-      class: 'grid grid-cols-2 gap-x-3',
-      visibleWhen,
-      fields: {
-        region: {
-          type: 'text',
-          label: ({ values }) => {
-            const country = values['country'] as string | undefined
-            return getCountryLabels(country).region
-          },
-          placeholder: ({ values }) => {
-            const country = values['country'] as string | undefined
-            return getCountryLabels(country).regionPlaceholder
-          },
-          autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level1`,
-          defaultValue: '',
-          rules: z.string().min(2, 'State/Region is required')
-        },
-        postcode: {
-          type: 'text',
-          label: ({ values }) => {
-            const country = values['country'] as string | undefined
-            return getCountryLabels(country).postcode
-          },
-          placeholder: ({ values }) => {
-            const country = values['country'] as string | undefined
-            return getCountryLabels(country).postcodePlaceholder
-          },
-          autocomplete: `section-${autocompleteSection} ${autocompleteSection} postal-code`,
-          defaultValue: '',
-          rules: z.string().min(3, 'Postcode is required')
-        }
-      }
+    placeholder: (ctx: FieldContext) => {
+      const country = ctx.values.country as string | undefined
+      return getCountryLabels(country).postcodePlaceholder
     },
+    autocomplete: `section-${autocompleteSection} ${autocompleteSection} postal-code`,
+    defaultValue: '',
+    rules: z.string().min(3, 'Postcode is required')
+  })
 
-    country: {
-      type: 'select',
-      label: 'Country',
-      placeholder: 'Select country...',
-      searchPlaceholder: 'Search countries...',
-      notFoundText: 'No country found.',
-      defaultValue: '',
-      options: [
-        { value: 'GB', label: 'United Kingdom' },
-        { value: 'US', label: 'United States' },
-        { value: 'CA', label: 'Canada' },
-        { value: 'AU', label: 'Australia' },
-        { value: 'NZ', label: 'New Zealand' },
-        { value: 'IE', label: 'Ireland' },
-        { value: 'DE', label: 'Germany' },
-        { value: 'FR', label: 'France' },
-        { value: 'ES', label: 'Spain' },
-        { value: 'IT', label: 'Italy' },
-        { value: 'NL', label: 'Netherlands' },
-        { value: 'BE', label: 'Belgium' },
-        { value: 'CH', label: 'Switzerland' },
-        { value: 'AT', label: 'Austria' },
-        { value: 'SE', label: 'Sweden' },
-        { value: 'NO', label: 'Norway' },
-        { value: 'DK', label: 'Denmark' },
-        { value: 'FI', label: 'Finland' }
-      ],
-      rules: z.string().min(1, 'Country is required'),
-      disabled: !!forcedCountry,
-      autocomplete: `section-${autocompleteSection} ${autocompleteSection} country`,
-      visibleWhen: visibleWhen,
-      isSeparatorAfter: true
-    }
-  }
+  const group1 = fieldGroup('group1', {
+    class: 'grid grid-cols-2 gap-x-3',
+    visibleWhen,
+    fields: { region, postcode }
+  })
+
+  const country = selectField('country', {
+    label: 'Country',
+    placeholder: 'Select country...',
+    searchPlaceholder: 'Search countries...',
+    notFoundText: 'No country found.',
+    defaultValue: forcedCountry || '',
+    options: [
+      { value: 'GB', label: 'United Kingdom' },
+      { value: 'US', label: 'United States' },
+      { value: 'CA', label: 'Canada' },
+      { value: 'AU', label: 'Australia' },
+      { value: 'NZ', label: 'New Zealand' },
+      { value: 'IE', label: 'Ireland' },
+      { value: 'DE', label: 'Germany' },
+      { value: 'FR', label: 'France' },
+      { value: 'ES', label: 'Spain' },
+      { value: 'IT', label: 'Italy' },
+      { value: 'NL', label: 'Netherlands' },
+      { value: 'BE', label: 'Belgium' },
+      { value: 'CH', label: 'Switzerland' },
+      { value: 'AT', label: 'Austria' },
+      { value: 'SE', label: 'Sweden' },
+      { value: 'NO', label: 'Norway' },
+      { value: 'DK', label: 'Denmark' },
+      { value: 'FI', label: 'Finland' }
+    ],
+    rules: z.string().min(1, 'Country is required'),
+    disabled: !!forcedCountry,
+    autocomplete: `section-${autocompleteSection} ${autocompleteSection} country`,
+    visibleWhen,
+    isSeparatorAfter: true
+  })
+
+  return { address1, address2, city, group1, country }
 }
 
 /**
@@ -295,8 +276,8 @@ export function createAddressFields(
  * 3. Town/City
  * 4. County/Region and Postcode
  */
-export const addressFormSection: FormDef = {
-  id: 'address',
-  title: 'Address',
-  fields: createAddressFields()
-}
+export const useAddressForm = defineForm('address', (ctx) => {
+  ctx.title = 'Address'
+
+  return useAddressFields()
+})

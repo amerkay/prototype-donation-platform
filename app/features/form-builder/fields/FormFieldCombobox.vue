@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, unref } from 'vue'
 import {
   ComboboxAnchor,
   ComboboxContent,
@@ -12,12 +12,12 @@ import {
 import { Check, ChevronsUpDown } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import type { ComboboxFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
+import type { FieldProps, FieldEmits, ComboboxFieldDef } from '~/features/form-builder/types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 
-type Props = FieldProps<string | number | (string | number)[], ComboboxFieldMeta>
+type Props = FieldProps<string | number | (string | number)[], ComboboxFieldDef>
 
 const props = defineProps<Props>()
 const emit = defineEmits<FieldEmits<string | number | (string | number)[]>>()
@@ -37,12 +37,17 @@ const searchPlaceholder = computed(() => props.meta.searchPlaceholder ?? 'Search
 
 const notFoundText = computed(() => props.meta.notFoundText ?? 'No results found.')
 
-// Resolve options (can be static array or function)
+// Resolve options (can be static array, function, or ComputedRef)
 const resolvedOptions = computed(() => {
-  if (typeof props.meta.options === 'function') {
-    return props.meta.options(fieldContext.value)
+  const opts = props.meta.options
+  // Handle ComputedRef
+  if (opts && typeof opts === 'object' && 'value' in opts) {
+    return unref(opts)
   }
-  return props.meta.options
+  if (typeof opts === 'function') {
+    return opts(fieldContext.value)
+  }
+  return opts
 })
 
 // Filter options based on search
@@ -50,7 +55,9 @@ const filteredOptions = computed(() => {
   if (!searchValue.value.trim()) return resolvedOptions.value
 
   const query = searchValue.value.toLowerCase()
-  return resolvedOptions.value.filter((opt) => opt.label.toLowerCase().includes(query))
+  return resolvedOptions.value.filter((opt: { label: string }) =>
+    opt.label.toLowerCase().includes(query)
+  )
 })
 
 // Handle single vs multiple selection
@@ -78,7 +85,7 @@ const displayText = computed(() => {
   } else {
     const val = modelValue.value as string | number | undefined
     if (val === undefined || val === '') return ''
-    const option = resolvedOptions.value.find((o) => o.value === val)
+    const option = resolvedOptions.value.find((o: { value: string | number }) => o.value === val)
     return option?.label ?? ''
   }
 })
@@ -87,7 +94,9 @@ const displayText = computed(() => {
 const selectedBadges = computed(() => {
   if (!props.meta.multiple) return []
   const selected = modelValue.value as Array<string | number>
-  return resolvedOptions.value.filter((opt) => selected.includes(opt.value))
+  return resolvedOptions.value.filter((opt: { value: string | number }) =>
+    selected.includes(opt.value)
+  )
 })
 
 // Check if an option is selected

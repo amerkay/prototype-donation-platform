@@ -2,37 +2,40 @@ import { describe, it, expect, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { nextTick } from 'vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
-import type { FormDef } from '~/features/form-builder/types'
+import { defineForm, textField, arrayField } from '~/features/form-builder/api'
 
 describe('FormRenderer', () => {
   it('respects updateOnlyWhenValid when manual errors exist', async () => {
     const sectionId = 'testSection'
-    const schema: FormDef = {
-      id: sectionId,
-      fields: {
-        textField: {
+
+    const schema = defineForm(sectionId, () => {
+      const textFieldDef = textField('textField', {
+        label: 'Text Field'
+      })
+
+      const errorTriggerArray = arrayField('errorTriggerArray', {
+        label: 'Trigger',
+        addButtonText: 'Add Trigger',
+        itemField: {
           type: 'text',
-          label: 'Text Field'
+          name: '',
+          label: 'Item'
         },
-        errorTriggerArray: {
-          type: 'array',
-          label: 'Trigger',
-          addButtonText: 'Add Trigger',
-          itemField: { type: 'text', label: 'Item' },
-          onChange: ({ value, setFieldError }) => {
-            const arr = Array.isArray(value) ? value : []
-            // If array has items, set a manual global error
-            if (arr.length > 0) {
-              // Set error on a path that doesn't correspond to a visible input
-              // so it won't be cleared by standard input validation
-              setFieldError?.(`${sectionId}.manualError`, 'Blocking Error')
-            } else {
-              setFieldError?.(`${sectionId}.manualError`, undefined)
-            }
+        onChange: ({ value, setFieldError }) => {
+          const arr = Array.isArray(value) ? value : []
+          // If array has items, set a manual global error
+          if (arr.length > 0) {
+            // Set error on a path that doesn't correspond to a visible input
+            // so it won't be cleared by standard input validation
+            setFieldError?.(`${sectionId}.manualError`, 'Blocking Error')
+          } else {
+            setFieldError?.(`${sectionId}.manualError`, undefined)
           }
         }
-      }
-    }
+      })
+
+      return { textField: textFieldDef, errorTriggerArray }
+    })
 
     const onUpdate = vi.fn()
 

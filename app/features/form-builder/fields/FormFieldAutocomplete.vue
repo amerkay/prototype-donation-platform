@@ -14,18 +14,18 @@ import { Spinner } from '@/components/ui/spinner'
 import { Check } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 import type {
-  AutocompleteFieldMeta,
   AutocompleteOption,
   SetFieldValueFn,
   FieldProps,
-  FieldEmits
+  FieldEmits,
+  AutocompleteFieldDef
 } from '~/features/form-builder/types'
 import { joinPath } from '~/features/form-builder/composables/useFieldPath'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 
-interface Props extends FieldProps<AutocompleteOption | null, AutocompleteFieldMeta> {
+interface Props extends FieldProps<AutocompleteOption | null, AutocompleteFieldDef> {
   fieldPrefix?: string
 }
 
@@ -77,7 +77,7 @@ const fetchOptions = async (query: string) => {
     } else if (props.meta.options) {
       // Static mode - filter locally
       const lowerQuery = trimmed.toLowerCase()
-      options.value = props.meta.options.filter((opt) =>
+      options.value = props.meta.options.filter((opt: { label: string }) =>
         opt.label.toLowerCase().includes(lowerQuery)
       )
     } else {

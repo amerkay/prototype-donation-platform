@@ -1,5 +1,6 @@
 import * as z from 'zod'
-import type { FieldMetaMap } from '~/features/form-builder/types'
+import type { FieldDef } from '~/features/form-builder/types'
+import { toggleField, textareaField } from '~/features/form-builder/api'
 
 /**
  * Create reusable message fields (toggle + textarea)
@@ -23,38 +24,37 @@ import type { FieldMetaMap } from '~/features/form-builder/types'
  */
 export function createMessageFields(
   visibleWhen?: (ctx: { values: Record<string, unknown> }) => boolean
-): FieldMetaMap {
-  return {
-    isIncludeMessage: {
-      type: 'toggle',
-      label: 'Include a Message',
-      description: 'Why are you donating today?',
-      optional: true,
-      visibleWhen,
-      defaultValue: false
+): Record<string, FieldDef> {
+  const isIncludeMessage = toggleField('isIncludeMessage', {
+    label: 'Include a Message',
+    description: 'Why are you donating today?',
+    optional: true,
+    visibleWhen,
+    defaultValue: false
+  })
+
+  const message = textareaField('message', {
+    label: 'Your Message',
+    placeholder: 'Enter your message (max 250 characters)',
+    maxLength: 250,
+    isShowMaxLengthIndicator: true,
+    defaultValue: '',
+    visibleWhen: ({ values }) => {
+      // First check parent visibility condition
+      if (visibleWhen && !visibleWhen({ values })) {
+        return false
+      }
+      // Then check if message toggle is enabled
+      return values.isIncludeMessage === true
     },
-    message: {
-      type: 'textarea',
-      label: 'Your Message',
-      placeholder: 'Enter your message (max 250 characters)',
-      maxLength: 250,
-      isShowMaxLengthIndicator: true,
-      defaultValue: '',
-      visibleWhen: ({ values }) => {
-        // First check parent visibility condition
-        if (visibleWhen && !visibleWhen({ values })) {
-          return false
-        }
-        // Then check if message toggle is enabled
-        return values.isIncludeMessage === true
-      },
-      rules: ({ values }) =>
-        values.isIncludeMessage === true
-          ? z
-              .string()
-              .min(5, 'Message must be at least 5 characters')
-              .max(250, 'Message must be 250 characters or less')
-          : z.string().optional()
-    }
-  }
+    rules: ({ values }) =>
+      values.isIncludeMessage === true
+        ? z
+            .string()
+            .min(5, 'Message must be at least 5 characters')
+            .max(250, 'Message must be 250 characters or less')
+        : z.string().optional()
+  })
+
+  return { isIncludeMessage, message }
 }

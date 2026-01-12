@@ -18,6 +18,7 @@ describe('FormFieldArray - Validation and Errors', () => {
     const { wrapper } = await mountFormFieldArray({
       itemField: {
         type: 'text',
+        name: '',
         label: 'Name',
         placeholder: 'Enter at least 3 characters',
         rules: z.string().min(3, 'Name must be at least 3 characters')
@@ -54,6 +55,7 @@ describe('FormFieldArray - Validation and Errors', () => {
       {
         itemField: {
           type: 'text',
+          name: '',
           label: 'Name',
           rules: z.string().min(1, 'Required')
         }
@@ -94,11 +96,12 @@ describe('FormFieldArray - Duplicate ID Detection', () => {
     const { wrapper } = await mountFormFieldArray({
       itemField: {
         type: 'field-group',
+        name: '',
         label: 'Item',
         collapsible: false,
         fields: {
-          name: { type: 'text', label: 'Name', rules: z.string() },
-          value: { type: 'number', label: 'Value', rules: z.number() }
+          name: { type: 'text', name: '', label: 'Name', rules: z.string() },
+          value: { type: 'number', name: '', label: 'Value', rules: z.number() }
         }
       }
     })
@@ -134,11 +137,12 @@ describe('FormFieldArray - Duplicate ID Detection', () => {
       {
         itemField: {
           type: 'field-group',
+          name: '',
           label: 'Item',
           collapsible: false,
           fields: {
-            name: { type: 'text', label: 'Name', rules: z.string() },
-            value: { type: 'number', label: 'Value', rules: z.number() }
+            name: { type: 'text', name: '', label: 'Name', rules: z.string() },
+            value: { type: 'number', name: '', label: 'Value', rules: z.number() }
           }
         }
       },
@@ -165,6 +169,7 @@ describe('FormFieldArray - Falsy Default Values', () => {
     const { wrapper, formValues } = await mountFormFieldArray({
       itemField: {
         type: 'number',
+        name: '',
         label: 'Count',
         defaultValue: 0,
         rules: z.number()
@@ -186,6 +191,7 @@ describe('FormFieldArray - Falsy Default Values', () => {
     const { wrapper, formValues } = await mountFormFieldArray({
       itemField: {
         type: 'toggle',
+        name: '',
         label: 'Enabled',
         defaultValue: false,
         rules: z.boolean()
@@ -207,6 +213,7 @@ describe('FormFieldArray - Falsy Default Values', () => {
     const { wrapper, formValues } = await mountFormFieldArray({
       itemField: {
         type: 'text',
+        name: '',
         label: 'Name',
         defaultValue: '',
         rules: z.string().optional()
@@ -228,23 +235,27 @@ describe('FormFieldArray - Falsy Default Values', () => {
     const { wrapper, formValues } = await mountFormFieldArray({
       itemField: {
         type: 'field-group',
+        name: '',
         label: 'Settings',
         collapsible: false,
         fields: {
           count: {
             type: 'number',
+            name: '',
             label: 'Count',
             defaultValue: 0,
             rules: z.number()
           },
           enabled: {
             type: 'toggle',
+            name: '',
             label: 'Enabled',
             defaultValue: false,
             rules: z.boolean()
           },
           label: {
             type: 'text',
+            name: '',
             label: 'Label',
             defaultValue: '',
             rules: z.string()
@@ -278,6 +289,7 @@ describe('FormFieldArray - Array-Level Validation', () => {
     const { wrapper, formValues } = await mountFormFieldArray({
       itemField: {
         type: 'text',
+        name: '',
         label: 'Item',
         rules: z.string().min(1)
       },
@@ -317,6 +329,7 @@ describe('FormFieldArray - Array-Level Validation', () => {
       {
         itemField: {
           type: 'text',
+          name: '',
           label: 'Item',
           rules: z.string()
         }
@@ -334,9 +347,11 @@ describe('FormFieldArray - Array-Level Validation', () => {
       {
         meta: {
           type: 'array',
+          name: '',
           label: 'Test Array',
           itemField: {
             type: 'text',
+            name: '',
             label: 'Item',
             rules: z.string()
           }
@@ -364,6 +379,7 @@ describe('FormFieldArray - Non-Sortable Behavior', () => {
       sortable: false,
       itemField: {
         type: 'text',
+        name: '',
         label: 'Item',
         rules: z.string()
       }
@@ -388,6 +404,7 @@ describe('FormFieldArray - Non-Sortable Behavior', () => {
     const { wrapper } = await mountFormFieldArray({
       itemField: {
         type: 'text',
+        name: '',
         label: 'Item',
         rules: z.string()
       }

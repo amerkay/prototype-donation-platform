@@ -4,36 +4,37 @@ import NextButton from '~/features/donation-form/components/NextButton.vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
 import CoverCostsField from '~/features/donation-form/cover-costs/CoverCostsField.vue'
 import CoverCostsUpsellModal from '~/features/donation-form/cover-costs/CoverCostsUpsellModal.vue'
+import { defineForm } from '~/features/form-builder/api'
 import { createGiftAidFields } from '../../gift-aid/forms/gift-aid-declaration-form'
 import { createEmailOptInField } from '~/features/donation-form/contact-consent/forms/email-opt-in-field'
 import { createTermsAcceptanceField } from '~/features/donation-form/terms/forms/terms-acceptance-field'
 import { useDonationFormStore } from '~/features/donation-form/stores/donationForm'
 import Separator from '~/components/ui/separator/Separator.vue'
 import { useFormConfigStore } from '~/stores/formConfig'
-import type { FormDef } from '~/features/form-builder/types'
 import DonationCustomFields from '~/features/donation-form/custom-fields/DonationCustomFields.vue'
+import type { FieldDef } from '~/features/form-builder/types'
 
 // Get shared form config from store
 const configStore = useFormConfigStore()
 const formConfig = computed(() => configStore.fullConfig)
 
 // Gift Aid form section (dynamically enabled from config)
-const giftAidFormSection = computed(() => ({
-  id: 'gift-aid',
-  fields: createGiftAidFields(formConfig.value?.features.giftAid.enabled ?? true)
-}))
+const giftAidFormSection = computed(() =>
+  defineForm(
+    'gift-aid',
+    () =>
+      createGiftAidFields(formConfig.value?.features.giftAid.enabled ?? true) as Record<
+        string,
+        FieldDef
+      >
+  )
+)
 
 // Email opt-in form section
-const emailOptInFormSection: FormDef = {
-  id: 'email-opt-in',
-  fields: createEmailOptInField()
-}
+const emailOptInFormSection = defineForm('email-opt-in', () => createEmailOptInField())
 
 // Terms acceptance form section (should be last)
-const termsFormSection: FormDef = {
-  id: 'terms',
-  fields: createTermsAcceptanceField()
-}
+const termsFormSection = defineForm('terms', () => createTermsAcceptanceField())
 
 const emit = defineEmits<{
   complete: []
@@ -196,7 +197,7 @@ const handleNext = () => {
     </div>
 
     <!-- Custom Fields (dynamically generated from admin config) -->
-    <DonationCustomFields ref="customFieldsRef" step="step3" @submit="handleNext" />
+    <DonationCustomFields ref="customFieldsRef" tab="step3" @submit="handleNext" />
 
     <!-- Email Opt-in -->
     <div>

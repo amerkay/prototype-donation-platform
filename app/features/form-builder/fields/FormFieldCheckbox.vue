@@ -2,11 +2,11 @@
 import { computed } from 'vue'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
-import type { CheckboxFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
+import type { FieldProps, FieldEmits, CheckboxFieldDef } from '~/features/form-builder/types'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 
-type Props = FieldProps<boolean | string[], CheckboxFieldMeta>
+type Props = FieldProps<boolean | string[], CheckboxFieldDef>
 
 const props = defineProps<Props>()
 const emit = defineEmits<FieldEmits<boolean | string[]>>()

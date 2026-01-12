@@ -3,78 +3,65 @@
  * Numeric input with optional min/max/step constraints
  */
 import * as z from 'zod'
-import type { FieldMeta } from '~/features/form-builder/types'
-import { createBaseFieldMeta, createOptionalSchema, extractFieldValue } from './field-base'
-
-/**
- * Number field configuration (admin-editable)
- */
-export interface NumberFieldConfig {
-  id: string
-  label: string
-  optional?: boolean
-  defaultValue?: number
-  min?: number
-  max?: number
-  step?: number
-}
+import type { NumberFieldConfig } from '../types'
+import { extractFieldValue } from './field-base'
+import {
+  fieldGroup,
+  numberField as numberFieldConstructor,
+  toggleField
+} from '~/features/form-builder/api'
+import type { FieldDef } from '~/features/form-builder/types'
 
 /**
  * Create admin configuration fields for number field
  */
-export function createNumberFieldAdminConfig(): Record<string, FieldMeta> {
+export function createNumberFieldAdminConfig(): Record<string, FieldDef> {
   return {
-    advancedSettings: {
-      type: 'field-group',
+    advancedSettings: fieldGroup('advancedSettings', {
       label: 'Advanced Settings',
       collapsible: true,
       collapsibleDefaultOpen: false,
       fields: {
-        min: {
-          type: 'number',
+        min: numberFieldConstructor('min', {
           label: 'Minimum Value',
           placeholder: 'No minimum',
           optional: true,
           rules: z.number().optional()
-        },
-        max: {
-          type: 'number',
+        }),
+        max: numberFieldConstructor('max', {
           label: 'Maximum Value',
           placeholder: 'No maximum',
           optional: true,
           rules: z.number().optional()
-        },
-        step: {
-          type: 'number',
+        }),
+        step: numberFieldConstructor('step', {
           label: 'Step',
           placeholder: '1',
           optional: true,
           min: 0,
           rules: z.number().min(1).optional()
-        },
-        optional: {
-          type: 'toggle',
+        }),
+        optional: toggleField('optional', {
           label: 'Optional',
           description: 'Allow users to skip this field',
           defaultValue: true,
           rules: z.boolean().optional()
-        },
-        defaultValue: {
-          type: 'number',
+        }),
+        defaultValue: numberFieldConstructor('defaultValue', {
           label: 'Default Value',
           placeholder: 'Optional default number',
           optional: true,
           rules: z.number().optional()
-        }
+        })
       }
-    }
+    })
   }
 }
 
 /**
- * Convert admin config to runtime field metadata
+ * Convert admin config to composable field definition
  */
-export function numberFieldToFieldMeta(config: NumberFieldConfig): FieldMeta {
+export function numberFieldToComposable(config: NumberFieldConfig): FieldDef {
   const configObj = config as unknown as Record<string, unknown>
   const min = extractFieldValue<number>(configObj, 'min')
   const max = extractFieldValue<number>(configObj, 'max')
@@ -87,15 +74,14 @@ export function numberFieldToFieldMeta(config: NumberFieldConfig): FieldMeta {
   if (min !== undefined) schema = schema.min(min, `Must be at least ${min}`)
   if (max !== undefined) schema = schema.max(max, `Must be at most ${max}`)
 
-  return {
-    ...createBaseFieldMeta({ ...config, optional, defaultValue }),
-    type: 'number' as const,
+  return numberFieldConstructor(config.id, {
+    label: config.label,
     min,
     max,
     step,
     defaultValue,
-    rules: optional ? createOptionalSchema(schema, true) : schema
-  }
+    rules: optional ? schema.optional() : schema
+  })
 }
 
 /**
@@ -110,6 +96,6 @@ export function getNumberFieldDefaultValue(config: NumberFieldConfig): number | 
  */
 export const numberField = {
   createAdminConfig: createNumberFieldAdminConfig,
-  toFieldMeta: numberFieldToFieldMeta,
+  toComposable: numberFieldToComposable,
   getDefaultValue: getNumberFieldDefaultValue
 }

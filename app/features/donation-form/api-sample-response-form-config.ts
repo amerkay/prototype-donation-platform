@@ -229,6 +229,30 @@ export const formConfig = {
               }
             }
           ]
+        },
+        hidden: {
+          enabled: true,
+          fields: [
+            {
+              id: 'hidden_is_large_donor',
+              type: 'hidden' as const,
+              label: 'is_large_donor',
+              defaultValue: 'yes',
+              enableVisibilityConditions: true,
+              visibilityConditions: {
+                visibleWhen: {
+                  conditions: [
+                    {
+                      field: 'donationAmount',
+                      operator: 'greaterOrEqual',
+                      value: 50
+                    }
+                  ],
+                  match: 'all'
+                }
+              }
+            }
+          ]
         }
       }
     }

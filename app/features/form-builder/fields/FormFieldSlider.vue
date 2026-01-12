@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, unref } from 'vue'
 import { Slider } from '@/components/ui/slider'
-import type { SliderFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
+import type { FieldProps, FieldEmits, SliderFieldDef } from '~/features/form-builder/types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 
-type Props = FieldProps<number, SliderFieldMeta>
+type Props = FieldProps<number, SliderFieldDef>
 
 const props = defineProps<Props>()
 const emit = defineEmits<FieldEmits<number>>()
@@ -14,29 +14,34 @@ const emit = defineEmits<FieldEmits<number>>()
 const { fieldContext } = useFormBuilderContext()
 const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors)
 
-// Resolve dynamic min/max/step values
+// Resolve dynamic min/max/step values (can be static, function, or ComputedRef)
 const resolvedMin = computed(() => {
   const min = props.meta.min
+  if (min && typeof min === 'object' && 'value' in min) return unref(min)
   return typeof min === 'function' ? min(fieldContext.value) : (min ?? 0)
 })
 
 const resolvedMax = computed(() => {
   const max = props.meta.max
+  if (max && typeof max === 'object' && 'value' in max) return unref(max)
   return typeof max === 'function' ? max(fieldContext.value) : (max ?? 100)
 })
 
 const resolvedStep = computed(() => {
   const step = props.meta.step
+  if (step && typeof step === 'object' && 'value' in step) return unref(step)
   return typeof step === 'function' ? step(fieldContext.value) : (step ?? 1)
 })
 
 const resolvedPrefix = computed(() => {
   const prefix = props.meta.prefix
+  if (prefix && typeof prefix === 'object' && 'value' in prefix) return unref(prefix)
   return typeof prefix === 'function' ? prefix(fieldContext.value) : prefix
 })
 
 const resolvedSuffix = computed(() => {
   const suffix = props.meta.suffix
+  if (suffix && typeof suffix === 'object' && 'value' in suffix) return unref(suffix)
   return typeof suffix === 'function' ? suffix(fieldContext.value) : suffix
 })
 

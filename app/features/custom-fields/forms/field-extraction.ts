@@ -1,5 +1,6 @@
 import type { CustomFieldType } from '~/features/custom-fields/fields'
 import type { AvailableField } from '~/features/form-builder/composables/useAvailableFields'
+import { slugify } from '~/features/custom-fields/fields/field-base'
 
 /**
  * Extract field metadata from a list of custom field configuration items
@@ -39,11 +40,14 @@ export function extractAvailableFields(
       (fieldType === 'select' || fieldType === 'radio-group' || fieldType === 'checkbox') &&
       item.options
     ) {
+      // Select/radio/checkbox with options are choice fields - use 'array' type for in/notIn operators
+      type = 'array'
       const opts = item.options as string[] | Array<{ value: string; label: string }>
       if (Array.isArray(opts) && opts.length > 0) {
         if (typeof opts[0] === 'string') {
+          // Slugify values to match runtime field behavior (select/radio/checkbox factories auto-slugify)
           options = (opts as string[]).map((opt) => ({
-            value: opt,
+            value: slugify(opt),
             label: opt
           }))
         } else {

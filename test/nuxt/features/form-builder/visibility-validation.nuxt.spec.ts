@@ -4,7 +4,7 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import * as z from 'zod'
 import FormField from '~/features/form-builder/FormField.vue'
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
-import type { FieldMeta } from '~/features/form-builder/types'
+import { fieldGroup, toggleField, textField, defineForm } from '~/features/form-builder/api'
 import { mountFormField, getSectionValues } from './test-utils'
 
 /**
@@ -28,7 +28,7 @@ async function waitForUpdate() {
  * - Multi-step wizards where previous steps may have different rules
  * - Dynamic configs where enabling/disabling sections shouldn't block form submission
  *
- * The field's VALUE should be preserved (for when user toggles back),
+ * The field's VALUE is preserved (so data isn't lost when toggling visibility),
  * but its VALIDATION STATE should not affect form validity.
  */
 describe('FormField - Visibility and Validation Integration', () => {
@@ -41,27 +41,24 @@ describe('FormField - Visibility and Validation Integration', () => {
     const { wrapper, formValues, validate } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('testGroup', {
           label: 'Test Group',
           collapsible: false,
           fields: {
-            enabled: {
-              type: 'toggle',
+            enabled: toggleField('enabled', {
               label: 'Enable Feature',
               defaultValue: true,
               rules: z.boolean()
-            },
-            requiredWhenEnabled: {
-              type: 'text',
+            }),
+            requiredWhenEnabled: textField('requiredWhenEnabled', {
               label: 'Required Field',
               placeholder: 'At least 3 characters',
               defaultValue: '', // Invalid when visible (empty, but min 3 required)
               rules: z.string().min(3, 'Must be at least 3 characters'),
               visibleWhen: (ctx) => ctx.values.enabled === true
-            }
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'testGroup'
       },
@@ -115,10 +112,11 @@ describe('FormField - Visibility and Validation Integration', () => {
     // Error message should not appear
     expect(wrapper.text()).not.toContain('at least 3 characters')
 
-    // Step 4: Verify value is preserved (for when toggle turns back ON)
+    // Step 4: Verify value is PRESERVED when field becomes hidden
+    // Values persist across visibility toggles to prevent data loss
     const values = getSectionValues(formValues)
     const groupValues = values?.testGroup as Record<string, unknown>
-    expect(groupValues?.requiredWhenEnabled).toBe('ab') // Value preserved
+    expect(groupValues?.requiredWhenEnabled).toBe('ab') // Value preserved on hide
     expect(groupValues?.enabled).toBe(false) // Toggle is OFF
   })
 
@@ -129,28 +127,25 @@ describe('FormField - Visibility and Validation Integration', () => {
     const { wrapper, validate } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('settings', {
           label: 'Settings Group',
           collapsible: true,
           collapsibleDefaultOpen: true,
           fields: {
-            advancedMode: {
-              type: 'toggle',
+            advancedMode: toggleField('advancedMode', {
               label: 'Advanced Mode',
               defaultValue: false,
               rules: z.boolean()
-            },
-            advancedSetting: {
-              type: 'text',
+            }),
+            advancedSetting: textField('advancedSetting', {
               label: 'Advanced Setting',
               placeholder: 'Required in advanced mode',
               defaultValue: '', // Invalid when visible
               rules: z.string().min(1, 'Required'),
               visibleWhen: (ctx) => ctx.values.advancedMode === true
-            }
+            })
           }
-        } as FieldMeta,
+        }),
         errors: [],
         name: 'settings'
       },
@@ -198,27 +193,24 @@ describe('FormField - Visibility and Validation Integration', () => {
       config: 'ab' // Invalid: only 2 chars
     })
 
+    const schema = defineForm('feature', () => ({
+      enabled: toggleField('enabled', {
+        label: 'Enable Feature',
+        rules: z.boolean()
+      }),
+      config: textField('config', {
+        label: 'Configuration',
+        placeholder: 'Required config',
+        rules: z.string().min(3, 'At least 3 characters'),
+        visibleWhen: (ctx) => ctx.values.enabled === true
+      })
+    }))
+
     const TestWrapper = defineComponent({
       setup() {
         return () =>
           h(FormRenderer, {
-            section: {
-              id: 'feature',
-              fields: {
-                enabled: {
-                  type: 'toggle',
-                  label: 'Enable Feature',
-                  rules: z.boolean()
-                },
-                config: {
-                  type: 'text',
-                  label: 'Configuration',
-                  placeholder: 'Required config',
-                  rules: z.string().min(3, 'At least 3 characters'),
-                  visibleWhen: (ctx) => ctx.values.enabled === true
-                }
-              }
-            },
+            section: schema,
             modelValue: modelValue.value,
             updateOnlyWhenValid: true, // CRITICAL: This is what triggers the bug
             'onUpdate:modelValue': (value: Record<string, unknown>) => {

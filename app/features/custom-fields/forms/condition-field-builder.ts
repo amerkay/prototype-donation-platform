@@ -3,7 +3,14 @@
  * Builds the dynamic condition UI based on available fields and operators
  */
 import * as z from 'zod'
-import type { FieldMeta, FieldContext, OnChangeContext } from '~/features/form-builder/types'
+import type { FieldContext, OnChangeContext, FieldDef } from '~/features/form-builder/types'
+import {
+  textField,
+  selectField,
+  numberField,
+  arrayField,
+  fieldGroup
+} from '~/features/form-builder/api'
 import type { AvailableField } from '~/features/form-builder/composables/useAvailableFields'
 import type { ContextSchema, ComparisonOperator } from '~/features/form-builder/conditions'
 import {
@@ -25,7 +32,7 @@ import { validateFields, buildNestedContext } from '~/features/form-builder/util
 export function buildConditionItemField(
   precedingFields: AvailableField[],
   contextSchema?: ContextSchema
-): (conditionValues: Record<string, unknown>) => FieldMeta {
+): (conditionValues: Record<string, unknown>) => FieldDef {
   return (conditionValues: Record<string, unknown>) => {
     const selectedField = conditionValues.field as string | undefined
     const selectedOperator = conditionValues.operator as ComparisonOperator | undefined
@@ -96,9 +103,8 @@ export function buildConditionItemField(
     }
 
     // Build the fields definition first
-    const conditionFields: Record<string, FieldMeta> = {
-      field: {
-        type: 'select',
+    const conditionFields: Record<string, FieldDef> = {
+      field: selectField('field', {
         label: 'Field',
         placeholder: 'Select a field',
         options: fieldOptions,
@@ -108,10 +114,9 @@ export function buildConditionItemField(
           setValue('operator', '')
           setValue('value', '')
         }
-      },
+      }),
 
-      operator: {
-        type: 'select',
+      operator: selectField('operator', {
         label: 'Condition',
         placeholder: 'Select condition',
         // Use current snapshot of operators (gets recomputed when builder reruns)
@@ -126,7 +131,7 @@ export function buildConditionItemField(
             message: 'Invalid operator'
           })
         },
-        visibleWhen: (ctx) => !!(ctx.values as Record<string, unknown>).field,
+        visibleWhen: (ctx: FieldContext) => !!(ctx.values as Record<string, unknown>).field,
         onChange: ({ value, setValue }: OnChangeContext) => {
           // Clear value when operator changes
           const op = value as ComparisonOperator
@@ -136,7 +141,7 @@ export function buildConditionItemField(
             setValue('value', '')
           }
         }
-      },
+      }),
 
       // Dynamic value field - changes based on operator and field metadata
       value: buildValueField(conditionValues, fieldMeta, availableOperators)
@@ -163,13 +168,12 @@ export function buildConditionItemField(
       return errors.size > 0
     }
 
-    return {
-      type: 'field-group',
+    return fieldGroup('', {
       label: displayLabel,
       collapsible: true,
       collapsibleDefaultOpen: hasValidationErrors,
       fields: conditionFields
-    }
+    })
   }
 }
 
@@ -181,7 +185,7 @@ function buildValueField(
   conditionValues: Record<string, unknown>,
   fieldMeta: AvailableField | undefined,
   availableOperators: ComparisonOperator[]
-): FieldMeta {
+): FieldDef {
   const currentOp = conditionValues.operator as ComparisonOperator | undefined
 
   // Common visibility check that ensures operator is valid for the current field
@@ -194,21 +198,18 @@ function buildValueField(
     // Ensure value is an array before rendering array field to avoid type mismatch errors during transition
     const currentValue = conditionValues.value
     if (!Array.isArray(currentValue)) {
-      return {
-        type: 'text',
+      return textField('value', {
         visibleWhen: () => false
-      }
+      })
     }
 
     if (fieldMeta?.options) {
       // Array of selects for enum fields
-      return {
-        type: 'array' as const,
+      return arrayField('value', {
         label: 'Values',
         addButtonText: 'Add Value',
         rules: z.array(z.union([z.string(), z.number()])).min(1, 'At least one value is required'),
-        itemField: {
-          type: 'select' as const,
+        itemField: selectField('', {
           placeholder: 'Select a value',
           options: fieldMeta.options.filter(
             (opt): opt is { value: string | number; label: string } =>
@@ -217,7 +218,7 @@ function buildValueField(
           rules: z.union([z.string(), z.number()]).refine((val) => val !== '', {
             message: 'Value is required'
           })
-        },
+        }),
         visibleWhen: ({ values }: FieldContext) => {
           const field = (values as Record<string, unknown>).field as string | undefined
           if (!field) return false
@@ -225,11 +226,10 @@ function buildValueField(
           if (!isOperatorValid(op)) return false
           return op === 'in' || op === 'notIn'
         }
-      }
+      })
     } else {
       // Array of text/number inputs for non-enum fields
-      return {
-        type: 'array' as const,
+      return arrayField('value', {
         label: 'Values',
         addButtonText: 'Add Value',
         rules: z
@@ -237,16 +237,14 @@ function buildValueField(
           .min(1, 'At least one value is required'),
         itemField:
           fieldMeta?.type === 'number'
-            ? {
-                type: 'number' as const,
+            ? numberField('', {
                 placeholder: 'Enter value',
                 rules: z.number({ message: 'Value is required' })
-              }
-            : {
-                type: 'text' as const,
+              })
+            : textField('', {
                 placeholder: 'Enter value',
                 rules: z.string().min(1, 'Value is required')
-              },
+              }),
         visibleWhen: ({ values }: FieldContext) => {
           const field = (values as Record<string, unknown>).field as string | undefined
           if (!field) return false
@@ -254,15 +252,14 @@ function buildValueField(
           if (!isOperatorValid(op)) return false
           return op === 'in' || op === 'notIn'
         }
-      }
+      })
     }
   }
 
   // For other operators, use single value field
   if (fieldMeta?.options) {
     // Select for enum fields
-    return {
-      type: 'select' as const,
+    return selectField('value', {
       label: 'Value',
       placeholder: 'Select a value',
       options: fieldMeta.options.filter(
@@ -279,11 +276,10 @@ function buildValueField(
         if (!isOperatorValid(op) || op === 'in' || op === 'notIn') return false
         return operatorRequiresValue(op)
       }
-    }
+    })
   } else if (fieldMeta?.type === 'number') {
     // Number input for numeric fields
-    return {
-      type: 'number' as const,
+    return numberField('value', {
       label: 'Value',
       placeholder: 'Enter value',
       rules: z.number({ message: 'Value is required' }),
@@ -294,11 +290,10 @@ function buildValueField(
         if (!isOperatorValid(op)) return false
         return operatorRequiresValue(op)
       }
-    }
+    })
   } else {
     // Text input for string/other fields
-    return {
-      type: 'text' as const,
+    return textField('value', {
       label: 'Value',
       placeholder: 'Enter value',
       rules: z.string().min(1, 'Value is required'),
@@ -309,6 +304,6 @@ function buildValueField(
         if (!isOperatorValid(op)) return false
         return operatorRequiresValue(op)
       }
-    }
+    })
   }
 }

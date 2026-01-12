@@ -8,11 +8,11 @@ import {
   FieldContent,
   FieldTitle
 } from '@/components/ui/field'
-import type { RadioGroupFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
+import type { FieldProps, FieldEmits, RadioGroupFieldDef } from '~/features/form-builder/types'
 import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 
-type Props = FieldProps<string | number, RadioGroupFieldMeta>
+type Props = FieldProps<string | number, RadioGroupFieldDef>
 
 const props = defineProps<Props>()
 defineEmits<FieldEmits<string | number>>()

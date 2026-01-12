@@ -1,12 +1,26 @@
 import { describe, expect, it } from 'vitest'
+import { computed } from 'vue'
 import { createDonationCustomFieldsConfigSection } from '~/features/donation-form/custom-fields/forms/donation-custom-fields-config-form'
 import type {
-  ArrayFieldMeta,
-  FieldGroupMeta,
+  ArrayFieldDef,
+  FieldGroupDef,
   ArrayItemContext,
-  TabsFieldMeta,
-  FieldContext
+  TabsFieldDef,
+  FieldContext,
+  FormContext
 } from '~/features/form-builder/types'
+
+/**
+ * Create a mock FormContext for testing
+ */
+function createMockFormContext(values: Record<string, unknown> = {}): FormContext {
+  return {
+    values: computed(() => values),
+    form: computed(() => values),
+    title: '',
+    description: ''
+  }
+}
 
 describe('donation-custom-fields-config-form', () => {
   /**
@@ -14,28 +28,28 @@ describe('donation-custom-fields-config-form', () => {
    * Tests which fields are available for use in visibility conditions
    */
   function getConditionFieldOptions(
-    fieldsArray: ArrayFieldMeta,
+    fieldsArray: ArrayFieldDef,
     rootValues: Record<string, unknown>,
     precedingFields: Record<string, unknown>[] = []
   ): Array<{ value: string; label: string }> {
-    const itemFieldFn = fieldsArray.itemField as (v: unknown, c: ArrayItemContext) => FieldGroupMeta
+    const itemFieldFn = fieldsArray.itemField as (v: unknown, c: ArrayItemContext) => FieldGroupDef
     const newItem = itemFieldFn(
       { type: 'text', label: 'Test Field' },
       { index: precedingFields.length, items: precedingFields, root: rootValues }
     )
 
     // Navigate to the condition field selector to test available fields
-    const conditionGroup = newItem.fields?.visibilityConditions as FieldGroupMeta | undefined
+    const conditionGroup = newItem.fields?.visibilityConditions as FieldGroupDef | undefined
     expect(conditionGroup, 'visibilityConditions should exist').toBeDefined()
 
-    const visibleWhen = conditionGroup?.fields?.visibleWhen as FieldGroupMeta | undefined
+    const visibleWhen = conditionGroup?.fields?.visibleWhen as FieldGroupDef | undefined
     expect(visibleWhen, 'visibleWhen should exist').toBeDefined()
 
-    const conditionsArray = visibleWhen?.fields?.conditions as ArrayFieldMeta | undefined
+    const conditionsArray = visibleWhen?.fields?.conditions as ArrayFieldDef | undefined
     expect(conditionsArray, 'conditions array should exist').toBeDefined()
 
     const conditionItemFn = conditionsArray?.itemField as
-      | ((v: unknown) => FieldGroupMeta)
+      | ((v: unknown) => FieldGroupDef)
       | undefined
     expect(conditionItemFn, 'condition itemField should exist').toBeDefined()
 
@@ -52,8 +66,9 @@ describe('donation-custom-fields-config-form', () => {
   describe('createDonationCustomFieldsConfigSection', () => {
     it('creates Step 2, Step 3, and Hidden Fields tabs for custom fields configuration', () => {
       const config = createDonationCustomFieldsConfigSection()
+      const { customFieldsTabs } = config.setup(createMockFormContext())
 
-      const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+      const tabsField = customFieldsTabs as TabsFieldDef
       expect(tabsField.type).toBe('tabs')
       expect(tabsField.tabs).toHaveLength(3)
       expect(tabsField.tabs[0]?.value).toBe('step2')
@@ -73,11 +88,11 @@ describe('donation-custom-fields-config-form', () => {
       }
 
       const config = createDonationCustomFieldsConfigSection(contextSchema)
-      const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+      const tabsField = config.setup(createMockFormContext()).customFieldsTabs as TabsFieldDef
       const step2Tabs = tabsField.tabs[0]
       expect(step2Tabs).toBeDefined()
 
-      const step2Fields = step2Tabs!.fields.fields as ArrayFieldMeta
+      const step2Fields = step2Tabs!.fields.fields as ArrayFieldDef
 
       const fieldOptions = getConditionFieldOptions(step2Fields, {})
       const availableKeys = fieldOptions.map((o) => o.value)
@@ -93,11 +108,11 @@ describe('donation-custom-fields-config-form', () => {
     describe('Cross-Step Field Resolution', () => {
       it('allows Step 3 fields to reference fields defined in Step 2', () => {
         const config = createDonationCustomFieldsConfigSection()
-        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+        const tabsField = config.setup(createMockFormContext()).customFieldsTabs as TabsFieldDef
         const step3Tabs = tabsField.tabs[1]
         expect(step3Tabs).toBeDefined()
 
-        const step3Fields = step3Tabs!.fields.fields as ArrayFieldMeta
+        const step3Fields = step3Tabs!.fields.fields as ArrayFieldDef
 
         // Mock a root state where Step 2 has a defined field
         const rootValues = {
@@ -119,11 +134,11 @@ describe('donation-custom-fields-config-form', () => {
 
       it('prevents Step 2 from referencing later Step 3 fields', () => {
         const config = createDonationCustomFieldsConfigSection()
-        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+        const tabsField = config.setup(createMockFormContext()).customFieldsTabs as TabsFieldDef
         const step2Tabs = tabsField.tabs[0]
         expect(step2Tabs).toBeDefined()
 
-        const step2Fields = step2Tabs!.fields.fields as ArrayFieldMeta
+        const step2Fields = step2Tabs!.fields.fields as ArrayFieldDef
 
         // Mock root having Step 3 fields
         const rootValues = {
@@ -142,11 +157,11 @@ describe('donation-custom-fields-config-form', () => {
 
       it('resolves Step 2 fields from nested configuration paths', () => {
         const config = createDonationCustomFieldsConfigSection()
-        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+        const tabsField = config.setup(createMockFormContext()).customFieldsTabs as TabsFieldDef
         const step3Tabs = tabsField.tabs[1]
         expect(step3Tabs).toBeDefined()
 
-        const step3Fields = step3Tabs!.fields.fields as ArrayFieldMeta
+        const step3Fields = step3Tabs!.fields.fields as ArrayFieldDef
 
         // Test alternative nesting structure
         const rootValues = {
@@ -168,11 +183,11 @@ describe('donation-custom-fields-config-form', () => {
 
       it('handles missing Step 2 data gracefully', () => {
         const config = createDonationCustomFieldsConfigSection()
-        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+        const tabsField = config.setup(createMockFormContext()).customFieldsTabs as TabsFieldDef
         const step3Tabs = tabsField.tabs[1]
         expect(step3Tabs).toBeDefined()
 
-        const step3Fields = step3Tabs!.fields.fields as ArrayFieldMeta
+        const step3Fields = step3Tabs!.fields.fields as ArrayFieldDef
 
         // No Step 2 data in root
         const rootValues = {}
@@ -187,11 +202,11 @@ describe('donation-custom-fields-config-form', () => {
         }
 
         const config = createDonationCustomFieldsConfigSection(contextSchema)
-        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+        const tabsField = config.setup(createMockFormContext()).customFieldsTabs as TabsFieldDef
         const step3Tabs = tabsField.tabs[1]
         expect(step3Tabs).toBeDefined()
 
-        const step3Fields = step3Tabs!.fields.fields as ArrayFieldMeta
+        const step3Fields = step3Tabs!.fields.fields as ArrayFieldDef
 
         const rootValues = {
           customFieldsTabs: {
@@ -216,15 +231,15 @@ describe('donation-custom-fields-config-form', () => {
     describe('Field Type Filtering', () => {
       it('excludes hidden field type from Step 2 and Step 3 tabs', () => {
         const config = createDonationCustomFieldsConfigSection()
-        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+        const tabsField = config.setup(createMockFormContext()).customFieldsTabs as TabsFieldDef
 
         // Check Step 2
         const step2Tab = tabsField.tabs[0]
-        const step2Fields = step2Tab!.fields.fields as ArrayFieldMeta
+        const step2Fields = step2Tab!.fields.fields as ArrayFieldDef
         const step2ItemFn = step2Fields.itemField as (
           v: unknown,
           c: ArrayItemContext
-        ) => FieldGroupMeta
+        ) => FieldGroupDef
         const step2Item = step2ItemFn({}, { index: 0, items: [], root: {} })
         const step2TypeField = step2Item.fields?.type as { options: Array<{ value: string }> }
 
@@ -233,11 +248,11 @@ describe('donation-custom-fields-config-form', () => {
 
         // Check Step 3
         const step3Tab = tabsField.tabs[1]
-        const step3Fields = step3Tab!.fields.fields as ArrayFieldMeta
+        const step3Fields = step3Tab!.fields.fields as ArrayFieldDef
         const step3ItemFn = step3Fields.itemField as (
           v: unknown,
           c: ArrayItemContext
-        ) => FieldGroupMeta
+        ) => FieldGroupDef
         const step3Item = step3ItemFn({}, { index: 0, items: [], root: {} })
         const step3TypeField = step3Item.fields?.type as { options: Array<{ value: string }> }
 
@@ -247,14 +262,14 @@ describe('donation-custom-fields-config-form', () => {
 
       it('includes only hidden field type in Hidden Fields tab', () => {
         const config = createDonationCustomFieldsConfigSection()
-        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+        const tabsField = config.setup(createMockFormContext()).customFieldsTabs as TabsFieldDef
 
         const hiddenTab = tabsField.tabs[2]
-        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldMeta
+        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldDef
         const hiddenItemFn = hiddenFields.itemField as (
           v: unknown,
           c: ArrayItemContext
-        ) => FieldGroupMeta
+        ) => FieldGroupDef
         const hiddenItem = hiddenItemFn({}, { index: 0, items: [], root: {} })
         const hiddenTypeField = hiddenItem.fields?.type as { options: Array<{ value: string }> }
 
@@ -264,14 +279,14 @@ describe('donation-custom-fields-config-form', () => {
 
       it('auto-selects field type when only one type is allowed', () => {
         const config = createDonationCustomFieldsConfigSection()
-        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+        const tabsField = config.setup(createMockFormContext()).customFieldsTabs as TabsFieldDef
 
         const hiddenTab = tabsField.tabs[2]
-        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldMeta
+        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldDef
         const hiddenItemFn = hiddenFields.itemField as (
           v: unknown,
           c: ArrayItemContext
-        ) => FieldGroupMeta
+        ) => FieldGroupDef
         const hiddenItem = hiddenItemFn({}, { index: 0, items: [], root: {} })
         const typeField = hiddenItem.fields?.type
 
@@ -280,14 +295,14 @@ describe('donation-custom-fields-config-form', () => {
 
       it('keeps accordion open by default when single field type is auto-selected', () => {
         const config = createDonationCustomFieldsConfigSection()
-        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+        const tabsField = config.setup(createMockFormContext()).customFieldsTabs as TabsFieldDef
 
         const hiddenTab = tabsField.tabs[2]
-        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldMeta
+        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldDef
         const hiddenItemFn = hiddenFields.itemField as (
           v: unknown,
           c: ArrayItemContext
-        ) => FieldGroupMeta
+        ) => FieldGroupDef
         const hiddenItem = hiddenItemFn({}, { index: 0, items: [], root: {} })
 
         expect(hiddenItem.collapsibleDefaultOpen).toBe(true)
@@ -295,36 +310,36 @@ describe('donation-custom-fields-config-form', () => {
 
       it('uses custom button text for single field type tabs', () => {
         const config = createDonationCustomFieldsConfigSection()
-        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+        const tabsField = config.setup(createMockFormContext()).customFieldsTabs as TabsFieldDef
 
         const hiddenTab = tabsField.tabs[2]
-        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldMeta
+        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldDef
 
         expect(hiddenFields.addButtonText).toBe('Add Hidden (tracking) Field')
       })
 
       it('uses generic button text for multi-type tabs', () => {
         const config = createDonationCustomFieldsConfigSection()
-        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+        const tabsField = config.setup(createMockFormContext()).customFieldsTabs as TabsFieldDef
 
         const step2Tab = tabsField.tabs[0]
-        const step2Fields = step2Tab!.fields.fields as ArrayFieldMeta
+        const step2Fields = step2Tab!.fields.fields as ArrayFieldDef
 
         expect(step2Fields.addButtonText).toBe('Add Custom Field')
       })
     })
 
     describe('Hidden Field Visibility Conditions', () => {
-      it('hides visibility conditions toggle for hidden field type', () => {
+      it('shows visibility conditions toggle for hidden field type', () => {
         const config = createDonationCustomFieldsConfigSection()
-        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+        const tabsField = config.setup(createMockFormContext()).customFieldsTabs as TabsFieldDef
 
         const hiddenTab = tabsField.tabs[2]
-        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldMeta
+        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldDef
         const hiddenItemFn = hiddenFields.itemField as (
           v: unknown,
           c: ArrayItemContext
-        ) => FieldGroupMeta
+        ) => FieldGroupDef
         const hiddenItem = hiddenItemFn(
           { type: 'hidden', label: 'Test' },
           { index: 0, items: [], root: {} }
@@ -338,53 +353,26 @@ describe('donation-custom-fields-config-form', () => {
             values: { type: 'hidden' },
             root: {}
           } as FieldContext)
-          expect(isVisible).toBe(false)
-        }
-      })
-
-      it('shows visibility conditions toggle for non-hidden field types', () => {
-        const config = createDonationCustomFieldsConfigSection()
-        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
-
-        const step2Tab = tabsField.tabs[0]
-        const step2Fields = step2Tab!.fields.fields as ArrayFieldMeta
-        const step2ItemFn = step2Fields.itemField as (
-          v: unknown,
-          c: ArrayItemContext
-        ) => FieldGroupMeta
-        const step2Item = step2ItemFn(
-          { type: 'text', label: 'Test' },
-          { index: 0, items: [], root: {} }
-        )
-
-        const enableVisibilityConditions = step2Item.fields?.enableVisibilityConditions
-        expect(enableVisibilityConditions?.visibleWhen).toBeDefined()
-
-        if (typeof enableVisibilityConditions?.visibleWhen === 'function') {
-          const isVisible = enableVisibilityConditions.visibleWhen({
-            values: { type: 'text' },
-            root: {}
-          } as FieldContext)
           expect(isVisible).toBe(true)
         }
       })
 
-      it('hides visibility conditions group for hidden fields', () => {
+      it('shows visibility conditions group for hidden fields when enabled', () => {
         const config = createDonationCustomFieldsConfigSection()
-        const tabsField = config.fields.customFieldsTabs as TabsFieldMeta
+        const tabsField = config.setup(createMockFormContext()).customFieldsTabs as TabsFieldDef
 
         const hiddenTab = tabsField.tabs[2]
-        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldMeta
+        const hiddenFields = hiddenTab!.fields.fields as ArrayFieldDef
         const hiddenItemFn = hiddenFields.itemField as (
           v: unknown,
           c: ArrayItemContext
-        ) => FieldGroupMeta
+        ) => FieldGroupDef
         const hiddenItem = hiddenItemFn(
           { type: 'hidden', label: 'Test', enableVisibilityConditions: true },
           { index: 0, items: [], root: {} }
         )
 
-        const visibilityConditions = hiddenItem.fields?.visibilityConditions as FieldGroupMeta
+        const visibilityConditions = hiddenItem.fields?.visibilityConditions as FieldGroupDef
         expect(visibilityConditions?.visibleWhen).toBeDefined()
 
         if (typeof visibilityConditions?.visibleWhen === 'function') {
@@ -392,7 +380,7 @@ describe('donation-custom-fields-config-form', () => {
             values: { type: 'hidden', enableVisibilityConditions: true },
             root: {}
           } as FieldContext)
-          expect(isVisible).toBe(false)
+          expect(isVisible).toBe(true)
         }
       })
     })

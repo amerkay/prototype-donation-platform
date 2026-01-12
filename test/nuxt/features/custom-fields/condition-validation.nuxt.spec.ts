@@ -4,7 +4,13 @@ import FormField from '~/features/form-builder/FormField.vue'
 import { buildConditionItemField } from '~/features/custom-fields/forms/condition-field-builder'
 import type { AvailableField } from '~/features/form-builder/composables/useAvailableFields'
 import type { ContextSchema } from '~/features/form-builder/conditions'
-import type { FieldGroupMeta, TabsFieldMeta, FieldMeta } from '~/features/form-builder/types'
+import type { FieldDef } from '~/features/form-builder/types'
+import {
+  fieldGroup,
+  arrayField,
+  tabsField,
+  toggleField
+} from '~/features/form-builder/api/defineForm'
 import { mountFormField } from '../form-builder/test-utils'
 
 async function waitForUpdate() {
@@ -147,8 +153,7 @@ describe('Condition Field Validation - Stale Closure Regression Tests', () => {
     const { validate, wrapper } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('conditionConfig', {
           label: 'Condition Config',
           fields: {
             condition: buildConditionField({
@@ -157,7 +162,7 @@ describe('Condition Field Validation - Stale Closure Regression Tests', () => {
               value: ''
             })
           }
-        },
+        }),
         name: 'conditionTest'
       },
       {
@@ -196,8 +201,7 @@ describe('Condition Field Validation - Stale Closure Regression Tests', () => {
     const { validate, wrapper } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('conditionConfig', {
           label: 'Condition Config',
           fields: {
             condition: buildConditionField({
@@ -206,7 +210,7 @@ describe('Condition Field Validation - Stale Closure Regression Tests', () => {
               value: 100
             })
           }
-        },
+        }),
         name: 'invalidOpTest'
       },
       {
@@ -245,13 +249,12 @@ describe('Condition Field Validation - Stale Closure Regression Tests', () => {
     const { validate, wrapper } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('conditionConfig', {
           label: 'Condition Config',
           fields: {
             condition: buildConditionField({}) // Empty field
           }
-        },
+        }),
         name: 'emptyFieldTest'
       },
       {
@@ -290,8 +293,7 @@ describe('Condition Field Validation - Stale Closure Regression Tests', () => {
     const { validate, wrapper } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('conditionConfig', {
           label: 'Condition Config',
           fields: {
             condition: buildConditionField({
@@ -300,7 +302,7 @@ describe('Condition Field Validation - Stale Closure Regression Tests', () => {
               value: '' // Empty - should error
             })
           }
-        },
+        }),
         name: 'missingValueTest'
       },
       {
@@ -341,13 +343,12 @@ describe('Condition Field Validation - Stale Closure Regression Tests', () => {
     const { validate, wrapper } = await mountFormField(
       FormField,
       {
-        meta: {
-          type: 'field-group',
+        meta: fieldGroup('conditionTest', {
           label: 'Condition Test',
           fields: {
             condition: buildConditionField({ field: 'frequency', operator: '', value: '' })
           }
-        },
+        }),
         name: 'simpleTest'
       },
       {
@@ -541,10 +542,11 @@ describe('Condition Field Validation - Error Display and Badges', () => {
         {
           meta: {
             type: 'array',
+            name: 'conditions',
             label: 'Conditions',
             itemField: conditionItemField,
             defaultValue: []
-          } as FieldMeta,
+          } as FieldDef,
           name: 'conditions'
         },
         {
@@ -585,20 +587,18 @@ describe('Condition Field Validation - Error Display and Badges', () => {
       const { validate, wrapper } = await mountFormField(
         FormField,
         {
-          meta: {
-            type: 'field-group',
+          meta: fieldGroup('visibilitySettings', {
             label: 'Visibility Settings',
             collapsible: true,
             collapsibleDefaultOpen: true, // MUST be open for initial validation to run
             fields: {
-              conditions: {
-                type: 'array',
+              conditions: arrayField('conditions', {
                 label: 'Conditions',
                 itemField: conditionItemField,
                 defaultValue: []
-              }
+              })
             }
-          } as FieldGroupMeta,
+          }),
           name: 'visibilitySettings'
         },
         {
@@ -650,8 +650,7 @@ describe('Condition Field Validation - Error Display and Badges', () => {
       const { validate, wrapper } = await mountFormField(
         FormField,
         {
-          meta: {
-            type: 'tabs',
+          meta: tabsField('fieldConfig', {
             label: 'Field Configuration',
             defaultValue: 'visibility',
             tabs: [
@@ -659,27 +658,25 @@ describe('Condition Field Validation - Error Display and Badges', () => {
                 value: 'visibility',
                 label: 'Visibility',
                 fields: {
-                  conditions: {
-                    type: 'array',
+                  conditions: arrayField('conditions', {
                     label: 'Conditions',
                     itemField: conditionItemField,
                     defaultValue: []
-                  }
+                  })
                 }
               },
               {
                 value: 'validation',
                 label: 'Validation',
                 fields: {
-                  required: {
-                    type: 'toggle',
+                  required: toggleField('required', {
                     label: 'Required',
                     defaultValue: false
-                  }
+                  })
                 }
               }
             ]
-          } as TabsFieldMeta,
+          }),
           name: 'fieldConfig'
         },
         {
@@ -726,8 +723,7 @@ describe('Condition Field Validation - Error Display and Badges', () => {
       const { validate, wrapper } = await mountFormField(
         FormField,
         {
-          meta: {
-            type: 'tabs',
+          meta: tabsField('customFields', {
             label: 'Custom Fields Config',
             defaultValue: 'step2',
             tabs: [
@@ -735,35 +731,32 @@ describe('Condition Field Validation - Error Display and Badges', () => {
                 value: 'step2',
                 label: 'Step 2',
                 fields: {
-                  visibilitySettings: {
-                    type: 'field-group',
+                  visibilitySettings: fieldGroup('visibilitySettings', {
                     label: 'Visibility Settings',
                     collapsible: true,
                     collapsibleDefaultOpen: true, // Start expanded to ensure validation triggers
                     fields: {
-                      conditions: {
-                        type: 'array',
+                      conditions: arrayField('conditions', {
                         label: 'Conditions',
                         itemField: conditionItemField,
                         defaultValue: []
-                      }
+                      })
                     }
-                  }
+                  })
                 }
               },
               {
                 value: 'step3',
                 label: 'Step 3',
                 fields: {
-                  enabled: {
-                    type: 'toggle',
+                  enabled: toggleField('enabled', {
                     label: 'Enabled',
                     defaultValue: false
-                  }
+                  })
                 }
               }
             ]
-          } as TabsFieldMeta,
+          }),
           name: 'customFields'
         },
         {
@@ -819,20 +812,18 @@ describe('Condition Field Validation - Error Display and Badges', () => {
       const { validate, wrapper } = await mountFormField(
         FormField,
         {
-          meta: {
-            type: 'field-group',
+          meta: fieldGroup('visibilityGroup', {
             label: 'Visibility Settings',
             collapsible: true,
             collapsibleDefaultOpen: true, // Start expanded
             fields: {
-              conditions: {
-                type: 'array',
+              conditions: arrayField('conditions', {
                 label: 'Conditions',
                 itemField: conditionItemField,
                 defaultValue: []
-              }
+              })
             }
-          } as FieldGroupMeta,
+          }),
           name: 'visibilitySettings'
         },
         {
@@ -884,8 +875,7 @@ describe('Condition Field Validation - Error Display and Badges', () => {
       const { validate, wrapper } = await mountFormField(
         FormField,
         {
-          meta: {
-            type: 'tabs',
+          meta: tabsField('fieldConfig', {
             label: 'Field Configuration',
             defaultValue: 'visibility',
             tabs: [
@@ -893,27 +883,25 @@ describe('Condition Field Validation - Error Display and Badges', () => {
                 value: 'visibility',
                 label: 'Visibility',
                 fields: {
-                  conditions: {
-                    type: 'array',
+                  conditions: arrayField('conditions', {
                     label: 'Conditions',
                     itemField: conditionItemField,
                     defaultValue: []
-                  }
+                  })
                 }
               },
               {
                 value: 'validation',
                 label: 'Validation',
                 fields: {
-                  required: {
-                    type: 'toggle',
+                  required: toggleField('required', {
                     label: 'Required',
                     defaultValue: false
-                  }
+                  })
                 }
               }
             ]
-          } as TabsFieldMeta,
+          }),
           name: 'fieldConfig'
         },
         {

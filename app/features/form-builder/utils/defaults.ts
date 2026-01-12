@@ -1,7 +1,7 @@
-import type { FieldMeta } from '../types'
+import type { FieldDef } from '../types'
 
 /**
- * Extract default values from field metadata
+ * Extract default values from field definitions
  * Only extracts explicitly defined defaultValue properties from field definitions
  * Recursively traverses field-groups and arrays
  *
@@ -9,34 +9,34 @@ import type { FieldMeta } from '../types'
  * will not have their children's defaults extracted. This enables type-scoped configs
  * where only the active type's defaults are included.
  *
- * @param fields - FieldMetaMap from a FormDef
+ * @param fields - Record of FieldDef objects from a ComposableForm
  * @param options - Extraction options
  * @returns Object with default values for each field that has defaultValue defined
  *
  * @example
  * ```ts
  * const fields = {
- *   name: { type: 'text', defaultValue: '', rules: z.string().min(1) },
- *   age: { type: 'number', defaultValue: 18, rules: z.number() },
- *   optional: { type: 'text', rules: z.string().optional() } // No default
+ *   name: textField('name', { defaultValue: '', rules: z.string().min(1) }),
+ *   age: numberField('age', { defaultValue: 18, rules: z.number() }),
+ *   optional: textField('optional', { rules: z.string().optional() }) // No default
  * }
  *
  * extractDefaultValues(fields) // { name: '', age: 18 }
  * ```
  */
 export function extractDefaultValues(
-  fields: Record<string, FieldMeta>,
+  fields: Record<string, FieldDef>,
   options: { skipConditionalGroups?: boolean } = {}
 ): Record<string, unknown> {
   const { skipConditionalGroups = true } = options
   const defaults: Record<string, unknown> = {}
 
-  for (const [key, fieldMeta] of Object.entries(fields)) {
+  for (const [key, fieldDef] of Object.entries(fields)) {
     // Container fields: recursively extract from children
-    if (fieldMeta.type === 'field-group' && 'fields' in fieldMeta && fieldMeta.fields) {
+    if (fieldDef.type === 'field-group' && 'fields' in fieldDef && fieldDef.fields) {
       // Skip conditional groups if configured (prevents extracting defaults from inactive type-specific configs)
-      if (skipConditionalGroups && 'extractDefaultsWhen' in fieldMeta) {
-        const extractDefaults = fieldMeta.extractDefaultsWhen
+      if (skipConditionalGroups && 'extractDefaultsWhen' in fieldDef) {
+        const extractDefaults = fieldDef.extractDefaultsWhen
         if (extractDefaults === false) {
           // Skip this group's defaults - it's a conditional config group
           continue
@@ -44,13 +44,13 @@ export function extractDefaultValues(
       }
 
       // Always include field-groups to maintain nested structure
-      defaults[key] = extractDefaultValues(fieldMeta.fields, options)
+      defaults[key] = extractDefaultValues(fieldDef.fields, options)
       continue
     }
 
-    if (fieldMeta.type === 'tabs' && 'tabs' in fieldMeta) {
+    if (fieldDef.type === 'tabs' && 'tabs' in fieldDef) {
       const tabsDefaults: Record<string, unknown> = {}
-      for (const tab of fieldMeta.tabs) {
+      for (const tab of fieldDef.tabs) {
         // Always include tabs to maintain structure
         tabsDefaults[tab.value] = extractDefaultValues(tab.fields, options)
       }
@@ -58,14 +58,14 @@ export function extractDefaultValues(
       continue
     }
 
-    if (fieldMeta.type === 'array') {
+    if (fieldDef.type === 'array') {
       defaults[key] = []
       continue
     }
 
     // Leaf fields: use explicit defaultValue
-    if ('defaultValue' in fieldMeta && fieldMeta.defaultValue !== undefined) {
-      defaults[key] = fieldMeta.defaultValue
+    if ('defaultValue' in fieldDef && fieldDef.defaultValue !== undefined) {
+      defaults[key] = fieldDef.defaultValue
     }
   }
 

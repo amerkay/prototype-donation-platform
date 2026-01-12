@@ -4,9 +4,9 @@ import { nextTick } from 'vue'
 import * as z from 'zod'
 
 import FormRenderer from '~/features/form-builder/FormRenderer.vue'
+import { defineForm, arrayField, fieldGroup } from '~/features/form-builder/api'
 import { buildConditionItemField } from '~/features/custom-fields/forms/condition-field-builder'
 import type { ContextSchema } from '~/features/form-builder/conditions'
-import type { FormDef } from '~/features/form-builder/types'
 
 describe('Condition builder loop regression', () => {
   it('does not thrash when adding value for `Donation Frequency in ...`', async () => {
@@ -36,48 +36,42 @@ describe('Condition builder loop regression', () => {
       }
     }
 
-    const schema: FormDef = {
-      id: 'test',
-      fields: {
-        items: {
-          type: 'array',
-          label: 'Items',
-          addButtonText: 'Add Item',
-          defaultValue: [
-            {
-              conditions: [
+    const schema = defineForm('test', () => ({
+      items: arrayField('items', {
+        label: 'Items',
+        addButtonText: 'Add Item',
+        defaultValue: [
+          {
+            conditions: [
+              {
+                field: 'isTribute',
+                operator: ''
+              }
+            ]
+          }
+        ],
+        rules: z.array(z.any()).min(1),
+        itemField: fieldGroup('', {
+          label: 'Item',
+          collapsible: true,
+          collapsibleDefaultOpen: true,
+          fields: {
+            conditions: arrayField('conditions', {
+              label: 'Conditions',
+              addButtonText: 'Add Condition',
+              defaultValue: [
                 {
                   field: 'isTribute',
                   operator: ''
                 }
-              ]
-            }
-          ],
-          rules: z.array(z.any()).min(1),
-          itemField: {
-            type: 'field-group',
-            label: 'Item',
-            collapsible: true,
-            collapsibleDefaultOpen: true,
-            fields: {
-              conditions: {
-                type: 'array',
-                label: 'Conditions',
-                addButtonText: 'Add Condition',
-                defaultValue: [
-                  {
-                    field: 'isTribute',
-                    operator: ''
-                  }
-                ],
-                rules: z.array(z.any()).min(1),
-                itemField: buildConditionItemField([], contextSchema)
-              }
-            }
+              ],
+              rules: z.array(z.any()).min(1),
+              itemField: buildConditionItemField([], contextSchema)
+            })
           }
-        }
-      }
-    }
+        })
+      })
+    }))
 
     const wrapper = await mountSuspended(FormRenderer, {
       props: {
@@ -162,48 +156,42 @@ describe('Condition builder loop regression', () => {
       }
     }
 
-    const schema: FormDef = {
-      id: 'test',
-      fields: {
-        items: {
-          type: 'array',
-          label: 'Items',
-          addButtonText: 'Add Item',
-          defaultValue: [
-            {
-              conditions: [
+    const schema = defineForm('test', () => ({
+      items: arrayField('items', {
+        label: 'Items',
+        addButtonText: 'Add Item',
+        defaultValue: [
+          {
+            conditions: [
+              {
+                field: 'isTribute',
+                operator: ''
+              }
+            ]
+          }
+        ],
+        rules: z.array(z.any()).min(1),
+        itemField: fieldGroup('', {
+          label: 'Item',
+          collapsible: true,
+          collapsibleDefaultOpen: true,
+          fields: {
+            conditions: arrayField('conditions', {
+              label: 'Conditions',
+              addButtonText: 'Add Condition',
+              defaultValue: [
                 {
                   field: 'isTribute',
                   operator: ''
                 }
-              ]
-            }
-          ],
-          rules: z.array(z.any()).min(1),
-          itemField: {
-            type: 'field-group',
-            label: 'Item',
-            collapsible: true,
-            collapsibleDefaultOpen: true,
-            fields: {
-              conditions: {
-                type: 'array',
-                label: 'Conditions',
-                addButtonText: 'Add Condition',
-                defaultValue: [
-                  {
-                    field: 'isTribute',
-                    operator: ''
-                  }
-                ],
-                rules: z.array(z.any()).min(1),
-                itemField: buildConditionItemField([], contextSchema)
-              }
-            }
+              ],
+              rules: z.array(z.any()).min(1),
+              itemField: buildConditionItemField([], contextSchema)
+            })
           }
-        }
-      }
-    }
+        })
+      })
+    }))
 
     const wrapper = await mountSuspended(FormRenderer, {
       props: {
@@ -276,26 +264,22 @@ describe('Condition builder loop regression', () => {
       }
     }
 
-    const schema: FormDef = {
-      id: 'test',
-      fields: {
-        conditions: {
-          type: 'array',
-          label: 'Conditions',
-          addButtonText: 'Add Condition',
-          defaultValue: [
-            {
-              field: 'donationAmount',
-              operator: '',
-              // Intentionally still a number, simulating a stale value during operator swap.
-              value: 100
-            }
-          ],
-          rules: z.array(z.any()).min(1),
-          itemField: buildConditionItemField([], contextSchema)
-        }
-      }
-    }
+    const schema = defineForm('test', () => ({
+      conditions: arrayField('conditions', {
+        label: 'Conditions',
+        addButtonText: 'Add Condition',
+        defaultValue: [
+          {
+            field: 'donationAmount',
+            operator: '',
+            // Intentionally still a number, simulating a stale value during operator swap.
+            value: 100
+          }
+        ],
+        rules: z.array(z.any()).min(1),
+        itemField: buildConditionItemField([], contextSchema)
+      })
+    }))
 
     const wrapper = await mountSuspended(FormRenderer, {
       props: {

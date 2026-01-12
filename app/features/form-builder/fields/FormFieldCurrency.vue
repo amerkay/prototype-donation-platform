@@ -7,7 +7,7 @@ import {
   InputGroupInput,
   InputGroupText
 } from '@/components/ui/input-group'
-import type { CurrencyFieldMeta, FieldProps, FieldEmits } from '~/features/form-builder/types'
+import type { FieldProps, FieldEmits, CurrencyFieldDef } from '~/features/form-builder/types'
 import { useFormBuilderContext } from '~/features/form-builder/composables/useFormBuilderContext'
 import {
   useFieldWrapper,
@@ -16,7 +16,7 @@ import {
 import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 import { cn } from '@/lib/utils'
 
-interface Props extends FieldProps<number | string | null, CurrencyFieldMeta> {
+interface Props extends FieldProps<number | string | null, CurrencyFieldDef> {
   class?: HTMLAttributes['class']
 }
 

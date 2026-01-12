@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import FormRenderer from '@/features/form-builder/FormRenderer.vue'
-import { createFormConfigSection } from '../donation-form/forms/donation-form-config-form'
-import { createMultipleProductsConfigSection } from '../donation-form/impact-cart/forms/impact-cart-config-form'
-import { createProductSelectorConfigSection } from '../donation-form/product-selector/forms/product-selector-config-form'
-import { createImpactJourneyConfigSection } from '../donation-form/impact-journey/forms/impact-journey-config-form'
-import { createCoverCostsConfigSection } from '../donation-form/cover-costs/forms/cover-costs-config-form'
-import { createGiftAidConfigSection } from '../donation-form/gift-aid/forms/gift-aid-config-form'
-import { createTributeConfigSection } from '../donation-form/tribute/forms/tribute-config-form'
+import { useDonationFormConfigForm } from '../donation-form/forms/donation-form-config-form'
+import { useMultipleProductsConfigSection } from '../donation-form/impact-cart/forms/impact-cart-config-form'
+import { useProductSelectorConfigSection } from '../donation-form/product-selector/forms/product-selector-config-form'
+import { useImpactJourneyConfigSection } from '../donation-form/impact-journey/forms/impact-journey-config-form'
+import { useCoverCostsConfigSection } from '../donation-form/cover-costs/forms/cover-costs-config-form'
+import { useGiftAidConfigSection } from '../donation-form/gift-aid/forms/gift-aid-config-form'
+import { useTributeConfigSection } from '../donation-form/tribute/forms/tribute-config-form'
 import { createDonationCustomFieldsConfigSection } from '../donation-form/custom-fields/forms/donation-custom-fields-config-form'
 import { useFormConfigStore } from '~/stores/formConfig'
 import { useDonationFormContext } from '../donation-form/composables/useDonationFormContext'
@@ -18,13 +18,13 @@ const store = useFormConfigStore()
 const { contextSchema: donationContextSchema } = useDonationFormContext()
 
 // Create all config sections
-const formSection = createFormConfigSection()
-const impactCartSection = createMultipleProductsConfigSection()
-const productSelectorSection = createProductSelectorConfigSection()
-const impactJourneySection = createImpactJourneyConfigSection()
-const coverCostsSection = createCoverCostsConfigSection()
-const giftAidSection = createGiftAidConfigSection()
-const tributeSection = createTributeConfigSection()
+const formSection = useDonationFormConfigForm
+const impactCartSection = useMultipleProductsConfigSection
+const productSelectorSection = useProductSelectorConfigSection
+const impactJourneySection = useImpactJourneyConfigSection
+const coverCostsSection = useCoverCostsConfigSection
+const giftAidSection = useGiftAidConfigSection
+const tributeSection = useTributeConfigSection
 const customFieldsSection = createDonationCustomFieldsConfigSection(donationContextSchema)
 </script>
 

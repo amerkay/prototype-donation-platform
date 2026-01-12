@@ -12,7 +12,7 @@ import { buildConditionItemField } from '~/features/custom-fields/forms/conditio
 import { operatorRequiresValue } from '~/features/form-builder/conditions'
 import type { ContextSchema } from '~/features/form-builder/conditions'
 import type { AvailableField } from '~/features/form-builder/composables/useAvailableFields'
-import type { FieldContext, OnChangeContext, FieldGroupMeta } from '~/features/form-builder/types'
+import type { FieldContext, OnChangeContext, FieldGroupDef } from '~/features/form-builder/types'
 
 describe('condition-field-builder', () => {
   /**
@@ -64,7 +64,7 @@ describe('condition-field-builder', () => {
 
       expect(typeof builder).toBe('function')
 
-      const config = builder({}) as FieldGroupMeta
+      const config = builder({}) as FieldGroupDef
       expect(config.type).toBe('field-group')
       expect(config.fields).toHaveProperty('field')
       expect(config.fields).toHaveProperty('operator')
@@ -75,7 +75,7 @@ describe('condition-field-builder', () => {
       const { precedingFields, contextSchema } = createMockFields()
       const builder = buildConditionItemField(precedingFields, contextSchema)
 
-      const config = builder({}) as FieldGroupMeta
+      const config = builder({}) as FieldGroupDef
       const fieldField = config.fields?.field
       expect(fieldField).toBeDefined()
       expect('options' in fieldField!).toBe(true)
@@ -97,7 +97,7 @@ describe('condition-field-builder', () => {
       const { precedingFields, contextSchema } = createMockFields()
       const builder = buildConditionItemField(precedingFields, contextSchema)
 
-      const config = builder({}) as FieldGroupMeta
+      const config = builder({}) as FieldGroupDef
       const fieldOnChange = config.fields?.field?.onChange
 
       expect(fieldOnChange).toBeDefined()
@@ -120,7 +120,7 @@ describe('condition-field-builder', () => {
       const { precedingFields, contextSchema } = createMockFields()
       const builder = buildConditionItemField(precedingFields, contextSchema)
 
-      const config = builder({ field: 'amount' }) as FieldGroupMeta
+      const config = builder({ field: 'amount' }) as FieldGroupDef
       const operatorOnChange = config.fields?.operator?.onChange
 
       expect(operatorOnChange).toBeDefined()
@@ -142,7 +142,7 @@ describe('condition-field-builder', () => {
       const { precedingFields, contextSchema } = createMockFields()
       const builder = buildConditionItemField(precedingFields, contextSchema)
 
-      const config = builder({ field: 'donationType' }) as FieldGroupMeta
+      const config = builder({ field: 'donationType' }) as FieldGroupDef
       const operatorOnChange = config.fields?.operator?.onChange
 
       expect(operatorOnChange).toBeDefined()
@@ -176,14 +176,14 @@ describe('condition-field-builder', () => {
       const builder = buildConditionItemField(precedingFields, contextSchema)
 
       // Without field selected
-      const configEmpty = builder({}) as FieldGroupMeta
+      const configEmpty = builder({}) as FieldGroupDef
       const operatorVisibleEmpty = configEmpty.fields?.operator?.visibleWhen as (
         ctx: FieldContext
       ) => boolean
       expect(operatorVisibleEmpty({ values: {}, root: {} })).toBe(false)
 
       // With field selected
-      const configWithField = builder({ field: 'amount' }) as FieldGroupMeta
+      const configWithField = builder({ field: 'amount' }) as FieldGroupDef
       const operatorVisibleWithField = configWithField.fields?.operator?.visibleWhen as (
         ctx: FieldContext
       ) => boolean
@@ -195,21 +195,21 @@ describe('condition-field-builder', () => {
       const builder = buildConditionItemField(precedingFields, contextSchema)
 
       // Without field
-      const configNoField = builder({}) as FieldGroupMeta
+      const configNoField = builder({}) as FieldGroupDef
       const valueVisibleNoField = configNoField.fields?.value?.visibleWhen as (
         ctx: FieldContext
       ) => boolean
       expect(valueVisibleNoField({ values: { operator: 'greaterOrEqual' }, root: {} })).toBe(false)
 
       // With field but no operator
-      const configNoOp = builder({ field: 'amount' }) as FieldGroupMeta
+      const configNoOp = builder({ field: 'amount' }) as FieldGroupDef
       const valueVisibleNoOp = configNoOp.fields?.value?.visibleWhen as (
         ctx: FieldContext
       ) => boolean
       expect(valueVisibleNoOp({ values: { field: 'amount' }, root: {} })).toBe(false)
 
       // With field and operator that requires value
-      const configWithBoth = builder({ field: 'amount' }) as FieldGroupMeta
+      const configWithBoth = builder({ field: 'amount' }) as FieldGroupDef
       const valueVisibleWithBoth = configWithBoth.fields?.value?.visibleWhen as (
         ctx: FieldContext
       ) => boolean
@@ -227,7 +227,7 @@ describe('condition-field-builder', () => {
       const { precedingFields, contextSchema } = createMockFields()
       const builder = buildConditionItemField(precedingFields, contextSchema)
 
-      const config = builder({ field: 'donationType' }) as FieldGroupMeta
+      const config = builder({ field: 'donationType' }) as FieldGroupDef
       const valueField = config.fields?.value
 
       expect(valueField?.type).toBe('select')
@@ -238,7 +238,7 @@ describe('condition-field-builder', () => {
       const { precedingFields, contextSchema } = createMockFields()
       const builder = buildConditionItemField(precedingFields, contextSchema)
 
-      const config = builder({ field: 'amount' }) as FieldGroupMeta
+      const config = builder({ field: 'amount' }) as FieldGroupDef
       const valueField = config.fields?.value
 
       expect(valueField?.type).toBe('number')
@@ -252,7 +252,7 @@ describe('condition-field-builder', () => {
         field: 'donationType',
         operator: 'in',
         value: []
-      }) as FieldGroupMeta
+      }) as FieldGroupDef
       const valueField = config.fields?.value
 
       expect(valueField?.type).toBe('array')
@@ -268,7 +268,7 @@ describe('condition-field-builder', () => {
         field: 'donationType',
         operator: 'in',
         value: '' // Not an array
-      }) as FieldGroupMeta
+      }) as FieldGroupDef
       const valueField = config.fields?.value
 
       expect(valueField?.type).toBe('text')

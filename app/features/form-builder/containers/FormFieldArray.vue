@@ -4,7 +4,7 @@ import { useFieldArray, useFormValues, useValidateField } from 'vee-validate'
 import { vAutoAnimate } from '@formkit/auto-animate'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import type { ArrayFieldMeta, FieldMeta, OnChangeContext } from '~/features/form-builder/types'
+import type { ArrayFieldDef, FieldDef, OnChangeContext } from '~/features/form-builder/types'
 import FormField from '../FormField.vue'
 import { useResolvedFieldMeta } from '~/features/form-builder/composables/useResolvedFieldMeta'
 import { useChildFieldErrors } from '~/features/form-builder/composables/useChildFieldErrors'
@@ -29,7 +29,7 @@ function getValueAtVeePath(root: unknown, veePath: string): unknown {
 interface Props {
   modelValue?: unknown[]
   errors: string[]
-  meta: ArrayFieldMeta
+  meta: ArrayFieldDef
   name: string
   touched: boolean
   onBlur?: (e?: Event) => void
@@ -266,7 +266,7 @@ function onDrop(event: DragEvent) {
 // Memoized item field metadata - prevents infinite re-render loop
 // Maps each item's index to its resolved field metadata
 const itemFieldMetaMap = computed(() => {
-  const map = new Map<number, FieldMeta>()
+  const map = new Map<number, FieldDef>()
 
   fields.value.forEach((field, index) => {
     const itemField = props.meta.itemField

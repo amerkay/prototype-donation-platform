@@ -1,5 +1,5 @@
-import { computed, toValue, type MaybeRefOrGetter } from 'vue'
-import type { BaseFieldMeta } from '~/features/form-builder/types'
+import { computed, toValue, unref, type MaybeRefOrGetter, type ComputedRef } from 'vue'
+import type { FieldContext } from '~/features/form-builder/types'
 import { useResolvedFieldMeta } from './useResolvedFieldMeta'
 import { useFormBuilderContext } from './useFormBuilderContext'
 
@@ -7,6 +7,19 @@ type WrapperOptions = {
   orientation?: 'horizontal' | 'vertical'
   disableLabelFor?: boolean
   variant?: 'field' | 'fieldset'
+}
+
+/**
+ * Extended type that supports both old BaseFieldMeta and new BaseFieldConfig with ComputedRef
+ */
+type FieldMetaLike = {
+  label?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
+  description?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
+  placeholder?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
+  optional?: boolean
+  disabled?: boolean | ComputedRef<boolean> | ((ctx: FieldContext) => boolean)
+  labelClass?: string
+  descriptionClass?: string
 }
 
 /**
@@ -29,16 +42,7 @@ type WrapperOptions = {
  * ```
  */
 export function useFieldWrapper(
-  meta: Pick<
-    BaseFieldMeta,
-    | 'label'
-    | 'description'
-    | 'placeholder'
-    | 'optional'
-    | 'disabled'
-    | 'labelClass'
-    | 'descriptionClass'
-  >,
+  meta: FieldMetaLike,
   name: string,
   errors: MaybeRefOrGetter<string[]>,
   options: WrapperOptions = {}
@@ -48,10 +52,15 @@ export function useFieldWrapper(
   const isFieldset = options.variant === 'fieldset'
 
   const resolvedDisabled = computed(() => {
+    if (!meta.disabled) return false
+    // Check if it's a ComputedRef
+    if (typeof meta.disabled === 'object' && 'value' in meta.disabled) {
+      return unref(meta.disabled)
+    }
     if (typeof meta.disabled === 'function') {
       return meta.disabled(fieldContext.value)
     }
-    return meta.disabled ?? false
+    return meta.disabled
   })
 
   const wrapperProps = computed(() => {
