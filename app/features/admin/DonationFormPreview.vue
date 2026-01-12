@@ -13,8 +13,8 @@ const donationStore = useDonationFormStore()
     <div class="bg-muted/50 rounded-xl w-full">
       <DonationFlowWizard :config="store.fullConfig" />
     </div>
-    <!-- <pre class="bg-muted/50 rounded-xl p-4 text-xs overflow-auto max-h-96">{{
+    <pre v-if="import.meta.dev" class="bg-muted/50 rounded-xl p-4 text-xs overflow-auto max-h-96">{{
       JSON.stringify(donationStore.$state, null, 2)
-    }}</pre> -->
+    }}</pre>
   </div>
 </template>
