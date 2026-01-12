@@ -6,6 +6,7 @@ import { useDonationFormStore } from '~/features/donation-form/stores/donationFo
 // Get shared form config from store
 const store = useFormConfigStore()
 const donationStore = useDonationFormStore()
+const isDev = import.meta.dev
 </script>
 
 <template>
@@ -13,7 +14,7 @@ const donationStore = useDonationFormStore()
     <div class="bg-muted/50 rounded-xl w-full">
       <DonationFlowWizard :config="store.fullConfig" />
     </div>
-    <pre v-if="import.meta.dev" class="bg-muted/50 rounded-xl p-4 text-xs overflow-auto max-h-96">{{
+    <pre v-if="isDev" class="bg-muted/50 rounded-xl p-4 text-xs overflow-auto max-h-96">{{
       JSON.stringify(donationStore.$state, null, 2)
     }}</pre>
   </div>
