@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppSidebar from '~/features/admin/sidebar/AppSidebar.vue'
-import DonationFormSettings from '~/features/admin/DonationFormSettings.vue'
+import AdminDonationFormConfig from '~/features/admin/AdminDonationFormConfig.vue'
 import DonationFormPreview from '~/features/admin/DonationFormPreview.vue'
 import {
   Breadcrumb,
@@ -50,7 +50,7 @@ store.initialize(sampleConfig as FullFormConfig, sampleProducts)
         <div class="flex-col-reverse flex gap-y-6 lg:space-x-4 lg:flex-row">
           <div class="grow pb-4">
             <p class="text-muted-foreground text-sm font-semibold mb-2">Form Settings</p>
-            <DonationFormSettings />
+            <AdminDonationFormConfig />
           </div>
 
           <div
