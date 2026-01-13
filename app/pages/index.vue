@@ -12,8 +12,8 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
-import { formConfig as sampleConfig } from '~/features/donation-form/api-sample-response-form-config'
-import { products as sampleProducts } from '~/features/donation-form/api-sample-response-products'
+import { formConfig as sampleConfig } from '~/sample-api-responses/api-sample-response-form-config'
+import { products as sampleProducts } from '~/sample-api-responses/api-sample-response-products'
 import { useFormConfigStore, type FullFormConfig } from '~/stores/formConfig'
 
 // Initialize store with config
