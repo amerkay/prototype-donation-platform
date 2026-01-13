@@ -11,10 +11,10 @@ const isDev = import.meta.dev
 
 <template>
   <div v-if="store.fullConfig" class="space-y-4">
-    <div class="bg-muted/50 rounded-xl w-full">
+    <div class="bg-muted/50 rounded-xl w-full border">
       <DonationFlowWizard :config="store.fullConfig" />
     </div>
-    <pre v-if="isDev" class="bg-muted/50 rounded-xl p-4 text-xs overflow-auto max-h-96">{{
+    <pre v-if="isDev" class="bg-muted/50 rounded-xl p-4 text-xs overflow-auto max-h-96 border">{{
       JSON.stringify(donationStore.completeState, null, 2)
     }}</pre>
   </div>

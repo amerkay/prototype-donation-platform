@@ -57,7 +57,7 @@ store.initialize(sampleConfig as FullFormConfig, sampleProducts)
             class="w-full sm:mx-auto lg:min-w-sm lg:max-w-sm lg:w-sm lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto pb-4"
           >
             <p class="text-muted-foreground text-sm font-semibold mb-2">Form Preview</p>
-            <DonationFormPreview class="border-2" />
+            <DonationFormPreview />
           </div>
         </div>
       </div>
