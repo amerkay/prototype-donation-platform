@@ -73,6 +73,7 @@ export type FieldType =
   | 'array'
   | 'emoji'
   | 'slider'
+  | 'image-upload'
   | 'condition-builder'
   | 'field-group'
   | 'card'
@@ -285,6 +286,12 @@ export interface SliderFieldConfig extends BaseFieldConfig {
   suffix?: string | ComputedRef<string | undefined> | ((ctx: FieldContext) => string | undefined)
 }
 
+export interface ImageUploadFieldConfig extends BaseFieldConfig {
+  accept?: string
+  maxSizeMB?: number
+  recommendedDimensions?: string
+}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface HiddenFieldConfig extends BaseFieldConfig {
   // Hidden fields inherit all base config (label, defaultValue, visibleWhen, etc.)
@@ -362,6 +369,7 @@ export interface FieldRegistry {
   'radio-group': RadioGroupFieldConfig
   emoji: EmojiFieldConfig
   slider: SliderFieldConfig
+  'image-upload': ImageUploadFieldConfig
   array: ArrayFieldConfig
   'field-group': FieldGroupConfig
   tabs: TabsFieldConfig
@@ -384,6 +392,7 @@ export type AutocompleteFieldDef = Field<'autocomplete', AutocompleteFieldConfig
 export type RadioGroupFieldDef = Field<'radio-group', RadioGroupFieldConfig>
 export type EmojiFieldDef = Field<'emoji', EmojiFieldConfig>
 export type SliderFieldDef = Field<'slider', SliderFieldConfig>
+export type ImageUploadFieldDef = Field<'image-upload', ImageUploadFieldConfig>
 export type ArrayFieldDef = Field<'array', ArrayFieldConfig>
 export type FieldGroupDef = Field<'field-group', FieldGroupConfig>
 export type TabsFieldDef = Field<'tabs', TabsFieldConfig>
@@ -419,6 +428,8 @@ export const isRadioGroupField = (field: FieldDef): field is RadioGroupFieldDef 
   field.type === 'radio-group'
 export const isEmojiField = (field: FieldDef): field is EmojiFieldDef => field.type === 'emoji'
 export const isSliderField = (field: FieldDef): field is SliderFieldDef => field.type === 'slider'
+export const isImageUploadField = (field: FieldDef): field is ImageUploadFieldDef =>
+  field.type === 'image-upload'
 export const isArrayField = (field: FieldDef): field is ArrayFieldDef => field.type === 'array'
 export const isFieldGroup = (field: FieldDef): field is FieldGroupDef =>
   field.type === 'field-group'

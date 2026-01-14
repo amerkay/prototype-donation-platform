@@ -26,6 +26,8 @@ import type {
   EmojiFieldDef,
   SliderFieldConfig,
   SliderFieldDef,
+  ImageUploadFieldConfig,
+  ImageUploadFieldDef,
   HiddenFieldConfig,
   HiddenFieldDef,
   ArrayFieldConfig,
@@ -229,6 +231,20 @@ export function emojiField(name: string, config: EmojiFieldConfig = {}): EmojiFi
 export function sliderField(name: string, config: SliderFieldConfig): SliderFieldDef {
   return {
     type: 'slider',
+    name,
+    ...config
+  }
+}
+
+/**
+ * Create an image upload field
+ */
+export function imageUploadField(
+  name: string,
+  config: ImageUploadFieldConfig = {}
+): ImageUploadFieldDef {
+  return {
+    type: 'image-upload',
     name,
     ...config
   }

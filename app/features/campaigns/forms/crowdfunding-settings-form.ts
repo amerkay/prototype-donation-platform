@@ -4,6 +4,7 @@ import {
   toggleField,
   textField,
   textareaField,
+  imageUploadField,
   selectField,
   numberField
 } from '~/features/form-builder/api'
@@ -35,6 +36,16 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     visibleWhen: ({ values }) => values.enabled === true,
     maxLength: 275,
     rules: z.string().min(20, 'Description must be at least 20 characters').max(275)
+  })
+
+  const coverPhoto = imageUploadField('coverPhoto', {
+    label: 'Cover Photo',
+    description: 'Upload a campaign cover image (recommended: 1200x675px, 16:9 ratio)',
+    visibleWhen: ({ values }) => values.enabled === true,
+    accept: 'image/*',
+    maxSizeMB: 5,
+    recommendedDimensions: '1200x675px',
+    optional: true
   })
 
   const story = textareaField('story', {
@@ -85,6 +96,7 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     enabled,
     title,
     shortDescription,
+    coverPhoto,
     story,
     showProgressBar,
     showRecentDonations,

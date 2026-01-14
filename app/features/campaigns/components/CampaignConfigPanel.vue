@@ -2,7 +2,6 @@
 import { useCampaignConfigStore } from '~/stores/campaignConfig'
 import { useCampaigns } from '../composables/useCampaigns'
 import FormRenderer from '@/features/form-builder/FormRenderer.vue'
-import ImageUploadField from './ImageUploadField.vue'
 import { useCampaignBasicSettingsForm } from '../forms/campaign-basic-settings-form'
 import { useCampaignStatsSettingsForm } from '../forms/campaign-stats-settings-form'
 import { useCrowdfundingSettingsForm } from '../forms/crowdfunding-settings-form'
@@ -46,17 +45,6 @@ const crowdfundingData = computed({
   set: (val) => {
     if (val) {
       store.crowdfunding = val
-      store.markDirty()
-    }
-  }
-})
-
-// Cover photo handling
-const coverPhoto = computed({
-  get: () => store.crowdfunding?.coverPhoto || null,
-  set: (val) => {
-    if (store.crowdfunding) {
-      store.crowdfunding = { ...store.crowdfunding, coverPhoto: val || undefined }
       store.markDirty()
     }
   }
@@ -144,15 +132,6 @@ const discardChanges = () => {
 
     <!-- Crowdfunding Page Settings -->
     <div v-if="crowdfundingData" class="config-section space-y-4">
-      <!-- Cover Photo Upload -->
-      <ImageUploadField
-        v-if="store.crowdfunding?.enabled"
-        v-model="coverPhoto"
-        label="Cover Photo"
-        description="Upload a campaign cover image (recommended: 1200x675px, 16:9 ratio)"
-      />
-
-      <!-- Other Crowdfunding Fields -->
       <FormRenderer
         ref="crowdfundingFormRef"
         v-model="crowdfundingData"

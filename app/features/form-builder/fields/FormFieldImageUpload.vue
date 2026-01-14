@@ -1,40 +1,33 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
 import { Upload, X, Image as ImageIcon } from 'lucide-vue-next'
 import { useDropZone, useFileDialog } from '@vueuse/core'
 import { cn } from '@/lib/utils'
+import type { FieldProps, FieldEmits, ImageUploadFieldDef } from '~/features/form-builder/types'
+import { useFieldWrapper } from '~/features/form-builder/composables/useFieldWrapper'
+import FormFieldWrapper from '~/features/form-builder/internal/FormFieldWrapper.vue'
 
-const props = withDefaults(
-  defineProps<{
-    modelValue?: string | null
-    label?: string
-    description?: string
-    accept?: string
-    maxSizeMB?: number
-  }>(),
-  {
-    label: 'Cover Photo',
-    description: 'Upload a campaign cover image (recommended: 1200x675px)',
-    accept: 'image/*',
-    maxSizeMB: 5
-  }
-)
+type Props = FieldProps<string | null, ImageUploadFieldDef>
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string | null]
-}>()
+const props = defineProps<Props>()
+const emit = defineEmits<FieldEmits<string | null>>()
+
+const { wrapperProps, resolvedLabel } = useFieldWrapper(props.meta, props.name, () => props.errors)
 
 // Refs
 const dropZoneRef = ref<HTMLDivElement>()
-const previewUrl = ref<string | null>(props.modelValue || null)
 const error = ref<string | null>(null)
 const isLoading = ref(false)
 
+// Get config values with defaults
+const accept = props.meta.accept || 'image/*'
+const maxSizeMB = props.meta.maxSizeMB || 5
+const recommendedDimensions = props.meta.recommendedDimensions || '1200x675px'
+
 // File dialog
 const { open: openFileDialog, onChange } = useFileDialog({
-  accept: props.accept,
+  accept,
   multiple: false
 })
 
@@ -43,14 +36,6 @@ const { isOverDropZone } = useDropZone(dropZoneRef, {
   onDrop: handleFiles,
   dataTypes: ['image/png', 'image/jpeg', 'image/webp', 'image/gif']
 })
-
-// Watch for external changes to modelValue
-watch(
-  () => props.modelValue,
-  (newValue) => {
-    previewUrl.value = newValue || null
-  }
-)
 
 // Handle file selection
 onChange((files) => {
@@ -74,9 +59,9 @@ async function handleFiles(files: File[] | FileList | null) {
   }
 
   // Validate file size
-  const maxSizeBytes = props.maxSizeMB * 1024 * 1024
+  const maxSizeBytes = maxSizeMB * 1024 * 1024
   if (file.size > maxSizeBytes) {
-    error.value = `File size must be less than ${props.maxSizeMB}MB`
+    error.value = `File size must be less than ${maxSizeMB}MB`
     return
   }
 
@@ -87,7 +72,6 @@ async function handleFiles(files: File[] | FileList | null) {
     const reader = new FileReader()
     reader.onload = (e) => {
       const result = e.target?.result as string
-      previewUrl.value = result
       emit('update:modelValue', result)
       isLoading.value = false
     }
@@ -103,7 +87,6 @@ async function handleFiles(files: File[] | FileList | null) {
 }
 
 function removeImage() {
-  previewUrl.value = null
   emit('update:modelValue', null)
   error.value = null
 }
@@ -114,28 +97,26 @@ function replaceImage() {
 </script>
 
 <template>
-  <div class="space-y-2">
-    <!-- Label -->
-    <Label v-if="label">{{ label }}</Label>
-    <p v-if="description" class="text-sm text-muted-foreground">{{ description }}</p>
-
+  <FormFieldWrapper v-bind="wrapperProps">
     <!-- Preview or Upload Zone -->
-    <div v-if="previewUrl" class="relative max-w-md">
-      <Card class="overflow-hidden">
-        <div class="relative aspect-video bg-muted">
-          <img :src="previewUrl" :alt="label" class="w-full h-full object-cover" />
-          <div
-            class="absolute inset-0 bg-black/0 hover:bg-black/50 transition-colors flex items-center justify-center gap-2 opacity-0 hover:opacity-100"
-          >
-            <Button variant="secondary" size="sm" @click="replaceImage">
-              <Upload class="w-3.5 h-3.5 mr-2" />
-              Replace
-            </Button>
-            <Button variant="secondary" size="sm" @click="removeImage">
-              <X class="w-3.5 h-3.5 mr-2" />
-              Remove
-            </Button>
-          </div>
+    <div v-if="modelValue" class="relative max-w-md">
+      <Card class="overflow-hidden p-0 gap-y-0">
+        <div class="aspect-video bg-muted">
+          <img
+            :src="modelValue"
+            :alt="resolvedLabel || 'Image'"
+            class="w-full h-full object-cover"
+          />
+        </div>
+        <div class="flex gap-2 p-3 border-t">
+          <Button variant="outline" size="sm" type="button" class="flex-1" @click="replaceImage">
+            <Upload class="w-3.5 h-3.5 mr-2" />
+            Replace
+          </Button>
+          <Button variant="outline" size="sm" type="button" class="flex-1" @click="removeImage">
+            <X class="w-3.5 h-3.5 mr-2" />
+            Remove
+          </Button>
         </div>
       </Card>
     </div>
@@ -172,6 +153,7 @@ function replaceImage() {
             </p>
             <p class="text-xs text-muted-foreground">
               PNG, JPG, WebP or GIF (max {{ maxSizeMB }}MB)
+              {{ recommendedDimensions ? ` • Recommended: ${recommendedDimensions}` : '' }}
             </p>
           </div>
 
@@ -184,9 +166,9 @@ function replaceImage() {
     </div>
 
     <!-- Error Message -->
-    <p v-if="error" class="text-sm text-destructive">{{ error }}</p>
+    <p v-if="error" class="text-sm text-destructive mt-2">{{ error }}</p>
 
     <!-- Loading State -->
-    <p v-if="isLoading" class="text-sm text-muted-foreground">Processing image...</p>
-  </div>
+    <p v-if="isLoading" class="text-sm text-muted-foreground mt-2">Processing image...</p>
+  </FormFieldWrapper>
 </template>

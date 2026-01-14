@@ -26,6 +26,7 @@ import FormFieldRadioGroup from './fields/FormFieldRadioGroup.vue'
 import FormFieldSlider from './fields/FormFieldSlider.vue'
 import FormFieldAutocomplete from './fields/FormFieldAutocomplete.vue'
 import FormFieldEmoji from './fields/FormFieldEmoji.vue'
+import FormFieldImageUpload from './fields/FormFieldImageUpload.vue'
 import FormFieldArray from './containers/FormFieldArray.vue'
 import FormFieldGroup from './containers/FormFieldGroup.vue'
 import FormFieldTabs from './containers/FormFieldTabs.vue'
@@ -54,6 +55,7 @@ const FIELD_COMPONENTS: Record<string, Component> = {
   'radio-group': FormFieldRadioGroup,
   emoji: FormFieldEmoji,
   slider: FormFieldSlider,
+  'image-upload': FormFieldImageUpload,
   card: FormFieldCard,
   'field-group': FormFieldGroup,
   array: FormFieldArray,
