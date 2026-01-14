@@ -12,14 +12,13 @@ export const campaigns: Campaign[] = [
       totalDonations: 342,
       totalDonors: 287,
       goalAmount: 50000,
-      includeGiftAidInGoal: true,
       averageDonation: 134,
       topDonation: 1000,
       daysRemaining: 45
     },
     crowdfunding: {
       enabled: true,
-      coverPhoto: '/imgs/orangutan-cover.jpg',
+      coverPhoto: '/imgs/baby-orangutan-hammick.webp',
       title: 'Help Save Borneo Orangutans',
       shortDescription:
         'Support the rehabilitation and protection of endangered orangutans in their natural habitat.',
@@ -27,9 +26,14 @@ export const campaigns: Campaign[] = [
       showProgressBar: true,
       showRecentDonations: true,
       defaultDonationsView: 'recent',
-      numberOfDonationsToShow: 10,
-      allowPeerToPeerFundraising: true,
-      wordpressPluginEnabled: true
+      numberOfDonationsToShow: 5
+    },
+    peerToPeer: {
+      enabled: true,
+      allowIndividuals: true,
+      allowTeams: true,
+      fundraiserGoalDefault: 500,
+      customMessage: 'Join our community of fundraisers and help us save orangutans!'
     },
     charity: {
       name: 'Borneo Orangutan Survival Foundation',
@@ -64,6 +68,84 @@ export const campaigns: Campaign[] = [
         joinedAt: '2025-08-01T00:00:00Z',
         raisedAmount: 12350,
         donationCount: 67
+      }
+    ],
+    recentDonations: [
+      {
+        id: 'd1',
+        donorName: 'Emma Wilson',
+        amount: 250,
+        message: 'Keep up the amazing work saving these beautiful creatures!',
+        isAnonymous: false,
+        createdAt: '2026-01-14T09:30:00Z'
+      },
+      {
+        id: 'd2',
+        donorName: 'Anonymous',
+        amount: 100,
+        isAnonymous: true,
+        createdAt: '2026-01-14T08:15:00Z'
+      },
+      {
+        id: 'd3',
+        donorName: 'James Chen',
+        amount: 500,
+        message: 'In memory of my grandmother who loved orangutans.',
+        isAnonymous: false,
+        createdAt: '2026-01-13T22:45:00Z'
+      },
+      {
+        id: 'd4',
+        donorName: 'Sarah & Tom',
+        amount: 75,
+        message: 'Happy to support!',
+        isAnonymous: false,
+        createdAt: '2026-01-13T18:30:00Z'
+      },
+      {
+        id: 'd5',
+        donorName: 'Anonymous',
+        amount: 1000,
+        isAnonymous: true,
+        createdAt: '2026-01-13T14:20:00Z'
+      },
+      {
+        id: 'd6',
+        donorName: 'Maria Garcia',
+        amount: 50,
+        message: 'For Bumi!',
+        isAnonymous: false,
+        createdAt: '2026-01-13T11:00:00Z'
+      },
+      {
+        id: 'd7',
+        donorName: 'David Brown',
+        amount: 150,
+        isAnonymous: false,
+        createdAt: '2026-01-12T16:45:00Z'
+      },
+      {
+        id: 'd8',
+        donorName: 'Anonymous',
+        amount: 25,
+        isAnonymous: true,
+        createdAt: '2026-01-12T10:30:00Z'
+      },
+      {
+        id: 'd9',
+        donorName: 'Lisa Thompson',
+        amount: 200,
+        message: 'Monthly supporter - love seeing the progress updates!',
+        isAnonymous: false,
+        createdAt: '2026-01-11T19:15:00Z'
+      },
+      {
+        id: 'd10',
+        donorName: 'Michael Lee',
+        amount: 300,
+        message: 'Donated on behalf of my company.',
+        isAnonymous: false,
+        createdAt: '2026-01-11T09:00:00Z'
       }
     ]
   }

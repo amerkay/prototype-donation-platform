@@ -149,6 +149,10 @@ export const useImpactCartStore = defineStore(
       multipleCart.value = filterByFrequency(multipleCart.value, 'once')
     }
 
+    function reset() {
+      clearCart()
+    }
+
     function restoreState(cartItems: CartItem[]) {
       multipleCart.value = cartItems
     }
@@ -213,6 +217,7 @@ export const useImpactCartStore = defineStore(
       clearRecurringItems,
       canAddRecurringFrequency,
       restoreState,
+      reset,
       $persist,
       $hydrate
     }

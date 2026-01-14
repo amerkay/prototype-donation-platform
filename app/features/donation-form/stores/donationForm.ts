@@ -239,6 +239,10 @@ export const useDonationFormStore = defineStore(
       }
     }
 
+    function reset() {
+      clearSession()
+    }
+
     // Persistence methods (called by plugin after hydration)
     function $persist() {
       if (import.meta.server) return
@@ -322,6 +326,7 @@ export const useDonationFormStore = defineStore(
       setCoverCosts,
       syncMultipleCart,
       clearSession,
+      reset,
       $persist,
       $hydrate
     }

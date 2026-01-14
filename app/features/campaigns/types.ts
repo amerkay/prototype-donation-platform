@@ -22,6 +22,18 @@ export interface CampaignFundraiser {
 }
 
 /**
+ * Individual donation record for preview
+ */
+export interface CampaignDonation {
+  id: string
+  donorName: string
+  amount: number
+  message?: string
+  isAnonymous: boolean
+  createdAt: string
+}
+
+/**
  * Campaign statistics
  */
 export interface CampaignStats {
@@ -29,7 +41,6 @@ export interface CampaignStats {
   totalDonations: number
   totalDonors: number
   goalAmount?: number
-  includeGiftAidInGoal?: boolean
   averageDonation: number
   topDonation: number
   daysRemaining?: number
@@ -48,8 +59,17 @@ export interface CrowdfundingSettings {
   showRecentDonations: boolean
   defaultDonationsView: 'recent' | 'top'
   numberOfDonationsToShow: number
-  allowPeerToPeerFundraising: boolean
-  wordpressPluginEnabled: boolean
+}
+
+/**
+ * Peer-to-peer fundraising settings
+ */
+export interface PeerToPeerSettings {
+  enabled: boolean
+  allowIndividuals: boolean
+  allowTeams: boolean
+  fundraiserGoalDefault?: number
+  customMessage?: string
 }
 
 /**
@@ -85,7 +105,9 @@ export interface Campaign {
   updatedAt: string
   stats: CampaignStats
   crowdfunding: CrowdfundingSettings
+  peerToPeer: PeerToPeerSettings
   charity: CharityInfo
   socialSharing: SocialSharingSettings
   fundraisers: CampaignFundraiser[]
+  recentDonations: CampaignDonation[]
 }

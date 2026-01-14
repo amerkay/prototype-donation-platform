@@ -24,7 +24,6 @@ export const useCharityInfoForm = defineForm('charity', (_ctx) => {
     label: 'Website URL',
     description: 'Charity website (must start with http:// or https://)',
     placeholder: 'https://example.org',
-    type: 'url',
     rules: z.string().url('Must be a valid URL')
   })
 

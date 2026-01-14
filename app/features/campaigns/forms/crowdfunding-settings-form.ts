@@ -81,20 +81,6 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     rules: z.number().min(5).max(50)
   })
 
-  const allowPeerToPeerFundraising = toggleField('allowPeerToPeerFundraising', {
-    label: 'Allow Peer-to-Peer Fundraising',
-    description: 'Enable team members and individuals to create their own fundraising pages',
-    visibleWhen: ({ values }) => values.enabled === true,
-    optional: true
-  })
-
-  const wordpressPluginEnabled = toggleField('wordpressPluginEnabled', {
-    label: 'WordPress Plugin Integration',
-    description: 'Enable embedding via WordPress plugin',
-    visibleWhen: ({ values }) => values.enabled === true,
-    optional: true
-  })
-
   return {
     enabled,
     title,
@@ -103,8 +89,6 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     showProgressBar,
     showRecentDonations,
     defaultDonationsView,
-    numberOfDonationsToShow,
-    allowPeerToPeerFundraising,
-    wordpressPluginEnabled
+    numberOfDonationsToShow
   }
 })
