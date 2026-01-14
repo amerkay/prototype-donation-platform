@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { useCampaignConfigStore } from '~/stores/campaignConfig'
+import { useCampaignShare } from '../composables/useCampaignShare'
+import CampaignPreviewCard from './CampaignPreviewCard.vue'
 import SocialShareButtons from './SocialShareButtons.vue'
 import {
   Dialog,
@@ -12,7 +13,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Copy, Check, Share2 } from 'lucide-vue-next'
-import { useClipboard } from '@vueuse/core'
 
 const props = defineProps<{
   open: boolean
@@ -22,23 +22,7 @@ const emit = defineEmits<{
   'update:open': [value: boolean]
 }>()
 
-const store = useCampaignConfigStore()
-
-// Share URL
-const campaignUrl = computed(() => `https://donate.example.com/campaigns/${store.id}`)
-const { copy, copied } = useClipboard({ source: campaignUrl })
-
-// Check if non-copyLink platforms are enabled
-const hasOtherPlatforms = computed(() => {
-  if (!store.socialSharing) return false
-  return (
-    store.socialSharing.facebook ||
-    store.socialSharing.twitter ||
-    store.socialSharing.linkedin ||
-    store.socialSharing.whatsapp ||
-    store.socialSharing.email
-  )
-})
+const { store, campaignUrl, copy, copied, hasOtherPlatforms } = useCampaignShare()
 </script>
 
 <template>
@@ -56,28 +40,12 @@ const hasOtherPlatforms = computed(() => {
 
       <div class="space-y-4 py-4">
         <!-- Campaign Preview Card -->
-        <div class="p-3 rounded-lg border bg-muted/30">
-          <div class="flex items-start gap-3">
-            <div
-              v-if="store.crowdfunding?.coverPhoto"
-              class="w-16 h-12 rounded-md overflow-hidden shrink-0"
-            >
-              <img
-                :src="store.crowdfunding.coverPhoto"
-                :alt="store.crowdfunding.title"
-                class="w-full h-full object-cover"
-              />
-            </div>
-            <div class="min-w-0">
-              <p class="font-medium text-sm truncate">
-                {{ store.crowdfunding?.title || store.name }}
-              </p>
-              <p class="text-xs text-muted-foreground line-clamp-2">
-                {{ store.crowdfunding?.shortDescription }}
-              </p>
-            </div>
-          </div>
-        </div>
+        <CampaignPreviewCard
+          :title="store.crowdfunding?.title || store.name"
+          :description="store.crowdfunding?.shortDescription"
+          :cover-photo="store.crowdfunding?.coverPhoto"
+          compact
+        />
 
         <!-- Copy Link -->
         <div v-if="store.socialSharing?.copyLink" class="space-y-2">

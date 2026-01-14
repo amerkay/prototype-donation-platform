@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { useCampaignConfigStore } from '~/stores/campaignConfig'
+import { useCampaignShare } from '../composables/useCampaignShare'
+import CampaignPreviewCard from './CampaignPreviewCard.vue'
 import SocialShareButtons from './SocialShareButtons.vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,22 +18,8 @@ import {
   MessageCircle,
   Share2
 } from 'lucide-vue-next'
-import { useClipboard } from '@vueuse/core'
 
-const store = useCampaignConfigStore()
-
-// Debug: Log socialSharing state
-watch(
-  () => store.socialSharing,
-  (newVal) => {
-    console.log('SharingTab - socialSharing changed:', newVal)
-  },
-  { immediate: true, deep: true }
-)
-
-// Share URLs
-const campaignUrl = computed(() => `https://donate.example.com/campaigns/${store.id}`)
-const { copy, copied } = useClipboard({ source: campaignUrl })
+const { store, campaignUrl, copy, copied, enabledPlatformsCount: enabledCount } = useCampaignShare()
 
 // Social platform config (consistent styling)
 const socialPlatforms = [
@@ -57,12 +44,6 @@ const togglePlatform = (
     store.markDirty()
   }
 }
-
-// Count enabled platforms
-const enabledCount = computed(() => {
-  if (!store.socialSharing) return 0
-  return Object.values(store.socialSharing).filter(Boolean).length
-})
 </script>
 
 <template>
@@ -87,27 +68,12 @@ const enabledCount = computed(() => {
         </div>
 
         <!-- Quick Share Preview -->
-        <div class="p-4 rounded-lg border bg-muted/30">
-          <div class="flex items-start gap-4">
-            <div
-              v-if="store.crowdfunding?.coverPhoto"
-              class="w-24 h-16 rounded-md overflow-hidden shrink-0"
-            >
-              <img
-                :src="store.crowdfunding.coverPhoto"
-                :alt="store.crowdfunding.title"
-                class="w-full h-full object-cover"
-              />
-            </div>
-            <div class="min-w-0">
-              <p class="font-medium truncate">{{ store.crowdfunding?.title || store.name }}</p>
-              <p class="text-sm text-muted-foreground line-clamp-2">
-                {{ store.crowdfunding?.shortDescription }}
-              </p>
-              <p class="text-xs text-primary mt-1">{{ campaignUrl }}</p>
-            </div>
-          </div>
-        </div>
+        <CampaignPreviewCard
+          :title="store.crowdfunding?.title || store.name"
+          :description="store.crowdfunding?.shortDescription"
+          :cover-photo="store.crowdfunding?.coverPhoto"
+          :url="campaignUrl"
+        />
       </CardContent>
     </Card>
 
