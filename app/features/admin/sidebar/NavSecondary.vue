@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { LucideIcon } from 'lucide-vue-next'
+import { useActiveLink } from './composables/useActiveLink'
 
 import {
   SidebarGroup,
@@ -16,6 +17,8 @@ defineProps<{
     icon: LucideIcon
   }[]
 }>()
+
+const { isActive } = useActiveLink()
 </script>
 
 <template>
@@ -23,11 +26,15 @@ defineProps<{
     <SidebarGroupContent>
       <SidebarMenu>
         <SidebarMenuItem v-for="item in items" :key="item.title">
-          <SidebarMenuButton as-child size="sm">
-            <a :href="item.url">
+          <SidebarMenuButton
+            as-child
+            size="sm"
+            :variant="isActive(item.url) ? 'selected' : 'default'"
+          >
+            <NuxtLink :to="item.url">
               <component :is="item.icon" />
               <span>{{ item.title }}</span>
-            </a>
+            </NuxtLink>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>

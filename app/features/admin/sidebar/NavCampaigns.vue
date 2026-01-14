@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import type { LucideIcon } from 'lucide-vue-next'
-import { Folder, Forward, MoreHorizontal, Trash2 } from 'lucide-vue-next'
+import { Folder, Forward, MoreHorizontal, Trash2, Megaphone } from 'lucide-vue-next'
+import { useCampaigns } from '~/features/campaigns/composables/useCampaigns'
+import { useActiveLink } from './composables/useActiveLink'
 
 import {
   DropdownMenu,
@@ -19,16 +20,16 @@ import {
   useSidebar
 } from '@/components/ui/sidebar'
 
-defineProps<{
-  campaigns: {
-    name: string
-    url: string
-    icon: LucideIcon
-    selected?: boolean
-  }[]
-}>()
-
 const { isMobile } = useSidebar()
+const { getRecentCampaigns } = useCampaigns()
+const { isActive } = useActiveLink()
+
+const campaigns = computed(() =>
+  getRecentCampaigns(3).map((c) => ({
+    name: c.name,
+    url: `/campaigns/${c.id}`
+  }))
+)
 </script>
 
 <template>
@@ -36,11 +37,11 @@ const { isMobile } = useSidebar()
     <SidebarGroupLabel>Recent Campaigns</SidebarGroupLabel>
     <SidebarMenu>
       <SidebarMenuItem v-for="item in campaigns" :key="item.name">
-        <SidebarMenuButton as-child :variant="item.selected ? 'selected' : 'default'">
-          <a :href="item.url">
-            <component :is="item.icon" />
+        <SidebarMenuButton as-child :variant="isActive(item.url) ? 'selected' : 'default'">
+          <NuxtLink :to="item.url">
+            <Megaphone />
             <span>{{ item.name }}</span>
-          </a>
+          </NuxtLink>
         </SidebarMenuButton>
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
@@ -71,9 +72,11 @@ const { isMobile } = useSidebar()
         </DropdownMenu>
       </SidebarMenuItem>
       <SidebarMenuItem>
-        <SidebarMenuButton>
-          <MoreHorizontal />
-          <span>More</span>
+        <SidebarMenuButton as-child>
+          <NuxtLink to="/campaigns">
+            <MoreHorizontal />
+            <span>View All</span>
+          </NuxtLink>
         </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>

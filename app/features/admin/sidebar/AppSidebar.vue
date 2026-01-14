@@ -49,8 +49,9 @@ const data = {
     },
     {
       title: 'Campaigns',
-      url: '#',
-      icon: Megaphone
+      url: '/campaigns',
+      icon: Megaphone,
+      exact: true
     },
     {
       title: 'Donors',
@@ -158,24 +159,6 @@ const data = {
       ]
     }
   ],
-  campaigns: [
-    {
-      name: 'Adopt an Orangutan',
-      url: '#',
-      icon: Megaphone,
-      selected: true
-    },
-    {
-      name: 'Save the Rainforest 2024',
-      url: '#',
-      icon: Megaphone
-    },
-    {
-      name: 'Wildlife Rescue Emergency Fund',
-      url: '#',
-      icon: Megaphone
-    }
-  ],
   navSecondary: [
     {
       title: 'Support',
@@ -214,7 +197,7 @@ const data = {
     </SidebarHeader>
     <SidebarContent>
       <NavMain :items="data.navMain" />
-      <NavCampaigns :campaigns="data.campaigns" />
+      <NavCampaigns />
       <NavSecondary :items="data.navSecondary" class="mt-auto" />
     </SidebarContent>
     <SidebarFooter>

@@ -1,5 +1,6 @@
 export const formConfig = {
   version: '1.0',
+  campaignId: 'adopt-orangutan',
   form: {
     title: 'Make a Donation',
     subtitle: 'Choose your donation amount'
