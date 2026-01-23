@@ -148,7 +148,7 @@ const handlePreview = () => {
 
                 <!-- Right: Crowdfunding Page Preview (sticky) -->
                 <div
-                  class="w-full sm:mx-auto lg:min-w-[380px] lg:max-w-[380px] lg:w-[380px] lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto pb-4"
+                  class="w-full sm:mx-auto lg:min-w-95 lg:max-w-95 lg:w-95 lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto pb-4"
                 >
                   <p class="text-muted-foreground text-sm font-semibold mb-3">
                     Crowdfunding Page Preview

@@ -113,7 +113,7 @@ const goBack = () => {
       <div
         v-if="campaign && deviceMode !== 'desktop'"
         class="fixed bottom-0 left-0 right-0 bg-background border-t p-3 shadow-lg z-40"
-        :class="deviceMode === 'mobile' ? 'max-w-[375px]' : 'max-w-[768px]'"
+        :class="deviceMode === 'mobile' ? 'max-w-93.75' : 'max-w-3xl'"
         style="left: 50%; transform: translateX(-50%)"
       >
         <div class="flex gap-2">
