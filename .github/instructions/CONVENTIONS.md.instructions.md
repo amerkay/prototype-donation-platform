@@ -10,15 +10,24 @@ Multi-step donation platform with single/recurring donations, multi-item cart sy
 
 ## Architecture
 
-**Feature-Based**: All feature code in `app/features/[feature-name]/` with components, composables, types, utils. Global UI only in `app/components/`. System-wide composables only in `app/composables/`.
+**Vertical Slice Architecture**: Organize by WHO uses it, not what it displays.
 
 ```
 app/features/[feature-name]/
-  ├── components/    # Feature components
-  ├── composables/   # Feature composables
-  ├── types.ts       # Feature types
-  └── utils.ts       # Feature utilities
+  ├── admin/         # Used BY admin (config panels, preview tools)
+  │   ├── components/
+  │   └── forms/
+  ├── donor/         # Used BY donors (forms, wizards, donor state)
+  │   ├── components/
+  │   ├── composables/
+  │   └── stores/    # Donor-centric state
+  └── shared/        # Only when BOTH import it (80%+ rule)
+      ├── types.ts
+      ├── composables/
+      └── stores/    # Truly shared config
 ```
+
+**Rules**: If 80%+ usage is one side, move it there. Stores follow their primary consumer. Preview components belong to whoever uses the preview.
 
 ## Code Standards
 
