@@ -1,5 +1,5 @@
 <script setup lang="ts">
-await navigateTo('/preview/form', { redirectCode: 301 })
+await navigateTo('/campaigns/adopt-orangutan', { redirectCode: 301 })
 </script>
 
 <template>
