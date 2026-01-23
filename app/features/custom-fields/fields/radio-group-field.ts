@@ -35,6 +35,7 @@ export function createRadioGroupFieldAdminConfig(): Record<string, FieldDef> {
       label: 'Advanced Settings',
       collapsible: true,
       collapsibleDefaultOpen: false,
+      isSeparatorAfter: true,
       fields: {
         orientation: radioGroupFieldConstructor('orientation', {
           label: 'Layout',

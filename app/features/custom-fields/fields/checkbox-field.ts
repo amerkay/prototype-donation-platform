@@ -23,6 +23,7 @@ export function createCheckboxFieldAdminConfig(): Record<string, FieldDef> {
       label: 'Advanced Settings',
       collapsible: true,
       collapsibleDefaultOpen: false,
+      isSeparatorAfter: true,
       fields: {
         options: arrayField('options', {
           label: 'Checkbox Options',

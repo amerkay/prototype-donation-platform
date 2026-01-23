@@ -173,13 +173,6 @@ export function useCustomFieldsConfigForm(
           const factory = FIELD_FACTORIES[type]
           const adminConfig = factory.createAdminConfig()
 
-          if (adminConfig.advancedSettings && '_name' in adminConfig.advancedSettings) {
-            const advancedSettings = adminConfig.advancedSettings as FieldDef & {
-              isSeparatorAfter?: boolean
-            }
-            advancedSettings.isSeparatorAfter = true
-          }
-
           // Merge factory-generated fields into the config
           Object.assign(dynamicFields, adminConfig)
         }

@@ -23,6 +23,7 @@ export function createTextFieldAdminConfig(): Record<string, FieldDef> {
       label: 'Advanced Settings',
       collapsible: true,
       collapsibleDefaultOpen: false,
+      isSeparatorAfter: true,
       fields: {
         placeholder: textFieldConstructor('placeholder', {
           label: 'Placeholder',

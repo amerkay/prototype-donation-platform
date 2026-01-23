@@ -35,6 +35,7 @@ export function createSliderFieldAdminConfig(): Record<string, FieldDef> {
       label: 'Advanced Settings',
       collapsible: true,
       collapsibleDefaultOpen: false,
+      isSeparatorAfter: true,
       fields: {
         step: numberField('step', {
           label: 'Step',
