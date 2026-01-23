@@ -2,14 +2,14 @@ import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { z } from 'zod'
 import { nextTick } from 'vue'
-import FormRenderer from '~/features/form-builder/FormRenderer.vue'
+import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import {
   defineForm,
   textField,
   fieldGroup,
   tabsField,
   arrayField
-} from '~/features/form-builder/api'
+} from '~/features/_library/form-builder/api'
 
 describe('FormRenderer validateOnMount prop', () => {
   it('validates on mount by default (validateOnMount=true)', async () => {

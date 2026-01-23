@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { computed } from 'vue'
-import { useCustomFieldsConfigForm } from '~/features/custom-fields/forms/custom-fields-config-form'
+import { useCustomFieldsConfigForm } from '~/features/_library/custom-fields/forms/custom-fields-config-form'
 import type {
   ArrayFieldDef,
   FieldGroupDef,
   SelectFieldDef,
   FormContext
-} from '~/features/form-builder/types'
-import type { ContextSchema } from '~/features/form-builder/conditions'
-import type { AvailableField } from '~/features/form-builder/composables/useAvailableFields'
+} from '~/features/_library/form-builder/types'
+import type { ContextSchema } from '~/features/_library/form-builder/conditions'
+import type { AvailableField } from '~/features/_library/form-builder/composables/useAvailableFields'
 
 function createMockFormContext(values: Record<string, unknown> = {}): FormContext {
   return {

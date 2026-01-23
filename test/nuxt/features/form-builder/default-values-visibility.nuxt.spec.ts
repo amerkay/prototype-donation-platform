@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { nextTick, ref } from 'vue'
-import FormField from '~/features/form-builder/FormField.vue'
-import { textField } from '~/features/form-builder/api'
+import FormField from '~/features/_library/form-builder/FormField.vue'
+import { textField } from '~/features/_library/form-builder/api'
 import { mountFormField, getSectionValues } from './test-utils'
 
 describe('FormField - Default Values Visibility Logic', () => {

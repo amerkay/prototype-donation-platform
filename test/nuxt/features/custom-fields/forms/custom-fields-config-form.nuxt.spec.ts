@@ -1,13 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { computed } from 'vue'
-import { useCustomFieldsConfigForm } from '~/features/custom-fields/forms/custom-fields-config-form'
+import { useCustomFieldsConfigForm } from '~/features/_library/custom-fields/forms/custom-fields-config-form'
 import type {
   ArrayFieldDef,
   FieldGroupDef,
   ArrayItemContext,
   FormContext,
   FieldDef
-} from '~/features/form-builder/types'
+} from '~/features/_library/form-builder/types'
 
 function createMockFormContext(values: Record<string, unknown> = {}): FormContext {
   return {

@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { ContextSchema } from '~/features/form-builder/conditions'
+import type { ContextSchema } from '~/features/_library/form-builder/conditions'
 import {
   createFieldReferenceSchema,
   validateCustomFieldConditions
-} from '~/features/custom-fields/forms/validation-helpers'
-import type { AvailableField } from '~/features/form-builder/composables/useAvailableFields'
+} from '~/features/_library/custom-fields/forms/validation-helpers'
+import type { AvailableField } from '~/features/_library/form-builder/composables/useAvailableFields'
 
 describe('custom-fields-config-form - Field Reference Validation', () => {
   describe('createFieldReferenceSchema', () => {

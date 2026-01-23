@@ -4,9 +4,9 @@ import {
   createTextFieldAdminConfig,
   textFieldToComposable,
   getTextFieldDefaultValue
-} from '~/features/custom-fields/fields/text-field'
-import type { TextFieldConfig } from '~/features/custom-fields/types'
-import type { FieldGroupDef, TextFieldDef } from '~/features/form-builder/types'
+} from '~/features/_library/custom-fields/fields/text-field'
+import type { TextFieldConfig } from '~/features/_library/custom-fields/types'
+import type { FieldGroupDef, TextFieldDef } from '~/features/_library/form-builder/types'
 
 describe('text-field factory', () => {
   describe('createTextFieldAdminConfig', () => {

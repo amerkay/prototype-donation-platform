@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import CrowdfundingPagePreview from '~/features/campaigns/components/CrowdfundingPagePreview.vue'
-import { useCampaigns } from '~/features/campaigns/composables/useCampaigns'
-import { useCampaignConfigStore } from '~/stores/campaignConfig'
+import CrowdfundingPagePreview from '~/features/campaigns/donor/components/CrowdfundingPagePreview.vue'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
+import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Smartphone, Tablet, Monitor } from 'lucide-vue-next'
 

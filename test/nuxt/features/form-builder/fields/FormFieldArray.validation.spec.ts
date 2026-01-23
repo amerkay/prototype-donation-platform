@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import * as z from 'zod'
 import { mountFormFieldArray, waitForArrayUpdate } from './FormFieldArray.shared'
 import { mountFormField, getSectionValues, assertNoDuplicateIds } from '../test-utils'
-import FormFieldArray from '~/features/form-builder/containers/FormFieldArray.vue'
+import FormFieldArray from '~/features/_library/form-builder/containers/FormFieldArray.vue'
 
 /**
  * FormFieldArray - Validation, IDs, and Default Values

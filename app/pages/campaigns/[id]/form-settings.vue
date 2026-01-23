@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import AppSidebar from '~/features/admin/sidebar/AppSidebar.vue'
-import AdminDonationFormConfig from '~/features/admin/AdminDonationFormConfig.vue'
-import DonationFormPreview from '~/features/admin/DonationFormPreview.vue'
-import { useCampaigns } from '~/features/campaigns/composables/useCampaigns'
+import AppSidebar from '~/features/_admin/sidebar/AppSidebar.vue'
+import AdminDonationFormConfig from '~/features/donation-form/admin/components/AdminDonationFormConfig.vue'
+import DonationFormPreview from '~/features/donation-form/admin/components/DonationFormPreview.vue'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,7 +15,10 @@ import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { formConfig as sampleConfig } from '~/sample-api-responses/api-sample-response-form-config'
 import { products as sampleProducts } from '~/sample-api-responses/api-sample-response-products'
-import { useFormConfigStore, type FullFormConfig } from '~/stores/formConfig'
+import {
+  useFormConfigStore,
+  type FullFormConfig
+} from '~/features/donation-form/shared/stores/formConfig'
 
 const route = useRoute()
 const { getCampaignById } = useCampaigns()

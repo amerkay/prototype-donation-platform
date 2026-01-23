@@ -2,9 +2,14 @@ import { describe, it, expect } from 'vitest'
 import { defineComponent, h, ref, nextTick } from 'vue'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import * as z from 'zod'
-import FormField from '~/features/form-builder/FormField.vue'
-import FormRenderer from '~/features/form-builder/FormRenderer.vue'
-import { fieldGroup, toggleField, textField, defineForm } from '~/features/form-builder/api'
+import FormField from '~/features/_library/form-builder/FormField.vue'
+import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
+import {
+  fieldGroup,
+  toggleField,
+  textField,
+  defineForm
+} from '~/features/_library/form-builder/api'
 import { mountFormField, getSectionValues } from './test-utils'
 
 /**

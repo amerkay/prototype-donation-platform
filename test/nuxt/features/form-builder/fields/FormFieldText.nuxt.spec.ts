@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { nextTick } from 'vue'
-import FormFieldText from '~/features/form-builder/fields/FormFieldText.vue'
-import type { TextFieldDef, FieldContext } from '~/features/form-builder/types'
+import FormFieldText from '~/features/_library/form-builder/fields/FormFieldText.vue'
+import type { TextFieldDef, FieldContext } from '~/features/_library/form-builder/types'
 import { mountFormField } from '../test-utils'
 
 // Helper to mount FormFieldText with complete form-builder context

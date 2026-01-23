@@ -11,8 +11,8 @@ import { describe, it, expect } from 'vitest'
 import { ref, nextTick } from 'vue'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { z } from 'zod'
-import FormRenderer from '@/features/form-builder/FormRenderer.vue'
-import { defineForm, textField } from '@/features/form-builder/api'
+import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
+import { defineForm, textField } from '@/features/_library/form-builder/api'
 
 async function waitForUpdate() {
   await nextTick()

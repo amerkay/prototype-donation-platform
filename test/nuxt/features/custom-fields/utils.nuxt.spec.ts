@@ -4,9 +4,9 @@ import {
   useCustomFieldsForm,
   extractCustomFieldDefaults,
   hasAnyVisibleCustomFields
-} from '~/features/custom-fields/utils'
-import type { CustomFieldDefinition } from '~/features/custom-fields/types'
-import type { FormContext } from '~/features/form-builder/types'
+} from '~/features/_library/custom-fields/utils'
+import type { CustomFieldDefinition } from '~/features/_library/custom-fields/types'
+import type { FormContext } from '~/features/_library/form-builder/types'
 
 function createMockFormContext(values: Record<string, unknown> = {}): FormContext {
   return {

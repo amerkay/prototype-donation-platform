@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import DonationFormPreview from '~/features/admin/DonationFormPreview.vue'
+import DonationFormPreview from '~/features/donation-form/admin/components/DonationFormPreview.vue'
 import { formConfig as sampleConfig } from '~/sample-api-responses/api-sample-response-form-config'
 import { products as sampleProducts } from '~/sample-api-responses/api-sample-response-products'
-import { useFormConfigStore, type FullFormConfig } from '~/stores/formConfig'
+import {
+  useFormConfigStore,
+  type FullFormConfig
+} from '~/features/donation-form/shared/stores/formConfig'
 
 // Initialize store with config
 const store = useFormConfigStore()

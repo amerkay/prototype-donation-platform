@@ -1,8 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { nextTick } from 'vue'
 import * as z from 'zod'
-import FormField from '~/features/form-builder/FormField.vue'
-import { fieldGroup, tabsField, numberField, arrayField } from '~/features/form-builder/api'
+import FormField from '~/features/_library/form-builder/FormField.vue'
+import {
+  fieldGroup,
+  tabsField,
+  numberField,
+  arrayField
+} from '~/features/_library/form-builder/api'
 import { mountFormField } from './test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { nextTick } from 'vue'
 import * as z from 'zod'
-import FormField from '~/features/form-builder/FormField.vue'
+import FormField from '~/features/_library/form-builder/FormField.vue'
 import {
   fieldGroup,
   tabsField,
@@ -9,7 +9,7 @@ import {
   arrayField,
   textField,
   toggleField
-} from '~/features/form-builder/api'
+} from '~/features/_library/form-builder/api'
 import { mountFormField } from './test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 

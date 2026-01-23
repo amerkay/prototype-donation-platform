@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { computed } from 'vue'
-import { createDonationCustomFieldsConfigSection } from '~/features/donation-form/custom-fields/forms/donation-custom-fields-config-form'
+import { createDonationCustomFieldsConfigSection } from '~/features/donation-form/features/custom-fields/admin/forms/donation-custom-fields-config-form'
 import type {
   ArrayFieldDef,
   FieldGroupDef,
@@ -8,7 +8,7 @@ import type {
   TabsFieldDef,
   FieldContext,
   FormContext
-} from '~/features/form-builder/types'
+} from '~/features/_library/form-builder/types'
 
 /**
  * Create a mock FormContext for testing

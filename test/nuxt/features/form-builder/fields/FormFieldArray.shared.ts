@@ -1,8 +1,8 @@
 import { vi } from 'vitest'
 import { nextTick } from 'vue'
 import * as z from 'zod'
-import FormFieldArray from '~/features/form-builder/containers/FormFieldArray.vue'
-import type { ArrayFieldDef, FieldDef } from '~/features/form-builder/types'
+import FormFieldArray from '~/features/_library/form-builder/containers/FormFieldArray.vue'
+import type { ArrayFieldDef, FieldDef } from '~/features/_library/form-builder/types'
 import { mountFormField } from '../test-utils'
 
 /**

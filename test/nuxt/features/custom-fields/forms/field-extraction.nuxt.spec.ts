@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { extractAvailableFields } from '~/features/custom-fields/forms/field-extraction'
+import { extractAvailableFields } from '~/features/_library/custom-fields/forms/field-extraction'
 
 describe('field-extraction', () => {
   describe('extractAvailableFields', () => {

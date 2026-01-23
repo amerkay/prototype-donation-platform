@@ -1,16 +1,16 @@
 import { describe, it, expect } from 'vitest'
 import { nextTick } from 'vue'
-import FormField from '~/features/form-builder/FormField.vue'
-import { buildConditionItemField } from '~/features/custom-fields/forms/condition-field-builder'
-import type { AvailableField } from '~/features/form-builder/composables/useAvailableFields'
-import type { ContextSchema } from '~/features/form-builder/conditions'
-import type { FieldDef } from '~/features/form-builder/types'
+import FormField from '~/features/_library/form-builder/FormField.vue'
+import { buildConditionItemField } from '~/features/_library/custom-fields/forms/condition-field-builder'
+import type { AvailableField } from '~/features/_library/form-builder/composables/useAvailableFields'
+import type { ContextSchema } from '~/features/_library/form-builder/conditions'
+import type { FieldDef } from '~/features/_library/form-builder/types'
 import {
   fieldGroup,
   arrayField,
   tabsField,
   toggleField
-} from '~/features/form-builder/api/defineForm'
+} from '~/features/_library/form-builder/api/defineForm'
 import { mountFormField } from '../form-builder/test-utils'
 
 async function waitForUpdate() {

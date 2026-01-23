@@ -3,10 +3,10 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { nextTick } from 'vue'
 import * as z from 'zod'
 
-import FormRenderer from '~/features/form-builder/FormRenderer.vue'
-import { defineForm, arrayField, fieldGroup } from '~/features/form-builder/api'
-import { buildConditionItemField } from '~/features/custom-fields/forms/condition-field-builder'
-import type { ContextSchema } from '~/features/form-builder/conditions'
+import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
+import { defineForm, arrayField, fieldGroup } from '~/features/_library/form-builder/api'
+import { buildConditionItemField } from '~/features/_library/custom-fields/forms/condition-field-builder'
+import type { ContextSchema } from '~/features/_library/form-builder/conditions'
 
 describe('Condition builder loop regression', () => {
   it('does not thrash when adding value for `Donation Frequency in ...`', async () => {

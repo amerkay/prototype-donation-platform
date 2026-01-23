@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { nextTick, ref } from 'vue'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
-import FormRenderer from '~/features/form-builder/FormRenderer.vue'
-import { useCustomFieldsForm } from '~/features/custom-fields/utils'
-import type { CustomFieldDefinition } from '~/features/custom-fields/types'
+import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
+import { useCustomFieldsForm } from '~/features/_library/custom-fields/utils'
+import type { CustomFieldDefinition } from '~/features/_library/custom-fields/types'
 
 async function waitForUpdate() {
   await nextTick()

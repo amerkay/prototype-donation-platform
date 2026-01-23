@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { nextTick } from 'vue'
-import FormRenderer from '~/features/form-builder/FormRenderer.vue'
-import { defineForm, textField, arrayField } from '~/features/form-builder/api'
+import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
+import { defineForm, textField, arrayField } from '~/features/_library/form-builder/api'
 
 describe('FormRenderer', () => {
   it('respects updateOnlyWhenValid when manual errors exist', async () => {

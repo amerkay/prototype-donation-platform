@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import AppSidebar from '~/features/admin/sidebar/AppSidebar.vue'
-import CompactCampaignHeader from '~/features/campaigns/components/CompactCampaignHeader.vue'
-import CampaignConfigPanel from '~/features/campaigns/components/CampaignConfigPanel.vue'
-import CrowdfundingPagePreview from '~/features/campaigns/components/CrowdfundingPagePreview.vue'
-import FundraisersTab from '~/features/campaigns/components/FundraisersTab.vue'
-import SharingTab from '~/features/campaigns/components/SharingTab.vue'
-import { useCampaigns } from '~/features/campaigns/composables/useCampaigns'
-import { useCampaignConfigStore } from '~/stores/campaignConfig'
+import AppSidebar from '~/features/_admin/sidebar/AppSidebar.vue'
+import CompactCampaignHeader from '~/features/campaigns/donor/components/CompactCampaignHeader.vue'
+import CampaignConfigPanel from '~/features/campaigns/admin/components/CampaignConfigPanel.vue'
+import CrowdfundingPagePreview from '~/features/campaigns/donor/components/CrowdfundingPagePreview.vue'
+import FundraisersTab from '~/features/campaigns/donor/components/FundraisersTab.vue'
+import SharingTab from '~/features/campaigns/donor/components/SharingTab.vue'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
+import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import {
   Breadcrumb,
   BreadcrumbItem,

@@ -8,11 +8,15 @@
  * For behavior testing of the rendered form, see custom-fields-config-form.nuxt.spec.ts
  */
 import { describe, it, expect, vi } from 'vitest'
-import { buildConditionItemField } from '~/features/custom-fields/forms/condition-field-builder'
-import { operatorRequiresValue } from '~/features/form-builder/conditions'
-import type { ContextSchema } from '~/features/form-builder/conditions'
-import type { AvailableField } from '~/features/form-builder/composables/useAvailableFields'
-import type { FieldContext, OnChangeContext, FieldGroupDef } from '~/features/form-builder/types'
+import { buildConditionItemField } from '~/features/_library/custom-fields/forms/condition-field-builder'
+import { operatorRequiresValue } from '~/features/_library/form-builder/conditions'
+import type { ContextSchema } from '~/features/_library/form-builder/conditions'
+import type { AvailableField } from '~/features/_library/form-builder/composables/useAvailableFields'
+import type {
+  FieldContext,
+  OnChangeContext,
+  FieldGroupDef
+} from '~/features/_library/form-builder/types'
 
 describe('condition-field-builder', () => {
   /**

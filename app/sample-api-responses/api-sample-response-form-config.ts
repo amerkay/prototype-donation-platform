@@ -148,11 +148,11 @@ export const formConfig = {
                   conditions: [
                     {
                       field: 'donationFrequency',
-                      operator: 'in',
+                      operator: 'in' as const,
                       value: ['monthly', 'yearly']
                     }
                   ],
-                  match: 'all'
+                  match: 'all' as const
                 }
               }
             }
@@ -176,11 +176,11 @@ export const formConfig = {
                   conditions: [
                     {
                       field: 'donationAmount',
-                      operator: 'greaterOrEqual',
+                      operator: 'greaterOrEqual' as const,
                       value: 100
                     }
                   ],
-                  match: 'all'
+                  match: 'all' as const
                 }
               }
             },
@@ -199,10 +199,10 @@ export const formConfig = {
                   conditions: [
                     {
                       field: 'isTribute',
-                      operator: 'isTrue'
+                      operator: 'isTrue' as const
                     }
                   ],
-                  match: 'all'
+                  match: 'all' as const
                 }
               }
             },
@@ -221,11 +221,11 @@ export const formConfig = {
                   conditions: [
                     {
                       field: 'costCoveragePercentage',
-                      operator: 'greaterOrEqual',
+                      operator: 'greaterOrEqual' as const,
                       value: 5
                     }
                   ],
-                  match: 'all'
+                  match: 'all' as const
                 }
               }
             }
@@ -245,11 +245,11 @@ export const formConfig = {
                   conditions: [
                     {
                       field: 'donationAmount',
-                      operator: 'greaterOrEqual',
+                      operator: 'greaterOrEqual' as const,
                       value: 50
                     }
                   ],
-                  match: 'all'
+                  match: 'all' as const
                 }
               }
             }

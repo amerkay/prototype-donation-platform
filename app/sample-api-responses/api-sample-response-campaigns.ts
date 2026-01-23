@@ -1,4 +1,4 @@
-import type { Campaign } from '~/features/campaigns/types'
+import type { Campaign } from '~/features/campaigns/shared/types'
 
 export const campaigns: Campaign[] = [
   {

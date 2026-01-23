@@ -5,12 +5,20 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { describe, it, expect } from 'vitest'
 import { computed } from 'vue'
-import FormRenderer from '~/features/form-builder/FormRenderer.vue'
-import { defineForm, textField, hiddenField, numberField } from '~/features/form-builder/api'
-import type { ConditionGroup } from '~/features/form-builder/conditions'
-import type { FormContext } from '~/features/form-builder/types'
-import { extractCustomFieldDefaults, useCustomFieldsForm } from '~/features/custom-fields/utils'
-import type { CustomFieldDefinition } from '~/features/custom-fields/types'
+import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
+import {
+  defineForm,
+  textField,
+  hiddenField,
+  numberField
+} from '~/features/_library/form-builder/api'
+import type { ConditionGroup } from '~/features/_library/form-builder/conditions'
+import type { FormContext } from '~/features/_library/form-builder/types'
+import {
+  extractCustomFieldDefaults,
+  useCustomFieldsForm
+} from '~/features/_library/custom-fields/utils'
+import type { CustomFieldDefinition } from '~/features/_library/custom-fields/types'
 
 describe('Hidden Field Visibility Conditions', () => {
   it('should not include hidden field in form data when visibility condition is false on mount', async () => {

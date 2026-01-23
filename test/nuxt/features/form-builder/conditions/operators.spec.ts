@@ -3,7 +3,7 @@
  * Tests behavior of the 10 supported comparison operators
  */
 import { describe, it, expect } from 'vitest'
-import { OPERATORS } from '~/features/form-builder/conditions/operators'
+import { OPERATORS } from '~/features/_library/form-builder/conditions/operators'
 
 describe('Condition Operators', () => {
   describe('contains', () => {
