@@ -143,7 +143,8 @@ export const useCampaignConfigStore = defineStore('campaignConfig', {
         charity: state.charity,
         socialSharing: state.socialSharing,
         fundraisers: state.fundraisers,
-        recentDonations: state.recentDonations
+        recentDonations: state.recentDonations,
+        forms: []
       }
     }
   },

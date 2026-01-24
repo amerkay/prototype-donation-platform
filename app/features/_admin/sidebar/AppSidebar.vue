@@ -49,7 +49,7 @@ const data = {
     },
     {
       title: 'Campaigns',
-      url: '/campaigns',
+      url: '/admin/campaigns',
       icon: Megaphone,
       exact: true
     },

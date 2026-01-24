@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
-import ShareDialog from './ShareDialog.vue'
-import DonateDialog from './DonateDialog.vue'
-import SocialShareButtons from './SocialShareButtons.vue'
+import ShareDialog from '../../donor/components/ShareDialog.vue'
+import DonateDialog from '../../donor/components/DonateDialog.vue'
+import SocialShareButtons from '../../donor/components/SocialShareButtons.vue'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'

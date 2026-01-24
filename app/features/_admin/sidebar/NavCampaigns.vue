@@ -27,7 +27,7 @@ const { isActive } = useActiveLink()
 const campaigns = computed(() =>
   getRecentCampaigns(3).map((c) => ({
     name: c.name,
-    url: `/campaigns/${c.id}`
+    url: `/admin/campaigns/${c.id}`
   }))
 )
 </script>
@@ -73,7 +73,7 @@ const campaigns = computed(() =>
       </SidebarMenuItem>
       <SidebarMenuItem>
         <SidebarMenuButton as-child>
-          <NuxtLink to="/campaigns">
+          <NuxtLink to="/admin/campaigns">
             <MoreHorizontal />
             <span>View All</span>
           </NuxtLink>

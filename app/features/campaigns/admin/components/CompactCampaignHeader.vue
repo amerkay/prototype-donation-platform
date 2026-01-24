@@ -3,12 +3,11 @@ import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campa
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { Edit, ExternalLink } from 'lucide-vue-next'
+import { ExternalLink } from 'lucide-vue-next'
 
 const store = useCampaignConfigStore()
 
 const emit = defineEmits<{
-  editForm: []
   preview: []
 }>()
 
@@ -77,10 +76,6 @@ const formatAmount = (amount: number) => {
         <Button variant="outline" size="sm" @click="emit('preview')">
           <ExternalLink class="w-4 h-4 mr-1.5" />
           Preview
-        </Button>
-        <Button size="sm" @click="emit('editForm')">
-          <Edit class="w-4 h-4 mr-1.5" />
-          Edit Form
         </Button>
       </div>
     </div>

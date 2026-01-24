@@ -114,10 +114,10 @@ const formattedDate = computed(() => {
       <!-- Actions -->
       <div v-if="!compact" class="flex gap-2 pt-2">
         <Button variant="outline" size="sm" class="flex-1" as-child>
-          <NuxtLink :to="`/campaigns/${campaign.id}`">View Details</NuxtLink>
+          <NuxtLink :to="`/admin/campaigns/${campaign.id}`">View Details</NuxtLink>
         </Button>
         <Button variant="default" size="sm" class="flex-1" as-child>
-          <NuxtLink :to="`/campaigns/${campaign.id}/form-settings`">Edit Form</NuxtLink>
+          <NuxtLink :to="`/admin/campaigns/${campaign.id}/form-settings`">Edit Form</NuxtLink>
         </Button>
       </div>
     </CardContent>

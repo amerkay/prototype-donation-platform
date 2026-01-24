@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Redirect to the campaign form settings
-navigateTo('/campaigns/adopt-orangutan')
+navigateTo('/admin/campaigns/adopt-orangutan')
 </script>
 
 <template>

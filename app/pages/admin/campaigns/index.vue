@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppSidebar from '~/features/_admin/sidebar/AppSidebar.vue'
-import CampaignList from '~/features/campaigns/donor/components/CampaignList.vue'
+import CampaignList from '~/features/campaigns/admin/components/CampaignList.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import {
   Breadcrumb,

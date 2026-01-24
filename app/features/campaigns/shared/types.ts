@@ -4,6 +4,9 @@
  * Core types for campaign management
  */
 
+import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
+import type { Product } from '~/features/donation-form/features/product/shared/types'
+
 export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed' | 'archived'
 
 export type FundraiserType = 'individual' | 'team' | 'organization'
@@ -95,6 +98,20 @@ export interface SocialSharingSettings {
 }
 
 /**
+ * Donation form for a campaign
+ */
+export interface CampaignForm {
+  id: string
+  campaignId: string
+  name: string
+  isDefault: boolean
+  config: FullFormConfig
+  products: Product[]
+  createdAt: string
+  updatedAt: string
+}
+
+/**
  * Complete campaign configuration
  */
 export interface Campaign {
@@ -110,4 +127,5 @@ export interface Campaign {
   socialSharing: SocialSharingSettings
   fundraisers: CampaignFundraiser[]
   recentDonations: CampaignDonation[]
+  forms: CampaignForm[]
 }

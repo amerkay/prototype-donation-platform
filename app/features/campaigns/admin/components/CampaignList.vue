@@ -21,7 +21,7 @@ defineProps<{
     <NuxtLink
       v-for="campaign in campaigns"
       :key="campaign.id"
-      :to="`/campaigns/${campaign.id}`"
+      :to="`/admin/campaigns/${campaign.id}`"
       class="block h-full"
     >
       <CampaignCard :campaign="campaign" :compact="compact" />

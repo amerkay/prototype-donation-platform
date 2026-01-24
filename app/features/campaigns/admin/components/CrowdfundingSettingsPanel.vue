@@ -2,56 +2,37 @@
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
-import FormsList from './FormsList.vue'
 import StickyButtonGroup from './StickyButtonGroup.vue'
-import { useCampaignBasicSettingsForm } from '../forms/campaign-basic-settings-form'
-import { useCampaignStatsSettingsForm } from '../forms/campaign-stats-settings-form'
+import { useCrowdfundingSettingsForm } from '../forms/crowdfunding-settings-form'
 
 const store = useCampaignConfigStore()
 const { updateCampaign } = useCampaigns()
 
-// Form definitions
-const basicForm = useCampaignBasicSettingsForm
-const statsForm = useCampaignStatsSettingsForm
+// Form definition
+const crowdfundingForm = useCrowdfundingSettingsForm
 
-// Local reactive state for forms (bound to store)
-const basicData = computed({
-  get: () => ({
-    name: store.name,
-    status: store.status
-  }),
+// Local reactive state for form (bound to store)
+const crowdfundingData = computed({
+  get: () => store.crowdfunding,
   set: (val) => {
-    store.name = val.name
-    store.status = val.status
-    store.markDirty()
-  }
-})
-
-const statsData = computed({
-  get: () => ({
-    stats: {
-      goalAmount: store.stats?.goalAmount
+    if (val) {
+      store.crowdfunding = val
+      store.markDirty()
     }
-  }),
-  set: (val) => {
-    store.updateGoal(val.stats.goalAmount)
   }
 })
 
 // Form refs for validation
-const basicFormRef = ref()
-const statsFormRef = ref()
+const crowdfundingFormRef = ref()
 
 // Save state
 const saveMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
 const saveChanges = async () => {
-  // Validate all forms
-  const forms = [basicFormRef.value, statsFormRef.value]
+  // Validate form
+  const isValid = crowdfundingFormRef.value?.isValid
 
-  const allValid = forms.every((form) => form?.isValid)
-
-  if (!allValid) {
+  if (!isValid) {
     saveMessage.value = { type: 'error', text: 'Please fix all errors before saving' }
     setTimeout(() => (saveMessage.value = null), 5000)
     return
@@ -95,31 +76,15 @@ const discardChanges = () => {
 
 <template>
   <div class="space-y-4">
-    <!-- Basic Settings -->
-    <div class="config-section">
+    <!-- Crowdfunding Page Settings -->
+    <div v-if="crowdfundingData" class="config-section space-y-4">
       <FormRenderer
-        ref="basicFormRef"
-        v-model="basicData"
-        :section="basicForm"
+        ref="crowdfundingFormRef"
+        v-model="crowdfundingData"
+        :section="crowdfundingForm"
         validate-on-mount
         update-only-when-valid
       />
-    </div>
-
-    <!-- Goal Settings -->
-    <div class="config-section">
-      <FormRenderer
-        ref="statsFormRef"
-        v-model="statsData"
-        :section="statsForm"
-        validate-on-mount
-        update-only-when-valid
-      />
-    </div>
-
-    <!-- Forms List -->
-    <div class="config-section">
-      <FormsList />
     </div>
 
     <!-- Save Button -->

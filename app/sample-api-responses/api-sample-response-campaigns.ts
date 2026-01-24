@@ -1,4 +1,9 @@
 import type { Campaign } from '~/features/campaigns/shared/types'
+import {
+  adoptOrangutanForms,
+  oceanConservationForms,
+  emergencyReliefForms
+} from './api-sample-response-forms'
 
 export const campaigns: Campaign[] = [
   {
@@ -147,6 +152,148 @@ export const campaigns: Campaign[] = [
         isAnonymous: false,
         createdAt: '2026-01-11T09:00:00Z'
       }
-    ]
+    ],
+    forms: adoptOrangutanForms
+  },
+  {
+    id: 'ocean-conservation',
+    name: 'Ocean Conservation Project',
+    status: 'active',
+    createdAt: '2025-03-15T00:00:00Z',
+    updatedAt: '2026-01-14T08:00:00Z',
+    stats: {
+      totalRaised: 28500,
+      totalDonations: 156,
+      totalDonors: 124,
+      goalAmount: 40000,
+      averageDonation: 183,
+      topDonation: 2000,
+      daysRemaining: 30
+    },
+    crowdfunding: {
+      enabled: true,
+      title: 'Save Our Oceans',
+      shortDescription: 'Help protect marine life and ocean ecosystems.',
+      story:
+        'Our ocean conservation efforts focus on protecting coral reefs, reducing plastic pollution, and supporting sustainable fishing practices.',
+      showProgressBar: true,
+      showRecentDonations: true,
+      defaultDonationsView: 'top',
+      numberOfDonationsToShow: 3
+    },
+    peerToPeer: {
+      enabled: false,
+      allowIndividuals: false,
+      allowTeams: false
+    },
+    charity: {
+      name: 'Ocean Conservation Foundation',
+      registrationNumber: 'RCN789012',
+      website: 'https://oceanconservation.org',
+      description: 'Dedicated to protecting and restoring ocean ecosystems worldwide.'
+    },
+    socialSharing: {
+      facebook: true,
+      twitter: true,
+      linkedin: false,
+      whatsapp: true,
+      email: true,
+      copyLink: true
+    },
+    fundraisers: [],
+    recentDonations: [
+      {
+        id: 'od1',
+        donorName: 'Ocean Lover',
+        amount: 2000,
+        message: 'For the whales!',
+        isAnonymous: false,
+        createdAt: '2026-01-12T10:00:00Z'
+      },
+      {
+        id: 'od2',
+        donorName: 'Anonymous',
+        amount: 500,
+        isAnonymous: true,
+        createdAt: '2026-01-10T15:30:00Z'
+      }
+    ],
+    forms: oceanConservationForms
+  },
+  {
+    id: 'emergency-relief',
+    name: 'Emergency Relief Fund',
+    status: 'active',
+    createdAt: '2025-06-01T00:00:00Z',
+    updatedAt: '2026-01-14T12:00:00Z',
+    stats: {
+      totalRaised: 67200,
+      totalDonations: 523,
+      totalDonors: 412,
+      goalAmount: 100000,
+      averageDonation: 129,
+      topDonation: 5000,
+      daysRemaining: 15
+    },
+    crowdfunding: {
+      enabled: true,
+      title: 'Emergency Relief - Help Now',
+      shortDescription: 'Provide immediate aid to communities affected by natural disasters.',
+      story:
+        'Your donation provides emergency shelter, food, clean water, and medical supplies to families in crisis.',
+      showProgressBar: true,
+      showRecentDonations: true,
+      defaultDonationsView: 'recent',
+      numberOfDonationsToShow: 8
+    },
+    peerToPeer: {
+      enabled: true,
+      allowIndividuals: true,
+      allowTeams: false,
+      fundraiserGoalDefault: 1000
+    },
+    charity: {
+      name: 'Global Relief Network',
+      registrationNumber: 'RCN345678',
+      website: 'https://globalrelief.org',
+      description: 'Rapid response humanitarian aid organization.'
+    },
+    socialSharing: {
+      facebook: true,
+      twitter: true,
+      linkedin: true,
+      whatsapp: true,
+      email: true,
+      copyLink: true
+    },
+    fundraisers: [
+      {
+        id: 'rf1',
+        name: 'Community Heroes',
+        email: 'heroes@community.org',
+        type: 'individual',
+        joinedAt: '2025-11-01T00:00:00Z',
+        raisedAmount: 8500,
+        donationCount: 45
+      }
+    ],
+    recentDonations: [
+      {
+        id: 'rd1',
+        donorName: 'Corporate Donor',
+        amount: 5000,
+        message: 'From our entire team',
+        isAnonymous: false,
+        createdAt: '2026-01-13T14:00:00Z'
+      },
+      {
+        id: 'rd2',
+        donorName: 'Anonymous',
+        amount: 250,
+        isAnonymous: true,
+        createdAt: '2026-01-13T10:00:00Z'
+      }
+    ],
+    forms: emergencyReliefForms
   }
 ]

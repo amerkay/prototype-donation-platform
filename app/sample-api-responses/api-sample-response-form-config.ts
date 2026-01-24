@@ -120,141 +120,141 @@ export const formConfig = {
     },
     customFields: {
       customFieldsTabs: {
-        step2: {
-          enabled: true,
-          fields: [
-            {
-              id: 'text_company_name',
-              type: 'text' as const,
-              label: 'Company Name',
-              advancedSettings: {
-                optional: true,
-                placeholder: 'Enter your company name',
-                maxLength: 100
-              }
-            },
-            {
-              id: 'textarea_recurring_reason',
-              type: 'textarea' as const,
-              label: 'Why choose a recurring donation?',
-              advancedSettings: {
-                optional: true,
-                placeholder: 'Tell us your motivation...',
-                rows: 2
-              },
-              enableVisibilityConditions: true,
-              visibilityConditions: {
-                visibleWhen: {
-                  conditions: [
-                    {
-                      field: 'donationFrequency',
-                      operator: 'in' as const,
-                      value: ['monthly', 'yearly']
-                    }
-                  ],
-                  match: 'all' as const
-                }
-              }
-            }
-          ]
-        },
-        step3: {
-          enabled: true,
-          fields: [
-            {
-              id: 'text_premium_reporting',
-              type: 'text' as const,
-              label: 'Premium Reporting Contact',
-              advancedSettings: {
-                optional: true,
-                placeholder: 'Email for detailed reports',
-                maxLength: 100
-              },
-              enableVisibilityConditions: true,
-              visibilityConditions: {
-                visibleWhen: {
-                  conditions: [
-                    {
-                      field: 'donationAmount',
-                      operator: 'greaterOrEqual' as const,
-                      value: 100
-                    }
-                  ],
-                  match: 'all' as const
-                }
-              }
-            },
-            {
-              id: 'text_tribute_recipient_name',
-              type: 'text' as const,
-              label: "Tribute Recipient's Name",
-              advancedSettings: {
-                optional: true,
-                placeholder: 'Full name',
-                maxLength: 100
-              },
-              enableVisibilityConditions: true,
-              visibilityConditions: {
-                visibleWhen: {
-                  conditions: [
-                    {
-                      field: 'isTribute',
-                      operator: 'isTrue' as const
-                    }
-                  ],
-                  match: 'all' as const
-                }
-              }
-            },
-            {
-              id: 'text_cost_coverage_notes',
-              type: 'text' as const,
-              label: 'Cost Coverage Preference',
-              advancedSettings: {
-                optional: true,
-                placeholder: 'Your coverage preference notes',
-                maxLength: 200
-              },
-              enableVisibilityConditions: true,
-              visibilityConditions: {
-                visibleWhen: {
-                  conditions: [
-                    {
-                      field: 'costCoveragePercentage',
-                      operator: 'greaterOrEqual' as const,
-                      value: 5
-                    }
-                  ],
-                  match: 'all' as const
-                }
-              }
-            }
-          ]
-        },
-        hidden: {
-          enabled: true,
-          fields: [
-            {
-              id: 'hidden_is_large_donor',
-              type: 'hidden' as const,
-              label: 'is_large_donor',
-              defaultValue: 'yes',
-              enableVisibilityConditions: true,
-              visibilityConditions: {
-                visibleWhen: {
-                  conditions: [
-                    {
-                      field: 'donationAmount',
-                      operator: 'greaterOrEqual' as const,
-                      value: 50
-                    }
-                  ],
-                  match: 'all' as const
-                }
-              }
-            }
-          ]
-        }
+        //   step2: {
+        //     enabled: true,
+        //     fields: [
+        //       {
+        //         id: 'text_company_name',
+        //         type: 'text' as const,
+        //         label: 'Company Name',
+        //         advancedSettings: {
+        //           optional: true,
+        //           placeholder: 'Enter your company name',
+        //           maxLength: 100
+        //         }
+        //       },
+        //       {
+        //         id: 'textarea_recurring_reason',
+        //         type: 'textarea' as const,
+        //         label: 'Why choose a recurring donation?',
+        //         advancedSettings: {
+        //           optional: true,
+        //           placeholder: 'Tell us your motivation...',
+        //           rows: 2
+        //         },
+        //         enableVisibilityConditions: true,
+        //         visibilityConditions: {
+        //           visibleWhen: {
+        //             conditions: [
+        //               {
+        //                 field: 'donationFrequency',
+        //                 operator: 'in' as const,
+        //                 value: ['monthly', 'yearly']
+        //               }
+        //             ],
+        //             match: 'all' as const
+        //           }
+        //         }
+        //       }
+        //     ]
+        //   },
+        //   step3: {
+        //     enabled: true,
+        //     fields: [
+        //       {
+        //         id: 'text_premium_reporting',
+        //         type: 'text' as const,
+        //         label: 'Premium Reporting Contact',
+        //         advancedSettings: {
+        //           optional: true,
+        //           placeholder: 'Email for detailed reports',
+        //           maxLength: 100
+        //         },
+        //         enableVisibilityConditions: true,
+        //         visibilityConditions: {
+        //           visibleWhen: {
+        //             conditions: [
+        //               {
+        //                 field: 'donationAmount',
+        //                 operator: 'greaterOrEqual' as const,
+        //                 value: 100
+        //               }
+        //             ],
+        //             match: 'all' as const
+        //           }
+        //         }
+        //       },
+        //       {
+        //         id: 'text_tribute_recipient_name',
+        //         type: 'text' as const,
+        //         label: "Tribute Recipient's Name",
+        //         advancedSettings: {
+        //           optional: true,
+        //           placeholder: 'Full name',
+        //           maxLength: 100
+        //         },
+        //         enableVisibilityConditions: true,
+        //         visibilityConditions: {
+        //           visibleWhen: {
+        //             conditions: [
+        //               {
+        //                 field: 'isTribute',
+        //                 operator: 'isTrue' as const
+        //               }
+        //             ],
+        //             match: 'all' as const
+        //           }
+        //         }
+        //       },
+        //       {
+        //         id: 'text_cost_coverage_notes',
+        //         type: 'text' as const,
+        //         label: 'Cost Coverage Preference',
+        //         advancedSettings: {
+        //           optional: true,
+        //           placeholder: 'Your coverage preference notes',
+        //           maxLength: 200
+        //         },
+        //         enableVisibilityConditions: true,
+        //         visibilityConditions: {
+        //           visibleWhen: {
+        //             conditions: [
+        //               {
+        //                 field: 'costCoveragePercentage',
+        //                 operator: 'greaterOrEqual' as const,
+        //                 value: 5
+        //               }
+        //             ],
+        //             match: 'all' as const
+        //           }
+        //         }
+        //       }
+        //     ]
+        //   },
+        //   hidden: {
+        //     enabled: true,
+        //     fields: [
+        //       {
+        //         id: 'hidden_is_large_donor',
+        //         type: 'hidden' as const,
+        //         label: 'is_large_donor',
+        //         defaultValue: 'yes',
+        //         enableVisibilityConditions: true,
+        //         visibilityConditions: {
+        //           visibleWhen: {
+        //             conditions: [
+        //               {
+        //                 field: 'donationAmount',
+        //                 operator: 'greaterOrEqual' as const,
+        //                 value: 50
+        //               }
+        //             ],
+        //             match: 'all' as const
+        //           }
+        //         }
+        //       }
+        //     ]
+        //   }
       }
     }
   }
