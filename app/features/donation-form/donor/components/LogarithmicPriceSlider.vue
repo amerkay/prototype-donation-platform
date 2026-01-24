@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { Slider } from '@/components/ui/slider'
-import { useCurrency } from '~/features/donation-form/donor/composables/useCurrency'
+import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import {
   InputGroup,
   InputGroupAddon,

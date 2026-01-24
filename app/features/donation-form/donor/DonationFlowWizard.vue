@@ -7,7 +7,7 @@ import DonationFormStep2 from '~/features/donation-form/donor/steps/step2/Donati
 import DonationFormStep3 from '~/features/donation-form/donor/steps/step3/DonationFormStep3.vue'
 import DonationCustomFields from '~/features/donation-form/features/custom-fields/donor/components/DonationCustomFields.vue'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
-import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/shared/stores/impactCart'
+import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
 import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
 
 interface Props {

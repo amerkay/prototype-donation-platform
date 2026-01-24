@@ -2,18 +2,16 @@
 import { ref, computed } from 'vue'
 import { Minus, Plus } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
-import { useCurrency } from '~/features/donation-form/donor/composables/useCurrency'
+import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import BaseDialogOrDrawer from '~/features/donation-form/donor/components/BaseDialogOrDrawer.vue'
 import AmountSelector from '~/features/donation-form/donor/components/AmountSelector.vue'
 import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
 import { createTributeFormSection } from '~/features/donation-form/features/tribute/donor/forms/tribute-form'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 import type { PricingSettings } from '~/features/donation-form/shared/types'
-import type {
-  TributeSettings,
-  TributeData
-} from '~/features/donation-form/features/tribute/shared/types'
-import type { CartItem } from '~/features/donation-form/features/impact-cart/shared/types'
+import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
+import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
+import type { CartItem } from '~/features/donation-form/features/impact-cart/donor/types'
 
 interface Props {
   currency: string

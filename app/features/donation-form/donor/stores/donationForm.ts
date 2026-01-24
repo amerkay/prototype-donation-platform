@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
-import type { TributeData } from '~/features/donation-form/features/tribute/shared/types'
-import type { CartItem } from '~/features/donation-form/features/impact-cart/shared/types'
+import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
+import type { CartItem } from '~/features/donation-form/features/impact-cart/donor/types'
 
 // Type definitions
 type Frequency = 'once' | 'monthly' | 'yearly' | 'multiple'

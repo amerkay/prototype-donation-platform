@@ -4,7 +4,7 @@ import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import { defineForm } from '~/features/_library/form-builder/api'
 import { createCoverCostsField } from '~/features/donation-form/features/cover-costs/admin/forms/cover-costs-field'
 import { useCoverCostsManager } from '~/features/donation-form/features/cover-costs/donor/composables/useCoverCostsManager'
-import type { CoverCostsSettings } from '~/features/donation-form/features/cover-costs/shared/types'
+import type { CoverCostsSettings } from '~/features/donation-form/features/cover-costs/admin/types'
 
 interface Props {
   config: CoverCostsSettings

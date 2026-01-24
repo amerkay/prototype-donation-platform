@@ -7,13 +7,13 @@ import ShippingNotice from '~/features/donation-form/features/shipping-notice/do
 import ProductOptionsModal from '~/features/donation-form/features/product/donor/components/ProductOptionsModal.vue'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
-import type { CartItem } from '~/features/donation-form/features/impact-cart/shared/types'
-import type { TributeData } from '~/features/donation-form/features/tribute/shared/types'
+import type { CartItem } from '~/features/donation-form/features/impact-cart/donor/types'
+import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
 import {
   getCartItemKey,
   parseCartItemKey
-} from '~/features/donation-form/features/impact-cart/shared/cart-utils'
-import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/shared/stores/impactCart'
+} from '~/features/donation-form/features/impact-cart/donor/utils'
+import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
 
 const cartStore = useImpactCartStore()
 

@@ -1,30 +1,6 @@
 /**
- * Tribute (gift/memorial dedication) configuration types
+ * Tribute runtime types (used by donor-facing components and forms)
  */
-
-export interface TributeSettings {
-  enabled: boolean
-  icons: {
-    gift: string
-    memorial: string
-    tribute: string
-  }
-  types: {
-    none: {
-      label: string
-    }
-    giftEnabled: boolean
-    memorialEnabled: boolean
-  }
-  relationships: ReadonlyArray<{
-    value: string
-    label: string
-  }>
-  modal: {
-    title: string
-    subtitle: string
-  }
-}
 
 /**
  * Flattened tribute data structure that matches form field structure.

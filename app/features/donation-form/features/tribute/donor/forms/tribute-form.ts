@@ -8,7 +8,7 @@ import {
   toggleField
 } from '~/features/_library/form-builder/api'
 import type { ComposableForm } from '~/features/_library/form-builder/types'
-import type { TributeSettings } from '~/features/donation-form/features/tribute/shared/types'
+import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
 import { createMessageFields } from '~/features/donation-form/shared/forms/optional-message-field'
 
 /**

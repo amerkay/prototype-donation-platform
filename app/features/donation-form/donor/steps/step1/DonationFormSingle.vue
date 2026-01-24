@@ -9,7 +9,7 @@ import TributeCard from '~/features/donation-form/features/tribute/donor/compone
 import TributeModal from '~/features/donation-form/features/tribute/donor/components/TributeModal.vue'
 import ProductSelectorButton from '~/features/donation-form/features/product-selector/donor/components/ProductSelectorButton.vue'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
-import type { TributeData } from '~/features/donation-form/features/tribute/shared/types'
+import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
 import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
 
 interface Props {

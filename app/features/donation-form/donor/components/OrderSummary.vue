@@ -2,9 +2,9 @@
 import { computed } from 'vue'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
-import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/shared/stores/impactCart'
+import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
-import { useCurrency } from '~/features/donation-form/donor/composables/useCurrency'
+import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 
 interface Props {

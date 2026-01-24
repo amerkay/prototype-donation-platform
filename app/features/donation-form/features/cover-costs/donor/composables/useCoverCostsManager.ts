@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
-import { useCurrency } from '~/features/donation-form/donor/composables/useCurrency'
+import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 
 /**
  * Cover Costs Manager Composable

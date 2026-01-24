@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { toRef } from 'vue'
 import { Button } from '@/components/ui/button'
-import { useImpactJourneyMessages } from '~/features/donation-form/features/impact-journey/shared/composables/useImpactJourneyMessages'
-import type { ImpactJourneySettings } from '~/features/donation-form/features/impact-journey/shared/types'
+import { useImpactJourneyMessages } from '~/features/donation-form/features/impact-journey/donor/composables/useImpactJourneyMessages'
+import type { ImpactJourneySettings } from '~/features/donation-form/features/impact-journey/admin/types'
 import type { PricingSettings } from '~/features/donation-form/shared/types'
 
 interface Props {

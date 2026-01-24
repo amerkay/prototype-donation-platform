@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
-import { useCurrency } from '~/features/donation-form/donor/composables/useCurrency'
+import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import TributeLine from '~/features/donation-form/features/tribute/donor/components/TributeLine.vue'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
-import type { TributeSettings } from '~/features/donation-form/features/tribute/shared/types'
-import type { CartItem } from '~/features/donation-form/features/impact-cart/shared/types'
+import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
+import type { CartItem } from '~/features/donation-form/features/impact-cart/donor/types'
 
 interface Props {
   item: CartItem | Product

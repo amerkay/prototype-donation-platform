@@ -1,15 +1,8 @@
 /**
- * Impact cart (multiple products) configuration types
+ * Impact cart runtime types (used by donor-facing cart components and store)
  */
 import type { Product } from '~/features/donation-form/features/product/shared/types'
-import type { TributeData } from '~/features/donation-form/features/tribute/shared/types'
-
-export interface ImpactCartSettings {
-  enabled: boolean
-  settings: {
-    initialDisplay: number
-  }
-}
+import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
 
 export type FrequencyType = 'once' | 'monthly' | 'yearly'
 export type CartFrequencyType = FrequencyType

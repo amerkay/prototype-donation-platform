@@ -2,7 +2,7 @@
 import DonationFlowWizard from '~/features/donation-form/donor/DonationFlowWizard.vue'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
-import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/shared/stores/impactCart'
+import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
 import { formConfig } from '~/sample-api-responses/api-sample-response-form-config'
 import { products } from '~/sample-api-responses/api-sample-response-products'
 import { Dialog, DialogContent } from '@/components/ui/dialog'

@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
-import { getCurrencySymbol } from '~/features/donation-form/donor/composables/useCurrency'
+import { getCurrencySymbol } from '~/features/donation-form/shared/composables/useCurrency'
 
 interface Props {
   open?: boolean

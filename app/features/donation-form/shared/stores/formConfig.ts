@@ -5,12 +5,12 @@ import type {
   PricingSettings,
   DonationCustomFieldsSettings
 } from '~/features/donation-form/shared/types'
-import type { ImpactCartSettings } from '~/features/donation-form/features/impact-cart/shared/types'
-import type { ProductSelectorSettings } from '~/features/donation-form/features/product-selector/shared/types'
-import type { ImpactJourneySettings } from '~/features/donation-form/features/impact-journey/shared/types'
-import type { CoverCostsSettings } from '~/features/donation-form/features/cover-costs/shared/types'
-import type { GiftAidSettings } from '~/features/donation-form/features/gift-aid/shared/types'
-import type { TributeSettings } from '~/features/donation-form/features/tribute/shared/types'
+import type { ImpactCartSettings } from '~/features/donation-form/features/impact-cart/admin/types'
+import type { ProductSelectorSettings } from '~/features/donation-form/features/product-selector/admin/types'
+import type { ImpactJourneySettings } from '~/features/donation-form/features/impact-journey/admin/types'
+import type { CoverCostsSettings } from '~/features/donation-form/features/cover-costs/admin/types'
+import type { GiftAidSettings } from '~/features/donation-form/features/gift-aid/admin/types'
+import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 
 /**

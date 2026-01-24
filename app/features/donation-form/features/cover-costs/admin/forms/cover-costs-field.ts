@@ -1,7 +1,7 @@
 import * as z from 'zod'
 import type { FieldDef, FieldContext } from '~/features/_library/form-builder/types'
 import { cardField, sliderField } from '~/features/_library/form-builder/api'
-import { getCurrencySymbol } from '~/features/donation-form/donor/composables/useCurrency'
+import { getCurrencySymbol } from '~/features/donation-form/shared/composables/useCurrency'
 
 /**
  * Universal cover costs field that adapts between percentage and fixed amount modes

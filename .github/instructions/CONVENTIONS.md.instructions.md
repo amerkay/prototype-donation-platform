@@ -29,6 +29,13 @@ app/features/[feature-name]/
 
 **Rules**: If 80%+ usage is one side, move it there. Stores follow their primary consumer. Preview components belong to whoever uses the preview.
 
+**Type Organization**:
+
+- Config types (`*Settings` interfaces) → `admin/types.ts` (used by admin forms & config store)
+- Runtime types (data models, state shapes) → `donor/types.ts` or `admin/types.ts` based on primary consumer
+- Truly shared types (used ~50/50 by both) → `shared/types.ts`
+- Utilities/composables/stores → move to consumer side (`donor/` or `admin/`)
+
 ## Code Standards
 
 **Components**: Use `<script setup lang="ts">`. Order: imports, constants, props/emits, state, computed, methods. No `any` types. PascalCase components, camelCase variables, UPPER_SNAKE_CASE constants.

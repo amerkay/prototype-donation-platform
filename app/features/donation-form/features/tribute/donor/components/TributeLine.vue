@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type {
-  TributeSettings,
-  TributeData
-} from '~/features/donation-form/features/tribute/shared/types'
+import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
+import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
 
 interface Props {
   tribute: TributeData

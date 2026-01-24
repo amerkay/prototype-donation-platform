@@ -6,7 +6,7 @@ import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import { useDonorInfoFormSection } from '~/features/donation-form/features/donor-info/donor/forms/donor-info-form'
 import { useAddressForm } from '~/features/donation-form/shared/forms/address-form'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
-import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/shared/stores/impactCart'
+import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
 import DonationCustomFields from '~/features/donation-form/features/custom-fields/donor/components/DonationCustomFields.vue'
 
 interface Props {

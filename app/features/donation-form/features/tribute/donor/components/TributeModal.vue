@@ -4,10 +4,8 @@ import { Button } from '@/components/ui/button'
 import BaseDialogOrDrawer from '~/features/donation-form/donor/components/BaseDialogOrDrawer.vue'
 import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
 import { createTributeFormSection } from '~/features/donation-form/features/tribute/donor/forms/tribute-form'
-import type {
-  TributeSettings,
-  TributeData
-} from '~/features/donation-form/features/tribute/shared/types'
+import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
+import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
 
 interface Props {
   config: TributeSettings

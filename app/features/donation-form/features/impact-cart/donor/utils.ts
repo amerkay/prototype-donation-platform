@@ -1,4 +1,8 @@
 /**
+ * Cart utility functions
+ */
+
+/**
  * Generate a unique key for a cart item based on its ID and timestamp
  */
 export const getCartItemKey = (itemId: string, addedAt: number): string => {

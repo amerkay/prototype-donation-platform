@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button'
 import CartProductLine from '~/features/donation-form/features/impact-cart/donor/components/ImpactCartProductLine.vue'
 import ProductSelectModal from '~/features/donation-form/features/product/donor/components/ProductSelectModal.vue'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
-import type { ProductSelectorSettings } from '~/features/donation-form/features/product-selector/shared/types'
-import type { TributeSettings } from '~/features/donation-form/features/tribute/shared/types'
+import type { ProductSelectorSettings } from '~/features/donation-form/features/product-selector/admin/types'
+import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
 
 interface Props {
   frequency: 'once' | 'monthly' | 'yearly'

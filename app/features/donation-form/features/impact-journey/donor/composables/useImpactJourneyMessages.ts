@@ -2,11 +2,9 @@ import { computed, type Ref } from 'vue'
 import {
   useCurrency,
   getCurrencySymbol
-} from '~/features/donation-form/donor/composables/useCurrency'
-import type {
-  ImpactJourneySettings,
-  ImpactPerAmount
-} from '~/features/donation-form/features/impact-journey/shared/types'
+} from '~/features/donation-form/shared/composables/useCurrency'
+import type { ImpactJourneySettings } from '~/features/donation-form/features/impact-journey/admin/types'
+import type { ImpactPerAmount } from '~/features/donation-form/features/impact-journey/donor/types'
 import type { PricingSettings } from '~/features/donation-form/shared/types'
 
 /**

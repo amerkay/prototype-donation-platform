@@ -4,15 +4,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   CURRENCY_OPTIONS,
   useCurrency
-} from '~/features/donation-form/donor/composables/useCurrency'
+} from '~/features/donation-form/shared/composables/useCurrency'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
-import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/shared/stores/impactCart'
+import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
 import DonationFormSingle from './DonationFormSingle.vue'
 import DonationFormMultiple from './DonationFormMultiple.vue'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
-import type { TributeData } from '~/features/donation-form/features/tribute/shared/types'
+import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
 import { formConfig as defaultConfig } from '~/sample-api-responses/api-sample-response-form-config'
 
 // Get products from store
