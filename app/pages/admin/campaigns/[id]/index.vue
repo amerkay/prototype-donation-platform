@@ -121,19 +121,19 @@ const handlePreview = () => {
         <div class="flex-1 px-4 pt-4">
           <Tabs v-model="activeTab" class="w-full">
             <TabsList class="mb-4">
-              <TabsTrigger value="settings" class="gap-2">
+              <TabsTrigger value="settings">
                 <Settings class="w-4 h-4" />
                 Settings
               </TabsTrigger>
-              <TabsTrigger value="crowdfunding" class="gap-2">
+              <TabsTrigger value="crowdfunding">
                 <Eye class="w-4 h-4" />
                 Crowdfunding Page
               </TabsTrigger>
-              <TabsTrigger value="fundraisers" class="gap-2">
+              <TabsTrigger value="fundraisers">
                 <Users class="w-4 h-4" />
                 Fundraisers
               </TabsTrigger>
-              <TabsTrigger value="sharing" class="gap-2">
+              <TabsTrigger value="sharing">
                 <Share2 class="w-4 h-4" />
                 Sharing
               </TabsTrigger>

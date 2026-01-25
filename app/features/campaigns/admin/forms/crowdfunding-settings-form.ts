@@ -6,7 +6,8 @@ import {
   textareaField,
   imageUploadField,
   selectField,
-  numberField
+  numberField,
+  currencyField
 } from '~/features/_library/form-builder/api'
 
 /**
@@ -92,6 +93,17 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     rules: z.number().min(5).max(50)
   })
 
+  const goalAmount = currencyField('goalAmount', {
+    label: 'Goal Amount',
+    description: 'Target fundraising amount (optional)',
+    placeholder: '50000',
+    optional: true,
+    min: 0,
+    currencySymbol: '£',
+    visibleWhen: ({ values }) => values.enabled === true,
+    rules: z.number().min(1, 'Goal must be at least 1').optional()
+  })
+
   return {
     enabled,
     title,
@@ -101,6 +113,7 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     showProgressBar,
     showRecentDonations,
     defaultDonationsView,
-    numberOfDonationsToShow
+    numberOfDonationsToShow,
+    goalAmount
   }
 })

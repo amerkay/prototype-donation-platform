@@ -51,7 +51,7 @@ const formatAmount = (amount: number) => {
 
       <!-- Center: Progress chip -->
       <div
-        v-if="store.stats.goalAmount"
+        v-if="store.crowdfunding?.goalAmount"
         class="flex items-center gap-3 px-3 py-1.5 bg-background rounded-full border"
       >
         <div class="w-24">
@@ -60,7 +60,7 @@ const formatAmount = (amount: number) => {
         <span class="text-sm font-medium whitespace-nowrap">
           {{ formatAmount(store.stats.totalRaised) }}
           <span class="text-muted-foreground font-normal">
-            / {{ formatAmount(store.stats.goalAmount) }}
+            / {{ formatAmount(store.crowdfunding.goalAmount) }}
           </span>
         </span>
         <span

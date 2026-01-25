@@ -16,7 +16,6 @@ export const campaigns: Campaign[] = [
       totalRaised: 45820.5,
       totalDonations: 342,
       totalDonors: 287,
-      goalAmount: 50000,
       averageDonation: 134,
       topDonation: 1000,
       daysRemaining: 45
@@ -31,7 +30,8 @@ export const campaigns: Campaign[] = [
       showProgressBar: true,
       showRecentDonations: true,
       defaultDonationsView: 'recent',
-      numberOfDonationsToShow: 5
+      numberOfDonationsToShow: 5,
+      goalAmount: 50000
     },
     peerToPeer: {
       enabled: true,
@@ -165,7 +165,6 @@ export const campaigns: Campaign[] = [
       totalRaised: 28500,
       totalDonations: 156,
       totalDonors: 124,
-      goalAmount: 40000,
       averageDonation: 183,
       topDonation: 2000,
       daysRemaining: 30
@@ -179,7 +178,8 @@ export const campaigns: Campaign[] = [
       showProgressBar: true,
       showRecentDonations: true,
       defaultDonationsView: 'top',
-      numberOfDonationsToShow: 3
+      numberOfDonationsToShow: 3,
+      goalAmount: 40000
     },
     peerToPeer: {
       enabled: false,
@@ -230,7 +230,6 @@ export const campaigns: Campaign[] = [
       totalRaised: 67200,
       totalDonations: 523,
       totalDonors: 412,
-      goalAmount: 100000,
       averageDonation: 129,
       topDonation: 5000,
       daysRemaining: 15
@@ -244,7 +243,8 @@ export const campaigns: Campaign[] = [
       showProgressBar: true,
       showRecentDonations: true,
       defaultDonationsView: 'recent',
-      numberOfDonationsToShow: 8
+      numberOfDonationsToShow: 8,
+      goalAmount: 100000
     },
     peerToPeer: {
       enabled: true,

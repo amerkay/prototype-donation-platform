@@ -24,8 +24,11 @@ const statusVariants: Record<
 }
 
 const progressPercentage = computed(() => {
-  if (!props.campaign.stats.goalAmount) return 0
-  return Math.min((props.campaign.stats.totalRaised / props.campaign.stats.goalAmount) * 100, 100)
+  if (!props.campaign.crowdfunding.goalAmount) return 0
+  return Math.min(
+    (props.campaign.stats.totalRaised / props.campaign.crowdfunding.goalAmount) * 100,
+    100
+  )
 })
 
 const formattedAmount = (amount: number) => {
@@ -69,11 +72,11 @@ const formattedDate = computed(() => {
 
     <CardContent class="space-y-4">
       <!-- Progress Bar -->
-      <div v-if="campaign.stats.goalAmount" class="space-y-2">
+      <div v-if="campaign.crowdfunding.goalAmount" class="space-y-2">
         <div class="flex items-baseline justify-between text-sm">
           <span class="font-semibold">{{ formattedAmount(campaign.stats.totalRaised) }}</span>
           <span class="text-muted-foreground text-xs">
-            of {{ formattedAmount(campaign.stats.goalAmount) }}
+            of {{ formattedAmount(campaign.crowdfunding.goalAmount) }}
           </span>
         </div>
         <Progress :model-value="progressPercentage" class="h-2" />

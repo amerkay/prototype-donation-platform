@@ -5,14 +5,12 @@ import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
 import FormsList from './FormsList.vue'
 import StickyButtonGroup from './StickyButtonGroup.vue'
 import { useCampaignBasicSettingsForm } from '../forms/campaign-basic-settings-form'
-import { useCampaignStatsSettingsForm } from '../forms/campaign-stats-settings-form'
 
 const store = useCampaignConfigStore()
 const { updateCampaign } = useCampaigns()
 
 // Form definitions
 const basicForm = useCampaignBasicSettingsForm
-const statsForm = useCampaignStatsSettingsForm
 
 // Local reactive state for forms (bound to store)
 const basicData = computed({
@@ -27,27 +25,15 @@ const basicData = computed({
   }
 })
 
-const statsData = computed({
-  get: () => ({
-    stats: {
-      goalAmount: store.stats?.goalAmount
-    }
-  }),
-  set: (val) => {
-    store.updateGoal(val.stats.goalAmount)
-  }
-})
-
 // Form refs for validation
 const basicFormRef = ref()
-const statsFormRef = ref()
 
 // Save state
 const saveMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
 const saveChanges = async () => {
   // Validate all forms
-  const forms = [basicFormRef.value, statsFormRef.value]
+  const forms = [basicFormRef.value]
 
   const allValid = forms.every((form) => form?.isValid)
 
@@ -101,17 +87,6 @@ const discardChanges = () => {
         ref="basicFormRef"
         v-model="basicData"
         :section="basicForm"
-        validate-on-mount
-        update-only-when-valid
-      />
-    </div>
-
-    <!-- Goal Settings -->
-    <div class="config-section">
-      <FormRenderer
-        ref="statsFormRef"
-        v-model="statsData"
-        :section="statsForm"
         validate-on-mount
         update-only-when-valid
       />

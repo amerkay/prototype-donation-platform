@@ -73,16 +73,16 @@ export const useCampaignConfigStore = defineStore('campaignConfig', {
      * Progress percentage for goal (0-100)
      */
     progressPercentage(state): number {
-      if (!state.stats?.goalAmount || state.stats.goalAmount === 0) return 0
-      return Math.min((state.stats.totalRaised / state.stats.goalAmount) * 100, 100)
+      if (!state.crowdfunding?.goalAmount || state.crowdfunding.goalAmount === 0) return 0
+      return Math.min((state.stats!.totalRaised / state.crowdfunding.goalAmount) * 100, 100)
     },
 
     /**
      * Amount remaining to reach goal
      */
     remainingAmount(state): number {
-      if (!state.stats?.goalAmount) return 0
-      return Math.max(state.stats.goalAmount - state.stats.totalRaised, 0)
+      if (!state.crowdfunding?.goalAmount) return 0
+      return Math.max(state.crowdfunding.goalAmount - state.stats!.totalRaised, 0)
     },
 
     /**
@@ -184,19 +184,6 @@ export const useCampaignConfigStore = defineStore('campaignConfig', {
     markClean() {
       this.isDirty = false
       this.updatedAt = new Date().toISOString()
-    },
-
-    /**
-     * Update goal settings
-     */
-    updateGoal(goalAmount: number | undefined) {
-      if (this.stats) {
-        this.stats = {
-          ...this.stats,
-          goalAmount
-        }
-        this.isDirty = true
-      }
     },
 
     /**

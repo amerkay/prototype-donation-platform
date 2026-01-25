@@ -43,7 +43,6 @@ export interface CampaignStats {
   totalRaised: number
   totalDonations: number
   totalDonors: number
-  goalAmount?: number
   averageDonation: number
   topDonation: number
   daysRemaining?: number
@@ -62,6 +61,7 @@ export interface CrowdfundingSettings {
   showRecentDonations: boolean
   defaultDonationsView: 'recent' | 'top'
   numberOfDonationsToShow: number
+  goalAmount?: number
 }
 
 /**

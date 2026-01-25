@@ -141,7 +141,9 @@ const hasSocialSharing = computed(() => {
           <!-- Progress & Actions (Mobile/Tablet only) -->
           <div class="@4xl:hidden space-y-4">
             <div
-              v-if="store.crowdfunding.showProgressBar && store.stats?.goalAmount"
+              v-if="
+                store.crowdfunding.showProgressBar && store.crowdfunding.goalAmount && store.stats
+              "
               class="space-y-2"
             >
               <Progress :model-value="store.progressPercentage" class="h-3" />
@@ -153,7 +155,7 @@ const hasSocialSharing = computed(() => {
                   <span class="text-muted-foreground"> raised</span>
                 </div>
                 <div class="text-muted-foreground text-right text-sm">
-                  <span>{{ formatAmount(store.stats.goalAmount) }} goal</span>
+                  <span>{{ formatAmount(store.crowdfunding.goalAmount) }} goal</span>
                 </div>
               </div>
               <div class="flex justify-between text-xs @md:text-sm text-muted-foreground">
@@ -339,7 +341,11 @@ const hasSocialSharing = computed(() => {
             </div>
 
             <!-- Progress Card -->
-            <Card v-if="store.crowdfunding.showProgressBar && store.stats?.goalAmount">
+            <Card
+              v-if="
+                store.crowdfunding.showProgressBar && store.crowdfunding.goalAmount && store.stats
+              "
+            >
               <CardContent class="p-5 space-y-4">
                 <Progress :model-value="store.progressPercentage" class="h-3" />
                 <div class="space-y-2">
@@ -349,7 +355,7 @@ const hasSocialSharing = computed(() => {
                         {{ formatAmount(store.stats.totalRaised) }}
                       </div>
                       <div class="text-sm text-muted-foreground">
-                        raised of {{ formatAmount(store.stats.goalAmount) }}
+                        raised of {{ formatAmount(store.crowdfunding.goalAmount) }}
                       </div>
                     </div>
                   </div>
