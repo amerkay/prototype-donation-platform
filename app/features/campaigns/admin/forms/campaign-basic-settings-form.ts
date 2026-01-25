@@ -29,14 +29,14 @@ export const useCampaignBasicSettingsForm = defineForm('campaign-basic', (_ctx) 
       { value: 'completed', label: 'Completed - Goal reached' },
       { value: 'archived', label: 'Archived - No longer accepting donations' }
     ],
-    rules: z.enum(['draft', 'active', 'paused', 'completed', 'archived'])
+    rules: z.enum(['draft', 'active', 'paused', 'completed', 'archived']),
+    isSeparatorAfter: true
   })
 
   // Component field with validation to ensure at least 1 donation form exists
   // Note: Validation uses props.formsCount which is injected by CampaignMasterConfigPanel
   const formsList = componentField('formsList', {
     component: FormsList,
-    class: 'mt-6 pt-6 border-t',
     // Validate using the formsCount prop that will be injected
     rules: z.any().refine(
       (props: Record<string, unknown>) => {

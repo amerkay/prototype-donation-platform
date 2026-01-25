@@ -43,8 +43,8 @@ const handlePreviewForm = (formId: string) => {
 
 <template>
   <div>
-    <h3 class="text-base font-semibold mb-3 flex items-center gap-2">
-      <FileText class="w-5 h-5" />
+    <h3 class="text-sm mb-3 flex items-center gap-x-1.5">
+      <FileText class="size-4" />
       Donation Forms
     </h3>
     <p class="text-sm text-muted-foreground mb-4">

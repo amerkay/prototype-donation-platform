@@ -150,7 +150,8 @@ if (props.meta.collapsible) {
                 :class="
                   cn(
                     meta.labelClass,
-                    'font-medium text-sm',
+                    'text-sm',
+                    isOpen ? 'font-bold opacity-75' : 'font-medium',
                     !meta.isDisabled && 'group-hover:underline'
                   )
                 "

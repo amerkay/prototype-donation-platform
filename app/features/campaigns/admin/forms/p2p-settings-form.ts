@@ -52,12 +52,12 @@ export const useP2PSettingsForm = defineForm('peerToPeer', (_ctx) => {
     rows: 3,
     optional: true,
     visibleWhen: ({ values }) => values.enabled === true,
-    rules: z.string().optional()
+    rules: z.string().optional(),
+    isSeparatorAfter: true
   })
 
   const fundraisersList = componentField('fundraisersList', {
     component: FundraisersList,
-    class: 'mt-6 pt-6 border-t',
     visibleWhen: ({ values }) => values.enabled === true,
     rules: z.any().optional()
   })
