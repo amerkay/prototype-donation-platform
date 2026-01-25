@@ -79,7 +79,7 @@ export function useAccordionGroup() {
  * @param externalStateRef - Optional external ref to bi-directionally sync with group state
  */
 export function provideAccordionGroup(externalStateRef?: Ref<string | undefined>) {
-  const groupState = ref<string | undefined>(undefined)
+  const groupState = ref<string | undefined>(externalStateRef?.value)
   provide('accordionGroupState', groupState)
 
   // Bi-directional sync with external ref if provided

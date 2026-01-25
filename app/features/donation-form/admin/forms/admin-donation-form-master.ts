@@ -1,5 +1,6 @@
 import { defineForm, fieldGroup } from '~/features/_library/form-builder/api'
 import type { FormContext } from '~/features/_library/form-builder/types'
+import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 import { useDonationFormConfigForm } from '~/features/donation-form/admin/forms/donation-form-config-form'
 import { useMultipleProductsConfigSection } from '~/features/donation-form/features/impact-cart/admin/forms/impact-cart-config-form'
 import { useProductSelectorConfigSection } from '~/features/donation-form/features/product-selector/admin/forms/product-selector-config-form'
@@ -16,6 +17,9 @@ import type { ContextSchema } from '~/features/_library/form-builder/conditions'
  */
 export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
   return defineForm('donationFormAdmin', (ctx: FormContext) => {
+    // Provide accordion group for single-open behavior
+    provideAccordionGroup()
+
     // Extract fields from each sub-form by calling their setup functions
     const formSettingsFields = useDonationFormConfigForm.setup(ctx)
     const impactJourneyFields = useImpactJourneyConfigSection.setup(ctx)

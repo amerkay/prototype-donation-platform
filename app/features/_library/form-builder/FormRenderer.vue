@@ -6,7 +6,6 @@ import type { ComposableForm } from '~/features/_library/form-builder/types'
 import type { ContextSchema } from '~/features/_library/form-builder/conditions'
 import { useScrollOnVisible } from './composables/useScrollOnVisible'
 import { checkFieldVisibility } from './composables/useFieldPath'
-import { useAccordionGroup } from './composables/useAccordionGroup'
 
 interface Props {
   section: ComposableForm
@@ -101,10 +100,6 @@ provide('sectionId', resolvedSection.value.id)
 
 // Provide validateOnMount for all nested fields and containers
 provide('validateOnMount', props.validateOnMount)
-
-// Provide accordion group for top-level collapsible field-groups
-const { provideAccordionGroup } = useAccordionGroup()
-provideAccordionGroup()
 
 // Provide external context values and schema for condition evaluation
 // Use toRef/computed to make them reactive so conditions re-evaluate on changes

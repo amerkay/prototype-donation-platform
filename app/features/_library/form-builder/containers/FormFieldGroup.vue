@@ -60,12 +60,9 @@ if (props.meta.collapsible) {
             : undefined
       )
 
-  // Only provide accordion group context if we don't already have one
-  // (for nested collapsible field groups that need their own state)
-  if (!hasAccordionGroup()) {
-    // Pass external ref to group-level sync (if provided by parent config)
-    provideAccordionGroup(props.meta.collapsibleStateRef)
-  }
+  // Always provide accordion group context for children to prevent cross-level interference
+  // This creates an isolated accordion context for any nested collapsible field groups
+  provideAccordionGroup()
 
   isOpen = computed(() => accordionValue.value === props.name)
 } else {
