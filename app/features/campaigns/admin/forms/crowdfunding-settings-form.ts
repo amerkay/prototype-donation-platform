@@ -107,13 +107,13 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
   return {
     enabled,
     title,
+    goalAmount,
     shortDescription,
     coverPhoto,
     story,
     showProgressBar,
     showRecentDonations,
     defaultDonationsView,
-    numberOfDonationsToShow,
-    goalAmount
+    numberOfDonationsToShow
   }
 })
