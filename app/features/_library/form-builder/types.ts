@@ -78,6 +78,7 @@ export type FieldType =
   | 'field-group'
   | 'card'
   | 'tabs'
+  | 'component'
 
 /**
  * Function type for setting field values with relative paths
@@ -340,6 +341,13 @@ export interface CardFieldConfig extends BaseFieldConfig {
   showBorder?: boolean
 }
 
+export interface ComponentFieldConfig<TProps = Record<string, unknown>> extends BaseFieldConfig {
+  /** Vue component to render */
+  component: Component
+  /** Props to pass to the component (static or dynamic) */
+  props?: TProps | ((ctx: FieldContext) => TProps)
+}
+
 // ============================================================================
 // FIELD DEFINITION TYPES (returned by field constructors)
 // ============================================================================
@@ -376,6 +384,7 @@ export interface FieldRegistry {
   'field-group': FieldGroupConfig
   tabs: TabsFieldConfig
   card: CardFieldConfig
+  component: ComponentFieldConfig<Record<string, unknown>>
 }
 
 /**
@@ -399,6 +408,10 @@ export type ArrayFieldDef = Field<'array', ArrayFieldConfig>
 export type FieldGroupDef = Field<'field-group', FieldGroupConfig>
 export type TabsFieldDef = Field<'tabs', TabsFieldConfig>
 export type CardFieldDef = Field<'card', CardFieldConfig>
+export type ComponentFieldDef<TProps = Record<string, unknown>> = Field<
+  'component',
+  ComponentFieldConfig<TProps>
+>
 
 /**
  * Union of all field definition types (auto-generated from registry)
@@ -437,6 +450,8 @@ export const isFieldGroup = (field: FieldDef): field is FieldGroupDef =>
   field.type === 'field-group'
 export const isTabsField = (field: FieldDef): field is TabsFieldDef => field.type === 'tabs'
 export const isCardField = (field: FieldDef): field is CardFieldDef => field.type === 'card'
+export const isComponentField = (field: FieldDef): field is ComponentFieldDef =>
+  field.type === 'component'
 
 // ============================================================================
 // FIELD COMPONENT PROPS & EMITS - Shared by value-based field components

@@ -1,4 +1,5 @@
 import type { z } from 'zod'
+import type { Component } from 'vue'
 import type {
   ComposableForm,
   FormContext,
@@ -38,6 +39,8 @@ import type {
   TabsFieldDef,
   CardFieldConfig,
   CardFieldDef,
+  ComponentFieldConfig,
+  ComponentFieldDef,
   FieldDef
 } from '../types'
 
@@ -289,6 +292,31 @@ export function tabsField(name: string, config: TabsFieldConfig): TabsFieldDef {
 export function cardField(name: string, config: CardFieldConfig = {}): CardFieldDef {
   return {
     type: 'card',
+    name,
+    ...config
+  }
+}
+
+/**
+ * Create a component field (renders custom Vue component)
+ * Allows injecting arbitrary components into forms with full visibility/validation support
+ *
+ * @example
+ * ```ts
+ * const formsList = componentField('formsList', {
+ *   label: 'Donation Forms',
+ *   component: FormsList,
+ *   props: { showActions: true },
+ *   visibleWhen: ({ values }) => values.enabled
+ * })
+ * ```
+ */
+export function componentField<TProps = Record<string, unknown>>(
+  name: string,
+  config: Omit<ComponentFieldConfig<TProps>, 'component'> & { component: Component }
+): ComponentFieldDef<TProps> {
+  return {
+    type: 'component',
     name,
     ...config
   }

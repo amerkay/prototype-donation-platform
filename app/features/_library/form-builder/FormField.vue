@@ -27,6 +27,7 @@ import FormFieldSlider from './fields/FormFieldSlider.vue'
 import FormFieldAutocomplete from './fields/FormFieldAutocomplete.vue'
 import FormFieldEmoji from './fields/FormFieldEmoji.vue'
 import FormFieldImageUpload from './fields/FormFieldImageUpload.vue'
+import FormFieldComponent from './fields/FormFieldComponent.vue'
 import FormFieldArray from './containers/FormFieldArray.vue'
 import FormFieldGroup from './containers/FormFieldGroup.vue'
 import FormFieldTabs from './containers/FormFieldTabs.vue'
@@ -56,6 +57,7 @@ const FIELD_COMPONENTS: Record<string, Component> = {
   emoji: FormFieldEmoji,
   slider: FormFieldSlider,
   'image-upload': FormFieldImageUpload,
+  component: FormFieldComponent,
   card: FormFieldCard,
   'field-group': FormFieldGroup,
   array: FormFieldArray,

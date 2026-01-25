@@ -25,7 +25,8 @@ export {
   arrayField,
   fieldGroup,
   tabsField,
-  cardField
+  cardField,
+  componentField
 } from './defineForm'
 
 // Type guards for runtime type checking
@@ -47,5 +48,6 @@ export {
   isArrayField,
   isFieldGroup,
   isTabsField,
-  isCardField
+  isCardField,
+  isComponentField
 } from '../types'

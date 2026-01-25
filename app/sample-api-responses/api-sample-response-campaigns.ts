@@ -178,7 +178,7 @@ export const campaigns: Campaign[] = [
       showProgressBar: true,
       showRecentDonations: true,
       defaultDonationsView: 'top',
-      numberOfDonationsToShow: 3,
+      numberOfDonationsToShow: 10,
       goalAmount: 40000
     },
     peerToPeer: {
@@ -243,7 +243,7 @@ export const campaigns: Campaign[] = [
       showProgressBar: true,
       showRecentDonations: true,
       defaultDonationsView: 'recent',
-      numberOfDonationsToShow: 8,
+      numberOfDonationsToShow: 20,
       goalAmount: 100000
     },
     peerToPeer: {

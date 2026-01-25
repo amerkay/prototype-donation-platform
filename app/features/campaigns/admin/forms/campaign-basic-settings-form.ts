@@ -1,5 +1,11 @@
 import * as z from 'zod'
-import { defineForm, textField, selectField } from '~/features/_library/form-builder/api'
+import {
+  defineForm,
+  textField,
+  selectField,
+  componentField
+} from '~/features/_library/form-builder/api'
+import FormsList from '~/features/campaigns/admin/components/FormsList.vue'
 
 /**
  * Campaign basic settings form
@@ -26,5 +32,20 @@ export const useCampaignBasicSettingsForm = defineForm('campaign-basic', (_ctx) 
     rules: z.enum(['draft', 'active', 'paused', 'completed', 'archived'])
   })
 
-  return { name, status }
+  // Component field with validation to ensure at least 1 donation form exists
+  // Note: Validation uses props.formsCount which is injected by CampaignMasterConfigPanel
+  const formsList = componentField('formsList', {
+    component: FormsList,
+    class: 'mt-6 pt-6 border-t',
+    // Validate using the formsCount prop that will be injected
+    rules: z.any().refine(
+      (props: Record<string, unknown>) => {
+        // Props will contain formsCount injected by parent
+        return (props?.formsCount as number | undefined) ?? 0 > 0
+      },
+      { message: 'At least one donation form is required for this campaign' }
+    )
+  })
+
+  return { name, status, formsList }
 })

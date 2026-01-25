@@ -30,6 +30,14 @@ export function useAccordionGroup() {
   }
 
   /**
+   * Get the currently open accordion ID (for consumers like preview components)
+   * @returns Ref<string | undefined> - ID of currently open accordion, or undefined if none open
+   */
+  function getOpenAccordionId(): Ref<string | undefined> {
+    return sharedState || ref(undefined)
+  }
+
+  /**
    * Register an accordion with the group and get its reactive state
    * Returns a computed ref that syncs with group state
    *
@@ -69,6 +77,7 @@ export function useAccordionGroup() {
   return {
     provideAccordionGroup,
     registerAccordion,
+    getOpenAccordionId,
     hasAccordionGroup
   }
 }
