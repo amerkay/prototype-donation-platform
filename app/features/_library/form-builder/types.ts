@@ -314,6 +314,8 @@ export interface FieldGroupConfig extends BaseFieldConfig {
   badgeVariant?: 'default' | 'outline' | 'secondary' | 'destructive'
   isDisabled?: boolean
   extractDefaultsWhen?: boolean
+  /** CSS classes for the wrapper element (Accordion/FieldSet container) */
+  wrapperClass?: string
 }
 
 export interface TabDefinitionConfig {

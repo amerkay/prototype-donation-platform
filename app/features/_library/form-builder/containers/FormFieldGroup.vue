@@ -130,7 +130,7 @@ if (props.meta.collapsible) {
     v-model="accordionValue"
     type="single"
     collapsible
-    :class="cn('w-full', props.class)"
+    :class="cn('w-full', meta.wrapperClass, props.class)"
   >
     <AccordionItem
       :ref="(el: any) => setElementRef(props.name, el)"
@@ -192,7 +192,7 @@ if (props.meta.collapsible) {
   </Accordion>
 
   <!-- Non-collapsible version -->
-  <FieldSet v-else v-show="isGroupVisible" :class="cn(props.class)">
+  <FieldSet v-else v-show="isGroupVisible" :class="cn(meta.wrapperClass, props.class)">
     <FieldLegend v-if="meta.legend || resolvedLabel" :class="cn(meta.labelClass)">{{
       meta.legend || resolvedLabel
     }}</FieldLegend>

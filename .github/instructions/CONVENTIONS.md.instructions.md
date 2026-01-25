@@ -83,3 +83,4 @@ YOU MUST ALWAYS FOLLOW THESE COMMANDMENTS:
 12. DO NOT RUN `pnpm dev`, you do not have browser access.
 13. Defer fixing formatting issues till you are almost done with the implementation as you can do them in one go using `pnpm format:fix; pnpm lint:fix; pnpm typecheck` to fix lint errors rather than fix them one by one.
 14. **`app/features/form-builder` and `app/features/custom-fields` CAN NEVER have donation platform related logic**. They MUST be treated as independant units that can be reused for any project.
+15. YOU MUST ALWAYS start by investigating codebase for similar patterns or related files to the task at hand.

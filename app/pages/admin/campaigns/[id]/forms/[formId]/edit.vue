@@ -88,7 +88,7 @@ const handlePreview = () => {
       <div class="flex flex-1 flex-col px-4 pt-0">
         <div class="flex-col-reverse flex gap-y-6 lg:space-x-4 lg:flex-row">
           <div class="grow pb-4">
-            <p class="text-muted-foreground text-sm font-semibold mb-2">Form Settings</p>
+            <!-- <p class="text-muted-foreground text-sm font-semibold mb-2">Form Settings</p> -->
             <AdminDonationFormConfig />
           </div>
 
