@@ -1,14 +1,10 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
-import { useAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
+import { openAccordionId } from '~/features/campaigns/admin/forms/campaign-config-master'
 import CrowdfundingPagePreview from './CrowdfundingPagePreview.vue'
 import SharingPreview from './SharingPreview.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Info } from 'lucide-vue-next'
-
-// Get the currently open accordion ID from shared state
-const { getOpenAccordionId } = useAccordionGroup()
-const openAccordionId = getOpenAccordionId()
 
 // Map accordion IDs to preview components
 const previewComponents: Record<string, Component> = {
@@ -19,11 +15,17 @@ const previewComponents: Record<string, Component> = {
 // Compute which preview to show
 const currentPreview = computed(() => {
   const accordionId = openAccordionId.value
+
   if (!accordionId) return null
 
-  // Map field group IDs to preview IDs
-  if (accordionId === 'crowdfunding') return 'crowdfunding'
-  if (accordionId === 'socialSharing') return 'socialSharing'
+  // Extract field name from full path (e.g., "campaignConfigMaster.crowdfunding" -> "crowdfunding")
+  const fieldName = accordionId.split('.').pop()
+
+  // Direct match with extracted field name
+  if (fieldName && fieldName in previewComponents) {
+    return fieldName
+  }
+
   return null
 })
 

@@ -117,7 +117,7 @@ const handlePreview = () => {
               <CampaignMasterConfigPanel @discard="handleDiscard" />
             </div>
 
-            <!-- Right: Dynamic Preview (sticky) -->
+            <!-- Right: Dynamic Preview (reactive to accordion state) -->
             <div
               class="w-full sm:mx-auto lg:min-w-95 lg:max-w-95 lg:w-95 lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto pb-4"
             >

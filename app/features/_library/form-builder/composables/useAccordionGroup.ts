@@ -1,4 +1,4 @@
-import { inject, provide, ref, computed, type Ref } from 'vue'
+import { inject, provide, ref, computed, watch, type Ref } from 'vue'
 
 /**
  * Shared accordion group state for managing single-open behavior across sibling accordions
@@ -19,15 +19,6 @@ import { inject, provide, ref, computed, type Ref } from 'vue'
 export function useAccordionGroup() {
   // Try to inject shared state (or null if no parent provided it)
   const sharedState = inject<Ref<string | undefined> | null>('accordionGroupState', null)
-
-  /**
-   * Provide accordion group context for children
-   * Call this in parent containers (FormFieldArray, nested field-groups, etc.)
-   */
-  function provideAccordionGroup() {
-    const groupState = ref<string | undefined>(undefined)
-    provide('accordionGroupState', groupState)
-  }
 
   /**
    * Get the currently open accordion ID (for consumers like preview components)
@@ -79,5 +70,25 @@ export function useAccordionGroup() {
     registerAccordion,
     getOpenAccordionId,
     hasAccordionGroup
+  }
+}
+
+/**
+ * Provide accordion group context for children
+ * Call this in parent containers (FormFieldArray, nested field-groups, etc.)
+ * @param externalStateRef - Optional external ref to bi-directionally sync with group state
+ */
+export function provideAccordionGroup(externalStateRef?: Ref<string | undefined>) {
+  const groupState = ref<string | undefined>(undefined)
+  provide('accordionGroupState', groupState)
+
+  // Bi-directional sync with external ref if provided
+  if (externalStateRef) {
+    watch(groupState, (newVal) => {
+      externalStateRef.value = newVal
+    })
+    watch(externalStateRef, (newVal) => {
+      groupState.value = newVal
+    })
   }
 }

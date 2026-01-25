@@ -107,7 +107,7 @@ const discardChanges = () => {
 
 <template>
   <div class="space-y-4">
-    <!-- Single FormRenderer with all sections as collapsible groups + component fields -->
+    <!-- Form Renderer -->
     <FormRenderer
       ref="formRef"
       v-model="combinedData"
