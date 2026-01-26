@@ -195,9 +195,11 @@ if (props.meta.collapsible) {
 
   <!-- Non-collapsible version -->
   <FieldSet v-else v-show="isGroupVisible" :class="cn(meta.wrapperClass, props.class)">
-    <FieldLegend v-if="meta.legend || resolvedLabel" :class="cn(meta.labelClass)">{{
-      meta.legend || resolvedLabel
-    }}</FieldLegend>
+    <FieldLegend
+      v-if="meta.legend || resolvedLabel"
+      :class="cn('mb-0 text-foreground/75 -ml-1 px-1', meta.labelClass)"
+      >{{ meta.legend || resolvedLabel }}</FieldLegend
+    >
     <FieldDescription v-if="meta.description" :class="meta.descriptionClass">
       {{ meta.description }}
     </FieldDescription>

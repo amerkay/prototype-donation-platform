@@ -193,7 +193,7 @@ export const useDonationFormConfigForm = defineForm('form', (ctx) => {
   const form = fieldGroup('form', {
     label: 'Basic Settings',
     collapsible: true,
-    collapsibleDefaultOpen: false,
+    collapsibleDefaultOpen: true,
     isSeparatorAfter: true,
     fields: { title: formTitle, subtitle: formSubtitle }
   })

@@ -31,6 +31,7 @@ export function createCampaignConfigMaster() {
     // Wrap each form's fields in a collapsible field-group with card styling
     const basicSettings = fieldGroup('basicSettings', {
       label: 'Campaign Settings',
+      description: 'Configure campaign name, status, and donation form assignments.',
       collapsible: true,
       collapsibleDefaultOpen: true,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
@@ -39,6 +40,7 @@ export function createCampaignConfigMaster() {
 
     const crowdfunding = fieldGroup('crowdfunding', {
       label: 'Crowdfunding Page',
+      description: 'Configure public page with title, story, cover photo, and progress tracking.',
       collapsible: true,
       collapsibleDefaultOpen: false,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
@@ -47,6 +49,7 @@ export function createCampaignConfigMaster() {
 
     const peerToPeer = fieldGroup('peerToPeer', {
       label: 'Fundraisers (P2P)',
+      description: 'Enable individual and team fundraising pages with custom goals.',
       collapsible: true,
       collapsibleDefaultOpen: false,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
@@ -55,6 +58,7 @@ export function createCampaignConfigMaster() {
 
     const socialSharing = fieldGroup('socialSharing', {
       label: 'Social Sharing',
+      description: 'Enable sharing to Facebook, Twitter, LinkedIn, WhatsApp, and email.',
       collapsible: true,
       collapsibleDefaultOpen: false,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',

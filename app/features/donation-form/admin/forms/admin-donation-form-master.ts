@@ -30,65 +30,62 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
     const tributeFields = useTributeConfigSection.setup(ctx)
     const customFieldsFields = createDonationCustomFieldsConfigSection(contextSchema).setup(ctx)
 
-    // Wrap each form's fields in a collapsible field-group with card styling
+    // Form Settings - standalone section
     const formSettings = fieldGroup('formSettings', {
       label: 'Form Settings',
+      description: 'Configure basic form settings, and donation amounts and frequency options.',
       collapsible: true,
       collapsibleDefaultOpen: true,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
       fields: formSettingsFields
     })
 
-    const impactJourney = fieldGroup('impactJourney', {
-      label: 'Impact Journey',
+    // Features - all donation features grouped together
+    const features = fieldGroup('features', {
+      label: 'Features',
+      description:
+        'Configure impact messaging, cart behavior, product selection, cost coverage, Gift Aid, and tribute options.',
       collapsible: true,
       collapsibleDefaultOpen: false,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: impactJourneyFields
+      fields: {
+        impactJourney: fieldGroup('impactJourney', {
+          // label: 'Impact Journey',
+          wrapperClass: 'p-4 bg-background rounded-lg border',
+          fields: impactJourneyFields
+        }),
+        impactCart: fieldGroup('impactCart', {
+          // label: 'Impact Cart',
+          wrapperClass: 'p-4 bg-background rounded-lg border',
+          fields: impactCartFields
+        }),
+        productSelector: fieldGroup('productSelector', {
+          // label: 'Product Selector',
+          wrapperClass: 'p-4 bg-background rounded-lg border',
+          fields: productSelectorFields
+        }),
+        coverCosts: fieldGroup('coverCosts', {
+          // label: 'Cover Costs',
+          wrapperClass: 'p-4 bg-background rounded-lg border',
+          fields: coverCostsFields
+        }),
+        giftAid: fieldGroup('giftAid', {
+          // label: 'Gift Aid',
+          wrapperClass: 'p-4 bg-background rounded-lg border',
+          fields: giftAidFields
+        }),
+        tribute: fieldGroup('tribute', {
+          // label: 'Tribute Settings',
+          wrapperClass: 'p-4 bg-background rounded-lg border',
+          fields: tributeFields
+        })
+      }
     })
 
-    const impactCart = fieldGroup('impactCart', {
-      label: 'Impact Cart',
-      collapsible: true,
-      collapsibleDefaultOpen: false,
-      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: impactCartFields
-    })
-
-    const productSelector = fieldGroup('productSelector', {
-      label: 'Product Selector',
-      collapsible: true,
-      collapsibleDefaultOpen: false,
-      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: productSelectorFields
-    })
-
-    const coverCosts = fieldGroup('coverCosts', {
-      label: 'Cover Costs',
-      collapsible: true,
-      collapsibleDefaultOpen: false,
-      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: coverCostsFields
-    })
-
-    const giftAid = fieldGroup('giftAid', {
-      label: 'Gift Aid',
-      collapsible: true,
-      collapsibleDefaultOpen: false,
-      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: giftAidFields
-    })
-
-    const tribute = fieldGroup('tribute', {
-      label: 'Tribute Settings',
-      collapsible: true,
-      collapsibleDefaultOpen: false,
-      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: tributeFields
-    })
-
+    // Custom Fields - standalone section
     const customFields = fieldGroup('customFields', {
       label: 'Custom Fields',
+      description: 'Add custom form fields with flexible field types and conditional logic.',
       collapsible: true,
       collapsibleDefaultOpen: false,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
@@ -97,12 +94,7 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
 
     return {
       formSettings,
-      impactJourney,
-      impactCart,
-      productSelector,
-      coverCosts,
-      giftAid,
-      tribute,
+      features,
       customFields
     }
   })

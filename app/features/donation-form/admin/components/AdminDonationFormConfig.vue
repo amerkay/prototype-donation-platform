@@ -15,26 +15,37 @@ const { contextSchema: donationContextSchema } = useDonationFormContext()
 const masterForm = createAdminDonationFormMaster(donationContextSchema)
 
 // Combine all store sections into one reactive object for v-model
+// Features are now grouped under "features" fieldGroup
 const combinedData = computed({
   get: () => ({
     formSettings: store.formSettings,
-    impactCart: store.impactCart,
-    productSelector: store.productSelector,
-    impactJourney: store.impactJourney,
-    coverCosts: store.coverCosts,
-    giftAid: store.giftAid,
-    tribute: store.tribute,
+    features: {
+      impactJourney: store.impactJourney,
+      impactCart: store.impactCart,
+      productSelector: store.productSelector,
+      coverCosts: store.coverCosts,
+      giftAid: store.giftAid,
+      tribute: store.tribute
+    },
     customFields: store.customFields
   }),
   set: (value) => {
     // Update each section independently for proper reactivity
     if (value.formSettings) store.formSettings = value.formSettings
-    if (value.impactCart) store.impactCart = value.impactCart
-    if (value.productSelector) store.productSelector = value.productSelector
-    if (value.impactJourney) store.impactJourney = value.impactJourney
-    if (value.coverCosts) store.coverCosts = value.coverCosts
-    if (value.giftAid) store.giftAid = value.giftAid
-    if (value.tribute) store.tribute = value.tribute
+
+    // Extract individual feature sections from the features group
+    if (value.features) {
+      const features = value.features as Record<string, unknown>
+      if (features.impactJourney)
+        store.impactJourney = features.impactJourney as typeof store.impactJourney
+      if (features.impactCart) store.impactCart = features.impactCart as typeof store.impactCart
+      if (features.productSelector)
+        store.productSelector = features.productSelector as typeof store.productSelector
+      if (features.coverCosts) store.coverCosts = features.coverCosts as typeof store.coverCosts
+      if (features.giftAid) store.giftAid = features.giftAid as typeof store.giftAid
+      if (features.tribute) store.tribute = features.tribute as typeof store.tribute
+    }
+
     if (value.customFields) store.customFields = value.customFields
     store.markDirty()
   }
