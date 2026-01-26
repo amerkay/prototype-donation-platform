@@ -58,7 +58,7 @@ const emit = defineEmits<Emits>()
 
         <!-- Main Content Layout -->
         <div class="flex-1 px-4" :class="$slots.header ? 'pt-4' : 'pt-0'">
-          <div class="flex-col-reverse flex gap-y-6 lg:gap-x-6 lg:flex-row">
+          <div class="flex-col flex gap-y-6 lg:gap-x-6 lg:flex-row">
             <!-- Left: Main Content -->
             <div class="grow min-w-0 pb-4">
               <slot name="content" />
