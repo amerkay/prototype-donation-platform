@@ -175,7 +175,7 @@ function createFrequencyTabFields(
  */
 export const useDonationFormConfigForm = defineForm('form', (ctx) => {
   ctx.title = 'Form Settings'
-  ctx.description = 'Configure form title, currencies, and pricing'
+  // ctx.description = 'Configure form title, currencies, and pricing'
 
   // Basic Settings fields
   const formTitle = textField('title', {

@@ -32,6 +32,9 @@ import type { Product } from '~/features/donation-form/features/product/shared/t
  */
 export const useFormConfigStore = defineStore('formConfig', {
   state: () => ({
+    // Form ID
+    formId: null as string | null,
+
     // Metadata
     version: '1.0',
 
@@ -48,7 +51,11 @@ export const useFormConfigStore = defineStore('formConfig', {
     customFields: null as DonationCustomFieldsSettings | null,
 
     // Products (separate concern)
-    products: [] as Product[]
+    products: [] as Product[],
+
+    // State tracking
+    isDirty: false,
+    isSaving: false
   }),
 
   getters: {
@@ -84,7 +91,8 @@ export const useFormConfigStore = defineStore('formConfig', {
      * Initialize store from API response
      * Destructures nested config into flat store structure
      */
-    initialize(config: FullFormConfig, productList: Product[]) {
+    initialize(config: FullFormConfig, productList: Product[], id?: string) {
+      this.formId = id ?? null
       this.version = config.version
       this.formSettings = {
         form: config.form,
@@ -99,6 +107,22 @@ export const useFormConfigStore = defineStore('formConfig', {
       this.tribute = config.features.tribute
       this.customFields = config.features.customFields
       this.products = productList
+      this.isDirty = false
+      this.isSaving = false
+    },
+
+    /**
+     * Mark store as having unsaved changes
+     */
+    markDirty() {
+      this.isDirty = true
+    },
+
+    /**
+     * Reset dirty flag after save
+     */
+    markClean() {
+      this.isDirty = false
     }
   }
 })

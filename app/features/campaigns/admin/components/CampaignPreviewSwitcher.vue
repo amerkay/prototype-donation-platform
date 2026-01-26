@@ -8,6 +8,7 @@ import { Info } from 'lucide-vue-next'
 
 // Map accordion IDs to preview components
 const previewComponents: Record<string, Component> = {
+  basicSettings: CrowdfundingPagePreview,
   crowdfunding: CrowdfundingPagePreview,
   socialSharing: SharingPreview
 }

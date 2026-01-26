@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
-import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
 import StickyButtonGroup from './StickyButtonGroup.vue'
 import { createCampaignConfigMaster } from '../forms/campaign-config-master'
 
 const store = useCampaignConfigStore()
-const { updateCampaign } = useCampaigns()
 
 // Get forms count for validation - will be injected as prop to formsList
 const { forms } = useForms(store.id!)
@@ -56,53 +54,16 @@ const combinedData = computed({
 // Form refs for validation
 const formRef = ref()
 
-// Save state
-const saveMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
-
-const saveChanges = async () => {
-  // Validate form
-  const isValid = formRef.value?.isValid
-
-  if (!isValid) {
-    saveMessage.value = { type: 'error', text: 'Please fix all errors before saving' }
-    setTimeout(() => (saveMessage.value = null), 5000)
-    return
-  }
-
-  if (!store.id) return
-
-  store.isSaving = true
-  saveMessage.value = null
-
-  try {
-    await updateCampaign(store.id, {
-      name: store.name,
-      status: store.status,
-      stats: store.stats!,
-      crowdfunding: store.crowdfunding!,
-      peerToPeer: store.peerToPeer!,
-      socialSharing: store.socialSharing!
-    })
-
-    store.markClean()
-    saveMessage.value = { type: 'success', text: 'Settings saved successfully' }
-    setTimeout(() => (saveMessage.value = null), 5000)
-  } catch {
-    saveMessage.value = { type: 'error', text: 'Failed to save settings. Please try again.' }
-    setTimeout(() => (saveMessage.value = null), 5000)
-  } finally {
-    store.isSaving = false
-  }
-}
-
-// Emit for parent to handle discard
+// Emit for parent to handle save/discard
 const emit = defineEmits<{
+  save: []
   discard: []
 }>()
 
-const discardChanges = () => {
-  emit('discard')
-}
+// Expose validation state to parent
+defineExpose({
+  isValid: computed(() => formRef.value?.isValid ?? false)
+})
 </script>
 
 <template>
@@ -120,9 +81,8 @@ const discardChanges = () => {
     <StickyButtonGroup
       :is-dirty="store.isDirty"
       :is-saving="store.isSaving"
-      :save-message="saveMessage"
-      @save="saveChanges"
-      @discard="discardChanges"
+      @save="emit('save')"
+      @discard="emit('discard')"
     />
   </div>
 </template>

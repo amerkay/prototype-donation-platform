@@ -1,35 +1,14 @@
 <script setup lang="ts">
-import AppSidebar from '~/features/_admin/sidebar/AppSidebar.vue'
+import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
 import CompactCampaignHeader from '~/features/campaigns/admin/components/CompactCampaignHeader.vue'
 import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/CampaignMasterConfigPanel.vue'
 import CampaignPreviewSwitcher from '~/features/campaigns/admin/components/CampaignPreviewSwitcher.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator
-} from '@/components/ui/breadcrumb'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
-import { Eye } from 'lucide-vue-next'
+import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
 
 const route = useRoute()
-const { getCampaignById } = useCampaigns()
+const { getCampaignById, updateCampaign } = useCampaigns()
 const store = useCampaignConfigStore()
 
 // Get campaign data
@@ -56,100 +35,69 @@ watch(
   }
 )
 
-// Discard changes dialog
-const showDiscardDialog = ref(false)
+// Form ref for validation
+const formRef = ref()
 
-const handleDiscard = () => {
-  showDiscardDialog.value = true
-}
+// Use admin edit composable for save/discard logic
+const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, formKey } = useAdminEdit({
+  store,
+  formRef,
+  originalData: campaign,
+  onSave: async () => {
+    if (!store.id) return
+    await updateCampaign(store.id, {
+      name: store.name,
+      status: store.status,
+      stats: store.stats!,
+      crowdfunding: store.crowdfunding!,
+      peerToPeer: store.peerToPeer!,
+      socialSharing: store.socialSharing!
+    })
+  },
+  onDiscard: (data) => store.initialize(data)
+})
 
-const confirmDiscard = () => {
-  if (campaign.value) {
-    store.initialize(campaign.value)
-  }
-  showDiscardDialog.value = false
-}
+// Breadcrumbs
+const breadcrumbs = computed(() => [
+  { label: 'Dashboard', href: '/' },
+  { label: 'Campaigns', href: '/admin/campaigns' },
+  { label: store.name }
+])
 
-// Navigation handlers
+// Preview handler
 const handlePreview = () => {
   window.open(`/admin/campaigns/${store.id}/preview`, '_blank')
 }
 </script>
 
 <template>
-  <SidebarProvider v-if="campaign">
-    <AppSidebar />
-    <SidebarInset>
-      <!-- Header with breadcrumbs -->
-      <header class="flex h-14 shrink-0 items-center gap-2 border-b">
-        <div class="flex items-center gap-2 px-4 w-full">
-          <SidebarTrigger class="-ml-1" />
-          <Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem class="hidden md:block">
-                <BreadcrumbLink href="/"> Dashboard </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator class="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/admin/campaigns"> Campaigns </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator class="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage>{{ store.name }}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-      </header>
+  <AdminEditLayout
+    v-if="campaign"
+    :breadcrumbs="breadcrumbs"
+    :is-dirty="store.isDirty"
+    :show-discard-dialog="showDiscardDialog"
+    @preview="handlePreview"
+    @update:show-discard-dialog="showDiscardDialog = $event"
+    @confirm-discard="confirmDiscard"
+  >
+    <!-- Header slot for CompactCampaignHeader -->
+    <template #header>
+      <CompactCampaignHeader />
+    </template>
 
-      <div class="flex flex-1 flex-col">
-        <!-- Compact Campaign Header -->
-        <div class="px-4 pt-4">
-          <CompactCampaignHeader @preview="handlePreview" />
-        </div>
+    <!-- Main content -->
+    <template #content>
+      <CampaignMasterConfigPanel
+        :key="formKey"
+        ref="formRef"
+        @save="handleSave"
+        @discard="handleDiscard"
+      />
+    </template>
 
-        <!-- Main Content: Config Form (left) | Preview (right) -->
-        <div class="flex-1 px-4 pt-4">
-          <div class="flex-col-reverse flex gap-y-6 lg:gap-x-6 lg:flex-row">
-            <!-- Left: Campaign Config with Accordions -->
-            <div class="grow min-w-0 pb-4">
-              <CampaignMasterConfigPanel @discard="handleDiscard" />
-            </div>
-
-            <!-- Right: Dynamic Preview (reactive to accordion state) -->
-            <div
-              class="w-full sm:mx-auto lg:min-w-95 lg:max-w-95 lg:w-95 lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto pb-4"
-            >
-              <div class="flex items-center justify-between mb-3">
-                <p class="text-muted-foreground text-sm font-semibold">Preview</p>
-                <Button variant="outline" size="sm" @click="handlePreview">
-                  <Eye class="w-4 h-4 mr-2" />
-                  Preview
-                </Button>
-              </div>
-              <CampaignPreviewSwitcher />
-            </div>
-          </div>
-        </div>
-      </div>
-    </SidebarInset>
-
-    <!-- Discard Changes Dialog -->
-    <AlertDialog v-model:open="showDiscardDialog">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Discard changes?</AlertDialogTitle>
-          <AlertDialogDescription>
-            You have unsaved changes. Are you sure you want to discard them? This action cannot be
-            undone.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction @click="confirmDiscard">Discard Changes</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  </SidebarProvider>
+    <!-- Preview panel -->
+    <template #preview>
+      <CampaignPreviewSwitcher />
+    </template>
+  </AdminEditLayout>
 </template>

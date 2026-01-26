@@ -41,7 +41,7 @@ const formattedTotalRaised = computed(() => {
               <BreadcrumbItem class="hidden md:block">
                 <BreadcrumbLink href="/"> Dashboard </BreadcrumbLink>
               </BreadcrumbItem>
-              <BreadcrumbSeparator class="hidden md:block" />
+              <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbPage>Campaigns</BreadcrumbPage>
               </BreadcrumbItem>

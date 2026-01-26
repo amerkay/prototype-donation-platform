@@ -48,12 +48,30 @@ export function useForms(campaignId: string) {
     return getFormById(formId)
   }
 
+  // Update form (mock - would call API in real app)
+  const updateForm = async (formId: string, config: CampaignForm['config']): Promise<void> => {
+    // In real app, this would call an API endpoint like:
+    // await $fetch(`/api/campaigns/${campaignId}/forms/${formId}`, {
+    //   method: 'PUT',
+    //   body: { config }
+    // })
+
+    console.log(`Updating form ${formId} for campaign ${campaignId}`, config)
+
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    // In a real app, this would update the backend
+    // For now, we're just simulating the operation
+  }
+
   return {
     forms,
     defaultForm,
     getEnabledFeaturesCount,
     formatDate,
     setDefaultForm,
-    getForm
+    getForm,
+    updateForm
   }
 }

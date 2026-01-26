@@ -5,7 +5,6 @@ import { Save, Loader2, RotateCcw } from 'lucide-vue-next'
 const props = defineProps<{
   isDirty: boolean
   isSaving: boolean
-  saveMessage: { type: 'success' | 'error'; text: string } | null
 }>()
 
 const emit = defineEmits<{
@@ -39,20 +38,6 @@ const emit = defineEmits<{
         <RotateCcw class="w-4 h-4 mr-2" />
         Discard
       </Button>
-    </div>
-
-    <!-- Save Message -->
-    <div
-      v-if="props.saveMessage"
-      class="mt-3 p-3 rounded-md text-sm"
-      :class="{
-        'bg-green-50 text-green-800 border border-green-200 dark:bg-green-950 dark:text-green-200 dark:border-green-800':
-          props.saveMessage.type === 'success',
-        'bg-red-50 text-red-800 border border-red-200 dark:bg-red-950 dark:text-red-200 dark:border-red-800':
-          props.saveMessage.type === 'error'
-      }"
-    >
-      {{ props.saveMessage.text }}
     </div>
   </div>
 </template>

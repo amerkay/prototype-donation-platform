@@ -1,15 +1,9 @@
 <script setup lang="ts">
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { ExternalLink } from 'lucide-vue-next'
 
 const store = useCampaignConfigStore()
-
-const emit = defineEmits<{
-  preview: []
-}>()
 
 // Status badge variants
 const statusVariants: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -40,13 +34,6 @@ const formatAmount = (amount: number) => {
         <Badge :variant="statusVariants[store.status]" class="shrink-0 text-xs capitalize">
           {{ store.status }}
         </Badge>
-        <Badge
-          v-if="store.isDirty"
-          variant="outline"
-          class="shrink-0 text-xs text-orange-600 border-orange-300"
-        >
-          Unsaved
-        </Badge>
       </div>
 
       <!-- Center: Progress chip -->
@@ -69,14 +56,6 @@ const formatAmount = (amount: number) => {
         >
           {{ store.stats.daysRemaining }}d left
         </span>
-      </div>
-
-      <!-- Right: Action buttons -->
-      <div class="flex items-center gap-2 shrink-0">
-        <Button variant="outline" size="sm" @click="emit('preview')">
-          <ExternalLink class="w-4 h-4 mr-1.5" />
-          Preview
-        </Button>
       </div>
     </div>
   </div>

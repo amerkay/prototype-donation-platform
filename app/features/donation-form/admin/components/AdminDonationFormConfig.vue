@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
+import StickyButtonGroup from '~/features/campaigns/admin/components/StickyButtonGroup.vue'
 import { createAdminDonationFormMaster } from '~/features/donation-form/admin/forms/admin-donation-form-master'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useDonationFormContext } from '~/features/donation-form/donor/composables/useDonationFormContext'
@@ -35,7 +36,22 @@ const combinedData = computed({
     if (value.giftAid) store.giftAid = value.giftAid
     if (value.tribute) store.tribute = value.tribute
     if (value.customFields) store.customFields = value.customFields
+    store.markDirty()
   }
+})
+
+// Emit for parent to handle save/discard
+const emit = defineEmits<{
+  save: []
+  discard: []
+}>()
+
+// Form ref for validation
+const formRef = ref()
+
+// Expose validation state to parent
+defineExpose({
+  isValid: computed(() => formRef.value?.isValid ?? false)
 })
 </script>
 
@@ -43,10 +59,20 @@ const combinedData = computed({
   <div class="w-full mx-auto space-y-6">
     <!-- Single FormRenderer with all sections as collapsible groups -->
     <FormRenderer
+      ref="formRef"
       v-model="combinedData"
       :section="masterForm"
       :context-schema="donationContextSchema"
+      validate-on-mount
       update-only-when-valid
+    />
+
+    <!-- Save/Discard Buttons -->
+    <StickyButtonGroup
+      :is-dirty="store.isDirty"
+      :is-saving="store.isSaving"
+      @save="emit('save')"
+      @discard="emit('discard')"
     />
   </div>
 </template>
