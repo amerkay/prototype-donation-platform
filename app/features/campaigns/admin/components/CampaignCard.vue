@@ -50,21 +50,17 @@ const formattedDate = computed(() => {
 </script>
 
 <template>
-  <Card
-    :class="
-      cn('transition-all hover:shadow-md cursor-pointer', compact ? 'h-full' : 'hover:scale-[1.01]')
-    "
-  >
+  <Card :class="cn('transition-all hover:shadow-md h-full', compact ? '' : '')">
     <CardHeader>
-      <div class="flex items-start justify-between gap-2">
-        <div class="flex-1 min-w-0">
+      <div class="flex items-start justify-between gap-2 min-w-0">
+        <div class="flex-1 min-w-0 overflow-hidden">
           <CardTitle class="text-lg truncate">{{ campaign.name }}</CardTitle>
           <CardDescription v-if="!compact" class="flex items-center gap-2 mt-1">
             <Calendar class="w-3 h-3" />
             <span class="text-xs">Updated {{ formattedDate }}</span>
           </CardDescription>
         </div>
-        <Badge :variant="statusVariants[campaign.status]" class="shrink-0">
+        <Badge :variant="statusVariants[campaign.status]" class="shrink-0 self-start">
           {{ campaign.status }}
         </Badge>
       </div>
@@ -115,13 +111,8 @@ const formattedDate = computed(() => {
       </div>
 
       <!-- Actions -->
-      <div v-if="!compact" class="flex gap-2 pt-2">
-        <Button variant="outline" size="sm" class="flex-1" as-child>
-          <NuxtLink :to="`/admin/campaigns/${campaign.id}`">View Details</NuxtLink>
-        </Button>
-        <Button variant="default" size="sm" class="flex-1" as-child>
-          <NuxtLink :to="`/admin/campaigns/${campaign.id}/form-settings`">Edit Form</NuxtLink>
-        </Button>
+      <div v-if="!compact" class="pt-2">
+        <Button variant="default" size="sm" class="w-full"> Edit Campaign </Button>
       </div>
     </CardContent>
   </Card>
