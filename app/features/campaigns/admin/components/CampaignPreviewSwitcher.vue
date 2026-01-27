@@ -5,6 +5,9 @@ import CrowdfundingPagePreview from './CrowdfundingPagePreview.vue'
 import SharingPreview from './SharingPreview.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Info } from 'lucide-vue-next'
+import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+
+const store = useCampaignConfigStore()
 
 // Map accordion IDs to preview components
 const previewComponents: Record<string, Component> = {
@@ -30,14 +33,57 @@ const currentPreview = computed(() => {
   return null
 })
 
-// Show default message when no preview available
+// Check if current section is disabled
+const isCurrentSectionDisabled = computed(() => {
+  const preview = currentPreview.value
+  if (!preview) return false
+
+  // Check if the feature is disabled
+  if (preview === 'crowdfunding' || preview === 'basicSettings') {
+    return store.crowdfunding?.enabled === false
+  }
+  if (preview === 'socialSharing') {
+    return store.socialSharing?.enabled === false
+  }
+
+  return false
+})
+
+// Get feature name for display
+const featureName = computed(() => {
+  const preview = currentPreview.value
+  if (preview === 'crowdfunding' || preview === 'basicSettings') return 'Crowdfunding Page'
+  if (preview === 'socialSharing') return 'Social Sharing'
+  return 'This feature'
+})
+
+// Show default message when no preview available and not disabled
 const showDefaultMessage = computed(() => !currentPreview.value)
+const showDisabledMessage = computed(() => currentPreview.value && isCurrentSectionDisabled.value)
 </script>
 
 <template>
   <div>
     <!-- Dynamic Preview -->
-    <component :is="previewComponents[currentPreview!]" v-if="currentPreview" />
+    <component
+      :is="previewComponents[currentPreview!]"
+      v-if="currentPreview && !isCurrentSectionDisabled"
+    />
+
+    <!-- Disabled Message -->
+    <Card v-if="showDisabledMessage">
+      <CardHeader>
+        <CardTitle class="flex items-center gap-2">
+          <Info class="w-5 h-5" />
+          Preview Unavailable
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p class="text-sm text-muted-foreground">
+          {{ featureName }} is currently disabled. Enable it in the settings to see the preview.
+        </p>
+      </CardContent>
+    </Card>
 
     <!-- Default Message -->
     <Card v-if="showDefaultMessage">

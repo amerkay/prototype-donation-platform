@@ -48,6 +48,7 @@ export const campaigns: Campaign[] = [
         'We rescue, rehabilitate, and release orangutans while protecting their natural habitat through community engagement and sustainable forest management programs across Borneo and Sumatra.'
     },
     socialSharing: {
+      enabled: true,
       facebook: true,
       twitter: true,
       linkedin: true,
@@ -193,6 +194,7 @@ export const campaigns: Campaign[] = [
       description: 'Dedicated to protecting and restoring ocean ecosystems worldwide.'
     },
     socialSharing: {
+      enabled: true,
       facebook: true,
       twitter: true,
       linkedin: false,
@@ -259,6 +261,7 @@ export const campaigns: Campaign[] = [
       description: 'Rapid response humanitarian aid organization.'
     },
     socialSharing: {
+      enabled: true,
       facebook: true,
       twitter: true,
       linkedin: true,

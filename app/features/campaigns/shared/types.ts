@@ -89,6 +89,7 @@ export interface CharityInfo {
  * Social sharing settings
  */
 export interface SocialSharingSettings {
+  enabled: boolean
   facebook: boolean
   twitter: boolean
   linkedin: boolean
