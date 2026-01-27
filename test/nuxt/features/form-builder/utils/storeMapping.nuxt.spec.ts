@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { Component } from 'vue'
 import {
   generateStoreMapping,
   generateGetData,

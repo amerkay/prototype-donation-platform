@@ -13,6 +13,7 @@ import type { FieldGroupDef } from '~/features/_library/form-builder/types'
 import { resolveText } from '~/features/_library/form-builder/composables/useResolvedFieldMeta'
 import { useContainerFieldSetup } from '~/features/_library/form-builder/composables/useContainerFieldSetup'
 import { useCombinedErrors } from '~/features/_library/form-builder/composables/useCombinedErrors'
+import { useFieldWrapper } from '~/features/_library/form-builder/composables/useFieldWrapper'
 import FormFieldList from '../internal/FormFieldList.vue'
 import { useScrollOnVisible } from '../composables/useScrollOnVisible'
 import { useAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
@@ -78,6 +79,9 @@ const {
   fullPath
 } = useContainerFieldSetup(props.name, props.meta.visibleWhen)
 
+// Extract resolvedDisabled from useFieldWrapper for standard disabled support
+const { resolvedDisabled } = useFieldWrapper(props.meta, props.name, () => [])
+
 // Compute combined errors if fields are provided
 const hasChildErrors = props.meta.fields
   ? useCombinedErrors(fullPath, props.meta.fields, scopedFormValues)
@@ -136,12 +140,12 @@ if (props.meta.collapsible) {
     <AccordionItem
       :ref="(el: any) => setElementRef(props.name, el)"
       :value="name"
-      :disabled="meta.isDisabled"
+      :disabled="resolvedDisabled"
       :unmount-on-hide="true"
     >
       <AccordionTrigger
         class="hover:no-underline group -my-4"
-        :class="{ 'cursor-not-allowed opacity-60': meta.isDisabled }"
+        :class="{ 'cursor-not-allowed opacity-60': resolvedDisabled }"
       >
         <div class="flex items-start justify-between w-full">
           <div class="flex-1 text-left">
@@ -153,7 +157,7 @@ if (props.meta.collapsible) {
                     meta.labelClass,
                     'text-sm',
                     isOpen ? 'font-bold opacity-75' : 'font-medium',
-                    !meta.isDisabled && 'group-hover:underline'
+                    !resolvedDisabled && 'group-hover:underline'
                   )
                 "
               >
@@ -178,7 +182,7 @@ if (props.meta.collapsible) {
               {{ meta.description }}
             </p>
           </div>
-          <span v-if="!meta.isDisabled" class="text-sm text-muted-foreground">{{
+          <span v-if="!resolvedDisabled" class="text-sm text-muted-foreground">{{
             isOpen ? '' : 'Edit'
           }}</span>
         </div>

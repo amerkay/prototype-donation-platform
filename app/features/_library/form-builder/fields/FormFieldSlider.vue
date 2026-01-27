@@ -12,7 +12,11 @@ const props = defineProps<Props>()
 const emit = defineEmits<FieldEmits<number>>()
 
 const { fieldContext } = useFormBuilderContext()
-const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors)
+const { wrapperProps, resolvedDisabled } = useFieldWrapper(
+  props.meta,
+  props.name,
+  () => props.errors
+)
 
 // Resolve dynamic min/max/step values (can be static, function, or ComputedRef)
 const resolvedMin = computed(() => {
@@ -93,6 +97,7 @@ const handleSliderChange = (value: number[] | undefined) => {
         :min="resolvedMin"
         :max="resolvedMax"
         :step="resolvedStep"
+        :disabled="resolvedDisabled"
         :class="meta.class"
         class="**:data-[slot=slider-track]:h-2.5 **:data-[slot=slider-thumb]:size-6"
         @update:model-value="handleSliderChange"

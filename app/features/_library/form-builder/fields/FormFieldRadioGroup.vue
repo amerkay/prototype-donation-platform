@@ -21,9 +21,14 @@ type Props = FieldProps<string | number, RadioGroupFieldDef>
 const props = defineProps<Props>()
 defineEmits<FieldEmits<string | number>>()
 
-const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors, {
-  variant: 'fieldset'
-})
+const { wrapperProps, resolvedDisabled } = useFieldWrapper(
+  props.meta,
+  props.name,
+  () => props.errors,
+  {
+    variant: 'fieldset'
+  }
+)
 </script>
 
 <template>
@@ -31,6 +36,7 @@ const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.err
     <RadioGroup
       :name="name"
       :model-value="modelValue"
+      :disabled="resolvedDisabled"
       :aria-invalid="!!errors.length"
       :orientation="meta.orientation"
       :class="cn(meta.orientation === 'horizontal' && 'grid-flow-col', meta.class)"

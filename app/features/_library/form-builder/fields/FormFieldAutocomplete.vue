@@ -47,7 +47,7 @@ if (props.modelValue) {
   selectedValue.value = props.modelValue
 }
 
-const { wrapperProps, resolvedPlaceholder } = useFieldWrapper(
+const { wrapperProps, resolvedPlaceholder, resolvedDisabled } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors
@@ -168,6 +168,7 @@ const notFoundText = computed(() => props.meta.notFoundText ?? 'No results found
   <FormFieldWrapper v-bind="wrapperProps">
     <ComboboxRoot
       v-model="selectedValue"
+      :disabled="resolvedDisabled"
       ignore-filter
       class="relative"
       @update:model-value="handleValueChange"

@@ -30,7 +30,11 @@ const emit = defineEmits<FieldEmits<number | string>>()
 // Get form context for dynamic currencySymbol resolution
 const { fieldContext } = useFormBuilderContext()
 
-const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors)
+const { wrapperProps, resolvedDisabled } = useFieldWrapper(
+  props.meta,
+  props.name,
+  () => props.errors
+)
 
 // Resolve currency symbol dynamically
 const currencySymbol = computed(() => {
@@ -65,6 +69,7 @@ const handleUpdate = (value: string | number) => {
         :max="meta.max"
         :step="meta.step ?? 1"
         :placeholder="meta.placeholder"
+        :disabled="resolvedDisabled"
         :aria-invalid="!!errors.length"
         :class="cn(meta.class)"
         @update:model-value="handleUpdate"

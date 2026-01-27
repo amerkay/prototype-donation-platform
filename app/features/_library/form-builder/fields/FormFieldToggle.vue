@@ -9,9 +9,14 @@ type Props = FieldProps<boolean, ToggleFieldDef>
 const props = defineProps<Props>()
 defineEmits<FieldEmits<boolean>>()
 
-const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors, {
-  orientation: 'horizontal'
-})
+const { wrapperProps, resolvedDisabled } = useFieldWrapper(
+  props.meta,
+  props.name,
+  () => props.errors,
+  {
+    orientation: 'horizontal'
+  }
+)
 </script>
 
 <template>
@@ -19,6 +24,7 @@ const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.err
     <Switch
       :id="id || name"
       :model-value="modelValue"
+      :disabled="resolvedDisabled"
       :class="meta.class"
       @update:model-value="$emit('update:modelValue', $event)"
     />

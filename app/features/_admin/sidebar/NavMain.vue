@@ -15,7 +15,7 @@ import {
   SidebarMenuSubItem
 } from '@/components/ui/sidebar'
 
-const props = defineProps<{
+interface Props {
   items: {
     title: string
     url: string
@@ -27,21 +27,23 @@ const props = defineProps<{
       url: string
     }[]
   }[]
-}>()
+}
+
+defineProps<Props>()
 
 const { isActive } = useActiveLink()
 
-const hasValidSubitems = (item: (typeof props.items)[number]) => {
+const hasValidSubitems = (item: Props['items'][number]) => {
   return item.items?.some((subItem) => subItem.url !== '#') ?? false
 }
 
-const isDisabled = (item: (typeof props.items)[number]) => {
+const isDisabled = (item: Props['items'][number]) => {
   if (item.url !== '#') return false
   if (!item.items?.length) return true
   return !hasValidSubitems(item)
 }
 
-const shouldToggle = (item: (typeof props.items)[number]) => {
+const shouldToggle = (item: Props['items'][number]) => {
   return item.url === '#' && !!item.items?.length && hasValidSubitems(item)
 }
 </script>

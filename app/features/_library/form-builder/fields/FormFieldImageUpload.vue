@@ -17,7 +17,11 @@ type Props = FieldProps<string | null, ImageUploadFieldDef>
 const props = defineProps<Props>()
 const emit = defineEmits<FieldEmits<string | null>>()
 
-const { wrapperProps, resolvedLabel } = useFieldWrapper(props.meta, props.name, () => props.errors)
+const { wrapperProps, resolvedLabel, resolvedDisabled } = useFieldWrapper(
+  props.meta,
+  props.name,
+  () => props.errors
+)
 
 // Refs
 const dropZoneRef = ref<HTMLDivElement>()
@@ -113,11 +117,25 @@ function replaceImage() {
           />
         </div>
         <div class="flex gap-2 p-3 border-t">
-          <Button variant="outline" size="sm" type="button" class="flex-1" @click="replaceImage">
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            class="flex-1"
+            :disabled="resolvedDisabled"
+            @click="replaceImage"
+          >
             <Upload class="w-3.5 h-3.5 mr-2" />
             Replace
           </Button>
-          <Button variant="outline" size="sm" type="button" class="flex-1" @click="removeImage">
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            class="flex-1"
+            :disabled="resolvedDisabled"
+            @click="removeImage"
+          >
             <X class="w-3.5 h-3.5 mr-2" />
             Remove
           </Button>
@@ -130,12 +148,14 @@ function replaceImage() {
         ref="dropZoneRef"
         :class="
           cn(
-            'border-2 border-dashed transition-colors cursor-pointer',
-            isOverDropZone && 'border-primary bg-primary/5',
+            'border-2 border-dashed transition-colors',
+            !resolvedDisabled && 'cursor-pointer',
+            resolvedDisabled && 'opacity-50 cursor-not-allowed',
+            isOverDropZone && !resolvedDisabled && 'border-primary bg-primary/5',
             error && 'border-destructive'
           )
         "
-        @click="openFileDialog"
+        @click="!resolvedDisabled && openFileDialog()"
       >
         <div class="p-4 flex flex-col items-center justify-center text-center space-y-2">
           <div
@@ -161,7 +181,13 @@ function replaceImage() {
             </p>
           </div>
 
-          <Button variant="outline" size="sm" type="button" @click.stop="openFileDialog">
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            :disabled="resolvedDisabled"
+            @click.stop="openFileDialog"
+          >
             <Upload class="w-3.5 h-3.5 mr-2" />
             Choose File
           </Button>

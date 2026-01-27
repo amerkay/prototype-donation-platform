@@ -18,10 +18,15 @@ const emit = defineEmits<FieldEmits<boolean | string[]>>()
 // Single checkbox mode vs array mode
 const isSingleMode = computed(() => !props.meta.options || props.meta.options.length === 0)
 
-const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors, {
-  variant: isSingleMode.value ? 'field' : 'fieldset',
-  disableLabelFor: true // We build Field manually for both modes
-})
+const { wrapperProps, resolvedDisabled } = useFieldWrapper(
+  props.meta,
+  props.name,
+  () => props.errors,
+  {
+    variant: isSingleMode.value ? 'field' : 'fieldset',
+    disableLabelFor: true // We build Field manually for both modes
+  }
+)
 
 // Single checkbox handlers
 const handleSingleUpdate = (checked: boolean | 'indeterminate') => {
@@ -51,6 +56,7 @@ const isChecked = (optionValue: string): boolean => {
       <Checkbox
         :id="id || name"
         :model-value="!!modelValue"
+        :disabled="resolvedDisabled"
         :aria-invalid="!!errors.length"
         :class="meta.class"
         @update:model-value="handleSingleUpdate"
@@ -74,6 +80,7 @@ const isChecked = (optionValue: string): boolean => {
           :id="`${id || name}-${option.value}`"
           :name="name"
           :model-value="isChecked(option.value)"
+          :disabled="resolvedDisabled"
           :aria-invalid="!!errors.length"
           :class="meta.class"
           @update:model-value="(checked) => handleArrayUpdate(option.value, checked)"

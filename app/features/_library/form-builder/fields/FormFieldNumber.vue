@@ -20,7 +20,11 @@ type Props = FieldProps<number | null | string, NumberFieldDef>
 const props = defineProps<Props>()
 defineEmits<FieldEmits<number | null | string | undefined>>()
 
-const { wrapperProps } = useFieldWrapper(props.meta, props.name, () => props.errors)
+const { wrapperProps, resolvedDisabled } = useFieldWrapper(
+  props.meta,
+  props.name,
+  () => props.errors
+)
 
 // Coerce modelValue to number | null for NumberField component
 // Allows invalid string values to flow through form validation while
@@ -43,6 +47,7 @@ const coercedValue = computed<number | null>(() => {
       :min="meta.min"
       :max="meta.max"
       :step="meta.step"
+      :disabled="resolvedDisabled"
       @update:model-value="$emit('update:modelValue', $event)"
     >
       <NumberFieldContent>

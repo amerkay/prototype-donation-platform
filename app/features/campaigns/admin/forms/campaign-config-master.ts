@@ -54,12 +54,16 @@ export function createCampaignConfigMaster() {
     })
 
     const peerToPeer = fieldGroup('peerToPeer', {
-      label: 'Fundraisers (P2P)',
+      label: 'Fundraisers',
       description: 'Enable individual and team fundraising pages with custom goals.',
       collapsible: true,
       collapsibleDefaultOpen: false,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: peerToPeerFields
+      fields: peerToPeerFields,
+
+      badgeLabel: 'On my TODO list',
+      badgeVariant: 'secondary',
+      disabled: true
     })
 
     const socialSharing = fieldGroup('socialSharing', {
