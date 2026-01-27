@@ -30,6 +30,7 @@ const { isActive } = useActiveLink()
             as-child
             size="sm"
             :variant="isActive(item.url) ? 'selected' : 'default'"
+            :class="{ 'opacity-50 pointer-events-none': item.url === '#' }"
           >
             <NuxtLink :to="item.url">
               <component :is="item.icon" />
