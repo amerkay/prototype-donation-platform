@@ -1,9 +1,5 @@
 import type { Campaign } from '~/features/campaigns/shared/types'
-import {
-  adoptOrangutanForms,
-  oceanConservationForms,
-  emergencyReliefForms
-} from './api-sample-response-forms'
+import { adoptOrangutanForms, oceanConservationForms } from './api-sample-response-forms'
 
 export const campaigns: Campaign[] = [
   {
@@ -221,82 +217,5 @@ export const campaigns: Campaign[] = [
       }
     ],
     forms: oceanConservationForms
-  },
-  {
-    id: 'emergency-relief',
-    name: 'Emergency Relief Fund',
-    status: 'active',
-    createdAt: '2025-06-01T00:00:00Z',
-    updatedAt: '2026-01-14T12:00:00Z',
-    stats: {
-      totalRaised: 67200,
-      totalDonations: 523,
-      totalDonors: 412,
-      averageDonation: 129,
-      topDonation: 5000,
-      daysRemaining: 15
-    },
-    crowdfunding: {
-      enabled: true,
-      title: 'Emergency Relief - Help Now',
-      shortDescription: 'Provide immediate aid to communities affected by natural disasters.',
-      story:
-        'Your donation provides emergency shelter, food, clean water, and medical supplies to families in crisis.',
-      showProgressBar: true,
-      showRecentDonations: true,
-      defaultDonationsView: 'recent',
-      numberOfDonationsToShow: 20,
-      goalAmount: 100000
-    },
-    peerToPeer: {
-      enabled: true,
-      allowIndividuals: true,
-      allowTeams: false,
-      fundraiserGoalDefault: 1000
-    },
-    charity: {
-      name: 'Global Relief Network',
-      registrationNumber: 'RCN345678',
-      website: 'https://globalrelief.org',
-      description: 'Rapid response humanitarian aid organization.'
-    },
-    socialSharing: {
-      enabled: true,
-      facebook: true,
-      twitter: true,
-      linkedin: true,
-      whatsapp: true,
-      email: true,
-      copyLink: true
-    },
-    fundraisers: [
-      {
-        id: 'rf1',
-        name: 'Community Heroes',
-        email: 'heroes@community.org',
-        type: 'individual',
-        joinedAt: '2025-11-01T00:00:00Z',
-        raisedAmount: 8500,
-        donationCount: 45
-      }
-    ],
-    recentDonations: [
-      {
-        id: 'rd1',
-        donorName: 'Corporate Donor',
-        amount: 5000,
-        message: 'From our entire team',
-        isAnonymous: false,
-        createdAt: '2026-01-13T14:00:00Z'
-      },
-      {
-        id: 'rd2',
-        donorName: 'Anonymous',
-        amount: 250,
-        isAnonymous: true,
-        createdAt: '2026-01-13T10:00:00Z'
-      }
-    ],
-    forms: emergencyReliefForms
   }
 ]
