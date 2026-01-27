@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useDonationCurrencies } from '~/features/donation-form/shared/composables/useDonationCurrencies'
-import { useCurrencySettingsStore } from '~/features/settings/shared/stores/currencySettings'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 
 describe('useDonationCurrencies', () => {
   beforeEach(() => {

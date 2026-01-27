@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import StickyButtonGroup from '~/features/campaigns/admin/components/StickyButtonGroup.vue'
 import { useCurrencySettingsForm } from '~/features/settings/admin/forms/currency-settings-form'
-import { useCurrencySettingsStore } from '~/features/settings/shared/stores/currencySettings'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 
 const store = useCurrencySettingsStore()
 
@@ -33,6 +33,13 @@ const emit = defineEmits<{
   save: []
   discard: []
 }>()
+
+// Expose validation state to parent
+defineExpose({
+  isValid: computed(() => formRef.value?.isValid ?? false),
+  errors: computed(() => formRef.value?.errors ?? {}),
+  meta: computed(() => formRef.value?.meta ?? {})
+})
 </script>
 
 <template>

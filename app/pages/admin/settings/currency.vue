@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
 import CurrencySettingsConfig from '~/features/settings/admin/components/CurrencySettingsConfig.vue'
-import { useCurrencySettingsStore } from '~/features/settings/shared/stores/currencySettings'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
 import { toast } from 'vue-sonner'
 

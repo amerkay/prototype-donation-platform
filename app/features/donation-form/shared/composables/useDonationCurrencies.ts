@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import type { LocalizationSettings } from '~/features/donation-form/shared/types'
-import { useCurrencySettingsStore } from '~/features/settings/shared/stores/currencySettings'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 
 /**
  * Composable to get effective currency settings for donation forms

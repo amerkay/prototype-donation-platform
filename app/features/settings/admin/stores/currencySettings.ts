@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { CurrencySettings } from '~/features/settings/shared/types'
+import type { CurrencySettings } from '~/features/settings/admin/types'
 import { currencySettings } from '~/sample-api-responses/api-sample-response-settings'
 
 /**
