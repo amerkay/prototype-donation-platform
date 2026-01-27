@@ -4,6 +4,7 @@
 
 export interface TributeSettings {
   enabled: boolean
+  showForOnceFrequency: boolean
   icons: {
     gift: string
     memorial: string

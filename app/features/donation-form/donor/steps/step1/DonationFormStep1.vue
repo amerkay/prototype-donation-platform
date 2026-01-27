@@ -219,13 +219,11 @@ const handleProductSelect = (product: Product) => {
 }
 
 const handleTributeSave = (data: TributeData | undefined) => {
-  const freqKey = selectedFrequency.value as 'once' | 'monthly' | 'yearly'
-  store.setTributeData(freqKey, data)
+  store.setTributeData(data)
 }
 
 const handleRemoveTribute = () => {
-  const freqKey = selectedFrequency.value as 'once' | 'monthly' | 'yearly'
-  store.setTributeData(freqKey, undefined)
+  store.setTributeData(undefined)
 }
 
 // Expose clearSession for parent components (e.g., after successful form submission)
@@ -239,7 +237,7 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
     const selectedProduct = store.selectedProducts[oldFreq]
     const amount = store.donationAmounts[oldFreq]
     if (selectedProduct && amount > 0 && cartStore.multipleCart.length === 0) {
-      cartStore.addToCart(selectedProduct, amount, 'multiple', 1, store.tributeData[oldFreq])
+      cartStore.addToCart(selectedProduct, amount, 'multiple', 1, store.tributeData)
     }
   }
 })
@@ -304,7 +302,7 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           :selected-product="
             store.selectedProducts[freq.value as keyof typeof store.selectedProducts] ?? null
           "
-          :tribute-data="store.tributeData[freq.value as keyof typeof store.tributeData]"
+          :tribute-data="store.tributeData"
           :products="products"
           :available-amounts="availableAmounts"
           :min-price="sliderMinPrice"

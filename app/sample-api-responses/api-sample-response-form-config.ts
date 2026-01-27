@@ -83,6 +83,7 @@ export const formConfig = {
     },
     tribute: {
       enabled: true,
+      showForOnceFrequency: true,
       icons: {
         gift: '🎁',
         memorial: '🕊️',

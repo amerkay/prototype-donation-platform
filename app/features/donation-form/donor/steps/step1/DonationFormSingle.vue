@@ -45,7 +45,12 @@ const tributeModalRef = ref<InstanceType<typeof TributeModal> | null>(null)
 const formContainerRef = ref<HTMLElement | null>(null)
 
 // Computed
-const showTributeSection = computed(() => props.frequency !== 'once')
+const showTributeSection = computed(() => {
+  // Always show for recurring donations
+  if (props.frequency !== 'once') return true
+  // For one-time donations, check config setting
+  return props.formConfig.features.tribute.showForOnceFrequency
+})
 
 const hasTribute = computed(
   () => props.tributeData?.type !== 'none' && props.tributeData !== undefined

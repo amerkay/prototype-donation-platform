@@ -22,6 +22,14 @@ export const useTributeConfigSection = defineForm('tribute', (_ctx) => {
     isSeparatorAfter: true
   })
 
+  const showForOnceFrequency = toggleField('showForOnceFrequency', {
+    label: 'Show Tribute button for One-time donations',
+    description:
+      'Allow donors to make tribute gifts with one-time donations (enabled by default for recurring)',
+    visibleWhen: ({ values }) => values.enabled === true,
+    isSeparatorAfter: true
+  })
+
   const ecardTemplate = fieldGroup('ecardTemplate', {
     label: 'eCard Template',
     visibleWhen: ({ values }) => values.enabled === true,
@@ -111,5 +119,5 @@ export const useTributeConfigSection = defineForm('tribute', (_ctx) => {
     fields: { gift: giftIcon, memorial: memorialIcon, tribute: tributeIcon }
   })
 
-  return { enabled, ecardTemplate, types, modal, icons }
+  return { enabled, showForOnceFrequency, ecardTemplate, types, modal, icons }
 })

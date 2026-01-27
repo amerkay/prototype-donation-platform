@@ -29,11 +29,7 @@ export const useDonationFormStore = defineStore(
       monthly: null,
       yearly: null
     })
-    const tributeData = ref<Record<DonationFrequency, TributeData | undefined>>({
-      once: undefined,
-      monthly: undefined,
-      yearly: undefined
-    })
+    const tributeData = ref<TributeData | undefined>(undefined)
     const coverCosts = ref<CoverCostsData | null>(null)
     const multipleCart = ref<CartItem[]>([])
     const formSections = ref<Record<string, Record<string, unknown>>>({
@@ -76,11 +72,7 @@ export const useDonationFormStore = defineStore(
 
     // Check if donation is a tribute
     const isTribute = computed(() => {
-      return (
-        (tributeData.value.once?.type && tributeData.value.once.type !== 'none') ||
-        (tributeData.value.monthly?.type && tributeData.value.monthly.type !== 'none') ||
-        (tributeData.value.yearly?.type && tributeData.value.yearly.type !== 'none')
-      )
+      return tributeData.value?.type !== undefined && tributeData.value.type !== 'none'
     })
 
     // Cost coverage percentage
@@ -117,10 +109,7 @@ export const useDonationFormStore = defineStore(
         activeTab.value !== 'multiple' && activeTab.value !== 'once'
           ? selectedProducts.value[activeTab.value as 'monthly' | 'yearly']
           : null
-      const currentTribute =
-        activeTab.value !== 'multiple'
-          ? tributeData.value[activeTab.value as DonationFrequency]
-          : undefined
+      const currentTribute = activeTab.value !== 'multiple' ? tributeData.value : undefined
       const currentCart = activeTab.value === 'multiple' ? multipleCart.value : []
 
       return {
@@ -206,8 +195,8 @@ export const useDonationFormStore = defineStore(
       selectedProducts.value[frequency] = product
     }
 
-    function setTributeData(frequency: DonationFrequency, data: TributeData | undefined) {
-      tributeData.value[frequency] = data
+    function setTributeData(data: TributeData | undefined) {
+      tributeData.value = data
     }
 
     function updateFormSection(section: string, data: Record<string, unknown>) {
@@ -227,7 +216,7 @@ export const useDonationFormStore = defineStore(
       activeTab.value = 'once'
       donationAmounts.value = { once: 0, monthly: 0, yearly: 0 }
       selectedProducts.value = { monthly: null, yearly: null }
-      tributeData.value = { once: undefined, monthly: undefined, yearly: undefined }
+      tributeData.value = undefined
       coverCosts.value = null
       multipleCart.value = []
       formSections.value = {
