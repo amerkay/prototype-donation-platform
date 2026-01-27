@@ -10,14 +10,11 @@ import {
   currencyField
 } from '~/features/_library/form-builder/api'
 import type { FieldContext, FieldDef } from '~/features/_library/form-builder/types'
-import { currencySettings } from '~/sample-api-responses/api-sample-response-settings'
 import {
   getCurrencyOptionsForSelect,
   getCurrencySymbol
 } from '~/features/donation-form/shared/composables/useCurrency'
-
-// Build currency options from account's configured currencies
-const CURRENCY_OPTIONS = getCurrencyOptionsForSelect(currencySettings.supportedCurrencies)
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 
 // Zod schema for frequency validation
 const frequencySchema = z
@@ -159,6 +156,10 @@ function createFrequencyTabFields(
  * Forms will inherit global currency settings by default
  */
 export const useDonationFormConfigForm = defineForm('form', () => {
+  // Get currency options from store (reactive - updates when settings change)
+  const currencyStore = useCurrencySettingsStore()
+  const CURRENCY_OPTIONS = getCurrencyOptionsForSelect(currencyStore.supportedCurrencies)
+
   // Basic Settings fields
   const formTitle = textField('title', {
     label: 'Form Title',
