@@ -17,7 +17,7 @@ export const useP2PSettingsForm = defineForm('peerToPeer', (_ctx) => {
     label: 'Enable Peer-to-Peer Fundraising',
     description: 'Allow supporters to create their own fundraising pages for your campaign',
     labelClass: 'font-bold',
-    isSeparatorAfter: true
+    showSeparatorAfter: true
   })
 
   const allowIndividuals = toggleField('allowIndividuals', {
@@ -53,7 +53,7 @@ export const useP2PSettingsForm = defineForm('peerToPeer', (_ctx) => {
     optional: true,
     visibleWhen: ({ values }) => values.enabled === true,
     rules: z.string().optional(),
-    isSeparatorAfter: true
+    showSeparatorAfter: true
   })
 
   const fundraisersList = componentField('fundraisersList', {

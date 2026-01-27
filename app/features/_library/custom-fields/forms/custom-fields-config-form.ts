@@ -70,7 +70,7 @@ export function useCustomFieldsConfigForm(
       label: 'Enable Custom Fields',
       description: 'Add extra questions to form',
       labelClass: 'font-bold',
-      isSeparatorAfter: true
+      showSeparatorAfter: true
     })
 
     const fields = arrayField('fields', {
@@ -90,7 +90,7 @@ export function useCustomFieldsConfigForm(
         fieldTypes.length === 1 && fieldTypes[0]
           ? `Add ${fieldTypeLabels[fieldTypes[0]] || fieldTypes[0]} Field`
           : 'Add Custom Field',
-      isSeparatorAfter: true,
+      showSeparatorAfter: true,
       // Dynamic itemField based on selected type - resolved per-item using function
       itemField: (values: Record<string, unknown>, context: ArrayItemContext) => {
         const type = values.type as CustomFieldType | undefined
@@ -160,7 +160,7 @@ export function useCustomFieldsConfigForm(
             },
             visibleWhen: ({ values }: { values: Record<string, unknown> }) => !!values.type,
             rules: z.string().min(1, 'Label is required'),
-            isSeparatorAfter: true,
+            showSeparatorAfter: true,
             onChange: ({ value, values, setValue }: OnChangeContext) => {
               const labelStr = (value as string) || ''
               const typeStr = (values.type as string) || 'field'

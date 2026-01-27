@@ -9,7 +9,7 @@ export const useGiftAidConfigSection = defineForm('giftAid', (_ctx) => {
     label: 'Enable Gift Aid Feature',
     description: 'Show Gift Aid consent for UK donors (GBP currency only)',
     labelClass: 'font-bold',
-    isSeparatorAfter: true
+    showSeparatorAfter: true
   })
 
   return { enabled }

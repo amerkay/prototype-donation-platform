@@ -34,7 +34,7 @@ export function createSelectFieldAdminConfig(): Record<string, FieldDef> {
       label: 'Advanced Settings',
       collapsible: true,
       collapsibleDefaultOpen: false,
-      isSeparatorAfter: true,
+      showSeparatorAfter: true,
       fields: {
         placeholder: textField('placeholder', {
           label: 'Placeholder',

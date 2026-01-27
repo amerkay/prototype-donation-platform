@@ -18,7 +18,7 @@ export const useImpactJourneyConfigSection = defineForm('impactJourney', (_ctx) 
     label: 'Enable Impact Journey',
     description: 'Auto-generates emotional impact messages based on donation amount',
     labelClass: 'font-bold',
-    isSeparatorAfter: true
+    showSeparatorAfter: true
   })
 
   const emoji = emojiField('emoji', {
@@ -58,7 +58,7 @@ export const useImpactJourneyConfigSection = defineForm('impactJourney', (_ctx) 
     collapsible: true,
     collapsibleDefaultOpen: false,
     visibleWhen: ({ values }) => values.enabled === true,
-    isSeparatorAfter: true,
+    showSeparatorAfter: true,
     fields: { emoji, onceHeadline, monthlyHeadline, yearlyHeadline }
   })
 
@@ -112,7 +112,7 @@ export const useImpactJourneyConfigSection = defineForm('impactJourney', (_ctx) 
     collapsible: true,
     collapsibleDefaultOpen: false,
     visibleWhen: ({ values }) => values.enabled === true,
-    isSeparatorAfter: true,
+    showSeparatorAfter: true,
     fields: { items: impactItems }
   })
 
@@ -151,7 +151,7 @@ export const useImpactJourneyConfigSection = defineForm('impactJourney', (_ctx) 
     collapsible: true,
     collapsibleDefaultOpen: false,
     visibleWhen: ({ values }) => values.enabled === true,
-    isSeparatorAfter: true,
+    showSeparatorAfter: true,
     fields: { upsellOnceToRecurring, upsellCtaCopy, upsellIncreaseAmount, upsellIncreaseCtaCopy }
   })
 

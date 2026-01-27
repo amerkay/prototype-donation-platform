@@ -574,7 +574,7 @@ All fields support:
   visibleWhen?: ((ctx: FieldContext) => boolean) | ConditionGroup
   rules?: z.ZodTypeAny | (ctx: FieldContext) => z.ZodTypeAny
   onChange?: (ctx: OnChangeContext) => void
-  isSeparatorAfter?: boolean       // Show separator after field
+  showSeparatorAfter?: boolean       // Show separator after field
   class?: string                   // Input CSS classes
   labelClass?: string
   descriptionClass?: string
@@ -618,6 +618,6 @@ interface Condition {
 - **Dynamic when needed:** Use functions only when depending on other fields
 - **onChange sparingly:** Most logic better served by `visibleWhen` + dynamic `rules`
 - **Extract patterns:** Reuse common field sets via factory functions returning `Record<string, FieldDef>`
-- **Separators:** Add `isSeparatorAfter: true` for visual separation
+- **Separators:** Add `showSeparatorAfter: true` for visual separation
 - **Validation on edit forms:** Set `validate-on-mount` for pre-filled forms
 - **Form submission:** Text fields submit on Enter; textareas use Shift+Enter for newline

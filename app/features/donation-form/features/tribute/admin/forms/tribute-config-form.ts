@@ -19,7 +19,7 @@ export const useTributeConfigSection = defineForm('tribute', (_ctx) => {
     label: 'Enable Tribute Feature',
     description: 'Allow donors to dedicate donations as gifts or memorials',
     labelClass: 'font-bold',
-    isSeparatorAfter: true
+    showSeparatorAfter: true
   })
 
   const showForOnceFrequency = toggleField('showForOnceFrequency', {
@@ -27,7 +27,7 @@ export const useTributeConfigSection = defineForm('tribute', (_ctx) => {
     description:
       'Allow donors to make tribute gifts with one-time donations (enabled by default for recurring)',
     visibleWhen: ({ values }) => values.enabled === true,
-    isSeparatorAfter: true
+    showSeparatorAfter: true
   })
 
   const ecardTemplate = fieldGroup('ecardTemplate', {
@@ -38,7 +38,7 @@ export const useTributeConfigSection = defineForm('tribute', (_ctx) => {
     badgeLabel: 'On my TODO list',
     badgeVariant: 'secondary',
     disabled: true,
-    isSeparatorAfter: true,
+    showSeparatorAfter: true,
     fields: {}
   })
 
@@ -58,7 +58,7 @@ export const useTributeConfigSection = defineForm('tribute', (_ctx) => {
     visibleWhen: ({ values }) => values.enabled === true,
     collapsible: true,
     collapsibleDefaultOpen: false,
-    isSeparatorAfter: true,
+    showSeparatorAfter: true,
     rules: z
       .object({
         giftEnabled: z.boolean(),
@@ -86,7 +86,7 @@ export const useTributeConfigSection = defineForm('tribute', (_ctx) => {
     visibleWhen: ({ values }) => values.enabled === true,
     collapsible: true,
     collapsibleDefaultOpen: false,
-    isSeparatorAfter: true,
+    showSeparatorAfter: true,
     fields: { title: modalTitle, subtitle: modalSubtitle }
   })
 
@@ -115,7 +115,7 @@ export const useTributeConfigSection = defineForm('tribute', (_ctx) => {
     collapsible: true,
     collapsibleDefaultOpen: false,
     class: 'sm:grid sm:grid-cols-3 sm:gap-3',
-    isSeparatorAfter: true,
+    showSeparatorAfter: true,
     fields: { gift: giftIcon, memorial: memorialIcon, tribute: tributeIcon }
   })
 

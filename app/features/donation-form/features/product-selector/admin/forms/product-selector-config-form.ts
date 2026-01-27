@@ -19,7 +19,7 @@ export const useProductSelectorConfigSection = defineForm('productSelector', (_c
     label: 'Enable Product Selector',
     description: 'Show product selector interface to donors',
     labelClass: 'font-bold',
-    isSeparatorAfter: true
+    showSeparatorAfter: true
   })
 
   const productList = fieldGroup('productList', {
@@ -30,7 +30,7 @@ export const useProductSelectorConfigSection = defineForm('productSelector', (_c
     badgeLabel: 'On my TODO list',
     badgeVariant: 'secondary',
     disabled: true,
-    isSeparatorAfter: true,
+    showSeparatorAfter: true,
     fields: {}
   })
 
@@ -81,7 +81,7 @@ export const useProductSelectorConfigSection = defineForm('productSelector', (_c
     visibleWhen: ({ values }) => values.enabled === true,
     collapsible: true,
     collapsibleDefaultOpen: false,
-    isSeparatorAfter: true,
+    showSeparatorAfter: true,
     fields: { icon, entity, action }
   })
 

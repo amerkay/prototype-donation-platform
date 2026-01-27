@@ -19,7 +19,7 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     label: 'Enable Crowdfunding Page',
     description: 'Make this campaign publicly accessible',
     labelClass: 'font-bold',
-    isSeparatorAfter: true
+    showSeparatorAfter: true
   })
 
   const title = textField('title', {

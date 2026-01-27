@@ -101,7 +101,7 @@ export function createTributeFormSection(config: TributeSettings): ComposableFor
       searchPlaceholder: 'Search relationship...',
       notFoundText: 'No relationship found.',
       visibleWhen: ({ values }) => values.type !== 'none',
-      isSeparatorAfter: true
+      showSeparatorAfter: true
     })
 
     const sendECard = toggleField('sendECard', {
@@ -110,7 +110,7 @@ export function createTributeFormSection(config: TributeSettings): ComposableFor
       description: 'Send an eCard about your donation',
       defaultValue: false,
       visibleWhen: ({ values }) => values.type !== 'none',
-      isSeparatorAfter: false,
+      showSeparatorAfter: false,
       onChange: ({ value, values, setValue }) => {
         // When enabling eCard for gift, default sameAsHonoree to true
         // BUT only if recipient name is empty or matches honoree
@@ -161,7 +161,7 @@ export function createTributeFormSection(config: TributeSettings): ComposableFor
       autocomplete: 'email',
       defaultValue: '',
       visibleWhen: ({ values }) => values.type !== 'none' && values.sendECard === true,
-      isSeparatorAfter: false,
+      showSeparatorAfter: false,
       rules: z.string().min(1, 'Email is required').email('Enter a valid email address')
     })
 

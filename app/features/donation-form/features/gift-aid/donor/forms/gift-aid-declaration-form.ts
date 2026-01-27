@@ -92,7 +92,7 @@ export function createGiftAidFields(
       defaultValue: false,
       optional: true,
       visibleWhen: ({ values }: { values: Record<string, unknown> }) => shouldShow({ values }),
-      isSeparatorAfter: true
+      showSeparatorAfter: true
     },
 
     // Option to use shipping address (if available)
@@ -143,7 +143,7 @@ export function createGiftAidFields(
           })
         }
       },
-      isSeparatorAfter: true
+      showSeparatorAfter: true
     },
 
     // Home Address Collection (for Gift Aid)

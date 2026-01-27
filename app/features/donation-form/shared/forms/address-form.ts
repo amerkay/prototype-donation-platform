@@ -267,7 +267,7 @@ export function useAddressFields(
     disabled: !!forcedCountry,
     autocomplete: `section-${autocompleteSection} ${autocompleteSection} country`,
     visibleWhen,
-    isSeparatorAfter: true
+    showSeparatorAfter: true
   })
 
   return { address1, address2, city, group1, country }

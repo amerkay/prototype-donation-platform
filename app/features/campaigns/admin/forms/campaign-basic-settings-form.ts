@@ -30,7 +30,7 @@ export const useCampaignBasicSettingsForm = defineForm('campaign-basic', (_ctx) 
       { value: 'archived', label: 'Archived - No longer accepting donations' }
     ],
     rules: z.enum(['draft', 'active', 'paused', 'completed', 'archived']),
-    isSeparatorAfter: true
+    showSeparatorAfter: true
   })
 
   // Component field with validation to ensure at least 1 donation form exists

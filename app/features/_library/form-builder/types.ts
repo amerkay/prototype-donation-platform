@@ -149,7 +149,7 @@ export interface BaseFieldConfig {
   optional?: boolean
   disabled?: boolean | ComputedRef<boolean> | ((ctx: FieldContext) => boolean)
   visibleWhen?: VisibilityFn | ConditionGroup
-  isSeparatorAfter?: boolean
+  showSeparatorAfter?: boolean
   class?: string
   labelClass?: string
   descriptionClass?: string

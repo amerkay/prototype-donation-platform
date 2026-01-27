@@ -177,7 +177,7 @@ export const useDonationFormConfigForm = defineForm('form', () => {
     // label: 'Basic Settings',
     // collapsible: true,
     // collapsibleDefaultOpen: true,
-    isSeparatorAfter: true,
+    showSeparatorAfter: true,
     fields: { title: formTitle, subtitle: formSubtitle }
   })
 
@@ -190,7 +190,7 @@ export const useDonationFormConfigForm = defineForm('form', () => {
     badgeVariant: 'secondary',
     disabled: true,
 
-    isSeparatorAfter: true,
+    showSeparatorAfter: true,
     fields: {}
   })
 
@@ -254,7 +254,7 @@ export const useDonationFormConfigForm = defineForm('form', () => {
     label: 'Pricing Configuration',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    isSeparatorAfter: true,
+    showSeparatorAfter: true,
     fields: { baseDefaultCurrency, frequencies }
   })
 

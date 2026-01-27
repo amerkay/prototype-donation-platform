@@ -146,21 +146,21 @@ export function createDonationCustomFieldsConfigSection(
       label: 'Enable Step 2 Custom Fields',
       description: 'Add extra questions to Step 2 (after donor info, before payment)',
       labelClass: 'font-bold',
-      isSeparatorAfter: true
+      showSeparatorAfter: true
     })
 
     const step3Enabled = toggleField('enabled', {
       label: 'Enable Step 3 Custom Fields',
       description: 'Add extra questions to Step 3 (with Gift Aid, cover costs, and preferences)',
       labelClass: 'font-bold',
-      isSeparatorAfter: true
+      showSeparatorAfter: true
     })
 
     const hiddenEnabled = toggleField('enabled', {
       label: 'Enable Hidden Fields',
       description: 'Add hidden tracking fields (stored but not shown to users on any step)',
       labelClass: 'font-bold',
-      isSeparatorAfter: true
+      showSeparatorAfter: true
     })
 
     const customFieldsTabs = tabsField('customFieldsTabs', {

@@ -20,7 +20,7 @@ export const useCoverCostsConfigSection = defineForm('coverCosts', (_ctx) => {
     label: 'Enable Cover Costs Feature',
     description: 'Allow donors to optionally cover operational costs',
     labelClass: 'font-bold',
-    isSeparatorAfter: true
+    showSeparatorAfter: true
   })
 
   const heading = textField('heading', {
@@ -53,7 +53,7 @@ export const useCoverCostsConfigSection = defineForm('coverCosts', (_ctx) => {
     visibleWhen: ({ values }) => values.enabled === true,
     collapsible: true,
     collapsibleDefaultOpen: false,
-    isSeparatorAfter: true,
+    showSeparatorAfter: true,
     fields: { heading, description, defaultPercentage }
   })
 

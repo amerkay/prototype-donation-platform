@@ -18,7 +18,7 @@ export const useMultipleProductsConfigSection = defineForm('impactCart', (_ctx) 
     label: 'Enable Multiple Products',
     description: 'Allow donors to add multiple products to their cart',
     labelClass: 'font-bold',
-    isSeparatorAfter: true
+    showSeparatorAfter: true
   })
 
   const productList = fieldGroup('productList', {
@@ -30,7 +30,7 @@ export const useMultipleProductsConfigSection = defineForm('impactCart', (_ctx) 
     badgeLabel: 'On my TODO list',
     badgeVariant: 'secondary',
     disabled: true,
-    isSeparatorAfter: true,
+    showSeparatorAfter: true,
     fields: {}
   })
 
@@ -51,7 +51,7 @@ export const useMultipleProductsConfigSection = defineForm('impactCart', (_ctx) 
     visibleWhen: ({ values }) => values.enabled === true,
     collapsible: true,
     collapsibleDefaultOpen: false,
-    isSeparatorAfter: true,
+    showSeparatorAfter: true,
     fields: { initialDisplay }
   })
 

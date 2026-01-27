@@ -53,7 +53,7 @@ export const useDonorInfoFormSection: ComposableForm = defineForm('donor-info', 
     autocomplete: 'tel',
     optional: true,
     defaultValue: '',
-    isSeparatorAfter: true,
+    showSeparatorAfter: true,
     visibleWhen: ({ values }) => {
       if (!values.email || typeof values.email !== 'string') return false
       return z.string().email().safeParse(values.email).success
