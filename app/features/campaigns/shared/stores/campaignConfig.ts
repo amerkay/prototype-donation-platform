@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 import type {
   Campaign,
   CampaignStats,
@@ -10,6 +11,7 @@ import type {
   CampaignFundraiser,
   CampaignStatus
 } from '~/features/campaigns/shared/types'
+import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
 
 /**
  * Campaign configuration store (Pinia)
@@ -29,181 +31,146 @@ import type {
  * </template>
  * ```
  */
-export const useCampaignConfigStore = defineStore('campaignConfig', {
-  state: () => ({
-    // Campaign ID
-    id: null as string | null,
+export const useCampaignConfigStore = defineStore('campaignConfig', () => {
+  // Editable state management
+  const { isDirty, isSaving, markDirty, markClean } = useEditableState()
 
-    // Basic settings (flat for v-model binding)
-    name: '',
-    status: 'draft' as CampaignStatus,
+  // State
+  const id = ref<string | null>(null)
+  const name = ref('')
+  const status = ref<CampaignStatus>('draft')
+  const stats = ref<CampaignStats | null>(null)
+  const crowdfunding = ref<CrowdfundingSettings | null>(null)
+  const peerToPeer = ref<PeerToPeerSettings | null>(null)
+  const charity = ref<CharityInfo | null>(null)
+  const socialSharing = ref<SocialSharingSettings | null>(null)
+  const fundraisers = ref<CampaignFundraiser[]>([])
+  const recentDonations = ref<CampaignDonation[]>([])
+  const createdAt = ref('')
+  const updatedAt = ref('')
 
-    // Statistics (read-only in admin, but needed for preview)
-    stats: null as CampaignStats | null,
+  // Getters
+  const progressPercentage = computed((): number => {
+    if (!crowdfunding.value?.goalAmount || crowdfunding.value.goalAmount === 0) return 0
+    return Math.min((stats.value!.totalRaised / crowdfunding.value.goalAmount) * 100, 100)
+  })
 
-    // Crowdfunding page settings (editable)
-    crowdfunding: null as CrowdfundingSettings | null,
+  const remainingAmount = computed((): number => {
+    if (!crowdfunding.value?.goalAmount) return 0
+    return Math.max(crowdfunding.value.goalAmount - stats.value!.totalRaised, 0)
+  })
 
-    // Peer-to-peer fundraising settings (editable)
-    peerToPeer: null as PeerToPeerSettings | null,
+  const donationsByRecent = computed((): CampaignDonation[] => {
+    return [...recentDonations.value].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
+  })
 
-    // Charity info (read-only display in preview, not editable here)
-    charity: null as CharityInfo | null,
+  const donationsByAmount = computed((): CampaignDonation[] => {
+    return [...recentDonations.value].sort((a, b) => b.amount - a.amount)
+  })
 
-    // Social sharing settings (editable)
-    socialSharing: null as SocialSharingSettings | null,
+  const displayDonations = computed((): CampaignDonation[] => {
+    const view = crowdfunding.value?.defaultDonationsView || 'recent'
+    const limit = crowdfunding.value?.numberOfDonationsToShow || 10
+    const sorted =
+      view === 'top'
+        ? [...recentDonations.value].sort((a, b) => b.amount - a.amount)
+        : [...recentDonations.value].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+    return sorted.slice(0, limit)
+  })
 
-    // Fundraisers list
-    fundraisers: [] as CampaignFundraiser[],
-
-    // Recent donations for preview
-    recentDonations: [] as CampaignDonation[],
-
-    // Metadata
-    createdAt: '',
-    updatedAt: '',
-
-    // UI state
-    isDirty: false,
-    isSaving: false
-  }),
-
-  getters: {
-    /**
-     * Progress percentage for goal (0-100)
-     */
-    progressPercentage(state): number {
-      if (!state.crowdfunding?.goalAmount || state.crowdfunding.goalAmount === 0) return 0
-      return Math.min((state.stats!.totalRaised / state.crowdfunding.goalAmount) * 100, 100)
-    },
-
-    /**
-     * Amount remaining to reach goal
-     */
-    remainingAmount(state): number {
-      if (!state.crowdfunding?.goalAmount) return 0
-      return Math.max(state.crowdfunding.goalAmount - state.stats!.totalRaised, 0)
-    },
-
-    /**
-     * Donations sorted by most recent first
-     */
-    donationsByRecent(state): CampaignDonation[] {
-      return [...state.recentDonations].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
-    },
-
-    /**
-     * Donations sorted by highest amount first
-     */
-    donationsByAmount(state): CampaignDonation[] {
-      return [...state.recentDonations].sort((a, b) => b.amount - a.amount)
-    },
-
-    /**
-     * Get donations based on current view setting
-     */
-    displayDonations(state): CampaignDonation[] {
-      const view = state.crowdfunding?.defaultDonationsView || 'recent'
-      const limit = state.crowdfunding?.numberOfDonationsToShow || 10
-      const sorted =
-        view === 'top'
-          ? [...state.recentDonations].sort((a, b) => b.amount - a.amount)
-          : [...state.recentDonations].sort(
-              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            )
-      return sorted.slice(0, limit)
-    },
-
-    /**
-     * Reconstruct full Campaign object for API submission
-     */
-    fullCampaign(state): Campaign | null {
-      if (
-        !state.id ||
-        !state.stats ||
-        !state.crowdfunding ||
-        !state.peerToPeer ||
-        !state.charity ||
-        !state.socialSharing
-      ) {
-        return null
-      }
-
-      return {
-        id: state.id,
-        name: state.name,
-        status: state.status,
-        createdAt: state.createdAt,
-        updatedAt: state.updatedAt,
-        stats: state.stats,
-        crowdfunding: state.crowdfunding,
-        peerToPeer: state.peerToPeer,
-        charity: state.charity,
-        socialSharing: state.socialSharing,
-        fundraisers: state.fundraisers,
-        recentDonations: state.recentDonations,
-        forms: []
-      }
+  const fullCampaign = computed((): Campaign | null => {
+    if (
+      !id.value ||
+      !stats.value ||
+      !crowdfunding.value ||
+      !peerToPeer.value ||
+      !charity.value ||
+      !socialSharing.value
+    ) {
+      return null
     }
-  },
 
-  actions: {
-    /**
-     * Initialize store from Campaign object
-     * Destructures campaign into flat store structure
-     */
-    initialize(campaign: Campaign) {
-      this.id = campaign.id
-      this.name = campaign.name
-      this.status = campaign.status
-      this.stats = { ...campaign.stats }
-      this.crowdfunding = { ...campaign.crowdfunding }
-      this.peerToPeer = { ...campaign.peerToPeer }
-      this.charity = { ...campaign.charity }
-      this.socialSharing = { ...campaign.socialSharing }
-      this.fundraisers = [...campaign.fundraisers]
-      this.recentDonations = [...campaign.recentDonations]
-      this.createdAt = campaign.createdAt
-      this.updatedAt = campaign.updatedAt
-      this.isDirty = false
-      this.isSaving = false
-    },
-
-    /**
-     * Mark store as having unsaved changes
-     */
-    markDirty() {
-      this.isDirty = true
-    },
-
-    /**
-     * Reset dirty flag after save
-     */
-    markClean() {
-      this.isDirty = false
-      this.updatedAt = new Date().toISOString()
-    },
-
-    /**
-     * Clear store state
-     */
-    reset() {
-      this.id = null
-      this.name = ''
-      this.status = 'draft'
-      this.stats = null
-      this.crowdfunding = null
-      this.peerToPeer = null
-      this.charity = null
-      this.socialSharing = null
-      this.fundraisers = []
-      this.recentDonations = []
-      this.createdAt = ''
-      this.updatedAt = ''
-      this.isDirty = false
-      this.isSaving = false
+    return {
+      id: id.value,
+      name: name.value,
+      status: status.value,
+      createdAt: createdAt.value,
+      updatedAt: updatedAt.value,
+      stats: stats.value,
+      crowdfunding: crowdfunding.value,
+      peerToPeer: peerToPeer.value,
+      charity: charity.value,
+      socialSharing: socialSharing.value,
+      fundraisers: fundraisers.value,
+      recentDonations: recentDonations.value,
+      forms: []
     }
+  })
+
+  // Actions
+  function initialize(campaign: Campaign) {
+    id.value = campaign.id
+    name.value = campaign.name
+    status.value = campaign.status
+    stats.value = { ...campaign.stats }
+    crowdfunding.value = { ...campaign.crowdfunding }
+    peerToPeer.value = { ...campaign.peerToPeer }
+    charity.value = { ...campaign.charity }
+    socialSharing.value = { ...campaign.socialSharing }
+    fundraisers.value = [...campaign.fundraisers]
+    recentDonations.value = [...campaign.recentDonations]
+    createdAt.value = campaign.createdAt
+    updatedAt.value = campaign.updatedAt
+    markClean()
+  }
+
+  function reset() {
+    id.value = null
+    name.value = ''
+    status.value = 'draft'
+    stats.value = null
+    crowdfunding.value = null
+    peerToPeer.value = null
+    charity.value = null
+    socialSharing.value = null
+    fundraisers.value = []
+    recentDonations.value = []
+    createdAt.value = ''
+    updatedAt.value = ''
+    markClean()
+  }
+
+  return {
+    // State
+    id,
+    name,
+    status,
+    stats,
+    crowdfunding,
+    peerToPeer,
+    charity,
+    socialSharing,
+    fundraisers,
+    recentDonations,
+    createdAt,
+    updatedAt,
+    isDirty,
+    isSaving,
+    // Getters
+    progressPercentage,
+    remainingAmount,
+    donationsByRecent,
+    donationsByAmount,
+    displayDonations,
+    fullCampaign,
+    // Actions
+    initialize,
+    reset,
+    markDirty,
+    markClean
   }
 })

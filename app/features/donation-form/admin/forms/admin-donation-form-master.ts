@@ -79,6 +79,15 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
           wrapperClass: 'p-4 bg-background rounded-lg border',
           fields: tributeFields
         })
+      },
+      // Flatten nested structure: form.features.impactJourney → store.impactJourney
+      $storePath: {
+        impactJourney: 'impactJourney',
+        impactCart: 'impactCart',
+        productSelector: 'productSelector',
+        coverCosts: 'coverCosts',
+        giftAid: 'giftAid',
+        tribute: 'tribute'
       }
     })
 

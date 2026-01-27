@@ -1,45 +1,24 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import StickyButtonGroup from '~/features/campaigns/admin/components/StickyButtonGroup.vue'
 import { useCurrencySettingsForm } from '~/features/settings/admin/forms/currency-settings-form'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
+import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
 
 const store = useCurrencySettingsStore()
 
-// Form definition
-const form = useCurrencySettingsForm
-
-// Form ref for validation
-const formRef = ref()
-
-// Create v-model binding for the store
-// NOTE: Must match form structure with 'currencies' field group
-const modelValue = computed({
-  get: () => ({
-    currencies: {
-      supportedCurrencies: store.supportedCurrencies
-    }
-  }),
-  set: (value) => {
-    if (value.currencies) {
-      store.updateSettings(value.currencies)
-    }
-  }
+// AUTO-MAPPING: No getData/setData needed! ✨
+// Form metadata ($storePath) handles all mapping automatically
+const { formRef, modelValue, form, expose } = useAdminConfigForm({
+  store,
+  form: useCurrencySettingsForm
 })
 
-// Emit for parent to handle save/discard
-const emit = defineEmits<{
+defineEmits<{
   save: []
   discard: []
 }>()
-
-// Expose validation state to parent
-defineExpose({
-  isValid: computed(() => formRef.value?.isValid ?? false),
-  errors: computed(() => formRef.value?.errors ?? {}),
-  meta: computed(() => formRef.value?.meta ?? {})
-})
+defineExpose(expose)
 </script>
 
 <template>
@@ -56,8 +35,8 @@ defineExpose({
     <StickyButtonGroup
       :is-dirty="store.isDirty"
       :is-saving="store.isSaving"
-      @save="emit('save')"
-      @discard="emit('discard')"
+      @save="$emit('save')"
+      @discard="$emit('discard')"
     />
   </div>
 </template>

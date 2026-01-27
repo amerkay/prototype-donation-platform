@@ -56,8 +56,6 @@ pnpm test:run
 
 # Run specific project
 pnpm test:nuxt      # Nuxt runtime tests
-pnpm test:unit      # Unit tests
-pnpm test:e2e       # E2E tests
 
 # Run for specific test
 pnpm test:nuxt --run test/nuxt/features/form-builder/fields/FormFieldArray.nuxt.spec.ts -t "preserves deeply nested field values"

@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 import type { CurrencySettings } from '~/features/settings/admin/types'
 import { currencySettings } from '~/sample-api-responses/api-sample-response-settings'
+import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
 
 /**
  * Organization-level currency settings store
@@ -19,56 +21,42 @@ import { currencySettings } from '~/sample-api-responses/api-sample-response-set
  * </script>
  * ```
  */
-export const useCurrencySettingsStore = defineStore('currencySettings', {
-  state: (): CurrencySettings & { isDirty: boolean; isSaving: boolean } => ({
-    supportedCurrencies: [...currencySettings.supportedCurrencies],
-    isDirty: false,
-    isSaving: false
-  }),
+export const useCurrencySettingsStore = defineStore('currencySettings', () => {
+  // Editable state management
+  const { isDirty, isSaving, markDirty, markClean } = useEditableState()
 
-  getters: {
-    /**
-     * Check if a currency is supported
-     */
-    isCurrencySupported:
-      (state) =>
-      (currency: string): boolean => {
-        return state.supportedCurrencies.includes(currency)
-      }
-  },
+  // State
+  const supportedCurrencies = ref<string[]>([...currencySettings.supportedCurrencies])
 
-  actions: {
-    /**
-     * Initialize store from API response or saved settings
-     */
-    initialize(settings: CurrencySettings) {
-      this.supportedCurrencies = settings.supportedCurrencies
-      this.isDirty = false
-      this.isSaving = false
-    },
+  // Getters
+  const isCurrencySupported = computed(() => (currency: string): boolean => {
+    return supportedCurrencies.value.includes(currency)
+  })
 
-    /**
-     * Update currency settings
-     */
-    updateSettings(settings: Partial<CurrencySettings>) {
-      if (settings.supportedCurrencies !== undefined) {
-        this.supportedCurrencies = settings.supportedCurrencies
-      }
-      this.markDirty()
-    },
+  // Actions
+  function initialize(settings: CurrencySettings) {
+    supportedCurrencies.value = settings.supportedCurrencies
+    markClean()
+  }
 
-    /**
-     * Mark store as having unsaved changes
-     */
-    markDirty() {
-      this.isDirty = true
-    },
-
-    /**
-     * Reset dirty flag after save
-     */
-    markClean() {
-      this.isDirty = false
+  function updateSettings(settings: Partial<CurrencySettings>) {
+    if (settings.supportedCurrencies !== undefined) {
+      supportedCurrencies.value = settings.supportedCurrencies
     }
+    markDirty()
+  }
+
+  return {
+    // State
+    supportedCurrencies,
+    isDirty,
+    isSaving,
+    // Getters
+    isCurrencySupported,
+    // Actions
+    initialize,
+    updateSettings,
+    markDirty,
+    markClean
   }
 })

@@ -8,6 +8,7 @@ import { toast } from 'vue-sonner'
 export interface EditableStore {
   isDirty: boolean
   isSaving: boolean
+  markDirty: () => void
   markClean: () => void
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialize: (...args: any[]) => void

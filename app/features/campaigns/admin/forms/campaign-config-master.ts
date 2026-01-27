@@ -35,7 +35,13 @@ export function createCampaignConfigMaster() {
       collapsible: true,
       collapsibleDefaultOpen: true,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: basicSettingsFields
+      fields: basicSettingsFields,
+      // Custom mapping: form.basicSettings.name → store.name (not store.basicSettings.name)
+      $storePath: {
+        name: 'name',
+        status: 'status'
+        // formsList excluded automatically (component field)
+      }
     })
 
     const crowdfunding = fieldGroup('crowdfunding', {

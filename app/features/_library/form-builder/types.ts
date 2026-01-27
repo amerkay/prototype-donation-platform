@@ -319,6 +319,35 @@ export interface FieldGroupConfig extends BaseFieldConfig {
   extractDefaultsWhen?: boolean
   /** CSS classes for the wrapper element (Accordion/FieldSet container) */
   wrapperClass?: string
+
+  /**
+   * Store mapping metadata for auto-mapping in admin config forms
+   *
+   * Controls how this field group maps to store properties:
+   * - `string`: Map to specific store path (e.g., 'customPath' → store.customPath)
+   * - `null`: Exclude from store mapping (component fields, computed values)
+   * - `Record<string, string>`: Granular per-field mapping (e.g., { name: 'basicInfo.name' })
+   * - `undefined` (default): Use convention (field name → store path)
+   *
+   * @example
+   * ```ts
+   * // Convention (default) - form.settings → store.settings
+   * fieldGroup('settings', { fields: {...} })
+   *
+   * // Custom path - form.features.impactCart → store.impactCart
+   * fieldGroup('features', {
+   *   fields: { impactCart: {...} },
+   *   $storePath: { impactCart: 'impactCart' }
+   * })
+   *
+   * // Exclude from mapping - component field only
+   * fieldGroup('preview', {
+   *   fields: { component: componentField(...) },
+   *   $storePath: null
+   * })
+   * ```
+   */
+  $storePath?: string | null | Record<string, string>
 }
 
 export interface TabDefinitionConfig {

@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 import type {
   FormSettings,
   PricingSettings,
@@ -11,6 +12,7 @@ import type { CoverCostsSettings } from '~/features/donation-form/features/cover
 import type { GiftAidSettings } from '~/features/donation-form/features/gift-aid/admin/types'
 import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
+import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
 
 /**
  * Form configuration store (Pinia)
@@ -29,98 +31,85 @@ import type { Product } from '~/features/donation-form/features/product/shared/t
  * </template>
  * ```
  */
-export const useFormConfigStore = defineStore('formConfig', {
-  state: () => ({
-    // Form ID
-    formId: null as string | null,
+export const useFormConfigStore = defineStore('formConfig', () => {
+  // Editable state management
+  const { isDirty, isSaving, markDirty, markClean } = useEditableState()
 
-    // Metadata
-    version: '1.0',
+  // State
+  const formId = ref<string | null>(null)
+  const version = ref('1.0')
+  const formSettings = ref<FormSettingsCombined | null>(null)
+  const impactCart = ref<ImpactCartSettings | null>(null)
+  const productSelector = ref<ProductSelectorSettings | null>(null)
+  const impactJourney = ref<ImpactJourneySettings | null>(null)
+  const coverCosts = ref<CoverCostsSettings | null>(null)
+  const giftAid = ref<GiftAidSettings | null>(null)
+  const tribute = ref<TributeSettings | null>(null)
+  const customFields = ref<DonationCustomFieldsSettings | null>(null)
+  const products = ref<Product[]>([])
 
-    // Core donation form settings (combined for direct v-model binding)
-    formSettings: null as FormSettingsCombined | null,
+  // Getters
+  const fullConfig = computed((): FullFormConfig | null => {
+    if (!formSettings.value) {
+      return null
+    }
 
-    // Feature settings (flat for direct v-model binding)
-    impactCart: null as ImpactCartSettings | null,
-    productSelector: null as ProductSelectorSettings | null,
-    impactJourney: null as ImpactJourneySettings | null,
-    coverCosts: null as CoverCostsSettings | null,
-    giftAid: null as GiftAidSettings | null,
-    tribute: null as TributeSettings | null,
-    customFields: null as DonationCustomFieldsSettings | null,
-
-    // Products (separate concern)
-    products: [] as Product[],
-
-    // State tracking
-    isDirty: false,
-    isSaving: false
-  }),
-
-  getters: {
-    /**
-     * Reconstruct full API-compatible config object
-     * Use this when you need to serialize the entire config (e.g., for API submission)
-     */
-    fullConfig(state): FullFormConfig | null {
-      if (!state.formSettings) {
-        return null
-      }
-
-      return {
-        version: state.version,
-        form: state.formSettings.form,
-        pricing: state.formSettings.pricing,
-        features: {
-          impactCart: state.impactCart!,
-          productSelector: state.productSelector!,
-          impactJourney: state.impactJourney!,
-          coverCosts: state.coverCosts!,
-          giftAid: state.giftAid!,
-          tribute: state.tribute!,
-          customFields: state.customFields!
-        }
+    return {
+      version: version.value,
+      form: formSettings.value.form,
+      pricing: formSettings.value.pricing,
+      features: {
+        impactCart: impactCart.value!,
+        productSelector: productSelector.value!,
+        impactJourney: impactJourney.value!,
+        coverCosts: coverCosts.value!,
+        giftAid: giftAid.value!,
+        tribute: tribute.value!,
+        customFields: customFields.value!
       }
     }
-  },
+  })
 
-  actions: {
-    /**
-     * Initialize store from API response
-     * Destructures nested config into flat store structure
-     */
-    initialize(config: FullFormConfig, productList: Product[], id?: string) {
-      this.formId = id ?? null
-      this.version = config.version
-      this.formSettings = {
-        form: config.form,
-        pricing: config.pricing
-      }
-      this.impactCart = config.features.impactCart
-      this.productSelector = config.features.productSelector
-      this.impactJourney = config.features.impactJourney
-      this.coverCosts = config.features.coverCosts
-      this.giftAid = config.features.giftAid
-      this.tribute = config.features.tribute
-      this.customFields = config.features.customFields
-      this.products = productList
-      this.isDirty = false
-      this.isSaving = false
-    },
-
-    /**
-     * Mark store as having unsaved changes
-     */
-    markDirty() {
-      this.isDirty = true
-    },
-
-    /**
-     * Reset dirty flag after save
-     */
-    markClean() {
-      this.isDirty = false
+  // Actions
+  function initialize(config: FullFormConfig, productList: Product[], id?: string) {
+    formId.value = id ?? null
+    version.value = config.version
+    formSettings.value = {
+      form: config.form,
+      pricing: config.pricing
     }
+    impactCart.value = config.features.impactCart
+    productSelector.value = config.features.productSelector
+    impactJourney.value = config.features.impactJourney
+    coverCosts.value = config.features.coverCosts
+    giftAid.value = config.features.giftAid
+    tribute.value = config.features.tribute
+    customFields.value = config.features.customFields
+    products.value = productList
+    markClean()
+  }
+
+  return {
+    // State
+    formId,
+    version,
+    formSettings,
+    impactCart,
+    productSelector,
+    impactJourney,
+    coverCosts,
+    giftAid,
+    tribute,
+    customFields,
+    products,
+    isDirty,
+    isSaving,
+    // Getters
+    fullConfig,
+    // Actions
+    initialize,
+    markDirty,
+    markClean
   }
 })
 

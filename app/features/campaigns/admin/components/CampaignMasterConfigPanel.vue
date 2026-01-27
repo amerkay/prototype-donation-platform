@@ -4,66 +4,40 @@ import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
 import StickyButtonGroup from './StickyButtonGroup.vue'
 import { createCampaignConfigMaster } from '../forms/campaign-config-master'
+import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
 
 const store = useCampaignConfigStore()
 
-// Get forms count for validation - will be injected as prop to formsList
+// Get forms count for component field validation
 const { forms } = useForms(store.id!)
 const formsCount = computed(() => forms.value.length)
 
-// Create master form with all sections as collapsible groups
-const masterForm = createCampaignConfigMaster()
-
-// Combine all store sections into one reactive object for v-model
-// Component fields (formsList, fundraisersList) are nested inside their parent groups
-const combinedData = computed({
-  get: () => ({
-    basicSettings: {
-      name: store.name,
-      status: store.status,
-      // Inject formsCount as prop for validation (not as form data)
-      formsList: { formsCount: formsCount.value }
-    },
-    crowdfunding: store.crowdfunding,
-    peerToPeer: store.peerToPeer
-      ? {
-          ...store.peerToPeer,
-          fundraisersList: {} // Component field - no data
-        }
-      : undefined,
-    socialSharing: store.socialSharing
-  }),
-  set: (value) => {
-    // Update each section independently for proper reactivity
-    if (value.basicSettings) {
-      const { formsList, ...basicData } = value.basicSettings
-      store.name = basicData.name
-      store.status = basicData.status
-    }
-    if (value.crowdfunding) store.crowdfunding = value.crowdfunding
-    if (value.peerToPeer) {
-      // Filter out component field data
-      const { fundraisersList, ...peerToPeerData } = value.peerToPeer
-      store.peerToPeer = peerToPeerData as typeof store.peerToPeer
-    }
-    if (value.socialSharing) store.socialSharing = value.socialSharing
-    store.markDirty()
-  }
+// AUTO-MAPPING: No getData/setData needed! ✨
+// Form metadata ($storePath) handles all mapping automatically
+const { formRef, modelValue, form, expose } = useAdminConfigForm({
+  store,
+  form: createCampaignConfigMaster()
 })
 
-// Form refs for validation
-const formRef = ref()
+// Manually inject formsCount for component field validation
+// Component fields are excluded from auto-mapping but need validation data
+watch(
+  formsCount,
+  (count) => {
+    if (modelValue.value.basicSettings) {
+      ;(modelValue.value.basicSettings as Record<string, unknown>).formsList = {
+        formsCount: count
+      }
+    }
+  },
+  { immediate: true }
+)
 
-// Emit for parent to handle save/discard
-const emit = defineEmits<{
+defineEmits<{
   save: []
   discard: []
 }>()
-
-// Expose validation state to parent
-defineExpose({
-  isValid: computed(() => formRef.value?.isValid ?? false)
-})
+defineExpose(expose)
 </script>
 
 <template>
@@ -71,8 +45,8 @@ defineExpose({
     <!-- Form Renderer -->
     <FormRenderer
       ref="formRef"
-      v-model="combinedData"
-      :section="masterForm"
+      v-model="modelValue"
+      :section="form"
       validate-on-mount
       update-only-when-valid
     />
@@ -81,8 +55,8 @@ defineExpose({
     <StickyButtonGroup
       :is-dirty="store.isDirty"
       :is-saving="store.isSaving"
-      @save="emit('save')"
-      @discard="emit('discard')"
+      @save="$emit('save')"
+      @discard="$emit('discard')"
     />
   </div>
 </template>

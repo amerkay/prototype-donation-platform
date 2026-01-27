@@ -25,7 +25,11 @@ export const useCurrencySettingsForm = defineForm('currencySettings', () => {
     description:
       'Configure which currencies are available across your organization. Each form will specify its own default currency.',
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: { supportedCurrencies }
+    fields: { supportedCurrencies },
+    // Map nested field to flat store: form.currencies.supportedCurrencies → store.supportedCurrencies
+    $storePath: {
+      supportedCurrencies: 'supportedCurrencies'
+    }
   })
 
   return { currencies }
