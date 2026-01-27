@@ -1,5 +1,5 @@
 import type { Campaign } from '~/features/campaigns/shared/types'
-import { adoptOrangutanForms, oceanConservationForms } from './api-sample-response-forms'
+import { adoptOrangutanForms } from './api-sample-response-forms'
 
 export const campaigns: Campaign[] = [
   {
@@ -151,71 +151,5 @@ export const campaigns: Campaign[] = [
       }
     ],
     forms: adoptOrangutanForms
-  },
-  {
-    id: 'ocean-conservation',
-    name: 'Ocean Conservation Project',
-    status: 'active',
-    createdAt: '2025-03-15T00:00:00Z',
-    updatedAt: '2026-01-14T08:00:00Z',
-    stats: {
-      totalRaised: 28500,
-      totalDonations: 156,
-      totalDonors: 124,
-      averageDonation: 183,
-      topDonation: 2000,
-      daysRemaining: 30
-    },
-    crowdfunding: {
-      enabled: true,
-      title: 'Save Our Oceans',
-      shortDescription: 'Help protect marine life and ocean ecosystems.',
-      story:
-        'Our ocean conservation efforts focus on protecting coral reefs, reducing plastic pollution, and supporting sustainable fishing practices.',
-      showProgressBar: true,
-      showRecentDonations: true,
-      defaultDonationsView: 'top',
-      numberOfDonationsToShow: 10,
-      goalAmount: 40000
-    },
-    peerToPeer: {
-      enabled: false,
-      allowIndividuals: false,
-      allowTeams: false
-    },
-    charity: {
-      name: 'Ocean Conservation Foundation',
-      registrationNumber: 'RCN789012',
-      website: 'https://oceanconservation.org',
-      description: 'Dedicated to protecting and restoring ocean ecosystems worldwide.'
-    },
-    socialSharing: {
-      enabled: true,
-      facebook: true,
-      twitter: true,
-      linkedin: false,
-      whatsapp: true,
-      email: true,
-      copyLink: true
-    },
-    fundraisers: [],
-    recentDonations: [
-      {
-        id: 'od1',
-        donorName: 'Ocean Lover',
-        amount: 2000,
-        message: 'For the whales!',
-        isAnonymous: false,
-        createdAt: '2026-01-12T10:00:00Z'
-      },
-      {
-        id: 'od2',
-        donorName: 'Anonymous',
-        amount: 500,
-        isAnonymous: true,
-        createdAt: '2026-01-10T15:30:00Z'
-      }
-    ],
-    forms: oceanConservationForms
   }
 ]

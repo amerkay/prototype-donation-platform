@@ -154,48 +154,12 @@ export const adoptOrangutanForms: CampaignForm[] = [
 ]
 
 /**
- * Forms for "Ocean Conservation" campaign
- */
-export const oceanConservationForms: CampaignForm[] = [
-  {
-    id: 'form-ocean-default',
-    campaignId: 'ocean-conservation',
-    name: 'Ocean Conservation Form',
-    isDefault: true,
-    config: {
-      ...minimalFormConfig,
-      campaignId: 'ocean-conservation',
-      form: {
-        title: 'Protect Our Oceans',
-        subtitle: 'Help us preserve marine ecosystems'
-      }
-    } as unknown as FullFormConfig,
-    products: [
-      {
-        id: 'ocean-protection',
-        name: 'Ocean Protection',
-        description: 'Support marine conservation efforts',
-        price: 30,
-        frequency: 'once' as const,
-        image: '🌊',
-        thumbnail: '🌊',
-        icon: '🌊'
-      }
-    ],
-    createdAt: '2024-03-10T10:00:00Z',
-    updatedAt: '2024-12-01T16:00:00Z'
-  }
-]
-
-/**
  * Get all forms for a specific campaign
  */
 export function getFormsByCampaignId(campaignId: string): CampaignForm[] {
   switch (campaignId) {
     case 'adopt-orangutan':
       return adoptOrangutanForms
-    case 'ocean-conservation':
-      return oceanConservationForms
     default:
       return []
   }
@@ -213,6 +177,6 @@ export function getDefaultForm(campaignId: string): CampaignForm | undefined {
  * Get specific form by ID
  */
 export function getFormById(formId: string): CampaignForm | undefined {
-  const allForms = [...adoptOrangutanForms, ...oceanConservationForms]
+  const allForms = [...adoptOrangutanForms]
   return allForms.find((form) => form.id === formId)
 }
