@@ -68,10 +68,10 @@ export const useImpactJourneyConfigSection = defineForm('impactJourney', (_ctx) 
     placeholder: '10',
     currencySymbol: ({ values }) => {
       // Traverse up to get base currency from pricing config
-      const baseCurrency =
-        ((values as Record<string, unknown>)?.pricing as Record<string, unknown>)?.baseCurrency ||
-        'GBP'
-      return baseCurrency === 'USD' ? '$' : baseCurrency === 'EUR' ? '€' : '£'
+      const baseDefaultCurrency =
+        ((values as Record<string, unknown>)?.pricing as Record<string, unknown>)
+          ?.baseDefaultCurrency || 'GBP'
+      return baseDefaultCurrency === 'USD' ? '$' : baseDefaultCurrency === 'EUR' ? '€' : '£'
     },
     rules: z.number().min(0.01, 'Must be positive')
   })

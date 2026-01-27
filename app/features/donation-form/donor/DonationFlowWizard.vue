@@ -9,18 +9,20 @@ import DonationCustomFields from '~/features/donation-form/features/custom-field
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
 import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
+import { formConfig as defaultConfig } from '~/sample-api-responses/api-sample-response-form-config'
 
-interface Props {
+const props = defineProps<{
   config?: FullFormConfig
-}
+}>()
 
-const props = defineProps<Props>()
+// Use provided config or fall back to default
+const activeConfig = computed(() => props.config ?? defaultConfig)
 
 const TOTAL_STEPS = 4 // Donation, Donor Info, Gift Aid/Cover Fees, Payment
 
 // Initialize Pinia stores
 const store = useDonationFormStore()
-store.initialize(props.config?.localization.defaultCurrency || 'USD')
+store.initialize(activeConfig.value.pricing.baseDefaultCurrency)
 
 const cartStore = useImpactCartStore()
 

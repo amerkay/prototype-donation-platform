@@ -6,7 +6,7 @@
 import { computed } from 'vue'
 import type { ContextSchema } from '~/features/_library/form-builder/conditions'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
-import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
+import { useDonationCurrencies } from '~/features/donation-form/shared/composables/useDonationCurrencies'
 
 /**
  * Create flattened context object from donation form store
@@ -14,7 +14,7 @@ import { useFormConfigStore } from '~/features/donation-form/shared/stores/formC
  */
 export function useDonationFormContext() {
   const store = useDonationFormStore()
-  const configStore = useFormConfigStore()
+  const { effectiveCurrencies } = useDonationCurrencies()
 
   /**
    * Flattened context object with all donation form state
@@ -41,11 +41,7 @@ export function useDonationFormContext() {
    * Context schema describing available fields for condition builder
    * Used as `contextSchema` prop in FormRenderer for custom fields
    */
-  const supportedCurrencies = configStore.fullConfig?.localization.supportedCurrencies || [
-    'USD',
-    'EUR',
-    'GBP'
-  ]
+  const supportedCurrencies = effectiveCurrencies.value.supportedCurrencies
 
   const contextSchema: ContextSchema = {
     donationFrequency: {

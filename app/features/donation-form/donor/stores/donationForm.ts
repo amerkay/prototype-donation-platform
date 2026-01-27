@@ -19,7 +19,7 @@ export const useDonationFormStore = defineStore(
     // ==================== STATE ====================
     const currentStep = ref(1)
     const activeTab = ref<Frequency>('once')
-    const selectedCurrency = ref('USD')
+    const selectedCurrency = ref('')
     const donationAmounts = ref<Record<DonationFrequency, number>>({
       once: 0,
       monthly: 0,
@@ -169,9 +169,10 @@ export const useDonationFormStore = defineStore(
     })
 
     // ==================== ACTIONS ====================
-    function initialize(defaultCurrency: string) {
-      if (selectedCurrency.value === 'USD') {
-        selectedCurrency.value = defaultCurrency
+    function initialize(baseDefaultCurrency: string) {
+      // Only set currency if not already set (first initialization)
+      if (!selectedCurrency.value) {
+        selectedCurrency.value = baseDefaultCurrency
       }
     }
 

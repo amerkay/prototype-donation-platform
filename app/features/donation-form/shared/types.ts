@@ -11,7 +11,6 @@ export interface FormSettings {
 }
 
 export interface LocalizationSettings {
-  defaultCurrency: string
   supportedCurrencies: string[]
 }
 
@@ -26,7 +25,7 @@ export interface FrequencySettings {
 }
 
 export interface PricingSettings {
-  baseCurrency: string
+  baseDefaultCurrency: string
   frequencies: {
     once: FrequencySettings
     monthly: FrequencySettings

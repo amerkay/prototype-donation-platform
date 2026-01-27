@@ -5,6 +5,7 @@ import {
   CURRENCY_OPTIONS,
   useCurrency
 } from '~/features/donation-form/shared/composables/useCurrency'
+import { useDonationCurrencies } from '~/features/donation-form/shared/composables/useDonationCurrencies'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
 import DonationFormSingle from './DonationFormSingle.vue'
@@ -32,11 +33,16 @@ const emit = defineEmits<{
   complete: []
 }>()
 
-const { convertPrice } = useCurrency(computed(() => formConfig.value.pricing.baseCurrency).value)
+const { convertPrice } = useCurrency(
+  computed(() => formConfig.value.pricing.baseDefaultCurrency).value
+)
 
 // Initialize Pinia stores
 const store = useDonationFormStore()
-store.initialize(formConfig.value.localization.defaultCurrency)
+
+// Get effective currencies (form override or global settings)
+const { effectiveCurrencies } = useDonationCurrencies()
+store.initialize(formConfig.value.pricing.baseDefaultCurrency)
 
 const cartStore = useImpactCartStore()
 
@@ -52,7 +58,7 @@ const selectedCurrency = computed({
 
 // Extract config values - now reactive to config changes
 const CURRENCIES = computed(() =>
-  formConfig.value.localization.supportedCurrencies.map((code) => {
+  effectiveCurrencies.value.supportedCurrencies.map((code) => {
     const option = CURRENCY_OPTIONS.find((o) => o.value === code)
     return {
       value: code,

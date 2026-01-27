@@ -22,12 +22,8 @@ const minimalFormConfig = {
     title: 'Quick Donation',
     subtitle: 'Support orangutan conservation'
   },
-  localization: {
-    defaultCurrency: 'GBP',
-    supportedCurrencies: ['GBP']
-  },
   pricing: {
-    baseCurrency: 'GBP',
+    baseDefaultCurrency: 'GBP',
     frequencies: {
       once: {
         enabled: true,

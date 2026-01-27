@@ -33,6 +33,39 @@ export function getCurrencyData() {
   }))
 }
 
+/**
+ * Get currency options formatted for combobox/select fields
+ * Optionally filter by provided currency codes
+ *
+ * @param filterCodes - Optional array of currency codes to filter by (e.g., ['USD', 'EUR', 'GBP'])
+ * @returns Array of { value, label } objects suitable for combobox fields
+ *
+ * @example
+ * // Get all currencies
+ * const allOptions = getCurrencyOptionsForSelect()
+ *
+ * // Get only configured currencies
+ * const configuredOptions = getCurrencyOptionsForSelect(['USD', 'EUR', 'GBP'])
+ */
+export function getCurrencyOptionsForSelect(
+  filterCodes?: string[]
+): Array<{ value: string; label: string }> {
+  const allOptions = [...CURRENCY_OPTIONS]
+
+  const filteredOptions =
+    filterCodes && filterCodes.length > 0
+      ? (() => {
+          const codesSet = new Set(filterCodes.map((code) => code.toUpperCase()))
+          return allOptions.filter((opt) => codesSet.has(opt.value))
+        })()
+      : allOptions
+
+  return filteredOptions.map((currency) => ({
+    value: currency.value,
+    label: `${currency.value} - ${currency.description}`
+  }))
+}
+
 export function useCurrency(baseCurrency: string = 'GBP') {
   // Exchange rates: 1 unit of base currency = X units of target currency
   // These are approximate rates and should be updated from a live API in production

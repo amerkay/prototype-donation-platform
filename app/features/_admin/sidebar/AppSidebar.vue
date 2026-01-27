@@ -134,7 +134,7 @@ const data = {
         },
         {
           title: 'Currency',
-          url: '#'
+          url: '/admin/settings/currency'
         },
         {
           title: 'Branding',

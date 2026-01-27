@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import type {
   FormSettings,
-  LocalizationSettings,
   PricingSettings,
   DonationCustomFieldsSettings
 } from '~/features/donation-form/shared/types'
@@ -71,7 +70,6 @@ export const useFormConfigStore = defineStore('formConfig', {
       return {
         version: state.version,
         form: state.formSettings.form,
-        localization: state.formSettings.localization,
         pricing: state.formSettings.pricing,
         features: {
           impactCart: state.impactCart!,
@@ -96,7 +94,6 @@ export const useFormConfigStore = defineStore('formConfig', {
       this.version = config.version
       this.formSettings = {
         form: config.form,
-        localization: config.localization,
         pricing: config.pricing
       }
       this.impactCart = config.features.impactCart
@@ -129,11 +126,9 @@ export const useFormConfigStore = defineStore('formConfig', {
 
 /**
  * Combined form settings type for v-model binding
- * Matches the structure expected by createFormConfigSection()
  */
 export interface FormSettingsCombined {
   form: FormSettings
-  localization: LocalizationSettings
   pricing: PricingSettings
 }
 
@@ -144,7 +139,6 @@ export interface FormSettingsCombined {
 export interface FullFormConfig {
   version: string
   form: FormSettings
-  localization: LocalizationSettings
   pricing: PricingSettings
   features: {
     impactCart: ImpactCartSettings

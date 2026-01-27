@@ -9,33 +9,15 @@ import {
   arrayField,
   currencyField
 } from '~/features/_library/form-builder/api'
-import type {
-  FieldContext,
-  OnChangeContext,
-  FieldDef
-} from '~/features/_library/form-builder/types'
+import type { FieldContext, FieldDef } from '~/features/_library/form-builder/types'
+import { currencySettings } from '~/sample-api-responses/api-sample-response-settings'
+import {
+  getCurrencyOptionsForSelect,
+  getCurrencySymbol
+} from '~/features/donation-form/shared/composables/useCurrency'
 
-// Stub currency data
-const CURRENCY_OPTIONS = [
-  { value: 'USD', label: 'USD - US Dollar' },
-  { value: 'EUR', label: 'EUR - Euro' },
-  { value: 'GBP', label: 'GBP - British Pound' },
-  { value: 'CAD', label: 'CAD - Canadian Dollar' },
-  { value: 'AUD', label: 'AUD - Australian Dollar' },
-  { value: 'NZD', label: 'NZD - New Zealand Dollar' }
-]
-
-function getCurrencySymbol(currency: string): string {
-  const symbols: Record<string, string> = {
-    USD: '$',
-    EUR: '€',
-    GBP: '£',
-    CAD: 'CA$',
-    AUD: 'A$',
-    NZD: 'NZ$'
-  }
-  return symbols[currency] || '$'
-}
+// Build currency options from account's configured currencies
+const CURRENCY_OPTIONS = getCurrencyOptionsForSelect(currencySettings.supportedCurrencies)
 
 // Zod schema for frequency validation
 const frequencySchema = z
@@ -112,8 +94,8 @@ function createFrequencyTabFields(
           const pricing = (values as Record<string, unknown>).pricing as
             | Record<string, unknown>
             | undefined
-          const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
-          return getCurrencySymbol(baseCurrency)
+          const baseDefaultCurrency = (pricing?.baseDefaultCurrency as string) || 'GBP'
+          return getCurrencySymbol(baseDefaultCurrency)
         },
         rules: ({ values }: FieldContext) => {
           const minAmount = (values.customAmount as Record<string, unknown> | undefined)?.min as
@@ -146,8 +128,8 @@ function createFrequencyTabFields(
             const pricing = (values as Record<string, unknown>).pricing as
               | Record<string, unknown>
               | undefined
-            const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
-            return getCurrencySymbol(baseCurrency)
+            const baseDefaultCurrency = (pricing?.baseDefaultCurrency as string) || 'GBP'
+            return getCurrencySymbol(baseDefaultCurrency)
           },
           rules: z.number().min(1, 'Must be at least 1')
         }),
@@ -159,8 +141,8 @@ function createFrequencyTabFields(
             const pricing = (values as Record<string, unknown>).pricing as
               | Record<string, unknown>
               | undefined
-            const baseCurrency = (pricing?.baseCurrency as string) || 'GBP'
-            return getCurrencySymbol(baseCurrency)
+            const baseDefaultCurrency = (pricing?.baseDefaultCurrency as string) || 'GBP'
+            return getCurrencySymbol(baseDefaultCurrency)
           },
           rules: z.number().min(1, 'Must be at least 1')
         })
@@ -171,12 +153,12 @@ function createFrequencyTabFields(
 
 /**
  * Donation form configuration composable
- * Returns the form configuration for editing form, localization, and pricing settings
+ * Returns the form configuration for editing form and pricing settings
+ *
+ * Note: Currency settings (localization) are now managed globally in Settings -> Currency
+ * Forms will inherit global currency settings by default
  */
-export const useDonationFormConfigForm = defineForm('form', (ctx) => {
-  ctx.title = 'Form Settings'
-  // ctx.description = 'Configure form title, currencies, and pricing'
-
+export const useDonationFormConfigForm = defineForm('form', () => {
   // Basic Settings fields
   const formTitle = textField('title', {
     label: 'Form Title',
@@ -191,9 +173,9 @@ export const useDonationFormConfigForm = defineForm('form', (ctx) => {
   })
 
   const form = fieldGroup('form', {
-    label: 'Basic Settings',
-    collapsible: true,
-    collapsibleDefaultOpen: true,
+    // label: 'Basic Settings',
+    // collapsible: true,
+    // collapsibleDefaultOpen: true,
     isSeparatorAfter: true,
     fields: { title: formTitle, subtitle: formSubtitle }
   })
@@ -209,70 +191,15 @@ export const useDonationFormConfigForm = defineForm('form', (ctx) => {
     fields: {}
   })
 
-  // Currency Settings fields
-  const supportedCurrencies = comboboxField('supportedCurrencies', {
-    label: 'Supported Currencies',
-    description: 'Currencies available for donors to choose from (select multiple)',
-    placeholder: 'Select currencies',
-    searchPlaceholder: 'Search currencies...',
-    multiple: true,
-    options: [...CURRENCY_OPTIONS],
-    rules: z.array(z.string()).min(1, 'At least one currency must be supported'),
-    onChange: ({ value, values, setValue }: OnChangeContext) => {
-      const defaultCurrency = values.defaultCurrency as string | undefined
-      const baseCurrency = (values.pricing as Record<string, unknown> | undefined)?.baseCurrency as
-        | string
-        | undefined
-      const supportedCurrencies = (value as string[]).filter(Boolean)
-
-      if (supportedCurrencies.length > 0) {
-        if (!defaultCurrency || !supportedCurrencies.includes(defaultCurrency)) {
-          setValue('localization.defaultCurrency', supportedCurrencies[0])
-        }
-        if (baseCurrency && !supportedCurrencies.includes(baseCurrency)) {
-          setValue('pricing.baseCurrency', supportedCurrencies[0])
-        }
-      } else {
-        setValue('localization.defaultCurrency', '')
-      }
-    }
-  })
-
-  const defaultCurrency = comboboxField('defaultCurrency', {
-    label: 'Default Currency',
-    description:
-      'The default currency shown when users first load the donation form (choose from supported currencies above)',
-    placeholder: 'Select default currency',
-    searchPlaceholder: 'Search currencies...',
-    options: ({ values }: FieldContext) => {
-      const supportedCurrencies = (values.supportedCurrencies as string[]) || []
-      return CURRENCY_OPTIONS.filter((opt) => supportedCurrencies.includes(opt.value))
-    },
-    rules: z.string().min(1, 'Default currency is required')
-  })
-
-  const localization = fieldGroup('localization', {
-    label: 'Currency Settings',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    isSeparatorAfter: true,
-    fields: { supportedCurrencies, defaultCurrency }
-  })
-
   // Pricing Configuration fields
-  const baseCurrency = comboboxField('baseCurrency', {
-    label: 'Base Currency',
+  const baseDefaultCurrency = comboboxField('baseDefaultCurrency', {
+    label: 'Default / Base Currency',
     description:
-      'The currency used for internal calculations and product pricing (choose from supported currencies above)',
-    placeholder: 'Select base currency',
+      'The default currency shown to donors when they first load the form. This is also the base currency for the preset amounts.',
+    placeholder: 'Select base default currency',
     searchPlaceholder: 'Search currencies...',
-    options: ({ values }: FieldContext) => {
-      const supportedCurrencies =
-        ((values.localization as Record<string, unknown> | undefined)
-          ?.supportedCurrencies as string[]) || []
-      return CURRENCY_OPTIONS.filter((opt) => supportedCurrencies.includes(opt.value))
-    },
-    rules: z.string().min(1, 'Base currency is required')
+    options: [...CURRENCY_OPTIONS],
+    rules: z.string().min(1, 'Base default currency is required')
   })
 
   const frequencies = tabsField('frequencies', {
@@ -325,13 +252,12 @@ export const useDonationFormConfigForm = defineForm('form', (ctx) => {
     collapsible: true,
     collapsibleDefaultOpen: false,
     isSeparatorAfter: true,
-    fields: { baseCurrency, frequencies }
+    fields: { baseDefaultCurrency, frequencies }
   })
 
   return {
     form,
     branding,
-    localization,
     pricing
   }
 })

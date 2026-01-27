@@ -5,12 +5,8 @@ export const formConfig = {
     title: 'Make a Donation',
     subtitle: 'Choose your donation amount'
   },
-  localization: {
-    defaultCurrency: 'GBP',
-    supportedCurrencies: ['USD', 'EUR', 'GBP']
-  },
   pricing: {
-    baseCurrency: 'GBP',
+    baseDefaultCurrency: 'GBP',
     frequencies: {
       once: {
         enabled: true,
