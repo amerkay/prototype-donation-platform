@@ -112,7 +112,11 @@ const handleSocialShare = (platform: string) => {
 // Check if any social sharing is enabled
 const hasSocialSharing = computed(() => {
   if (!props.campaign.socialSharing) return false
-  return Object.values(props.campaign.socialSharing).some((enabled) => enabled)
+  // First check if social sharing is enabled at all
+  if (props.campaign.socialSharing.enabled === false) return false
+  // Then check if at least one platform is enabled (excluding the 'enabled' field itself)
+  const { enabled, ...platforms } = props.campaign.socialSharing
+  return Object.values(platforms).some((platformEnabled) => platformEnabled)
 })
 </script>
 
@@ -185,7 +189,12 @@ const hasSocialSharing = computed(() => {
                 <Heart class="w-4 h-4 mr-2" />
                 Donate Now
               </Button>
-              <Button variant="outline" size="lg" @click="showShareDialog = true">
+              <Button
+                v-if="hasSocialSharing"
+                variant="outline"
+                size="lg"
+                @click="showShareDialog = true"
+              >
                 <Share2 class="w-4 h-4" />
               </Button>
             </div>
@@ -398,7 +407,13 @@ const hasSocialSharing = computed(() => {
                 <Heart class="w-4 h-4 mr-2" />
                 Donate Now
               </Button>
-              <Button variant="outline" class="w-full" size="lg" @click="showShareDialog = true">
+              <Button
+                v-if="hasSocialSharing"
+                variant="outline"
+                class="w-full"
+                size="lg"
+                @click="showShareDialog = true"
+              >
                 <Share2 class="w-4 h-4 mr-2" />
                 Share Campaign
               </Button>
