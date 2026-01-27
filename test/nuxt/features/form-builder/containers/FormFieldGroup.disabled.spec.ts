@@ -118,28 +118,6 @@ describe('FormFieldGroup - Disabled Property', () => {
     expect(wrapper.find('button').exists()).toBe(true)
   })
 
-  it('supports legacy isDisabled property for backwards compatibility', async () => {
-    const meta: FieldGroupDef = {
-      type: 'field-group',
-      name: 'testGroup',
-      label: 'Test Group',
-      collapsible: true,
-      fields: {
-        field1: textField('field1', { label: 'Field 1' })
-      },
-      isDisabled: true, // Legacy property
-      disabled: true // New standardized property takes precedence
-    }
-
-    const WrapperComponent = createFormGroupWrapper(meta, 'testGroup')
-    const wrapper = await mountSuspended(WrapperComponent)
-
-    // Should work with standard disabled property
-    const accordionTrigger = wrapper.find('button')
-    expect(accordionTrigger.classes()).toContain('cursor-not-allowed')
-    expect(accordionTrigger.classes()).toContain('opacity-60')
-  })
-
   it('disabled does not affect non-collapsible field groups', async () => {
     const meta: FieldGroupDef = {
       type: 'field-group',

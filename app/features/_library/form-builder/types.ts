@@ -315,7 +315,6 @@ export interface FieldGroupConfig extends BaseFieldConfig {
   collapsibleStateRef?: Ref<string | undefined>
   badgeLabel?: string | ComputedRef<string>
   badgeVariant?: 'default' | 'outline' | 'secondary' | 'destructive'
-  isDisabled?: boolean
   extractDefaultsWhen?: boolean
   /** CSS classes for the wrapper element (Accordion/FieldSet container) */
   wrapperClass?: string

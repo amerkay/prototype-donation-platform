@@ -185,9 +185,11 @@ export const useDonationFormConfigForm = defineForm('form', () => {
     label: 'Branding',
     collapsible: true,
     collapsibleDefaultOpen: false,
+
     badgeLabel: 'On my TODO list',
     badgeVariant: 'secondary',
-    isDisabled: true,
+    disabled: true,
+
     isSeparatorAfter: true,
     fields: {}
   })

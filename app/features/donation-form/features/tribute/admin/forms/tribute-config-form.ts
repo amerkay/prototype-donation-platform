@@ -37,7 +37,7 @@ export const useTributeConfigSection = defineForm('tribute', (_ctx) => {
     collapsibleDefaultOpen: false,
     badgeLabel: 'On my TODO list',
     badgeVariant: 'secondary',
-    isDisabled: true,
+    disabled: true,
     isSeparatorAfter: true,
     fields: {}
   })

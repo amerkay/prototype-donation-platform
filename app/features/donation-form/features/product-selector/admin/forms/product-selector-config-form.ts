@@ -29,7 +29,7 @@ export const useProductSelectorConfigSection = defineForm('productSelector', (_c
     collapsibleDefaultOpen: false,
     badgeLabel: 'On my TODO list',
     badgeVariant: 'secondary',
-    isDisabled: true,
+    disabled: true,
     isSeparatorAfter: true,
     fields: {}
   })
