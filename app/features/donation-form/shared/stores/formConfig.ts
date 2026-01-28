@@ -38,7 +38,8 @@ export const useFormConfigStore = defineStore('formConfig', () => {
   // State
   const formId = ref<string | null>(null)
   const version = ref('1.0')
-  const formSettings = ref<FormSettingsCombined | null>(null)
+  const form = ref<FormSettings | null>(null)
+  const pricing = ref<PricingSettings | null>(null)
   const impactCart = ref<ImpactCartSettings | null>(null)
   const productSelector = ref<ProductSelectorSettings | null>(null)
   const impactJourney = ref<ImpactJourneySettings | null>(null)
@@ -50,14 +51,14 @@ export const useFormConfigStore = defineStore('formConfig', () => {
 
   // Getters
   const fullConfig = computed((): FullFormConfig | null => {
-    if (!formSettings.value) {
+    if (!form.value || !pricing.value) {
       return null
     }
 
     return {
       version: version.value,
-      form: formSettings.value.form,
-      pricing: formSettings.value.pricing,
+      form: form.value,
+      pricing: pricing.value,
       features: {
         impactCart: impactCart.value!,
         productSelector: productSelector.value!,
@@ -74,10 +75,8 @@ export const useFormConfigStore = defineStore('formConfig', () => {
   function initialize(config: FullFormConfig, productList: Product[], id?: string) {
     formId.value = id ?? null
     version.value = config.version
-    formSettings.value = {
-      form: config.form,
-      pricing: config.pricing
-    }
+    form.value = config.form
+    pricing.value = config.pricing
     impactCart.value = config.features.impactCart
     productSelector.value = config.features.productSelector
     impactJourney.value = config.features.impactJourney
@@ -93,7 +92,8 @@ export const useFormConfigStore = defineStore('formConfig', () => {
     // State
     formId,
     version,
-    formSettings,
+    form,
+    pricing,
     impactCart,
     productSelector,
     impactJourney,
@@ -112,14 +112,6 @@ export const useFormConfigStore = defineStore('formConfig', () => {
     markClean
   }
 })
-
-/**
- * Combined form settings type for v-model binding
- */
-export interface FormSettingsCombined {
-  form: FormSettings
-  pricing: PricingSettings
-}
 
 /**
  * Full form configuration type (API response shape)

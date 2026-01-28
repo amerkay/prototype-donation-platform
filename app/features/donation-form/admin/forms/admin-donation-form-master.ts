@@ -34,14 +34,34 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
     const tributeFields = useTributeConfigSection.setup(ctx)
     const customFieldsFields = createDonationCustomFieldsConfigSection(contextSchema).setup(ctx)
 
-    // Form Settings - standalone section
+    // Form Settings - basic settings and branding only
     const formSettings = fieldGroup('formSettings', {
       label: 'Form Settings',
-      description: 'Configure basic form settings, and donation amounts and frequency options.',
+      description: 'Configure basic form settings and branding.',
       collapsible: true,
       collapsibleDefaultOpen: true,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: { ...formBasicFields, ...formBrandingFields, ...formPricingFields }
+      fields: { ...formBasicFields, ...formBrandingFields },
+      // Flatten structure: form.formSettings.form → store.form
+      $storePath: {
+        form: 'form',
+        branding: 'branding'
+      }
+    })
+
+    // Pricing - standalone section for donation amounts and frequencies
+    const pricing = fieldGroup('pricing', {
+      label: 'Pricing',
+      description: 'Configure donation amounts and frequency options.',
+      collapsible: true,
+      collapsibleDefaultOpen: false,
+      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+      fields: formPricingFields,
+      // Flatten structure: form.pricing.baseDefaultCurrency → store.pricing.baseDefaultCurrency
+      $storePath: {
+        baseDefaultCurrency: 'pricing.baseDefaultCurrency',
+        frequencies: 'pricing.frequencies'
+      }
     })
 
     // Features - all donation features grouped together
@@ -107,6 +127,7 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
 
     return {
       formSettings,
+      pricing,
       features,
       customFields
     }
