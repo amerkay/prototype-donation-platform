@@ -33,6 +33,40 @@ const accept = props.meta.accept || 'image/*'
 const maxSizeMB = props.meta.maxSizeMB || 5
 const recommendedDimensions = props.meta.recommendedDimensions || '1200x675px'
 
+// Parse recommended dimensions and calculate aspect ratio
+const parsedDimensions = computed(() => {
+  const match = recommendedDimensions.match(/(\d+)\s*x\s*(\d+)/)
+  if (!match || !match[1] || !match[2]) return { width: 1200, height: 675, ratio: 16 / 9 }
+
+  const width = parseInt(match[1], 10)
+  const height = parseInt(match[2], 10)
+  const ratio = width / height
+
+  return { width, height, ratio }
+})
+
+// Calculate constrained dimensions respecting max width/height and aspect ratio
+const containerStyle = computed(() => {
+  const { ratio } = parsedDimensions.value
+  const maxWidth = 360
+  const maxHeight = 240
+
+  // Start with max width
+  let width = maxWidth
+  let height = width / ratio
+
+  // If height exceeds max, scale down by height
+  if (height > maxHeight) {
+    height = maxHeight
+    width = height * ratio
+  }
+
+  return {
+    maxWidth: `${Math.round(width)}px`,
+    aspectRatio: ratio.toString()
+  }
+})
+
 // File dialog
 const { open: openFileDialog, onChange } = useFileDialog({
   accept,
@@ -107,9 +141,9 @@ function replaceImage() {
 <template>
   <FormFieldWrapper v-bind="wrapperProps">
     <!-- Preview or Upload Zone -->
-    <div v-if="modelValue" class="relative max-w-md">
+    <div v-if="modelValue" class="relative" :style="{ maxWidth: containerStyle.maxWidth }">
       <Card class="overflow-hidden p-0 gap-y-0">
-        <div class="aspect-video bg-muted">
+        <div class="bg-muted" :style="{ aspectRatio: containerStyle.aspectRatio }">
           <img
             :src="modelValue"
             :alt="resolvedLabel || 'Image'"
@@ -121,29 +155,29 @@ function replaceImage() {
             variant="outline"
             size="sm"
             type="button"
-            class="flex-1"
+            class="flex-1 text-xs sm:text-sm"
             :disabled="resolvedDisabled"
             @click="replaceImage"
           >
-            <Upload class="w-3.5 h-3.5 mr-2" />
+            <Upload class="size-3 sm:size-3.5" />
             Replace
           </Button>
           <Button
             variant="outline"
             size="sm"
             type="button"
-            class="flex-1"
+            class="flex-1 text-xs sm:text-sm"
             :disabled="resolvedDisabled"
             @click="removeImage"
           >
-            <X class="w-3.5 h-3.5 mr-2" />
+            <X class="size-3 sm:size-3.5" />
             Remove
           </Button>
         </div>
       </Card>
     </div>
 
-    <div v-else>
+    <div v-else :style="{ maxWidth: containerStyle.maxWidth }">
       <Card
         ref="dropZoneRef"
         :class="
@@ -155,6 +189,7 @@ function replaceImage() {
             error && 'border-destructive'
           )
         "
+        :style="{ aspectRatio: containerStyle.aspectRatio }"
         @click="!resolvedDisabled && openFileDialog()"
       >
         <div class="p-4 flex flex-col items-center justify-center text-center space-y-2">

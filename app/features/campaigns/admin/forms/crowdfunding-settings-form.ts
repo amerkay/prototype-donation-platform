@@ -44,7 +44,6 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     description: 'Upload a campaign cover image (recommended: 1200x675px, 16:9 ratio)',
     visibleWhen: ({ values }) => values.enabled === true,
     accept: 'image/*',
-    maxSizeMB: 5,
     recommendedDimensions: '1200x675px',
     optional: true
   })

@@ -78,7 +78,6 @@ export function createPresetAmountsField() {
           image: imageUploadField('image', {
             label: 'Square Image',
             accept: 'image/*',
-            maxSizeMB: 2,
             recommendedDimensions: '400x400px (square)',
             visibleWhen: ({ root }: FieldContext) => {
               return !!(root.enableAmountDescriptions as boolean | undefined)
