@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { toRef } from 'vue'
 import { Button } from '@/components/ui/button'
-import { useImpactJourneyMessages } from '~/features/donation-form/features/impact-journey/donor/composables/useImpactJourneyMessages'
-import type { ImpactJourneySettings } from '~/features/donation-form/features/impact-journey/admin/types'
+import { useImpactBoostMessages } from '~/features/donation-form/features/impact-boost/donor/composables/useImpactBoostMessages'
+import type { ImpactBoostSettings } from '~/features/donation-form/features/impact-boost/admin/types'
 import type { DonationAmountsSettings } from '~/features/donation-form/shared/types'
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
   donationAmount: number // Current tab's donation amount
   currency: string // Selected currency
   baseCurrency: string // For amount conversion
-  config: ImpactJourneySettings // From formConfig
+  config: ImpactBoostSettings // From formConfig
   donationAmountsConfig: DonationAmountsSettings // For preset amounts
   enabledFrequencies: Array<'once' | 'monthly' | 'yearly'>
 }
@@ -29,18 +29,15 @@ const currencyRef = toRef(props, 'currency')
 const configRef = toRef(props, 'config')
 const donationAmountsConfigRef = toRef(props, 'donationAmountsConfig')
 
-// Get impact items provided at this donation level + new design props
+// Get upsell message and CTA
 const {
   showUpsell,
+  upsellType,
   upsellTargetAmount,
   targetRecurringFrequency,
-  emoji,
-  timeFrameHeadline,
-  // multiplierText,
-  impactListInline,
-  impactListPrefix,
+  emotionalMessage,
   ctaCopy
-} = useImpactJourneyMessages(
+} = useImpactBoostMessages(
   frequencyRef,
   amountRef,
   currencyRef,
@@ -56,39 +53,28 @@ const handleUpsellClick = () => {
   const freqKey = props.frequency
 
   // One-time to recurring conversion - use determined target frequency
-  if (freqKey === 'once' && targetRecurringFrequency.value) {
+  if (freqKey === 'once' && upsellType.value === 'recurring' && targetRecurringFrequency.value) {
     const targetAmount = upsellTargetAmount.value || props.donationAmount
     emit('switch-to-tab', targetRecurringFrequency.value, targetAmount)
   }
   // Increase amount on same tab - use next level amount
-  else if (upsellTargetAmount.value) {
+  else if (upsellType.value === 'increase' && upsellTargetAmount.value) {
     emit('update-amount', upsellTargetAmount.value)
   }
 }
 </script>
 
 <template>
-  <div v-if="impactListInline && frequency !== 'multiple'" class="border-t pt-4">
-    <!-- Compact Impact Card: Emotional Reliability Design -->
+  <div v-if="showUpsell && frequency !== 'multiple'">
+    <!-- Impact Boost Card: Simplified Emotional Appeal -->
     <div class="rounded-lg border bg-muted/30 p-5 space-y-4">
-      <!-- Bold Headline with Emoji -->
-      <h3 class="text-lg font-bold tracking-tight text-foreground">
-        {{ emoji }} {{ timeFrameHeadline }}
-      </h3>
-
-      <!-- Compact Multiplier Subtitle -->
-      <!-- <p class="text-sm text-muted-foreground leading-relaxed">
-        {{ multiplierText }}
-      </p> -->
-
-      <!-- Inline Bullet Impact List -->
-      <p class="text-sm text-foreground leading-relaxed">
-        <span class="font-medium">{{ impactListPrefix }}</span>
-        {{ impactListInline }}
+      <!-- Emotional Message -->
+      <p class="text-sm leading-relaxed text-foreground font-medium">
+        {{ emotionalMessage }}
       </p>
 
-      <!-- Primary CTA Button (if upsell enabled) -->
-      <Button v-if="showUpsell" size="default" class="w-full" @click="handleUpsellClick">
+      <!-- Primary CTA Button -->
+      <Button size="default" class="w-full" @click="handleUpsellClick">
         {{ ctaCopy }}
       </Button>
     </div>

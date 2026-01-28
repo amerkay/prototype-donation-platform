@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import AmountSelector from '~/features/donation-form/donor/components/AmountSelector.vue'
 import NextButton from '~/features/donation-form/donor/components/NextButton.vue'
-import ImpactJourneyCard from '~/features/donation-form/features/impact-journey/donor/components/ImpactJourneyCard.vue'
+import ImpactBoostCard from '~/features/donation-form/features/impact-boost/donor/components/ImpactBoostCard.vue'
 import ShippingNotice from '~/features/donation-form/features/shipping-notice/donor/components/ShippingNotice.vue'
 import TributeCard from '~/features/donation-form/features/tribute/donor/components/TributeCard.vue'
 import TributeModal from '~/features/donation-form/features/tribute/donor/components/TributeModal.vue'
@@ -12,6 +12,7 @@ import type { Product } from '~/features/donation-form/features/product/shared/t
 import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
 import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
 import type { PresetAmount } from '~/features/donation-form/shared/types'
+import Separator from '~/components/ui/separator/Separator.vue'
 
 interface Props {
   frequency: 'once' | 'monthly' | 'yearly'
@@ -106,6 +107,13 @@ defineExpose({
       @update:model-value="handleAmountUpdate"
     />
 
+    <Separator
+      v-if="
+        formConfig.features.productSelector.enabled ||
+        (formConfig.features.tribute.enabled && showTributeSection)
+      "
+    />
+
     <!-- Product Selector -->
     <ProductSelectorButton
       ref="productSelectorRef"
@@ -136,14 +144,16 @@ defineExpose({
       </Button>
     </template>
 
-    <!-- Impact Journey -->
-    <ImpactJourneyCard
-      v-if="formConfig.features.impactJourney.enabled"
+    <Separator v-if="formConfig.features.impactBoost.enabled" />
+
+    <!-- Impact Boost -->
+    <ImpactBoostCard
+      v-if="formConfig.features.impactBoost.enabled"
       :frequency="frequency"
       :donation-amount="donationAmount"
       :currency="currency"
       :base-currency="formConfig.donationAmounts.baseDefaultCurrency"
-      :config="formConfig.features.impactJourney"
+      :config="formConfig.features.impactBoost"
       :donation-amounts-config="formConfig.donationAmounts"
       :enabled-frequencies="enabledFrequencies"
       @switch-to-tab="handleSwitchToTab"

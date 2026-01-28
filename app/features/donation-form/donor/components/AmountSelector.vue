@@ -123,15 +123,6 @@ const backToPresets = () => {
           {{ currencySymbol }}{{ amount }}
         </Button>
       </div>
-
-      <!-- Custom Amount Button -->
-      <Button
-        variant="outline"
-        class="h-14 w-full text-lg font-semibold"
-        @click="enableCustomAmount"
-      >
-        Custom Amount
-      </Button>
     </div>
 
     <!-- Preset Amounts - Stacked Cards (with descriptions) -->
@@ -139,7 +130,7 @@ const backToPresets = () => {
       <Card
         v-for="item in amounts"
         :key="item.amount"
-        class="cursor-pointer transition-all hover:border-primary py-0 rounded"
+        class="cursor-pointer transition-all hover:border-primary py-0 rounded-lg overflow-hidden"
         :class="{
           'border-primary border-2 bg-primary/5': selectedAmount === item.amount,
           border: selectedAmount !== item.amount
@@ -148,7 +139,7 @@ const backToPresets = () => {
       >
         <div class="pr-4 flex items-center gap-4">
           <!-- Image (square) -->
-          <div class="size-12 shrink-0 rounded-l overflow-hidden bg-muted">
+          <div class="size-12 shrink-0 bg-muted">
             <img
               v-if="item.image"
               :src="item.image"
@@ -178,31 +169,21 @@ const backToPresets = () => {
             v-if="selectedAmount === item.amount"
             class="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4 text-primary-foreground"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clip-rule="evenodd"
-              />
-            </svg>
+            <Icon name="heroicons:check-20-solid" class="h-4 w-4 text-primary-foreground" />
           </div>
         </div>
       </Card>
-
-      <!-- Custom Amount Button -->
-      <Button
-        variant="outline"
-        class="h-14 w-full text-lg font-semibold"
-        @click="enableCustomAmount"
-      >
-        Custom Amount
-      </Button>
     </div>
+
+    <!-- Custom Amount Button (shared between both preset modes) -->
+    <Button
+      v-if="!showSlider"
+      variant="outline"
+      class="h-12 w-full font-semibold"
+      @click="enableCustomAmount"
+    >
+      Custom Amount
+    </Button>
 
     <!-- Custom Amount Slider -->
     <div v-else-if="showSlider" class="space-y-3">

@@ -3,88 +3,25 @@ import {
   useCurrency,
   getCurrencySymbol
 } from '~/features/donation-form/shared/composables/useCurrency'
-import type { ImpactJourneySettings } from '~/features/donation-form/features/impact-journey/admin/types'
-import type { ImpactPerAmount } from '~/features/donation-form/features/impact-journey/donor/types'
+import type { ImpactBoostSettings } from '~/features/donation-form/features/impact-boost/admin/types'
 import type { DonationAmountsSettings } from '~/features/donation-form/shared/types'
 
 /**
- * Composable for impact journey - auto-generates impact messages and CTAs
- * Shows all impact items where item.amount <= donation amount
+ * Composable for impact boost - provides emotional upsell messages and CTAs
+ * Simplified version focused on 2 upsell scenarios: one-time → recurring, and amount increase
  */
-export function useImpactJourneyMessages(
+export function useImpactBoostMessages(
   frequency: Ref<string>,
   amount: Ref<number>,
   currency: Ref<string>,
   baseCurrency: string,
-  config: Ref<ImpactJourneySettings>,
+  config: Ref<ImpactBoostSettings>,
   donationAmountsConfig: Ref<DonationAmountsSettings>
 ) {
   const { convertPrice } = useCurrency(baseCurrency)
 
   // ============================================================================
-  // STEP 1: Calculate provided items based on donation amount
-  // ============================================================================
-
-  const providedItems = computed<ImpactPerAmount[]>(() => {
-    if (!config.value.enabled || !config.value.impactPerAmount?.items) return []
-
-    // Convert to base currency for comparison
-    let baseAmount = convertPrice(amount.value, baseCurrency, currency.value)
-
-    // Yearly: convert to monthly equivalent (£120/year = £10/month)
-    if (frequency.value === 'yearly') {
-      baseAmount = baseAmount / 12
-    }
-
-    return config.value.impactPerAmount.items
-      .filter((item: ImpactPerAmount) => item.amount <= baseAmount)
-      .sort((a: ImpactPerAmount, b: ImpactPerAmount) => a.amount - b.amount)
-  })
-
-  // ============================================================================
-  // STEP 2: Generate display content (headline, subtitle, list)
-  // ============================================================================
-
-  const emoji = computed<string>(() => config.value.messaging?.emoji || '🌱')
-
-  const timeFrameHeadline = computed<string>(() => {
-    const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
-    const messaging = config.value.messaging
-
-    if (freqKey === 'monthly') {
-      return messaging?.monthlyHeadline || "Every Day You're There"
-    }
-    if (freqKey === 'yearly') {
-      return messaging?.yearlyHeadline || "Every Day You're There"
-    }
-    return messaging?.onceHeadline || 'Your Support Today'
-  })
-
-  // const multiplierText = computed<string | null>(() => {
-  //   const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
-  //   const currencySymbol = getCurrencySymbol(currency.value)
-  //   const formattedAmount = `${currencySymbol}${amount.value}`
-
-  //   if (freqKey === 'monthly') {
-  //     return `Monthly support = reliable care they count on`
-  //   }
-  //   if (freqKey === 'yearly') {
-  //     return `Yearly support = consistent care all year long`
-  //   }
-  //   return `Your ${formattedAmount} provides immediate care`
-  // })
-
-  const impactListInline = computed<string | null>(() => {
-    if (providedItems.value.length === 0) return null
-    return providedItems.value.map((item) => item.label).join(' • ')
-  })
-
-  const impactListPrefix = computed<string>(() => {
-    return 'Provides:'
-  })
-
-  // ============================================================================
-  // STEP 3: Calculate upsell logic (if enabled)
+  // STEP 1: Calculate upsell logic
   // ============================================================================
 
   // Find next preset amount for increase upsell
@@ -136,30 +73,32 @@ export function useImpactJourneyMessages(
     return findClosestPreset(targetAmount, amounts)
   })
 
-  // Check if upsell CTA should be shown
-  const showUpsell = computed<boolean>(() => {
+  // Determine upsell type and whether to show
+  const upsellType = computed<'recurring' | 'increase' | null>(() => {
     const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
 
     // One-time → recurring conversion
     if (
       freqKey === 'once' &&
-      config.value.upsells?.upsellOnceToRecurring &&
+      config.value.upsells?.enableRecurringBoost &&
       targetRecurringFrequency.value
     ) {
-      return true
+      return 'recurring'
     }
 
     // Amount increase (only if next level exists)
     if (
       (freqKey === 'monthly' || freqKey === 'yearly') &&
-      config.value.upsells?.upsellIncreaseAmount &&
+      config.value.upsells?.enableIncreaseBoost &&
       nextPresetAmount.value !== null
     ) {
-      return true
+      return 'increase'
     }
 
-    return false
+    return null
   })
+
+  const showUpsell = computed<boolean>(() => upsellType.value !== null)
 
   // Calculate target amount (converted to user's currency)
   const upsellTargetAmount = computed<number | undefined>(() => {
@@ -175,7 +114,7 @@ export function useImpactJourneyMessages(
     // Amount increase: use next preset
     if (
       (freqKey === 'monthly' || freqKey === 'yearly') &&
-      config.value.upsells?.upsellIncreaseAmount &&
+      config.value.upsells?.enableIncreaseBoost &&
       nextPresetAmount.value
     ) {
       return convertPrice(nextPresetAmount.value, currency.value, baseCurrency)
@@ -184,40 +123,53 @@ export function useImpactJourneyMessages(
     return undefined
   })
 
+  // ============================================================================
+  // STEP 2: Generate display content (message + CTA)
+  // ============================================================================
+
+  // Get emotional message based on upsell type
+  const emotionalMessage = computed<string>(() => {
+    if (upsellType.value === 'recurring') {
+      return (
+        config.value.messages?.recurringBoostMessage ||
+        'Your monthly gift means they can count on you every single day'
+      )
+    }
+    if (upsellType.value === 'increase') {
+      return (
+        config.value.messages?.increaseBoostMessage ||
+        'A little more today creates lasting change tomorrow'
+      )
+    }
+    return ''
+  })
+
   // Generate CTA button text
   const ctaCopy = computed<string>(() => {
-    const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
     const currencySymbol = getCurrencySymbol(currency.value)
-    const emojiStr = emoji.value
 
     // One-time → recurring
-    if (freqKey === 'once' && targetRecurringFrequency.value) {
+    if (upsellType.value === 'recurring' && targetRecurringFrequency.value) {
       const targetAmount = upsellTargetAmount.value || amount.value
       const targetFreq = targetRecurringFrequency.value
       const freqLabel = targetFreq === 'monthly' ? 'month' : 'year'
-      const ctaText = config.value.upsells?.upsellCtaCopy || 'Be Their Constant'
-      return `${emojiStr} Give ${currencySymbol}${targetAmount}/${freqLabel} – ${ctaText}`
+      return `Give ${currencySymbol}${targetAmount}/${freqLabel}`
     }
 
     // Amount increase
-    if (upsellTargetAmount.value) {
-      const ctaText = config.value.upsells?.upsellIncreaseCtaCopy || 'Greater Impact'
-      return `${emojiStr} Increase to ${currencySymbol}${upsellTargetAmount.value} – ${ctaText}`
+    if (upsellType.value === 'increase' && upsellTargetAmount.value) {
+      return `Increase to ${currencySymbol}${upsellTargetAmount.value}`
     }
 
-    return `${emojiStr} Increase My Impact`
+    return 'Boost My Impact'
   })
 
   return {
-    providedItems,
     showUpsell,
+    upsellType,
     upsellTargetAmount,
     targetRecurringFrequency,
-    emoji,
-    timeFrameHeadline,
-    // multiplierText,
-    impactListInline,
-    impactListPrefix,
+    emotionalMessage,
     ctaCopy
   }
 }

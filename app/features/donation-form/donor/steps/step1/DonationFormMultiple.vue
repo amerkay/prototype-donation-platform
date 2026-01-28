@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import ImpactCart from '~/features/donation-form/features/impact-cart/donor/components/ImpactCart.vue'
 import NextButton from '~/features/donation-form/donor/components/NextButton.vue'
-import ImpactJourneyCard from '~/features/donation-form/features/impact-journey/donor/components/ImpactJourneyCard.vue'
+import ImpactBoostCard from '~/features/donation-form/features/impact-boost/donor/components/ImpactBoostCard.vue'
 import ShippingNotice from '~/features/donation-form/features/shipping-notice/donor/components/ShippingNotice.vue'
 import ProductOptionsModal from '~/features/donation-form/features/product/donor/components/ProductOptionsModal.vue'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
@@ -123,14 +123,14 @@ defineExpose({
       @product-select="handleProductSelect"
     />
 
-    <!-- Impact Journey -->
-    <ImpactJourneyCard
-      v-if="formConfig.features.impactJourney.enabled"
+    <!-- Impact Boost -->
+    <ImpactBoostCard
+      v-if="formConfig.features.impactBoost.enabled"
       frequency="multiple"
       :donation-amount="cartStore.recurringTotal"
       :currency="currency"
       :base-currency="formConfig.donationAmounts.baseDefaultCurrency"
-      :config="formConfig.features.impactJourney"
+      :config="formConfig.features.impactBoost"
       :donation-amounts-config="formConfig.donationAmounts"
       :enabled-frequencies="enabledFrequencies"
       @switch-to-tab="handleSwitchToTab"

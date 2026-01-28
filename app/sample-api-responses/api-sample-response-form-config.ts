@@ -77,30 +77,15 @@ export const formConfig = {
         action: { verb: 'Adopt', noun: 'adoption' }
       }
     },
-    impactJourney: {
+    impactBoost: {
       enabled: true,
-      messaging: {
-        emoji: '❤️',
-        onceHeadline: 'Your Support Today',
-        monthlyHeadline: "Every Day You're There",
-        yearlyHeadline: "Every Day You're There"
-      },
-      impactPerAmount: {
-        items: [
-          { amount: 3, label: 'Fresh fruit' },
-          { amount: 10, label: 'Medical checkup' },
-          { amount: 15, label: 'Enrichment toys' },
-          { amount: 25, label: 'Complete care' },
-          { amount: 50, label: 'Multiple orangutans' },
-          { amount: 75, label: 'Rescue equipment' },
-          { amount: 100, label: 'Habitat protection' }
-        ]
+      messages: {
+        recurringBoostMessage: 'Your monthly gift means they can count on you every single day ❤️',
+        increaseBoostMessage: 'A little more today creates lasting change tomorrow ❤️'
       },
       upsells: {
-        upsellOnceToRecurring: true,
-        upsellCtaCopy: 'Be Their Constant',
-        upsellIncreaseAmount: true,
-        upsellIncreaseCtaCopy: 'Greater Impact'
+        enableRecurringBoost: true,
+        enableIncreaseBoost: true
       }
     },
     coverCosts: {

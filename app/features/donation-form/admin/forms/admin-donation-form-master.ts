@@ -6,7 +6,7 @@ import { useDonationFormBrandingForm } from '~/features/donation-form/admin/form
 import { useDonationFormDonationAmountsForm } from '~/features/donation-form/admin/forms/donation-form-donation-amounts-form'
 import { useMultipleProductsConfigSection } from '~/features/donation-form/features/impact-cart/admin/forms/impact-cart-config-form'
 import { useProductSelectorConfigSection } from '~/features/donation-form/features/product-selector/admin/forms/product-selector-config-form'
-import { useImpactJourneyConfigSection } from '~/features/donation-form/features/impact-journey/admin/forms/impact-journey-config-form'
+import { useImpactBoostConfigSection } from '~/features/donation-form/features/impact-boost/admin/forms/impact-boost-config-form'
 import { useCoverCostsConfigSection } from '~/features/donation-form/features/cover-costs/admin/forms/cover-costs-config-form'
 import { useGiftAidConfigSection } from '~/features/donation-form/features/gift-aid/admin/forms/gift-aid-config-form'
 import { useTributeConfigSection } from '~/features/donation-form/features/tribute/admin/forms/tribute-config-form'
@@ -26,7 +26,7 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
     const formBasicFields = useDonationFormBasicForm.setup(ctx)
     const formBrandingFields = useDonationFormBrandingForm.setup(ctx)
     const formDonationAmountsFields = useDonationFormDonationAmountsForm.setup(ctx)
-    const impactJourneyFields = useImpactJourneyConfigSection.setup(ctx)
+    const impactBoostFields = useImpactBoostConfigSection.setup(ctx)
     const impactCartFields = useMultipleProductsConfigSection.setup(ctx)
     const productSelectorFields = useProductSelectorConfigSection.setup(ctx)
     const coverCostsFields = useCoverCostsConfigSection.setup(ctx)
@@ -73,10 +73,10 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
       collapsibleDefaultOpen: false,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
       fields: {
-        impactJourney: fieldGroup('impactJourney', {
-          // label: 'Impact Journey',
+        impactBoost: fieldGroup('impactBoost', {
+          // label: 'Impact Boost',
           wrapperClass: 'p-4 bg-background rounded-lg border',
-          fields: impactJourneyFields
+          fields: impactBoostFields
         }),
         impactCart: fieldGroup('impactCart', {
           // label: 'Impact Cart',
@@ -104,9 +104,9 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
           fields: tributeFields
         })
       },
-      // Flatten nested structure: form.features.impactJourney → store.impactJourney
+      // Flatten nested structure: form.features.impactBoost → store.impactBoost
       $storePath: {
-        impactJourney: 'impactJourney',
+        impactBoost: 'impactBoost',
         impactCart: 'impactCart',
         productSelector: 'productSelector',
         coverCosts: 'coverCosts',

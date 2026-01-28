@@ -7,7 +7,7 @@ import type {
 } from '~/features/donation-form/shared/types'
 import type { ImpactCartSettings } from '~/features/donation-form/features/impact-cart/admin/types'
 import type { ProductSelectorSettings } from '~/features/donation-form/features/product-selector/admin/types'
-import type { ImpactJourneySettings } from '~/features/donation-form/features/impact-journey/admin/types'
+import type { ImpactBoostSettings } from '~/features/donation-form/features/impact-boost/admin/types'
 import type { CoverCostsSettings } from '~/features/donation-form/features/cover-costs/admin/types'
 import type { GiftAidSettings } from '~/features/donation-form/features/gift-aid/admin/types'
 import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
@@ -42,7 +42,7 @@ export const useFormConfigStore = defineStore('formConfig', () => {
   const donationAmounts = ref<DonationAmountsSettings | null>(null)
   const impactCart = ref<ImpactCartSettings | null>(null)
   const productSelector = ref<ProductSelectorSettings | null>(null)
-  const impactJourney = ref<ImpactJourneySettings | null>(null)
+  const impactBoost = ref<ImpactBoostSettings | null>(null)
   const coverCosts = ref<CoverCostsSettings | null>(null)
   const giftAid = ref<GiftAidSettings | null>(null)
   const tribute = ref<TributeSettings | null>(null)
@@ -62,7 +62,7 @@ export const useFormConfigStore = defineStore('formConfig', () => {
       features: {
         impactCart: impactCart.value!,
         productSelector: productSelector.value!,
-        impactJourney: impactJourney.value!,
+        impactBoost: impactBoost.value!,
         coverCosts: coverCosts.value!,
         giftAid: giftAid.value!,
         tribute: tribute.value!,
@@ -79,7 +79,7 @@ export const useFormConfigStore = defineStore('formConfig', () => {
     donationAmounts.value = config.donationAmounts
     impactCart.value = config.features.impactCart
     productSelector.value = config.features.productSelector
-    impactJourney.value = config.features.impactJourney
+    impactBoost.value = config.features.impactBoost
     coverCosts.value = config.features.coverCosts
     giftAid.value = config.features.giftAid
     tribute.value = config.features.tribute
@@ -96,7 +96,7 @@ export const useFormConfigStore = defineStore('formConfig', () => {
     donationAmounts,
     impactCart,
     productSelector,
-    impactJourney,
+    impactBoost,
     coverCosts,
     giftAid,
     tribute,
@@ -124,7 +124,7 @@ export interface FullFormConfig {
   features: {
     impactCart: ImpactCartSettings
     productSelector: ProductSelectorSettings
-    impactJourney: ImpactJourneySettings
+    impactBoost: ImpactBoostSettings
     coverCosts: CoverCostsSettings
     giftAid: GiftAidSettings
     tribute: TributeSettings

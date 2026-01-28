@@ -60,22 +60,15 @@ const minimalFormConfig = {
         action: { verb: 'Adopt', noun: 'adoption' }
       }
     },
-    impactJourney: {
+    impactBoost: {
       enabled: false,
-      messaging: {
-        emoji: '❤️',
-        onceHeadline: 'Your Support Today',
-        monthlyHeadline: "Every Day You're There",
-        yearlyHeadline: "Every Day You're There"
-      },
-      impactPerAmount: {
-        items: []
+      messages: {
+        recurringBoostMessage: '',
+        increaseBoostMessage: ''
       },
       upsells: {
-        upsellOnceToRecurring: false,
-        upsellCtaCopy: '',
-        upsellIncreaseAmount: false,
-        upsellIncreaseCtaCopy: ''
+        enableRecurringBoost: false,
+        enableIncreaseBoost: false
       }
     },
     coverCosts: {
