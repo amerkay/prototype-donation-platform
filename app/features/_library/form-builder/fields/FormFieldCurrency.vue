@@ -30,7 +30,7 @@ const emit = defineEmits<FieldEmits<number | string>>()
 // Get form context for dynamic currencySymbol resolution
 const { fieldContext } = useFormBuilderContext()
 
-const { wrapperProps, resolvedDisabled } = useFieldWrapper(
+const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors
@@ -57,7 +57,7 @@ const handleUpdate = (value: string | number) => {
 
 <template>
   <FormFieldWrapper v-bind="wrapperProps">
-    <InputGroup :class="cn('bg-background', props.class, meta.class)">
+    <InputGroup :class="cn('bg-background', props.class, resolvedClass)">
       <InputGroupAddon>
         <InputGroupText>{{ currencySymbol }}</InputGroupText>
       </InputGroupAddon>
@@ -71,7 +71,7 @@ const handleUpdate = (value: string | number) => {
         :placeholder="meta.placeholder"
         :disabled="resolvedDisabled"
         :aria-invalid="!!errors.length"
-        :class="cn(meta.class)"
+        :class="cn(resolvedClass)"
         @update:model-value="handleUpdate"
         @blur="onBlur"
         @keydown.enter="preventEnterSubmit"

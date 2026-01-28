@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { cn } from '@/lib/utils'
 import type { CardFieldDef } from '~/features/_library/form-builder/types'
-import { resolveText } from '~/features/_library/form-builder/composables/useResolvedFieldMeta'
+import { useResolvedFieldMeta } from '~/features/_library/form-builder/composables/useResolvedFieldMeta'
 import { useContainerFieldSetup } from '~/features/_library/form-builder/composables/useContainerFieldSetup'
 
 interface Props {
@@ -13,12 +13,10 @@ interface Props {
 const props = defineProps<Props>()
 
 // Use unified container setup composable
-const { isVisible, scopedFormValues } = useContainerFieldSetup(props.name, props.meta.visibleWhen)
+const { isVisible } = useContainerFieldSetup(props.name, props.meta.visibleWhen)
 
-// Resolve description using utility
-const resolvedDescription = computed(() =>
-  resolveText(props.meta.description, scopedFormValues.value)
-)
+// Resolve description and class using composable
+const { resolvedDescription, resolvedClass } = useResolvedFieldMeta(props.meta)
 
 // Resolve card styling based on meta props
 const cardClasses = computed(() => {
@@ -26,7 +24,7 @@ const cardClasses = computed(() => {
 
   return cn(
     showBorder && 'border rounded-lg text-card-foreground p-6 bg-background',
-    props.meta.class
+    resolvedClass.value
   )
 })
 </script>

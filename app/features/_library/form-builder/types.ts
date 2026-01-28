@@ -150,7 +150,7 @@ export interface BaseFieldConfig {
   disabled?: boolean | ComputedRef<boolean> | ((ctx: FieldContext) => boolean)
   visibleWhen?: VisibilityFn | ConditionGroup
   showSeparatorAfter?: boolean
-  class?: string
+  class?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   labelClass?: string
   descriptionClass?: string
   autocomplete?: string

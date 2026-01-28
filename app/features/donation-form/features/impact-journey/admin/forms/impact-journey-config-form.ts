@@ -63,8 +63,8 @@ export const useImpactJourneyConfigSection = defineForm('impactJourney', (_ctx) 
   })
 
   const impactAmount = currencyField('amount', {
-    label: 'Amount',
-    description: 'Amount threshold',
+    label: 'Amount threshold',
+    // description: 'Amount threshold',
     placeholder: '10',
     currencySymbol: ({ values }) => {
       // Traverse up to get base currency from pricing config
@@ -78,7 +78,7 @@ export const useImpactJourneyConfigSection = defineForm('impactJourney', (_ctx) 
 
   const impactLabel = textField('label', {
     label: 'What This Provides',
-    description: 'Keep it short (max 30 chars) for compact inline display',
+    // description: 'Keep it short (max 30 chars) for compact inline display',
     placeholder: 'Fresh fruit weekly',
     maxLength: 30,
     rules: z.string().min(1, 'Required').max(30, 'Max 30 characters')

@@ -9,6 +9,7 @@ export type WithResolvableText = {
   label?: ResolvableText
   description?: ResolvableText
   placeholder?: ResolvableText
+  class?: ResolvableText
 }
 
 /**
@@ -28,7 +29,7 @@ export function resolveText(
 }
 
 /**
- * Composable to resolve dynamic field metadata (label, description, placeholder)
+ * Composable to resolve dynamic field metadata (label, description, placeholder, class)
  * Uses vee-validate's form values AND external context via useFormBuilderContext for reactivity
  */
 export function useResolvedFieldMeta(meta: WithResolvableText) {
@@ -37,10 +38,12 @@ export function useResolvedFieldMeta(meta: WithResolvableText) {
   const resolvedLabel = computed(() => resolveText(meta.label, fieldContext.value))
   const resolvedDescription = computed(() => resolveText(meta.description, fieldContext.value))
   const resolvedPlaceholder = computed(() => resolveText(meta.placeholder, fieldContext.value))
+  const resolvedClass = computed(() => resolveText(meta.class, fieldContext.value))
 
   return {
     resolvedLabel,
     resolvedDescription,
-    resolvedPlaceholder
+    resolvedPlaceholder,
+    resolvedClass
   }
 }

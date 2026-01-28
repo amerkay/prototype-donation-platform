@@ -21,7 +21,7 @@ type Props = FieldProps<string | number, RadioGroupFieldDef>
 const props = defineProps<Props>()
 defineEmits<FieldEmits<string | number>>()
 
-const { wrapperProps, resolvedDisabled } = useFieldWrapper(
+const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors,
@@ -39,7 +39,7 @@ const { wrapperProps, resolvedDisabled } = useFieldWrapper(
       :disabled="resolvedDisabled"
       :aria-invalid="!!errors.length"
       :orientation="meta.orientation"
-      :class="cn(meta.orientation === 'horizontal' && 'grid-flow-col', meta.class)"
+      :class="cn(meta.orientation === 'horizontal' && 'grid-flow-col', resolvedClass)"
       @update:model-value="$emit('update:modelValue', $event)"
     >
       <FieldLabel

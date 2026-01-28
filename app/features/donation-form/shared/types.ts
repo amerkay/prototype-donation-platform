@@ -14,10 +14,21 @@ export interface LocalizationSettings {
   supportedCurrencies: string[]
 }
 
+/**
+ * Preset amount configuration
+ * Supports both simple number format (backward compatible) and rich format with descriptions
+ */
+export interface PresetAmount {
+  amount: number
+  shortText?: string // Max 30 chars - short description
+  image?: string // Base64 or URL for square image
+}
+
 export interface FrequencySettings {
   enabled: boolean
   label: string
-  presetAmounts: number[]
+  enableAmountDescriptions?: boolean // Toggle to enable descriptions per amount
+  presetAmounts: PresetAmount[] // Always object format for consistency
   customAmount: {
     min: number
     max: number

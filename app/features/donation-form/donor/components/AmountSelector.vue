@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import LogarithmicPriceSlider from '~/features/donation-form/donor/components/LogarithmicPriceSlider.vue'
+import type { PresetAmount } from '~/features/donation-form/shared/types'
 
 interface Props {
   modelValue: number
-  amounts: number[]
+  amounts: PresetAmount[] // Always PresetAmount[] for consistency
   currency?: string
   minPrice?: number
   maxPrice?: number
   frequencyLabel?: string
   frequency?: 'once' | 'monthly' | 'yearly'
+  showDescriptions?: boolean // Whether to show descriptions
 }
 
 interface Emits {
@@ -23,7 +26,8 @@ const props = withDefaults(defineProps<Props>(), {
   minPrice: 5,
   maxPrice: 1000,
   frequencyLabel: 'donation',
-  frequency: 'once'
+  frequency: 'once',
+  showDescriptions: false
 })
 
 const { getCurrencySymbol } = useCurrency()
@@ -35,6 +39,11 @@ const localAmount = ref(props.modelValue)
 const showSlider = ref(false)
 const selectedAmount = ref<number | null>(null)
 
+// Extract amounts as numbers for logic
+const normalizedAmounts = computed(() => {
+  return props.amounts.map((item) => item.amount)
+})
+
 // Initialize based on modelValue
 watch(
   () => props.modelValue,
@@ -42,7 +51,7 @@ watch(
     localAmount.value = newValue
 
     // Always sync selectedAmount when value matches a preset
-    if (props.amounts.includes(newValue)) {
+    if (normalizedAmounts.value.includes(newValue)) {
       selectedAmount.value = newValue
     } else {
       selectedAmount.value = null
@@ -51,7 +60,7 @@ watch(
     // Only auto-switch mode on initial load (oldValue === undefined)
     // Don't interfere when user is actively using the slider
     if (oldValue === undefined) {
-      if (props.amounts.includes(newValue)) {
+      if (normalizedAmounts.value.includes(newValue)) {
         showSlider.value = false
       } else if (newValue > 0) {
         showSlider.value = true
@@ -89,7 +98,7 @@ const enableCustomAmount = () => {
 const backToPresets = () => {
   showSlider.value = false
   // Check if current amount matches a preset
-  if (props.amounts.includes(localAmount.value)) {
+  if (normalizedAmounts.value.includes(localAmount.value)) {
     selectedAmount.value = localAmount.value
   } else {
     // Reset to no selection if custom amount doesn't match presets
@@ -101,11 +110,11 @@ const backToPresets = () => {
 
 <template>
   <div class="space-y-3">
-    <!-- Preset Amounts Grid -->
-    <div v-if="!showSlider" class="space-y-3">
+    <!-- Preset Amounts - Button Grid (without descriptions) -->
+    <div v-if="!showSlider && !showDescriptions" class="space-y-3">
       <div class="grid grid-cols-3 gap-3">
         <Button
-          v-for="amount in amounts"
+          v-for="amount in normalizedAmounts"
           :key="amount"
           :variant="selectedAmount === amount ? 'default' : 'outline'"
           class="h-14 text-lg font-semibold"
@@ -125,8 +134,78 @@ const backToPresets = () => {
       </Button>
     </div>
 
+    <!-- Preset Amounts - Stacked Cards (with descriptions) -->
+    <div v-if="!showSlider && showDescriptions" class="space-y-3">
+      <Card
+        v-for="item in amounts"
+        :key="item.amount"
+        class="cursor-pointer transition-all hover:border-primary py-0 rounded"
+        :class="{
+          'border-primary border-2 bg-primary/5': selectedAmount === item.amount,
+          border: selectedAmount !== item.amount
+        }"
+        @click="selectAmount(item.amount)"
+      >
+        <div class="pr-4 flex items-center gap-4">
+          <!-- Image (square) -->
+          <div class="size-14 shrink-0 rounded-l overflow-hidden bg-muted">
+            <img
+              v-if="item.image"
+              :src="item.image"
+              :alt="item.shortText || `${currencySymbol}${item.amount}`"
+              class="w-full h-full object-cover"
+            />
+            <div
+              v-else
+              class="w-full h-full flex items-center justify-center text-muted-foreground"
+            >
+              <span class="text-2xl">{{ currencySymbol }}</span>
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <p class="text-2xl font-bold">{{ currencySymbol }}{{ item.amount }}</p>
+              <p v-if="item.shortText" class="text-sm text-muted-foreground truncate">
+                {{ item.shortText }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Selection indicator -->
+          <div
+            v-if="selectedAmount === item.amount"
+            class="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 text-primary-foreground"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+        </div>
+      </Card>
+
+      <!-- Custom Amount Button -->
+      <Button
+        variant="outline"
+        class="h-14 w-full text-lg font-semibold"
+        @click="enableCustomAmount"
+      >
+        Custom Amount
+      </Button>
+    </div>
+
     <!-- Custom Amount Slider -->
-    <div v-else class="space-y-3">
+    <div v-else-if="showSlider" class="space-y-3">
       <!-- Selected Amount Display -->
       <div class="rounded-lg bg-muted p-4 text-center">
         <p class="text-sm text-muted-foreground">Your {{ frequencyLabel }}</p>

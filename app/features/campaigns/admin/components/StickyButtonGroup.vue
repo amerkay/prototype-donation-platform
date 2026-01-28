@@ -2,10 +2,16 @@
 import { Button } from '@/components/ui/button'
 import { Save, Loader2, RotateCcw } from 'lucide-vue-next'
 
-const props = defineProps<{
-  isDirty: boolean
-  isSaving: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    isDirty: boolean
+    isSaving: boolean
+    isValid?: boolean
+  }>(),
+  {
+    isValid: true
+  }
+)
 
 const emit = defineEmits<{
   save: []
@@ -19,7 +25,7 @@ const emit = defineEmits<{
   >
     <div class="flex gap-2">
       <Button
-        :disabled="!props.isDirty || props.isSaving"
+        :disabled="!props.isDirty || !props.isValid || props.isSaving"
         size="lg"
         class="flex-1"
         @click="emit('save')"

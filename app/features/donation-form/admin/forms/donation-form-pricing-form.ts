@@ -7,7 +7,8 @@ import {
   toggleField,
   tabsField,
   arrayField,
-  currencyField
+  currencyField,
+  imageUploadField
 } from '~/features/_library/form-builder/api'
 import type { FieldContext, FieldDef } from '~/features/_library/form-builder/types'
 import {
@@ -21,7 +22,14 @@ const frequencySchema = z
   .object({
     enabled: z.boolean(),
     label: z.string(),
-    presetAmounts: z.array(z.number()),
+    enableAmountDescriptions: z.boolean().optional(),
+    presetAmounts: z.array(
+      z.object({
+        amount: z.number(),
+        shortText: z.string().nullish(),
+        image: z.string().nullish()
+      })
+    ),
     customAmount: z.object({
       min: z.number().min(1),
       max: z.number().min(1)
@@ -46,13 +54,31 @@ const frequencySchema = z
       })
     }
 
-    val.presetAmounts.forEach((amount, idx) => {
-      if (amount < 1) {
+    // Validate amounts and conditional description requirements
+    val.presetAmounts.forEach((preset, idx) => {
+      if (preset.amount < 1) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Must be at least 1',
-          path: ['presetAmounts', idx]
+          path: ['presetAmounts', idx, 'amount']
         })
+      }
+
+      // If descriptions are enabled, validate description fields
+      if (val.enableAmountDescriptions) {
+        if (!preset.shortText || !preset.shortText.trim()) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Description is required',
+            path: ['presetAmounts', idx, 'shortText']
+          })
+        } else if (preset.shortText.length > 30) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Max 30 characters',
+            path: ['presetAmounts', idx, 'shortText']
+          })
+        }
       }
     })
   })
@@ -78,38 +104,100 @@ function createFrequencyTabFields(
         return enabled ? z.string().min(1, 'Label is required') : z.string()
       }
     }),
+    enableAmountDescriptions: toggleField('enableAmountDescriptions', {
+      label: 'Add descriptions per amount',
+      description: 'Show a description (short text + image) for each preset amount',
+      visibleWhen: ({ values }: FieldContext) => !!(values?.enabled as boolean | undefined),
+      rules: z.boolean().optional()
+    }),
     presetAmounts: arrayField('presetAmounts', {
       label: 'Preset Amounts',
       description: 'Preset donation amounts (in base currency)',
       visibleWhen: ({ values }: FieldContext) => !!(values?.enabled as boolean | undefined),
-      class: 'grid grid-cols-1 gap-2 items-start sm:grid-cols-2',
+      class: ({ values }: FieldContext) => {
+        const enableDescriptions = values.enableAmountDescriptions as boolean | undefined
+        return enableDescriptions
+          ? 'grid grid-cols-1 gap-2'
+          : 'grid grid-cols-1 gap-2 items-start sm:grid-cols-2'
+      },
       sortable: true,
-      itemField: currencyField('', {
-        placeholder: '25',
-        min: 1,
-        currencySymbol: ({ values }: FieldContext) => {
-          const pricing = (values as Record<string, unknown>).pricing as
-            | Record<string, unknown>
-            | undefined
-          const baseDefaultCurrency = (pricing?.baseDefaultCurrency as string) || 'GBP'
-          return getCurrencySymbol(baseDefaultCurrency)
-        },
-        rules: ({ values }: FieldContext) => {
-          const minAmount = (values.customAmount as Record<string, unknown> | undefined)?.min as
-            | number
-            | undefined
-          const effectiveMin = minAmount ?? 1
-          return z
-            .number({ message: 'Amount is required' })
-            .min(effectiveMin, `Must be at least ${effectiveMin}`)
-        }
-      }),
+      itemField: (itemValues: Record<string, unknown>, context) => {
+        // Access parent frequency values from root context to check if descriptions are enabled
+        const rootValues = context.root as Record<string, unknown>
+        const enableDescriptions = rootValues.enableAmountDescriptions as boolean | undefined
+
+        // Dynamic label based on amount value
+        const amount = itemValues.amount as number | undefined
+        const shortText = itemValues.shortText as string | undefined
+        const displayLabel =
+          amount && shortText && enableDescriptions
+            ? `£${amount} — ${shortText.length > 25 ? shortText.substring(0, 25) + '...' : shortText}`
+            : amount
+              ? `£${amount}`
+              : 'New Amount'
+
+        // Always return fieldGroup with 3 fields for consistent data structure
+        return fieldGroup('', {
+          label: enableDescriptions ? displayLabel : undefined,
+          collapsible: enableDescriptions,
+          collapsibleDefaultOpen: false,
+          wrapperClass: enableDescriptions ? '' : 'my-2.5!',
+          fields: {
+            amount: currencyField('amount', {
+              label: enableDescriptions ? 'Amount' : undefined,
+              placeholder: '25',
+              min: 1,
+              currencySymbol: ({ values }: FieldContext) => {
+                const pricing = (values as Record<string, unknown>).pricing as
+                  | Record<string, unknown>
+                  | undefined
+                const baseDefaultCurrency = (pricing?.baseDefaultCurrency as string) || 'GBP'
+                return getCurrencySymbol(baseDefaultCurrency)
+              },
+              rules: ({ values }: FieldContext) => {
+                const minAmount = (values.customAmount as Record<string, unknown> | undefined)
+                  ?.min as number | undefined
+                const effectiveMin = minAmount ?? 1
+                return z
+                  .number({ message: 'Amount is required' })
+                  .min(effectiveMin, `Must be at least ${effectiveMin}`)
+              }
+            }),
+            shortText: textField('shortText', {
+              label: 'Short Description',
+              placeholder: 'e.g., Feed a family for a day',
+              maxLength: 30,
+              visibleWhen: ({ root }: FieldContext) => {
+                return !!(root.enableAmountDescriptions as boolean | undefined)
+              }
+            }),
+            image: imageUploadField('image', {
+              label: 'Square Image',
+              accept: 'image/*',
+              maxSizeMB: 2,
+              recommendedDimensions: '400x400px (square)',
+              visibleWhen: ({ root }: FieldContext) => {
+                return !!(root.enableAmountDescriptions as boolean | undefined)
+              }
+            })
+          }
+        })
+      },
       addButtonText: 'Add Amount',
       rules: ({ values }: FieldContext) => {
         const enabled = values.enabled as boolean | undefined
-        return enabled
-          ? z.array(z.number().min(1)).min(1, 'At least one preset required')
-          : z.array(z.number())
+        if (!enabled) return z.array(z.any())
+
+        // Validate array of objects with conditional field requirements
+        return z
+          .array(
+            z.object({
+              amount: z.number().min(1, 'Amount is required'),
+              shortText: z.string().nullish(),
+              image: z.string().nullish()
+            })
+          )
+          .min(1, 'At least one preset required')
       }
     }),
     customAmount: fieldGroup('customAmount', {
@@ -149,52 +237,17 @@ function createFrequencyTabFields(
 }
 
 /**
- * Donation form configuration composable
- * Returns the form configuration for editing form and pricing settings
+ * Donation form pricing configuration
+ * Handles base currency, frequencies, preset amounts, and custom amount ranges
  *
- * Note: Currency settings (localization) are now managed globally in Settings -> Currency
- * Forms will inherit global currency settings by default
+ * Note: Currency settings (localization) are managed globally in Settings -> Currency
+ * Forms inherit global currency settings by default
  */
-export const useDonationFormConfigForm = defineForm('form', () => {
+export const useDonationFormPricingForm = defineForm('formPricing', () => {
   // Get currency options from store (reactive - updates when settings change)
   const currencyStore = useCurrencySettingsStore()
   const CURRENCY_OPTIONS = getCurrencyOptionsForSelect(currencyStore.supportedCurrencies)
 
-  // Basic Settings fields
-  const formTitle = textField('title', {
-    label: 'Form Title',
-    placeholder: 'Enter form title',
-    rules: z.string().min(5, 'Title is required')
-  })
-
-  const formSubtitle = textField('subtitle', {
-    label: 'Form Subtitle',
-    placeholder: 'Enter form subtitle',
-    optional: true
-  })
-
-  const form = fieldGroup('form', {
-    // label: 'Basic Settings',
-    // collapsible: true,
-    // collapsibleDefaultOpen: true,
-    showSeparatorAfter: true,
-    fields: { title: formTitle, subtitle: formSubtitle }
-  })
-
-  const branding = fieldGroup('branding', {
-    label: 'Branding',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-
-    badgeLabel: 'On my TODO list',
-    badgeVariant: 'secondary',
-    disabled: true,
-
-    showSeparatorAfter: true,
-    fields: {}
-  })
-
-  // Pricing Configuration fields
   const baseDefaultCurrency = comboboxField('baseDefaultCurrency', {
     label: 'Default / Base Currency',
     description:
@@ -258,9 +311,5 @@ export const useDonationFormConfigForm = defineForm('form', () => {
     fields: { baseDefaultCurrency, frequencies }
   })
 
-  return {
-    form,
-    branding,
-    pricing
-  }
+  return { pricing }
 })

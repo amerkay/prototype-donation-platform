@@ -12,7 +12,7 @@ type Props = FieldProps<string, EmojiFieldDef>
 const props = defineProps<Props>()
 const emit = defineEmits<FieldEmits<string>>()
 
-const { wrapperProps, resolvedDisabled } = useFieldWrapper(
+const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors
@@ -39,7 +39,7 @@ onMounted(() => {
       <EmojiPicker
         v-model:open="pickerOpen"
         :disabled="resolvedDisabled"
-        :class="meta.class"
+        :class="resolvedClass"
         :selected-value="selectedEmoji"
         :hide-trigger="!!selectedEmoji"
         @select="handleEmojiSelect"

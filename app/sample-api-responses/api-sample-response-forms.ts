@@ -28,19 +28,19 @@ const minimalFormConfig = {
       once: {
         enabled: true,
         label: 'One-time',
-        presetAmounts: [10, 25, 50, 100],
+        presetAmounts: [{ amount: 10 }, { amount: 25 }, { amount: 50 }, { amount: 100 }],
         customAmount: { min: 5, max: 1000 }
       },
       monthly: {
         enabled: false,
         label: 'Monthly',
-        presetAmounts: [5, 10, 25, 50],
+        presetAmounts: [{ amount: 5 }, { amount: 10 }, { amount: 25 }, { amount: 50 }],
         customAmount: { min: 3, max: 500 }
       },
       yearly: {
         enabled: false,
         label: 'Yearly',
-        presetAmounts: [50, 100, 250, 500],
+        presetAmounts: [{ amount: 50 }, { amount: 100 }, { amount: 250 }, { amount: 500 }],
         customAmount: { min: 25, max: 2000 }
       }
     }

@@ -173,11 +173,12 @@ const handleNext = () => {
 
 <template>
   <div ref="formContainerRef" class="space-y-6">
-    <!-- Step Header -->
-    <div class="space-y-2">
-      <h1 class="text-lg font-bold">A few more questions&hellip;</h1>
-      <!-- <p class="text-muted-foreground">Just a few more questions&hellip;</p> -->
+    <!-- Cover Costs Field (separate component for dynamic percentage/amount switching) -->
+    <div v-if="formConfig?.features.coverCosts.enabled" @click="handleFormClick">
+      <CoverCostsField :config="formConfig.features.coverCosts" />
     </div>
+
+    <Separator v-if="formConfig?.features.coverCosts.enabled" />
 
     <!-- Gift Aid Form (wrapped for click delegation) -->
     <div v-if="formConfig?.features.giftAid.enabled" @click="handleFormClick">
@@ -190,11 +191,6 @@ const handleNext = () => {
     </div>
 
     <Separator v-if="formConfig?.features.giftAid.enabled" />
-
-    <!-- Cover Costs Field (separate component for dynamic percentage/amount switching) -->
-    <div v-if="formConfig?.features.coverCosts.enabled" @click="handleFormClick">
-      <CoverCostsField :config="formConfig.features.coverCosts" />
-    </div>
 
     <!-- Custom Fields (dynamically generated from admin config) -->
     <DonationCustomFields ref="customFieldsRef" tab="step3" @submit="handleNext" />

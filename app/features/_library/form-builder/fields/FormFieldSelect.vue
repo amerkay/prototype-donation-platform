@@ -14,7 +14,7 @@ const emit = defineEmits<FieldEmits<string | number>>()
 
 const { fieldContext } = useFormBuilderContext()
 
-const { wrapperProps, resolvedPlaceholder, resolvedDisabled } = useFieldWrapper(
+const { wrapperProps, resolvedPlaceholder, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors
@@ -55,7 +55,7 @@ const selectValue = computed({
       :autocomplete="meta.autocomplete"
       :aria-invalid="!!errors.length"
       :disabled="resolvedDisabled"
-      :class="cn('bg-background', meta.class)"
+      :class="cn('bg-background', resolvedClass)"
       @blur="onBlur"
     >
       <NativeSelectOption v-if="resolvedPlaceholder" value="">

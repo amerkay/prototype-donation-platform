@@ -105,7 +105,7 @@ const arrayLabelClass = computed(() =>
   cn(props.meta.labelClass, allErrors.value.length > 0 && 'text-destructive')
 )
 
-const { resolvedLabel, resolvedDescription } = useResolvedFieldMeta(props.meta)
+const { resolvedLabel, resolvedDescription, resolvedClass } = useResolvedFieldMeta(props.meta)
 
 // --- vee-validate array state ---
 const { fields, push, move, remove, replace } = useFieldArray(resolvedVeeName)
@@ -398,7 +398,7 @@ function removeItem(index: number) {
       <div
         ref="arrayContainer"
         v-auto-animate="{ duration: 180 }"
-        :class="cn('grid gap-2', meta.class)"
+        :class="cn('grid gap-2', resolvedClass)"
       >
         <div
           v-for="item in orderedItems"
@@ -419,7 +419,7 @@ function removeItem(index: number) {
             :class="
               cn(
                 'drag-handle shrink-0 py-1.5 px-2 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none',
-                getItemFieldMeta(item.veeIndex).type === 'field-group' ? 'mt-2.5' : 'mt-1'
+                getItemFieldMeta(item.veeIndex).type === 'field-group' ? 'mt-3' : 'mt-1'
               )
             "
             draggable="true"

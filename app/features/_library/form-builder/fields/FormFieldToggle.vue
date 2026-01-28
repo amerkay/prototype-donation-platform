@@ -9,7 +9,7 @@ type Props = FieldProps<boolean, ToggleFieldDef>
 const props = defineProps<Props>()
 defineEmits<FieldEmits<boolean>>()
 
-const { wrapperProps, resolvedDisabled } = useFieldWrapper(
+const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors,
@@ -25,7 +25,7 @@ const { wrapperProps, resolvedDisabled } = useFieldWrapper(
       :id="id || name"
       :model-value="modelValue"
       :disabled="resolvedDisabled"
-      :class="meta.class"
+      :class="resolvedClass"
       @update:model-value="$emit('update:modelValue', $event)"
     />
   </FormFieldWrapper>

@@ -11,19 +11,53 @@ export const formConfig = {
       once: {
         enabled: true,
         label: 'One-time',
-        presetAmounts: [10, 25, 50, 100, 250, 500],
+        enableAmountDescriptions: true,
+        presetAmounts: [
+          {
+            amount: 10,
+            shortText: 'Fresh fruit weekly',
+            image: '/imgs/orangutan-felix-square.jpg'
+          },
+          { amount: 25, shortText: 'Medical checkup', image: '/imgs/orangutan-felix-square.jpg' },
+          { amount: 50, shortText: 'Enrichment toys', image: '/imgs/orangutan-felix-square.jpg' },
+          {
+            amount: 100,
+            shortText: 'Complete care package',
+            image: '/imgs/orangutan-felix-square.jpg'
+          },
+          {
+            amount: 250,
+            shortText: 'Multiple orangutans',
+            image: '/imgs/orangutan-felix-square.jpg'
+          },
+          { amount: 500, shortText: 'Rescue equipment', image: '/imgs/orangutan-felix-square.jpg' }
+        ],
         customAmount: { min: 5, max: 1000 }
       },
       monthly: {
         enabled: true,
         label: 'Monthly',
-        presetAmounts: [5, 10, 25, 50, 75, 100],
+        presetAmounts: [
+          { amount: 5 },
+          { amount: 10 },
+          { amount: 25 },
+          { amount: 50 },
+          { amount: 75 },
+          { amount: 100 }
+        ],
         customAmount: { min: 3, max: 500 }
       },
       yearly: {
         enabled: false,
         label: 'Yearly',
-        presetAmounts: [50, 100, 250, 500, 1000, 1500],
+        presetAmounts: [
+          { amount: 50 },
+          { amount: 100 },
+          { amount: 250 },
+          { amount: 500 },
+          { amount: 1000 },
+          { amount: 1500 }
+        ],
         customAmount: { min: 25, max: 2000 }
       }
     }

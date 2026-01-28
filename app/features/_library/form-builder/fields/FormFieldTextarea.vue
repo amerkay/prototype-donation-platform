@@ -15,7 +15,7 @@ type Props = FieldProps<string | number, TextareaFieldDef>
 const props = defineProps<Props>()
 defineEmits<FieldEmits<string | number | undefined>>()
 
-const { wrapperProps, resolvedPlaceholder, resolvedDisabled } = useFieldWrapper(
+const { wrapperProps, resolvedPlaceholder, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors
@@ -44,7 +44,7 @@ const maxLengthDisplay = computed(() => {
       :maxlength="meta.maxLength"
       :disabled="resolvedDisabled"
       :aria-invalid="!!errors.length"
-      :class="cn('bg-background', meta.class)"
+      :class="cn('bg-background', resolvedClass)"
       @update:model-value="$emit('update:modelValue', $event)"
       @blur="onBlur"
     />

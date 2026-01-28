@@ -80,7 +80,7 @@ const {
 } = useContainerFieldSetup(props.name, props.meta.visibleWhen)
 
 // Extract resolvedDisabled from useFieldWrapper for standard disabled support
-const { resolvedDisabled } = useFieldWrapper(props.meta, props.name, () => [])
+const { resolvedDisabled, resolvedClass } = useFieldWrapper(props.meta, props.name, () => [])
 
 // Compute combined errors if fields are provided
 const hasChildErrors = props.meta.fields
@@ -191,7 +191,7 @@ if (props.meta.collapsible) {
         <FormFieldList
           :fields="meta.fields || {}"
           :field-context="scopedFormValues"
-          :class="cn(meta.class)"
+          :class="cn(resolvedClass)"
         />
       </AccordionContent>
     </AccordionItem>
@@ -210,7 +210,7 @@ if (props.meta.collapsible) {
     <FormFieldList
       :fields="meta.fields || {}"
       :field-context="scopedFormValues"
-      :class="meta.class"
+      :class="resolvedClass"
     />
   </FieldSet>
 </template>

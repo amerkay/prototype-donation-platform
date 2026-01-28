@@ -44,7 +44,7 @@ const backUrl = computed(() => `/admin/campaigns/${campaignId}/forms/${formId}/e
 </script>
 
 <template>
-  <PreviewLayout :back-url="backUrl" back-label="Back to Form Settings">
+  <PreviewLayout :back-url="backUrl" back-label="Back">
     <DonationFormPreview />
   </PreviewLayout>
 </template>

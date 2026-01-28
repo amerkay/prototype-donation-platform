@@ -92,7 +92,6 @@ const handleNext = () => {
     <!-- Shipping Address Form (conditional) -->
     <template v-if="needsShipping">
       <ShippingNotice :requires-shipping="true" :cart-count="shippingCounts.cartCount" />
-      <!-- <div class="rounded-lg border border-transparent px-4 py-6 bg-background/40"> -->
       <FormRenderer
         ref="shippingFormRef"
         v-model="shippingSection"
@@ -100,7 +99,6 @@ const handleNext = () => {
         :section="useAddressForm"
         @submit="handleNext"
       />
-      <!-- </div> -->
     </template>
 
     <!-- Custom Fields (dynamically generated from admin config) -->

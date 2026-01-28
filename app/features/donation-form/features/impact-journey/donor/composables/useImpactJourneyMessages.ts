@@ -94,7 +94,8 @@ export function useImpactJourneyMessages(
     if (!freqConfig?.enabled || !freqConfig.presetAmounts) return null
 
     const baseAmount = convertPrice(amount.value, baseCurrency, currency.value)
-    const sorted = [...freqConfig.presetAmounts].sort((a, b) => a - b)
+    const amounts = freqConfig.presetAmounts.map((preset) => preset.amount)
+    const sorted = [...amounts].sort((a, b) => a - b)
     return sorted.find((preset) => preset > baseAmount) || null
   })
 
@@ -129,8 +130,10 @@ export function useImpactJourneyMessages(
     // Calculate target: 66.6% for monthly, 100% for yearly
     const targetAmount = targetFreq === 'monthly' ? baseAmount * (2 / 3) : baseAmount
 
+    const amounts = freqConfig.presetAmounts.map((preset) => preset.amount)
+
     // Find closest preset
-    return findClosestPreset(targetAmount, freqConfig.presetAmounts)
+    return findClosestPreset(targetAmount, amounts)
   })
 
   // Check if upsell CTA should be shown

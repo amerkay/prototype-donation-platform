@@ -28,7 +28,7 @@ const emit = defineEmits<FieldEmits<string | number | (string | number)[]>>()
 
 const { fieldContext } = useFormBuilderContext()
 
-const { wrapperProps, resolvedPlaceholder, resolvedDisabled } = useFieldWrapper(
+const { wrapperProps, resolvedPlaceholder, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors
@@ -158,7 +158,7 @@ const removeBadge = (value: string | number, event: Event) => {
           cn(
             'inline-flex w-full items-center justify-between rounded-lg border border-input px-3 py-2 text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-within:outline-none focus-within:ring-1 focus-within:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer',
             'bg-background',
-            meta.class,
+            resolvedClass,
             errors.length && 'border-destructive',
             resolvedDisabled && 'pointer-events-none'
           )

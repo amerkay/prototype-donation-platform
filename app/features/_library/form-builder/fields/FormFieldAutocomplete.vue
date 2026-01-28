@@ -47,7 +47,7 @@ if (props.modelValue) {
   selectedValue.value = props.modelValue
 }
 
-const { wrapperProps, resolvedPlaceholder, resolvedDisabled } = useFieldWrapper(
+const { wrapperProps, resolvedPlaceholder, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors
@@ -178,7 +178,7 @@ const notFoundText = computed(() => props.meta.notFoundText ?? 'No results found
           cn(
             'inline-flex w-full items-center justify-between rounded-lg border border-input px-3 py-2 text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-within:outline-none focus-within:ring-1 focus-within:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
             'bg-background',
-            meta.class,
+            resolvedClass,
             errors.length && 'border-destructive'
           )
         "

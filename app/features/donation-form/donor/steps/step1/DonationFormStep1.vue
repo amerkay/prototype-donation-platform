@@ -121,7 +121,8 @@ watch(
   { immediate: true }
 )
 
-const availableAmounts = computed(() => {
+// Get preset amounts in rich format (with descriptions if available)
+const richAvailableAmounts = computed(() => {
   if (selectedFrequency.value === 'multiple') return []
   if (
     !enabledFrequencies.value.includes(selectedFrequency.value as 'once' | 'monthly' | 'yearly')
@@ -131,7 +132,26 @@ const availableAmounts = computed(() => {
   const cfg =
     formConfig.value.pricing.frequencies[selectedFrequency.value as 'once' | 'monthly' | 'yearly']
   if (!cfg) return []
-  return cfg.presetAmounts.map((amt: number) => convertPrice(amt, selectedCurrency.value))
+
+  // Convert to rich format with currency conversion
+  return cfg.presetAmounts.map((preset) => ({
+    amount: convertPrice(preset.amount, selectedCurrency.value),
+    shortText: preset.shortText,
+    image: preset.image
+  }))
+})
+
+// Check if descriptions are enabled for current frequency
+const showAmountDescriptions = computed(() => {
+  if (selectedFrequency.value === 'multiple') return false
+  if (
+    !enabledFrequencies.value.includes(selectedFrequency.value as 'once' | 'monthly' | 'yearly')
+  ) {
+    return false
+  }
+  const cfg =
+    formConfig.value.pricing.frequencies[selectedFrequency.value as 'once' | 'monthly' | 'yearly']
+  return cfg?.enableAmountDescriptions ?? false
 })
 
 const sliderMinPrice = computed(() => {
@@ -304,11 +324,12 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           "
           :tribute-data="store.tributeData"
           :products="products"
-          :available-amounts="availableAmounts"
+          :available-amounts="richAvailableAmounts"
           :min-price="sliderMinPrice"
           :max-price="sliderMaxPrice"
           :enabled-frequencies="enabledFrequencies"
           :form-config="formConfig"
+          :show-amount-descriptions="showAmountDescriptions"
           @update:donation-amount="
             (val) => store.setDonationAmount(freq.value as 'once' | 'monthly' | 'yearly', val)
           "

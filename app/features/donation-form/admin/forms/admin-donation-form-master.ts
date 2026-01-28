@@ -1,7 +1,9 @@
 import { defineForm, fieldGroup } from '~/features/_library/form-builder/api'
 import type { FormContext } from '~/features/_library/form-builder/types'
 import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
-import { useDonationFormConfigForm } from '~/features/donation-form/admin/forms/donation-form-config-form'
+import { useDonationFormBasicForm } from '~/features/donation-form/admin/forms/donation-form-basic-form'
+import { useDonationFormBrandingForm } from '~/features/donation-form/admin/forms/donation-form-branding-form'
+import { useDonationFormPricingForm } from '~/features/donation-form/admin/forms/donation-form-pricing-form'
 import { useMultipleProductsConfigSection } from '~/features/donation-form/features/impact-cart/admin/forms/impact-cart-config-form'
 import { useProductSelectorConfigSection } from '~/features/donation-form/features/product-selector/admin/forms/product-selector-config-form'
 import { useImpactJourneyConfigSection } from '~/features/donation-form/features/impact-journey/admin/forms/impact-journey-config-form'
@@ -21,7 +23,9 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
     provideAccordionGroup()
 
     // Extract fields from each sub-form by calling their setup functions
-    const formSettingsFields = useDonationFormConfigForm.setup(ctx)
+    const formBasicFields = useDonationFormBasicForm.setup(ctx)
+    const formBrandingFields = useDonationFormBrandingForm.setup(ctx)
+    const formPricingFields = useDonationFormPricingForm.setup(ctx)
     const impactJourneyFields = useImpactJourneyConfigSection.setup(ctx)
     const impactCartFields = useMultipleProductsConfigSection.setup(ctx)
     const productSelectorFields = useProductSelectorConfigSection.setup(ctx)
@@ -37,7 +41,7 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
       collapsible: true,
       collapsibleDefaultOpen: true,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: formSettingsFields
+      fields: { ...formBasicFields, ...formBrandingFields, ...formPricingFields }
     })
 
     // Features - all donation features grouped together

@@ -12,7 +12,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<FieldEmits<number>>()
 
 const { fieldContext } = useFormBuilderContext()
-const { wrapperProps, resolvedDisabled } = useFieldWrapper(
+const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors
@@ -98,7 +98,7 @@ const handleSliderChange = (value: number[] | undefined) => {
         :max="resolvedMax"
         :step="resolvedStep"
         :disabled="resolvedDisabled"
-        :class="meta.class"
+        :class="resolvedClass"
         class="**:data-[slot=slider-track]:h-2.5 **:data-[slot=slider-thumb]:size-6"
         @update:model-value="handleSliderChange"
       />

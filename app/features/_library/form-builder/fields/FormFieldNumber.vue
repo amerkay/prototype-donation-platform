@@ -20,7 +20,7 @@ type Props = FieldProps<number | null | string, NumberFieldDef>
 const props = defineProps<Props>()
 defineEmits<FieldEmits<number | null | string | undefined>>()
 
-const { wrapperProps, resolvedDisabled } = useFieldWrapper(
+const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors
@@ -54,7 +54,7 @@ const coercedValue = computed<number | null>(() => {
         <NumberFieldDecrement />
         <NumberFieldInput
           :aria-invalid="!!errors.length"
-          :class="cn('bg-background', meta.class)"
+          :class="cn('bg-background', resolvedClass)"
           @keydown.enter="preventEnterSubmit"
         />
         <NumberFieldIncrement />

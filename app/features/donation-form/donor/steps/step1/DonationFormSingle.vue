@@ -11,6 +11,7 @@ import ProductSelectorButton from '~/features/donation-form/features/product-sel
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
 import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
+import type { PresetAmount } from '~/features/donation-form/shared/types'
 
 interface Props {
   frequency: 'once' | 'monthly' | 'yearly'
@@ -20,11 +21,12 @@ interface Props {
   selectedProduct: Product | null
   tributeData: TributeData | undefined
   products: Product[]
-  availableAmounts: number[]
+  availableAmounts: PresetAmount[] // Always PresetAmount[] for consistency
   minPrice: number
   maxPrice: number
   enabledFrequencies: Array<'once' | 'monthly' | 'yearly'>
   formConfig: FullFormConfig
+  showAmountDescriptions?: boolean // Whether to show descriptions
 }
 
 const props = defineProps<Props>()
@@ -100,6 +102,7 @@ defineExpose({
       :max-price="maxPrice"
       :frequency-label="frequencyLabel.toLowerCase() + ' donation'"
       :frequency="frequency"
+      :show-descriptions="showAmountDescriptions"
       @update:model-value="handleAmountUpdate"
     />
 

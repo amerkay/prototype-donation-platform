@@ -13,7 +13,7 @@ type Props = FieldProps<string | number, TextFieldDef>
 const props = defineProps<Props>()
 defineEmits<FieldEmits<string | number | undefined>>()
 
-const { wrapperProps, resolvedPlaceholder, resolvedDisabled } = useFieldWrapper(
+const { wrapperProps, resolvedPlaceholder, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors
@@ -30,7 +30,7 @@ const { wrapperProps, resolvedPlaceholder, resolvedDisabled } = useFieldWrapper(
       :maxlength="meta.maxLength"
       :disabled="resolvedDisabled"
       :aria-invalid="!!errors.length"
-      :class="cn('bg-background', meta.class, 'text-sm')"
+      :class="cn('bg-background', resolvedClass, 'text-sm')"
       @update:model-value="$emit('update:modelValue', $event)"
       @blur="onBlur"
       @keydown.enter="preventEnterSubmit"

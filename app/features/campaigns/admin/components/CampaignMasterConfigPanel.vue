@@ -55,6 +55,7 @@ defineExpose(expose)
     <StickyButtonGroup
       :is-dirty="store.isDirty"
       :is-saving="store.isSaving"
+      :is-valid="formRef?.isValid ?? false"
       @save="$emit('save')"
       @discard="$emit('discard')"
     />

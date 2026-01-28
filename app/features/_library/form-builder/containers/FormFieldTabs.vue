@@ -6,7 +6,10 @@ import { Field, FieldLegend, FieldDescription } from '@/components/ui/field'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import type { TabsFieldDef, TabDefinitionConfig } from '~/features/_library/form-builder/types'
-import { resolveText } from '~/features/_library/form-builder/composables/useResolvedFieldMeta'
+import {
+  useResolvedFieldMeta,
+  resolveText
+} from '~/features/_library/form-builder/composables/useResolvedFieldMeta'
 import { useContainerFieldSetup } from '~/features/_library/form-builder/composables/useContainerFieldSetup'
 import { useCombinedErrors } from '~/features/_library/form-builder/composables/useCombinedErrors'
 import FormFieldGroup from './FormFieldGroup.vue'
@@ -56,6 +59,9 @@ const tabHasErrors = (tabValue: string) => {
 
 const resolvedLabel = computed(() => resolveText(props.meta.label, scopedFormValues.value))
 
+// Resolve class from meta
+const { resolvedClass } = useResolvedFieldMeta(props.meta)
+
 // Resolve tab labels using utility
 const resolveTabLabel = (tab: (typeof props.meta.tabs)[number]) => {
   return resolveText(tab.label, scopedFormValues.value)
@@ -69,7 +75,7 @@ const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
 
 <template>
   <div v-show="isTabsVisible">
-    <Field :class="cn(meta.class, 'space-y-1')">
+    <Field :class="cn(resolvedClass, 'space-y-1')">
       <FieldLegend v-if="resolvedLabel" :class="cn('mb-0', meta.labelClass)">
         {{ resolvedLabel }}
       </FieldLegend>
