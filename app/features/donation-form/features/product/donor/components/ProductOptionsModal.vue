@@ -8,7 +8,7 @@ import AmountSelector from '~/features/donation-form/donor/components/AmountSele
 import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
 import { createTributeFormSection } from '~/features/donation-form/features/tribute/donor/forms/tribute-form'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
-import type { PricingSettings } from '~/features/donation-form/shared/types'
+import type { DonationAmountsSettings } from '~/features/donation-form/shared/types'
 import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
 import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
 import type { CartItem } from '~/features/donation-form/features/impact-cart/donor/types'
@@ -16,13 +16,13 @@ import type { CartItem } from '~/features/donation-form/features/impact-cart/don
 interface Props {
   currency: string
   baseCurrency?: string
-  pricingConfig?: PricingSettings['frequencies']
+  donationAmountsConfig?: DonationAmountsSettings['frequencies']
   tributeConfig?: TributeSettings
 }
 
 const props = withDefaults(defineProps<Props>(), {
   baseCurrency: 'GBP',
-  pricingConfig: () => ({
+  donationAmountsConfig: () => ({
     once: {
       enabled: true,
       label: 'One-time',
@@ -122,7 +122,7 @@ const frequencyLabel = computed(() => {
 const amounts = computed(() => {
   if (!product.value || !isRecurring.value) return []
   const frequency = product.value.frequency
-  const config = props.pricingConfig?.[frequency]
+  const config = props.donationAmountsConfig?.[frequency]
   if (!config?.presetAmounts) return []
   // Convert amounts but preserve PresetAmount structure
   return config.presetAmounts.map((preset) => ({
@@ -134,7 +134,7 @@ const amounts = computed(() => {
 const maxPrice = computed(() => {
   if (!product.value) return 1000
   const frequency = product.value.frequency
-  const config = props.pricingConfig?.[frequency]
+  const config = props.donationAmountsConfig?.[frequency]
   return convertPrice(config?.customAmount?.max ?? 1000, props.currency)
 })
 

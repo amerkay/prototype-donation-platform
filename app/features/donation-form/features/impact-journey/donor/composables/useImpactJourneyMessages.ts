@@ -5,7 +5,7 @@ import {
 } from '~/features/donation-form/shared/composables/useCurrency'
 import type { ImpactJourneySettings } from '~/features/donation-form/features/impact-journey/admin/types'
 import type { ImpactPerAmount } from '~/features/donation-form/features/impact-journey/donor/types'
-import type { PricingSettings } from '~/features/donation-form/shared/types'
+import type { DonationAmountsSettings } from '~/features/donation-form/shared/types'
 
 /**
  * Composable for impact journey - auto-generates impact messages and CTAs
@@ -17,7 +17,7 @@ export function useImpactJourneyMessages(
   currency: Ref<string>,
   baseCurrency: string,
   config: Ref<ImpactJourneySettings>,
-  pricingConfig: Ref<PricingSettings>
+  donationAmountsConfig: Ref<DonationAmountsSettings>
 ) {
   const { convertPrice } = useCurrency(baseCurrency)
 
@@ -90,7 +90,7 @@ export function useImpactJourneyMessages(
   // Find next preset amount for increase upsell
   const nextPresetAmount = computed<number | null>(() => {
     const freqKey = frequency.value as 'once' | 'monthly' | 'yearly'
-    const freqConfig = pricingConfig.value.frequencies[freqKey]
+    const freqConfig = donationAmountsConfig.value.frequencies[freqKey]
     if (!freqConfig?.enabled || !freqConfig.presetAmounts) return null
 
     const baseAmount = convertPrice(amount.value, baseCurrency, currency.value)
@@ -102,8 +102,8 @@ export function useImpactJourneyMessages(
   // Determine which recurring frequency to suggest (monthly or yearly)
   const targetRecurringFrequency = computed<'monthly' | 'yearly' | null>(() => {
     // Prefer monthly, fallback to yearly if monthly disabled
-    if (pricingConfig.value.frequencies.monthly?.enabled) return 'monthly'
-    if (pricingConfig.value.frequencies.yearly?.enabled) return 'yearly'
+    if (donationAmountsConfig.value.frequencies.monthly?.enabled) return 'monthly'
+    if (donationAmountsConfig.value.frequencies.yearly?.enabled) return 'yearly'
     return null
   })
 
@@ -121,7 +121,7 @@ export function useImpactJourneyMessages(
     const targetFreq = targetRecurringFrequency.value
     if (!targetFreq) return null
 
-    const freqConfig = pricingConfig.value.frequencies[targetFreq]
+    const freqConfig = donationAmountsConfig.value.frequencies[targetFreq]
     if (!freqConfig?.enabled || !freqConfig.presetAmounts) return null
 
     // Convert current amount to base currency

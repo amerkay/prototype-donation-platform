@@ -35,7 +35,7 @@ export interface FrequencySettings {
   }
 }
 
-export interface PricingSettings {
+export interface DonationAmountsSettings {
   baseDefaultCurrency: string
   frequencies: {
     once: FrequencySettings

@@ -52,10 +52,10 @@ export function createPresetAmountsField() {
             placeholder: '25',
             min: 1,
             currencySymbol: ({ values }: FieldContext) => {
-              const pricing = (values as Record<string, unknown>).pricing as
+              const donationAmounts = (values as Record<string, unknown>).donationAmounts as
                 | Record<string, unknown>
                 | undefined
-              const baseDefaultCurrency = (pricing?.baseDefaultCurrency as string) || 'GBP'
+              const baseDefaultCurrency = (donationAmounts?.baseDefaultCurrency as string) || 'GBP'
               return getCurrencySymbol(baseDefaultCurrency)
             },
             rules: ({ values }: FieldContext) => {

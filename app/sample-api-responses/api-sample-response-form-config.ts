@@ -5,7 +5,7 @@ export const formConfig = {
     title: 'Make a Donation',
     subtitle: 'Choose your donation amount'
   },
-  pricing: {
+  donationAmounts: {
     baseDefaultCurrency: 'GBP',
     frequencies: {
       once: {

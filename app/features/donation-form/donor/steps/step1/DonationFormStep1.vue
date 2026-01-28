@@ -34,7 +34,7 @@ const emit = defineEmits<{
 }>()
 
 const { convertPrice } = useCurrency(
-  computed(() => formConfig.value.pricing.baseDefaultCurrency).value
+  computed(() => formConfig.value.donationAmounts.baseDefaultCurrency).value
 )
 
 // Initialize Pinia stores
@@ -42,7 +42,7 @@ const store = useDonationFormStore()
 
 // Get effective currencies (form override or global settings)
 const { effectiveCurrencies } = useDonationCurrencies()
-store.initialize(formConfig.value.pricing.baseDefaultCurrency)
+store.initialize(formConfig.value.donationAmounts.baseDefaultCurrency)
 
 const cartStore = useImpactCartStore()
 
@@ -72,10 +72,10 @@ const BASE_FREQUENCY_ORDER = ['once', 'monthly', 'yearly'] as const
 // Convert frequencies config to array format for UI (enabled only)
 const BASE_FREQUENCIES = computed(() => {
   return BASE_FREQUENCY_ORDER.filter(
-    (freq) => formConfig.value.pricing.frequencies[freq].enabled
+    (freq) => formConfig.value.donationAmounts.frequencies[freq].enabled
   ).map((freq) => ({
     value: freq,
-    label: formConfig.value.pricing.frequencies[freq].label
+    label: formConfig.value.donationAmounts.frequencies[freq].label
   }))
 })
 
@@ -130,7 +130,9 @@ const richAvailableAmounts = computed(() => {
     return []
   }
   const cfg =
-    formConfig.value.pricing.frequencies[selectedFrequency.value as 'once' | 'monthly' | 'yearly']
+    formConfig.value.donationAmounts.frequencies[
+      selectedFrequency.value as 'once' | 'monthly' | 'yearly'
+    ]
   if (!cfg) return []
 
   // Convert to rich format with currency conversion
@@ -150,7 +152,9 @@ const showAmountDescriptions = computed(() => {
     return false
   }
   const cfg =
-    formConfig.value.pricing.frequencies[selectedFrequency.value as 'once' | 'monthly' | 'yearly']
+    formConfig.value.donationAmounts.frequencies[
+      selectedFrequency.value as 'once' | 'monthly' | 'yearly'
+    ]
   return cfg?.enableAmountDescriptions ?? false
 })
 
@@ -162,7 +166,9 @@ const sliderMinPrice = computed(() => {
     return 0
   }
   const cfg =
-    formConfig.value.pricing.frequencies[selectedFrequency.value as 'once' | 'monthly' | 'yearly']
+    formConfig.value.donationAmounts.frequencies[
+      selectedFrequency.value as 'once' | 'monthly' | 'yearly'
+    ]
   if (!cfg) return 0
   return convertPrice(cfg.customAmount.min, selectedCurrency.value)
 })
@@ -175,7 +181,9 @@ const sliderMaxPrice = computed(() => {
     return 0
   }
   const cfg =
-    formConfig.value.pricing.frequencies[selectedFrequency.value as 'once' | 'monthly' | 'yearly']
+    formConfig.value.donationAmounts.frequencies[
+      selectedFrequency.value as 'once' | 'monthly' | 'yearly'
+    ]
   if (!cfg) return 0
   return convertPrice(cfg.customAmount.max, selectedCurrency.value)
 })

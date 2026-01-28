@@ -67,9 +67,9 @@ export const useImpactJourneyConfigSection = defineForm('impactJourney', (_ctx) 
     // description: 'Amount threshold',
     placeholder: '10',
     currencySymbol: ({ values }) => {
-      // Traverse up to get base currency from pricing config
+      // Traverse up to get base currency from donation amounts config
       const baseDefaultCurrency =
-        ((values as Record<string, unknown>)?.pricing as Record<string, unknown>)
+        ((values as Record<string, unknown>)?.donationAmounts as Record<string, unknown>)
           ?.baseDefaultCurrency || 'GBP'
       return baseDefaultCurrency === 'USD' ? '$' : baseDefaultCurrency === 'EUR' ? '€' : '£'
     },

@@ -133,10 +133,10 @@ function createFrequencyTabFields(
           placeholder: maxPlaceholder,
           min: 1,
           currencySymbol: ({ values }: FieldContext) => {
-            const pricing = (values as Record<string, unknown>).pricing as
+            const donationAmounts = (values as Record<string, unknown>).donationAmounts as
               | Record<string, unknown>
               | undefined
-            const baseDefaultCurrency = (pricing?.baseDefaultCurrency as string) || 'GBP'
+            const baseDefaultCurrency = (donationAmounts?.baseDefaultCurrency as string) || 'GBP'
             return getCurrencySymbol(baseDefaultCurrency)
           },
           rules: z.number().min(1, 'Must be at least 1')
@@ -147,13 +147,13 @@ function createFrequencyTabFields(
 }
 
 /**
- * Donation form pricing configuration
+ * Donation amounts configuration
  * Handles base currency, frequencies, preset amounts, and custom amount ranges
  *
  * Note: Currency settings (localization) are managed globally in Settings -> Currency
  * Forms inherit global currency settings by default
  */
-export const useDonationFormPricingForm = defineForm('formPricing', () => {
+export const useDonationFormDonationAmountsForm = defineForm('formDonationAmounts', () => {
   // Get currency options from store (reactive - updates when settings change)
   const currencyStore = useCurrencySettingsStore()
   const CURRENCY_OPTIONS = getCurrencyOptionsForSelect(currencyStore.supportedCurrencies)

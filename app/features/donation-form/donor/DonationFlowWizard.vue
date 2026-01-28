@@ -22,7 +22,7 @@ const TOTAL_STEPS = 4 // Donation, Donor Info, Gift Aid/Cover Fees, Payment
 
 // Initialize Pinia stores
 const store = useDonationFormStore()
-store.initialize(activeConfig.value.pricing.baseDefaultCurrency)
+store.initialize(activeConfig.value.donationAmounts.baseDefaultCurrency)
 
 const cartStore = useImpactCartStore()
 

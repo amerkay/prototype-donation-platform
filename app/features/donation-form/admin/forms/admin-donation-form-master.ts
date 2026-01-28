@@ -3,7 +3,7 @@ import type { FormContext } from '~/features/_library/form-builder/types'
 import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 import { useDonationFormBasicForm } from '~/features/donation-form/admin/forms/donation-form-basic-form'
 import { useDonationFormBrandingForm } from '~/features/donation-form/admin/forms/donation-form-branding-form'
-import { useDonationFormPricingForm } from '~/features/donation-form/admin/forms/donation-form-pricing-form'
+import { useDonationFormDonationAmountsForm } from '~/features/donation-form/admin/forms/donation-form-donation-amounts-form'
 import { useMultipleProductsConfigSection } from '~/features/donation-form/features/impact-cart/admin/forms/impact-cart-config-form'
 import { useProductSelectorConfigSection } from '~/features/donation-form/features/product-selector/admin/forms/product-selector-config-form'
 import { useImpactJourneyConfigSection } from '~/features/donation-form/features/impact-journey/admin/forms/impact-journey-config-form'
@@ -25,7 +25,7 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
     // Extract fields from each sub-form by calling their setup functions
     const formBasicFields = useDonationFormBasicForm.setup(ctx)
     const formBrandingFields = useDonationFormBrandingForm.setup(ctx)
-    const formPricingFields = useDonationFormPricingForm.setup(ctx)
+    const formDonationAmountsFields = useDonationFormDonationAmountsForm.setup(ctx)
     const impactJourneyFields = useImpactJourneyConfigSection.setup(ctx)
     const impactCartFields = useMultipleProductsConfigSection.setup(ctx)
     const productSelectorFields = useProductSelectorConfigSection.setup(ctx)
@@ -49,18 +49,18 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
       }
     })
 
-    // Pricing - standalone section for donation amounts and frequencies
-    const pricing = fieldGroup('pricing', {
-      label: 'Pricing',
+    // Donation Amounts - standalone section for donation amounts and frequencies
+    const donationAmounts = fieldGroup('donationAmounts', {
+      label: 'Donation Amounts',
       description: 'Configure donation amounts and frequency options.',
       collapsible: true,
       collapsibleDefaultOpen: false,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: formPricingFields,
-      // Flatten structure: form.pricing.baseDefaultCurrency → store.pricing.baseDefaultCurrency
+      fields: formDonationAmountsFields,
+      // Flatten structure: form.donationAmounts.baseDefaultCurrency → store.donationAmounts.baseDefaultCurrency
       $storePath: {
-        baseDefaultCurrency: 'pricing.baseDefaultCurrency',
-        frequencies: 'pricing.frequencies'
+        baseDefaultCurrency: 'donationAmounts.baseDefaultCurrency',
+        frequencies: 'donationAmounts.frequencies'
       }
     })
 
@@ -127,7 +127,7 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
 
     return {
       formSettings,
-      pricing,
+      donationAmounts,
       features,
       customFields
     }

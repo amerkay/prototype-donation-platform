@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type {
   FormSettings,
-  PricingSettings,
+  DonationAmountsSettings,
   DonationCustomFieldsSettings
 } from '~/features/donation-form/shared/types'
 import type { ImpactCartSettings } from '~/features/donation-form/features/impact-cart/admin/types'
@@ -39,7 +39,7 @@ export const useFormConfigStore = defineStore('formConfig', () => {
   const formId = ref<string | null>(null)
   const version = ref('1.0')
   const form = ref<FormSettings | null>(null)
-  const pricing = ref<PricingSettings | null>(null)
+  const donationAmounts = ref<DonationAmountsSettings | null>(null)
   const impactCart = ref<ImpactCartSettings | null>(null)
   const productSelector = ref<ProductSelectorSettings | null>(null)
   const impactJourney = ref<ImpactJourneySettings | null>(null)
@@ -51,14 +51,14 @@ export const useFormConfigStore = defineStore('formConfig', () => {
 
   // Getters
   const fullConfig = computed((): FullFormConfig | null => {
-    if (!form.value || !pricing.value) {
+    if (!form.value || !donationAmounts.value) {
       return null
     }
 
     return {
       version: version.value,
       form: form.value,
-      pricing: pricing.value,
+      donationAmounts: donationAmounts.value,
       features: {
         impactCart: impactCart.value!,
         productSelector: productSelector.value!,
@@ -76,7 +76,7 @@ export const useFormConfigStore = defineStore('formConfig', () => {
     formId.value = id ?? null
     version.value = config.version
     form.value = config.form
-    pricing.value = config.pricing
+    donationAmounts.value = config.donationAmounts
     impactCart.value = config.features.impactCart
     productSelector.value = config.features.productSelector
     impactJourney.value = config.features.impactJourney
@@ -93,7 +93,7 @@ export const useFormConfigStore = defineStore('formConfig', () => {
     formId,
     version,
     form,
-    pricing,
+    donationAmounts,
     impactCart,
     productSelector,
     impactJourney,
@@ -120,7 +120,7 @@ export const useFormConfigStore = defineStore('formConfig', () => {
 export interface FullFormConfig {
   version: string
   form: FormSettings
-  pricing: PricingSettings
+  donationAmounts: DonationAmountsSettings
   features: {
     impactCart: ImpactCartSettings
     productSelector: ProductSelectorSettings
