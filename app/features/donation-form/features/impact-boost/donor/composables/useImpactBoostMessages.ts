@@ -130,16 +130,10 @@ export function useImpactBoostMessages(
   // Get emotional message based on upsell type
   const emotionalMessage = computed<string>(() => {
     if (upsellType.value === 'recurring') {
-      return (
-        config.value.messages?.recurringBoostMessage ||
-        'Your monthly gift means they can count on you every single day'
-      )
+      return config.value.messages?.recurringBoostMessage || ''
     }
     if (upsellType.value === 'increase') {
-      return (
-        config.value.messages?.increaseBoostMessage ||
-        'A little more today creates lasting change tomorrow'
-      )
+      return config.value.messages?.increaseBoostMessage || ''
     }
     return ''
   })

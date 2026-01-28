@@ -14,6 +14,7 @@ import { resolveText } from '~/features/_library/form-builder/composables/useRes
 import { useContainerFieldSetup } from '~/features/_library/form-builder/composables/useContainerFieldSetup'
 import { useCombinedErrors } from '~/features/_library/form-builder/composables/useCombinedErrors'
 import { useFieldWrapper } from '~/features/_library/form-builder/composables/useFieldWrapper'
+import { useContainerValidation } from '~/features/_library/form-builder/composables/useContainerValidation'
 import FormFieldList from '../internal/FormFieldList.vue'
 import { useScrollOnVisible } from '../composables/useScrollOnVisible'
 import { useAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
@@ -83,9 +84,18 @@ const {
 const { resolvedDisabled, resolvedClass } = useFieldWrapper(props.meta, props.name, () => [])
 
 // Compute combined errors if fields are provided
+// Include container-level rules for schema validation when unmounted
 const hasChildErrors = props.meta.fields
-  ? useCombinedErrors(fullPath, props.meta.fields, scopedFormValues)
+  ? useCombinedErrors(fullPath, props.meta.fields, scopedFormValues, props.meta.rules)
   : computed(() => false)
+
+// Validate container-level rules if defined
+const { containerErrors } = useContainerValidation(
+  fullPath,
+  props.meta.rules,
+  scopedFormValues,
+  () => isGroupVisible.value
+)
 
 // Resolve dynamic defaultOpen after scopedFormValues is available
 if (props.meta.collapsible && typeof props.meta.collapsibleDefaultOpen === 'function') {
@@ -170,7 +180,11 @@ if (props.meta.collapsible) {
               >
                 {{ meta.badgeLabel }}
               </Badge>
-              <Badge v-if="hasChildErrors" variant="destructive" class="text-xs gap-1">
+              <Badge
+                v-if="hasChildErrors || containerErrors.length > 0"
+                variant="destructive"
+                class="text-xs gap-1"
+              >
                 <Icon name="lucide:alert-circle" class="h-3 w-3" />
                 Error
               </Badge>
@@ -193,6 +207,9 @@ if (props.meta.collapsible) {
           :field-context="scopedFormValues"
           :class="cn(resolvedClass)"
         />
+        <div v-if="containerErrors.length > 0" class="mt-3 text-sm text-destructive">
+          <p v-for="(error, idx) in containerErrors" :key="idx">{{ error }}</p>
+        </div>
       </AccordionContent>
     </AccordionItem>
   </Accordion>
@@ -212,6 +229,9 @@ if (props.meta.collapsible) {
       :field-context="scopedFormValues"
       :class="resolvedClass"
     />
+    <div v-if="containerErrors.length > 0" class="mt-3 text-sm text-destructive">
+      <p v-for="(error, idx) in containerErrors" :key="idx">{{ error }}</p>
+    </div>
   </FieldSet>
 </template>
 

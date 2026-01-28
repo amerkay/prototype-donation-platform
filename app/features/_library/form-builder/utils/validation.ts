@@ -70,21 +70,36 @@ export function validateField(
   fieldContext: FieldContext,
   errors: Map<string, string>
 ): void {
-  // Field-group: recurse into nested fields
+  // Field-group: recurse into nested fields + validate container-level rules
   if (fieldDef.type === 'field-group' && 'fields' in fieldDef && fieldDef.fields) {
     const nestedValues = (fieldValue as Record<string, unknown>) || {}
     const nestedContext = buildNestedContext(fieldContext, nestedValues)
     validateFields(fieldDef.fields, nestedValues, fullPath, nestedContext, errors)
+
+    // Validate field-group level rules (e.g., "at least one option must be enabled")
+    const groupRules = resolveFieldRules(fieldDef.rules, nestedContext)
+    if (groupRules) {
+      const message = validateWithZod(groupRules, fieldValue)
+      if (message) errors.set(fullPath, message)
+    }
     return
   }
 
-  // Tabs: recurse into each tab's fields
+  // Tabs: recurse into each tab's fields + validate container-level rules
   if (fieldDef.type === 'tabs' && 'tabs' in fieldDef) {
     const tabsValue = (fieldValue as Record<string, unknown>) || {}
     for (const tab of fieldDef.tabs) {
       const tabValues = (tabsValue[tab.value] as Record<string, unknown>) || {}
       const tabContext = buildNestedContext(fieldContext, tabValues)
       validateFields(tab.fields, tabValues, `${fullPath}.${tab.value}`, tabContext, errors)
+    }
+
+    // Validate tabs-level rules
+    const tabsContext = buildNestedContext(fieldContext, tabsValue)
+    const tabsRules = resolveFieldRules(fieldDef.rules, tabsContext)
+    if (tabsRules) {
+      const message = validateWithZod(tabsRules, fieldValue)
+      if (message) errors.set(fullPath, message)
     }
     return
   }

@@ -12,6 +12,7 @@ import {
 } from '~/features/_library/form-builder/composables/useResolvedFieldMeta'
 import { useContainerFieldSetup } from '~/features/_library/form-builder/composables/useContainerFieldSetup'
 import { useCombinedErrors } from '~/features/_library/form-builder/composables/useCombinedErrors'
+import { useContainerValidation } from '~/features/_library/form-builder/composables/useContainerValidation'
 import FormFieldGroup from './FormFieldGroup.vue'
 
 interface Props {
@@ -47,6 +48,7 @@ const tabErrorTrackers = Object.fromEntries(
       }
     })
 
+    // Tabs-level rules are validated separately (not per-tab)
     const hasErrors = useCombinedErrors(tabPath, tab.fields, tabScopedValues)
     return [tab.value, hasErrors]
   })
@@ -61,6 +63,14 @@ const resolvedLabel = computed(() => resolveText(props.meta.label, scopedFormVal
 
 // Resolve class from meta
 const { resolvedClass } = useResolvedFieldMeta(props.meta)
+
+// Validate container-level rules if defined
+const { containerErrors } = useContainerValidation(
+  fullTabsPath,
+  props.meta.rules,
+  scopedFormValues,
+  () => isTabsVisible.value
+)
 
 // Resolve tab labels using utility
 const resolveTabLabel = (tab: (typeof props.meta.tabs)[number]) => {
@@ -116,6 +126,11 @@ const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <!-- Display container-level validation errors -->
+      <div v-if="containerErrors.length > 0" class="mt-3 text-sm text-destructive">
+        <p v-for="(error, idx) in containerErrors" :key="idx">{{ error }}</p>
+      </div>
     </Field>
   </div>
 </template>
