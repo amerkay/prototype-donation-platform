@@ -148,7 +148,7 @@ const backToPresets = () => {
       >
         <div class="pr-4 flex items-center gap-4">
           <!-- Image (square) -->
-          <div class="size-14 shrink-0 rounded-l overflow-hidden bg-muted">
+          <div class="size-12 shrink-0 rounded-l overflow-hidden bg-muted">
             <img
               v-if="item.image"
               :src="item.image"
@@ -166,7 +166,7 @@ const backToPresets = () => {
           <!-- Content -->
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
-              <p class="text-2xl font-bold">{{ currencySymbol }}{{ item.amount }}</p>
+              <p class="text-xl font-bold">{{ currencySymbol }}{{ item.amount }}</p>
               <p v-if="item.shortText" class="text-sm text-muted-foreground truncate">
                 {{ item.shortText }}
               </p>
