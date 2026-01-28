@@ -6,6 +6,7 @@ import type { ComposableForm } from '~/features/_library/form-builder/types'
 import type { ContextSchema } from '~/features/_library/form-builder/conditions'
 import { useScrollOnVisible } from './composables/useScrollOnVisible'
 import { checkFieldVisibility } from './composables/useFieldPath'
+import { validateFields } from './utils/validation'
 
 interface Props {
   section: ComposableForm
@@ -215,8 +216,26 @@ const onSubmit = handleSubmit((submittedValues) => {
   emit('submit')
 })
 
-// Expose validation state
-const isValid = computed(() => meta.value.valid)
+// Schema validation for unmounted fields (collapsed containers)
+// This complements vee-validate's live validation by checking unmounted fields
+const schemaErrors = computed(() => {
+  try {
+    const errors = validateFields(
+      resolvedSection.value.fields,
+      sectionValues.value,
+      resolvedSection.value.id,
+      sectionFieldContext.value
+    )
+    return errors.size > 0
+  } catch {
+    // During value resets (e.g., discard), values may be in transitional state
+    // where nested properties are temporarily undefined. Treat as no errors.
+    return false
+  }
+})
+
+// Expose validation state combining live + schema validation
+const isValid = computed(() => meta.value.valid && !schemaErrors.value)
 
 defineExpose({
   isValid,
