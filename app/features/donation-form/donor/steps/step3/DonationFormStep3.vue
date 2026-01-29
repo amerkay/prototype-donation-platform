@@ -181,7 +181,10 @@ const handleNext = () => {
     <Separator v-if="formConfig?.features.coverCosts.enabled" />
 
     <!-- Gift Aid Form (wrapped for click delegation) -->
-    <div v-if="formConfig?.features.giftAid.enabled" @click="handleFormClick">
+    <div
+      v-if="formConfig?.features.giftAid.enabled && store.selectedCurrency === 'GBP'"
+      @click="handleFormClick"
+    >
       <FormRenderer
         ref="giftAidFormRef"
         v-model="giftAidDataWithContext"
@@ -190,7 +193,7 @@ const handleNext = () => {
       />
     </div>
 
-    <Separator v-if="formConfig?.features.giftAid.enabled" />
+    <Separator v-if="formConfig?.features.giftAid.enabled && store.selectedCurrency === 'GBP'" />
 
     <!-- Custom Fields (dynamically generated from admin config) -->
     <DonationCustomFields ref="customFieldsRef" tab="step3" @submit="handleNext" />
