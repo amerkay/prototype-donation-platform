@@ -2,6 +2,13 @@ import type { Ref, ComputedRef } from 'vue'
 import { toast } from 'vue-sonner'
 
 /**
+ * Deep clone helper that removes Vue reactivity and clones data
+ */
+function deepClone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value))
+}
+
+/**
  * Generic store interface for admin edit operations
  * Any store used with useAdminEdit must implement these properties/methods
  */
@@ -20,14 +27,14 @@ export interface EditableStore {
 export interface UseAdminEditOptions<TStore extends EditableStore, TOriginalData> {
   /** Store instance with isDirty, isSaving, markClean, initialize */
   store: TStore
-  /** Ref to form component with isValid property */
-  formRef: Ref<{ isValid: boolean } | undefined>
-  /** Original data to restore on discard */
+  /** Ref to form component with isValid property and resetToSaved method */
+  formRef: Ref<{ isValid: boolean; resetToSaved?: () => void } | undefined>
+  /** Original data to restore on discard. Should be reactive to current store state. */
   originalData: ComputedRef<TOriginalData | undefined>
   /** Function to call on successful save */
   onSave: () => Promise<void>
-  /** Function to restore original data (usually calls store.initialize) */
-  onDiscard: (data: TOriginalData) => void
+  /** Optional function to restore original data. Defaults to store.initialize(data) */
+  onDiscard?: (data: TOriginalData) => void
 }
 
 /**
@@ -46,7 +53,6 @@ export interface UseAdminEditOptions<TStore extends EditableStore, TOriginalData
  *   handleDiscard,
  *   confirmDiscard,
  *   showDiscardDialog,
- *   formKey
  * } = useAdminEdit({
  *   store,
  *   formRef,
@@ -66,11 +72,18 @@ export function useAdminEdit<TStore extends EditableStore, TOriginalData>({
   onSave,
   onDiscard
 }: UseAdminEditOptions<TStore, TOriginalData>) {
+  // Track last saved state - single source of truth for discard baseline
+  const lastSavedData = ref<TOriginalData>()
+
+  // Initialize once on mount, then manage independently
+  onMounted(() => {
+    if (originalData.value) {
+      lastSavedData.value = deepClone(originalData.value)
+    }
+  })
+
   // Discard state
   const showDiscardDialog = ref(false)
-
-  // Form key to force re-render on discard
-  const formKey = ref(0)
 
   /**
    * Handle save action with validation
@@ -88,6 +101,12 @@ export function useAdminEdit<TStore extends EditableStore, TOriginalData>({
 
     try {
       await onSave()
+
+      // Capture current state as new baseline
+      // originalData is reactive to store, so it reflects the just-saved state
+      if (originalData.value) {
+        lastSavedData.value = deepClone(originalData.value)
+      }
 
       store.markClean()
       toast.success('Settings saved successfully')
@@ -109,12 +128,42 @@ export function useAdminEdit<TStore extends EditableStore, TOriginalData>({
   /**
    * Confirm and execute discard action
    */
-  const confirmDiscard = () => {
-    const data = originalData.value
-    if (data) {
-      onDiscard(data)
-      // Increment formKey to force form re-render with fresh state
-      formKey.value++
+  const confirmDiscard = async () => {
+    // Restore to last saved state
+    if (lastSavedData.value) {
+      // Use custom onDiscard if provided, otherwise default to store.initialize
+      if (onDiscard) {
+        onDiscard(lastSavedData.value)
+      } else {
+        // Handle both single object and tuple arguments for initialize
+        if (Array.isArray(lastSavedData.value)) {
+          store.initialize(...lastSavedData.value)
+        } else {
+          store.initialize(lastSavedData.value)
+        }
+      }
+
+      // Mark clean immediately after store initialization
+      // store.initialize may trigger watchers that mark dirty
+      store.markClean()
+
+      // Reset form validation state to match updated store
+      // This updates vee-validate's internal state without remounting
+      if (formRef.value?.resetToSaved) {
+        formRef.value.resetToSaved()
+      }
+
+      // Wait for all reactive updates to settle, then mark clean again
+      // resetToSaved() triggers FormRenderer watchers which may call setData and mark dirty
+      await nextTick()
+      store.markClean()
+
+      // FormRenderer's watcher uses { flush: 'post' } which can fire after nextTick
+      // Use setTimeout to ensure we mark clean after ALL async updates complete
+      setTimeout(() => {
+        store.markClean()
+      }, 0)
+
       toast.success('Changes discarded')
     }
     showDiscardDialog.value = false
@@ -124,7 +173,6 @@ export function useAdminEdit<TStore extends EditableStore, TOriginalData>({
     handleSave,
     handleDiscard,
     confirmDiscard,
-    showDiscardDialog,
-    formKey
+    showDiscardDialog
   }
 }

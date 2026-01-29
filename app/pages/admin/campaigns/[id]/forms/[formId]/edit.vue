@@ -39,19 +39,24 @@ watch(
   }
 )
 
+// originalData must read from STORE (current state), not API data
+const formForStore = computed(() => {
+  if (!store.fullConfig || !store.formId) return undefined
+  return [store.fullConfig, store.products, store.formId] as const
+})
+
 // Form config ref for validation
 const formConfigRef = ref()
 
 // Use admin edit composable for save/discard logic
-const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, formKey } = useAdminEdit({
+const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdminEdit({
   store,
   formRef: formConfigRef,
-  originalData: form,
+  originalData: formForStore,
   onSave: async () => {
     if (!store.formId || !store.fullConfig) return
     await updateForm(store.formId, store.fullConfig)
-  },
-  onDiscard: (data) => store.initialize(data.config, data.products, data.id)
+  }
 })
 
 // Breadcrumbs
@@ -81,12 +86,7 @@ const handlePreview = () => {
   >
     <!-- Main content -->
     <template #content>
-      <AdminDonationFormConfig
-        :key="formKey"
-        ref="formConfigRef"
-        @save="handleSave"
-        @discard="handleDiscard"
-      />
+      <AdminDonationFormConfig ref="formConfigRef" @save="handleSave" @discard="handleDiscard" />
     </template>
 
     <!-- Preview panel -->

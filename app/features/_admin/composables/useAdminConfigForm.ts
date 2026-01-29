@@ -103,7 +103,16 @@ export function useAdminConfigForm<
 
   // Standard expose interface for admin config components
   const expose = {
-    isValid: computed(() => formRef.value?.isValid ?? false)
+    isValid: computed(() => formRef.value?.isValid ?? false),
+    /**
+     * Reset form to current store values without remounting
+     * Useful for discard functionality - resets validation state
+     */
+    resetToSaved: () => {
+      if (formRef.value?.resetToValues) {
+        formRef.value.resetToValues(getData(store))
+      }
+    }
   }
 
   return {

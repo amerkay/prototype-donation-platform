@@ -35,14 +35,17 @@ watch(
   }
 )
 
+// originalData must read from STORE (current state), not API data
+const campaignForStore = computed(() => store.fullCampaign)
+
 // Form ref for validation
 const formRef = ref()
 
 // Use admin edit composable for save/discard logic
-const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, formKey } = useAdminEdit({
+const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdminEdit({
   store,
   formRef,
-  originalData: campaign,
+  originalData: campaignForStore,
   onSave: async () => {
     if (!store.id) return
     await updateCampaign(store.id, {
@@ -53,8 +56,7 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, formKey } 
       peerToPeer: store.peerToPeer!,
       socialSharing: store.socialSharing!
     })
-  },
-  onDiscard: (data) => store.initialize(data)
+  }
 })
 
 // Breadcrumbs
@@ -87,12 +89,7 @@ const handlePreview = () => {
 
     <!-- Main content -->
     <template #content>
-      <CampaignMasterConfigPanel
-        :key="formKey"
-        ref="formRef"
-        @save="handleSave"
-        @discard="handleDiscard"
-      />
+      <CampaignMasterConfigPanel ref="formRef" @save="handleSave" @discard="handleDiscard" />
     </template>
 
     <!-- Preview panel -->

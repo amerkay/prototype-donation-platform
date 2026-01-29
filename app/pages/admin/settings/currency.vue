@@ -4,22 +4,20 @@ import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
 import CurrencySettingsConfig from '~/features/settings/admin/components/CurrencySettingsConfig.vue'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
-import { toast } from 'vue-sonner'
 
 // Initialize store
 const store = useCurrencySettingsStore()
 
-// Store original data for discard - capture initial state on mount
-const initialData = {
+// Original data for initial baseline (captured once on mount)
+const originalData = computed(() => ({
   supportedCurrencies: [...store.supportedCurrencies]
-}
-const originalData = computed(() => initialData)
+}))
 
 // Form config ref
 const formConfigRef = ref()
 
 // Use admin edit composable for save/discard logic
-const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, formKey } = useAdminEdit({
+const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdminEdit({
   store,
   formRef: formConfigRef,
   originalData,
@@ -27,13 +25,6 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, formKey } 
     // In real app, would call API here
     // await api.updateCurrencySettings(store)
     await new Promise((resolve) => setTimeout(resolve, 500))
-    toast.success('Currency settings saved successfully')
-    store.markClean()
-    // Update initial data after successful save
-    initialData.supportedCurrencies = [...store.supportedCurrencies]
-  },
-  onDiscard: (data) => {
-    store.initialize(data)
   }
 })
 
@@ -69,12 +60,7 @@ definePageMeta({
           </p>
         </div>
 
-        <CurrencySettingsConfig
-          :key="formKey"
-          ref="formConfigRef"
-          @save="handleSave"
-          @discard="handleDiscard"
-        />
+        <CurrencySettingsConfig ref="formConfigRef" @save="handleSave" @discard="handleDiscard" />
       </div>
     </template>
   </AdminEditLayout>

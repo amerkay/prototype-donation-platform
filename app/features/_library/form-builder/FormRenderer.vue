@@ -89,7 +89,8 @@ const {
   setFieldValue,
   setFieldTouched,
   setFieldError,
-  errors
+  errors,
+  resetForm
 } = useForm({
   initialValues: initialFormValues.value,
   keepValuesOnUnmount: true, // Always true - values persist through accordion/tab unmount cycles
@@ -237,9 +238,22 @@ const schemaErrors = computed(() => {
 // Expose validation state combining live + schema validation
 const isValid = computed(() => meta.value.valid && !schemaErrors.value)
 
+/**
+ * Reset form to specific values without remounting
+ * Useful for discard functionality
+ */
+const resetToValues = (newValues: Record<string, unknown>) => {
+  resetForm({
+    values: {
+      [resolvedSection.value.id]: newValues
+    }
+  })
+}
+
 defineExpose({
   isValid,
-  onSubmit
+  onSubmit,
+  resetToValues
 })
 </script>
 
