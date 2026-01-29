@@ -49,7 +49,7 @@ const customFieldsFormSection = computed(() => {
   const tabConfig = formConfig.value?.features.customFields.customFieldsTabs[props.tab]
   if (!tabConfig?.enabled) return null
   const fields = tabConfig.fields
-  if (fields.length === 0) return null
+  if (!Array.isArray(fields) || fields.length === 0) return null
   return useCustomFieldsForm(fields)
 })
 
