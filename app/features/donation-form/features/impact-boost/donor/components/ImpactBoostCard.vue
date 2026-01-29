@@ -41,7 +41,7 @@ const {
   frequencyRef,
   amountRef,
   currencyRef,
-  props.baseCurrency,
+  () => props.baseCurrency,
   configRef,
   donationAmountsConfigRef
 )

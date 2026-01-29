@@ -25,7 +25,7 @@ const emit = defineEmits<{
   remove: []
 }>()
 
-const { getCurrencySymbol } = useCurrency(props.baseCurrency)
+const { getCurrencySymbol } = useCurrency(() => props.baseCurrency)
 
 const displayPrice = computed(() => {
   return props.price ?? (props.item as CartItem).price ?? 0

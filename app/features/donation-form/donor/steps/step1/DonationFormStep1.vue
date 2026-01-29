@@ -34,7 +34,7 @@ const emit = defineEmits<{
 }>()
 
 const { convertPrice } = useCurrency(
-  computed(() => formConfig.value.donationAmounts.baseDefaultCurrency).value
+  computed(() => formConfig.value.donationAmounts.baseDefaultCurrency)
 )
 
 // Initialize Pinia stores

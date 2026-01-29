@@ -1,5 +1,6 @@
 import { computed } from 'vue'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
+import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 
 /**
@@ -21,7 +22,11 @@ type CoverCostsType = 'percentage' | 'amount' | null
 
 export function useCoverCostsManager() {
   const store = useDonationFormStore()
-  const { convertPrice } = useCurrency('GBP')
+  const configStore = useFormConfigStore()
+
+  // Get base currency reactively from config store
+  const baseCurrency = computed(() => configStore.donationAmounts?.baseDefaultCurrency || 'GBP')
+  const { convertPrice } = useCurrency(baseCurrency)
 
   // Current donation amount (use store getter)
   const donationAmount = computed(() => store.totalDonationAmount)

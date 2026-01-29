@@ -20,7 +20,7 @@ const emit = defineEmits<{
   click: []
 }>()
 
-const { getCurrencySymbol } = useCurrency(props.baseCurrency)
+const { getCurrencySymbol } = useCurrency(() => props.baseCurrency)
 </script>
 
 <template>

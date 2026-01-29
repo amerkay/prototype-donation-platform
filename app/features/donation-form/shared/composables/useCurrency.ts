@@ -1,3 +1,5 @@
+import { computed, toValue, type MaybeRef } from 'vue'
+
 // List of supported currencies (single source of truth)
 export const CURRENCY_OPTIONS = [
   { value: 'GBP', symbol: '£', label: 'GBP (£)', description: 'United Kingdom' },
@@ -66,7 +68,11 @@ export function getCurrencyOptionsForSelect(
   }))
 }
 
-export function useCurrency(baseCurrency: string = 'GBP') {
+export function useCurrency(baseCurrency: MaybeRef<string> | (() => string) = 'GBP') {
+  // Convert to computed for reactivity if it's a getter function
+  const baseCurrencyComputed =
+    typeof baseCurrency === 'function' ? computed(baseCurrency) : baseCurrency
+
   // Exchange rates: 1 unit of base currency = X units of target currency
   // These are approximate rates and should be updated from a live API in production
   const getExchangeRates = (base: string): Record<string, number> => {
@@ -134,7 +140,7 @@ export function useCurrency(baseCurrency: string = 'GBP') {
     targetCurrency: string,
     fromCurrency?: string
   ): number => {
-    const sourceCurrency = fromCurrency || baseCurrency
+    const sourceCurrency = fromCurrency || toValue(baseCurrencyComputed)
     const target = targetCurrency.toUpperCase()
     const source = sourceCurrency.toUpperCase()
 

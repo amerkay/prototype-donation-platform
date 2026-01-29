@@ -1,4 +1,4 @@
-import { computed, type Ref } from 'vue'
+import { computed, toValue, type Ref, type MaybeRef } from 'vue'
 import {
   useCurrency,
   getCurrencySymbol
@@ -14,7 +14,7 @@ export function useImpactBoostMessages(
   frequency: Ref<string>,
   amount: Ref<number>,
   currency: Ref<string>,
-  baseCurrency: string,
+  baseCurrency: MaybeRef<string> | (() => string),
   config: Ref<ImpactBoostSettings>,
   donationAmountsConfig: Ref<DonationAmountsSettings>
 ) {
@@ -30,7 +30,7 @@ export function useImpactBoostMessages(
     const freqConfig = donationAmountsConfig.value.frequencies[freqKey]
     if (!freqConfig?.enabled || !freqConfig.presetAmounts) return null
 
-    const baseAmount = convertPrice(amount.value, baseCurrency, currency.value)
+    const baseAmount = convertPrice(amount.value, toValue(baseCurrency), currency.value)
     const amounts = freqConfig.presetAmounts.map((preset) => preset.amount)
     const sorted = [...amounts].sort((a, b) => a - b)
     return sorted.find((preset) => preset > baseAmount) || null
@@ -62,7 +62,7 @@ export function useImpactBoostMessages(
     if (!freqConfig?.enabled || !freqConfig.presetAmounts) return null
 
     // Convert current amount to base currency
-    const baseAmount = convertPrice(amount.value, baseCurrency, currency.value)
+    const baseAmount = convertPrice(amount.value, toValue(baseCurrency), currency.value)
 
     // Calculate target: 66.6% for monthly, 100% for yearly
     const targetAmount = targetFreq === 'monthly' ? baseAmount * (2 / 3) : baseAmount
@@ -108,7 +108,11 @@ export function useImpactBoostMessages(
 
     // One-time → recurring: use auto-calculated amount
     if (freqKey === 'once' && autoCalculatedRecurringAmount.value) {
-      return convertPrice(autoCalculatedRecurringAmount.value, currency.value, baseCurrency)
+      return convertPrice(
+        autoCalculatedRecurringAmount.value,
+        currency.value,
+        toValue(baseCurrency)
+      )
     }
 
     // Amount increase: use next preset
@@ -117,7 +121,7 @@ export function useImpactBoostMessages(
       config.value.upsells?.enableIncreaseBoost &&
       nextPresetAmount.value
     ) {
-      return convertPrice(nextPresetAmount.value, currency.value, baseCurrency)
+      return convertPrice(nextPresetAmount.value, currency.value, toValue(baseCurrency))
     }
 
     return undefined

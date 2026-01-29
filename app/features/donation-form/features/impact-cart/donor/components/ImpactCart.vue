@@ -70,7 +70,7 @@ const handleProductSelect = (product: Product) => {
   emit('product-select', product)
 }
 
-const { getCurrencySymbol } = useCurrency(props.baseCurrency)
+const { getCurrencySymbol } = useCurrency(() => props.baseCurrency)
 
 const totalLabel = computed(() => {
   if (props.items.length === 0) return 'Total'
