@@ -119,11 +119,11 @@ function createFrequencyTabFields(
           label: 'Minimum',
           placeholder: '1',
           min: 1,
-          currencySymbol: ({ values }: FieldContext) => {
-            const pricing = (values as Record<string, unknown>).pricing as
+          currencySymbol: ({ root }: FieldContext) => {
+            const donationAmounts = (root as Record<string, unknown>).donationAmounts as
               | Record<string, unknown>
               | undefined
-            const baseDefaultCurrency = (pricing?.baseDefaultCurrency as string) || 'GBP'
+            const baseDefaultCurrency = (donationAmounts?.baseDefaultCurrency as string) || 'GBP'
             return getCurrencySymbol(baseDefaultCurrency)
           },
           rules: z.number().min(1, 'Must be at least 1')
@@ -132,8 +132,8 @@ function createFrequencyTabFields(
           label: 'Maximum',
           placeholder: maxPlaceholder,
           min: 1,
-          currencySymbol: ({ values }: FieldContext) => {
-            const donationAmounts = (values as Record<string, unknown>).donationAmounts as
+          currencySymbol: ({ root }: FieldContext) => {
+            const donationAmounts = (root as Record<string, unknown>).donationAmounts as
               | Record<string, unknown>
               | undefined
             const baseDefaultCurrency = (donationAmounts?.baseDefaultCurrency as string) || 'GBP'

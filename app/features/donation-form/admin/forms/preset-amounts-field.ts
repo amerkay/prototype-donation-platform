@@ -30,14 +30,19 @@ export function createPresetAmountsField() {
       const rootValues = context.root as Record<string, unknown>
       const enableDescriptions = rootValues.enableAmountDescriptions as boolean | undefined
 
+      // Get currency symbol from baseDefaultCurrency
+      const donationAmounts = (rootValues.donationAmounts as Record<string, unknown>) || {}
+      const baseDefaultCurrency = (donationAmounts.baseDefaultCurrency as string) || 'GBP'
+      const currencySymbol = getCurrencySymbol(baseDefaultCurrency)
+
       // Dynamic label based on amount value
       const amount = itemValues.amount as number | undefined
       const shortText = itemValues.shortText as string | undefined
       const displayLabel =
         amount && shortText && enableDescriptions
-          ? `£${amount} — ${shortText.length > 25 ? shortText.substring(0, 25) + '...' : shortText}`
+          ? `${currencySymbol}${amount} — ${shortText.length > 25 ? shortText.substring(0, 25) + '...' : shortText}`
           : amount
-            ? `£${amount}`
+            ? `${currencySymbol}${amount}`
             : 'New Amount'
 
       // Always return fieldGroup with 3 fields for consistent data structure
@@ -51,8 +56,8 @@ export function createPresetAmountsField() {
             label: enableDescriptions ? 'Amount' : undefined,
             placeholder: '25',
             min: 1,
-            currencySymbol: ({ values }: FieldContext) => {
-              const donationAmounts = (values as Record<string, unknown>).donationAmounts as
+            currencySymbol: ({ root }: FieldContext) => {
+              const donationAmounts = (root as Record<string, unknown>).donationAmounts as
                 | Record<string, unknown>
                 | undefined
               const baseDefaultCurrency = (donationAmounts?.baseDefaultCurrency as string) || 'GBP'
