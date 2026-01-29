@@ -1,6 +1,5 @@
 import { defineForm, fieldGroup } from '~/features/_library/form-builder/api'
 import type { FormContext } from '~/features/_library/form-builder/types'
-import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 import { useCampaignBasicSettingsForm } from '~/features/campaigns/admin/forms/campaign-basic-settings-form'
 import { useCrowdfundingSettingsForm } from '~/features/campaigns/admin/forms/crowdfunding-settings-form'
 import { useP2PSettingsForm } from '~/features/campaigns/admin/forms/p2p-settings-form'
@@ -19,9 +18,6 @@ export const openAccordionId = ref<string | undefined>('campaignConfigMaster.bas
  */
 export function createCampaignConfigMaster() {
   return defineForm('campaignConfigMaster', (ctx: FormContext) => {
-    // Provide accordion group with external state sync for preview components
-    provideAccordionGroup(openAccordionId)
-
     // Extract fields from each sub-form by calling their setup functions
     const basicSettingsFields = useCampaignBasicSettingsForm.setup(ctx)
     const crowdfundingFields = useCrowdfundingSettingsForm.setup(ctx)

@@ -3,10 +3,15 @@ import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campa
 import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
 import StickyButtonGroup from './StickyButtonGroup.vue'
-import { createCampaignConfigMaster } from '../forms/campaign-config-master'
+import { createCampaignConfigMaster, openAccordionId } from '../forms/campaign-config-master'
 import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
+import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 
 const store = useCampaignConfigStore()
+
+// Provide accordion group with external state sync for preview components
+// This must be called in component setup(), not in form definition
+provideAccordionGroup(openAccordionId)
 
 // Get forms count for component field validation
 const { forms } = useForms(store.id!)
