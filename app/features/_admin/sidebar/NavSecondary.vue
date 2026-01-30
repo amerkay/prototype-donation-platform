@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { LucideIcon } from 'lucide-vue-next'
-import { useActiveLink } from './composables/useActiveLink'
 
 import {
   SidebarGroup,
@@ -17,8 +16,6 @@ defineProps<{
     icon: LucideIcon
   }[]
 }>()
-
-const { isActive } = useActiveLink()
 </script>
 
 <template>
@@ -29,7 +26,6 @@ const { isActive } = useActiveLink()
           <SidebarMenuButton
             as-child
             size="sm"
-            :variant="isActive(item.url) ? 'selected' : 'default'"
             :class="{ 'opacity-50 pointer-events-none': item.url === '#' }"
           >
             <NuxtLink :to="item.url">

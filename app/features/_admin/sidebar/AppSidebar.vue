@@ -44,8 +44,7 @@ const data = {
     {
       title: 'Dashboard',
       url: '#',
-      icon: LayoutDashboard,
-      isActive: true
+      icon: LayoutDashboard
     },
     {
       title: 'Campaigns',

@@ -31,7 +31,7 @@ interface Props {
 
 defineProps<Props>()
 
-const { isActive } = useActiveLink()
+const { isActive, hasActiveChild } = useActiveLink()
 
 const hasValidSubitems = (item: Props['items'][number]) => {
   return item.items?.some((subItem) => subItem.url !== '#') ?? false
@@ -46,17 +46,38 @@ const isDisabled = (item: Props['items'][number]) => {
 const shouldToggle = (item: Props['items'][number]) => {
   return item.url === '#' && !!item.items?.length && hasValidSubitems(item)
 }
+
+/**
+ * Check if a nav item should be considered active
+ * Active if parent URL matches OR any child URL matches
+ */
+const isItemActive = (item: Props['items'][number]) => {
+  return isActive(item.url, item.exact) || hasActiveChild(item.items)
+}
 </script>
 
 <template>
   <SidebarGroup>
     <SidebarGroupLabel>Navigation</SidebarGroupLabel>
     <SidebarMenu>
-      <Collapsible v-for="item in items" :key="item.title" as-child :default-open="item.isActive">
+      <Collapsible
+        v-for="item in items"
+        :key="item.title"
+        as-child
+        :default-open="isItemActive(item)"
+      >
         <SidebarMenuItem>
           <template v-if="shouldToggle(item)">
             <CollapsibleTrigger as-child>
-              <SidebarMenuButton :tooltip="item.title">
+              <SidebarMenuButton
+                :tooltip="item.title"
+                :variant="isItemActive(item) ? 'selected' : 'default'"
+                :class="
+                  isItemActive(item)
+                    ? 'data-[state=open]:hover:bg-primary/90 data-[state=open]:hover:text-primary-foreground'
+                    : ''
+                "
+              >
                 <component :is="item.icon" />
                 <span>{{ item.title }}</span>
                 <ChevronRight
@@ -91,7 +112,7 @@ const shouldToggle = (item: Props['items'][number]) => {
               <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.title">
                 <SidebarMenuSubButton
                   as-child
-                  :variant="isActive(subItem.url) ? 'selected' : 'default'"
+                  :is-active="isActive(subItem.url)"
                   :class="{ 'opacity-50 pointer-events-none': subItem.url === '#' }"
                 >
                   <NuxtLink :to="subItem.url">

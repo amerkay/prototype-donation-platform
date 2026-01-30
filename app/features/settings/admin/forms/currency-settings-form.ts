@@ -131,6 +131,7 @@ export const useCurrencySettingsForm = defineForm('currencySettings', () => {
 
   const currencyMultipliers = fieldGroup('currencyMultipliers', {
     label: 'Currency Multipliers',
+    collapsible: true,
     description:
       'To make things easier for donors, currency conversion is enabled for all forms and uses smart rounding with multipliers you can adjust below.',
     // wrapperClass: 'mt-4',
