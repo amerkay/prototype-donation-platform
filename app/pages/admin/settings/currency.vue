@@ -8,9 +8,11 @@ import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
 // Initialize store
 const store = useCurrencySettingsStore()
 
-// Original data for initial baseline (captured once on mount)
+// Original data for discard - capture complete store state
 const originalData = computed(() => ({
-  supportedCurrencies: [...store.supportedCurrencies]
+  supportedCurrencies: [...store.supportedCurrencies],
+  defaultCurrency: store.defaultCurrency,
+  currencyMultipliers: { ...store.currencyMultipliers }
 }))
 
 // Form config ref

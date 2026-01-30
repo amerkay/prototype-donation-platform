@@ -142,7 +142,13 @@ export function validateField(
   // Scalar field: validate rules directly
   const rules = resolveFieldRules(fieldDef.rules, fieldContext)
   if (rules) {
-    const message = validateWithZod(rules, fieldValue)
+    // Use defaultValue if field value is undefined/null and defaultValue exists
+    // This ensures fields with default values don't show validation errors before mounting
+    let valueToValidate = fieldValue
+    if ((fieldValue === undefined || fieldValue === null) && 'defaultValue' in fieldDef) {
+      valueToValidate = fieldDef.defaultValue
+    }
+    const message = validateWithZod(rules, valueToValidate)
     if (message) errors.set(fullPath, message)
   }
 }

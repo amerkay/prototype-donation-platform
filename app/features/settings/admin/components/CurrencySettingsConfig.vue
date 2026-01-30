@@ -6,6 +6,7 @@ import { useCurrencySettingsStore } from '~/features/settings/admin/stores/curre
 import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
 
 const store = useCurrencySettingsStore()
+const isDev = import.meta.dev
 
 // AUTO-MAPPING: No getData/setData needed! ✨
 // Form metadata ($storePath) handles all mapping automatically
@@ -39,5 +40,18 @@ defineExpose(expose)
       @save="$emit('save')"
       @discard="$emit('discard')"
     />
+
+    <!-- Dev Mode: JSON Output -->
+    <pre v-if="isDev" class="bg-muted/50 rounded-xl p-4 text-xs overflow-auto max-h-96 border">{{
+      JSON.stringify(
+        {
+          supportedCurrencies: store.supportedCurrencies,
+          defaultCurrency: store.defaultCurrency,
+          currencyMultipliers: store.currencyMultipliers
+        },
+        null,
+        2
+      )
+    }}</pre>
   </div>
 </template>

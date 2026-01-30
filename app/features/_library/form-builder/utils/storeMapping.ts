@@ -168,6 +168,8 @@ export function generateGetData<TStore>(mapping: StoreMapping) {
  */
 export function generateSetData<TStore extends { markDirty: () => void }>(mapping: StoreMapping) {
   return (store: TStore, data: Record<string, unknown>): void => {
+    let hasChanges = false
+
     for (const [formPath, storePath] of mapping.paths.entries()) {
       // Parse paths
       const formSegments = formPath.split('.')
@@ -181,6 +183,18 @@ export function generateSetData<TStore extends { markDirty: () => void }>(mappin
       }
 
       if (value !== undefined) {
+        // Get old value from store for comparison
+        let oldValue: unknown = store
+        for (const segment of storeSegments) {
+          oldValue = (oldValue as Record<string, unknown>)?.[segment]
+        }
+
+        // Check if value actually changed
+        const valueChanged = JSON.stringify(oldValue) !== JSON.stringify(value)
+        if (valueChanged) {
+          hasChanges = true
+        }
+
         // Set value in store
         let target: Record<string, unknown> = store as Record<string, unknown>
         for (let i = 0; i < storeSegments.length - 1; i++) {
@@ -192,6 +206,9 @@ export function generateSetData<TStore extends { markDirty: () => void }>(mappin
       }
     }
 
-    store.markDirty()
+    // Only mark dirty when values actually changed
+    if (hasChanges) {
+      store.markDirty()
+    }
   }
 }

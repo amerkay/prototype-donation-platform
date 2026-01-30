@@ -13,7 +13,9 @@ describe('useDonationCurrencies', () => {
 
     // Initialize currency settings
     currencySettings.initialize({
-      supportedCurrencies: ['USD', 'EUR', 'GBP']
+      supportedCurrencies: ['USD', 'EUR', 'GBP'],
+      defaultCurrency: 'USD',
+      currencyMultipliers: {}
     })
 
     const { effectiveCurrencies } = useDonationCurrencies()
@@ -26,7 +28,9 @@ describe('useDonationCurrencies', () => {
 
     // Initialize with default settings
     currencySettings.initialize({
-      supportedCurrencies: ['GBP', 'EUR']
+      supportedCurrencies: ['GBP', 'EUR'],
+      defaultCurrency: 'GBP',
+      currencyMultipliers: {}
     })
 
     const { effectiveCurrencies } = useDonationCurrencies()

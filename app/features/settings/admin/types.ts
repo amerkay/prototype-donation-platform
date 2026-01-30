@@ -4,4 +4,6 @@
 
 export interface CurrencySettings {
   supportedCurrencies: string[]
+  defaultCurrency: string
+  currencyMultipliers: Record<string, number>
 }

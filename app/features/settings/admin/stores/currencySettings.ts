@@ -27,15 +27,25 @@ export const useCurrencySettingsStore = defineStore('currencySettings', () => {
 
   // State
   const supportedCurrencies = ref<string[]>([...currencySettings.supportedCurrencies])
+  const defaultCurrency = ref<string>(currencySettings.defaultCurrency)
+  const currencyMultipliers = ref<Record<string, number>>({
+    ...currencySettings.currencyMultipliers
+  })
 
   // Getters
   const isCurrencySupported = computed(() => (currency: string): boolean => {
     return supportedCurrencies.value.includes(currency)
   })
 
+  const getMultiplier = computed(() => (currency: string): number => {
+    return currencyMultipliers.value[currency] ?? 1.0
+  })
+
   // Actions
   function initialize(settings: CurrencySettings) {
     supportedCurrencies.value = settings.supportedCurrencies
+    defaultCurrency.value = settings.defaultCurrency
+    currencyMultipliers.value = { ...settings.currencyMultipliers }
     markClean()
   }
 
@@ -43,16 +53,25 @@ export const useCurrencySettingsStore = defineStore('currencySettings', () => {
     if (settings.supportedCurrencies !== undefined) {
       supportedCurrencies.value = settings.supportedCurrencies
     }
+    if (settings.defaultCurrency !== undefined) {
+      defaultCurrency.value = settings.defaultCurrency
+    }
+    if (settings.currencyMultipliers !== undefined) {
+      currencyMultipliers.value = { ...settings.currencyMultipliers }
+    }
     markDirty()
   }
 
   return {
     // State
     supportedCurrencies,
+    defaultCurrency,
+    currencyMultipliers,
     isDirty,
     isSaving,
     // Getters
     isCurrencySupported,
+    getMultiplier,
     // Actions
     initialize,
     updateSettings,

@@ -1,4 +1,6 @@
 import { computed, toValue, type MaybeRef } from 'vue'
+import { getExchangeRatesForBase } from '~/sample-api-responses/api-sample-response-exchange-rates'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 
 // List of supported currencies (single source of truth)
 export const CURRENCY_OPTIONS = [
@@ -68,70 +70,128 @@ export function getCurrencyOptionsForSelect(
   }))
 }
 
+/**
+ * Compute direct and inverse currency multipliers from store configuration
+ * Cross-currency conversions are calculated on-demand for simplicity
+ *
+ * @param accountDefaultCurrency - Account-level default currency
+ * @param formBaseCurrency - Form-level base currency (may differ from account)
+ * @param configMultipliers - Multipliers from store relative to account default
+ * @returns Object with accountDefault, formBase, and multiplier lookups
+ */
+function computeMultiplierConfig(
+  accountDefaultCurrency: string,
+  formBaseCurrency: string,
+  configMultipliers: Record<string, number>
+) {
+  const accountDefault = accountDefaultCurrency.toUpperCase()
+  const formBase = formBaseCurrency.toUpperCase()
+  const multipliers = new Map<string, number>()
+
+  // Store direct mappings from account default currency
+  for (const [currency, multiplier] of Object.entries(configMultipliers)) {
+    const curr = currency.toUpperCase()
+    multipliers.set(`${accountDefault}->${curr}`, multiplier)
+    multipliers.set(`${curr}->${accountDefault}`, 1 / multiplier)
+  }
+
+  return { accountDefault, formBase, multipliers }
+}
+
 export function useCurrency(baseCurrency: MaybeRef<string> | (() => string) = 'GBP') {
   // Convert to computed for reactivity if it's a getter function
   const baseCurrencyComputed =
     typeof baseCurrency === 'function' ? computed(baseCurrency) : baseCurrency
 
-  // Exchange rates: 1 unit of base currency = X units of target currency
-  // These are approximate rates and should be updated from a live API in production
-  const getExchangeRates = (base: string): Record<string, number> => {
-    const ratesFromGBP: Record<string, number> = {
-      GBP: 1,
-      USD: 1.27,
-      CAD: 1.71,
-      AUD: 1.97,
-      NZD: 2.14,
-      EUR: 1.17
-    }
+  // Access currency settings store for multipliers
+  const currencySettingsStore = useCurrencySettingsStore()
 
-    const ratesFromUSD: Record<string, number> = {
-      USD: 1,
-      GBP: 0.79,
-      CAD: 1.35,
-      AUD: 1.55,
-      NZD: 1.69,
-      EUR: 0.92
-    }
+  // Compute multiplier configuration (reactive to store changes)
+  const multiplierConfig = computed(() => {
+    const accountDefaultCurrency = currencySettingsStore.defaultCurrency
+    const formBaseCurrency = toValue(baseCurrencyComputed)
+    const configMultipliers = currencySettingsStore.currencyMultipliers
 
-    const ratesFromEUR: Record<string, number> = {
-      EUR: 1,
-      GBP: 0.86,
-      USD: 1.09,
-      CAD: 1.46,
-      AUD: 1.68,
-      NZD: 1.83
-    }
+    return computeMultiplierConfig(accountDefaultCurrency, formBaseCurrency, configMultipliers)
+  })
 
-    // Return the appropriate rate table based on base currency
-    switch (base) {
-      case 'GBP':
-        return ratesFromGBP
-      case 'USD':
-        return ratesFromUSD
-      case 'EUR':
-        return ratesFromEUR
-      default:
-        return ratesFromGBP
-    }
+  /**
+   * Get multiplier for currency conversion with just-in-time calculation
+   * Handles: identity, direct, inverse, and cross-currency conversions
+   */
+  const getMultiplier = (fromCurrency: string, toCurrency: string): number => {
+    const from = fromCurrency.toUpperCase()
+    const to = toCurrency.toUpperCase()
+    const { accountDefault, formBase, multipliers } = multiplierConfig.value
+
+    // Identity: same currency
+    if (from === to) return 1.0
+
+    // Direct lookup in multipliers map
+    const directKey = `${from}->${to}`
+    if (multipliers.has(directKey)) return multipliers.get(directKey)!
+
+    // Cross-currency conversion through base
+    // For example: USD->EUR goes through GBP (USD->GBP->EUR)
+    const baseCurrency = from === formBase || to === formBase ? accountDefault : formBase
+    const fromToBase = multipliers.get(`${from}->${baseCurrency}`) ?? 1.0
+    const baseToTo = multipliers.get(`${baseCurrency}->${to}`) ?? 1.0
+
+    return fromToBase * baseToTo
   }
 
-  const smartRound = (value: number): number => {
-    if (value < 5) {
-      // Round to nearest even number
-      return Math.round(value)
-    } else if (value < 50) {
+  // Exchange rates now come from centralized API response file
+  const getExchangeRates = (base: string): Record<string, number> => {
+    const rates = getExchangeRatesForBase(base)
+    return rates.rates
+  }
+
+  /**
+   * Smart rounding to clean preset values with automatic multiplier application
+   *
+   * Multipliers are automatically applied based on:
+   * - Account-level currency settings
+   * - Current form's base currency
+   * - Target currency for the conversion
+   *
+   * No need to pass multipliers manually - they're fetched from store automatically!
+   *
+   * @param value - Value to round
+   * @param targetCurrency - Currency to round for (optional, uses base currency if not provided)
+   * @param sourceCurrency - Currency value is in (optional, uses base currency if not provided)
+   * @returns Rounded value with multiplier applied
+   *
+   * @example
+   * const { smartRound } = useCurrency('GBP')
+   * smartRound(10.5, 'USD', 'GBP') // Applies GBP->USD multiplier automatically
+   */
+  const smartRound = (value: number, targetCurrency?: string, sourceCurrency?: string): number => {
+    // Determine source and target currencies
+    const source = (sourceCurrency || toValue(baseCurrencyComputed)).toUpperCase()
+    const target = (targetCurrency || toValue(baseCurrencyComputed)).toUpperCase()
+
+    // Get multiplier from store (automatic bidirectional calculation)
+    const multiplier = getMultiplier(source, target)
+
+    // Apply multiplier first
+    const adjustedValue = value * multiplier
+
+    // Then apply smart rounding based on value ranges
+    if (adjustedValue < 5) {
+      // Round to nearest whole number
+      return Math.round(adjustedValue)
+    } else if (adjustedValue < 50) {
       // Round to nearest 5
-      return Math.round(value / 5) * 5
-    } else if (value < 200) {
+      return Math.round(adjustedValue / 5) * 5
+    } else if (adjustedValue < 200) {
       // Round to nearest 25
-      return Math.round(value / 25) * 25
-    } else if (value < 500) {
+      return Math.round(adjustedValue / 25) * 25
+    } else if (adjustedValue < 500) {
       // Round to nearest 50
-      return Math.round(value / 50) * 50
+      return Math.round(adjustedValue / 50) * 50
     } else {
       // Round to nearest 100
-      return Math.round(value / 100) * 100
+      return Math.round(adjustedValue / 100) * 100
     }
   }
 
@@ -159,11 +219,15 @@ export function useCurrency(baseCurrency: MaybeRef<string> | (() => string) = 'G
 
     // Convert: multiply by the rate (1 source = rate target)
     const converted = basePrice * rate
-    return smartRound(converted)
+
+    // Apply smart rounding with automatic multiplier
+    return smartRound(converted, target, source)
   }
 
   return {
     getCurrencySymbol,
-    convertPrice
+    convertPrice,
+    smartRound,
+    getMultiplier // Expose for advanced use cases
   }
 }

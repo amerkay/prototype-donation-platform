@@ -10,7 +10,7 @@ describe('Currency Settings Store', () => {
   it('initializes with default values', () => {
     const store = useCurrencySettingsStore()
 
-    expect(store.supportedCurrencies).toEqual(['USD', 'EUR', 'GBP'])
+    expect(store.supportedCurrencies).toEqual(['GBP', 'USD', 'EUR'])
     expect(store.isDirty).toBe(false)
     expect(store.isSaving).toBe(false)
   })
@@ -28,7 +28,9 @@ describe('Currency Settings Store', () => {
     const store = useCurrencySettingsStore()
 
     store.initialize({
-      supportedCurrencies: ['USD', 'CAD']
+      supportedCurrencies: ['USD', 'CAD'],
+      defaultCurrency: 'USD',
+      currencyMultipliers: {}
     })
 
     expect(store.supportedCurrencies).toEqual(['USD', 'CAD'])

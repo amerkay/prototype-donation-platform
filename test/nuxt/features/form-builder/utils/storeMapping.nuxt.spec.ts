@@ -386,8 +386,8 @@ describe('storeMapping', () => {
 
       // Value should remain unchanged
       expect(store.settings.name).toBe('Original')
-      // But markDirty should still be called
-      expect(store.markDirty).toHaveBeenCalled()
+      // markDirty should NOT be called since no values actually changed
+      expect(store.markDirty).not.toHaveBeenCalled()
     })
   })
 

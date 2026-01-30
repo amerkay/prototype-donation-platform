@@ -79,6 +79,6 @@ YOU MUST ALWAYS FOLLOW THESE COMMANDMENTS:
 10. **SHORT SUMMARIES**: MUST provide brief updates. End with minimal conventional commit message
 11. **WRITE TESTS TO UNCOVER BUGS**: Always ask your self, do the tests make sense? Remember, we need to always avoid success on buggy unexpect abnormal behaviour, and we do not want to blindly test current behaviour. If something fails and it makes not sense to change the test, stop and tell me, don't just change the test for buggy behaviour.
 12. DO NOT RUN `pnpm dev`, you do not have browser access.
-13. Defer fixing formatting issues till you are almost done with the implementation as you can do them in one go using `pnpm format:fix; pnpm lint:fix; pnpm typecheck` to fix lint errors rather than fix them one by one.
+13. Defer fixing formatting issues till you are almost done with the implementation as you can do them in one go using `pnpm format:fix; pnpm lint:fix; pnpm typecheck` to fix lint errors rather than fix them one by one. These CLI commands take up to 60 seconds to run.
 14. **`app/features/form-builder` and `app/features/custom-fields` CAN NEVER have donation platform related logic**. They MUST be treated as independant units that can be reused for any project.
 15. YOU MUST ALWAYS start by investigating codebase for similar patterns or related files to the task at hand.
