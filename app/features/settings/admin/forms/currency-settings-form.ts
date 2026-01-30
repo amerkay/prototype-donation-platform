@@ -10,7 +10,6 @@ import {
 import type { FieldContext } from '~/features/_library/form-builder/types'
 import CurrencyExampleTable from '~/features/settings/admin/components/CurrencyExampleTable.vue'
 import { getCurrencyOptionsForSelect } from '~/features/donation-form/shared/composables/useCurrency'
-import { getExchangeRatesForBase } from '~/sample-api-responses/api-sample-response-exchange-rates'
 
 // Get all available currency options from centralized source
 const CURRENCY_OPTIONS = getCurrencyOptionsForSelect()
@@ -90,12 +89,12 @@ export const useCurrencySettingsForm = defineForm('currencySettings', () => {
 
     currencyMultiplierFields[currency] = fieldGroup('', {
       label: ({ root }: FieldContext) => {
-        // Access root.currencies.defaultCurrency (2 levels up: currency fieldGroup -> currencyMultipliers fieldGroup -> currencies fieldGroup)
+        // Access multiplier value from root.currencies.currencyMultipliers[currency].slider
         const currencies = root.currencies as Record<string, unknown> | undefined
-        const defaultCurr = (currencies?.defaultCurrency as string) || 'GBP'
-        const rates = getExchangeRatesForBase(defaultCurr)
-        const rate = rates.rates[currency] ?? 1
-        return `${currency} (1 ${defaultCurr} = ${rate.toFixed(4)} ${currency})`
+        const multipliers = currencies?.currencyMultipliers as Record<string, unknown> | undefined
+        const currencyGroup = multipliers?.[currency] as Record<string, unknown> | undefined
+        const multiplier = (currencyGroup?.slider as number) ?? 1.0
+        return `${currency} multiplier = ${multiplier.toFixed(2)}×${multiplier === 1.0 ? ' (default)' : ''}`
       },
       collapsible: true,
       collapsibleDefaultOpen: false,
