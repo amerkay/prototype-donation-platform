@@ -21,7 +21,7 @@ const showDonateDialog = ref(false)
 
 // Story expand/collapse state
 const isStoryExpanded = ref(false)
-const storyPreviewLength = 200
+const storyPreviewLength = 350
 
 // Computed for story preview
 const storyPreview = computed(() => {
@@ -159,9 +159,9 @@ const hasSocialSharing = computed(() => {
               </div>
               <Button
                 v-if="hasMoreStory"
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                class="px-0 h-auto text-primary hover:underline"
+                class="text-primary"
                 @click="isStoryExpanded = !isStoryExpanded"
               >
                 {{ isStoryExpanded ? 'Read less' : 'Read more' }}
@@ -184,13 +184,13 @@ const hasSocialSharing = computed(() => {
             <Separator class="@3xl:hidden" />
 
             <!-- About the Charity -->
-            <Card class="bg-muted/30 border-0">
-              <CardHeader class="pb-2 pt-3 px-3">
+            <Card class="gap-2">
+              <CardHeader class="pb-0 px-5">
                 <h3 class="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
                   About the Charity
                 </h3>
               </CardHeader>
-              <CardContent class="px-3 pb-3 space-y-2">
+              <CardContent class="px-5 space-y-2">
                 <div>
                   <h4 class="font-semibold text-sm">{{ campaign.charity?.name }}</h4>
                   <p class="text-xs text-muted-foreground">
