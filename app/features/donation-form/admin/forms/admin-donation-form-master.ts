@@ -1,4 +1,4 @@
-import { defineForm, fieldGroup } from '~/features/_library/form-builder/api'
+import { defineForm, fieldGroup, componentField } from '~/features/_library/form-builder/api'
 import type { FormContext } from '~/features/_library/form-builder/types'
 import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 import { useDonationFormBasicForm } from '~/features/donation-form/admin/forms/donation-form-basic-form'
@@ -12,6 +12,7 @@ import { useGiftAidConfigSection } from '~/features/donation-form/features/gift-
 import { useTributeConfigSection } from '~/features/donation-form/features/tribute/admin/forms/tribute-config-form'
 import { createDonationCustomFieldsConfigSection } from '~/features/donation-form/features/custom-fields/admin/forms/donation-custom-fields-config-form'
 import type { ContextSchema } from '~/features/_library/form-builder/conditions'
+import CurrencySettingsInfo from '~/features/settings/admin/components/CurrencySettingsInfo.vue'
 
 /**
  * Master admin form that consolidates all donation form configuration sections
@@ -33,6 +34,11 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
     const giftAidFields = useGiftAidConfigSection.setup(ctx)
     const tributeFields = useTributeConfigSection.setup(ctx)
     const customFieldsFields = createDonationCustomFieldsConfigSection(contextSchema).setup(ctx)
+
+    // Currency settings info - display organization's currency config
+    const currencyInfo = componentField('currencyInfo', {
+      component: CurrencySettingsInfo
+    })
 
     // Form Settings - basic settings and branding only
     const formSettings = fieldGroup('formSettings', {
@@ -56,7 +62,10 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
       collapsible: true,
       collapsibleDefaultOpen: false,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: formDonationAmountsFields,
+      fields: {
+        currencyInfo,
+        ...formDonationAmountsFields
+      },
       // Flatten structure: form.donationAmounts.baseDefaultCurrency → store.donationAmounts.baseDefaultCurrency
       $storePath: {
         baseDefaultCurrency: 'donationAmounts.baseDefaultCurrency',
