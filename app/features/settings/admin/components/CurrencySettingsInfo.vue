@@ -15,11 +15,6 @@ const supportedCurrenciesDisplay = computed(() => {
     .join(', ')
 })
 
-const defaultCurrencyDisplay = computed(() => {
-  const option = CURRENCY_OPTIONS.find((opt) => opt.value === currencyStore.defaultCurrency)
-  return option?.label ?? currencyStore.defaultCurrency
-})
-
 const multipliersDisplay = computed(() => {
   const multipliers = currencyStore.currencyMultipliers
   const entries = Object.entries(multipliers)
