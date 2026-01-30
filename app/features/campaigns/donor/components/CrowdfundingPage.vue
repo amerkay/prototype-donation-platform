@@ -3,12 +3,13 @@ import type { Campaign } from '~/features/campaigns/shared/types'
 import ShareDialog from './ShareDialog.vue'
 import DonateDialog from './DonateDialog.vue'
 import SocialShareButtons from './SocialShareButtons.vue'
+import DonationsList from './DonationsList.vue'
+import CampaignProgress from './CampaignProgress.vue'
+import CampaignActions from './CampaignActions.vue'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Heart, Share2, ChevronDown, ChevronUp, ExternalLink } from 'lucide-vue-next'
+import { Heart, ChevronDown, ChevronUp, ExternalLink } from 'lucide-vue-next'
 
 const props = defineProps<{
   campaign: Campaign
@@ -22,18 +23,6 @@ const showDonateDialog = ref(false)
 const isStoryExpanded = ref(false)
 const storyPreviewLength = 200
 
-// Donations view toggle
-const currentDonationsView = ref<'recent' | 'top'>('recent')
-
-// Initialize with campaign's default view
-watch(
-  () => props.campaign.crowdfunding?.defaultDonationsView,
-  (view) => {
-    if (view) currentDonationsView.value = view
-  },
-  { immediate: true }
-)
-
 // Computed for story preview
 const storyPreview = computed(() => {
   const story = props.campaign.crowdfunding?.story || ''
@@ -45,62 +34,11 @@ const hasMoreStory = computed(() => {
   return (props.campaign.crowdfunding?.story?.length || 0) > storyPreviewLength
 })
 
-// Get sorted donations based on current view
+// Get limited donations for display
 const displayedDonations = computed(() => {
   const limit = props.campaign.crowdfunding?.numberOfDonationsToShow || 5
-  const donations = [...props.campaign.recentDonations]
-
-  if (currentDonationsView.value === 'top') {
-    donations.sort((a, b) => b.amount - a.amount)
-  } else {
-    donations.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-  }
-
-  return donations.slice(0, limit)
+  return props.campaign.recentDonations.slice(0, limit)
 })
-
-// Progress percentage
-const progressPercentage = computed(() => {
-  if (!props.campaign.crowdfunding?.goalAmount || !props.campaign.stats) return 0
-  return Math.min(
-    Math.round((props.campaign.stats.totalRaised / props.campaign.crowdfunding.goalAmount) * 100),
-    100
-  )
-})
-
-// Formatting helpers
-const formatAmount = (amount: number) => {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(amount)
-}
-
-const formatRelativeTime = (dateString: string) => {
-  const now = new Date()
-  const date = new Date(dateString)
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
-  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' }).format(date)
-}
-
-const getDonorInitials = (name: string) => {
-  if (name === 'Anonymous') return '?'
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-}
 
 // Handle social share click
 const handleSocialShare = (platform: string) => {
@@ -112,9 +50,7 @@ const handleSocialShare = (platform: string) => {
 // Check if any social sharing is enabled
 const hasSocialSharing = computed(() => {
   if (!props.campaign.socialSharing) return false
-  // First check if social sharing is enabled at all
   if (props.campaign.socialSharing.enabled === false) return false
-  // Then check if at least one platform is enabled (excluding the 'enabled' field itself)
   const { enabled, ...platforms } = props.campaign.socialSharing
   return Object.values(platforms).some((platformEnabled) => platformEnabled)
 })
@@ -123,238 +59,30 @@ const hasSocialSharing = computed(() => {
 <template>
   <div v-if="campaign.crowdfunding" class="@container">
     <div class="bg-background rounded-xl border overflow-hidden">
-      <!-- Cover Photo -->
-      <div class="relative aspect-video @4xl:aspect-21/9 bg-muted overflow-hidden">
-        <img
-          v-if="campaign.crowdfunding.coverPhoto"
-          :src="campaign.crowdfunding.coverPhoto"
-          :alt="campaign.crowdfunding.title"
-          class="w-full h-full object-cover"
-        />
-        <div
-          v-else
-          class="w-full h-full flex items-center justify-center bg-linear-to-br from-primary/20 to-primary/5"
-        >
-          <Heart class="w-12 h-12 @md:w-16 @md:h-16 @4xl:w-20 @4xl:h-20 text-primary/40" />
-        </div>
-      </div>
-
-      <!-- Content Container -->
-      <div class="@4xl:flex @4xl:gap-6 @4xl:p-6">
-        <!-- Main Content -->
-        <div class="flex-1 p-4 @md:p-6 @4xl:p-0 space-y-4 @md:space-y-5">
-          <!-- Title & Description (Mobile/Tablet only) -->
-          <div class="@4xl:hidden space-y-3">
-            <h2 class="text-xl @md:text-2xl font-bold leading-tight">
-              {{ campaign.crowdfunding.title }}
-            </h2>
-            <p class="text-sm @md:text-base text-muted-foreground leading-relaxed">
-              {{ campaign.crowdfunding.shortDescription }}
-            </p>
-          </div>
-
-          <!-- Progress & Actions (Mobile/Tablet only) -->
-          <div class="@4xl:hidden space-y-4">
-            <div
-              v-if="
-                campaign.crowdfunding.showProgressBar &&
-                campaign.crowdfunding.goalAmount &&
-                campaign.stats
-              "
-              class="space-y-2"
-            >
-              <Progress :model-value="progressPercentage" class="h-3" />
-              <div class="flex justify-between items-baseline text-sm @md:text-base">
-                <div>
-                  <span class="font-bold text-lg @md:text-xl">{{
-                    formatAmount(campaign.stats.totalRaised)
-                  }}</span>
-                  <span class="text-muted-foreground"> raised</span>
-                </div>
-                <div class="text-muted-foreground text-right text-sm">
-                  <span>{{ formatAmount(campaign.crowdfunding.goalAmount) }} goal</span>
-                </div>
-              </div>
-              <div class="flex justify-between text-xs @md:text-sm text-muted-foreground">
-                <span>{{ campaign.stats.totalDonors }} supporters</span>
-                <span v-if="campaign.stats.daysRemaining"
-                  >{{ campaign.stats.daysRemaining }} days left</span
-                >
-              </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex gap-2">
-              <Button class="flex-1" size="lg" @click="showDonateDialog = true">
-                <Heart class="w-4 h-4 mr-2" />
-                Donate Now
-              </Button>
-              <Button
-                v-if="hasSocialSharing"
-                variant="outline"
-                size="lg"
-                @click="showShareDialog = true"
-              >
-                <Share2 class="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-
-          <Separator class="@4xl:hidden" />
-
-          <!-- Story Section -->
-          <div class="space-y-3">
-            <h3
-              class="font-semibold text-sm @md:text-base uppercase tracking-wide text-muted-foreground"
-            >
-              Our Story
-            </h3>
-            <div class="text-sm @md:text-base leading-relaxed whitespace-pre-line">
-              {{ isStoryExpanded ? campaign.crowdfunding.story : storyPreview }}
-            </div>
-            <Button
-              v-if="hasMoreStory"
-              variant="ghost"
-              size="sm"
-              class="px-0 h-auto text-primary hover:underline"
-              @click="isStoryExpanded = !isStoryExpanded"
-            >
-              {{ isStoryExpanded ? 'Read less' : 'Read more' }}
-              <ChevronUp v-if="isStoryExpanded" class="w-4 h-4 ml-1" />
-              <ChevronDown v-else class="w-4 h-4 ml-1" />
-            </Button>
-          </div>
-
-          <Separator />
-
-          <!-- Recent Donations -->
-          <div v-if="campaign.crowdfunding.showRecentDonations" class="space-y-3">
-            <div class="flex items-center justify-between">
-              <h3
-                class="font-semibold text-sm @md:text-base uppercase tracking-wide text-muted-foreground"
-              >
-                {{ currentDonationsView === 'recent' ? 'Recent' : 'Top' }} Donations
-              </h3>
-              <div class="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  class="h-7 @md:h-8 px-2 @md:px-3 text-xs @md:text-sm"
-                  :class="{ 'bg-muted': currentDonationsView === 'recent' }"
-                  @click="currentDonationsView = 'recent'"
-                >
-                  Recent
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  class="h-7 @md:h-8 px-2 @md:px-3 text-xs @md:text-sm"
-                  :class="{ 'bg-muted': currentDonationsView === 'top' }"
-                  @click="currentDonationsView = 'top'"
-                >
-                  Top
-                </Button>
-              </div>
-            </div>
-
-            <div class="space-y-2">
-              <div
-                v-for="donation in displayedDonations"
-                :key="donation.id"
-                class="flex items-start gap-3 p-2 @md:p-3 rounded-lg hover:bg-muted/50 transition-colors"
-              >
-                <Avatar class="w-8 h-8 @md:w-10 @md:h-10 shrink-0">
-                  <AvatarFallback class="text-xs @md:text-sm bg-primary/10 text-primary">
-                    {{ getDonorInitials(donation.isAnonymous ? 'Anonymous' : donation.donorName) }}
-                  </AvatarFallback>
-                </Avatar>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-baseline justify-between gap-2">
-                    <span class="font-medium text-sm @md:text-base truncate">
-                      {{ donation.isAnonymous ? 'Anonymous' : donation.donorName }}
-                    </span>
-                    <span class="text-sm @md:text-base font-semibold text-primary shrink-0">
-                      {{ formatAmount(donation.amount) }}
-                    </span>
-                  </div>
-                  <p
-                    v-if="donation.message"
-                    class="text-xs @md:text-sm text-muted-foreground line-clamp-2 mt-0.5"
-                  >
-                    "{{ donation.message }}"
-                  </p>
-                  <span class="text-xs @md:text-sm text-muted-foreground">
-                    {{ formatRelativeTime(donation.createdAt) }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <p class="text-xs @md:text-sm text-center text-muted-foreground pt-1">
-              {{ campaign.stats?.totalDonations }} total donations
-            </p>
-          </div>
-
-          <Separator />
-
-          <!-- About the Charity -->
-          <Card class="bg-muted/30 border-0">
-            <CardHeader class="pb-2 pt-3 @md:pt-4 px-3 @md:px-4">
-              <h3
-                class="font-semibold text-sm @md:text-base uppercase tracking-wide text-muted-foreground"
-              >
-                About the Charity
-              </h3>
-            </CardHeader>
-            <CardContent class="px-3 @md:px-4 pb-3 @md:pb-4 space-y-2">
-              <div>
-                <h4 class="font-semibold text-sm @md:text-base">{{ campaign.charity?.name }}</h4>
-                <p class="text-xs @md:text-sm text-muted-foreground">
-                  Registered Charity: {{ campaign.charity?.registrationNumber }}
-                </p>
-              </div>
-              <p class="text-sm @md:text-base text-muted-foreground line-clamp-3">
-                {{ campaign.charity?.description }}
-              </p>
-              <a
-                v-if="campaign.charity?.website"
-                :href="campaign.charity.website"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center gap-1 text-sm @md:text-base text-primary hover:underline"
-              >
-                {{ campaign.charity.website.replace(/^https?:\/\//, '') }}
-                <ExternalLink class="w-3 h-3 @md:w-4 @md:h-4" />
-              </a>
-            </CardContent>
-          </Card>
-
-          <!-- Social Sharing (respects campaign.socialSharing settings) -->
-          <div v-if="hasSocialSharing" class="space-y-3 pb-20 @4xl:pb-0">
-            <h3
-              class="font-semibold text-sm @md:text-base uppercase tracking-wide text-muted-foreground text-center"
-            >
-              Share this campaign
-            </h3>
-            <div class="flex justify-center gap-2 flex-wrap">
-              <SocialShareButtons
-                :settings="campaign.socialSharing"
-                :campaign-id="campaign.id!"
-                :campaign-title="campaign.crowdfunding?.title || campaign.name"
-                :short-description="campaign.crowdfunding?.shortDescription"
-                size="icon"
-                @share="handleSocialShare"
-              />
-            </div>
+      <!-- Hero Section: Cover Photo + Campaign Info -->
+      <div class="@3xl:flex">
+        <!-- Cover Photo - reaches top and left edges on desktop -->
+        <div class="relative aspect-video @3xl:aspect-auto @3xl:w-3/5 bg-muted overflow-hidden">
+          <img
+            v-if="campaign.crowdfunding.coverPhoto"
+            :src="campaign.crowdfunding.coverPhoto"
+            :alt="campaign.crowdfunding.title"
+            class="w-full h-full object-cover @3xl:min-h-80"
+          />
+          <div
+            v-else
+            class="w-full h-full flex items-center justify-center bg-linear-to-br from-primary/20 to-primary/5 @3xl:min-h-80"
+          >
+            <Heart class="w-12 h-12 @3xl:w-20 @3xl:h-20 text-primary/40" />
           </div>
         </div>
 
-        <!-- Desktop Sidebar -->
-        <aside class="hidden @4xl:block @4xl:w-85 @5xl:w-95 shrink-0">
-          <div class="sticky top-6 space-y-4">
+        <!-- Campaign Info (right side on desktop) -->
+        <div class="hidden @3xl:flex @3xl:w-2/5 p-6 @3xl:p-8 @3xl:pl-12 flex-col justify-center">
+          <div class="space-y-4">
             <!-- Title & Description -->
             <div class="space-y-3">
-              <h2 class="text-2xl @5xl:text-3xl font-bold leading-tight">
+              <h2 class="text-2xl font-bold leading-tight">
                 {{ campaign.crowdfunding.title }}
               </h2>
               <p class="text-base text-muted-foreground leading-relaxed">
@@ -363,63 +91,162 @@ const hasSocialSharing = computed(() => {
             </div>
 
             <!-- Progress Card -->
-            <Card
+            <CampaignProgress
               v-if="
                 campaign.crowdfunding.showProgressBar &&
                 campaign.crowdfunding.goalAmount &&
                 campaign.stats
               "
-            >
-              <CardContent class="p-5 space-y-4">
-                <Progress :model-value="progressPercentage" class="h-3" />
-                <div class="space-y-2">
-                  <div class="flex justify-between items-baseline">
-                    <div>
-                      <div class="font-bold text-2xl">
-                        {{ formatAmount(campaign.stats.totalRaised) }}
-                      </div>
-                      <div class="text-sm text-muted-foreground">
-                        raised of {{ formatAmount(campaign.crowdfunding.goalAmount) }}
-                      </div>
-                    </div>
-                  </div>
-                  <div class="flex gap-4 text-sm text-muted-foreground pt-2 border-t">
-                    <div>
-                      <span class="font-semibold text-foreground">{{
-                        campaign.stats.totalDonors
-                      }}</span>
-                      supporters
-                    </div>
-                    <div v-if="campaign.stats.daysRemaining">
-                      <span class="font-semibold text-foreground">{{
-                        campaign.stats.daysRemaining
-                      }}</span>
-                      days left
-                    </div>
-                  </div>
+              :stats="campaign.stats"
+              :goal-amount="campaign.crowdfunding.goalAmount"
+            />
+
+            <!-- Action Buttons -->
+            <CampaignActions
+              :show-share="hasSocialSharing"
+              @donate="showDonateDialog = true"
+              @share="showShareDialog = true"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="p-4 @3xl:p-8">
+        <!-- Title & Description (Mobile/Tablet only) -->
+        <div class="@3xl:hidden space-y-3">
+          <h2 class="text-xl font-bold leading-tight">
+            {{ campaign.crowdfunding.title }}
+          </h2>
+          <p class="text-sm text-muted-foreground leading-relaxed">
+            {{ campaign.crowdfunding.shortDescription }}
+          </p>
+        </div>
+
+        <!-- Progress & Actions (Mobile/Tablet only) -->
+        <div class="@3xl:hidden space-y-4 mt-4">
+          <CampaignProgress
+            v-if="
+              campaign.crowdfunding.showProgressBar &&
+              campaign.crowdfunding.goalAmount &&
+              campaign.stats
+            "
+            :stats="campaign.stats"
+            :goal-amount="campaign.crowdfunding.goalAmount"
+          />
+
+          <!-- Action Buttons -->
+          <CampaignActions
+            :show-share="hasSocialSharing"
+            @donate="showDonateDialog = true"
+            @share="showShareDialog = true"
+          />
+        </div>
+
+        <Separator class="@3xl:hidden my-4" />
+
+        <!-- Two-column layout for desktop -->
+        <div class="@3xl:flex">
+          <!-- Left Column: Story, Charity, Social -->
+          <div class="flex-1 space-y-4">
+            <!-- Story Section -->
+            <div class="space-y-3">
+              <h3 class="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
+                Our Story
+              </h3>
+              <div class="text-sm leading-relaxed whitespace-pre-line">
+                {{ isStoryExpanded ? campaign.crowdfunding.story : storyPreview }}
+              </div>
+              <Button
+                v-if="hasMoreStory"
+                variant="ghost"
+                size="sm"
+                class="px-0 h-auto text-primary hover:underline"
+                @click="isStoryExpanded = !isStoryExpanded"
+              >
+                {{ isStoryExpanded ? 'Read less' : 'Read more' }}
+                <ChevronUp v-if="isStoryExpanded" class="w-4 h-4 ml-1" />
+                <ChevronDown v-else class="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+
+            <Separator class="@3xl:hidden" />
+
+            <!-- Recent Donations (Mobile/Tablet only - moves to right column on desktop) -->
+            <DonationsList
+              v-if="campaign.crowdfunding.showRecentDonations"
+              class="@3xl:hidden"
+              :donations="displayedDonations"
+              :total-count="campaign.stats?.totalDonations || 0"
+              :default-view="campaign.crowdfunding.defaultDonationsView"
+            />
+
+            <Separator class="@3xl:hidden" />
+
+            <!-- About the Charity -->
+            <Card class="bg-muted/30 border-0">
+              <CardHeader class="pb-2 pt-3 px-3">
+                <h3 class="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
+                  About the Charity
+                </h3>
+              </CardHeader>
+              <CardContent class="px-3 pb-3 space-y-2">
+                <div>
+                  <h4 class="font-semibold text-sm">{{ campaign.charity?.name }}</h4>
+                  <p class="text-xs text-muted-foreground">
+                    Registered Charity: {{ campaign.charity?.registrationNumber }}
+                  </p>
                 </div>
+                <p class="text-sm text-muted-foreground line-clamp-3">
+                  {{ campaign.charity?.description }}
+                </p>
+                <a
+                  v-if="campaign.charity?.website"
+                  :href="campaign.charity.website"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                >
+                  {{ campaign.charity.website.replace(/^https?:\/\//, '') }}
+                  <ExternalLink class="w-3 h-3" />
+                </a>
               </CardContent>
             </Card>
 
-            <!-- Action Buttons -->
-            <div class="space-y-2">
-              <Button class="w-full" size="lg" @click="showDonateDialog = true">
-                <Heart class="w-4 h-4 mr-2" />
-                Donate Now
-              </Button>
-              <Button
-                v-if="hasSocialSharing"
-                variant="outline"
-                class="w-full"
-                size="lg"
-                @click="showShareDialog = true"
+            <!-- Social Sharing (respects campaign.socialSharing settings) -->
+            <div v-if="hasSocialSharing" class="space-y-3 pb-20 @3xl:pb-0">
+              <h3
+                class="font-semibold text-sm uppercase tracking-wide text-muted-foreground text-center"
               >
-                <Share2 class="w-4 h-4 mr-2" />
-                Share Campaign
-              </Button>
+                Share this campaign
+              </h3>
+              <div class="flex justify-center gap-2 flex-wrap">
+                <SocialShareButtons
+                  :settings="campaign.socialSharing"
+                  :campaign-id="campaign.id!"
+                  :campaign-title="campaign.crowdfunding?.title || campaign.name"
+                  :short-description="campaign.crowdfunding?.shortDescription"
+                  size="icon"
+                  @share="handleSocialShare"
+                />
+              </div>
             </div>
           </div>
-        </aside>
+
+          <!-- Right Column: Recent Donations (Desktop only) -->
+          <aside
+            v-if="campaign.crowdfunding.showRecentDonations"
+            class="hidden @3xl:block @3xl:w-2/5 @3xl:pl-10 shrink-0"
+          >
+            <div class="sticky top-6">
+              <DonationsList
+                :donations="displayedDonations"
+                :total-count="campaign.stats?.totalDonations || 0"
+                :default-view="campaign.crowdfunding.defaultDonationsView"
+              />
+            </div>
+          </aside>
+        </div>
       </div>
 
       <!-- Dialogs -->

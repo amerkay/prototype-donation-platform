@@ -1,28 +1,14 @@
 <script setup lang="ts">
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import {
+  useCampaignFormatters,
+  CAMPAIGN_STATUS_VARIANTS
+} from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 
 const store = useCampaignConfigStore()
-
-// Status badge variants
-const statusVariants: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  active: 'default',
-  draft: 'secondary',
-  paused: 'outline',
-  completed: 'outline',
-  archived: 'outline'
-}
-
-// Formatting helpers
-const formatAmount = (amount: number) => {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(amount)
-}
+const { formatAmount } = useCampaignFormatters()
 </script>
 
 <template>
@@ -31,7 +17,10 @@ const formatAmount = (amount: number) => {
       <!-- Left: Campaign name and status -->
       <div class="flex items-center gap-3 min-w-0">
         <h1 class="text-lg font-bold truncate">{{ store.name }}</h1>
-        <Badge :variant="statusVariants[store.status]" class="shrink-0 text-xs capitalize">
+        <Badge
+          :variant="CAMPAIGN_STATUS_VARIANTS[store.status]"
+          class="shrink-0 text-xs capitalize"
+        >
           {{ store.status }}
         </Badge>
       </div>

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
+import { useClipboard } from '@vueuse/core'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -24,7 +26,6 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog'
 import { UserPlus, Mail, Copy, Users, User, Check } from 'lucide-vue-next'
-import { useClipboard } from '@vueuse/core'
 
 const store = useCampaignConfigStore()
 
@@ -38,31 +39,7 @@ const inviteLink = computed(() => `https://donate.example.com/join/${store.id}`)
 const { copy, copied } = useClipboard({ source: inviteLink })
 
 // Format helpers
-const formatAmount = (amount: number) => {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(amount)
-}
-
-const formatDate = (dateString: string) => {
-  return new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  }).format(new Date(dateString))
-}
-
-const getInitials = (name: string) => {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-}
+const { formatAmount, formatDate, getInitials } = useCampaignFormatters()
 
 const getFundraiserTypeIcon = (type: string) => {
   return type === 'team' ? Users : User

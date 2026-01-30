@@ -1,5 +1,6 @@
 import type { CampaignForm } from '~/features/campaigns/shared/types'
 import { getFormsByCampaignId, getFormById } from '~/sample-api-responses/api-sample-response-forms'
+import { useCampaignFormatters } from './useCampaignFormatters'
 
 /**
  * Forms management composable
@@ -12,6 +13,9 @@ export function useForms(campaignId: string) {
   // Get the default form
   const defaultForm = computed(() => forms.value.find((f) => f.isDefault) || forms.value[0])
 
+  // Format helpers
+  const { formatDate } = useCampaignFormatters()
+
   // Count of features enabled in a form
   const getEnabledFeaturesCount = (form: CampaignForm): number => {
     const features = form.config.features
@@ -19,15 +23,6 @@ export function useForms(campaignId: string) {
       const f = feature as { enabled?: boolean }
       return f?.enabled === true
     }).length
-  }
-
-  // Format date helper
-  const formatDate = (dateString: string): string => {
-    return new Intl.DateTimeFormat('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    }).format(new Date(dateString))
   }
 
   // Set a form as default (mock - would call API in real app)

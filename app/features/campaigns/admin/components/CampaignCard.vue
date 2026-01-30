@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import type { Campaign } from '~/features/campaigns/shared/types'
+import {
+  useCampaignFormatters,
+  CAMPAIGN_STATUS_VARIANTS
+} from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -12,41 +16,16 @@ const props = defineProps<{
   compact?: boolean
 }>()
 
-const statusVariants: Record<
-  Campaign['status'],
-  'default' | 'secondary' | 'outline' | 'destructive'
-> = {
-  active: 'default',
-  draft: 'secondary',
-  paused: 'outline',
-  completed: 'outline',
-  archived: 'outline'
-}
+const { formatAmount, formatDate, getProgressPercentage } = useCampaignFormatters()
 
-const progressPercentage = computed(() => {
-  if (!props.campaign.crowdfunding.goalAmount) return 0
-  return Math.min(
-    (props.campaign.stats.totalRaised / props.campaign.crowdfunding.goalAmount) * 100,
-    100
+const progressPercentage = computed(() =>
+  getProgressPercentage(
+    props.campaign.stats.totalRaised,
+    props.campaign.crowdfunding.goalAmount || 0
   )
-})
+)
 
-const formattedAmount = (amount: number) => {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(amount)
-}
-
-const formattedDate = computed(() => {
-  return new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  }).format(new Date(props.campaign.updatedAt))
-})
+const formattedDate = computed(() => formatDate(props.campaign.updatedAt))
 </script>
 
 <template>
@@ -60,7 +39,7 @@ const formattedDate = computed(() => {
             <span class="text-xs">Updated {{ formattedDate }}</span>
           </CardDescription>
         </div>
-        <Badge :variant="statusVariants[campaign.status]" class="shrink-0 self-start">
+        <Badge :variant="CAMPAIGN_STATUS_VARIANTS[campaign.status]" class="shrink-0 self-start">
           {{ campaign.status }}
         </Badge>
       </div>
@@ -70,9 +49,9 @@ const formattedDate = computed(() => {
       <!-- Progress Bar -->
       <div v-if="campaign.crowdfunding.goalAmount" class="space-y-2">
         <div class="flex items-baseline justify-between text-sm">
-          <span class="font-semibold">{{ formattedAmount(campaign.stats.totalRaised) }}</span>
+          <span class="font-semibold">{{ formatAmount(campaign.stats.totalRaised) }}</span>
           <span class="text-muted-foreground text-xs">
-            of {{ formattedAmount(campaign.crowdfunding.goalAmount) }}
+            of {{ formatAmount(campaign.crowdfunding.goalAmount) }}
           </span>
         </div>
         <Progress :model-value="progressPercentage" class="h-2" />
