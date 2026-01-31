@@ -7,6 +7,10 @@ import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
 
+definePageMeta({
+  layout: 'admin'
+})
+
 const route = useRoute()
 const { getCampaignById } = useCampaigns()
 

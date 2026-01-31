@@ -7,6 +7,10 @@ import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaig
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
 
+definePageMeta({
+  layout: 'admin'
+})
+
 const route = useRoute()
 const { getCampaignById, updateCampaign } = useCampaigns()
 const store = useCampaignConfigStore()

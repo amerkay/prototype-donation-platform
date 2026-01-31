@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import PreviewLayout from '~/features/_admin/components/PreviewLayout.vue'
 import DonationFormPreview from '~/features/donation-form/admin/components/DonationFormPreview.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 
 definePageMeta({
-  layout: false
+  layout: 'admin-preview'
 })
 
 const route = useRoute()
@@ -39,12 +38,8 @@ watch(
     }
   }
 )
-
-const backUrl = computed(() => `/admin/campaigns/${campaignId}/forms/${formId}/edit`)
 </script>
 
 <template>
-  <PreviewLayout :back-url="backUrl" back-label="Back">
-    <DonationFormPreview />
-  </PreviewLayout>
+  <DonationFormPreview />
 </template>
