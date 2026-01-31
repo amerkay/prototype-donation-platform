@@ -10,21 +10,33 @@ interface PiniaInternal extends Pinia {
 }
 
 export default defineNuxtPlugin((nuxtApp) => {
-  // After Vue hydration completes, restore all stores with $hydrate method
-  nuxtApp.hook('app:mounted', () => {
-    const pinia = nuxtApp.$pinia as PiniaInternal
+  const pinia = nuxtApp.$pinia as PiniaInternal
+  const hydratedStores = new Set<string>()
 
-    // Iterate all registered stores
-    pinia._s.forEach((store: PersistedStore) => {
-      // If store has $hydrate method, restore its state
-      if (typeof store.$hydrate === 'function') {
-        store.$hydrate()
+  // Function to hydrate a single store
+  const hydrateStore = (store: PersistedStore) => {
+    // Skip if already hydrated
+    if (hydratedStores.has(store.$id)) return
 
-        // If store has $persist method, watch for changes
-        if (typeof store.$persist === 'function') {
-          store.$subscribe(() => store.$persist!())
-        }
+    // If store has $hydrate method, restore its state
+    if (typeof store.$hydrate === 'function') {
+      store.$hydrate()
+      hydratedStores.add(store.$id)
+
+      // If store has $persist method, watch for changes
+      if (typeof store.$persist === 'function') {
+        store.$subscribe(() => store.$persist!())
       }
-    })
+    }
+  }
+
+  // After Vue hydration completes, restore existing stores
+  nuxtApp.hook('app:mounted', () => {
+    pinia._s.forEach(hydrateStore)
+  })
+
+  // Also hydrate on page finish to catch stores loaded after app:mounted
+  nuxtApp.hook('page:finish', () => {
+    pinia._s.forEach(hydrateStore)
   })
 })

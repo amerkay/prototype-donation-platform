@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npm run build:*)",
       "Bash(pnpm test:nuxt:*)",
-      "Bash(pnpm typecheck:*)"
+      "Bash(pnpm typecheck:*)",
+      "Bash(git show:*)",
+      "Bash(npm run test:nuxt:*)"
     ]
   }
 }
