@@ -170,7 +170,13 @@ const plan = radioGroupField('plan', {
 ## Specialized Fields
 
 ```typescript
-import { sliderField, emojiField, cardField, hiddenField } from '~/features/form-builder/api'
+import {
+  sliderField,
+  emojiField,
+  cardField,
+  hiddenField,
+  componentField
+} from '~/features/form-builder/api'
 
 // Range slider with dynamic props
 const volume = sliderField('volume', {
@@ -204,6 +210,21 @@ const info = cardField('info', {
 const source = hiddenField('source', {
   defaultValue: 'campaign-123'
 })
+
+// Component field (render custom Vue component)
+import FormsList from '~/components/FormsList.vue'
+const formsList = componentField('formsList', {
+  component: FormsList,
+  // Validate using the formsCount prop that will be injected by parent
+  rules: z.any().refine(
+    (props: Record<string, unknown>) => {
+      return (props?.formsCount as number | undefined) ?? 0 > 0
+    },
+    { message: 'At least one donation form is required for this campaign' }
+  )
+})
+// Renders arbitrary components with full validation support
+// Props can be injected dynamically by parent component
 ```
 
 ## Container Fields
@@ -216,22 +237,59 @@ const source = hiddenField('source', {
 - `cardField` → Display-only, no nesting (instructions, tips)
 
 ```typescript
-import { fieldGroup, tabsField, arrayField, textField } from '~/features/form-builder/api'
+import {
+  fieldGroup,
+  tabsField,
+  arrayField,
+  textField,
+  toggleField
+} from '~/features/form-builder/api'
+import { z } from 'zod'
 
-// Group fields with layout
-const address = fieldGroup('address', {
-  label: 'Address',
-  class: 'grid grid-cols-2 gap-3',
-  collapsible: true, // Optional accordion
-  collapsibleDefaultOpen: false,
-  badgeLabel: 'Optional',
+// Group fields with wrapperClass for card styling
+const formSettings = fieldGroup('formSettings', {
+  label: 'Form Settings',
+  description: 'Configure basic form settings and branding.',
+  collapsible: true,
+  collapsibleDefaultOpen: true,
+  wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border', // Styles Accordion wrapper
   fields: {
-    street: textField('street', { label: 'Street' }),
-    city: textField('city', { label: 'City' }),
-    zip: textField('zip', { label: 'ZIP' })
+    title: textField('title', { label: 'Title' }),
+    subtitle: textField('subtitle', { label: 'Subtitle' })
   }
 })
-// Data: { address: { street, city, zip } }
+// wrapperClass styles the Accordion/FieldSet container, 'class' styles content
+
+// Group with external state sync
+const openSectionId = ref<string | undefined>('address')
+const shippingAddress = fieldGroup('shippingAddress', {
+  label: 'Shipping',
+  collapsible: true,
+  collapsibleStateRef: openSectionId, // Bi-directional sync with external ref
+  fields: {
+    /* ... */
+  }
+})
+// openSectionId updates when accordion opens/closes, and vice versa
+
+// Container-level validation
+const notifications = fieldGroup('notifications', {
+  label: 'Notification Settings',
+  collapsible: true,
+  fields: {
+    email: toggleField('email', { label: 'Email' }),
+    sms: toggleField('sms', { label: 'SMS' })
+  },
+  rules: z
+    .object({
+      email: z.boolean(),
+      sms: z.boolean()
+    })
+    .refine((data) => data.email || data.sms, {
+      message: 'At least one notification method required'
+    })
+})
+// Validation applies to entire container, error badge persists when collapsed
 
 // Tabbed sections
 const contact = tabsField('contact', {
@@ -357,6 +415,16 @@ const coverCosts = sliderField('coverCosts', {
 ### Dynamic Validation & Text
 
 ```typescript
+// Real example: disable field type selector once selected
+const fieldType = selectField('type', {
+  label: 'Field Type',
+  placeholder: 'Choose field type...',
+  options: fieldTypeOptions,
+  disabled: ({ values }: { values: Record<string, unknown> }) => !!values.type,
+  rules: z.enum(['text', 'number', 'select'], { message: 'Please select a field type' })
+})
+
+// Dynamic descriptions based on context
 const phone = textField('phone', {
   label: 'Phone',
   description: (ctx) =>
@@ -368,7 +436,7 @@ const phone = textField('phone', {
     return z.string().min(1)
   }
 })
-// All text props accept functions: label, description, placeholder
+// All text props accept functions or ComputedRef: label, description, placeholder
 ```
 
 ### onChange Callbacks
@@ -402,6 +470,34 @@ const emailAddress = textField('emailAddress', {
 - `parent`, `root`, `form` → Context variants
 
 **Use sparingly.** Prefer `visibleWhen` and dynamic `rules` for maintainability.
+
+### onVisibilityChange Callbacks
+
+React to field visibility changes (e.g., clear value when hidden).
+
+```typescript
+import { OnVisibilityChangeContext } from '~/features/form-builder/types'
+
+// Real example from custom fields - clear value when field becomes hidden
+const customField = textField('customField', {
+  label: 'Custom Field',
+  visibleWhen: visibilityConditions.visibleWhen,
+  onVisibilityChange: ({ visible, clearValue }: OnVisibilityChangeContext) => {
+    if (!visible) {
+      clearValue('customField') // Clear without triggering validation
+    }
+  }
+})
+```
+
+**OnVisibilityChangeContext:**
+
+- `visible` → Whether field is now visible
+- `value` → Current field value
+- `values` → Form values + context
+- `setValue(path, value)` → Update field (relative paths)
+- `clearValue(path)` → Clear value without validation
+- `parent`, `root`, `form` → Context variants
 
 ## Reusable Field Sets
 
@@ -446,6 +542,57 @@ export const useCheckoutForm = defineForm('checkout', (ctx) => {
 })
 ```
 
+## Store Auto-Mapping (Admin Config Forms)
+
+Eliminate getData/setData boilerplate using convention-based mapping. By default, field-group names map to store properties.
+
+```typescript
+import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
+
+// AUTO-MAPPING: No getData/setData needed! ✨
+const { formRef, modelValue, expose } = useAdminConfigForm({
+  store: useCampaignConfigStore(),
+  form: createCampaignConfigMaster()
+})
+```
+
+**Override convention with `$storePath` metadata:**
+
+```typescript
+// Flatten: form.basicSettings.name → store.name (not store.basicSettings.name)
+const basicSettings = fieldGroup('basicSettings', {
+  fields: { name, status, formsList },
+  $storePath: { name: 'name', status: 'status' } // formsList excluded (component field)
+})
+
+// Map nested paths: form.amounts.frequencies → store.donationAmounts.frequencies
+const amounts = fieldGroup('amounts', {
+  fields: { frequencies, defaultAmount },
+  $storePath: {
+    frequencies: 'donationAmounts.frequencies',
+    defaultAmount: 'donationAmounts.defaultAmount'
+  }
+})
+
+// Exclude from mapping
+const preview = fieldGroup('preview', {
+  fields: { component: componentField(...) },
+  $storePath: null // Skip - component only
+})
+```
+
+**Manual mapping (backward compatible):**
+
+```typescript
+const { formRef, modelValue } = useAdminConfigForm({
+  store: useCurrencyStore(),
+  form: useCurrencyForm,
+  autoMap: false,
+  getData: (s) => ({ currencies: { supported: s.supportedCurrencies } }),
+  setData: (s, v) => s.updateSettings(v.currencies)
+})
+```
+
 ## API Reference
 
 ### FormRenderer Props
@@ -471,17 +618,24 @@ interface FormRendererProps {
 
 - `isValid: ComputedRef<boolean>`
 - `onSubmit(): void`
+- `resetToValues(newValues: Record<string, unknown>): void`
 
 ```vue
 <script setup lang="ts">
 const form = useContactForm()
 const data = ref({})
+const originalData = ref({})
 const formRef = ref<InstanceType<typeof FormRenderer>>()
 
 function manualSubmit() {
   if (formRef.value?.isValid) {
     formRef.value.onSubmit()
   }
+}
+
+function discardChanges() {
+  // Reset without remounting
+  formRef.value?.resetToValues(originalData.value)
 }
 </script>
 
@@ -565,17 +719,18 @@ All fields support:
 
 ```typescript
 {
-  label?: string | (ctx: FieldContext) => string
-  description?: string | (ctx: FieldContext) => string
-  placeholder?: string | (ctx: FieldContext) => string
+  label?: string | ComputedRef<string> | (ctx: FieldContext) => string
+  description?: string | ComputedRef<string> | (ctx: FieldContext) => string
+  placeholder?: string | ComputedRef<string> | (ctx: FieldContext) => string
   defaultValue?: unknown
   optional?: boolean               // "(optional)" badge
-  disabled?: boolean | (ctx: FieldContext) => boolean
+  disabled?: boolean | ComputedRef<boolean> | (ctx: FieldContext) => boolean
   visibleWhen?: ((ctx: FieldContext) => boolean) | ConditionGroup
-  rules?: z.ZodTypeAny | (ctx: FieldContext) => z.ZodTypeAny
+  rules?: z.ZodTypeAny | ComputedRef<z.ZodTypeAny> | (ctx: FieldContext) => z.ZodTypeAny
   onChange?: (ctx: OnChangeContext) => void
+  onVisibilityChange?: (ctx: OnVisibilityChangeContext) => void
   showSeparatorAfter?: boolean       // Show separator after field
-  class?: string                   // Input CSS classes
+  class?: string | ComputedRef<string> | (ctx: FieldContext) => string
   labelClass?: string
   descriptionClass?: string
   autocomplete?: string            // HTML autocomplete
@@ -590,6 +745,14 @@ interface FieldContext {
   parent?: Record<string, unknown> // Parent container values
   root: Record<string, unknown> // All values + context at top level
   form?: Record<string, unknown> // Pure form values (no context), for submission
+}
+
+interface OnVisibilityChangeContext extends FieldContext {
+  visible: boolean // Whether field is now visible
+  value: unknown // Current field value
+  setValue: SetFieldValueFn // Update field values
+  clearValue: (relativePath: string) => void // Clear without validation
+  path?: string // Full path to current field
 }
 ```
 
@@ -615,9 +778,29 @@ interface Condition {
 - **Nested data:** Field-group values nest: `values.groupName.fieldName`
 - **Composables:** Use `defineForm` for all form definitions—enables reactivity and reusability
 - **Field constructors:** Import constructors from `~/features/form-builder/api` instead of writing object literals
-- **Dynamic when needed:** Use functions only when depending on other fields
+- **Dynamic when needed:** Use functions/ComputedRef only when depending on other fields
 - **onChange sparingly:** Most logic better served by `visibleWhen` + dynamic `rules`
 - **Extract patterns:** Reuse common field sets via factory functions returning `Record<string, FieldDef>`
-- **Separators:** Add `showSeparatorAfter: true` for visual separation
+- **Separators:** Add `showSeparatorAfter: true` for visual separation between sections
 - **Validation on edit forms:** Set `validate-on-mount` for pre-filled forms
 - **Form submission:** Text fields submit on Enter; textareas use Shift+Enter for newline
+- **Container validation:** Use `rules` on field-groups/tabs for cross-field validation ("at least one required")
+- **Store mapping:** Use `$storePath` metadata + `autoMap` in admin forms to eliminate boilerplate
+- **Disabled state:** Use `disabled` property (not `isDisabled`) with boolean/ComputedRef/function
+
+```typescript
+// Real example: showSeparatorAfter for visual grouping
+const enabled = toggleField('enabled', {
+  label: 'Enable Cover Costs Feature',
+  description: 'Allow donors to optionally cover operational costs',
+  labelClass: 'font-bold',
+  showSeparatorAfter: true // Add visual separator after this field
+})
+
+const heading = textField('heading', {
+  label: 'Heading',
+  description: 'The heading shown above the cover costs option',
+  placeholder: 'Send 100% to the [Your Cause]',
+  rules: z.string().min(1, 'Heading is required when enabled')
+})
+```
