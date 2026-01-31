@@ -126,53 +126,55 @@ const backToPresets = () => {
     </div>
 
     <!-- Preset Amounts - Stacked Cards (with descriptions) -->
-    <div v-if="!showSlider && showDescriptions" class="space-y-3">
-      <Card
-        v-for="item in amounts"
-        :key="item.amount"
-        class="cursor-pointer transition-all hover:border-primary py-0 rounded-lg overflow-hidden"
-        :class="{
-          'border-primary border-2 bg-primary/5': selectedAmount === item.amount,
-          border: selectedAmount !== item.amount
-        }"
-        @click="selectAmount(item.amount)"
-      >
-        <div class="pr-4 flex items-center gap-4">
-          <!-- Image (square) -->
-          <div class="size-12 shrink-0 bg-muted">
-            <img
-              v-if="item.image"
-              :src="item.image"
-              :alt="item.shortText || `${currencySymbol}${item.amount}`"
-              class="w-full h-full object-cover"
-            />
+    <div v-if="!showSlider && showDescriptions" class="@container">
+      <div class="grid grid-cols-1 @2xl:grid-cols-2 @4xl:grid-cols-3 gap-3">
+        <Card
+          v-for="item in amounts"
+          :key="item.amount"
+          class="cursor-pointer transition-all hover:border-primary py-0 rounded-lg overflow-hidden"
+          :class="{
+            'border-primary bg-primary/5': selectedAmount === item.amount,
+            border: selectedAmount !== item.amount
+          }"
+          @click="selectAmount(item.amount)"
+        >
+          <div class="pr-4 flex items-center gap-4">
+            <!-- Image (square) -->
+            <div class="size-12 shrink-0 bg-muted">
+              <img
+                v-if="item.image"
+                :src="item.image"
+                :alt="item.shortText || `${currencySymbol}${item.amount}`"
+                class="w-full h-full object-cover"
+              />
+              <div
+                v-else
+                class="w-full h-full flex items-center justify-center text-muted-foreground"
+              >
+                <span class="text-2xl">{{ currencySymbol }}</span>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <p class="text-xl font-bold">{{ currencySymbol }}{{ item.amount }}</p>
+                <p v-if="item.shortText" class="text-sm text-muted-foreground truncate">
+                  {{ item.shortText }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Selection indicator -->
             <div
-              v-else
-              class="w-full h-full flex items-center justify-center text-muted-foreground"
+              v-if="selectedAmount === item.amount"
+              class="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0"
             >
-              <span class="text-2xl">{{ currencySymbol }}</span>
+              <Icon name="heroicons:check-20-solid" class="h-4 w-4 text-primary-foreground" />
             </div>
           </div>
-
-          <!-- Content -->
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2">
-              <p class="text-xl font-bold">{{ currencySymbol }}{{ item.amount }}</p>
-              <p v-if="item.shortText" class="text-sm text-muted-foreground truncate">
-                {{ item.shortText }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Selection indicator -->
-          <div
-            v-if="selectedAmount === item.amount"
-            class="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0"
-          >
-            <Icon name="heroicons:check-20-solid" class="h-4 w-4 text-primary-foreground" />
-          </div>
-        </div>
-      </Card>
+        </Card>
+      </div>
     </div>
 
     <!-- Custom Amount Button (shared between both preset modes) -->
