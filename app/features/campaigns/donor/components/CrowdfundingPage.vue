@@ -77,54 +77,16 @@ const hasSocialSharing = computed(() => {
           </div>
         </div>
 
-        <!-- Campaign Info (right side on desktop) -->
-        <div class="hidden @3xl:flex @3xl:w-2/5 p-6 @3xl:p-8 @3xl:pl-12 flex-col justify-center">
-          <div class="space-y-4">
-            <!-- Title & Description -->
-            <div class="space-y-3">
-              <h2 class="text-2xl font-bold leading-tight">
-                {{ campaign.crowdfunding.title }}
-              </h2>
-              <p class="text-base text-muted-foreground leading-relaxed">
-                {{ campaign.crowdfunding.shortDescription }}
-              </p>
-            </div>
-
-            <!-- Progress Card -->
-            <CampaignProgress
-              v-if="
-                campaign.crowdfunding.showProgressBar &&
-                campaign.crowdfunding.goalAmount &&
-                campaign.stats
-              "
-              :stats="campaign.stats"
-              :goal-amount="campaign.crowdfunding.goalAmount"
-            />
-
-            <!-- Action Buttons -->
-            <CampaignActions
-              :show-share="hasSocialSharing"
-              @donate="showDonateDialog = true"
-              @share="showShareDialog = true"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Main Content -->
-      <div class="p-4 @3xl:p-8">
-        <!-- Title & Description (Mobile/Tablet only) -->
-        <div class="@3xl:hidden space-y-3">
-          <h2 class="text-xl font-bold leading-tight">
+        <!-- Campaign Info -->
+        <div
+          class="p-4 space-y-3 @3xl:w-2/5 @3xl:p-8 @3xl:pl-12 @3xl:flex @3xl:flex-col @3xl:justify-center @3xl:space-y-4"
+        >
+          <h2 class="text-xl @3xl:text-2xl font-bold leading-tight">
             {{ campaign.crowdfunding.title }}
           </h2>
-          <p class="text-sm text-muted-foreground leading-relaxed">
+          <p class="text-sm @3xl:text-base text-muted-foreground leading-relaxed">
             {{ campaign.crowdfunding.shortDescription }}
           </p>
-        </div>
-
-        <!-- Progress & Actions (Mobile/Tablet only) -->
-        <div class="@3xl:hidden space-y-4 mt-4">
           <CampaignProgress
             v-if="
               campaign.crowdfunding.showProgressBar &&
@@ -134,16 +96,17 @@ const hasSocialSharing = computed(() => {
             :stats="campaign.stats"
             :goal-amount="campaign.crowdfunding.goalAmount"
           />
-
-          <!-- Action Buttons -->
           <CampaignActions
             :show-share="hasSocialSharing"
             @donate="showDonateDialog = true"
             @share="showShareDialog = true"
           />
         </div>
+      </div>
 
-        <Separator class="@3xl:hidden my-4" />
+      <!-- Main Content -->
+      <div class="px-4 pb-4 @3xl:p-8 @3xl:pt-0">
+        <Separator class="@3xl:hidden mb-4" />
 
         <!-- Two-column layout for desktop -->
         <div class="@3xl:flex">
