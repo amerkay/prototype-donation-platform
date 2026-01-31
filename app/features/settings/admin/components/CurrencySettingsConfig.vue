@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
-import StickyButtonGroup from '~/features/campaigns/admin/components/StickyButtonGroup.vue'
+import StickyButtonGroup from '~/features/_admin/components/StickyButtonGroup.vue'
 import { useCurrencySettingsForm } from '~/features/settings/admin/forms/currency-settings-form'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'

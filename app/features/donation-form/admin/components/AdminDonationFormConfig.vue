@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
-import StickyButtonGroup from '~/features/campaigns/admin/components/StickyButtonGroup.vue'
+import StickyButtonGroup from '~/features/_admin/components/StickyButtonGroup.vue'
 import { createAdminDonationFormMaster } from '~/features/donation-form/admin/forms/admin-donation-form-master'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useDonationFormContext } from '~/features/donation-form/donor/composables/useDonationFormContext'

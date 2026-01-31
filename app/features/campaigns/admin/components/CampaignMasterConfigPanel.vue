@@ -2,7 +2,7 @@
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
-import StickyButtonGroup from './StickyButtonGroup.vue'
+import StickyButtonGroup from '~/features/_admin/components/StickyButtonGroup.vue'
 import { createCampaignConfigMaster, openAccordionId } from '../forms/campaign-config-master'
 import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
 import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
