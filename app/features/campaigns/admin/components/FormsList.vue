@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
-import { generateFormId, generateFormName } from '~/features/campaigns/admin/templates'
-import type { DonationFormTemplate } from '~/features/campaigns/admin/templates'
-import DonationFormTemplatesDialog from '~/features/campaigns/admin/components/DonationFormTemplatesDialog.vue'
+import { generateFormId, generateFormName } from '~/features/donation-form/admin/templates'
+import type { DonationFormTemplate } from '~/features/donation-form/admin/templates'
+import DonationFormTemplatesDialog from '~/features/donation-form/admin/components/DonationFormTemplatesDialog.vue'
 import {
   Table,
   TableBody,

@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { TEMPLATE_REGISTRY, type DonationFormTemplate } from '~/features/campaigns/admin/templates'
+import {
+  TEMPLATE_REGISTRY,
+  type DonationFormTemplate
+} from '~/features/donation-form/admin/templates'
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
