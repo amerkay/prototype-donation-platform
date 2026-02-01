@@ -1,14 +1,17 @@
 import type { CampaignForm } from '~/features/campaigns/shared/types'
-import { getFormsByCampaignId, getFormById } from '~/sample-api-responses/api-sample-response-forms'
+import { getFormById } from '~/sample-api-responses/api-sample-response-forms'
 import { useCampaignFormatters } from './useCampaignFormatters'
+import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
 
 /**
  * Forms management composable
  * Handles CRUD operations for campaign donation forms
  */
 export function useForms(campaignId: string) {
-  // Get all forms for this campaign
-  const forms = computed(() => getFormsByCampaignId(campaignId))
+  const formsStore = useFormsStore()
+
+  // Get all forms for this campaign (reactive)
+  const forms = computed(() => formsStore.getForms(campaignId))
 
   // Get the default form
   const defaultForm = computed(() => forms.value.find((f) => f.isDefault) || forms.value[0])
@@ -25,17 +28,13 @@ export function useForms(campaignId: string) {
     }).length
   }
 
-  // Set a form as default (mock - would call API in real app)
+  // Set a form as default
   const setDefaultForm = async (formId: string): Promise<void> => {
-    // In real app, this would call an API
-    // For now, just simulate the operation
-    console.log(`Setting form ${formId} as default for campaign ${campaignId}`)
-
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 300))
 
-    // In a real app, this would update the backend and refresh data
-    // For now, we'd need to update the sample data or use a reactive store
+    // Update store (in real app, would call API then refresh)
+    formsStore.setDefaultForm(campaignId, formId)
   }
 
   // Get form by ID

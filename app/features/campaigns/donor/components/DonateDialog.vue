@@ -3,13 +3,13 @@ import DonationFlowWizard from '~/features/donation-form/donor/DonationFlowWizar
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
-import { formConfig } from '~/sample-api-responses/api-sample-response-form-config'
-import { products } from '~/sample-api-responses/api-sample-response-products'
+import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 const props = defineProps<{
   open: boolean
+  campaignId: string
 }>()
 
 const emit = defineEmits<{
@@ -19,14 +19,15 @@ const emit = defineEmits<{
 const formConfigStore = useFormConfigStore()
 const donationStore = useDonationFormStore()
 const cartStore = useImpactCartStore()
+const { defaultForm } = useForms(props.campaignId)
 
 // Initialize form config when dialog opens
 watch(
   () => props.open,
   (isOpen) => {
-    if (isOpen) {
-      // Initialize form config store with sample data
-      formConfigStore.initialize(formConfig, products)
+    if (isOpen && defaultForm.value) {
+      // Initialize form config store with default form's config and products
+      formConfigStore.initialize(defaultForm.value.config, defaultForm.value.products)
       // Reset donation form state
       donationStore.reset()
       cartStore.reset()

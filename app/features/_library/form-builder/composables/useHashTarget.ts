@@ -159,7 +159,7 @@ export function useHashTarget(fullPath: ComputedRef<string>, options: { animate?
 
   const hashHighlightClass = computed(() => {
     if (!isHashTarget.value) return ''
-    const base = 'ring-offset-10 rounded'
+    const base = 'ring-offset-card ring-offset-10 rounded'
     return isFlashing.value
       ? `${base} ring-2 ring-primary hash-highlight-flash`
       : `${base} ring-1 ring-primary/50`

@@ -214,7 +214,7 @@ const hasSocialSharing = computed(() => {
 
       <!-- Dialogs -->
       <ShareDialog v-model:open="showShareDialog" />
-      <DonateDialog v-model:open="showDonateDialog" />
+      <DonateDialog v-model:open="showDonateDialog" :campaign-id="campaign.id!" />
     </div>
   </div>
 
