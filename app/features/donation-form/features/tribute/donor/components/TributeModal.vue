@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
-import BaseDialogOrDrawer from '~/features/donation-form/donor/components/BaseDialogOrDrawer.vue'
+import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
 import { createTributeFormSection } from '~/features/donation-form/features/tribute/donor/forms/tribute-form'
 import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseDialogOrDrawer from '~/features/donation-form/donor/components/BaseDialogOrDrawer.vue'
+import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import { Button } from '@/components/ui/button'
 import {
   Table,

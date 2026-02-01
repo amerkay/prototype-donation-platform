@@ -8,7 +8,7 @@ import type { TributeSettings } from '~/features/donation-form/features/tribute/
 import type { CartItem } from '~/features/donation-form/features/impact-cart/donor/types'
 import CartProductLine from '~/features/donation-form/features/impact-cart/donor/components/ImpactCartProductLine.vue'
 import ProductListContent from '~/features/donation-form/features/product/donor/components/ProductListContent.vue'
-import BaseDialogOrDrawer from '~/features/donation-form/donor/components/BaseDialogOrDrawer.vue'
+import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyContent } from '@/components/ui/empty'
 import { Button } from '@/components/ui/button'
 

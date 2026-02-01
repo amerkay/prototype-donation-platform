@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import BaseDialogOrDrawer from '~/features/donation-form/donor/components/BaseDialogOrDrawer.vue'
+import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import ProductCard from '~/features/donation-form/features/product/donor/components/ProductCard.vue'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 

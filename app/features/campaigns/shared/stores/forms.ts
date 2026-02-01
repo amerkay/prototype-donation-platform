@@ -1,20 +1,31 @@
 import { defineStore } from 'pinia'
 import type { CampaignForm } from '~/features/campaigns/shared/types'
+import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
+import type { Product } from '~/features/donation-form/features/product/shared/types'
 import { getFormsByCampaignId } from '~/sample-api-responses/api-sample-response-forms'
 
 /**
  * Forms store
  * Manages reactive state for campaign donation forms
  * Wraps sample data to enable mutations (set default, etc.)
+ *
+ * TODO: Remove persist/hydrate logic when switching to Supabase instead of api-sample-response
  */
 export const useFormsStore = defineStore('forms', () => {
   // Initialize from sample data - would come from API in real app
   const formsData = ref<Record<string, CampaignForm[]>>({})
+  const hydratedCampaigns = ref<Set<string>>(new Set())
 
   // Get forms for a campaign, initializing from sample data if needed
   const getForms = (campaignId: string): CampaignForm[] => {
     if (!formsData.value[campaignId]) {
-      formsData.value[campaignId] = getFormsByCampaignId(campaignId)
+      // Try to hydrate from sessionStorage first
+      $hydrate(campaignId)
+
+      // If still no data, initialize from sample data
+      if (!formsData.value[campaignId]) {
+        formsData.value[campaignId] = getFormsByCampaignId(campaignId)
+      }
     }
     return formsData.value[campaignId]
   }
@@ -33,10 +44,138 @@ export const useFormsStore = defineStore('forms', () => {
     if (targetForm) {
       targetForm.isDefault = true
     }
+
+    // Persist changes
+    $persist(campaignId)
+  }
+
+  // Add a new form to a campaign
+  const addForm = (
+    campaignId: string,
+    formId: string,
+    name: string,
+    config: FullFormConfig,
+    products: Product[]
+  ): void => {
+    const forms = getForms(campaignId)
+
+    const newForm: CampaignForm = {
+      id: formId,
+      campaignId,
+      name,
+      isDefault: forms.length === 0,
+      config,
+      products,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+
+    forms.push(newForm)
+
+    // Persist changes
+    $persist(campaignId)
+  }
+
+  // Duplicate an existing form
+  const duplicateForm = (
+    campaignId: string,
+    sourceFormId: string,
+    newFormId: string,
+    newName: string
+  ): void => {
+    const forms = getForms(campaignId)
+    const sourceForm = forms.find((f) => f.id === sourceFormId)
+
+    if (!sourceForm) {
+      console.error(`Form ${sourceFormId} not found`)
+      return
+    }
+
+    // Deep clone the config and products
+    const duplicatedForm: CampaignForm = {
+      id: newFormId,
+      campaignId,
+      name: newName,
+      isDefault: false,
+      config: JSON.parse(JSON.stringify(sourceForm.config)),
+      products: JSON.parse(JSON.stringify(sourceForm.products)),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+
+    forms.push(duplicatedForm)
+
+    // Persist changes
+    $persist(campaignId)
+  }
+
+  // Delete a form from a campaign
+  const deleteForm = (campaignId: string, formId: string): void => {
+    const forms = getForms(campaignId)
+    const formIndex = forms.findIndex((f) => f.id === formId)
+
+    if (formIndex === -1) {
+      console.error(`Form ${formId} not found`)
+      return
+    }
+
+    const formToDelete = forms[formIndex]
+    if (!formToDelete) return
+
+    const wasDefault = formToDelete.isDefault
+
+    // Remove the form
+    forms.splice(formIndex, 1)
+
+    // If deleted form was default and there are remaining forms, set first as default
+    if (wasDefault && forms.length > 0) {
+      const firstForm = forms[0]
+      if (firstForm) {
+        firstForm.isDefault = true
+      }
+    }
+
+    // Persist changes
+    $persist(campaignId)
+  }
+
+  // TODO: Remove when switching to Supabase instead of api-sample-response
+  // Persistence method - save forms to sessionStorage
+  const $persist = (campaignId: string): void => {
+    if (import.meta.server) return
+    try {
+      const forms = formsData.value[campaignId]
+      if (forms) {
+        sessionStorage.setItem(`forms-${campaignId}`, JSON.stringify(forms))
+      }
+    } catch (error) {
+      console.warn('Failed to persist forms:', error)
+    }
+  }
+
+  // TODO: Remove when switching to Supabase instead of api-sample-response
+  // Hydration method - load forms from sessionStorage
+  const $hydrate = (campaignId: string): void => {
+    if (import.meta.server) return
+    if (hydratedCampaigns.value.has(campaignId)) return
+
+    try {
+      const saved = sessionStorage.getItem(`forms-${campaignId}`)
+      if (saved) {
+        formsData.value[campaignId] = JSON.parse(saved)
+      }
+      hydratedCampaigns.value.add(campaignId)
+    } catch (error) {
+      console.warn('Failed to hydrate forms:', error)
+      hydratedCampaigns.value.add(campaignId)
+    }
   }
 
   return {
     getForms,
-    setDefaultForm
+    setDefaultForm,
+    addForm,
+    duplicateForm,
+    deleteForm
   }
 })

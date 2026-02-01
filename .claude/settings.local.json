@@ -5,7 +5,12 @@
       "Bash(pnpm test:nuxt:*)",
       "Bash(pnpm typecheck:*)",
       "Bash(git show:*)",
-      "Bash(npm run test:nuxt:*)"
+      "Bash(npm run test:nuxt:*)",
+      "Bash(pnpm format:fix:*)",
+      "Bash(pnpm lint:fix:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run format:*)",
+      "Bash(npm run lint:*)"
     ]
   }
 }

@@ -30,7 +30,7 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   open: false,
-  dismissible: false,
+  dismissible: true,
   description: undefined,
   maxWidth: 'sm:max-w-md'
 })

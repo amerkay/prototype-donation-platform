@@ -1,4 +1,6 @@
 import type { CampaignForm } from '~/features/campaigns/shared/types'
+import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
+import type { Product } from '~/features/donation-form/features/product/shared/types'
 import { getFormById } from '~/sample-api-responses/api-sample-response-forms'
 import { useCampaignFormatters } from './useCampaignFormatters'
 import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
@@ -38,7 +40,16 @@ export function useForms(campaignId: string) {
   }
 
   // Get form by ID
+  // TODO: Remove fallback to getFormById when switching to Supabase instead of api-sample-response
   const getForm = (formId: string): CampaignForm | undefined => {
+    // First check local forms store (includes newly created/duplicated forms)
+    const formsList = formsStore.getForms(campaignId)
+    const formInStore = formsList.find((f) => f.id === formId)
+    if (formInStore) {
+      return formInStore
+    }
+
+    // Fall back to API sample response for existing forms
     return getFormById(formId)
   }
 
@@ -59,6 +70,42 @@ export function useForms(campaignId: string) {
     // For now, we're just simulating the operation
   }
 
+  // Create a new form from template
+  const createForm = async (
+    formId: string,
+    name: string,
+    config: FullFormConfig,
+    products: Product[]
+  ): Promise<void> => {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 300))
+
+    // Add to store
+    formsStore.addForm(campaignId, formId, name, config, products)
+  }
+
+  // Duplicate an existing form
+  const duplicateForm = async (
+    sourceFormId: string,
+    newFormId: string,
+    newName: string
+  ): Promise<void> => {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 300))
+
+    // Duplicate in store
+    formsStore.duplicateForm(campaignId, sourceFormId, newFormId, newName)
+  }
+
+  // Delete a form
+  const deleteForm = async (formId: string): Promise<void> => {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 300))
+
+    // Delete from store
+    formsStore.deleteForm(campaignId, formId)
+  }
+
   return {
     forms,
     defaultForm,
@@ -66,6 +113,9 @@ export function useForms(campaignId: string) {
     formatDate,
     setDefaultForm,
     getForm,
-    updateForm
+    updateForm,
+    createForm,
+    duplicateForm,
+    deleteForm
   }
 }
