@@ -50,7 +50,9 @@ if (props.modelValue) {
 const { wrapperProps, resolvedPlaceholder, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
-  () => props.errors
+  () => props.errors,
+  {},
+  () => props.fullPath
 )
 
 // Configuration computed values

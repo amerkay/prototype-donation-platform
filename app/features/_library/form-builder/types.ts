@@ -499,6 +499,8 @@ export interface FieldProps<TValue = unknown, TMeta = unknown> {
   id?: string
   onBlur?: (e?: Event) => void
   class?: string
+  /** Full vee-validate path for hash target highlighting */
+  fullPath?: string
 }
 
 /**

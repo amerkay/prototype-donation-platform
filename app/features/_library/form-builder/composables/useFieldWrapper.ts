@@ -31,6 +31,7 @@ type FieldMetaLike = {
  * @param name - Field name
  * @param errors - Validation errors array (can be reactive ref/computed)
  * @param options - Additional wrapper options including variant type
+ * @param fullPath - Optional full vee-validate path for hash target highlighting
  * @returns Object with all wrapper props ready to spread
  *
  * @example
@@ -46,7 +47,8 @@ export function useFieldWrapper(
   meta: FieldMetaLike,
   name: string,
   errors: MaybeRefOrGetter<string[]>,
-  options: WrapperOptions = {}
+  options: WrapperOptions = {},
+  fullPath?: MaybeRefOrGetter<string | undefined>
 ) {
   const { fieldContext } = useFormBuilderContext()
   const { resolvedLabel, resolvedDescription, resolvedPlaceholder, resolvedClass } =
@@ -74,7 +76,8 @@ export function useFieldWrapper(
       errors: errorsArray,
       invalid: errorsArray.length > 0,
       labelClass: meta.labelClass,
-      descriptionClass: meta.descriptionClass
+      descriptionClass: meta.descriptionClass,
+      fullPath: fullPath ? toValue(fullPath) : undefined
     }
 
     // Add field-specific props only for non-fieldset variant

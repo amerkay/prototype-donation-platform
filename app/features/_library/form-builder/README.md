@@ -650,6 +650,27 @@ function discardChanges() {
 </template>
 ```
 
+## Deep Linking (URL Hash Navigation)
+
+Link directly to any field using URL hashes. Forms auto-expand collapsible groups, switch tabs, and highlight the target field.
+
+**Syntax:**
+
+- Short: `#fieldName` → Resolves to first match (e.g., `#supportedCurrencies`)
+- Full path: `#group.field` → Exact location (e.g., `#currencies.currencyMultipliers.USD`)
+
+**Examples:**
+
+```
+/admin/settings/currency#defaultCurrency
+/admin/settings/currency#supportedCurrencies
+/admin/settings/currency#currencies.currencyMultipliers
+/admin/settings/currency#currencies.currencyMultipliers.USD
+/admin/campaigns/form-id/edit#donationAmounts.frequencies.monthly
+```
+
+Target fields receive animated ring highlight (3x flash, then persistent until user interaction). Ideal for validation error links, documentation, and support workflows.
+
 ### defineForm
 
 ```typescript

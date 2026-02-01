@@ -23,7 +23,9 @@ defineEmits<FieldEmits<number | null | string | undefined>>()
 const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
-  () => props.errors
+  () => props.errors,
+  {},
+  () => props.fullPath
 )
 
 // Coerce modelValue to number | null for NumberField component

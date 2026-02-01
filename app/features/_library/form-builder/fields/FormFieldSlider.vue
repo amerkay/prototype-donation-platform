@@ -15,7 +15,9 @@ const { fieldContext } = useFormBuilderContext()
 const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
-  () => props.errors
+  () => props.errors,
+  {},
+  () => props.fullPath
 )
 
 // Resolve dynamic min/max/step values (can be static, function, or ComputedRef)

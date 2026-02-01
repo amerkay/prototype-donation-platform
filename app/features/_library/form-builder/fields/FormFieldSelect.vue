@@ -17,7 +17,9 @@ const { fieldContext } = useFormBuilderContext()
 const { wrapperProps, resolvedPlaceholder, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
-  () => props.errors
+  () => props.errors,
+  {},
+  () => props.fullPath
 )
 
 // Resolve options (can be static array, function, or ComputedRef)

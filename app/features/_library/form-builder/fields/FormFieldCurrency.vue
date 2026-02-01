@@ -33,7 +33,9 @@ const { fieldContext } = useFormBuilderContext()
 const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
-  () => props.errors
+  () => props.errors,
+  {},
+  () => props.fullPath
 )
 
 // Resolve currency symbol dynamically

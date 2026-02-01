@@ -16,7 +16,8 @@ const { wrapperProps, resolvedClass } = useFieldWrapper(
   () => props.errors,
   {
     disableLabelFor: true
-  }
+  },
+  () => props.fullPath
 )
 
 // Resolve component props (static or dynamic)

@@ -15,7 +15,8 @@ const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
   () => props.errors,
   {
     orientation: 'horizontal'
-  }
+  },
+  () => props.fullPath
 )
 </script>
 

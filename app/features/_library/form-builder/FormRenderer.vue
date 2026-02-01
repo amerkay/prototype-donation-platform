@@ -7,6 +7,7 @@ import type { ContextSchema } from '~/features/_library/form-builder/conditions'
 import { useScrollOnVisible } from './composables/useScrollOnVisible'
 import { checkFieldVisibility } from './composables/useFieldPath'
 import { validateFields } from './utils/validation'
+import { provideHashTarget } from './composables/useHashTarget'
 
 interface Props {
   section: ComposableForm
@@ -99,6 +100,9 @@ const {
 
 // Provide section id so nested fields can resolve absolute vee-validate names
 provide('sectionId', resolvedSection.value.id)
+
+// Provide hash target for URL deep-linking (e.g. /settings#currencies.currencyMultipliers)
+provideHashTarget(resolvedSection.value.fields)
 
 // Provide validateOnMount for all nested fields and containers
 provide('validateOnMount', props.validateOnMount)

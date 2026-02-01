@@ -18,7 +18,9 @@ defineEmits<FieldEmits<string | number | undefined>>()
 const { wrapperProps, resolvedPlaceholder, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
-  () => props.errors
+  () => props.errors,
+  {},
+  () => props.fullPath
 )
 
 const charCount = computed(() => {

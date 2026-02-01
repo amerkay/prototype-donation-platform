@@ -27,7 +27,8 @@ const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
   () => props.errors,
   {
     variant: 'fieldset'
-  }
+  },
+  () => props.fullPath
 )
 </script>
 

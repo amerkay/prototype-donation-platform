@@ -47,7 +47,7 @@ const multipliersDisplay = computed(() => {
     <CardFooter class="justify-between border-t text-xs text-muted-foreground px-4 pt-4!">
       <span> Your organization's default currency settings. They apply to all forms. </span>
       <NuxtLink
-        to="/admin/settings/currency"
+        to="/admin/settings/currency#currencyMultipliers"
         class="flex items-center gap-1 whitespace-nowrap text-primary hover:underline"
       >
         Edit Settings

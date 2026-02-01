@@ -18,6 +18,7 @@ import { useContainerValidation } from '~/features/_library/form-builder/composa
 import FormFieldList from '../internal/FormFieldList.vue'
 import { useScrollOnVisible } from '../composables/useScrollOnVisible'
 import { useAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
+import { useHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
 
 interface Props {
   meta: FieldGroupDef
@@ -79,6 +80,22 @@ const {
   scopedFormValues,
   fullPath
 } = useContainerFieldSetup(props.name, props.meta.visibleWhen)
+
+// Auto-expand accordion when hash target is inside this group
+const {
+  isAncestorOfHashTarget,
+  elementRef: groupEl,
+  hashHighlightClass
+} = useHashTarget(fullPath, { animate: true })
+if (props.meta.collapsible) {
+  watch(
+    isAncestorOfHashTarget,
+    (isAncestor) => {
+      if (isAncestor) accordionValue.value = props.name
+    },
+    { immediate: true }
+  )
+}
 
 // Extract resolvedDisabled from useFieldWrapper for standard disabled support
 const { resolvedDisabled, resolvedClass } = useFieldWrapper(props.meta, props.name, () => [])
@@ -145,10 +162,15 @@ if (props.meta.collapsible) {
     v-model="accordionValue"
     type="single"
     collapsible
-    :class="cn('w-full', meta.wrapperClass, props.class)"
+    :class="cn('w-full', hashHighlightClass, meta.wrapperClass, props.class)"
   >
     <AccordionItem
-      :ref="(el: any) => setElementRef(props.name, el)"
+      :ref="
+        (el: any) => {
+          setElementRef(props.name, el)
+          groupEl = el?.$el || el
+        }
+      "
       :value="name"
       :disabled="resolvedDisabled"
       :unmount-on-hide="true"
@@ -215,7 +237,12 @@ if (props.meta.collapsible) {
   </Accordion>
 
   <!-- Non-collapsible version -->
-  <FieldSet v-else v-show="isGroupVisible" :class="cn(meta.wrapperClass, props.class)">
+  <FieldSet
+    v-else
+    v-show="isGroupVisible"
+    ref="groupEl"
+    :class="cn(hashHighlightClass, meta.wrapperClass, props.class)"
+  >
     <FieldLegend
       v-if="meta.legend || resolvedLabel"
       :class="cn('mb-0 text-foreground/75 -ml-1 px-1', meta.labelClass)"

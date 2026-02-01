@@ -20,7 +20,9 @@ const emit = defineEmits<FieldEmits<string | null>>()
 const { wrapperProps, resolvedLabel, resolvedDisabled } = useFieldWrapper(
   props.meta,
   props.name,
-  () => props.errors
+  () => props.errors,
+  {},
+  () => props.fullPath
 )
 
 // Refs

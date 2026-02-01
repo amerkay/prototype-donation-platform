@@ -25,7 +25,8 @@ const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
   {
     variant: isSingleMode.value ? 'field' : 'fieldset',
     disableLabelFor: true // We build Field manually for both modes
-  }
+  },
+  () => props.fullPath
 )
 
 // Single checkbox handlers

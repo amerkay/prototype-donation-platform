@@ -12,7 +12,6 @@ import {
 } from '~/features/_library/form-builder/composables/useFieldPath'
 import { useFormBuilderContext } from '~/features/_library/form-builder/composables/useFormBuilderContext'
 import { extractDefaultValues } from '~/features/_library/form-builder/utils/defaults'
-import { cn } from '@/lib/utils'
 import FormFieldText from './fields/FormFieldText.vue'
 import FormFieldTextarea from './fields/FormFieldTextarea.vue'
 import FormFieldNumber from './fields/FormFieldNumber.vue'
@@ -230,9 +229,10 @@ const fieldProps = computed(() => {
   const baseProps = {
     meta: props.meta,
     name: props.name,
-    class: cn(props.class),
+    class: props.class,
     errors: fieldErrors.value,
-    onBlur: fieldAttrs.value.onBlur
+    onBlur: fieldAttrs.value.onBlur,
+    fullPath: resolvedVeeName.value
   }
 
   // Container fields (group, tabs, card) don't need v-model or id

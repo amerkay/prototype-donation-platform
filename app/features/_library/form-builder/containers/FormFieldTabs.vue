@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { cn } from '@/lib/utils'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Field, FieldLegend, FieldDescription } from '@/components/ui/field'
@@ -13,6 +13,7 @@ import {
 import { useContainerFieldSetup } from '~/features/_library/form-builder/composables/useContainerFieldSetup'
 import { useCombinedErrors } from '~/features/_library/form-builder/composables/useCombinedErrors'
 import { useContainerValidation } from '~/features/_library/form-builder/composables/useContainerValidation'
+import { useHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
 import FormFieldGroup from './FormFieldGroup.vue'
 
 interface Props {
@@ -31,6 +32,22 @@ const {
 
 // Active tab state - initialize from defaultValue or first tab
 const activeTab = ref(props.meta.defaultValue || props.meta.tabs[0]?.value || '')
+
+// Auto-switch tab when hash target is inside this tabs container
+const {
+  hashTargetChildSegment,
+  elementRef: tabsEl,
+  hashHighlightClass
+} = useHashTarget(fullTabsPath, { animate: true })
+watch(
+  hashTargetChildSegment,
+  (tabValue) => {
+    if (tabValue && props.meta.tabs.some((t) => t.value === tabValue)) {
+      activeTab.value = tabValue
+    }
+  },
+  { immediate: true }
+)
 
 // Compute combined errors for each tab using lightweight composable
 const tabErrorTrackers = Object.fromEntries(
@@ -84,8 +101,8 @@ const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
 </script>
 
 <template>
-  <div v-show="isTabsVisible">
-    <Field :class="cn(resolvedClass, 'space-y-1')">
+  <div v-show="isTabsVisible" ref="tabsEl">
+    <Field :class="cn(hashHighlightClass, resolvedClass, 'space-y-1')">
       <FieldLegend v-if="resolvedLabel" :class="cn('mb-0', meta.labelClass)">
         {{ resolvedLabel }}
       </FieldLegend>

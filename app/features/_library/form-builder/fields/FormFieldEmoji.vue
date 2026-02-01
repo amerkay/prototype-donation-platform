@@ -15,7 +15,9 @@ const emit = defineEmits<FieldEmits<string>>()
 const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
-  () => props.errors
+  () => props.errors,
+  {},
+  () => props.fullPath
 )
 
 const pickerOpen = ref(false)
