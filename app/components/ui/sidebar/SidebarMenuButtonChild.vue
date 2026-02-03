@@ -25,6 +25,7 @@ const props = withDefaults(defineProps<SidebarMenuButtonProps>(), {
     data-slot="sidebar-menu-button"
     data-sidebar="menu-button"
     :data-size="size"
+    :data-variant="variant"
     :data-active="isActive"
     :class="cn(sidebarMenuButtonVariants({ variant, size }), props.class)"
     :as="as"
