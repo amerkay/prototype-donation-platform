@@ -6,6 +6,7 @@ import CampaignPreviewSwitcher from '~/features/campaigns/admin/components/Campa
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { getCampaignTypeBreadcrumb } from '~/features/campaigns/shared/composables/useCampaignTypes'
+import { openAccordionId } from '~/features/campaigns/admin/forms/campaign-config-master'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
 
 definePageMeta({
@@ -19,6 +20,9 @@ const store = useCampaignConfigStore()
 // Get campaign data
 const campaign = computed(() => getCampaignById(route.params.id as string))
 
+// Reset accordion state before child components mount (clears stale state from previous campaigns)
+openAccordionId.value = undefined
+
 // Initialize store synchronously so child components have store.id during setup
 if (campaign.value) {
   store.initialize(campaign.value)
@@ -30,10 +34,16 @@ onMounted(() => {
   }
 })
 
+// Clean up accordion state when leaving the page
+onUnmounted(() => {
+  openAccordionId.value = undefined
+})
+
 // Watch for campaign ID changes (navigation between campaigns)
 watch(
   () => route.params.id,
   (newId) => {
+    openAccordionId.value = undefined
     const newCampaign = getCampaignById(newId as string)
     if (newCampaign) {
       store.initialize(newCampaign)
