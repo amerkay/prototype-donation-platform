@@ -73,8 +73,12 @@ export function createCampaignConfigMaster() {
       collapsibleDefaultOpen: false,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
       fields: socialSharingFields,
-      // Hidden for fundraiser campaigns (social sharing inherited from template)
-      visibleWhen: () => !store.isFundraiser
+      // Hidden for fundraiser campaigns and when crowdfunding page is disabled
+      visibleWhen: ({ values }) => {
+        if (store.isFundraiser) return false
+        const cf = values.crowdfunding as Record<string, unknown> | undefined
+        return cf?.enabled === true || store.isP2P
+      }
     })
 
     return {
