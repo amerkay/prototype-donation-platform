@@ -11,6 +11,20 @@ export const formConfig = {
       once: {
         enabled: true,
         label: 'One-time',
+        enableAmountDescriptions: false,
+        presetAmounts: [
+          { amount: 5 },
+          { amount: 10 },
+          { amount: 25 },
+          { amount: 50 },
+          { amount: 75 },
+          { amount: 100 }
+        ],
+        customAmount: { min: 5, max: 1000 }
+      },
+      monthly: {
+        enabled: true,
+        label: 'Monthly',
         enableAmountDescriptions: true,
         presetAmounts: [
           {
@@ -31,19 +45,6 @@ export const formConfig = {
             image: '/imgs/orangutan-felix-square.jpg'
           },
           { amount: 500, shortText: 'Rescue equipment', image: '/imgs/orangutan-felix-square.jpg' }
-        ],
-        customAmount: { min: 5, max: 1000 }
-      },
-      monthly: {
-        enabled: true,
-        label: 'Monthly',
-        presetAmounts: [
-          { amount: 5 },
-          { amount: 10 },
-          { amount: 25 },
-          { amount: 50 },
-          { amount: 75 },
-          { amount: 100 }
         ],
         customAmount: { min: 3, max: 500 }
       },

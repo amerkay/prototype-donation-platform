@@ -70,7 +70,7 @@ function onKeydown(e: KeyboardEvent) {
   >
     <span class="truncate max-w-48 sm:max-w-72">{{ modelValue }}</span>
     <Pencil
-      class="h-3 w-3 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+      class="h-3 w-3 shrink-0 text-muted-foreground md:opacity-0 group-hover:opacity-100 transition-opacity"
     />
   </button>
 </template>
