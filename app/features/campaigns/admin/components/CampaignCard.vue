@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import type { Campaign } from '~/features/campaigns/shared/types'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
+import {
+  getCampaignTypeShortLabel,
+  getCampaignTypeBadgeVariant
+} from '~/features/campaigns/shared/composables/useCampaignTypes'
 import {
   useCampaignFormatters,
   CAMPAIGN_STATUS_VARIANTS
@@ -17,6 +22,7 @@ const props = defineProps<{
 }>()
 
 const { formatAmount, formatDate, getProgressPercentage } = useCampaignFormatters()
+const { getCampaignById } = useCampaigns()
 
 const progressPercentage = computed(() =>
   getProgressPercentage(
@@ -26,6 +32,21 @@ const progressPercentage = computed(() =>
 )
 
 const formattedDate = computed(() => formatDate(props.campaign.updatedAt))
+
+const isP2P = computed(() => props.campaign.type === 'p2p')
+const isFundraiser = computed(() => props.campaign.type === 'fundraiser')
+
+const campaignTypeLabel = computed(() => getCampaignTypeShortLabel(props.campaign))
+const typeBadgeVariant = computed(() => getCampaignTypeBadgeVariant(props.campaign.type))
+
+const parentTemplate = computed(() => {
+  if (!isFundraiser.value || !props.campaign.parentCampaignId) return null
+  return getCampaignById(props.campaign.parentCampaignId)
+})
+
+const activeFundraisersCount = computed(
+  () => props.campaign.fundraisers.filter((f) => f.status === 'active').length
+)
 </script>
 
 <template>
@@ -34,20 +55,36 @@ const formattedDate = computed(() => formatDate(props.campaign.updatedAt))
       <div class="flex items-start justify-between gap-2 min-w-0">
         <div class="flex-1 min-w-0 overflow-hidden">
           <CardTitle class="text-lg truncate">{{ campaign.name }}</CardTitle>
+          <CardDescription v-if="parentTemplate && !compact" class="text-xs mt-0.5">
+            Parent Template: {{ parentTemplate.name }}
+          </CardDescription>
           <CardDescription v-if="!compact" class="flex items-center gap-2 mt-1">
             <Calendar class="w-3 h-3" />
             <span class="text-xs">Updated {{ formattedDate }}</span>
           </CardDescription>
         </div>
-        <Badge :variant="CAMPAIGN_STATUS_VARIANTS[campaign.status]" class="shrink-0 self-start">
-          {{ campaign.status }}
-        </Badge>
+        <div class="flex items-center gap-1.5 shrink-0 self-start">
+          <Badge :variant="typeBadgeVariant" class="text-xs">
+            {{ campaignTypeLabel }}
+          </Badge>
+          <Badge :variant="CAMPAIGN_STATUS_VARIANTS[campaign.status]">
+            {{ campaign.status }}
+          </Badge>
+        </div>
       </div>
     </CardHeader>
 
     <CardContent class="space-y-4">
-      <!-- Progress Bar -->
-      <div v-if="campaign.crowdfunding.goalAmount" class="space-y-2">
+      <!-- P2P Template: Total raised only (no goal - each fundraiser has own goal) -->
+      <div v-if="isP2P" class="space-y-2">
+        <div class="flex items-baseline justify-between text-sm">
+          <span class="text-muted-foreground text-xs">Total Raised</span>
+          <span class="font-semibold">{{ formatAmount(campaign.stats.totalRaised) }}</span>
+        </div>
+      </div>
+
+      <!-- Standard Campaign: Progress bar with goal -->
+      <div v-else-if="campaign.crowdfunding.goalAmount" class="space-y-2">
         <div class="flex items-baseline justify-between text-sm">
           <span class="font-semibold">{{ formatAmount(campaign.stats.totalRaised) }}</span>
           <span class="text-muted-foreground text-xs">
@@ -61,7 +98,14 @@ const formattedDate = computed(() => formatDate(props.campaign.updatedAt))
       </div>
 
       <!-- Stats Grid -->
-      <div v-if="!compact" class="grid grid-cols-2 gap-3 pt-2">
+      <div v-if="!compact" class="grid gap-3 pt-2" :class="isP2P ? 'grid-cols-3' : 'grid-cols-2'">
+        <div v-if="isP2P" class="flex items-center gap-2 text-sm">
+          <Users class="w-4 h-4 text-muted-foreground" />
+          <div>
+            <p class="font-medium">{{ activeFundraisersCount }}</p>
+            <p class="text-xs text-muted-foreground">Active</p>
+          </div>
+        </div>
         <div class="flex items-center gap-2 text-sm">
           <Users class="w-4 h-4 text-muted-foreground" />
           <div>

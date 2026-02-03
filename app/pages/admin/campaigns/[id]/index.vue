@@ -5,6 +5,7 @@ import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/Cam
 import CampaignPreviewSwitcher from '~/features/campaigns/admin/components/CampaignPreviewSwitcher.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { getCampaignTypeBreadcrumb } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
 
 definePageMeta({
@@ -18,15 +19,20 @@ const store = useCampaignConfigStore()
 // Get campaign data
 const campaign = computed(() => getCampaignById(route.params.id as string))
 
-// Redirect if campaign not found
-if (!campaign.value) {
-  navigateTo('/admin/campaigns')
-}
+// TODO: Remove when switching to Supabase API
+// Track if client-side hydration completed (sessionStorage is client-only)
+const isHydrated = ref(false)
 
-// Initialize store with campaign data
-if (campaign.value) {
+// TODO: Remove when switching to Supabase API
+// Check for campaign existence after client-side hydration from sessionStorage
+onMounted(() => {
+  isHydrated.value = true
+  if (!campaign.value) {
+    throw createError({ statusCode: 404, statusMessage: 'Campaign not found' })
+  }
+  // Initialize store with campaign data
   store.initialize(campaign.value)
-}
+})
 
 // Watch for campaign ID changes (navigation between campaigns)
 watch(
@@ -64,11 +70,15 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdmi
 })
 
 // Breadcrumbs
-const breadcrumbs = computed(() => [
-  { label: 'Dashboard', href: '/' },
-  { label: 'Campaigns', href: '/admin/campaigns' },
-  { label: store.name }
-])
+const breadcrumbs = computed(() => {
+  const typeBreadcrumb = getCampaignTypeBreadcrumb({ type: store.type })
+  return [
+    { label: 'Dashboard', href: '/' },
+    { label: 'Campaigns', href: '/admin/campaigns/standard' },
+    { label: typeBreadcrumb.label, href: typeBreadcrumb.href },
+    { label: store.name }
+  ]
+})
 
 // Preview handler
 const handlePreview = () => {
@@ -77,8 +87,12 @@ const handlePreview = () => {
 </script>
 
 <template>
+  <!-- TODO: Remove loading state when switching to Supabase API (will fetch from API instead) -->
+  <div v-if="!isHydrated" class="flex items-center justify-center min-h-screen">
+    <div class="text-muted-foreground">Loading...</div>
+  </div>
   <AdminEditLayout
-    v-if="campaign"
+    v-else-if="campaign"
     :breadcrumbs="breadcrumbs"
     :is-dirty="store.isDirty"
     :show-discard-dialog="showDiscardDialog"

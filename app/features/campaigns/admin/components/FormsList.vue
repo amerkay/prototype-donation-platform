@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import type { CampaignForm } from '~/features/campaigns/shared/types'
 import { generateFormId, generateFormName } from '~/features/donation-form/admin/templates'
 import type { DonationFormTemplate } from '~/features/donation-form/admin/templates'
 import DonationFormTemplatesDialog from '~/features/donation-form/admin/components/DonationFormTemplatesDialog.vue'
+import CopyFormFromCampaignDialog from '~/features/campaigns/admin/components/CopyFormFromCampaignDialog.vue'
 import {
   Table,
   TableBody,
@@ -55,6 +57,16 @@ const store = useCampaignConfigStore()
 
 const { forms, setDefaultForm, createForm, duplicateForm, deleteForm } = useForms(store.id!)
 
+// P2P campaigns are limited to a single donation form
+// Fundraiser campaigns cannot add forms (they use a copy from parent template)
+const canAddForm = computed(() => {
+  if (store.isFundraiser) return false
+  return forms.value.length < store.maxFormsAllowed
+})
+
+// Fundraisers cannot modify forms (they use copied forms from parent)
+const canModifyForms = computed(() => !store.isFundraiser)
+
 // Loading state
 const isLoading = ref(true)
 
@@ -71,6 +83,9 @@ const deletingId = ref<string | null>(null)
 
 // Templates dialog state
 const showTemplatesDialog = ref(false)
+
+// Copy from campaign dialog state
+const showCopyDialog = ref(false)
 
 // Delete confirmation dialog state
 const formToDelete = ref<{ id: string; name: string } | null>(null)
@@ -150,6 +165,30 @@ const handleConfirmDelete = async () => {
     formToDelete.value = null
   }
 }
+
+const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId: string) => {
+  try {
+    // Generate unique form ID and name
+    const formId = generateFormId(store.id!, 'copy')
+    const existingNames = forms.value.map((f) => f.name)
+    const formName = generateFormName(`${sourceForm.name} (Copy)`, existingNames)
+
+    // Copy the form to current campaign
+    const { forms: sourceForms } = useForms(sourceCampaignId)
+    const sourceFormData = sourceForms.value.find((f) => f.id === sourceForm.id)
+    if (!sourceFormData) {
+      throw new Error('Source form not found')
+    }
+
+    // Create form with copied config and products
+    await createForm(formId, formName, sourceFormData.config, sourceFormData.products)
+
+    // Navigate to edit page
+    router.push(`/admin/campaigns/${store.id}/forms/${formId}/edit`)
+  } catch (error) {
+    console.error('Failed to copy form', error)
+  }
+}
 </script>
 
 <template>
@@ -159,13 +198,21 @@ const handleConfirmDelete = async () => {
         <FileText class="size-4" />
         Donation Forms
       </h3>
-      <Button size="sm" @click="handleAddForm">
+      <Button v-if="canAddForm" size="sm" @click="handleAddForm">
         <Plus class="w-4 h-4 mr-1.5" />
         Add Form
       </Button>
     </div>
     <p class="text-sm text-muted-foreground mb-4">
-      Manage donation forms for this campaign. Set a default form for direct campaign links.
+      <template v-if="store.isFundraiser">
+        Fundraiser campaigns use a copy of the parent template's form.
+      </template>
+      <template v-else-if="store.isP2P && !canAddForm">
+        P2P campaigns use a single donation form.
+      </template>
+      <template v-else>
+        Manage donation forms for this campaign. Set a default form for direct campaign links.
+      </template>
     </p>
 
     <!-- Loading State -->
@@ -186,10 +233,16 @@ const handleConfirmDelete = async () => {
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button @click="handleAddForm">
-          <Plus class="w-4 h-4 mr-1.5" />
-          Create Your First Form
-        </Button>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <Button @click="handleAddForm">
+            <Plus class="w-4 h-4 mr-1.5" />
+            Create Your First Form
+          </Button>
+          <Button variant="outline" @click="showCopyDialog = true">
+            <Copy class="w-4 h-4 mr-1.5" />
+            Copy from another campaign
+          </Button>
+        </div>
       </EmptyContent>
     </Empty>
 
@@ -235,23 +288,25 @@ const handleConfirmDelete = async () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
-                      v-if="!form.isDefault"
+                      v-if="!form.isDefault && canModifyForms"
                       :disabled="settingDefaultId === form.id"
                       @click="handleSetDefault(form.id)"
                     >
                       <Check class="w-4 h-4 mr-2" />
                       {{ settingDefaultId === form.id ? 'Setting...' : 'Set default' }}
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator v-if="!form.isDefault" />
+                    <DropdownMenuSeparator v-if="!form.isDefault && canModifyForms" />
                     <DropdownMenuItem
+                      v-if="canAddForm && canModifyForms"
                       :disabled="duplicatingId === form.id"
                       @click="handleDuplicateForm(form.id, form.name)"
                     >
                       <Copy class="w-4 h-4 mr-2" />
                       {{ duplicatingId === form.id ? 'Duplicating...' : 'Duplicate' }}
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator v-if="canModifyForms" />
                     <DropdownMenuItem
+                      v-if="canModifyForms"
                       class="text-destructive focus:text-destructive"
                       :disabled="deletingId === form.id"
                       @click="handleDeleteForm(form.id, form.name)"
@@ -273,6 +328,13 @@ const handleConfirmDelete = async () => {
       v-model:open="showTemplatesDialog"
       :campaign-id="store.id!"
       @select="handleTemplateSelect"
+    />
+
+    <!-- Copy from Campaign Dialog -->
+    <CopyFormFromCampaignDialog
+      v-model:open="showCopyDialog"
+      :current-campaign-id="store.id!"
+      @select="handleCopyFromCampaign"
     />
 
     <!-- Delete Confirmation Dialog -->

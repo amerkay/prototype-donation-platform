@@ -4,6 +4,7 @@ import { useCampaignBasicSettingsForm } from '~/features/campaigns/admin/forms/c
 import { useCrowdfundingSettingsForm } from '~/features/campaigns/admin/forms/crowdfunding-settings-form'
 import { useP2PSettingsForm } from '~/features/campaigns/admin/forms/p2p-settings-form'
 import { useSocialSharingForm } from '~/features/campaigns/admin/forms/social-sharing-form'
+import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 
 /**
  * Reactive state for currently open accordion
@@ -18,6 +19,8 @@ export const openAccordionId = ref<string | undefined>('campaignConfigMaster.bas
  */
 export function createCampaignConfigMaster() {
   return defineForm('campaignConfigMaster', (ctx: FormContext) => {
+    const store = useCampaignConfigStore()
+
     // Extract fields from each sub-form by calling their setup functions
     const basicSettingsFields = useCampaignBasicSettingsForm.setup(ctx)
     const crowdfundingFields = useCrowdfundingSettingsForm.setup(ctx)
@@ -41,8 +44,10 @@ export function createCampaignConfigMaster() {
     })
 
     const crowdfunding = fieldGroup('crowdfunding', {
-      label: 'Crowdfunding Page',
-      description: 'Configure public page with title, story, cover photo, and progress tracking.',
+      label: store.isP2P ? 'Template Defaults' : 'Crowdfunding Page',
+      description: store.isP2P
+        ? 'Default settings inherited by all fundraisers created from this template.'
+        : 'Configure public page with title, story, cover photo, and progress tracking.',
       collapsible: true,
       collapsibleDefaultOpen: false,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
@@ -53,13 +58,11 @@ export function createCampaignConfigMaster() {
       label: 'Fundraisers',
       description: 'Enable individual and team fundraising pages with custom goals.',
       collapsible: true,
-      collapsibleDefaultOpen: false,
+      collapsibleDefaultOpen: store.isP2P,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
       fields: peerToPeerFields,
-
-      badgeLabel: 'On my TODO list',
-      badgeVariant: 'secondary',
-      disabled: true
+      // Hide from standard and fundraiser campaigns (fundraisers can't have sub-fundraisers)
+      visibleWhen: () => store.type !== 'standard' && store.type !== 'fundraiser'
     })
 
     const socialSharing = fieldGroup('socialSharing', {

@@ -20,6 +20,7 @@ import NavMain from '~/features/_admin/sidebar/NavMain.vue'
 import NavCampaigns from '~/features/_admin/sidebar/NavCampaigns.vue'
 import NavSecondary from '~/features/_admin/sidebar/NavSecondary.vue'
 import NavUser from '~/features/_admin/sidebar/NavUser.vue'
+import { useFeatureFlags } from '~/composables/useFeatureFlags'
 import {
   Sidebar,
   SidebarContent,
@@ -34,142 +35,164 @@ const props = withDefaults(defineProps<SidebarProps>(), {
   variant: 'inset'
 })
 
+const { showMyFundraisers } = useFeatureFlags()
+
+// Compute the navMain structure to include "My Fundraisers" when available
+const navMain = computed(() => [
+  {
+    title: 'Dashboard',
+    url: '#',
+    icon: LayoutDashboard
+  },
+  {
+    title: 'Campaigns',
+    url: '/admin/campaigns',
+    icon: Megaphone,
+    items: [
+      {
+        title: 'Standard',
+        url: '/admin/campaigns/standard'
+      },
+      {
+        title: 'P2P Templates',
+        url: '/admin/campaigns/p2p'
+      },
+      ...(showMyFundraisers.value
+        ? [
+            {
+              title: 'My Fundraisers',
+              url: '/admin/campaigns/fundraisers'
+            }
+          ]
+        : [])
+    ]
+  },
+  {
+    title: 'Donors',
+    url: '#',
+    icon: Users
+  },
+  {
+    title: 'Donations',
+    url: '#',
+    icon: PoundSterling
+  },
+  {
+    title: 'Subscriptions',
+    url: '#',
+    icon: CreditCard
+  },
+  {
+    title: 'Products',
+    url: '#',
+    icon: Box
+  },
+  {
+    title: 'Templates',
+    url: '#',
+    icon: FileText,
+    items: [
+      {
+        title: 'Receipts',
+        url: '#'
+      },
+      {
+        title: 'Certificates',
+        url: '#'
+      },
+      {
+        title: 'eCards',
+        url: '#'
+      },
+      {
+        title: 'Pages',
+        url: '#'
+      }
+    ]
+  },
+  {
+    title: 'Integrations',
+    url: '#',
+    icon: Plug,
+    items: [
+      {
+        title: 'Payments',
+        url: '#'
+      },
+      {
+        title: 'CRM',
+        url: '#'
+      },
+      {
+        title: 'Email',
+        url: '#'
+      },
+      {
+        title: 'Automation',
+        url: '#'
+      },
+      {
+        title: 'WordPress',
+        url: '#'
+      }
+    ]
+  },
+  {
+    title: 'Settings',
+    url: '#',
+    icon: Settings2,
+    items: [
+      {
+        title: 'General',
+        url: '#'
+      },
+      {
+        title: 'Currency',
+        url: '/admin/settings/currency'
+      },
+      {
+        title: 'Branding',
+        url: '#'
+      },
+      {
+        title: 'Payment Processors',
+        url: '#'
+      },
+      {
+        title: 'Team',
+        url: '#'
+      },
+      {
+        title: 'Billing',
+        url: '#'
+      },
+      {
+        title: 'API & Webhooks',
+        url: '#'
+      }
+    ]
+  }
+])
+
+const navSecondary = [
+  {
+    title: 'Support',
+    url: '#',
+    icon: LifeBuoy
+  },
+  {
+    title: 'Feedback',
+    url: '#',
+    icon: Send
+  }
+]
+
 const data = {
   user: {
     name: 'Wild Amer',
     email: 'awesome@charity.co.uk',
     avatar: '/avatar.png'
-  },
-  navMain: [
-    {
-      title: 'Dashboard',
-      url: '#',
-      icon: LayoutDashboard
-    },
-    {
-      title: 'Campaigns',
-      url: '/admin/campaigns',
-      icon: Megaphone,
-      exact: true
-    },
-    {
-      title: 'Donors',
-      url: '#',
-      icon: Users
-    },
-    {
-      title: 'Donations',
-      url: '#',
-      icon: PoundSterling
-    },
-    {
-      title: 'Subscriptions',
-      url: '#',
-      icon: CreditCard
-    },
-    {
-      title: 'Products',
-      url: '#',
-      icon: Box
-    },
-    {
-      title: 'Templates',
-      url: '#',
-      icon: FileText,
-      items: [
-        {
-          title: 'Receipts',
-          url: '#'
-        },
-        {
-          title: 'Certificates',
-          url: '#'
-        },
-        {
-          title: 'eCards',
-          url: '#'
-        },
-        {
-          title: 'Pages',
-          url: '#'
-        }
-      ]
-    },
-    {
-      title: 'Integrations',
-      url: '#',
-      icon: Plug,
-      items: [
-        {
-          title: 'Payments',
-          url: '#'
-        },
-        {
-          title: 'CRM',
-          url: '#'
-        },
-        {
-          title: 'Email',
-          url: '#'
-        },
-        {
-          title: 'Automation',
-          url: '#'
-        },
-        {
-          title: 'WordPress',
-          url: '#'
-        }
-      ]
-    },
-    {
-      title: 'Settings',
-      url: '#',
-      icon: Settings2,
-      items: [
-        {
-          title: 'General',
-          url: '#'
-        },
-        {
-          title: 'Currency',
-          url: '/admin/settings/currency'
-        },
-        {
-          title: 'Branding',
-          url: '#'
-        },
-        {
-          title: 'Payment Processors',
-          url: '#'
-        },
-        {
-          title: 'Team',
-          url: '#'
-        },
-        {
-          title: 'Billing',
-          url: '#'
-        },
-        {
-          title: 'API & Webhooks',
-          url: '#'
-        }
-      ]
-    }
-  ],
-  navSecondary: [
-    {
-      title: 'Support',
-      url: '#',
-      icon: LifeBuoy
-    },
-    {
-      title: 'Feedback',
-      url: '#',
-      icon: Send
-    }
-  ]
+  }
 }
 </script>
 
@@ -195,9 +218,9 @@ const data = {
       </SidebarMenu>
     </SidebarHeader>
     <SidebarContent>
-      <NavMain :items="data.navMain" />
+      <NavMain :items="navMain" />
       <NavCampaigns />
-      <NavSecondary :items="data.navSecondary" class="mt-auto" />
+      <NavSecondary :items="navSecondary" class="mt-auto" />
     </SidebarContent>
     <SidebarFooter>
       <NavUser :user="data.user" />

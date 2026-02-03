@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type {
   Campaign,
+  CampaignType,
+  P2PPreset,
   CampaignStats,
   CrowdfundingSettings,
   PeerToPeerSettings,
@@ -37,6 +39,9 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
 
   // State
   const id = ref<string | null>(null)
+  const type = ref<CampaignType>('standard')
+  const p2pPreset = ref<P2PPreset | null>(null)
+  const parentCampaignId = ref<string | null>(null)
   const name = ref('')
   const status = ref<CampaignStatus>('draft')
   const stats = ref<CampaignStats | null>(null)
@@ -50,6 +55,10 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
   const updatedAt = ref('')
 
   // Getters
+  const isP2P = computed(() => type.value === 'p2p')
+  const isFundraiser = computed(() => type.value === 'fundraiser')
+  const maxFormsAllowed = computed(() => (isP2P.value ? 1 : Infinity))
+
   const progressPercentage = computed((): number => {
     if (!crowdfunding.value?.goalAmount || crowdfunding.value.goalAmount === 0) return 0
     return Math.min((stats.value!.totalRaised / crowdfunding.value.goalAmount) * 100, 100)
@@ -96,6 +105,9 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
 
     return {
       id: id.value,
+      type: type.value,
+      ...(p2pPreset.value ? { p2pPreset: p2pPreset.value } : {}),
+      ...(parentCampaignId.value ? { parentCampaignId: parentCampaignId.value } : {}),
       name: name.value,
       status: status.value,
       createdAt: createdAt.value,
@@ -114,6 +126,9 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
   // Actions
   function initialize(campaign: Campaign) {
     id.value = campaign.id
+    type.value = campaign.type
+    p2pPreset.value = campaign.p2pPreset ?? null
+    parentCampaignId.value = campaign.parentCampaignId ?? null
     name.value = campaign.name
     status.value = campaign.status
     stats.value = { ...campaign.stats }
@@ -130,6 +145,9 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
 
   function reset() {
     id.value = null
+    type.value = 'standard'
+    p2pPreset.value = null
+    parentCampaignId.value = null
     name.value = ''
     status.value = 'draft'
     stats.value = null
@@ -147,6 +165,9 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
   return {
     // State
     id,
+    type,
+    p2pPreset,
+    parentCampaignId,
     name,
     status,
     stats,
@@ -161,6 +182,9 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     isDirty,
     isSaving,
     // Getters
+    isP2P,
+    isFundraiser,
+    maxFormsAllowed,
     progressPercentage,
     remainingAmount,
     donationsByRecent,

@@ -9,19 +9,29 @@ import type { Product } from '~/features/donation-form/features/product/shared/t
 
 export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed' | 'archived'
 
-export type FundraiserType = 'individual' | 'team' | 'organization'
+export type CampaignType = 'standard' | 'p2p' | 'fundraiser'
+
+export type P2PPreset = 'birthday' | 'tribute' | 'challenge' | 'wedding'
+
+export type FundraiserStatus = 'active' | 'paused' | 'removed'
 
 /**
- * Campaign fundraiser/team member
+ * Campaign fundraiser (lightweight metadata for stats rollup)
+ * The actual fundraiser is a full Campaign object with type: 'fundraiser'
  */
 export interface CampaignFundraiser {
   id: string
+  campaignId: string // References the full Campaign.id of fundraiser campaign
   name: string
   email: string
-  type: FundraiserType
   joinedAt: string
   raisedAmount: number
   donationCount: number
+  goal?: number
+  slug: string
+  story?: string
+  coverPhoto?: string
+  status: FundraiserStatus
 }
 
 /**
@@ -69,9 +79,6 @@ export interface CrowdfundingSettings {
  */
 export interface PeerToPeerSettings {
   enabled: boolean
-  allowIndividuals: boolean
-  allowTeams: boolean
-  fundraiserGoalDefault?: number
   customMessage?: string
 }
 
@@ -117,6 +124,9 @@ export interface CampaignForm {
  */
 export interface Campaign {
   id: string
+  type: CampaignType
+  p2pPreset?: P2PPreset
+  parentCampaignId?: string // For fundraiser campaigns, links to P2P template
   name: string
   status: CampaignStatus
   createdAt: string

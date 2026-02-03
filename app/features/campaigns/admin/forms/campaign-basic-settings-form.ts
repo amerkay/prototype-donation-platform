@@ -6,12 +6,18 @@ import {
   componentField
 } from '~/features/_library/form-builder/api'
 import FormsList from '~/features/campaigns/admin/components/FormsList.vue'
+import CampaignTypeBadge from '~/features/campaigns/admin/components/CampaignTypeBadge.vue'
 
 /**
  * Campaign basic settings form
  * Handles campaign name and status
  */
 export const useCampaignBasicSettingsForm = defineForm('campaign-basic', (_ctx) => {
+  const campaignType = componentField('campaignType', {
+    component: CampaignTypeBadge,
+    rules: z.any().optional()
+  })
+
   const name = textField('name', {
     label: 'Campaign Name',
     description: 'The display name for this campaign',
@@ -47,5 +53,5 @@ export const useCampaignBasicSettingsForm = defineForm('campaign-basic', (_ctx) 
     )
   })
 
-  return { name, status, formsList }
+  return { campaignType, name, status, formsList }
 })
