@@ -4,11 +4,9 @@ import {
   getCampaignTypeShortLabel,
   getCampaignTypeBadgeVariant
 } from '~/features/campaigns/shared/composables/useCampaignTypes'
-import {
-  useCampaignFormatters,
-  CAMPAIGN_STATUS_COLORS
-} from '~/features/campaigns/shared/composables/useCampaignFormatters'
+import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import type { CampaignStatus } from '~/features/campaigns/shared/types'
+import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import {
@@ -22,9 +20,13 @@ import {
 const store = useCampaignConfigStore()
 const { formatAmount } = useCampaignFormatters()
 
+const emit = defineEmits<{
+  'update:name': [value: string]
+  'update:status': [value: CampaignStatus]
+}>()
+
 const campaignTypeLabel = computed(() => getCampaignTypeShortLabel({ type: store.type }))
 const typeBadgeVariant = computed(() => getCampaignTypeBadgeVariant(store.type))
-const statusColors = computed(() => CAMPAIGN_STATUS_COLORS[store.status])
 
 // P2P templates show total raised only (no progress bar, as each fundraiser has own goal)
 const showProgress = computed(() => !store.isP2P && store.crowdfunding?.goalAmount)
@@ -39,8 +41,7 @@ const STATUS_OPTIONS: { value: CampaignStatus; label: string }[] = [
 
 function handleStatusChange(value: string | number | bigint | Record<string, unknown> | null) {
   if (typeof value === 'string') {
-    store.status = value as CampaignStatus
-    store.markDirty()
+    emit('update:status', value as CampaignStatus)
   }
 }
 </script>
@@ -50,7 +51,11 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
     <div class="flex items-center justify-between gap-4 flex-wrap">
       <!-- Left: Campaign name, type and status -->
       <div class="flex items-center gap-3 min-w-0">
-        <h1 class="text-lg font-bold truncate">{{ store.name }}</h1>
+        <InlineEditableText
+          :model-value="store.name"
+          display-class="text-lg font-bold"
+          @update:model-value="emit('update:name', $event)"
+        />
         <Badge :variant="typeBadgeVariant" class="shrink-0 text-xs">
           {{ campaignTypeLabel }}
         </Badge>
@@ -58,12 +63,10 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
         <!-- Status dropdown (all campaign types) -->
         <Select :model-value="store.status" @update:model-value="handleStatusChange">
           <SelectTrigger
-            :class="[
-              'data-[size=default]:h-6 w-auto gap-1 rounded-full px-2 py-0 text-xs font-medium shadow-none',
-              statusColors.trigger
-            ]"
+            :data-campaign-status="store.status"
+            class="data-[size=default]:h-6 w-auto gap-1 rounded-full border-(--cs-border) px-2 py-0 text-xs font-medium text-(--cs-text) shadow-none"
           >
-            <span :class="['size-1.5 shrink-0 rounded-full', statusColors.dot]" />
+            <span class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)" />
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -75,7 +78,8 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
             >
               <span class="flex items-center gap-2">
                 <span
-                  :class="['size-1.5 shrink-0 rounded-full', CAMPAIGN_STATUS_COLORS[opt.value].dot]"
+                  :data-campaign-status="opt.value"
+                  class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)"
                 />
                 {{ opt.label }}
               </span>

@@ -159,3 +159,50 @@
     color: var(--primary);
   }
 }
+
+/* Campaign status color tokens – applied via data-campaign-status attribute */
+[data-campaign-status='draft'] {
+  --cs-dot: var(--muted-foreground);
+  --cs-text: var(--muted-foreground);
+  --cs-border: color-mix(in oklch, var(--muted-foreground) 30%, transparent);
+}
+
+[data-campaign-status='active'] {
+  --cs-dot: var(--color-emerald-500);
+  --cs-text: var(--color-emerald-700);
+  --cs-border: color-mix(in oklch, var(--color-emerald-500) 40%, transparent);
+}
+
+[data-campaign-status='paused'] {
+  --cs-dot: var(--color-amber-500);
+  --cs-text: var(--color-amber-700);
+  --cs-border: color-mix(in oklch, var(--color-amber-500) 40%, transparent);
+}
+
+[data-campaign-status='completed'] {
+  --cs-dot: var(--color-blue-500);
+  --cs-text: var(--color-blue-700);
+  --cs-border: color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+}
+
+[data-campaign-status='archived'] {
+  --cs-dot: var(--color-neutral-400);
+  --cs-text: var(--color-neutral-500);
+  --cs-border: color-mix(in oklch, var(--color-neutral-400) 40%, transparent);
+}
+
+.dark [data-campaign-status='active'] {
+  --cs-text: var(--color-emerald-400);
+}
+
+.dark [data-campaign-status='paused'] {
+  --cs-text: var(--color-amber-400);
+}
+
+.dark [data-campaign-status='completed'] {
+  --cs-text: var(--color-blue-400);
+}
+
+.dark [data-campaign-status='archived'] {
+  --cs-text: var(--color-neutral-400);
+}

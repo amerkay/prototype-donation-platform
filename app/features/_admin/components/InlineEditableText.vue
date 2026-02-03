@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Check, Pencil } from 'lucide-vue-next'
 
-defineProps<{
+const props = defineProps<{
   modelValue: string
+  /** Override display text classes (default: 'text-sm font-medium') */
+  displayClass?: string
 }>()
 
 const emit = defineEmits<{
@@ -65,7 +68,12 @@ function onKeydown(e: KeyboardEvent) {
   <!-- Display mode -->
   <button
     v-else
-    class="inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 -mx-1.5 text-sm font-medium text-foreground hover:bg-muted transition-colors group cursor-pointer"
+    :class="
+      cn(
+        'inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 -mx-1.5 text-foreground hover:bg-muted transition-colors group cursor-pointer',
+        props.displayClass || 'text-sm font-medium'
+      )
+    "
     @click="startEditing(modelValue)"
   >
     <span class="truncate max-w-48 sm:max-w-72">{{ modelValue }}</span>

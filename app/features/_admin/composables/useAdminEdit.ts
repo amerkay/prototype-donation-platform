@@ -169,10 +169,22 @@ export function useAdminEdit<TStore extends EditableStore, TOriginalData>({
     showDiscardDialog.value = false
   }
 
+  /**
+   * Patch specific fields in the discard baseline without re-snapshotting the full store.
+   * Use after saving fields independently (e.g. name/status) so discard doesn't
+   * revert those saved changes while preserving the original baseline for unsaved form edits.
+   */
+  const patchBaseline = (patch: Record<string, unknown>) => {
+    if (lastSavedData.value != null && typeof lastSavedData.value === 'object') {
+      Object.assign(lastSavedData.value, deepClone(patch))
+    }
+  }
+
   return {
     handleSave,
     handleDiscard,
     confirmDiscard,
-    showDiscardDialog
+    showDiscardDialog,
+    patchBaseline
   }
 }

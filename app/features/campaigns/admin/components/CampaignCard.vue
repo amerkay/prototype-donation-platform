@@ -5,10 +5,7 @@ import {
   getCampaignTypeShortLabel,
   getCampaignTypeBadgeVariant
 } from '~/features/campaigns/shared/composables/useCampaignTypes'
-import {
-  useCampaignFormatters,
-  CAMPAIGN_STATUS_VARIANTS
-} from '~/features/campaigns/shared/composables/useCampaignFormatters'
+import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -67,7 +64,12 @@ const activeFundraisersCount = computed(
           <Badge :variant="typeBadgeVariant" class="text-xs">
             {{ campaignTypeLabel }}
           </Badge>
-          <Badge :variant="CAMPAIGN_STATUS_VARIANTS[campaign.status]">
+          <Badge
+            variant="outline"
+            :data-campaign-status="campaign.status"
+            class="border-(--cs-border) text-(--cs-text)"
+          >
+            <span class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)" />
             {{ campaign.status }}
           </Badge>
         </div>

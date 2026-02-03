@@ -5,6 +5,7 @@ import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/Cam
 import CampaignPreviewSwitcher from '~/features/campaigns/admin/components/CampaignPreviewSwitcher.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import type { Campaign, CampaignStatus } from '~/features/campaigns/shared/types'
 import { getCampaignTypeBreadcrumb } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import { openAccordionId } from '~/features/campaigns/admin/forms/campaign-config-master'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
@@ -58,23 +59,24 @@ const campaignForStore = computed(() => store.fullCampaign)
 const formRef = ref()
 
 // Use admin edit composable for save/discard logic
-const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdminEdit({
-  store,
-  formRef,
-  originalData: campaignForStore,
-  onSave: async () => {
-    if (!store.id) return
-    store.commitFormDeletes(store.id)
-    await updateCampaign(store.id, {
-      name: store.name,
-      status: store.status,
-      stats: store.stats!,
-      crowdfunding: store.crowdfunding!,
-      peerToPeer: store.peerToPeer!,
-      socialSharing: store.socialSharing!
-    })
-  }
-})
+const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBaseline } =
+  useAdminEdit({
+    store,
+    formRef,
+    originalData: campaignForStore,
+    onSave: async () => {
+      if (!store.id) return
+      store.commitFormDeletes(store.id)
+      await updateCampaign(store.id, {
+        name: store.name,
+        status: store.status,
+        stats: store.stats!,
+        crowdfunding: store.crowdfunding!,
+        peerToPeer: store.peerToPeer!,
+        socialSharing: store.socialSharing!
+      })
+    }
+  })
 
 // Breadcrumbs
 const breadcrumbs = computed(() => {
@@ -87,10 +89,25 @@ const breadcrumbs = computed(() => {
   ]
 })
 
-// Editable campaign name from breadcrumb
+// Save name/status independently (no form validation required)
+async function saveCampaignMeta(updates: Partial<Pick<Campaign, 'name' | 'status'>>) {
+  if (!store.id) return
+  try {
+    await updateCampaign(store.id, updates)
+    patchBaseline(updates)
+  } catch {
+    // updateCampaign handles rollback internally
+  }
+}
+
 function handleNameUpdate(newName: string) {
   store.name = newName
-  store.markDirty()
+  saveCampaignMeta({ name: newName })
+}
+
+function handleStatusUpdate(newStatus: CampaignStatus) {
+  store.status = newStatus
+  saveCampaignMeta({ status: newStatus })
 }
 
 // Preview handler
@@ -113,7 +130,7 @@ const handlePreview = () => {
   >
     <!-- Header slot for CompactCampaignHeader -->
     <template #header>
-      <CompactCampaignHeader />
+      <CompactCampaignHeader @update:name="handleNameUpdate" @update:status="handleStatusUpdate" />
     </template>
 
     <!-- Main content -->

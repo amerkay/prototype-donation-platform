@@ -193,29 +193,23 @@ export function useCampaigns() {
     return id
   }
 
-  /** Persistence - save campaigns to sessionStorage */
+  /** Persistence - save all campaigns (modified mocks + user-created) to sessionStorage */
   function $persist(): void {
     try {
-      // Only persist campaigns that are not in mockCampaigns (user-created)
-      const userCampaigns = campaigns.value.filter(
-        (c) => !mockCampaigns.find((mc) => mc.id === c.id)
-      )
-      sessionStorage.setItem('campaigns', JSON.stringify(userCampaigns))
+      sessionStorage.setItem('campaigns', JSON.stringify(campaigns.value))
     } catch (error) {
       console.warn('Failed to persist campaigns:', error)
     }
   }
 
-  /** Hydration - load campaigns from sessionStorage */
+  /** Hydration - restore persisted campaigns, falling back to mock data */
   function $hydrate(): void {
     if (hydrated) return
 
     try {
       const saved = sessionStorage.getItem('campaigns')
       if (saved) {
-        const userCampaigns = JSON.parse(saved) as Campaign[]
-        // Merge with mock data
-        campaigns.value = [...mockCampaigns, ...userCampaigns]
+        campaigns.value = JSON.parse(saved) as Campaign[]
       }
       hydrated = true
     } catch (error) {
