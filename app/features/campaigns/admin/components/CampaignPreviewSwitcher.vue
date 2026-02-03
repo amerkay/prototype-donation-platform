@@ -34,6 +34,9 @@ const previewComponents: Record<string, Component> = {
 
 // Compute which preview to show
 const currentPreview = computed(() => {
+  // Fundraiser campaigns only have the crowdfunding section visible
+  if (store.isFundraiser) return 'crowdfunding'
+
   const accordionId = openAccordionId.value
 
   if (!accordionId) return null
