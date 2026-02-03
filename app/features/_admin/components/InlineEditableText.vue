@@ -70,13 +70,13 @@ function onKeydown(e: KeyboardEvent) {
     v-else
     :class="
       cn(
-        'inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 -mx-1.5 text-foreground hover:bg-muted transition-colors group cursor-pointer',
+        'inline-flex min-w-0 items-center gap-1.5 rounded-md px-1.5 py-0.5 -mx-1.5 text-foreground hover:bg-muted transition-colors group cursor-pointer',
         props.displayClass || 'text-sm font-medium'
       )
     "
     @click="startEditing(modelValue)"
   >
-    <span class="truncate max-w-48 sm:max-w-72">{{ modelValue }}</span>
+    <span class="truncate">{{ modelValue }}</span>
     <Pencil
       class="h-3 w-3 shrink-0 text-muted-foreground md:opacity-0 group-hover:opacity-100 transition-opacity"
     />

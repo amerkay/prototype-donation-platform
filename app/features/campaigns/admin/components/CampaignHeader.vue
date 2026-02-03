@@ -48,12 +48,13 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
 
 <template>
   <div v-if="store.stats" class="bg-muted/30 rounded-xl border px-4 py-3">
-    <div class="flex items-center justify-between gap-4 flex-wrap">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
       <!-- Left: Campaign name, type and status -->
-      <div class="flex items-center gap-3 min-w-0">
+      <div class="flex w-full items-center gap-x-3 gap-y-1.5 min-w-0 flex-wrap sm:w-auto">
         <InlineEditableText
           :model-value="store.name"
           display-class="text-lg font-bold"
+          class="basis-full sm:basis-auto"
           @update:model-value="emit('update:name', $event)"
         />
         <Badge :variant="typeBadgeVariant" class="shrink-0 text-xs">
@@ -102,7 +103,7 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
       <!-- Center: Progress chip (for standard campaigns and fundraisers with goals) -->
       <div
         v-else-if="showProgress"
-        class="flex items-center gap-3 px-3 py-1.5 bg-background rounded-full border"
+        class="flex w-full items-center gap-3 px-3 py-1.5 bg-background rounded-full border sm:w-auto"
       >
         <div class="w-24">
           <Progress :model-value="store.progressPercentage" class="h-2" />

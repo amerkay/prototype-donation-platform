@@ -55,7 +55,7 @@ const emit = defineEmits<Emits>()
   />
 
   <div class="flex flex-1 flex-col">
-    <!-- Optional header content (e.g., CompactCampaignHeader) -->
+    <!-- Optional header content (e.g., CampaignHeader) -->
     <div v-if="$slots.header" class="px-4">
       <slot name="header" />
     </div>
