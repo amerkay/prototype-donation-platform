@@ -13,15 +13,17 @@ import { useForms } from '~/features/campaigns/shared/composables/useForms'
 const store = useCampaignConfigStore()
 const formConfigStore = useFormConfigStore()
 
-// Initialize form config store with default form for donation forms preview
+// Sync form config store with default form for donation forms preview
 const { defaultForm } = useForms(store.id!)
-if (defaultForm.value) {
-  formConfigStore.initialize(
-    defaultForm.value.config,
-    defaultForm.value.products,
-    defaultForm.value.id
-  )
-}
+watch(
+  defaultForm,
+  (form) => {
+    if (form) {
+      formConfigStore.initialize(form.config, form.products, form.id)
+    }
+  },
+  { immediate: true }
+)
 
 // Map accordion IDs to preview components
 const previewComponents: Record<string, Component> = {
