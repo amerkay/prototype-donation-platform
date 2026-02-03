@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
-import CompactCampaignHeader from '~/features/campaigns/admin/components/CompactCampaignHeader.vue'
+import CampaignHeader from '~/features/campaigns/admin/components/CampaignHeader.vue'
 import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/CampaignMasterConfigPanel.vue'
 import CampaignPreviewSwitcher from '~/features/campaigns/admin/components/CampaignPreviewSwitcher.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
@@ -128,9 +128,9 @@ const handlePreview = () => {
     @confirm-discard="confirmDiscard"
     @update:last-item-label="handleNameUpdate"
   >
-    <!-- Header slot for CompactCampaignHeader -->
+    <!-- Header slot for CampaignHeader -->
     <template #header>
-      <CompactCampaignHeader @update:name="handleNameUpdate" @update:status="handleStatusUpdate" />
+      <CampaignHeader @update:name="handleNameUpdate" @update:status="handleStatusUpdate" />
     </template>
 
     <!-- Main content -->
