@@ -31,6 +31,31 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
   const isEnabled = ({ values }: { values: Record<string, unknown> }) =>
     values.enabled === true || store.isP2P || store.isFundraiser
 
+  const goalAmount = currencyField('goalAmount', {
+    label: () => (store.isP2P ? 'Default Goal Amount' : 'Goal Amount'),
+    description: () =>
+      store.isP2P
+        ? 'Default target fundraising amount for new fundraisers'
+        : 'Target fundraising amount (optional)',
+    placeholder: '500',
+    optional: true,
+    min: 0,
+    currencySymbol: '£',
+    visibleWhen: isEnabled,
+    rules: z.number().min(1, 'Goal must be at least 1').optional()
+  })
+
+  const showProgressBar = toggleField('showProgressBar', {
+    label: () => (store.isP2P ? 'Default Show Progress Bar' : 'Show Progress Bar'),
+    description: () =>
+      store.isP2P
+        ? 'Display goal progress visualization by default'
+        : 'Display goal progress visualization',
+    visibleWhen: isEnabled,
+    optional: true,
+    showSeparatorAfter: true
+  })
+
   const title = textField('title', {
     label: () => (store.isP2P ? 'Default Page Title' : 'Page Title'),
     description: () =>
@@ -79,31 +104,6 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     showSeparatorAfter: true
   })
 
-  const goalAmount = currencyField('goalAmount', {
-    label: () => (store.isP2P ? 'Default Goal Amount' : 'Goal Amount'),
-    description: () =>
-      store.isP2P
-        ? 'Default target fundraising amount for new fundraisers'
-        : 'Target fundraising amount (optional)',
-    placeholder: '500',
-    optional: true,
-    min: 0,
-    currencySymbol: '£',
-    visibleWhen: isEnabled,
-    rules: z.number().min(1, 'Goal must be at least 1').optional()
-  })
-
-  const showProgressBar = toggleField('showProgressBar', {
-    label: () => (store.isP2P ? 'Default Show Progress Bar' : 'Show Progress Bar'),
-    description: () =>
-      store.isP2P
-        ? 'Display goal progress visualization by default'
-        : 'Display goal progress visualization',
-    visibleWhen: isEnabled,
-    optional: true,
-    showSeparatorAfter: true
-  })
-
   const showRecentDonations = toggleField('showRecentDonations', {
     label: () => (store.isP2P ? 'Default Show Recent Donations' : 'Show Recent Donations'),
     description: () =>
@@ -142,13 +142,13 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
   return {
     enabled,
 
+    goalAmount,
+    showProgressBar,
+
     title,
     shortDescription,
     coverPhoto,
     story,
-
-    goalAmount,
-    showProgressBar,
 
     showRecentDonations,
     defaultDonationsView,

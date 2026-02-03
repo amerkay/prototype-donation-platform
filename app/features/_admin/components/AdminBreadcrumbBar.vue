@@ -49,8 +49,10 @@ const lastItem = computed(() =>
           <!-- All items except last -->
           <template v-for="(item, index) in items.slice(0, -1)" :key="index">
             <BreadcrumbItem :class="index === 0 ? 'hidden md:block' : ''">
-              <BreadcrumbLink v-if="item.href" :href="item.href">
-                {{ item.label }}
+              <BreadcrumbLink v-if="item.href" as-child>
+                <NuxtLink :to="item.href">
+                  {{ item.label }}
+                </NuxtLink>
               </BreadcrumbLink>
               <span v-else>{{ item.label }}</span>
             </BreadcrumbItem>
