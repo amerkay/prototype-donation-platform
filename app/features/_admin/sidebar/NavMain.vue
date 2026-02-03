@@ -29,13 +29,26 @@ interface Props {
   }[]
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
+const route = useRoute()
 const { isActive, hasActiveChild } = useActiveLink()
 
 const isItemActive = (item: Props['items'][number]) => {
   return isActive(item.url, item.exact) || hasActiveChild(item.items)
 }
+
+// Track open state per item; auto-expand parents when navigating to child routes
+const openStates = reactive<Record<string, boolean>>({})
+watch(
+  () => route.path,
+  () => {
+    for (const item of props.items) {
+      if (isItemActive(item)) openStates[item.title] = true
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -46,7 +59,7 @@ const isItemActive = (item: Props['items'][number]) => {
         v-for="item in items"
         :key="item.title"
         as-child
-        :default-open="isItemActive(item)"
+        v-model:open="openStates[item.title]"
       >
         <SidebarMenuItem>
           <!-- Toggle-only: no URL, button itself toggles subitems -->
