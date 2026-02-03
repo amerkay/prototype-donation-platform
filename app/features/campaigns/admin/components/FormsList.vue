@@ -165,26 +165,11 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
 
 <template>
   <div>
-    <div class="flex items-center justify-between mb-3">
+    <div class="mb-3">
       <h3 class="text-sm flex items-center gap-x-1.5">
         <FileText class="size-4" />
         Donation Forms
       </h3>
-      <div v-if="canAddForm" class="flex items-center gap-2">
-        <Button size="sm" @click="handleAddForm">
-          <Plus class="w-4 h-4 mr-1.5" />
-          Add Form
-        </Button>
-        <Button
-          v-if="store.type === 'standard'"
-          variant="outline"
-          size="sm"
-          @click="showCopyDialog = true"
-        >
-          <Copy class="w-4 h-4 mr-1.5" />
-          Copy from...
-        </Button>
-      </div>
     </div>
     <p class="text-sm text-muted-foreground mb-4">
       <template v-if="store.isFundraiser">
@@ -303,6 +288,24 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
         </TableBody>
       </Table>
     </ClientOnly>
+
+    <!-- Add/Copy Buttons -->
+    <div v-if="canAddForm" class="flex items-center gap-2 mt-3 mr-2 ml-2 sm:justify-end">
+      <Button
+        v-if="store.type === 'standard'"
+        class="flex-1 sm:flex-initial"
+        variant="outline"
+        size="sm"
+        @click="showCopyDialog = true"
+      >
+        <Copy class="w-4 h-4 mr-1.5" />
+        Copy from...
+      </Button>
+      <Button class="flex-1 sm:flex-initial" size="sm" @click="handleAddForm">
+        <Plus class="w-4 h-4 mr-1.5" />
+        Add Form
+      </Button>
+    </div>
 
     <!-- Templates Dialog -->
     <DonationFormTemplatesDialog
