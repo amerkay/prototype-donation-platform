@@ -200,7 +200,7 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
             <Plus class="w-4 h-4 mr-1.5" />
             Create Your First Form
           </Button>
-          <Button variant="outline" @click="showCopyDialog = true">
+          <Button variant="outline" class="text-foreground" @click="showCopyDialog = true">
             <Copy class="w-4 h-4 mr-1.5" />
             Copy from another campaign
           </Button>
@@ -290,7 +290,7 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
     </ClientOnly>
 
     <!-- Add/Copy Buttons -->
-    <div v-if="canAddForm" class="flex items-center gap-2 mt-3 mr-2 ml-2 sm:justify-end">
+    <div v-if="canAddForm && visibleForms.length > 0" class="flex items-center gap-2 mt-3 mr-2 ml-2 sm:justify-end">
       <Button
         v-if="store.type === 'standard'"
         class="flex-1 sm:flex-initial"
