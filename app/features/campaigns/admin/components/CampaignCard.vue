@@ -49,18 +49,12 @@ const activeFundraisersCount = computed(
 <template>
   <Card :class="cn('transition-all hover:shadow-md h-full', compact ? '' : '')">
     <CardHeader>
-      <div class="flex items-start justify-between gap-2 min-w-0">
-        <div class="flex-1 min-w-0 overflow-hidden">
-          <CardTitle class="text-lg truncate">{{ campaign.name }}</CardTitle>
-          <CardDescription v-if="parentTemplate && !compact" class="text-xs mt-0.5">
-            Parent Template: {{ parentTemplate.name }}
-          </CardDescription>
-          <CardDescription v-if="!compact" class="flex items-center gap-2 mt-1">
-            <Calendar class="w-3 h-3" />
-            <span class="text-xs">Updated {{ formattedDate }}</span>
-          </CardDescription>
-        </div>
-        <div class="flex items-center gap-1.5 shrink-0 self-start">
+      <div class="min-w-0">
+        <CardTitle class="text-lg truncate">{{ campaign.name }}</CardTitle>
+        <CardDescription v-if="parentTemplate && !compact" class="text-xs mt-1">
+          Parent Template: {{ parentTemplate.name }}
+        </CardDescription>
+        <div class="flex items-center gap-1.5 mt-2">
           <Badge :variant="typeBadgeVariant" class="text-xs">
             {{ campaignTypeLabel }}
           </Badge>
@@ -73,6 +67,10 @@ const activeFundraisersCount = computed(
             {{ campaign.status }}
           </Badge>
         </div>
+        <CardDescription v-if="!compact" class="flex items-center gap-2 mt-2">
+          <Calendar class="w-3 h-3" />
+          <span class="text-xs">Updated {{ formattedDate }}</span>
+        </CardDescription>
       </div>
     </CardHeader>
 
