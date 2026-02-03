@@ -3,15 +3,29 @@ import type { Component } from 'vue'
 import { openAccordionId } from '~/features/campaigns/admin/forms/campaign-config-master'
 import CrowdfundingPagePreview from './CrowdfundingPagePreview.vue'
 import SharingPreview from './SharingPreview.vue'
+import DonationFormPreview from '~/features/donation-form/admin/components/DonationFormPreview.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Info } from 'lucide-vue-next'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
+import { useForms } from '~/features/campaigns/shared/composables/useForms'
 
 const store = useCampaignConfigStore()
+const formConfigStore = useFormConfigStore()
+
+// Initialize form config store with default form for donation forms preview
+const { defaultForm } = useForms(store.id!)
+if (defaultForm.value) {
+  formConfigStore.initialize(
+    defaultForm.value.config,
+    defaultForm.value.products,
+    defaultForm.value.id
+  )
+}
 
 // Map accordion IDs to preview components
 const previewComponents: Record<string, Component> = {
-  basicSettings: CrowdfundingPagePreview,
+  donationForms: DonationFormPreview,
   crowdfunding: CrowdfundingPagePreview,
   socialSharing: SharingPreview
 }
@@ -39,7 +53,7 @@ const isCurrentSectionDisabled = computed(() => {
   if (!preview) return false
 
   // Check if the feature is disabled
-  if (preview === 'crowdfunding' || preview === 'basicSettings') {
+  if (preview === 'crowdfunding') {
     return store.crowdfunding?.enabled === false
   }
   if (preview === 'socialSharing') {
@@ -52,7 +66,7 @@ const isCurrentSectionDisabled = computed(() => {
 // Get feature name for display
 const featureName = computed(() => {
   const preview = currentPreview.value
-  if (preview === 'crowdfunding' || preview === 'basicSettings') return 'Crowdfunding Page'
+  if (preview === 'crowdfunding') return 'Crowdfunding Page'
   if (preview === 'socialSharing') return 'Social Sharing'
   return 'This feature'
 })
@@ -98,6 +112,7 @@ const showDisabledMessage = computed(() => currentPreview.value && isCurrentSect
           Expand a section to see its preview here. Available previews:
         </p>
         <ul class="mt-2 space-y-1 text-sm text-muted-foreground list-disc list-inside">
+          <li>Donation Forms - preview the default donation form</li>
           <li>Crowdfunding Page - see how your public page will look</li>
           <li>Social Sharing - preview share buttons and content</li>
         </ul>

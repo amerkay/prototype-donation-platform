@@ -39,8 +39,12 @@ export function useForms(campaignId: string) {
     formsStore.setDefaultForm(campaignId, formId)
   }
 
-  // Get form by ID
-  // TODO: Remove fallback to getFormById when switching to Supabase instead of api-sample-response
+  // Rename a form
+  const renameForm = (formId: string, newName: string): void => {
+    formsStore.renameForm(campaignId, formId, newName)
+  }
+
+  // Get form by ID (falls back to sample data for forms not yet in store)
   const getForm = (formId: string): CampaignForm | undefined => {
     // First check local forms store (includes newly created/duplicated forms)
     const formsList = formsStore.getForms(campaignId)
@@ -112,6 +116,7 @@ export function useForms(campaignId: string) {
     getEnabledFeaturesCount,
     formatDate,
     setDefaultForm,
+    renameForm,
     getForm,
     updateForm,
     createForm,

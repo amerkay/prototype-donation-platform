@@ -257,7 +257,8 @@ const resetToValues = (newValues: Record<string, unknown>) => {
 defineExpose({
   isValid,
   onSubmit,
-  resetToValues
+  resetToValues,
+  setFieldValue: providedSetFieldValue
 })
 </script>
 

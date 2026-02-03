@@ -19,19 +19,15 @@ const store = useCampaignConfigStore()
 // Get campaign data
 const campaign = computed(() => getCampaignById(route.params.id as string))
 
-// TODO: Remove when switching to Supabase API
-// Track if client-side hydration completed (sessionStorage is client-only)
-const isHydrated = ref(false)
+// Initialize store synchronously so child components have store.id during setup
+if (campaign.value) {
+  store.initialize(campaign.value)
+}
 
-// TODO: Remove when switching to Supabase API
-// Check for campaign existence after client-side hydration from sessionStorage
 onMounted(() => {
-  isHydrated.value = true
   if (!campaign.value) {
     throw createError({ statusCode: 404, statusMessage: 'Campaign not found' })
   }
-  // Initialize store with campaign data
-  store.initialize(campaign.value)
 })
 
 // Watch for campaign ID changes (navigation between campaigns)
@@ -58,6 +54,7 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdmi
   originalData: campaignForStore,
   onSave: async () => {
     if (!store.id) return
+    store.commitFormDeletes(store.id)
     await updateCampaign(store.id, {
       name: store.name,
       status: store.status,
@@ -80,6 +77,12 @@ const breadcrumbs = computed(() => {
   ]
 })
 
+// Editable campaign name from breadcrumb
+function handleNameUpdate(newName: string) {
+  store.name = newName
+  store.markDirty()
+}
+
 // Preview handler
 const handlePreview = () => {
   window.open(`/admin/campaigns/${store.id}/preview`, '_blank')
@@ -87,18 +90,16 @@ const handlePreview = () => {
 </script>
 
 <template>
-  <!-- TODO: Remove loading state when switching to Supabase API (will fetch from API instead) -->
-  <div v-if="!isHydrated" class="flex items-center justify-center min-h-screen">
-    <div class="text-muted-foreground">Loading...</div>
-  </div>
   <AdminEditLayout
-    v-else-if="campaign"
+    v-if="campaign"
     :breadcrumbs="breadcrumbs"
     :is-dirty="store.isDirty"
     :show-discard-dialog="showDiscardDialog"
+    editable-last-item
     @preview="handlePreview"
     @update:show-discard-dialog="showDiscardDialog = $event"
     @confirm-discard="confirmDiscard"
+    @update:last-item-label="handleNameUpdate"
   >
     <!-- Header slot for CompactCampaignHeader -->
     <template #header>

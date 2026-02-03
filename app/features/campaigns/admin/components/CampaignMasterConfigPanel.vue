@@ -15,7 +15,9 @@ provideAccordionGroup(openAccordionId)
 
 // Get forms count for component field validation
 const { forms } = useForms(store.id!)
-const formsCount = computed(() => forms.value.length)
+const formsCount = computed(
+  () => forms.value.filter((f) => !store.pendingFormDeletes.has(f.id)).length
+)
 
 // AUTO-MAPPING: No getData/setData needed! ✨
 // Form metadata ($storePath) handles all mapping automatically
@@ -26,14 +28,20 @@ const { formRef, modelValue, form, expose } = useAdminConfigForm({
 
 // Manually inject formsCount for component field validation
 // Component fields are excluded from auto-mapping but need validation data
+// donationForms may not exist in auto-mapped data (no mapped fields left), so create it
 watch(
   formsCount,
   (count) => {
-    if (modelValue.value.basicSettings) {
-      ;(modelValue.value.basicSettings as Record<string, unknown>).formsList = {
-        formsCount: count
-      }
+    if (!modelValue.value.donationForms) {
+      ;(modelValue.value as Record<string, unknown>).donationForms = {}
     }
+    ;(modelValue.value.donationForms as Record<string, unknown>).formsList = {
+      formsCount: count
+    }
+    // Push into vee-validate's internal state so validation re-runs.
+    // FormRenderer clones modelValue on init, so direct mutation above only
+    // covers the initial snapshot — setFieldValue handles live updates.
+    formRef.value?.setFieldValue('donationForms.formsList', { formsCount: count })
   },
   { immediate: true }
 )

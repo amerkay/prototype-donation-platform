@@ -24,18 +24,22 @@ interface Props {
   previewLabel?: string
   /** Show discard dialog */
   showDiscardDialog?: boolean
+  /** Allow editing the last breadcrumb item */
+  editableLastItem?: boolean
 }
 
 interface Emits {
   (e: 'preview' | 'confirmDiscard'): void
   (e: 'update:showDiscardDialog', value: boolean): void
+  (e: 'update:lastItemLabel', value: string): void
 }
 
 withDefaults(defineProps<Props>(), {
   isDirty: false,
   showPreview: true,
   previewLabel: 'Preview',
-  showDiscardDialog: false
+  showDiscardDialog: false,
+  editableLastItem: false
 })
 
 const emit = defineEmits<Emits>()
@@ -43,7 +47,12 @@ const emit = defineEmits<Emits>()
 
 <template>
   <!-- Breadcrumb Bar -->
-  <AdminBreadcrumbBar :items="breadcrumbs" :is-dirty="isDirty" />
+  <AdminBreadcrumbBar
+    :items="breadcrumbs"
+    :is-dirty="isDirty"
+    :editable-last-item="editableLastItem"
+    @update:last-item-label="emit('update:lastItemLabel', $event)"
+  />
 
   <div class="flex flex-1 flex-col">
     <!-- Optional header content (e.g., CompactCampaignHeader) -->

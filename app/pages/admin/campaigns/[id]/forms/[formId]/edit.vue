@@ -22,23 +22,16 @@ const { getForm, updateForm } = useForms(campaignId)
 const campaign = computed(() => getCampaignById(campaignId))
 const form = computed(() => getForm(formId))
 
-// TODO: Remove when switching to Supabase API
-// Track if client-side hydration completed (sessionStorage is client-only)
-const isHydrated = ref(false)
-
-// Initialize store with form config
+// Initialize store synchronously so child components have store data during setup
 const store = useFormConfigStore()
+if (form.value) {
+  store.initialize(form.value.config, form.value.products, form.value.id)
+}
 
-// TODO: Remove when switching to Supabase API
-// Check for campaign/form existence after client-side hydration from sessionStorage
 onMounted(() => {
-  isHydrated.value = true
   if (!campaign.value || !form.value) {
     navigateTo('/admin/campaigns')
-    return
   }
-  // Initialize store with form config
-  store.initialize(form.value.config, form.value.products, form.value.id)
 })
 
 // Watch for form changes
@@ -86,12 +79,8 @@ const handlePreview = () => {
 </script>
 
 <template>
-  <!-- TODO: Remove loading state when switching to Supabase API -->
-  <div v-if="!isHydrated" class="flex items-center justify-center min-h-screen">
-    <div class="text-muted-foreground">Loading...</div>
-  </div>
   <AdminEditLayout
-    v-else-if="campaign && form"
+    v-if="campaign && form"
     :breadcrumbs="breadcrumbs"
     :is-dirty="store.isDirty"
     :show-discard-dialog="showDiscardDialog"

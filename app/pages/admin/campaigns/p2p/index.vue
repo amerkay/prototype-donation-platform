@@ -59,7 +59,6 @@ const showP2PPresetDialog = ref(false)
 const handleP2PPresetSelect = (preset: P2PCampaignPreset) => {
   // Generate campaign data from preset factory
   const presetData = preset.factory()
-  // TODO: Replace with API call when Supabase is available
   const campaignId = createCampaign(presetData)
   navigateTo(`/admin/campaigns/${campaignId}`)
 }

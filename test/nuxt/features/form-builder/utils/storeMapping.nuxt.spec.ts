@@ -15,7 +15,7 @@ describe('storeMapping', () => {
   describe('generateStoreMapping', () => {
     it('uses convention for simple fieldGroups', () => {
       const form = defineForm('test', () => ({
-        basicSettings: fieldGroup('basicSettings', {
+        donationForms: fieldGroup('donationForms', {
           fields: {
             name: textField('name', { label: 'Name' })
           }
@@ -25,8 +25,8 @@ describe('storeMapping', () => {
       const mapping = generateStoreMapping(form)
 
       // Only leaf fields are mapped, not intermediate groups
-      expect(mapping.paths.has('basicSettings')).toBe(false)
-      expect(mapping.paths.get('basicSettings.name')).toBe('basicSettings.name')
+      expect(mapping.paths.has('donationForms')).toBe(false)
+      expect(mapping.paths.get('donationForms.name')).toBe('donationForms.name')
     })
 
     it('respects $storePath string override', () => {
@@ -49,7 +49,7 @@ describe('storeMapping', () => {
 
     it('respects $storePath object for granular mapping', () => {
       const form = defineForm('test', () => ({
-        basicSettings: fieldGroup('basicSettings', {
+        donationForms: fieldGroup('donationForms', {
           fields: {
             name: textField('name', { label: 'Name' }),
             status: textField('status', { label: 'Status' })
@@ -63,8 +63,8 @@ describe('storeMapping', () => {
 
       const mapping = generateStoreMapping(form)
 
-      expect(mapping.paths.get('basicSettings.name')).toBe('topLevelName')
-      expect(mapping.paths.get('basicSettings.status')).toBe('topLevelStatus')
+      expect(mapping.paths.get('donationForms.name')).toBe('topLevelName')
+      expect(mapping.paths.get('donationForms.status')).toBe('topLevelStatus')
     })
 
     it('excludes component fields automatically', () => {
@@ -180,7 +180,7 @@ describe('storeMapping', () => {
 
     it('flattens nested form to flat store (granular mapping)', () => {
       const form = defineForm('test', () => ({
-        basicSettings: fieldGroup('basicSettings', {
+        donationForms: fieldGroup('donationForms', {
           fields: {
             name: textField('name', { label: 'Name' }),
             status: textField('status', { label: 'Status' })
@@ -203,7 +203,7 @@ describe('storeMapping', () => {
       const result = getData(store)
 
       expect(result).toEqual({
-        basicSettings: {
+        donationForms: {
           name: 'My Campaign',
           status: 'active'
         }
@@ -292,7 +292,7 @@ describe('storeMapping', () => {
 
     it('maps flat form to nested store (granular mapping)', () => {
       const form = defineForm('test', () => ({
-        basicSettings: fieldGroup('basicSettings', {
+        donationForms: fieldGroup('donationForms', {
           fields: {
             name: textField('name', { label: 'Name' }),
             status: textField('status', { label: 'Status' })
@@ -314,7 +314,7 @@ describe('storeMapping', () => {
       }
 
       const formData = {
-        basicSettings: {
+        donationForms: {
           name: 'New Name',
           status: 'active'
         }
@@ -429,7 +429,7 @@ describe('storeMapping', () => {
 
     it('round-trips data with granular $storePath mapping', () => {
       const form = defineForm('test', () => ({
-        basicSettings: fieldGroup('basicSettings', {
+        donationForms: fieldGroup('donationForms', {
           fields: {
             name: textField('name', { label: 'Name' }),
             status: textField('status', { label: 'Status' })
@@ -454,11 +454,11 @@ describe('storeMapping', () => {
       // Get data - should create nested form structure
       const formData = getData(store)
       expect(formData).toEqual({
-        basicSettings: { name: 'Campaign', status: 'draft' }
+        donationForms: { name: 'Campaign', status: 'draft' }
       })
 
       // Modify
-      ;(formData.basicSettings as { name: string; status: string }).status = 'active'
+      ;(formData.donationForms as { name: string; status: string }).status = 'active'
 
       // Set data back - should flatten to store
       setData(store, formData)

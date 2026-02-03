@@ -13,20 +13,15 @@ const store = useCampaignConfigStore()
 
 const campaign = computed(() => getCampaignById(route.params.id as string))
 
-// TODO: Remove when switching to Supabase API
-// Track if client-side hydration completed (sessionStorage is client-only)
-const isHydrated = ref(false)
+// Initialize store synchronously so child components have store data during setup
+if (campaign.value) {
+  store.initialize(campaign.value)
+}
 
-// TODO: Remove when switching to Supabase API
-// Check for campaign existence after client-side hydration from sessionStorage
 onMounted(() => {
-  isHydrated.value = true
   if (!campaign.value) {
     navigateTo('/admin/campaigns')
-    return
   }
-  // Initialize store with campaign data
-  store.initialize(campaign.value)
 })
 
 // Watch for campaign ID changes
@@ -42,11 +37,7 @@ watch(
 </script>
 
 <template>
-  <!-- TODO: Remove loading state when switching to Supabase API -->
-  <div v-if="!isHydrated" class="flex items-center justify-center min-h-screen">
-    <div class="text-muted-foreground">Loading...</div>
-  </div>
-  <CrowdfundingPagePreview v-else-if="campaign" />
+  <CrowdfundingPagePreview v-if="campaign" />
   <div v-else class="text-center py-12">
     <p class="text-muted-foreground">Campaign not found</p>
   </div>

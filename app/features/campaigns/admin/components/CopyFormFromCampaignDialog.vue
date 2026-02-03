@@ -33,10 +33,12 @@ const { campaigns } = useCampaigns()
 // Two-step selection: campaign → form
 const selectedCampaign = ref<Campaign | null>(null)
 
-// Get campaigns with forms (excluding current campaign)
+// Get campaigns with forms (excluding current campaign and fundraisers)
 const availableCampaigns = computed(() => {
   return campaigns.value.filter((c) => {
     if (c.id === props.currentCampaignId) return false
+    // Exclude fundraisers (they only have pointer refs to parent template forms)
+    if (c.type === 'fundraiser') return false
     const { forms } = useForms(c.id)
     return forms.value.length > 0
   })

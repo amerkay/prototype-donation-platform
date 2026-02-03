@@ -24,12 +24,12 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     description: 'Make this campaign publicly accessible',
     labelClass: 'font-bold',
     showSeparatorAfter: true,
-    // Hide for P2P templates (always enabled)
-    visibleWhen: () => !store.isP2P
+    // Hide for P2P templates and fundraisers (always enabled for these types)
+    visibleWhen: () => !store.isP2P && !store.isFundraiser
   })
 
   const isEnabled = ({ values }: { values: Record<string, unknown> }) =>
-    values.enabled === true || store.isP2P
+    values.enabled === true || store.isP2P || store.isFundraiser
 
   const title = textField('title', {
     label: () => (store.isP2P ? 'Default Page Title' : 'Page Title'),

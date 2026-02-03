@@ -14,6 +14,7 @@ import type {
   CampaignStatus
 } from '~/features/campaigns/shared/types'
 import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
+import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
 
 /**
  * Campaign configuration store (Pinia)
@@ -53,6 +54,7 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
   const recentDonations = ref<CampaignDonation[]>([])
   const createdAt = ref('')
   const updatedAt = ref('')
+  const pendingFormDeletes = ref<Set<string>>(new Set())
 
   // Getters
   const isP2P = computed(() => type.value === 'p2p')
@@ -140,6 +142,7 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     recentDonations.value = [...campaign.recentDonations]
     createdAt.value = campaign.createdAt
     updatedAt.value = campaign.updatedAt
+    pendingFormDeletes.value = new Set()
     markClean()
   }
 
@@ -159,7 +162,21 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     recentDonations.value = []
     createdAt.value = ''
     updatedAt.value = ''
+    pendingFormDeletes.value = new Set()
     markClean()
+  }
+
+  function addPendingFormDelete(formId: string) {
+    pendingFormDeletes.value = new Set([...pendingFormDeletes.value, formId])
+    markDirty()
+  }
+
+  function commitFormDeletes(campaignId: string) {
+    const formsStore = useFormsStore()
+    for (const formId of pendingFormDeletes.value) {
+      formsStore.deleteForm(campaignId, formId)
+    }
+    pendingFormDeletes.value = new Set()
   }
 
   return {
@@ -179,6 +196,7 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     recentDonations,
     createdAt,
     updatedAt,
+    pendingFormDeletes,
     isDirty,
     isSaving,
     // Getters
@@ -195,6 +213,8 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     initialize,
     reset,
     markDirty,
-    markClean
+    markClean,
+    addPendingFormDelete,
+    commitFormDeletes
   }
 })

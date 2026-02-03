@@ -6,9 +6,7 @@ import { campaigns as mockCampaigns } from '~/sample-api-responses/api-sample-re
  * Campaigns Composable (Singleton Pattern)
  *
  * Provides reactive access to campaign data with helper functions.
- * In production, replace mock data with API calls.
- *
- * TODO: Remove sessionStorage persistence when switching to Supabase API
+ * Uses sessionStorage for persistence until Supabase API is available.
  *
  * @example
  * ```ts
@@ -24,9 +22,8 @@ const error = ref<Error | null>(null)
 let hydrated = false
 
 export function useCampaigns() {
-  // TODO: Remove when switching to Supabase API
   // Hydrate from sessionStorage on first use
-  if (!hydrated && !import.meta.server) {
+  if (!hydrated) {
     $hydrate()
   }
 
@@ -129,13 +126,11 @@ export function useCampaigns() {
       isLoading.value = false
     }
 
-    // TODO: Persist to sessionStorage until Supabase API is available
     $persist()
   }
 
   /**
    * Create a new campaign
-   * TODO: Replace with actual API call when Supabase is available
    */
   const createCampaign = (campaignData: Partial<Campaign>): string => {
     // Generate unique ID
@@ -193,18 +188,13 @@ export function useCampaigns() {
     // Add to campaigns array
     campaigns.value.push(newCampaign)
 
-    // TODO: Persist to sessionStorage until Supabase API is available
     $persist()
 
     return id
   }
 
-  /**
-   * TODO: Remove when switching to Supabase API
-   * Persistence - save campaigns to sessionStorage
-   */
+  /** Persistence - save campaigns to sessionStorage */
   function $persist(): void {
-    if (import.meta.server) return
     try {
       // Only persist campaigns that are not in mockCampaigns (user-created)
       const userCampaigns = campaigns.value.filter(
@@ -216,12 +206,8 @@ export function useCampaigns() {
     }
   }
 
-  /**
-   * TODO: Remove when switching to Supabase API
-   * Hydration - load campaigns from sessionStorage
-   */
+  /** Hydration - load campaigns from sessionStorage */
   function $hydrate(): void {
-    if (import.meta.server) return
     if (hydrated) return
 
     try {

@@ -16,6 +16,33 @@ export const CAMPAIGN_STATUS_VARIANTS: Record<
 }
 
 /**
+ * Status-specific color classes for the header status selector
+ * Provides distinct visual differentiation per campaign status
+ */
+export const CAMPAIGN_STATUS_COLORS: Record<CampaignStatus, { trigger: string; dot: string }> = {
+  draft: {
+    trigger: 'border-muted-foreground/30 text-muted-foreground',
+    dot: 'bg-muted-foreground'
+  },
+  active: {
+    trigger: 'border-emerald-500/40 text-emerald-700 dark:text-emerald-400',
+    dot: 'bg-emerald-500'
+  },
+  paused: {
+    trigger: 'border-amber-500/40 text-amber-700 dark:text-amber-400',
+    dot: 'bg-amber-500'
+  },
+  completed: {
+    trigger: 'border-blue-500/40 text-blue-700 dark:text-blue-400',
+    dot: 'bg-blue-500'
+  },
+  archived: {
+    trigger: 'border-neutral-400/40 text-neutral-500 dark:text-neutral-400',
+    dot: 'bg-neutral-400'
+  }
+}
+
+/**
  * Shared formatting utilities for campaign components
  * Extracts common formatting logic used across donor and admin campaign views
  */

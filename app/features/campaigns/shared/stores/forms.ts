@@ -8,8 +8,6 @@ import { getFormsByCampaignId } from '~/sample-api-responses/api-sample-response
  * Forms store
  * Manages reactive state for campaign donation forms
  * Wraps sample data to enable mutations (set default, etc.)
- *
- * TODO: Remove persist/hydrate logic when switching to Supabase instead of api-sample-response
  */
 export const useFormsStore = defineStore('forms', () => {
   // Initialize from sample data - would come from API in real app
@@ -109,6 +107,16 @@ export const useFormsStore = defineStore('forms', () => {
     $persist(campaignId)
   }
 
+  // Rename a form
+  const renameForm = (campaignId: string, formId: string, newName: string): void => {
+    const forms = getForms(campaignId)
+    const form = forms.find((f) => f.id === formId)
+    if (form) {
+      form.name = newName
+      $persist(campaignId)
+    }
+  }
+
   // Delete a form from a campaign
   const deleteForm = (campaignId: string, formId: string): void => {
     const forms = getForms(campaignId)
@@ -139,10 +147,8 @@ export const useFormsStore = defineStore('forms', () => {
     $persist(campaignId)
   }
 
-  // TODO: Remove when switching to Supabase instead of api-sample-response
-  // Persistence method - save forms to sessionStorage
+  // Persistence - save forms to sessionStorage
   const $persist = (campaignId: string): void => {
-    if (import.meta.server) return
     try {
       const forms = formsData.value[campaignId]
       if (forms) {
@@ -153,10 +159,8 @@ export const useFormsStore = defineStore('forms', () => {
     }
   }
 
-  // TODO: Remove when switching to Supabase instead of api-sample-response
-  // Hydration method - load forms from sessionStorage
+  // Hydration - load forms from sessionStorage
   const $hydrate = (campaignId: string): void => {
-    if (import.meta.server) return
     if (hydratedCampaigns.value.has(campaignId)) return
 
     try {
@@ -174,6 +178,7 @@ export const useFormsStore = defineStore('forms', () => {
   return {
     getForms,
     setDefaultForm,
+    renameForm,
     addForm,
     duplicateForm,
     deleteForm

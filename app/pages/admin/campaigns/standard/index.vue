@@ -40,7 +40,6 @@ const breadcrumbs = [
 ]
 
 const handleNewCampaign = () => {
-  // TODO: Replace with API call when Supabase is available
   const campaignId = createCampaign({
     type: 'standard',
     name: 'New Campaign'

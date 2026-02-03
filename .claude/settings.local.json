@@ -13,7 +13,9 @@
       "Bash(npm run lint:*)",
       "Bash(npm run format:fix:*)",
       "Bash(npm run lint:fix:*)",
-      "Bash(git --no-pager diff:*)"
+      "Bash(git --no-pager diff:*)",
+      "Bash(pnpm test:run:*)",
+      "Bash(npx nuxi typecheck:*)"
     ]
   }
 }

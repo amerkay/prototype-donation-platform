@@ -6,6 +6,7 @@ import { generateFormId, generateFormName } from '~/features/donation-form/admin
 import type { DonationFormTemplate } from '~/features/donation-form/admin/templates'
 import DonationFormTemplatesDialog from '~/features/donation-form/admin/components/DonationFormTemplatesDialog.vue'
 import CopyFormFromCampaignDialog from '~/features/campaigns/admin/components/CopyFormFromCampaignDialog.vue'
+import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
 import {
   Table,
   TableBody,
@@ -40,46 +41,28 @@ import {
   EmptyMedia,
   EmptyTitle
 } from '@/components/ui/empty'
-import {
-  Edit,
-  Check,
-  FileText,
-  Plus,
-  Eye,
-  Copy,
-  MoreHorizontal,
-  Trash2,
-  Loader2
-} from 'lucide-vue-next'
+import { Edit, Check, FileText, Plus, Eye, Copy, MoreHorizontal, Trash2 } from 'lucide-vue-next'
 
 const router = useRouter()
 const store = useCampaignConfigStore()
 
-const { forms, setDefaultForm, createForm, duplicateForm, deleteForm } = useForms(store.id!)
+const { forms, setDefaultForm, renameForm, createForm, duplicateForm } = useForms(store.id!)
+
+const visibleForms = computed(() => forms.value.filter((f) => !store.pendingFormDeletes.has(f.id)))
 
 // P2P campaigns are limited to a single donation form
 // Fundraiser campaigns cannot add forms (they use a copy from parent template)
 const canAddForm = computed(() => {
   if (store.isFundraiser) return false
-  return forms.value.length < store.maxFormsAllowed
+  return visibleForms.value.length < store.maxFormsAllowed
 })
 
 // Fundraisers cannot modify forms (they use copied forms from parent)
 const canModifyForms = computed(() => !store.isFundraiser)
 
-// Loading state
-const isLoading = ref(true)
-
-onMounted(() => {
-  // Simulate loading completion - in real app this would be after async data fetch
-  // Set to false immediately since data comes from sessionStorage/sample data synchronously
-  isLoading.value = false
-})
-
 // Track loading states
 const settingDefaultId = ref<string | null>(null)
 const duplicatingId = ref<string | null>(null)
-const deletingId = ref<string | null>(null)
 
 // Templates dialog state
 const showTemplatesDialog = ref(false)
@@ -152,18 +135,10 @@ const handleDeleteForm = (formId: string, formName: string) => {
   formToDelete.value = { id: formId, name: formName }
 }
 
-const handleConfirmDelete = async () => {
+const handleConfirmDelete = () => {
   if (!formToDelete.value) return
-
-  deletingId.value = formToDelete.value.id
-  try {
-    await deleteForm(formToDelete.value.id)
-  } catch (error) {
-    console.error('Failed to delete form', error)
-  } finally {
-    deletingId.value = null
-    formToDelete.value = null
-  }
+  store.addPendingFormDelete(formToDelete.value.id)
+  formToDelete.value = null
 }
 
 const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId: string) => {
@@ -182,9 +157,6 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
 
     // Create form with copied config and products
     await createForm(formId, formName, sourceFormData.config, sourceFormData.products)
-
-    // Navigate to edit page
-    router.push(`/admin/campaigns/${store.id}/forms/${formId}/edit`)
   } catch (error) {
     console.error('Failed to copy form', error)
   }
@@ -198,10 +170,21 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
         <FileText class="size-4" />
         Donation Forms
       </h3>
-      <Button v-if="canAddForm" size="sm" @click="handleAddForm">
-        <Plus class="w-4 h-4 mr-1.5" />
-        Add Form
-      </Button>
+      <div v-if="canAddForm" class="flex items-center gap-2">
+        <Button size="sm" @click="handleAddForm">
+          <Plus class="w-4 h-4 mr-1.5" />
+          Add Form
+        </Button>
+        <Button
+          v-if="store.type === 'standard'"
+          variant="outline"
+          size="sm"
+          @click="showCopyDialog = true"
+        >
+          <Copy class="w-4 h-4 mr-1.5" />
+          Copy from...
+        </Button>
+      </div>
     </div>
     <p class="text-sm text-muted-foreground mb-4">
       <template v-if="store.isFundraiser">
@@ -215,14 +198,8 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
       </template>
     </p>
 
-    <!-- Loading State -->
-    <div v-if="isLoading" class="flex items-center justify-center py-12 text-muted-foreground">
-      <Loader2 class="w-6 h-6 animate-spin mr-2" />
-      <span>Loading forms...</span>
-    </div>
-
     <!-- Empty State -->
-    <Empty v-else-if="forms.length === 0" class="border border-dashed">
+    <Empty v-if="visibleForms.length === 0" class="border border-dashed">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <FileText />
@@ -256,10 +233,15 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="form in forms" :key="form.id">
+          <TableRow v-for="form in visibleForms" :key="form.id">
             <TableCell>
               <div class="flex items-center gap-2">
-                <span class="font-medium">{{ form.name }}</span>
+                <InlineEditableText
+                  v-if="canModifyForms"
+                  :model-value="form.name"
+                  @update:model-value="renameForm(form.id, $event)"
+                />
+                <span v-else class="font-medium">{{ form.name }}</span>
                 <Badge v-if="form.isDefault" variant="default" class="gap-1">
                   <Check class="w-3 h-3" />
                   Default
@@ -308,11 +290,10 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
                     <DropdownMenuItem
                       v-if="canModifyForms"
                       class="text-destructive focus:text-destructive"
-                      :disabled="deletingId === form.id"
                       @click="handleDeleteForm(form.id, form.name)"
                     >
                       <Trash2 class="w-4 h-4 mr-2" />
-                      {{ deletingId === form.id ? 'Deleting...' : 'Delete' }}
+                      Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -326,14 +307,14 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
     <!-- Templates Dialog -->
     <DonationFormTemplatesDialog
       v-model:open="showTemplatesDialog"
-      :campaign-id="store.id!"
+      :campaign-id="store.id ?? ''"
       @select="handleTemplateSelect"
     />
 
     <!-- Copy from Campaign Dialog -->
     <CopyFormFromCampaignDialog
       v-model:open="showCopyDialog"
-      :current-campaign-id="store.id!"
+      :current-campaign-id="store.id ?? ''"
       @select="handleCopyFromCampaign"
     />
 
@@ -343,15 +324,13 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Form</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete "{{ formToDelete?.name }}"? This action cannot be
-            undone.
+            Are you sure you want to delete "{{ formToDelete?.name }}"? You can restore it by
+            discarding changes.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel :disabled="!!deletingId">Cancel</AlertDialogCancel>
-          <Button variant="destructive" :disabled="!!deletingId" @click="handleConfirmDelete">
-            {{ deletingId ? 'Deleting...' : 'Delete' }}
-          </Button>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <Button variant="destructive" @click="handleConfirmDelete"> Delete </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

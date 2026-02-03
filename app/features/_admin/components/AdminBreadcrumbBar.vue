@@ -10,6 +10,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
+import InlineEditableText from './InlineEditableText.vue'
 
 export interface BreadcrumbItem {
   label: string
@@ -21,9 +22,21 @@ interface Props {
   items: BreadcrumbItem[]
   /** Show "Unsaved" badge */
   isDirty?: boolean
+  /** Allow editing the last breadcrumb item label */
+  editableLastItem?: boolean
 }
 
-defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  editableLastItem: false
+})
+
+const emit = defineEmits<{
+  (e: 'update:lastItemLabel', value: string): void
+}>()
+
+const lastItem = computed(() =>
+  props.items.length > 0 ? props.items[props.items.length - 1]! : null
+)
 </script>
 
 <template>
@@ -44,9 +57,14 @@ defineProps<Props>()
             <BreadcrumbSeparator />
           </template>
 
-          <!-- Last item (current page) -->
-          <BreadcrumbItem v-if="items.length > 0">
-            <BreadcrumbPage>{{ items[items.length - 1]!.label }}</BreadcrumbPage>
+          <!-- Last item (current page) - editable or static -->
+          <BreadcrumbItem v-if="lastItem" class="min-w-0">
+            <InlineEditableText
+              v-if="editableLastItem"
+              :model-value="lastItem.label"
+              @update:model-value="emit('update:lastItemLabel', $event)"
+            />
+            <BreadcrumbPage v-else>{{ lastItem.label }}</BreadcrumbPage>
           </BreadcrumbItem>
 
           <!-- Unsaved badge -->
