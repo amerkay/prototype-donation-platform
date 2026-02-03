@@ -74,10 +74,17 @@ const featureName = computed(() => {
 // Show default message when no preview available and not disabled
 const showDefaultMessage = computed(() => !currentPreview.value)
 const showDisabledMessage = computed(() => currentPreview.value && isCurrentSectionDisabled.value)
+
+// Scroll parent container to top when preview changes
+const containerRef = ref<HTMLElement>()
+watch(currentPreview, async () => {
+  await nextTick()
+  containerRef.value?.parentElement?.scrollTo({ top: 0, behavior: 'smooth' })
+})
 </script>
 
 <template>
-  <div>
+  <div ref="containerRef">
     <!-- Dynamic Preview -->
     <component
       :is="previewComponents[currentPreview!]"
