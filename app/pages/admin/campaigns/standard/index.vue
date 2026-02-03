@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import AdminPageHeader from '~/features/_admin/components/AdminPageHeader.vue'
 import CampaignList from '~/features/campaigns/admin/components/CampaignList.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { Button } from '@/components/ui/button'
@@ -33,6 +34,13 @@ const formattedTotalRaised = computed(() => {
   }).format(totalRaised.value)
 })
 
+const stats = computed(() => [
+  { value: standardCampaigns.value.length, label: 'campaigns' },
+  { value: activeCampaigns.value.length, label: 'active' },
+  { value: formattedTotalRaised.value, label: 'raised' },
+  { value: totalDonations.value, label: 'donations' }
+])
+
 const breadcrumbs = [
   { label: 'Dashboard', href: '/' },
   { label: 'Campaigns', href: '/admin/campaigns/standard' },
@@ -53,34 +61,15 @@ const handleNewCampaign = () => {
     <AdminBreadcrumbBar :items="breadcrumbs" />
 
     <div class="flex flex-1 flex-col px-4 pt-0 pb-4">
-      <!-- Header Stats -->
-      <div class="mb-6 space-y-2">
-        <div class="flex items-center justify-between">
-          <h1 class="text-3xl font-bold">Standard Campaigns</h1>
-          <Button size="sm" @click="handleNewCampaign">
+      <AdminPageHeader title="Standard Campaigns" :stats="stats">
+        <template #action>
+          <Button class="w-full sm:w-auto" size="sm" @click="handleNewCampaign">
             <Plus class="w-4 h-4 mr-2" />
             New Standard Campaign
           </Button>
-        </div>
-        <div class="flex gap-6 text-sm text-muted-foreground">
-          <div>
-            <span class="font-semibold text-foreground">{{ standardCampaigns.length }}</span> total
-          </div>
-          <div>
-            <span class="font-semibold text-foreground">{{ activeCampaigns.length }}</span>
-            active
-          </div>
-          <div>
-            <span class="font-semibold text-foreground">{{ formattedTotalRaised }}</span> raised
-          </div>
-          <div>
-            <span class="font-semibold text-foreground">{{ totalDonations }}</span>
-            donations
-          </div>
-        </div>
-      </div>
+        </template>
+      </AdminPageHeader>
 
-      <!-- Campaign List -->
       <CampaignList :campaigns="standardCampaigns" />
     </div>
   </div>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import AdminPageHeader from '~/features/_admin/components/AdminPageHeader.vue'
 import CampaignList from '~/features/campaigns/admin/components/CampaignList.vue'
 import P2PPresetPickerDialog from '~/features/campaigns/admin/components/P2PPresetPickerDialog.vue'
 import type { P2PCampaignPreset } from '~/features/campaigns/admin/templates'
@@ -47,6 +48,15 @@ const formattedTotalRaised = computed(() => {
   }).format(totalRaised.value)
 })
 
+const stats = computed(() => [
+  { value: p2pCampaigns.value.length, label: 'campaigns' },
+  { value: activeCampaigns.value.length, label: 'active' },
+  { value: totalFundraisers.value, label: 'fundraisers' },
+  { value: activeFundraisers.value, label: 'active fundraisers' },
+  { value: formattedTotalRaised.value, label: 'raised' },
+  { value: totalDonations.value, label: 'donations' }
+])
+
 const breadcrumbs = [
   { label: 'Dashboard', href: '/' },
   { label: 'Campaigns', href: '/admin/campaigns/p2p' },
@@ -69,47 +79,18 @@ const handleP2PPresetSelect = (preset: P2PCampaignPreset) => {
     <AdminBreadcrumbBar :items="breadcrumbs" />
 
     <div class="flex flex-1 flex-col px-4 pt-0 pb-4">
-      <!-- Header Stats -->
-      <div class="mb-6 space-y-2">
-        <div class="flex items-center justify-between">
-          <h1 class="text-3xl font-bold">P2P Templates</h1>
-          <Button size="sm" @click="showP2PPresetDialog = true">
+      <AdminPageHeader title="P2P Templates" :stats="stats">
+        <template #action>
+          <Button class="w-full sm:w-auto" size="sm" @click="showP2PPresetDialog = true">
             <Plus class="w-4 h-4 mr-2" />
             New P2P Campaign
           </Button>
-        </div>
-        <div class="flex gap-6 text-sm text-muted-foreground">
-          <div>
-            <span class="font-semibold text-foreground">{{ p2pCampaigns.length }}</span> total
-            campaigns
-          </div>
-          <div>
-            <span class="font-semibold text-foreground">{{ activeCampaigns.length }}</span>
-            active campaigns
-          </div>
-          <div>
-            <span class="font-semibold text-foreground">{{ totalFundraisers }}</span> total
-            fundraisers
-          </div>
-          <div>
-            <span class="font-semibold text-foreground">{{ activeFundraisers }}</span> active
-            fundraisers
-          </div>
-          <div>
-            <span class="font-semibold text-foreground">{{ formattedTotalRaised }}</span> raised
-          </div>
-          <div>
-            <span class="font-semibold text-foreground">{{ totalDonations }}</span>
-            donations
-          </div>
-        </div>
-      </div>
+        </template>
+      </AdminPageHeader>
 
-      <!-- Campaign List -->
       <CampaignList :campaigns="p2pCampaigns" />
     </div>
 
-    <!-- P2P Preset Picker Dialog -->
     <P2PPresetPickerDialog v-model:open="showP2PPresetDialog" @select="handleP2PPresetSelect" />
   </div>
 </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import AdminPageHeader from '~/features/_admin/components/AdminPageHeader.vue'
 import CampaignList from '~/features/campaigns/admin/components/CampaignList.vue'
 import { useFeatureFlags } from '~/composables/useFeatureFlags'
 import { Button } from '@/components/ui/button'
@@ -45,6 +46,14 @@ const formattedAverageRaised = computed(() => {
   }).format(averageRaised.value)
 })
 
+const stats = computed(() => [
+  { value: currentUserFundraisers.value.length, label: 'fundraisers' },
+  { value: activeFundraisers.value.length, label: 'active' },
+  { value: formattedTotalRaised.value, label: 'raised' },
+  { value: totalDonations.value, label: 'donations' },
+  { value: formattedAverageRaised.value, label: 'avg' }
+])
+
 const breadcrumbs = [
   { label: 'Dashboard', href: '/' },
   { label: 'Campaigns', href: '/admin/campaigns/standard' },
@@ -57,35 +66,8 @@ const breadcrumbs = [
     <AdminBreadcrumbBar :items="breadcrumbs" />
 
     <div class="flex flex-1 flex-col px-4 pt-0 pb-4">
-      <!-- Header Stats -->
-      <div class="mb-6 space-y-2">
-        <div class="flex items-center justify-between">
-          <h1 class="text-3xl font-bold">My Fundraisers</h1>
-        </div>
-        <div class="flex gap-6 text-sm text-muted-foreground">
-          <div>
-            <span class="font-semibold text-foreground">{{ currentUserFundraisers.length }}</span>
-            total
-          </div>
-          <div>
-            <span class="font-semibold text-foreground">{{ activeFundraisers.length }}</span>
-            active
-          </div>
-          <div>
-            <span class="font-semibold text-foreground">{{ formattedTotalRaised }}</span> raised
-          </div>
-          <div>
-            <span class="font-semibold text-foreground">{{ totalDonations }}</span>
-            donations
-          </div>
-          <div>
-            <span class="font-semibold text-foreground">{{ formattedAverageRaised }}</span>
-            average
-          </div>
-        </div>
-      </div>
+      <AdminPageHeader title="My Fundraisers" :stats="stats" />
 
-      <!-- Campaign List -->
       <CampaignList v-if="currentUserFundraisers.length > 0" :campaigns="currentUserFundraisers" />
 
       <!-- Empty State -->
