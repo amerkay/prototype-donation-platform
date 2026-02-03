@@ -67,10 +67,10 @@ Tests mirror source structure in `test/nuxt/`. Example: `app/features/form-build
 
 YOU MUST ALWAYS FOLLOW THESE COMMANDMENTS:
 
-1. **THINK → PLAN → WORK**: MUST identify root causes, explore 5+ approaches, choose the most minimal elegant solution
+1. **THINK → PLAN → WORK**: MUST identify root causes, explore 5+ approaches, choose the most minimal elegant solution. Think of 5+ solutions that are minimal, elegant, pattern following, maintainable, readable and DRY with pros/cons and star rating for each. Then pick the best one and explain why. Then make a detailed plan with steps before coding or answering my question.
 2. **FOLLOW EXISTING PATTERNS**: MUST study similar files in codebase first. Match established conventions exactly
-3. **PREFER SHORTER CODE**: MUST prioritize readability and maintainability. Less code is better code
-4. **DRY PRINCIPLE**: MUST extract repeated logic. One responsibility per component. Never repeat code
+3. **PREFER SHORTER CODE**: MUST prioritize readability and maintainability. Less code is ALWAYS better code
+4. **DRY PRINCIPLE**: MUST extract repeated logic. One responsibility per component. Never repeat code!
 5. **MINIMAL EDITS**: MUST make the least changes to solve the problem. Remove all obsolete code immediately
 6. **FEATURE-BASED**: MUST place all feature code in `app/features/[feature-name]/`. Never violate architecture
 7. **TYPE SAFETY**: MUST use strict TypeScript. NEVER use `any` types. Mirror API structures exactly

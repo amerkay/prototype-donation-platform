@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import type { CampaignForm } from '~/features/campaigns/shared/types'
-import { generateFormId, generateFormName } from '~/features/donation-form/admin/templates'
+import {
+  generateFormId,
+  generateFormName,
+  convertTemplateAmounts
+} from '~/features/donation-form/admin/templates'
 import type { DonationFormTemplate } from '~/features/donation-form/admin/templates'
+import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import DonationFormTemplatesDialog from '~/features/donation-form/admin/components/DonationFormTemplatesDialog.vue'
 import CopyFormFromCampaignDialog from '~/features/campaigns/admin/components/CopyFormFromCampaignDialog.vue'
 import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
@@ -45,6 +51,8 @@ import { Edit, Check, FileText, Plus, Eye, Copy, MoreHorizontal, Trash2 } from '
 
 const router = useRouter()
 const store = useCampaignConfigStore()
+const currencySettings = useCurrencySettingsStore()
+const { smartRound } = useCurrency()
 
 const { forms, setDefaultForm, renameForm, createForm, duplicateForm } = useForms(store.id!)
 
@@ -101,8 +109,12 @@ const handleTemplateSelect = async (template: DonationFormTemplate) => {
     const existingNames = forms.value.map((f) => f.name)
     const formName = generateFormName(template.metadata.name, existingNames)
 
-    // Generate form config from template
-    const { config, products } = template.factory(store.id!)
+    // Generate form config from template and convert GBP amounts to default currency
+    const defaultCurrency = currencySettings.defaultCurrency
+    const templateResult = template.factory(store.id!, defaultCurrency)
+    const { config, products } = convertTemplateAmounts(templateResult, (amount) =>
+      smartRound(amount, defaultCurrency, 'GBP')
+    )
 
     // Create form
     await createForm(formId, formName, config, products)
@@ -290,7 +302,10 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
     </ClientOnly>
 
     <!-- Add/Copy Buttons -->
-    <div v-if="canAddForm && visibleForms.length > 0" class="flex items-center gap-2 mt-3 mr-2 ml-2 sm:justify-end">
+    <div
+      v-if="canAddForm && visibleForms.length > 0"
+      class="flex items-center gap-2 mt-3 mr-2 ml-2 sm:justify-end"
+    >
       <Button
         v-if="store.type === 'standard'"
         class="flex-1 sm:flex-initial"

@@ -5,7 +5,10 @@ import type { Product } from '~/features/donation-form/features/product/shared/t
  * Multiple Products Template
  * Impact cart enabled with multiple products for donation
  */
-export function createMultipleProductsTemplate(_campaignId: string): {
+export function createMultipleProductsTemplate(
+  _campaignId: string,
+  defaultCurrency: string
+): {
   config: FullFormConfig
   products: Product[]
 } {
@@ -17,7 +20,7 @@ export function createMultipleProductsTemplate(_campaignId: string): {
         subtitle: 'Select items to support orangutan conservation'
       },
       donationAmounts: {
-        baseDefaultCurrency: 'GBP',
+        baseDefaultCurrency: defaultCurrency,
         frequencies: {
           once: {
             enabled: true,

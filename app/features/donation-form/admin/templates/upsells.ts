@@ -5,7 +5,10 @@ import type { Product } from '~/features/donation-form/features/product/shared/t
  * Upsells Template
  * Features recurring and increase boost upsells enabled
  */
-export function createUpsellsTemplate(_campaignId: string): {
+export function createUpsellsTemplate(
+  _campaignId: string,
+  defaultCurrency: string
+): {
   config: FullFormConfig
   products: Product[]
 } {
@@ -17,7 +20,7 @@ export function createUpsellsTemplate(_campaignId: string): {
         subtitle: 'Choose your donation amount'
       },
       donationAmounts: {
-        baseDefaultCurrency: 'GBP',
+        baseDefaultCurrency: defaultCurrency,
         frequencies: {
           once: {
             enabled: true,

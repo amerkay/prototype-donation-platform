@@ -6,7 +6,10 @@ import type { Product } from '~/features/donation-form/features/product/shared/t
  * All features enabled (except impact statements)
  * Comprehensive donation experience with all options
  */
-export function createFullExperienceTemplate(_campaignId: string): {
+export function createFullExperienceTemplate(
+  _campaignId: string,
+  defaultCurrency: string
+): {
   config: FullFormConfig
   products: Product[]
 } {
@@ -18,7 +21,7 @@ export function createFullExperienceTemplate(_campaignId: string): {
         subtitle: 'Choose your donation amount'
       },
       donationAmounts: {
-        baseDefaultCurrency: 'GBP',
+        baseDefaultCurrency: defaultCurrency,
         frequencies: {
           once: {
             enabled: true,

@@ -5,7 +5,10 @@ import type { Product } from '~/features/donation-form/features/product/shared/t
  * Recurring Symbolic Adoptions Template
  * Product selector enabled for symbolic orangutan adoptions
  */
-export function createRecurringAdoptionsTemplate(_campaignId: string): {
+export function createRecurringAdoptionsTemplate(
+  _campaignId: string,
+  defaultCurrency: string
+): {
   config: FullFormConfig
   products: Product[]
 } {
@@ -17,7 +20,7 @@ export function createRecurringAdoptionsTemplate(_campaignId: string): {
         subtitle: 'Choose an orangutan to support with monthly donations'
       },
       donationAmounts: {
-        baseDefaultCurrency: 'GBP',
+        baseDefaultCurrency: defaultCurrency,
         frequencies: {
           once: {
             enabled: false,

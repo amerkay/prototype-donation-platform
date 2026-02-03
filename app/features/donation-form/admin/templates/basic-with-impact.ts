@@ -5,7 +5,10 @@ import type { Product } from '~/features/donation-form/features/product/shared/t
  * Basic with Impact Statements Template
  * One-time and monthly donations with impact descriptions
  */
-export function createBasicWithImpactTemplate(_campaignId: string): {
+export function createBasicWithImpactTemplate(
+  _campaignId: string,
+  defaultCurrency: string
+): {
   config: FullFormConfig
   products: Product[]
 } {
@@ -17,7 +20,7 @@ export function createBasicWithImpactTemplate(_campaignId: string): {
         subtitle: 'See the impact of your donation'
       },
       donationAmounts: {
-        baseDefaultCurrency: 'GBP',
+        baseDefaultCurrency: defaultCurrency,
         frequencies: {
           once: {
             enabled: true,

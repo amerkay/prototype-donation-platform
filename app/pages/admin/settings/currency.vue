@@ -54,14 +54,6 @@ definePageMeta({
     <!-- Main content -->
     <template #content>
       <div class="space-y-6">
-        <div>
-          <h1 class="text-2xl font-bold">Currency Settings</h1>
-          <p class="text-muted-foreground mt-1">
-            Configure default currencies for your organization. These settings apply to all donation
-            forms unless overridden.
-          </p>
-        </div>
-
         <CurrencySettingsConfig ref="formConfigRef" @save="handleSave" @discard="handleDiscard" />
       </div>
     </template>

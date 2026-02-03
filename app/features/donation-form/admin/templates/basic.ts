@@ -6,7 +6,10 @@ import type { Product } from '~/features/donation-form/features/product/shared/t
  * Minimal configuration with only one-time and monthly donations
  * All features disabled
  */
-export function createBasicTemplate(_campaignId: string): {
+export function createBasicTemplate(
+  _campaignId: string,
+  defaultCurrency: string
+): {
   config: FullFormConfig
   products: Product[]
 } {
@@ -18,7 +21,7 @@ export function createBasicTemplate(_campaignId: string): {
         subtitle: 'Choose your donation amount'
       },
       donationAmounts: {
-        baseDefaultCurrency: 'GBP',
+        baseDefaultCurrency: defaultCurrency,
         frequencies: {
           once: {
             enabled: true,

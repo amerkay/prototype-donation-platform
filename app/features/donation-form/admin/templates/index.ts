@@ -23,7 +23,10 @@ export interface TemplateMetadata {
 /**
  * Template factory function that generates a complete form configuration
  */
-export type TemplateFactory = (campaignId: string) => {
+export type TemplateFactory = (
+  campaignId: string,
+  defaultCurrency: string
+) => {
   config: FullFormConfig
   products: Product[]
 }
@@ -103,6 +106,40 @@ export const TEMPLATE_REGISTRY: DonationFormTemplate[] = [
     factory: createFullExperienceTemplate
   }
 ]
+
+/**
+ * Convert all amounts in a template result from GBP to the target currency.
+ * Templates are authored with GBP amounts; this post-processes them
+ * using a provided conversion function (e.g., smartRound from useCurrency).
+ */
+export function convertTemplateAmounts(
+  result: { config: FullFormConfig; products: Product[] },
+  convertFn: (amount: number) => number
+): { config: FullFormConfig; products: Product[] } {
+  const { config, products } = result
+
+  // Convert frequency preset amounts and custom amount bounds
+  for (const freq of Object.values(config.donationAmounts.frequencies)) {
+    freq.presetAmounts = freq.presetAmounts.map((preset) => ({
+      ...preset,
+      amount: convertFn(preset.amount)
+    }))
+    freq.customAmount = {
+      min: convertFn(freq.customAmount.min),
+      max: convertFn(freq.customAmount.max)
+    }
+  }
+
+  // Convert product prices
+  const convertedProducts = products.map((product) => ({
+    ...product,
+    ...(product.price !== undefined && { price: convertFn(product.price) }),
+    ...(product.minPrice !== undefined && { minPrice: convertFn(product.minPrice) }),
+    ...(product.default !== undefined && { default: convertFn(product.default) })
+  }))
+
+  return { config, products: convertedProducts }
+}
 
 /**
  * Get template by ID
