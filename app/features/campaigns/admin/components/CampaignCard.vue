@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Calendar, Users, TrendingUp, Target } from 'lucide-vue-next'
+import { Calendar, Heart, Users, TrendingUp, Target } from 'lucide-vue-next'
 
 const props = defineProps<{
   campaign: Campaign
@@ -47,7 +47,25 @@ const activeFundraisersCount = computed(
 </script>
 
 <template>
-  <Card :class="cn('transition-all hover:shadow-md h-full', compact ? '' : '')">
+  <Card
+    :class="cn('transition-all hover:shadow-md h-full overflow-hidden pt-0', compact ? '' : '')"
+  >
+    <!-- Cover Photo -->
+    <div class="relative aspect-3/1 bg-muted overflow-hidden">
+      <img
+        v-if="campaign.crowdfunding.coverPhoto"
+        :src="campaign.crowdfunding.coverPhoto"
+        :alt="campaign.name"
+        class="w-full h-full object-cover"
+      />
+      <div
+        v-else
+        class="w-full h-full flex items-center justify-center bg-linear-to-br from-primary/20 to-primary/5"
+      >
+        <Heart class="w-8 h-8 text-primary/40" />
+      </div>
+    </div>
+
     <CardHeader>
       <div class="min-w-0">
         <CardTitle class="text-lg truncate">{{ campaign.name }}</CardTitle>
