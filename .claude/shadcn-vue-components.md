@@ -1,5 +1,7 @@
 # shadcn-vue Component Reference
 
+Your goal is to use shadcn-vue components to keep the code DRY and consistent.
+
 **Install:** `pnpm dlx shadcn-vue@latest add [component]`
 **Docs:** `https://www.shadcn-vue.com/docs/components/[component].html`
 
@@ -24,7 +26,7 @@ Check the directory `app/components/ui`.
 | card            | Group related content into container             |
 | carousel        | Horizontal swipeable images/slides               |
 | chart           | Data visualization (line, bar, area)             |
-| checkbox        | Toggle option on/off; multi-select              |
+| checkbox        | Toggle option on/off; multi-select               |
 | collapsible     | Progressively disclose content with toggle       |
 | combobox        | Searchable select with autocomplete              |
 | command         | Command palette for quick actions                |
