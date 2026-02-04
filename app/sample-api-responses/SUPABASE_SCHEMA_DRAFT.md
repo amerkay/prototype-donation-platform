@@ -560,11 +560,11 @@ CREATE INDEX idx_form_custom_fields_step ON form_custom_fields(form_id, step);
 | Organizations & Settings | 3      | organizations, currency_settings, supported_currencies                                                             |
 | Campaigns                | 6      | campaigns, campaign_stats, campaign_crowdfunding, campaign_peer_to_peer, campaign_charity, campaign_social_sharing |
 | Campaign Data            | 1      | campaign_fundraisers                                                                                               |
-| Donor Portal             | 7      | donor_users, transactions, transaction_line_items, transaction_tributes, subscriptions, subscription_line_items     |
+| Donor Portal             | 7      | donor_users, transactions, transaction_line_items, transaction_tributes, subscriptions, subscription_line_items    |
 | Products                 | 1      | products                                                                                                           |
 | Forms                    | 2      | campaign_forms, form_products (junction)                                                                           |
 | Form Settings            | 3      | form_settings, form_frequencies, form_preset_amounts                                                               |
-| Form Features            | 6      | form_feature_* (one per feature)                                                                                   |
+| Form Features            | 6      | form*feature*\* (one per feature)                                                                                  |
 | Lookups                  | 1      | tribute_relationships                                                                                              |
 | Custom Fields            | 1      | form_custom_fields                                                                                                 |
 | Views                    | 1      | campaign_donations_view                                                                                            |

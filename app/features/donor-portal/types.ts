@@ -52,6 +52,7 @@ export interface Transaction {
   subscriptionId?: string
   campaignId: string
   campaignName: string
+  charityName: string
 
   lineItems: TransactionLineItem[]
 
@@ -88,6 +89,7 @@ export interface Subscription {
   processorSubscriptionId: string
   campaignId: string
   campaignName: string
+  charityName: string
 
   lineItems: TransactionLineItem[]
 

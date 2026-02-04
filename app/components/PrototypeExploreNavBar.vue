@@ -9,7 +9,7 @@ defineProps<{
 </script>
 
 <template>
-  <header class="bg-background border-b">
+  <header class="bg-background border-b rounded-t-lg">
     <div class="px-4 py-2 flex items-center justify-between gap-4">
       <!-- Left: Back to explore -->
       <NuxtLink to="/" class="shrink-0">
