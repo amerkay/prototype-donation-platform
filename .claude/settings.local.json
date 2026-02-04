@@ -21,7 +21,8 @@
       "Bash(find:*)",
       "Bash(tree:*)",
       "WebFetch(domain:www.shadcn-vue.com)",
-      "Bash(pnpm lint:*)"
+      "Bash(pnpm lint:*)",
+      "Bash(xargs -I {} bash -c 'echo \"\"=== {} ===\"\" && ls -la {}')"
     ]
   }
 }

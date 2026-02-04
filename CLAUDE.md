@@ -1,0 +1,99 @@
+# Donation Platform Prototype
+
+Multi-step donation platform: single/recurring donations, multi-item cart, dynamic pricing sliders, mobile-first progressive disclosure. Nuxt 4 + Vue 3.5 + TypeScript + Tailwind CSS 4 + shadcn-vue.
+
+## Commands
+
+```bash
+pnpm test:run              # All tests
+pnpm test:run -- test/nuxt/path/to/spec.ts -t "test name"  # Single test
+pnpm typecheck             # Type checking
+pnpm format:fix; pnpm lint:fix  # Fix formatting + lint (defer till end)
+pnpm dlx shadcn-vue@latest add [component]  # Add shadcn-vue component
+```
+
+Do NOT run `pnpm dev` — no browser access.
+
+## Architecture
+
+**Vertical Slice Architecture**: organize by WHO uses it (`admin/` vs `donor/`), not what it displays.
+
+```
+app/features/[feature-name]/
+  admin/       → config panels, preview tools, admin forms
+  donor/       → forms, wizards, donor-facing state
+  shared/      → only when BOTH sides import it (80%+ rule)
+```
+
+**Rules**: If 80%+ usage is one side, move it there. Stores follow their primary consumer.
+
+**Type Organization**:
+
+- Config types (`*Settings` interfaces) → `admin/types.ts`
+- Runtime types (data models, state shapes) → `donor/types.ts` or `admin/types.ts` based on primary consumer
+- Truly shared types (used ~50/50 by both) → `shared/types.ts`
+
+**Library modules** (`app/features/_library/`): form-builder and custom-fields are **reusable, domain-agnostic**. They MUST NEVER contain donation-specific logic. When working with these modules, ALWAYS read their README.md first:
+
+- `app/features/_library/form-builder/README.md` — defineForm API, field types, containers, conditions, store mapping
+- `app/features/_library/custom-fields/README.md` — field factories, admin config, runtime rendering
+
+**Admin infrastructure** (`app/features/_admin/`): shared admin UI (sidebar, layouts, composables).
+
+## Code Standards
+
+**Components**: `<script setup lang="ts">`. Order: imports, constants, props/emits, state, computed, methods. PascalCase components, camelCase variables, UPPER_SNAKE_CASE constants.
+
+**Styling**: NEVER concatenate classes. Use `cn()` from `@/lib/utils`. Explicit conditionals for dynamic classes.
+
+**State**: Local `ref()`/`computed()` in components. Composables for shared state. No prop mutations — emit events.
+
+**Validation**: vee-validate + Zod. Schema per field type.
+
+**shadcn-vue**: Do not edit `app/components/ui/` unless necessary.
+
+## Project Summary
+
+<!-- regenerate with /update-project-summary -->
+
+| Feature       | Path                                   | Purpose                                                                                             |
+| ------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| donation-form | `app/features/donation-form/`          | Multi-step donation wizard with 12 sub-features (cover-costs, gift-aid, impact-cart, tribute, etc.) |
+| campaigns     | `app/features/campaigns/`              | Campaign CRUD, crowdfunding, P2P fundraising, templates                                             |
+| donor-portal  | `app/features/donor-portal/`           | Donor dashboard: transaction history, subscriptions, fundraiser management                          |
+| settings      | `app/features/settings/`               | Organization-level config (currencies, multipliers)                                                 |
+| form-builder  | `app/features/_library/form-builder/`  | Schema-driven form framework: defineForm API, 15 field types, conditions, containers                |
+| custom-fields | `app/features/_library/custom-fields/` | Admin-configurable dynamic fields with 8 field type factories                                       |
+| \_admin       | `app/features/_admin/`                 | Shared admin components: sidebar, breadcrumbs, edit layouts, sticky buttons                         |
+
+**Key stores:** `donation-form/shared/stores/formConfig.ts` (admin config), `donation-form/donor/stores/donationForm.ts` (donor state), `donation-form/features/impact-cart/donor/stores/impactCart.ts` (cart by frequency), `campaigns/shared/stores/campaignConfig.ts` (campaign config), `campaigns/shared/stores/forms.ts` (campaign forms), `settings/admin/stores/currencySettings.ts` (org currencies).
+
+**Key composables:** `useCampaigns()`, `useForms()`, `useDonorPortal()`, `useCurrency()`, `useDonationCurrencies()`, `useAdminConfigForm()`, `useAdminEdit()`, `defineEditableStore()`.
+
+**Layouts:** `admin.vue`, `donor.vue`, `portal.vue`, `admin-preview.vue`, `default.vue`.
+
+**Pages:** `app/pages/admin/` (campaign + settings admin), `app/pages/donor/` (donate, crowdfunding, P2P), `app/pages/portal/` (donor portal dashboard).
+
+<!-- end project summary -->
+
+## Code Rules
+
+YOU MUST ALWAYS FOLLOW THESE RULES (COMMANDMENTS):
+
+1. **THINK → PLAN → WORK**: MUST identify root causes, explore 5+ approaches, choose the most minimal elegant solution. Think of 5+ solutions that are minimal, elegant, pattern-following, maintainable, readable and DRY with pros/cons and star rating for each. Pick the best, explain why. Make a detailed plan with steps before coding.
+2. **INVESTIGATE FIRST**: YOU MUST ALWAYS start by searching the codebase for similar patterns or related files before writing any code.
+3. **FOLLOW EXISTING PATTERNS**: MUST study similar files in codebase first. Match established conventions exactly.
+4. **PREFER SHORTER CODE**: MUST prioritize readability and maintainability. Less code is ALWAYS better code.
+5. **DRY PRINCIPLE**: MUST extract repeated logic. One responsibility per component. Never repeat code.
+6. **MINIMAL EDITS**: MUST make the least changes to solve the problem. Remove all obsolete code immediately.
+7. **FEATURE-BASED**: MUST place all feature code in `app/features/[feature-name]/`. Never violate architecture.
+8. **TYPE SAFETY**: MUST use strict TypeScript. NEVER use `any` types. Mirror API structures exactly.
+9. **SELF-CONTAINED LOGIC**: MUST prefer isolated, clear implementations. Avoid complex dependencies.
+10. **USE shadcn-vue**: MUST use existing components or request missing ones. Do not reinvent UI.
+11. **WRITE TESTS TO UNCOVER BUGS**: Do the tests make sense? Avoid testing buggy behavior as if it's correct. If a test fails on sensible assertions, STOP and report — do not change the test to match broken behavior.
+12. **DEFER FORMATTING**: Do NOT fix lint/format issues one by one. Batch them at the end: `pnpm format:fix; pnpm lint:fix; pnpm typecheck`. These commands take up to 60 seconds.
+13. **`_library/` IS SACRED**: `app/features/_library/form-builder` and `app/features/_library/custom-fields` CAN NEVER have donation platform logic. They MUST be treated as independent reusable units.
+14. **READ THE DOCS**: When working with form-builder or custom-fields, ALWAYS read the relevant README.md first (`app/features/_library/form-builder/README.md` or `app/features/_library/custom-fields/README.md`).
+15. **SHORT SUMMARIES**: MUST provide brief updates after EACH answer. End with minimal conventional commit message about all the work we did in the entire session including compacted summaries unless I instruct you otherwise. The conv. commit first line must be a summary of all work done, and then bullet points with more details, keeping it concise.
+16. **KEEP PROJECT SUMMARY CURRENT**: After completing any task that adds, removes, renames, or restructures features, stores, composables, pages, or layouts, you MUST ask yourself: "Did I change the project structure?" If yes, tell the user in **bold** at the end of your final message: **"Project structure changed — run `/update-project-summary` to keep CLAUDE.md current."**
+17. **COMMIT MESSAGE STANDARD**: Use short conventional commits following rule #15. NEVER include the "Authored by Anthropic" line in commit messages.
