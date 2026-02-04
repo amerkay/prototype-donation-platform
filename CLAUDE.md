@@ -50,7 +50,7 @@ app/features/[feature-name]/
 
 **Validation**: vee-validate + Zod. Schema per field type.
 
-**shadcn-vue**: Do not edit `app/components/ui/` unless necessary.
+**shadcn-vue**: Do not edit `app/components/ui/` unless necessary. For frontend tasks needing ready-made components, consult `.claude/shadcn-vue-components.md` (lists all components with purposes). Use the docs URL template in that file (`https://www.shadcn-vue.com/docs/components/[component].html`) to read full documentation before building custom UI.
 
 ## Project Summary
 
