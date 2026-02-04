@@ -97,14 +97,18 @@ const activeFundraisersCount = computed(
       <div v-if="isP2P" class="space-y-2">
         <div class="flex items-baseline justify-between text-sm">
           <span class="text-muted-foreground text-xs">Total Raised</span>
-          <span class="font-semibold">{{ formatAmount(campaign.stats.totalRaised) }}</span>
+          <span class="font-semibold">{{
+            formatAmount(campaign.stats.totalRaised, campaign.stats.currency)
+          }}</span>
         </div>
       </div>
 
       <!-- Standard Campaign: Progress bar with goal -->
       <div v-else-if="campaign.crowdfunding.goalAmount" class="space-y-2">
         <div class="flex items-baseline justify-between text-sm">
-          <span class="font-semibold">{{ formatAmount(campaign.stats.totalRaised) }}</span>
+          <span class="font-semibold">{{
+            formatAmount(campaign.stats.totalRaised, campaign.stats.currency)
+          }}</span>
           <span class="text-muted-foreground text-xs">
             of {{ formatAmount(campaign.crowdfunding.goalAmount) }}
           </span>

@@ -1,18 +1,15 @@
+import { formatCurrency } from '~/lib/formatCurrency'
+
 /**
  * Shared formatting utilities for campaign components
  * Extracts common formatting logic used across donor and admin campaign views
  */
 export function useCampaignFormatters() {
   /**
-   * Format currency amount in GBP
+   * Format currency amount (defaults to GBP)
    */
-  const formatAmount = (amount: number): string => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount)
+  const formatAmount = (amount: number, currency?: string): string => {
+    return formatCurrency(amount, currency)
   }
 
   /**

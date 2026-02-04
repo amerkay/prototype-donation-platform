@@ -60,6 +60,10 @@ export interface Transaction {
   coverCostsAmount: number
   totalAmount: number
   currency: string
+  /** Org base currency at time of transaction */
+  baseCurrency: string
+  /** Exchange rate used: 1 original currency = X base currency */
+  exchangeRate: number
 
   paymentMethod: PaymentMethod
   status: TransactionStatus
@@ -95,6 +99,8 @@ export interface Subscription {
 
   amount: number
   currency: string
+  baseCurrency: string
+  exchangeRate: number
   frequency: 'monthly' | 'yearly'
 
   paymentMethod: PaymentMethod

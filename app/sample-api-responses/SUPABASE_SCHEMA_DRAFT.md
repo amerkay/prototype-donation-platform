@@ -1036,19 +1036,19 @@ All other configuration uses separate columns for: direct SQL querying, Supabase
 
 ## Table Statistics
 
-| Category                 | Count  | Tables                                                                                                             |
-| ------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------ |
-| Organizations & Auth     | 4      | organizations, profiles, currency_settings, supported_currencies                                                   |
-| Campaigns                | 6      | campaigns, campaign_stats, campaign_crowdfunding, campaign_peer_to_peer, campaign_charity, campaign_social_sharing |
-| Campaign Data            | 1      | campaign_fundraisers                                                                                               |
-| Donor Portal             | 8      | donor_users, subscriptions, subscription_line_items, transactions, transaction_line_items, transaction_tributes     |
-| Products                 | 1      | products                                                                                                           |
-| Forms                    | 2      | campaign_forms, form_products (junction)                                                                           |
-| Form Settings            | 3      | form_settings, form_frequencies, form_preset_amounts                                                               |
-| Form Features            | 6      | form_feature_* (one per feature)                                                                                   |
-| Lookups                  | 1      | tribute_relationships                                                                                              |
-| Custom Fields            | 1      | form_custom_fields                                                                                                 |
-| **Total**                | **33** | + 1 view (`campaign_donations_view`) + 1 storage bucket                                                           |
+| Category             | Count  | Tables                                                                                                             |
+| -------------------- | ------ | ------------------------------------------------------------------------------------------------------------------ |
+| Organizations & Auth | 4      | organizations, profiles, currency_settings, supported_currencies                                                   |
+| Campaigns            | 6      | campaigns, campaign_stats, campaign_crowdfunding, campaign_peer_to_peer, campaign_charity, campaign_social_sharing |
+| Campaign Data        | 1      | campaign_fundraisers                                                                                               |
+| Donor Portal         | 8      | donor_users, subscriptions, subscription_line_items, transactions, transaction_line_items, transaction_tributes    |
+| Products             | 1      | products                                                                                                           |
+| Forms                | 2      | campaign_forms, form_products (junction)                                                                           |
+| Form Settings        | 3      | form_settings, form_frequencies, form_preset_amounts                                                               |
+| Form Features        | 6      | form*feature*\* (one per feature)                                                                                  |
+| Lookups              | 1      | tribute_relationships                                                                                              |
+| Custom Fields        | 1      | form_custom_fields                                                                                                 |
+| **Total**            | **33** | + 1 view (`campaign_donations_view`) + 1 storage bucket                                                            |
 
 ---
 
@@ -1076,6 +1076,7 @@ Two separate user types with different auth patterns:
 ### TEXT + CHECK vs Enums
 
 All status/type columns use `TEXT NOT NULL CHECK (value IN (...))` instead of PostgreSQL enums. Reasons:
+
 - Easier to add/remove values (simple `ALTER TABLE ... DROP/ADD CONSTRAINT`)
 - No need to drop and recreate enum types during migrations
 - Supabase migration tooling works better with constraints
@@ -1106,7 +1107,8 @@ Denormalized from `campaigns.organization_id` and set on insert. This allows RLS
 // Get full campaign with all related data
 const campaign = await supabase
   .from('campaigns')
-  .select(`
+  .select(
+    `
     *,
     campaign_stats(*),
     campaign_crowdfunding(*),
@@ -1114,7 +1116,8 @@ const campaign = await supabase
     campaign_peer_to_peer(*),
     campaign_social_sharing(*),
     campaign_fundraisers(*)
-  `)
+  `
+  )
   .eq('id', campaignId)
   .is('deleted_at', null)
   .single()
@@ -1130,7 +1133,8 @@ const donations = await supabase
 // Get form with all settings and features
 const form = await supabase
   .from('campaign_forms')
-  .select(`
+  .select(
+    `
     *,
     form_settings(*),
     form_frequencies(*, form_preset_amounts(*)),
@@ -1142,7 +1146,8 @@ const form = await supabase
     form_feature_gift_aid(*),
     form_feature_tribute(*),
     form_custom_fields(*)
-  `)
+  `
+  )
   .eq('id', formId)
   .is('deleted_at', null)
   .single()
@@ -1150,21 +1155,25 @@ const form = await supabase
 // Get donor's transaction history
 const history = await supabase
   .from('transactions')
-  .select(`
+  .select(
+    `
     *,
     transaction_line_items(*),
     transaction_tributes(*)
-  `)
+  `
+  )
   .eq('donor_user_id', userId)
   .order('created_at', { ascending: false })
 
 // Get donor's active subscriptions
 const subs = await supabase
   .from('subscriptions')
-  .select(`
+  .select(
+    `
     *,
     subscription_line_items(*)
-  `)
+  `
+  )
   .eq('donor_user_id', userId)
   .eq('status', 'active')
 

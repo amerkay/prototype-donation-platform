@@ -46,7 +46,7 @@ export function useDonorPortal() {
   )
 
   const totalDonated = computed(() =>
-    succeededTransactions.value.reduce((sum, t) => sum + t.totalAmount, 0)
+    succeededTransactions.value.reduce((sum, t) => sum + t.subtotal * t.exchangeRate, 0)
   )
 
   const totalTransactions = computed(() => succeededTransactions.value.length)

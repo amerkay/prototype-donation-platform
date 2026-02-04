@@ -121,7 +121,7 @@ const paymentMethodLabel = (pm: {
                   </Badge>
                 </div>
                 <CardDescription>
-                  {{ formatAmount(sub.amount) }}/{{ sub.frequency }} via
+                  {{ formatAmount(sub.amount, sub.currency) }}/{{ sub.frequency }} via
                   {{ paymentMethodLabel(sub.paymentMethod) }}
                 </CardDescription>
               </CardHeader>

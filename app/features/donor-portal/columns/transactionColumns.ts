@@ -4,14 +4,7 @@ import type { Transaction } from '~/features/donor-portal/types'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowUpDown, RefreshCw } from 'lucide-vue-next'
-
-const formatAmount = (amount: number): string =>
-  new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(amount)
+import { formatCurrency } from '~/lib/formatCurrency'
 
 const formatDate = (dateString: string): string =>
   new Intl.DateTimeFormat('en-GB', {
@@ -124,7 +117,7 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
       h(
         'div',
         { class: 'text-right font-medium text-sm whitespace-nowrap' },
-        formatAmount(row.getValue('totalAmount'))
+        formatCurrency(row.original.totalAmount, row.original.currency)
       )
   },
   {
@@ -185,7 +178,7 @@ export const transactionColumnsCompact: ColumnDef<Transaction>[] = [
       h(
         'div',
         { class: 'text-right font-medium text-sm' },
-        formatAmount(row.getValue('totalAmount'))
+        formatCurrency(row.original.totalAmount, row.original.currency)
       )
   },
   {

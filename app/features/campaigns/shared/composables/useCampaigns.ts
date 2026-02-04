@@ -149,7 +149,8 @@ export function useCampaigns() {
         totalDonations: 0,
         totalDonors: 0,
         averageDonation: 0,
-        topDonation: 0
+        topDonation: 0,
+        currency: 'GBP'
       },
       crowdfunding: campaignData.crowdfunding ?? {
         enabled: true,

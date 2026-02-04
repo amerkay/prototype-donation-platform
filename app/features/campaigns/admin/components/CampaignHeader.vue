@@ -96,7 +96,7 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
       >
         <span class="text-xs text-muted-foreground whitespace-nowrap">Total Raised</span>
         <span class="text-sm font-medium whitespace-nowrap">
-          {{ formatAmount(store.stats.totalRaised) }}
+          {{ formatAmount(store.stats.totalRaised, store.stats.currency) }}
         </span>
       </div>
 
@@ -109,7 +109,7 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
           <Progress :model-value="store.progressPercentage" class="h-2" />
         </div>
         <span class="text-sm font-medium whitespace-nowrap">
-          {{ formatAmount(store.stats.totalRaised) }}
+          {{ formatAmount(store.stats.totalRaised, store.stats.currency) }}
           <span class="text-muted-foreground font-normal">
             / {{ formatAmount(store.crowdfunding?.goalAmount ?? 0) }}
           </span>

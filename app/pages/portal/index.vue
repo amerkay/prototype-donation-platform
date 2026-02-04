@@ -133,7 +133,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
                   {{ sub.lineItems.map((i) => i.productName).join(', ') }}
                 </p>
                 <p class="text-xs text-muted-foreground">
-                  {{ formatAmount(sub.amount) }}/{{ sub.frequency }}
+                  {{ formatAmount(sub.amount, sub.currency) }}/{{ sub.frequency }}
                 </p>
               </div>
               <Badge
@@ -198,7 +198,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
                     class="h-1.5"
                   />
                   <div class="flex justify-between text-xs text-muted-foreground">
-                    <span>{{ formatAmount(f.stats.totalRaised) }}</span>
+                    <span>{{ formatAmount(f.stats.totalRaised, f.stats.currency) }}</span>
                     <span>{{ formatAmount(f.crowdfunding.goalAmount) }}</span>
                   </div>
                 </div>

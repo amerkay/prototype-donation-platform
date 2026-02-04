@@ -27,7 +27,7 @@ const displayName = computed(() =>
           {{ displayName }}
         </span>
         <span class="text-sm @3xl:text-base font-semibold text-primary shrink-0">
-          {{ formatAmount(donation.amount) }}
+          {{ formatAmount(donation.amount, donation.currency) }}
         </span>
       </div>
       <p

@@ -3,14 +3,7 @@ import type { ColumnDef } from '@tanstack/vue-table'
 import type { CampaignDonation } from '~/features/campaigns/shared/types'
 import { Button } from '@/components/ui/button'
 import { ArrowUpDown } from 'lucide-vue-next'
-
-const formatAmount = (amount: number): string =>
-  new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(amount)
+import { formatCurrency } from '~/lib/formatCurrency'
 
 const formatDate = (dateString: string): string =>
   new Intl.DateTimeFormat('en-GB', {
@@ -63,7 +56,11 @@ export const fundraiserDonationColumns: ColumnDef<CampaignDonation>[] = [
         () => ['Amount', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
       ),
     cell: ({ row }) =>
-      h('div', { class: 'text-right font-medium text-sm' }, formatAmount(row.getValue('amount')))
+      h(
+        'div',
+        { class: 'text-right font-medium text-sm' },
+        formatCurrency(row.original.amount, row.original.currency)
+      )
   }
 ]
 
@@ -84,6 +81,10 @@ export const fundraiserDonationColumnsCompact: ColumnDef<CampaignDonation>[] = [
     accessorKey: 'amount',
     header: () => h('div', { class: 'text-right' }, 'Amount'),
     cell: ({ row }) =>
-      h('div', { class: 'text-right font-medium text-sm' }, formatAmount(row.getValue('amount')))
+      h(
+        'div',
+        { class: 'text-right font-medium text-sm' },
+        formatCurrency(row.original.amount, row.original.currency)
+      )
   }
 ]

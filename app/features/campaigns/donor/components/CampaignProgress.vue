@@ -21,7 +21,7 @@ const progressPercentage = computed(() => {
     <Progress :model-value="progressPercentage" class="h-3" />
     <div class="flex justify-between items-baseline text-sm">
       <div>
-        <span class="font-bold text-lg">{{ formatAmount(stats.totalRaised) }}</span>
+        <span class="font-bold text-lg">{{ formatAmount(stats.totalRaised, stats.currency) }}</span>
         <span class="text-muted-foreground"> raised</span>
       </div>
       <div class="text-muted-foreground text-right text-sm">

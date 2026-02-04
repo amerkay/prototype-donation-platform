@@ -28,6 +28,8 @@ export interface CampaignFundraiser {
   joinedAt: string
   raisedAmount: number
   donationCount: number
+  /** Currency for raisedAmount and goal (org base currency) */
+  currency: string
   goal?: number
   slug: string
   story?: string
@@ -42,6 +44,8 @@ export interface CampaignDonation {
   id: string
   donorName: string
   amount: number
+  /** Original transaction currency */
+  currency: string
   message?: string
   isAnonymous: boolean
   createdAt: string
@@ -56,6 +60,8 @@ export interface CampaignStats {
   totalDonors: number
   averageDonation: number
   topDonation: number
+  /** Currency stats are denominated in (org base currency) */
+  currency: string
   daysRemaining?: number
 }
 

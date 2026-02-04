@@ -160,7 +160,7 @@ const sendInvites = async () => {
         <TrendingUp class="size-4 text-muted-foreground" />
         <div>
           <p class="text-lg font-semibold leading-none">
-            {{ formatAmount(totalFundraiserRaised) }}
+            {{ formatAmount(totalFundraiserRaised, 'GBP') }}
           </p>
           <p class="text-xs text-muted-foreground mt-0.5">Total Raised</p>
         </div>
@@ -168,7 +168,7 @@ const sendInvites = async () => {
       <div class="flex items-center gap-2 p-3 rounded-lg border bg-background">
         <Target class="size-4 text-muted-foreground" />
         <div>
-          <p class="text-lg font-semibold leading-none">{{ formatAmount(averageRaised) }}</p>
+          <p class="text-lg font-semibold leading-none">{{ formatAmount(averageRaised, 'GBP') }}</p>
           <p class="text-xs text-muted-foreground mt-0.5">Avg per Fundraiser</p>
         </div>
       </div>
@@ -224,9 +224,11 @@ const sendInvites = async () => {
           <TableCell>
             <div class="min-w-[140px]">
               <div class="flex items-baseline justify-between text-sm mb-1">
-                <span class="font-medium">{{ formatAmount(fundraiser.raisedAmount) }}</span>
+                <span class="font-medium">{{
+                  formatAmount(fundraiser.raisedAmount, fundraiser.currency)
+                }}</span>
                 <span v-if="fundraiser.goal" class="text-xs text-muted-foreground">
-                  of {{ formatAmount(fundraiser.goal) }}
+                  of {{ formatAmount(fundraiser.goal, fundraiser.currency) }}
                 </span>
               </div>
               <Progress

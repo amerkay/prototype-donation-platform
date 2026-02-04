@@ -19,7 +19,8 @@ const campaignForPreview = computed<Campaign | null>(() => {
         totalDonations: 0,
         totalDonors: 0,
         averageDonation: 0,
-        topDonation: 0
+        topDonation: 0,
+        currency: 'GBP'
       },
       recentDonations: []
     }

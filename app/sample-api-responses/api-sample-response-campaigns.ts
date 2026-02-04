@@ -68,13 +68,7 @@ export const campaigns: Campaign[] = [
     status: 'active',
     createdAt: '2025-11-01T00:00:00Z',
     updatedAt: '2026-01-10T14:00:00Z',
-    stats: computeCampaignStats('birthday-p2p-template', {
-      totalRaised: 12450,
-      totalDonations: 89,
-      totalDonors: 76,
-      averageDonation: 140,
-      topDonation: 500
-    }),
+    stats: computeCampaignStats('birthday-p2p-template'),
     crowdfunding: {
       enabled: true,
       title: 'Help Me Celebrate by Giving Back',
@@ -122,13 +116,7 @@ export const campaigns: Campaign[] = [
     status: 'active',
     createdAt: '2025-11-15T00:00:00Z',
     updatedAt: '2026-01-15T10:00:00Z',
-    stats: computeCampaignStats('wild-amer-birthday-fundraiser', {
-      totalRaised: 420,
-      totalDonations: 23,
-      totalDonors: 19,
-      averageDonation: 18,
-      topDonation: 50
-    }),
+    stats: computeCampaignStats('wild-amer-birthday-fundraiser'),
     crowdfunding: {
       enabled: true,
       coverPhoto: '/imgs/baby-orangutan-hammick.webp',
@@ -175,13 +163,7 @@ export const campaigns: Campaign[] = [
     status: 'active',
     createdAt: '2025-12-20T00:00:00Z',
     updatedAt: '2026-01-10T16:00:00Z',
-    stats: computeCampaignStats('wild-amer-birthday-2-fundraiser', {
-      totalRaised: 180,
-      totalDonations: 12,
-      totalDonors: 11,
-      averageDonation: 15,
-      topDonation: 25
-    }),
+    stats: computeCampaignStats('wild-amer-birthday-2-fundraiser'),
     crowdfunding: {
       enabled: true,
       title: 'Mini Campaign for Orangutans',

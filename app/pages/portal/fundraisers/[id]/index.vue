@@ -113,7 +113,8 @@ const breadcrumbItems = computed(() => {
               <div v-if="fundraiser.crowdfunding.goalAmount" class="space-y-1">
                 <div class="flex justify-between text-sm">
                   <span class="font-medium">
-                    {{ formatAmount(fundraiser.stats.totalRaised) }} raised
+                    {{ formatAmount(fundraiser.stats.totalRaised, fundraiser.stats.currency) }}
+                    raised
                   </span>
                   <span class="text-muted-foreground">
                     of {{ formatAmount(fundraiser.crowdfunding.goalAmount) }}
@@ -146,7 +147,7 @@ const breadcrumbItems = computed(() => {
                 </div>
                 <div>
                   <p class="text-lg font-semibold">
-                    {{ formatAmount(fundraiser.stats.averageDonation) }}
+                    {{ formatAmount(fundraiser.stats.averageDonation, fundraiser.stats.currency) }}
                   </p>
                   <p class="text-xs text-muted-foreground">avg</p>
                 </div>
