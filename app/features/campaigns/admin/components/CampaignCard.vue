@@ -135,7 +135,9 @@ const activeFundraisersCount = computed(
 
       <!-- Actions -->
       <div v-if="!compact" class="pt-2">
-        <Button variant="default" size="sm" class="w-full"> Edit Campaign </Button>
+        <slot name="actions">
+          <Button variant="default" size="sm" class="w-full"> Edit Campaign </Button>
+        </slot>
       </div>
     </CardContent>
   </Card>

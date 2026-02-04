@@ -20,7 +20,6 @@ import NavMain from '~/features/_admin/sidebar/NavMain.vue'
 import NavCampaigns from '~/features/_admin/sidebar/NavCampaigns.vue'
 import NavSecondary from '~/features/_admin/sidebar/NavSecondary.vue'
 import NavUser from '~/features/_admin/sidebar/NavUser.vue'
-import { useFeatureFlags } from '~/composables/useFeatureFlags'
 import {
   Sidebar,
   SidebarContent,
@@ -35,9 +34,6 @@ const props = withDefaults(defineProps<SidebarProps>(), {
   variant: 'inset'
 })
 
-const { showMyFundraisers } = useFeatureFlags()
-
-// Compute the navMain structure to include "My Fundraisers" when available
 const navMain = computed(() => [
   {
     title: 'Dashboard',
@@ -56,15 +52,7 @@ const navMain = computed(() => [
       {
         title: 'P2P Templates',
         url: '/admin/campaigns/p2p'
-      },
-      ...(showMyFundraisers.value
-        ? [
-            {
-              title: 'My Fundraisers',
-              url: '/admin/campaigns/fundraisers'
-            }
-          ]
-        : [])
+      }
     ]
   },
   {

@@ -22,6 +22,7 @@ export type FundraiserStatus = 'active' | 'paused' | 'removed'
 export interface CampaignFundraiser {
   id: string
   campaignId: string // References the full Campaign.id of fundraiser campaign
+  parentCampaignId: string // The P2P template campaign this fundraiser belongs to
   name: string
   email: string
   joinedAt: string

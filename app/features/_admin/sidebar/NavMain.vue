@@ -58,8 +58,8 @@ watch(
       <Collapsible
         v-for="item in items"
         :key="item.title"
-        as-child
         v-model:open="openStates[item.title]"
+        as-child
       >
         <SidebarMenuItem>
           <!-- Toggle-only: no URL, button itself toggles subitems -->

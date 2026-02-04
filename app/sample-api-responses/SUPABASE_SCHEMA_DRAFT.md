@@ -56,7 +56,8 @@ CREATE TABLE campaigns (
 CREATE INDEX idx_campaigns_org ON campaigns(organization_id);
 CREATE INDEX idx_campaigns_status ON campaigns(status);
 
--- Campaign aggregated statistics (computed or updated via triggers)
+-- Campaign aggregated statistics (materialized from transactions via triggers/functions)
+-- In the mock data layer, these are computed by computeCampaignStats() from the transactions table.
 CREATE TABLE campaign_stats (
   campaign_id UUID PRIMARY KEY REFERENCES campaigns(id) ON DELETE CASCADE,
   total_raised DECIMAL(12,2) DEFAULT 0,
@@ -122,38 +123,200 @@ CREATE TABLE campaign_social_sharing (
 -- ============================================
 -- CAMPAIGN TRANSACTIONAL DATA
 -- ============================================
--- Recent donations (aggregated for preview/leaderboard)
-CREATE TABLE campaign_donations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  campaign_id UUID NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
-  form_id UUID REFERENCES campaign_forms(id),
-  donor_name TEXT,
-  amount DECIMAL(10,2) NOT NULL,
-  currency TEXT NOT NULL,
-  message TEXT,
-  is_anonymous BOOLEAN DEFAULT false,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
 
-CREATE INDEX idx_campaign_donations_campaign ON campaign_donations(campaign_id);
-CREATE INDEX idx_campaign_donations_created ON campaign_donations(created_at DESC);
-CREATE INDEX idx_campaign_donations_amount ON campaign_donations(amount DESC);
-
--- Campaign fundraisers (individuals/teams/organizations raising for campaign)
+-- Campaign fundraisers (individuals raising for a P2P campaign)
 CREATE TABLE campaign_fundraisers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   campaign_id UUID NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+  -- campaign_id: the fundraiser's own campaign (type='fundraiser')
+  parent_campaign_id UUID NOT NULL REFERENCES campaigns(id),
+  -- parent_campaign_id: the P2P template campaign this fundraiser belongs to
+  donor_user_id UUID REFERENCES donor_users(id),
   name TEXT NOT NULL,
   email TEXT NOT NULL,
-  type TEXT NOT NULL,
-  -- type: individual | team | organization
+  goal DECIMAL(10,2),
+  slug TEXT NOT NULL,
+  story TEXT,
+  cover_photo TEXT,
+  status TEXT NOT NULL DEFAULT 'active',
+  -- status: active | paused | removed
   raised_amount DECIMAL(12,2) DEFAULT 0,
   donation_count INT DEFAULT 0,
   joined_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE INDEX idx_campaign_fundraisers_campaign ON campaign_fundraisers(campaign_id);
+CREATE INDEX idx_campaign_fundraisers_parent ON campaign_fundraisers(parent_campaign_id);
+CREATE INDEX idx_campaign_fundraisers_donor ON campaign_fundraisers(donor_user_id);
 CREATE INDEX idx_campaign_fundraisers_raised ON campaign_fundraisers(raised_amount DESC);
+```
+
+> **Note:** `campaign_donations` from the previous schema is replaced by a VIEW over
+> the `transactions` table (see Donor Portal Tables below). Campaign donation previews
+> and leaderboards query `transactions` directly, filtered by `campaign_id`.
+
+```sql
+-- Campaign donations view (replaces the old campaign_donations table)
+-- Provides the lightweight CampaignDonation shape for crowdfunding pages.
+CREATE VIEW campaign_donations_view AS
+SELECT
+  t.id,
+  t.campaign_id,
+  CASE WHEN t.is_anonymous THEN 'Anonymous' ELSE t.donor_name END AS donor_name,
+  t.subtotal AS amount,
+  t.currency,
+  t.message,
+  t.is_anonymous,
+  t.created_at
+FROM transactions t
+WHERE t.status = 'succeeded';
+
+CREATE INDEX idx_transactions_campaign_donations
+  ON transactions(campaign_id, status, created_at DESC);
+```
+
+### Donor Portal Tables
+
+```sql
+-- ============================================
+-- DONOR PORTAL
+-- ============================================
+
+-- Donor user accounts (public-facing donors, not admin users)
+CREATE TABLE donor_users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  auth_user_id UUID UNIQUE,
+  -- links to Supabase auth.users if using Supabase Auth
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  avatar_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_donor_users_email ON donor_users(email);
+
+-- All payment transactions (one-time and subscription billing)
+-- This is the single source of truth for all donations across all campaigns.
+CREATE TABLE transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  processor TEXT NOT NULL,
+  -- processor: stripe | paypal
+  processor_transaction_id TEXT NOT NULL,
+  type TEXT NOT NULL,
+  -- type: one_time | subscription_payment
+  subscription_id UUID REFERENCES subscriptions(id),
+  campaign_id UUID NOT NULL REFERENCES campaigns(id),
+  campaign_name TEXT NOT NULL,
+
+  subtotal DECIMAL(10,2) NOT NULL,
+  cover_costs_amount DECIMAL(10,2) DEFAULT 0,
+  total_amount DECIMAL(10,2) NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'GBP',
+
+  payment_method_type TEXT NOT NULL,
+  -- payment_method_type: card | paypal | bank_transfer
+  payment_method_last4 TEXT,
+  payment_method_brand TEXT,
+  payment_method_email TEXT,
+
+  status TEXT NOT NULL DEFAULT 'pending',
+  -- status: succeeded | pending | failed | refunded
+
+  donor_user_id UUID REFERENCES donor_users(id),
+  donor_name TEXT NOT NULL,
+  donor_email TEXT NOT NULL,
+  is_anonymous BOOLEAN DEFAULT false,
+  message TEXT,
+  gift_aid BOOLEAN DEFAULT false,
+
+  created_at TIMESTAMPTZ DEFAULT now(),
+  receipt_url TEXT
+);
+
+CREATE INDEX idx_transactions_campaign ON transactions(campaign_id);
+CREATE INDEX idx_transactions_donor ON transactions(donor_email);
+CREATE INDEX idx_transactions_donor_user ON transactions(donor_user_id);
+CREATE INDEX idx_transactions_status ON transactions(status);
+CREATE INDEX idx_transactions_created ON transactions(created_at DESC);
+CREATE INDEX idx_transactions_amount ON transactions(total_amount DESC);
+
+-- Transaction line items (supports Impact Cart multi-item checkouts)
+CREATE TABLE transaction_line_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  transaction_id UUID NOT NULL REFERENCES transactions(id) ON DELETE CASCADE,
+  product_id UUID REFERENCES products(id),
+  product_name TEXT NOT NULL,
+  product_icon TEXT,
+  quantity INT NOT NULL DEFAULT 1,
+  unit_price DECIMAL(10,2) NOT NULL,
+  frequency TEXT NOT NULL,
+  -- frequency: once | monthly | yearly
+  sort_order INT DEFAULT 0
+);
+
+CREATE INDEX idx_transaction_line_items_txn ON transaction_line_items(transaction_id);
+
+-- Transaction tributes (memorial / gift dedications)
+CREATE TABLE transaction_tributes (
+  transaction_id UUID PRIMARY KEY REFERENCES transactions(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  -- type: gift | memorial
+  honoree_name TEXT NOT NULL
+);
+
+-- Recurring subscriptions (Stripe Subscription / PayPal Billing Agreement)
+CREATE TABLE subscriptions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  processor TEXT NOT NULL,
+  -- processor: stripe | paypal
+  processor_subscription_id TEXT NOT NULL,
+  campaign_id UUID NOT NULL REFERENCES campaigns(id),
+  campaign_name TEXT NOT NULL,
+  donor_user_id UUID REFERENCES donor_users(id),
+
+  amount DECIMAL(10,2) NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'GBP',
+  frequency TEXT NOT NULL,
+  -- frequency: monthly | yearly
+
+  payment_method_type TEXT NOT NULL,
+  payment_method_last4 TEXT,
+  payment_method_brand TEXT,
+  payment_method_email TEXT,
+
+  status TEXT NOT NULL DEFAULT 'active',
+  -- status: active | paused | cancelled | past_due
+
+  current_period_start TIMESTAMPTZ,
+  current_period_end TIMESTAMPTZ,
+  next_billing_date TIMESTAMPTZ,
+  cancelled_at TIMESTAMPTZ,
+  paused_at TIMESTAMPTZ,
+
+  created_at TIMESTAMPTZ DEFAULT now(),
+  total_paid DECIMAL(12,2) DEFAULT 0,
+  payment_count INT DEFAULT 0
+);
+
+CREATE INDEX idx_subscriptions_campaign ON subscriptions(campaign_id);
+CREATE INDEX idx_subscriptions_donor ON subscriptions(donor_user_id);
+CREATE INDEX idx_subscriptions_status ON subscriptions(status);
+
+-- Subscription line items (supports multi-item Impact Cart subscriptions)
+CREATE TABLE subscription_line_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  subscription_id UUID NOT NULL REFERENCES subscriptions(id) ON DELETE CASCADE,
+  product_id UUID REFERENCES products(id),
+  product_name TEXT NOT NULL,
+  product_icon TEXT,
+  quantity INT NOT NULL DEFAULT 1,
+  unit_price DECIMAL(10,2) NOT NULL,
+  frequency TEXT NOT NULL,
+  -- frequency: monthly | yearly
+  sort_order INT DEFAULT 0
+);
+
+CREATE INDEX idx_subscription_line_items_sub ON subscription_line_items(subscription_id);
 ```
 
 ### Products
@@ -396,23 +559,35 @@ CREATE INDEX idx_form_custom_fields_step ON form_custom_fields(form_id, step);
 | ------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------ |
 | Organizations & Settings | 3      | organizations, currency_settings, supported_currencies                                                             |
 | Campaigns                | 6      | campaigns, campaign_stats, campaign_crowdfunding, campaign_peer_to_peer, campaign_charity, campaign_social_sharing |
-| Campaign Data            | 2      | campaign_donations, campaign_fundraisers                                                                           |
+| Campaign Data            | 1      | campaign_fundraisers                                                                                               |
+| Donor Portal             | 7      | donor_users, transactions, transaction_line_items, transaction_tributes, subscriptions, subscription_line_items     |
 | Products                 | 1      | products                                                                                                           |
 | Forms                    | 2      | campaign_forms, form_products (junction)                                                                           |
 | Form Settings            | 3      | form_settings, form_frequencies, form_preset_amounts                                                               |
-| Form Features            | 6      | form*feature*\* (one per feature)                                                                                  |
+| Form Features            | 6      | form_feature_* (one per feature)                                                                                   |
 | Lookups                  | 1      | tribute_relationships                                                                                              |
 | Custom Fields            | 1      | form_custom_fields                                                                                                 |
-| **Total**                | **25** |                                                                                                                    |
+| Views                    | 1      | campaign_donations_view                                                                                            |
+| **Total**                | **31** | (+ 1 view)                                                                                                         |
 
 ---
 
 ## Key Design Decisions
 
-### ✅ Why Separate Tables (Not JSONB)
+### Why `transactions` replaces `campaign_donations`
 
-1. **Queryable data**: `campaign_donations`, `campaign_fundraisers`, `form_frequencies`, `form_preset_amounts`
-   - Need to filter by amount, date, frequency
+The old schema had a separate `campaign_donations` table for crowdfunding page previews. This created duplication — the same donation existed in both `campaign_donations` and the donor's transaction history.
+
+Now `transactions` is the single source of truth. The `campaign_donations_view` provides the lightweight shape needed for crowdfunding pages without data duplication.
+
+### `campaign_stats` as materialized data
+
+`campaign_stats` is populated via database triggers that fire on `transactions` INSERT/UPDATE. In the mock data layer, `computeCampaignStats()` simulates this by aggregating from the transactions array at module load time.
+
+### Why Separate Tables (Not JSONB)
+
+1. **Queryable data**: `transactions`, `subscriptions`, `campaign_fundraisers`, `form_frequencies`, `form_preset_amounts`
+   - Need to filter by amount, date, frequency, status
    - Need to aggregate (SUM, COUNT, AVG)
    - Need sorting and pagination
 
@@ -426,7 +601,7 @@ CREATE INDEX idx_form_custom_fields_step ON form_custom_fields(form_id, step);
 
 4. **Performance**: Direct indexed queries vs. JSONB extraction operators
 
-### ✅ Why JSONB for Custom Fields
+### Why JSONB for Custom Fields
 
 1. **Flexible schema**: Field types and their settings vary
    - Text: `{placeholder, maxLength, optional}`
@@ -453,12 +628,19 @@ const campaign = await supabase
     campaign_stats(*),
     campaign_crowdfunding(*),
     campaign_charity(*),
-    campaign_donations(*),
     campaign_fundraisers(*)
   `
   )
   .eq('id', campaignId)
   .single()
+
+// Get recent donations for a campaign (via the view)
+const donations = await supabase
+  .from('campaign_donations_view')
+  .select('*')
+  .eq('campaign_id', campaignId)
+  .order('created_at', { ascending: false })
+  .limit(10)
 
 // Get form with all settings and features
 const form = await supabase
@@ -479,11 +661,36 @@ const form = await supabase
   .eq('id', formId)
   .single()
 
-// Get top donors with aggregation
-const topDonors = await supabase
+// Get donor's transaction history
+const history = await supabase
+  .from('transactions')
+  .select(
+    `
+    *,
+    transaction_line_items(*),
+    transaction_tributes(*)
+  `
+  )
+  .eq('donor_user_id', userId)
+  .order('created_at', { ascending: false })
+
+// Get donor's active subscriptions
+const subs = await supabase
+  .from('subscriptions')
+  .select(
+    `
+    *,
+    subscription_line_items(*)
+  `
+  )
+  .eq('donor_user_id', userId)
+  .eq('status', 'active')
+
+// Get top fundraisers for a P2P campaign
+const topFundraisers = await supabase
   .from('campaign_fundraisers')
   .select('*')
-  .eq('campaign_id', campaignId)
+  .eq('parent_campaign_id', campaignId)
   .order('raised_amount', { ascending: false })
   .limit(10)
 ```
@@ -502,8 +709,9 @@ const topDonors = await supabase
 
 ## Future Enhancements
 
-- **Computed stats**: Use database triggers to update `campaign_stats` when donations/fundraisers change
+- **Computed stats**: Use database triggers to update `campaign_stats` when transactions change
 - **Audit logging**: Add `created_by`, `updated_by` columns to key tables
 - **Soft deletes**: Add `deleted_at` TIMESTAMPTZ for campaigns/forms instead of hard delete
 - **Search**: Add full-text search indexes on campaign names, descriptions
 - **Analytics**: Create materialized views for dashboard aggregations
+- **Donor portal auth**: Integrate `donor_users` with Supabase Auth for self-service portal

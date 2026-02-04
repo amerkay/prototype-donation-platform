@@ -206,3 +206,65 @@
 .dark [data-campaign-status='archived'] {
   --cs-text: var(--color-neutral-400);
 }
+
+/* Transaction status tokens */
+[data-campaign-status='succeeded'] {
+  --cs-dot: var(--color-emerald-500);
+  --cs-text: var(--color-emerald-700);
+  --cs-border: color-mix(in oklch, var(--color-emerald-500) 40%, transparent);
+}
+
+[data-campaign-status='pending'] {
+  --cs-dot: var(--color-amber-500);
+  --cs-text: var(--color-amber-700);
+  --cs-border: color-mix(in oklch, var(--color-amber-500) 40%, transparent);
+}
+
+[data-campaign-status='failed'] {
+  --cs-dot: var(--color-red-500);
+  --cs-text: var(--color-red-700);
+  --cs-border: color-mix(in oklch, var(--color-red-500) 40%, transparent);
+}
+
+[data-campaign-status='refunded'] {
+  --cs-dot: var(--color-neutral-400);
+  --cs-text: var(--color-neutral-500);
+  --cs-border: color-mix(in oklch, var(--color-neutral-400) 40%, transparent);
+}
+
+/* Subscription status tokens */
+[data-campaign-status='cancelled'] {
+  --cs-dot: var(--color-red-500);
+  --cs-text: var(--color-red-700);
+  --cs-border: color-mix(in oklch, var(--color-red-500) 40%, transparent);
+}
+
+[data-campaign-status='past_due'] {
+  --cs-dot: var(--color-orange-500);
+  --cs-text: var(--color-orange-700);
+  --cs-border: color-mix(in oklch, var(--color-orange-500) 40%, transparent);
+}
+
+.dark [data-campaign-status='succeeded'] {
+  --cs-text: var(--color-emerald-400);
+}
+
+.dark [data-campaign-status='pending'] {
+  --cs-text: var(--color-amber-400);
+}
+
+.dark [data-campaign-status='failed'] {
+  --cs-text: var(--color-red-400);
+}
+
+.dark [data-campaign-status='refunded'] {
+  --cs-text: var(--color-neutral-400);
+}
+
+.dark [data-campaign-status='cancelled'] {
+  --cs-text: var(--color-red-400);
+}
+
+.dark [data-campaign-status='past_due'] {
+  --cs-text: var(--color-orange-400);
+}

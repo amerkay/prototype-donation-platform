@@ -5,6 +5,8 @@ import {
   wildAmer1FundraiserForms,
   wildAmer2FundraiserForms
 } from './api-sample-response-forms'
+import { getRecentDonations, computeCampaignStats } from './api-sample-response-transactions'
+import { getCampaignFundraisers } from './api-sample-response-fundraisers'
 
 export const campaigns: Campaign[] = [
   {
@@ -14,14 +16,14 @@ export const campaigns: Campaign[] = [
     status: 'active',
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2026-01-14T10:30:00Z',
-    stats: {
+    stats: computeCampaignStats('adopt-orangutan', {
       totalRaised: 45820.5,
       totalDonations: 342,
       totalDonors: 287,
       averageDonation: 134,
       topDonation: 1000,
       daysRemaining: 45
-    },
+    }),
     crowdfunding: {
       enabled: true,
       coverPhoto: '/imgs/baby-orangutan-hammick.webp',
@@ -55,84 +57,7 @@ export const campaigns: Campaign[] = [
       copyLink: true
     },
     fundraisers: [],
-    recentDonations: [
-      {
-        id: 'd1',
-        donorName: 'Emma Wilson',
-        amount: 250,
-        message: 'Keep up the amazing work saving these beautiful creatures!',
-        isAnonymous: false,
-        createdAt: '2026-01-14T09:30:00Z'
-      },
-      {
-        id: 'd2',
-        donorName: 'Anonymous',
-        amount: 100,
-        isAnonymous: true,
-        createdAt: '2026-01-14T08:15:00Z'
-      },
-      {
-        id: 'd3',
-        donorName: 'James Chen',
-        amount: 500,
-        message: 'In memory of my grandmother who loved orangutans.',
-        isAnonymous: false,
-        createdAt: '2026-01-13T22:45:00Z'
-      },
-      {
-        id: 'd4',
-        donorName: 'Sarah & Tom',
-        amount: 75,
-        message: 'Happy to support!',
-        isAnonymous: false,
-        createdAt: '2026-01-13T18:30:00Z'
-      },
-      {
-        id: 'd5',
-        donorName: 'Anonymous',
-        amount: 1000,
-        isAnonymous: true,
-        createdAt: '2026-01-13T14:20:00Z'
-      },
-      {
-        id: 'd6',
-        donorName: 'Maria Garcia',
-        amount: 50,
-        message: 'For Bumi!',
-        isAnonymous: false,
-        createdAt: '2026-01-13T11:00:00Z'
-      },
-      {
-        id: 'd7',
-        donorName: 'David Brown',
-        amount: 150,
-        isAnonymous: false,
-        createdAt: '2026-01-12T16:45:00Z'
-      },
-      {
-        id: 'd8',
-        donorName: 'Anonymous',
-        amount: 25,
-        isAnonymous: true,
-        createdAt: '2026-01-12T10:30:00Z'
-      },
-      {
-        id: 'd9',
-        donorName: 'Lisa Thompson',
-        amount: 200,
-        message: 'Monthly supporter - love seeing the progress updates!',
-        isAnonymous: false,
-        createdAt: '2026-01-11T19:15:00Z'
-      },
-      {
-        id: 'd10',
-        donorName: 'Michael Lee',
-        amount: 300,
-        message: 'Donated on behalf of my company.',
-        isAnonymous: false,
-        createdAt: '2026-01-11T09:00:00Z'
-      }
-    ],
+    recentDonations: getRecentDonations('adopt-orangutan'),
     forms: adoptOrangutanForms
   },
   {
@@ -143,13 +68,13 @@ export const campaigns: Campaign[] = [
     status: 'active',
     createdAt: '2025-11-01T00:00:00Z',
     updatedAt: '2026-01-10T14:00:00Z',
-    stats: {
+    stats: computeCampaignStats('birthday-p2p-template', {
       totalRaised: 12450,
       totalDonations: 89,
       totalDonors: 76,
       averageDonation: 140,
       topDonation: 500
-    },
+    }),
     crowdfunding: {
       enabled: true,
       title: 'Help Me Celebrate by Giving Back',
@@ -183,100 +108,8 @@ export const campaigns: Campaign[] = [
       email: true,
       copyLink: true
     },
-    fundraisers: [
-      {
-        id: 'f1',
-        campaignId: 'wild-amer-birthday-fundraiser',
-        name: 'Wild Amer',
-        email: 'awesome@charity.co.uk',
-        joinedAt: '2025-11-15T00:00:00Z',
-        raisedAmount: 420,
-        donationCount: 23,
-        goal: 1000,
-        slug: 'wild-amer-birthday',
-        story:
-          "I'm celebrating my birthday by raising funds for orangutan conservation! This is my personal campaign.",
-        coverPhoto: '/imgs/baby-orangutan-hammick.webp',
-        status: 'active'
-      },
-      {
-        id: 'f2',
-        campaignId: 'michael-chen-birthday-fundraiser',
-        name: 'Michael Chen',
-        email: 'michael@example.com',
-        joinedAt: '2025-12-01T00:00:00Z',
-        raisedAmount: 385,
-        donationCount: 18,
-        goal: 500,
-        slug: 'michael-chen-birthday',
-        story: 'Turning 25 and want to make it count! Please help me reach my goal.',
-        status: 'active'
-      },
-      {
-        id: 'f3',
-        campaignId: 'wild-amer-birthday-2-fundraiser',
-        name: 'Wild Amer',
-        email: 'awesome@charity.co.uk',
-        joinedAt: '2025-12-20T00:00:00Z',
-        raisedAmount: 180,
-        donationCount: 12,
-        goal: 500,
-        slug: 'wild-amer-birthday-2',
-        story: 'Another fundraiser I created to support orangutans! Help me reach my goal.',
-        status: 'active'
-      },
-      {
-        id: 'f4',
-        campaignId: 'david-martinez-birthday-fundraiser',
-        name: 'David Martinez',
-        email: 'david@example.com',
-        joinedAt: '2026-01-05T00:00:00Z',
-        raisedAmount: 85,
-        donationCount: 8,
-        goal: 500,
-        slug: 'david-martinez-birthday',
-        story: 'My 40th is coming up - donate to save orangutans!',
-        status: 'active'
-      },
-      {
-        id: 'f5',
-        campaignId: 'lisa-anderson-birthday-fundraiser',
-        name: 'Lisa Anderson',
-        email: 'lisa@example.com',
-        joinedAt: '2025-11-28T00:00:00Z',
-        raisedAmount: 75,
-        donationCount: 6,
-        goal: 500,
-        slug: 'lisa-anderson-birthday',
-        story: 'Small goal, big impact! Help me celebrate sustainably.',
-        status: 'paused'
-      }
-    ],
-    recentDonations: [
-      {
-        id: 'pd1',
-        donorName: 'John Smith',
-        amount: 100,
-        message: 'Happy Birthday Sarah!',
-        isAnonymous: false,
-        createdAt: '2026-01-10T12:30:00Z'
-      },
-      {
-        id: 'pd2',
-        donorName: 'Anonymous',
-        amount: 50,
-        isAnonymous: true,
-        createdAt: '2026-01-10T10:15:00Z'
-      },
-      {
-        id: 'pd3',
-        donorName: 'Rachel Green',
-        amount: 75,
-        message: 'Great cause!',
-        isAnonymous: false,
-        createdAt: '2026-01-09T18:20:00Z'
-      }
-    ],
+    fundraisers: getCampaignFundraisers('birthday-p2p-template'),
+    recentDonations: getRecentDonations('birthday-p2p-template'),
     forms: birthdayP2PForms
   },
   // Fundraiser Campaign 1: Wild Amer's Birthday Fundraiser
@@ -289,13 +122,13 @@ export const campaigns: Campaign[] = [
     status: 'active',
     createdAt: '2025-11-15T00:00:00Z',
     updatedAt: '2026-01-15T10:00:00Z',
-    stats: {
+    stats: computeCampaignStats('wild-amer-birthday-fundraiser', {
       totalRaised: 420,
       totalDonations: 23,
       totalDonors: 19,
       averageDonation: 18,
       topDonation: 50
-    },
+    }),
     crowdfunding: {
       enabled: true,
       coverPhoto: '/imgs/baby-orangutan-hammick.webp',
@@ -329,31 +162,7 @@ export const campaigns: Campaign[] = [
       copyLink: true
     },
     fundraisers: [],
-    recentDonations: [
-      {
-        id: 'waf1-d1',
-        donorName: 'Sarah Mitchell',
-        amount: 25,
-        message: 'Happy Birthday Wild! Great cause!',
-        isAnonymous: false,
-        createdAt: '2026-01-15T09:30:00Z'
-      },
-      {
-        id: 'waf1-d2',
-        donorName: 'Tom Wilson',
-        amount: 50,
-        message: 'Amazing initiative! Keep up the good work.',
-        isAnonymous: false,
-        createdAt: '2026-01-14T18:20:00Z'
-      },
-      {
-        id: 'waf1-d3',
-        donorName: 'Anonymous',
-        amount: 10,
-        isAnonymous: true,
-        createdAt: '2026-01-14T14:10:00Z'
-      }
-    ],
+    recentDonations: getRecentDonations('wild-amer-birthday-fundraiser'),
     forms: wildAmer1FundraiserForms
   },
   // Fundraiser Campaign 2: Wild Amer's Second Birthday Fundraiser
@@ -366,13 +175,13 @@ export const campaigns: Campaign[] = [
     status: 'active',
     createdAt: '2025-12-20T00:00:00Z',
     updatedAt: '2026-01-10T16:00:00Z',
-    stats: {
+    stats: computeCampaignStats('wild-amer-birthday-2-fundraiser', {
       totalRaised: 180,
       totalDonations: 12,
       totalDonors: 11,
       averageDonation: 15,
       topDonation: 25
-    },
+    }),
     crowdfunding: {
       enabled: true,
       title: 'Mini Campaign for Orangutans',
@@ -405,23 +214,7 @@ export const campaigns: Campaign[] = [
       copyLink: true
     },
     fundraisers: [],
-    recentDonations: [
-      {
-        id: 'waf2-d1',
-        donorName: 'Emma Davis',
-        amount: 25,
-        message: 'Great work!',
-        isAnonymous: false,
-        createdAt: '2026-01-10T15:00:00Z'
-      },
-      {
-        id: 'waf2-d2',
-        donorName: 'John Smith',
-        amount: 15,
-        isAnonymous: false,
-        createdAt: '2026-01-09T12:30:00Z'
-      }
-    ],
+    recentDonations: getRecentDonations('wild-amer-birthday-2-fundraiser'),
     forms: wildAmer2FundraiserForms
   }
 ]

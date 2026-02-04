@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import AppSidebar from '~/features/_admin/sidebar/AppSidebar.vue'
+import PortalSidebar from '~/features/donor-portal/sidebar/PortalSidebar.vue'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 </script>
 
 <template>
   <div>
     <SidebarProvider>
-      <AppSidebar />
+      <PortalSidebar />
       <SidebarInset>
-        <!-- TODO, remove when no longer prototype -->
-        <PrototypeExploreNavBar label="Admin View" />
+        <PrototypeExploreNavBar label="Donor Portal" />
         <slot />
       </SidebarInset>
     </SidebarProvider>

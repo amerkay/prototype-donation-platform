@@ -18,7 +18,10 @@
       "Bash(npx nuxi typecheck:*)",
       "Bash(git status:*)",
       "Bash(grep:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(tree:*)",
+      "WebFetch(domain:www.shadcn-vue.com)",
+      "Bash(pnpm lint:*)"
     ]
   }
 }
