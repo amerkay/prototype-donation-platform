@@ -19,7 +19,7 @@ const { transactions } = useDonorPortal()
     <div class="flex flex-1 flex-col gap-6 px-4 py-2 pb-8 sm:px-6">
       <div class="space-y-1.5">
         <h1 class="text-2xl font-semibold tracking-tight">Donation History</h1>
-        <p class="text-sm text-muted-foreground">All your past payments and donations.</p>
+        <p class="text-sm text-muted-foreground">Every gift you've made, in one place.</p>
       </div>
       <DataTable :columns="transactionColumns" :data="transactions" :page-size="10" />
     </div>

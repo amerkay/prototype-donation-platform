@@ -58,10 +58,8 @@ const breadcrumbItems = computed(() => {
           <EmptyMedia variant="icon">
             <Megaphone />
           </EmptyMedia>
-          <EmptyTitle>Fundraiser Not Found</EmptyTitle>
-          <EmptyDescription>
-            The fundraiser you're looking for doesn't exist or has been removed.
-          </EmptyDescription>
+          <EmptyTitle>Can't find this fundraiser</EmptyTitle>
+          <EmptyDescription> It may have been removed or the link is incorrect. </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <NuxtLink to="/portal/fundraisers">

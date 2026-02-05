@@ -94,7 +94,7 @@ const {
     <div class="flex flex-1 flex-col gap-6 px-4 py-2 pb-8 sm:px-6">
       <div class="space-y-1.5">
         <h1 class="text-2xl font-semibold tracking-tight">Subscriptions</h1>
-        <p class="text-sm text-muted-foreground">Manage your recurring donations.</p>
+        <p class="text-sm text-muted-foreground">Your monthly giving, easy to update anytime.</p>
       </div>
 
       <!-- Status filters -->
@@ -121,8 +121,7 @@ const {
           <EmptyTitle>No {{ activeFilter === 'all' ? '' : activeFilter }} subscriptions</EmptyTitle>
           <EmptyDescription>
             <template v-if="activeFilter === 'all'">
-              You don't have any recurring donations yet. Start a subscription from any campaign
-              page.
+              No subscriptions yet. When you set up monthly giving, they'll show up here.
             </template>
             <template v-else> No subscriptions with status "{{ activeFilter }}". </template>
           </EmptyDescription>

@@ -30,9 +30,7 @@ const charityStore = useCharitySettingsStore()
     <div class="flex flex-1 flex-col gap-6 px-4 py-2 pb-8 sm:px-6">
       <div class="space-y-1.5">
         <h1 class="text-2xl font-semibold tracking-tight">My Fundraisers</h1>
-        <p class="text-sm text-muted-foreground">
-          Your peer-to-peer fundraising campaigns and their donations.
-        </p>
+        <p class="text-sm text-muted-foreground">Campaigns you've started and how they're doing.</p>
       </div>
 
       <Empty v-if="currentUserFundraisers.length === 0">
@@ -40,10 +38,10 @@ const charityStore = useCharitySettingsStore()
           <EmptyMedia variant="icon">
             <Megaphone />
           </EmptyMedia>
-          <EmptyTitle>No Fundraisers</EmptyTitle>
+          <EmptyTitle>No fundraisers yet</EmptyTitle>
           <EmptyDescription>
-            You haven't created any fundraisers yet. Visit P2P templates to create your first
-            fundraiser.
+            When you create a fundraising page, it'll appear here so you can track donations and
+            share it.
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>

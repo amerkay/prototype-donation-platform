@@ -36,7 +36,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
       <!-- Page header -->
       <div class="space-y-1.5">
         <h1 class="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p class="text-sm text-muted-foreground">Overview of your donation activity</p>
+        <p class="text-sm text-muted-foreground">Your giving at a glance</p>
       </div>
 
       <!-- Stats row -->
@@ -118,7 +118,12 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
           <CardHeader>
             <div class="flex items-center gap-2">
               <CreditCard class="w-4 h-4 text-muted-foreground" />
-              <CardTitle class="text-base font-semibold">Subscriptions</CardTitle>
+              <CardTitle class="text-base font-semibold">
+                Subscriptions
+                <span class="text-muted-foreground font-normal"
+                  >({{ activeSubscriptions.length }} active)</span
+                >
+              </CardTitle>
             </div>
           </CardHeader>
           <CardContent class="pt-0 space-y-2">
@@ -166,7 +171,12 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
           <CardHeader>
             <div class="flex items-center gap-2">
               <Megaphone class="w-4 h-4 text-muted-foreground" />
-              <CardTitle class="text-base font-semibold">My Fundraisers</CardTitle>
+              <CardTitle class="text-base font-semibold">
+                My Fundraisers
+                <span class="text-muted-foreground font-normal"
+                  >({{ activeFundraisers.length }} active)</span
+                >
+              </CardTitle>
             </div>
           </CardHeader>
           <CardContent class="pt-0 space-y-2">
