@@ -61,7 +61,8 @@ export const useCharitySettingsForm = defineForm('charitySettings', () => {
     placeholder: 'We rescue, rehabilitate, and release orangutans...',
     maxLength: 275,
     rows: 3,
-    rules: z.string().min(20, 'Description must be at least 20 characters').max(275)
+    rules: z.string().min(20, 'Description must be at least 20 characters').max(275),
+    showSeparatorAfter: true
   })
 
   // Per-currency override groups

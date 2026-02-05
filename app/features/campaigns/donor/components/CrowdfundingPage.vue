@@ -65,7 +65,7 @@ const hasSocialSharing = computed(() => {
   <div v-if="campaign.crowdfunding" class="@container">
     <div class="bg-background rounded-xl border overflow-hidden">
       <!-- Hero Section: Cover Photo + Campaign Info -->
-      <div class="@3xl:flex">
+      <div class="@3xl:flex @3xl:mb-8">
         <!-- Cover Photo - reaches top and left edges on desktop -->
         <div class="relative aspect-video @3xl:aspect-auto @3xl:w-3/5 bg-muted overflow-hidden">
           <img

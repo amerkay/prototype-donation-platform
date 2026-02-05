@@ -14,7 +14,7 @@ export const charitySettings: CharitySettings = {
   name: 'Borneo Orangutan Survival Foundation',
   registrationNumber: 'RCN123456',
   address: '123 Conservation Way, Palangka Raya, Central Kalimantan, Indonesia',
-  website: 'https://orangutan.org',
+  website: 'https://borneoorangutansurvival.org/',
   description:
     'We rescue, rehabilitate, and release orangutans while protecting their natural habitat through community engagement and sustainable forest management programs across Borneo and Sumatra.',
   currencyOverrides: {
