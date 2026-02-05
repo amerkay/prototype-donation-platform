@@ -188,8 +188,9 @@ export function useCampaigns() {
     return id
   }
 
-  /** Persistence - save all campaigns (modified mocks + user-created) to sessionStorage */
+  /** Persistence - save all campaigns (modified mocks + user-created) to sessionStorage (client-only) */
   function $persist(): void {
+    if (!import.meta.client) return
     try {
       sessionStorage.setItem('campaigns', JSON.stringify(campaigns.value))
     } catch (error) {
@@ -197,9 +198,10 @@ export function useCampaigns() {
     }
   }
 
-  /** Hydration - restore persisted campaigns, falling back to mock data */
+  /** Hydration - restore persisted campaigns, falling back to mock data (client-only) */
   function $hydrate(): void {
     if (hydrated) return
+    if (!import.meta.client) return
 
     try {
       const saved = sessionStorage.getItem('campaigns')

@@ -55,6 +55,8 @@ describe('donationForm store persistence', () => {
       const TestComponent = defineComponent({
         setup() {
           const store = useDonationFormStore()
+          // Set formId first (required for hydrate to read from correct storage key)
+          store.formId = TEST_FORM_ID
           // Manually call hydrate (plugin would do this automatically)
           store.$hydrate()
           return { store }
@@ -98,6 +100,8 @@ describe('donationForm store persistence', () => {
       sessionStorage.setItem(STORAGE_KEY, 'invalid-json{')
 
       const store = useDonationFormStore()
+      // Set formId first (required for hydrate to read from correct storage key)
+      store.formId = TEST_FORM_ID
 
       // Should not throw even with corrupted data
       expect(() => store.$hydrate()).not.toThrow()
@@ -168,6 +172,7 @@ describe('donationForm store persistence', () => {
       const TestComponent = defineComponent({
         setup() {
           const store = useDonationFormStore()
+          store.initialize(TEST_FORM_ID, 'GBP')
           return { store }
         },
         template: '<div>test</div>'
@@ -210,6 +215,7 @@ describe('donationForm store persistence', () => {
       const TestComponent = defineComponent({
         setup() {
           const store = useDonationFormStore()
+          store.initialize(TEST_FORM_ID, 'GBP')
           return { store }
         },
         template: '<div>test</div>'
@@ -325,6 +331,8 @@ describe('donationForm store persistence', () => {
       // Create fresh pinia and store instance to simulate page reload
       setActivePinia(createPinia())
       const freshStore = useDonationFormStore()
+      // Set formId first (required for hydrate to read from correct storage key)
+      freshStore.formId = TEST_FORM_ID
       freshStore.$hydrate()
 
       // Verify all state was restored correctly (testing actual persisted shape)

@@ -172,8 +172,9 @@ export const useFormsStore = defineStore('forms', () => {
     $persist(campaignId)
   }
 
-  // Persistence - save forms to sessionStorage
+  // Persistence - save forms to sessionStorage (client-only)
   const $persist = (campaignId: string): void => {
+    if (!import.meta.client) return
     try {
       const forms = formsData.value[campaignId]
       if (forms) {
@@ -184,9 +185,10 @@ export const useFormsStore = defineStore('forms', () => {
     }
   }
 
-  // Hydration - load forms from sessionStorage
+  // Hydration - load forms from sessionStorage (client-only)
   const $hydrate = (campaignId: string): void => {
     if (hydratedCampaigns.value.has(campaignId)) return
+    if (!import.meta.client) return
 
     try {
       const saved = sessionStorage.getItem(`forms-${campaignId}`)
