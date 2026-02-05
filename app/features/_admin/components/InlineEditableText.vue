@@ -2,7 +2,7 @@
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Check, Pencil } from 'lucide-vue-next'
+import { Check, Pencil, X } from 'lucide-vue-next'
 
 const props = defineProps<{
   modelValue: string
@@ -30,7 +30,7 @@ function startEditing(currentValue: string) {
 
 function submitEdit() {
   const trimmed = editValue.value.trim()
-  if (trimmed) {
+  if (trimmed && trimmed !== props.modelValue) {
     emit('update:modelValue', trimmed)
   }
   isEditing.value = false
@@ -60,8 +60,16 @@ function onKeydown(e: KeyboardEvent) {
       @keydown="onKeydown"
       @blur="submitEdit"
     />
-    <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0" @mousedown.prevent="submitEdit">
+    <Button
+      variant="ghost"
+      size="icon"
+      class="ml-1 h-7 w-7 shrink-0"
+      @mousedown.prevent="submitEdit"
+    >
       <Check class="h-4 w-4" />
+    </Button>
+    <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0" @mousedown.prevent="cancelEdit">
+      <X class="h-4 w-4" />
     </Button>
   </div>
 

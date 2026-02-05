@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { toast } from 'vue-sonner'
 import type { Campaign } from '~/features/campaigns/shared/types'
 import { campaigns as mockCampaigns } from '~/sample-api-responses/api-sample-response-campaigns'
 
@@ -130,6 +131,22 @@ export function useCampaigns() {
   }
 
   /**
+   * Update campaign name with toast notification
+   */
+  const updateCampaignName = async (id: string, name: string): Promise<void> => {
+    await updateCampaign(id, { name })
+    toast.success('Campaign name updated')
+  }
+
+  /**
+   * Update campaign status with toast notification
+   */
+  const updateCampaignStatus = async (id: string, status: Campaign['status']): Promise<void> => {
+    await updateCampaign(id, { status })
+    toast.success('Campaign status updated')
+  }
+
+  /**
    * Create a new campaign
    */
   const createCampaign = (campaignData: Partial<Campaign>): string => {
@@ -232,6 +249,8 @@ export function useCampaigns() {
     getCampaignsByStatus,
     refresh,
     updateCampaign,
+    updateCampaignName,
+    updateCampaignStatus,
     createCampaign
   }
 }

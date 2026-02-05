@@ -28,7 +28,7 @@ const hasCurrencyOverrides = computed(() => {
         >
       </p>
       <NuxtLink
-        to="/admin/settings/currency"
+        to="/admin/settings/currency#defaultCurrency"
         class="inline-flex items-center gap-1 font-medium hover:underline"
       >
         Change default currency

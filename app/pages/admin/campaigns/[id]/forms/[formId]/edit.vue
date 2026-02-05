@@ -17,7 +17,7 @@ const { getCampaignById } = useCampaigns()
 const campaignId = route.params.id as string
 const formId = route.params.formId as string
 
-const { getForm, updateForm } = useForms(campaignId)
+const { getForm, updateForm, renameForm } = useForms(campaignId)
 
 const campaign = computed(() => getCampaignById(campaignId))
 const form = computed(() => getForm(formId))
@@ -85,9 +85,11 @@ const handlePreview = () => {
     :is-dirty="store.isDirty"
     :show-discard-dialog="showDiscardDialog"
     preview-label="Form Preview"
+    editable-last-item
     @preview="handlePreview"
     @update:show-discard-dialog="showDiscardDialog = $event"
     @confirm-discard="confirmDiscard"
+    @update:last-item-label="renameForm(formId, $event)"
   >
     <!-- Main content -->
     <template #content>

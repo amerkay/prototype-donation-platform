@@ -5,7 +5,7 @@ import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/Cam
 import CampaignPreviewSwitcher from '~/features/campaigns/admin/components/CampaignPreviewSwitcher.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
-import type { Campaign, CampaignStatus } from '~/features/campaigns/shared/types'
+import type { CampaignStatus } from '~/features/campaigns/shared/types'
 import { getCampaignTypeBreadcrumb } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import { openAccordionId } from '~/features/campaigns/admin/forms/campaign-config-master'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
@@ -15,7 +15,7 @@ definePageMeta({
 })
 
 const route = useRoute()
-const { getCampaignById, updateCampaign } = useCampaigns()
+const { getCampaignById, updateCampaign, updateCampaignName, updateCampaignStatus } = useCampaigns()
 const store = useCampaignConfigStore()
 
 // Get campaign data
@@ -90,24 +90,26 @@ const breadcrumbs = computed(() => {
 })
 
 // Save name/status independently (no form validation required)
-async function saveCampaignMeta(updates: Partial<Pick<Campaign, 'name' | 'status'>>) {
+async function handleNameUpdate(newName: string) {
   if (!store.id) return
+  store.name = newName
   try {
-    await updateCampaign(store.id, updates)
-    patchBaseline(updates)
+    await updateCampaignName(store.id, newName)
+    patchBaseline({ name: newName })
   } catch {
     // updateCampaign handles rollback internally
   }
 }
 
-function handleNameUpdate(newName: string) {
-  store.name = newName
-  saveCampaignMeta({ name: newName })
-}
-
-function handleStatusUpdate(newStatus: CampaignStatus) {
+async function handleStatusUpdate(newStatus: CampaignStatus) {
+  if (!store.id) return
   store.status = newStatus
-  saveCampaignMeta({ status: newStatus })
+  try {
+    await updateCampaignStatus(store.id, newStatus)
+    patchBaseline({ status: newStatus })
+  } catch {
+    // updateCampaign handles rollback internally
+  }
 }
 
 // Preview handler

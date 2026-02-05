@@ -1,3 +1,4 @@
+import { toast } from 'vue-sonner'
 import type { CampaignForm } from '~/features/campaigns/shared/types'
 import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
@@ -42,6 +43,7 @@ export function useForms(campaignId: string) {
   // Rename a form
   const renameForm = (formId: string, newName: string): void => {
     formsStore.renameForm(campaignId, formId, newName)
+    toast.success('Form name updated')
   }
 
   // Get form by ID (falls back to sample data for forms not yet in store)

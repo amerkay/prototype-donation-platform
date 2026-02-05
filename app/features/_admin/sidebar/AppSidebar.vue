@@ -79,6 +79,7 @@ const navMain = computed(() => [
     title: 'Templates',
     url: '#',
     icon: FileText,
+    disabled: true,
     items: [
       {
         title: 'Receipts',
@@ -102,6 +103,7 @@ const navMain = computed(() => [
     title: 'Integrations',
     url: '#',
     icon: Plug,
+    disabled: true,
     items: [
       {
         title: 'Payments',

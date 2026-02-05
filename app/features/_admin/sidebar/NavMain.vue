@@ -22,6 +22,7 @@ interface Props {
     icon: LucideIcon
     isActive?: boolean
     exact?: boolean
+    disabled?: boolean
     items?: {
       title: string
       url: string
@@ -67,11 +68,12 @@ watch(
             <SidebarMenuButton
               :tooltip="item.title"
               :variant="isItemActive(item) ? 'selected' : 'default'"
-              :class="
+              :class="[
                 isItemActive(item)
                   ? 'data-[state=open]:hover:bg-primary/90 data-[state=open]:hover:text-primary-foreground'
-                  : ''
-              "
+                  : '',
+                item.disabled ? 'text-muted-foreground/60' : ''
+              ]"
             >
               <component :is="item.icon" />
               <span>{{ item.title }}</span>
