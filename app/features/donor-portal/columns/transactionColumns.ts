@@ -34,7 +34,7 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
         Button,
         {
           variant: 'ghost',
-          class: '-ml-4',
+          class: '-ml-2.5',
           onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
         },
         () => ['Date', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
@@ -108,7 +108,7 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
         Button,
         {
           variant: 'ghost',
-          class: '-ml-4',
+          class: '-mr-4 ',
           onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
         },
         () => ['Amount', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]

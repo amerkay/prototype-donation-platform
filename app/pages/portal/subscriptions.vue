@@ -1,20 +1,33 @@
 <script setup lang="ts">
-import type { SubscriptionStatus } from '~/features/donor-portal/types'
+import type { SubscriptionStatus, Subscription } from '~/features/subscriptions/shared/types'
 import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/ui/badge'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
-import { CreditCard, Pause, Play, RefreshCw, X } from 'lucide-vue-next'
+import { CreditCard } from 'lucide-vue-next'
+import SubscriptionCard from '~/features/subscriptions/donor/components/SubscriptionCard.vue'
+import { useSubscriptionActions } from '~/features/subscriptions/shared/composables/useSubscriptionActions'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
+import BaseDialogOrDrawer from '@/components/BaseDialogOrDrawer.vue'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 definePageMeta({
   layout: 'portal'
 })
 
-const { formatAmount, formatDate } = useCampaignFormatters()
+const { formatDate } = useCampaignFormatters()
 const { subscriptions } = useDonorPortal()
 
 const statusFilters: { value: SubscriptionStatus | 'all'; label: string }[] = [
@@ -25,12 +38,23 @@ const statusFilters: { value: SubscriptionStatus | 'all'; label: string }[] = [
 ]
 
 const activeFilter = ref<SubscriptionStatus | 'all'>('active')
+const filteredSubscriptions = ref<Subscription[]>([])
 
-const filteredSubscriptions = computed(() =>
-  activeFilter.value === 'all'
-    ? subscriptions.value
-    : subscriptions.value.filter((s) => s.status === activeFilter.value)
-)
+const applyFilter = () => {
+  filteredSubscriptions.value =
+    activeFilter.value === 'all'
+      ? [...subscriptions.value]
+      : subscriptions.value.filter((s) => s.status === activeFilter.value)
+}
+
+const setFilter = (status: SubscriptionStatus | 'all') => {
+  activeFilter.value = status
+  applyFilter()
+}
+
+onMounted(() => {
+  applyFilter()
+})
 
 const subscriptionsByCharity = computed(() => {
   const grouped = new Map<string, typeof filteredSubscriptions.value>()
@@ -47,17 +71,19 @@ const filterCount = (status: SubscriptionStatus | 'all') =>
     ? subscriptions.value.length
     : subscriptions.value.filter((s) => s.status === status).length
 
-const paymentMethodLabel = (pm: {
-  type: string
-  last4?: string
-  brand?: string
-  email?: string
-}) => {
-  if (pm.type === 'card' && pm.brand && pm.last4) return `${pm.brand} ****${pm.last4}`
-  if (pm.type === 'paypal') return 'PayPal'
-  if (pm.type === 'bank_transfer') return 'Bank Transfer'
-  return pm.type
-}
+const {
+  showPauseDialog,
+  confirmPause,
+  handlePause,
+  showCancelDialog,
+  confirmCancel,
+  handleCancel,
+  handleResume,
+  changeAmountState,
+  openChangeAmount,
+  handleChangeAmount,
+  currentSubscription
+} = useSubscriptionActions(subscriptions)
 </script>
 
 <template>
@@ -78,7 +104,7 @@ const paymentMethodLabel = (pm: {
           :key="filter.value"
           :variant="activeFilter === filter.value ? 'default' : 'outline'"
           size="sm"
-          @click="activeFilter = filter.value"
+          @click="setFilter(filter.value)"
         >
           {{ filter.label }}
           <Badge variant="secondary" class="ml-1.5 px-1.5 min-w-5 justify-center">
@@ -107,85 +133,92 @@ const paymentMethodLabel = (pm: {
         <section v-for="[charityName, subs] in subscriptionsByCharity" :key="charityName">
           <h2 class="text-lg font-semibold mb-3">{{ charityName }}</h2>
           <div class="grid gap-4 sm:grid-cols-2">
-            <Card v-for="sub in subs" :key="sub.id">
-              <CardHeader class="pb-3">
-                <div class="flex items-center justify-between">
-                  <CardTitle class="text-base">{{ sub.campaignName }}</CardTitle>
-                  <Badge
-                    variant="outline"
-                    :data-campaign-status="sub.status"
-                    class="border-(--cs-border) text-(--cs-text)"
-                  >
-                    <span class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)" />
-                    {{ sub.status.replace('_', ' ') }}
-                  </Badge>
-                </div>
-                <CardDescription>
-                  {{ formatAmount(sub.amount, sub.currency) }}/{{ sub.frequency }} via
-                  {{ paymentMethodLabel(sub.paymentMethod) }}
-                </CardDescription>
-              </CardHeader>
-              <CardContent class="space-y-3">
-                <div class="flex flex-col gap-1">
-                  <span v-for="item in sub.lineItems" :key="item.productId" class="text-sm">
-                    {{ item.productIcon }} {{ item.productName }}
-                    <span class="text-muted-foreground">
-                      ({{ formatAmount(item.unitPrice) }}/{{ item.frequency }})
-                    </span>
-                  </span>
-                </div>
-
-                <Separator />
-
-                <div class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-                  <div class="space-y-0.5">
-                    <span class="text-xs text-muted-foreground">Total paid</span>
-                    <p class="text-sm font-medium">{{ formatAmount(sub.totalPaid) }}</p>
-                  </div>
-                  <div class="space-y-0.5">
-                    <span class="text-xs text-muted-foreground">Payments</span>
-                    <p class="text-sm font-medium">{{ sub.paymentCount }}</p>
-                  </div>
-                  <div v-if="sub.nextBillingDate" class="space-y-0.5">
-                    <span class="text-xs text-muted-foreground">Next billing</span>
-                    <p class="text-sm font-medium">{{ formatDate(sub.nextBillingDate) }}</p>
-                  </div>
-                  <div class="space-y-0.5">
-                    <span class="text-xs text-muted-foreground">Since</span>
-                    <p class="text-sm font-medium">{{ formatDate(sub.createdAt) }}</p>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div class="flex flex-wrap gap-2">
-                  <Button v-if="sub.status === 'active'" variant="outline" size="sm" disabled>
-                    <Pause class="w-3.5 h-3.5 mr-1" />
-                    Pause
-                  </Button>
-                  <Button v-if="sub.status === 'paused'" variant="outline" size="sm" disabled>
-                    <Play class="w-3.5 h-3.5 mr-1" />
-                    Resume
-                  </Button>
-                  <Button
-                    v-if="sub.status === 'active' || sub.status === 'paused'"
-                    variant="outline"
-                    size="sm"
-                    disabled
-                  >
-                    <X class="w-3.5 h-3.5 mr-1" />
-                    Cancel
-                  </Button>
-                  <Button v-if="sub.status === 'active'" variant="outline" size="sm" disabled>
-                    <RefreshCw class="w-3.5 h-3.5 mr-1" />
-                    Change Amount
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <SubscriptionCard
+              v-for="sub in subs"
+              :key="sub.id"
+              :subscription="sub"
+              @pause="confirmPause"
+              @resume="handleResume"
+              @cancel="confirmCancel"
+              @change-amount="openChangeAmount"
+            />
           </div>
         </section>
       </div>
     </div>
+
+    <!-- Pause Confirmation -->
+    <AlertDialog v-model:open="showPauseDialog">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Pause subscription?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Your subscription will be paused and you won't be charged until you resume it. You can
+            resume at any time.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction @click="handlePause">Pause Subscription</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <!-- Cancel Confirmation -->
+    <AlertDialog v-model:open="showCancelDialog">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Cancel subscription?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. Your subscription will be cancelled and you won't be
+            charged again. You can always start a new subscription later.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Go Back</AlertDialogCancel>
+          <AlertDialogAction @click="handleCancel">Cancel Subscription</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <!-- Change Amount Dialog -->
+    <BaseDialogOrDrawer v-model:open="changeAmountState.open" max-width="sm:max-w-md">
+      <template #header>Change Subscription Amount</template>
+      <template #content>
+        <div class="space-y-4 py-4">
+          <div class="space-y-2">
+            <Label for="new-amount">New Amount</Label>
+            <div class="flex gap-2 items-center">
+              <span class="text-sm text-muted-foreground">{{
+                currentSubscription?.currency || '£'
+              }}</span>
+              <Input
+                id="new-amount"
+                v-model="changeAmountState.newAmount"
+                type="number"
+                step="0.01"
+                min="0.01"
+                placeholder="0.00"
+              />
+              <span class="text-sm text-muted-foreground"
+                >/{{ currentSubscription?.frequency }}</span
+              >
+            </div>
+          </div>
+          <p class="text-sm text-muted-foreground">
+            The new amount will take effect on your next billing date:
+            {{
+              currentSubscription?.nextBillingDate
+                ? formatDate(currentSubscription.nextBillingDate)
+                : 'N/A'
+            }}
+          </p>
+        </div>
+      </template>
+      <template #footer>
+        <Button variant="outline" @click="changeAmountState.open = false">Cancel</Button>
+        <Button @click="handleChangeAmount">Update Amount</Button>
+      </template>
+    </BaseDialogOrDrawer>
   </div>
 </template>

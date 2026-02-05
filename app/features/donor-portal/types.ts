@@ -1,10 +1,9 @@
 /**
  * Donor Portal Types
  *
- * Transaction and subscription types compatible with:
- * - Stripe (PaymentIntent, Subscription) and PayPal (Order, BillingAgreement)
- * - One-time payments, recurring subscriptions
- * - Impact Cart multi-item checkouts (multiple items with mixed frequencies)
+ * Transaction types compatible with Stripe PaymentIntent and PayPal Order.
+ * Supports one-time payments and subscription billing records.
+ * For subscription types, see ~/features/subscriptions/shared/types
  */
 
 export type PaymentProcessor = 'stripe' | 'paypal'
@@ -12,8 +11,6 @@ export type PaymentProcessor = 'stripe' | 'paypal'
 export type PaymentMethodType = 'card' | 'paypal' | 'bank_transfer'
 
 export type TransactionStatus = 'succeeded' | 'pending' | 'failed' | 'refunded'
-
-export type SubscriptionStatus = 'active' | 'paused' | 'cancelled' | 'past_due'
 
 export interface PaymentMethod {
   type: PaymentMethodType
@@ -80,40 +77,4 @@ export interface Transaction {
 
   createdAt: string
   receiptUrl?: string
-}
-
-/**
- * A recurring subscription.
- * Models Stripe Subscription / PayPal Billing Agreement.
- */
-export interface Subscription {
-  id: string
-  processor: PaymentProcessor
-  /** Stripe: sub_xxx, PayPal: I-xxx */
-  processorSubscriptionId: string
-  campaignId: string
-  campaignName: string
-  charityName: string
-
-  lineItems: TransactionLineItem[]
-
-  amount: number
-  currency: string
-  baseCurrency: string
-  exchangeRate: number
-  frequency: 'monthly' | 'yearly'
-
-  paymentMethod: PaymentMethod
-  status: SubscriptionStatus
-
-  currentPeriodStart: string
-  currentPeriodEnd: string
-  nextBillingDate?: string
-  cancelledAt?: string
-  pausedAt?: string
-
-  createdAt: string
-
-  totalPaid: number
-  paymentCount: number
 }

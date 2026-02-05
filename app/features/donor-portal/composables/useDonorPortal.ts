@@ -3,7 +3,8 @@ import {
   transactions as sampleTransactions,
   subscriptions as sampleSubscriptions
 } from '~/sample-api-responses/api-sample-response-transactions'
-import type { Transaction, Subscription } from '~/features/donor-portal/types'
+import type { Transaction } from '~/features/donor-portal/types'
+import type { Subscription } from '~/features/subscriptions/shared/types'
 import type { Campaign } from '~/features/campaigns/shared/types'
 
 const CURRENT_USER_EMAIL = 'awesome@charity.co.uk'

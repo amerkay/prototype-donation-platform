@@ -1,4 +1,5 @@
-import type { Transaction, Subscription } from '~/features/donor-portal/types'
+import type { Transaction } from '~/features/donor-portal/types'
+import type { Subscription } from '~/features/subscriptions/shared/types'
 import type { CampaignDonation, CampaignStats } from '~/features/campaigns/shared/types'
 
 /**
