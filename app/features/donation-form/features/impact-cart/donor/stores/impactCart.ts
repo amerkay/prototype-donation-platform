@@ -12,6 +12,7 @@ export const useImpactCartStore = defineStore(
   'impactCart',
   () => {
     // ==================== STATE ====================
+    const formId = ref<string | null>(null)
     const onceCart = ref<CartItem[]>([])
     const monthlyCart = ref<CartItem[]>([])
     const multipleCart = ref<CartItem[]>([])
@@ -153,16 +154,25 @@ export const useImpactCartStore = defineStore(
       clearCart()
     }
 
+    function initialize(newFormId: string) {
+      // If switching to a different form, reset state and hydrate for new form
+      if (formId.value !== newFormId) {
+        clearCart()
+        formId.value = newFormId
+        $hydrate() // Hydrate data for this specific form
+      }
+    }
+
     function restoreState(cartItems: CartItem[]) {
       multipleCart.value = cartItems
     }
 
-    // Persistence methods (called by plugin after hydration)
+    // Persistence methods - keyed by formId for per-form state
     function $persist() {
-      if (import.meta.server) return
+      if (import.meta.server || !formId.value) return
       try {
         sessionStorage.setItem(
-          'impact-cart',
+          `impact-cart-${formId.value}`,
           JSON.stringify({
             onceCart: onceCart.value,
             monthlyCart: monthlyCart.value,
@@ -175,9 +185,9 @@ export const useImpactCartStore = defineStore(
     }
 
     function $hydrate() {
-      if (import.meta.server) return
+      if (import.meta.server || !formId.value) return
       try {
-        const saved = sessionStorage.getItem('impact-cart')
+        const saved = sessionStorage.getItem(`impact-cart-${formId.value}`)
         if (!saved) return
 
         const data = JSON.parse(saved)
@@ -191,6 +201,7 @@ export const useImpactCartStore = defineStore(
 
     return {
       // State
+      formId,
       onceCart,
       monthlyCart,
       multipleCart,
@@ -206,6 +217,7 @@ export const useImpactCartStore = defineStore(
       activeRecurringFrequency,
 
       // Actions
+      initialize,
       currentCart,
       cartTotal,
       addToCart,

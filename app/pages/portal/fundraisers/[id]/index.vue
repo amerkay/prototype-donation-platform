@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
+import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import DataTable from '~/features/donor-portal/components/DataTable.vue'
 import { fundraiserDonationColumns } from '~/features/donor-portal/columns/fundraiserDonationColumns'
@@ -25,6 +26,7 @@ definePageMeta({
 const route = useRoute()
 const { formatAmount, getProgressPercentage } = useCampaignFormatters()
 const { currentUserFundraisers } = useDonorPortal()
+const charityStore = useCharitySettingsStore()
 
 const fundraiser = computed(() =>
   currentUserFundraisers.value.find((f) => f.id === route.params.id)
@@ -95,7 +97,7 @@ const breadcrumbItems = computed(() => {
               Edit Campaign
             </Button>
           </NuxtLink>
-          <NuxtLink :to="`/donor/campaign/${fundraiser.id}`">
+          <NuxtLink :to="`/${charityStore.slug}/campaign/${fundraiser.id}`">
             <Button variant="outline" size="sm" as="span">
               <ExternalLink class="w-3.5 h-3.5 mr-1" />
               View Page

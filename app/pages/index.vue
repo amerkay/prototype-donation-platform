@@ -2,18 +2,21 @@
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Heart, LayoutDashboard, Users, Settings, ArrowRight } from 'lucide-vue-next'
+import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 
 definePageMeta({
   layout: 'default'
 })
 
-const donorCards = [
+const charityStore = useCharitySettingsStore()
+
+const donorCards = computed(() => [
   {
     title: 'Crowdfunding Page',
     description:
       'A campaign page with hero image, story, progress bar, recent donations, and social sharing.',
     icon: Heart,
-    to: '/donor/crowdfunding'
+    to: `/${charityStore.slug}/adopt-orangutan`
   },
   {
     title: 'Donor Portal',
@@ -27,9 +30,9 @@ const donorCards = [
     description:
       'Browse peer-to-peer fundraiser templates and walk through the supporter onboarding flow.',
     icon: Users,
-    to: '/donor/p2p-templates'
+    to: `/${charityStore.slug}/p2p-templates`
   }
-]
+])
 </script>
 
 <template>

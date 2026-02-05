@@ -8,9 +8,11 @@ import {
   DialogTitle
 } from '@/components/ui/dialog'
 import { Share2 } from 'lucide-vue-next'
+import type { Campaign } from '~/features/campaigns/shared/types'
 
 const props = defineProps<{
   open: boolean
+  campaign?: Campaign
 }>()
 
 const emit = defineEmits<{
@@ -32,7 +34,7 @@ const emit = defineEmits<{
       </DialogHeader>
 
       <div class="py-4">
-        <ShareContent />
+        <ShareContent :campaign="campaign" />
       </div>
     </DialogContent>
   </Dialog>

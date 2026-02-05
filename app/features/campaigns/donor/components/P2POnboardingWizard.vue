@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Campaign } from '~/features/campaigns/shared/types'
+import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { getPresetById } from '~/features/campaigns/admin/templates'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import {
@@ -28,6 +29,7 @@ const props = defineProps<{
 }>()
 
 const { createCampaign } = useCampaigns()
+const charityStore = useCharitySettingsStore()
 
 // Preset icon lookup
 const presetIcon = computed(() => {
@@ -141,7 +143,6 @@ const handleLaunch = () => {
       goalAmount: goal.value
     },
     peerToPeer: { enabled: false },
-    charity: { ...props.campaign.charity },
     socialSharing: { ...props.campaign.socialSharing }
   })
 
@@ -285,7 +286,7 @@ const handleLaunch = () => {
 
         <div class="text-sm text-muted-foreground text-center">
           <p>
-            Fundraising for <strong>{{ campaign.charity.name }}</strong>
+            Fundraising for <strong>{{ charityStore.name }}</strong>
           </p>
         </div>
 
@@ -318,7 +319,10 @@ const handleLaunch = () => {
         <p class="text-xs text-muted-foreground italic">
           (This is a prototype — the campaign was saved to session storage)
         </p>
-        <NuxtLink :to="`/donor/campaign/${createdCampaignId}`" class="inline-block pt-2">
+        <NuxtLink
+          :to="`/${charityStore.slug}/campaign/${createdCampaignId}`"
+          class="inline-block pt-2"
+        >
           <Button>View your newly created campaign</Button>
         </NuxtLink>
       </CardContent>

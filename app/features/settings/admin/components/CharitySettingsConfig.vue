@@ -1,29 +1,16 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import StickyButtonGroup from '~/features/_admin/components/StickyButtonGroup.vue'
-import CurrencyCharityNotice from '~/features/settings/admin/components/CurrencyCharityNotice.vue'
 import DevJsonPreview from '~/features/_admin/components/DevJsonPreview.vue'
-import { useCurrencySettingsForm } from '~/features/settings/admin/forms/currency-settings-form'
-import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
+import { useCharitySettingsForm } from '~/features/settings/admin/forms/charity-settings-form'
+import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
 
-const store = useCurrencySettingsStore()
-
-// Track whether default currency was changed to show charity notice
-const initialDefaultCurrency = ref(store.defaultCurrency)
-const defaultCurrencyChanged = ref(false)
-
-watch(
-  () => store.defaultCurrency,
-  (newVal) => {
-    defaultCurrencyChanged.value = newVal !== initialDefaultCurrency.value
-  }
-)
+const store = useCharitySettingsStore()
 
 const { formRef, modelValue, form, expose } = useAdminConfigForm({
   store,
-  form: useCurrencySettingsForm
+  form: useCharitySettingsForm
 })
 
 defineEmits<{
@@ -49,11 +36,7 @@ defineExpose(expose)
       :is-valid="formRef?.isValid ?? false"
       @save="$emit('save')"
       @discard="$emit('discard')"
-    >
-      <template #notice>
-        <CurrencyCharityNotice :visible="defaultCurrencyChanged" />
-      </template>
-    </StickyButtonGroup>
+    />
 
     <DevJsonPreview :data="store.$state" />
   </div>

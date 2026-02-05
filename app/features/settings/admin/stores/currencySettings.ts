@@ -62,6 +62,39 @@ export const useCurrencySettingsStore = defineStore('currencySettings', () => {
     markDirty()
   }
 
+  // Persistence - hydrate on load, save only on explicit call
+  let hydrated = false
+  function $hydrate() {
+    if (hydrated) return
+    try {
+      const saved = sessionStorage.getItem('settings-currency')
+      if (saved) initialize(JSON.parse(saved))
+    } catch {
+      /* ignore */
+    }
+    hydrated = true
+  }
+
+  function save() {
+    try {
+      sessionStorage.setItem(
+        'settings-currency',
+        JSON.stringify({
+          supportedCurrencies: supportedCurrencies.value,
+          defaultCurrency: defaultCurrency.value,
+          currencyMultipliers: currencyMultipliers.value
+        })
+      )
+    } catch {
+      /* ignore */
+    }
+  }
+
+  // Hydrate immediately on client (before components render)
+  if (import.meta.client) {
+    $hydrate()
+  }
+
   return {
     // State
     supportedCurrencies,
@@ -76,6 +109,8 @@ export const useCurrencySettingsStore = defineStore('currencySettings', () => {
     initialize,
     updateSettings,
     markDirty,
-    markClean
+    markClean,
+    $hydrate,
+    save
   }
 })

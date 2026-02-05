@@ -11,7 +11,11 @@ export default defineNuxtConfig({
     '/admin/**': { ssr: false }
   },
 
-  // runtimeConfig: {},
+  runtimeConfig: {
+    public: {
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    }
+  },
 
   shadcn: {
     /**

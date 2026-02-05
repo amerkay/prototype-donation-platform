@@ -42,7 +42,8 @@ const store = useDonationFormStore()
 
 // Get effective currencies (form override or global settings)
 const { effectiveCurrencies } = useDonationCurrencies()
-store.initialize(formConfig.value.donationAmounts.baseDefaultCurrency)
+const currentFormId = computed(() => configStore.formId || 'default')
+store.initialize(currentFormId.value, formConfig.value.donationAmounts.baseDefaultCurrency)
 
 const cartStore = useImpactCartStore()
 

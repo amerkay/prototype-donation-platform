@@ -26,11 +26,18 @@ watch(
   () => props.open,
   (isOpen) => {
     if (isOpen && defaultForm.value) {
-      // Initialize form config store with default form's config and products
-      formConfigStore.initialize(defaultForm.value.config, defaultForm.value.products)
-      // Reset donation form state
-      donationStore.reset()
-      cartStore.reset()
+      // Initialize form config store with default form's config, products, and ID
+      formConfigStore.initialize(
+        defaultForm.value.config,
+        defaultForm.value.products,
+        defaultForm.value.id
+      )
+      // Initialize donation form and cart for this form
+      donationStore.initialize(
+        defaultForm.value.id,
+        defaultForm.value.config.donationAmounts.baseDefaultCurrency
+      )
+      cartStore.initialize(defaultForm.value.id)
     }
   },
   { immediate: true }

@@ -8,7 +8,10 @@ import DonationFormStep3 from '~/features/donation-form/donor/steps/step3/Donati
 import DonationCustomFields from '~/features/donation-form/features/custom-fields/donor/components/DonationCustomFields.vue'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
-import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
+import {
+  useFormConfigStore,
+  type FullFormConfig
+} from '~/features/donation-form/shared/stores/formConfig'
 import { formConfig as defaultConfig } from '~/sample-api-responses/api-sample-response-form-config'
 
 const props = defineProps<{
@@ -21,10 +24,15 @@ const activeConfig = computed(() => props.config ?? defaultConfig)
 const TOTAL_STEPS = 4 // Donation, Donor Info, Gift Aid/Cover Fees, Payment
 
 // Initialize Pinia stores
+const formConfigStore = useFormConfigStore()
 const store = useDonationFormStore()
-store.initialize(activeConfig.value.donationAmounts.baseDefaultCurrency)
+
+// Initialize donation store with form ID for per-form persistence
+const currentFormId = computed(() => formConfigStore.formId || 'default')
+store.initialize(currentFormId.value, activeConfig.value.donationAmounts.baseDefaultCurrency)
 
 const cartStore = useImpactCartStore()
+cartStore.initialize(currentFormId.value)
 
 // Sync impactCart multipleCart to donationForm store for persistence
 watch(
@@ -34,11 +42,6 @@ watch(
   },
   { deep: true, immediate: true }
 )
-
-// Restore impactCart from donationForm on mount
-if (store.multipleCart.length > 0) {
-  cartStore.restoreState(store.multipleCart)
-}
 
 // Ref for the container element
 const wizardContainer = ref<HTMLElement | null>(null)

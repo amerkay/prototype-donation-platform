@@ -165,12 +165,6 @@ export function useCampaigns() {
       peerToPeer: campaignData.peerToPeer ?? {
         enabled: false
       },
-      charity: campaignData.charity ?? {
-        name: '',
-        registrationNumber: '',
-        website: '',
-        description: ''
-      },
       socialSharing: campaignData.socialSharing ?? {
         enabled: true,
         facebook: true,

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { Campaign } from '~/features/campaigns/shared/types'
+import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
+import { useCampaignShare } from '~/features/campaigns/shared/composables/useCampaignShare'
 import ShareDialog from './ShareDialog.vue'
 import DonateDialog from './DonateDialog.vue'
 import SocialShareButtons from './SocialShareButtons.vue'
@@ -14,6 +16,9 @@ import { Heart, ChevronDown, ChevronUp, ExternalLink } from 'lucide-vue-next'
 const props = defineProps<{
   campaign: Campaign
 }>()
+
+const charityStore = useCharitySettingsStore()
+const { campaignUrl } = useCampaignShare(computed(() => props.campaign.id))
 
 // Dialog states
 const showShareDialog = ref(false)
@@ -155,22 +160,25 @@ const hasSocialSharing = computed(() => {
               </CardHeader>
               <CardContent class="px-5 space-y-2">
                 <div>
-                  <h4 class="font-semibold text-sm">{{ campaign.charity?.name }}</h4>
+                  <h4 class="font-semibold text-sm">{{ charityStore.name }}</h4>
                   <p class="text-xs text-muted-foreground">
-                    Registered Charity: {{ campaign.charity?.registrationNumber }}
+                    Registered Charity: {{ charityStore.registrationNumber }}
                   </p>
                 </div>
+                <p v-if="charityStore.address" class="text-xs text-muted-foreground">
+                  {{ charityStore.address }}
+                </p>
                 <p class="text-sm text-muted-foreground line-clamp-3">
-                  {{ campaign.charity?.description }}
+                  {{ charityStore.description }}
                 </p>
                 <a
-                  v-if="campaign.charity?.website"
-                  :href="campaign.charity.website"
+                  v-if="charityStore.website"
+                  :href="charityStore.website"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="inline-flex items-center gap-1 text-sm text-primary hover:underline"
                 >
-                  {{ campaign.charity.website.replace(/^https?:\/\//, '') }}
+                  {{ charityStore.website.replace(/^https?:\/\//, '') }}
                   <ExternalLink class="w-3 h-3" />
                 </a>
               </CardContent>
@@ -186,7 +194,7 @@ const hasSocialSharing = computed(() => {
               <div class="flex justify-center gap-2 flex-wrap">
                 <SocialShareButtons
                   :settings="campaign.socialSharing"
-                  :campaign-id="campaign.id!"
+                  :campaign-url="campaignUrl"
                   :campaign-title="campaign.crowdfunding?.title || campaign.name"
                   :short-description="campaign.crowdfunding?.shortDescription"
                   size="icon"
@@ -213,7 +221,7 @@ const hasSocialSharing = computed(() => {
       </div>
 
       <!-- Dialogs -->
-      <ShareDialog v-model:open="showShareDialog" />
+      <ShareDialog v-model:open="showShareDialog" :campaign="campaign" />
       <DonateDialog v-model:open="showDonateDialog" :campaign-id="campaign.id!" />
     </div>
   </div>

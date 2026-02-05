@@ -139,6 +139,10 @@ const navMain = computed(() => [
         url: '/admin/settings/currency'
       },
       {
+        title: 'Charity',
+        url: '/admin/settings/charity'
+      },
+      {
         title: 'Branding',
         url: '#'
       },

@@ -183,11 +183,18 @@ export function generateSetData<TStore extends { markDirty: () => void }>(mappin
       }
 
       if (value !== undefined) {
-        // Get old value from store for comparison
-        let oldValue: unknown = store
-        for (const segment of storeSegments) {
-          oldValue = (oldValue as Record<string, unknown>)?.[segment]
+        // Resolve store target (skip if intermediate is missing)
+        let target: Record<string, unknown> = store as Record<string, unknown>
+        for (let i = 0; i < storeSegments.length - 1; i++) {
+          const segment = storeSegments[i]!
+          target = target[segment] as Record<string, unknown>
+          if (!target) break
         }
+        if (!target) continue
+
+        // Get old value from store for comparison
+        const lastSegment = storeSegments[storeSegments.length - 1]!
+        const oldValue = target[lastSegment]
 
         // Check if value actually changed
         const valueChanged = JSON.stringify(oldValue) !== JSON.stringify(value)
@@ -196,12 +203,6 @@ export function generateSetData<TStore extends { markDirty: () => void }>(mappin
         }
 
         // Set value in store
-        let target: Record<string, unknown> = store as Record<string, unknown>
-        for (let i = 0; i < storeSegments.length - 1; i++) {
-          const segment = storeSegments[i]!
-          target = target[segment] as Record<string, unknown>
-        }
-        const lastSegment = storeSegments[storeSegments.length - 1]!
         target[lastSegment] = value
       }
     }

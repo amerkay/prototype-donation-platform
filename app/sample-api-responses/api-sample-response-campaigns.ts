@@ -40,13 +40,6 @@ export const campaigns: Campaign[] = [
     peerToPeer: {
       enabled: false
     },
-    charity: {
-      name: 'Borneo Orangutan Survival Foundation',
-      registrationNumber: 'RCN123456',
-      website: 'https://orangutan.org',
-      description:
-        'We rescue, rehabilitate, and release orangutans while protecting their natural habitat through community engagement and sustainable forest management programs across Borneo and Sumatra.'
-    },
     socialSharing: {
       enabled: true,
       facebook: true,
@@ -85,13 +78,6 @@ export const campaigns: Campaign[] = [
     peerToPeer: {
       enabled: true,
       customMessage: 'Join me in celebrating by raising funds for a great cause!'
-    },
-    charity: {
-      name: 'Borneo Orangutan Survival Foundation',
-      registrationNumber: 'RCN123456',
-      website: 'https://orangutan.org',
-      description:
-        'We rescue, rehabilitate, and release orangutans while protecting their natural habitat through community engagement and sustainable forest management programs across Borneo and Sumatra.'
     },
     socialSharing: {
       enabled: true,
@@ -133,13 +119,6 @@ export const campaigns: Campaign[] = [
     peerToPeer: {
       enabled: false
     },
-    charity: {
-      name: 'Borneo Orangutan Survival Foundation',
-      registrationNumber: 'RCN123456',
-      website: 'https://orangutan.org',
-      description:
-        'We rescue, rehabilitate, and release orangutans while protecting their natural habitat through community engagement and sustainable forest management programs across Borneo and Sumatra.'
-    },
     socialSharing: {
       enabled: true,
       facebook: true,
@@ -178,13 +157,6 @@ export const campaigns: Campaign[] = [
     },
     peerToPeer: {
       enabled: false
-    },
-    charity: {
-      name: 'Borneo Orangutan Survival Foundation',
-      registrationNumber: 'RCN123456',
-      website: 'https://orangutan.org',
-      description:
-        'We rescue, rehabilitate, and release orangutans while protecting their natural habitat through community engagement and sustainable forest management programs across Borneo and Sumatra.'
     },
     socialSharing: {
       enabled: true,

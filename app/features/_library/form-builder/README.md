@@ -581,6 +581,22 @@ const preview = fieldGroup('preview', {
 })
 ```
 
+**Deep store paths require pre-populated data:**
+
+When `$storePath` maps to nested store paths (e.g., `overrides.USD.enabled`), the store **must** pre-populate all intermediate objects with defaults. This ensures form fields read the pre-populated values and write them back unchanged, preventing spurious dirty state when expanding collapsibles.
+
+```typescript
+// ✅ Pre-populated — form reads store values, writes them back unchanged
+const store = { overrides: { USD: { enabled: false, name: '' } } }
+
+// ❌ Empty — getData returns undefined, setData skips writes (fail-safe, but broken)
+const store = { overrides: {} }
+```
+
+Without pre-population, `setData` silently skips writes when intermediates are missing. This prevents spurious dirty state but breaks functionality — user changes are lost.
+
+This matches the currency multipliers pattern: `currencyMultipliers: { USD: 1.0, EUR: 1.0 }` — all supported currencies have default entries.
+
 **Manual mapping (backward compatible):**
 
 ```typescript

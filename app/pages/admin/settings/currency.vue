@@ -2,33 +2,52 @@
 import { ref, computed } from 'vue'
 import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
 import CurrencySettingsConfig from '~/features/settings/admin/components/CurrencySettingsConfig.vue'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
 
-// Initialize store
 const store = useCurrencySettingsStore()
 
-// Original data for discard - capture complete store state
 const originalData = computed(() => ({
   supportedCurrencies: [...store.supportedCurrencies],
   defaultCurrency: store.defaultCurrency,
   currencyMultipliers: { ...store.currencyMultipliers }
 }))
 
-// Form config ref
 const formConfigRef = ref()
+const showCharityCheckDialog = ref(false)
 
-// Use admin edit composable for save/discard logic
-const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdminEdit({
+const {
+  handleSave: _handleSave,
+  handleDiscard,
+  confirmDiscard,
+  showDiscardDialog
+} = useAdminEdit({
   store,
   formRef: formConfigRef,
   originalData,
   onSave: async () => {
-    // In real app, would call API here
-    // await api.updateCurrencySettings(store)
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    store.save()
   }
 })
+
+async function handleSave() {
+  await _handleSave()
+  // Show charity check prompt after successful save
+  if (!store.isDirty) {
+    showCharityCheckDialog.value = true
+  }
+}
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -43,19 +62,39 @@ definePageMeta({
 </script>
 
 <template>
-  <AdminEditLayout
-    :breadcrumbs="breadcrumbs"
-    :is-dirty="store.isDirty"
-    :show-discard-dialog="showDiscardDialog"
-    :show-preview="false"
-    @update:show-discard-dialog="showDiscardDialog = $event"
-    @confirm-discard="confirmDiscard"
-  >
-    <!-- Main content -->
-    <template #content>
-      <div class="space-y-6">
-        <CurrencySettingsConfig ref="formConfigRef" @save="handleSave" @discard="handleDiscard" />
-      </div>
-    </template>
-  </AdminEditLayout>
+  <div>
+    <AdminEditLayout
+      :breadcrumbs="breadcrumbs"
+      :is-dirty="store.isDirty"
+      :show-discard-dialog="showDiscardDialog"
+      :show-preview="false"
+      @update:show-discard-dialog="showDiscardDialog = $event"
+      @confirm-discard="confirmDiscard"
+    >
+      <template #content>
+        <div class="space-y-6">
+          <CurrencySettingsConfig ref="formConfigRef" @save="handleSave" @discard="handleDiscard" />
+        </div>
+      </template>
+    </AdminEditLayout>
+
+    <!-- Post-save: remind to check charity settings -->
+    <AlertDialog v-model:open="showCharityCheckDialog">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Check Charity Information</AlertDialogTitle>
+          <AlertDialogDescription>
+            Currency settings saved. Make sure your charity name, registration number, and address
+            are correct for the updated currency configuration.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Dismiss</AlertDialogCancel>
+          <AlertDialogAction as-child>
+            <NuxtLink to="/admin/settings/charity">Review Charity Settings</NuxtLink>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </div>
 </template>

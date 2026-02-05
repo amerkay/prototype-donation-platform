@@ -361,6 +361,73 @@ describe('storeMapping', () => {
       expect(store.markDirty).toHaveBeenCalled()
     })
 
+    it('skips writes when store intermediate is missing', () => {
+      const form = defineForm('test', () => ({
+        config: fieldGroup('config', {
+          fields: {
+            enabled: textField('enabled', { label: 'Enabled' })
+          },
+          $storePath: {
+            enabled: 'overrides.USD.enabled'
+          }
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+      const setData = generateSetData(mapping)
+
+      // Store starts with empty overrides (no USD key)
+      const store = {
+        overrides: {} as Record<string, Record<string, unknown>>,
+        markDirty: vi.fn()
+      }
+
+      const formData = {
+        config: { enabled: true }
+      }
+
+      setData(store, formData)
+
+      // Should NOT create intermediate — store must be pre-populated
+      expect(store.overrides.USD).toBeUndefined()
+      expect(store.markDirty).not.toHaveBeenCalled()
+    })
+
+    it('writes to pre-populated deep store paths', () => {
+      const form = defineForm('test', () => ({
+        config: fieldGroup('config', {
+          fields: {
+            enabled: textField('enabled', { label: 'Enabled' }),
+            name: textField('name', { label: 'Name' })
+          },
+          $storePath: {
+            enabled: 'overrides.USD.enabled',
+            name: 'overrides.USD.name'
+          }
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+      const setData = generateSetData(mapping)
+
+      // Store pre-populated with defaults
+      const store = {
+        overrides: {
+          USD: { enabled: false, name: '' }
+        } as Record<string, Record<string, unknown>>,
+        markDirty: vi.fn()
+      }
+
+      const formData = {
+        config: { enabled: true, name: 'US Charity' }
+      }
+
+      setData(store, formData)
+
+      expect(store.overrides.USD).toEqual({ enabled: true, name: 'US Charity' })
+      expect(store.markDirty).toHaveBeenCalled()
+    })
+
     it('skips undefined form values', () => {
       const form = defineForm('test', () => ({
         settings: fieldGroup('settings', {

@@ -17,6 +17,7 @@ export const useDonationFormStore = defineStore(
   'donationForm',
   () => {
     // ==================== STATE ====================
+    const formId = ref<string | null>(null)
     const currentStep = ref(1)
     const activeTab = ref<Frequency>('once')
     const selectedCurrency = ref('')
@@ -158,7 +159,13 @@ export const useDonationFormStore = defineStore(
     })
 
     // ==================== ACTIONS ====================
-    function initialize(baseDefaultCurrency: string) {
+    function initialize(newFormId: string, baseDefaultCurrency: string) {
+      // If switching to a different form, reset state and hydrate for new form
+      if (formId.value !== newFormId) {
+        clearSession()
+        formId.value = newFormId
+        $hydrate() // Hydrate data for this specific form
+      }
       // Only set currency if not already set (first initialization)
       if (!selectedCurrency.value) {
         selectedCurrency.value = baseDefaultCurrency
@@ -233,12 +240,12 @@ export const useDonationFormStore = defineStore(
       clearSession()
     }
 
-    // Persistence methods (called by plugin after hydration)
+    // Persistence methods - keyed by formId for per-form state
     function $persist() {
-      if (import.meta.server) return
+      if (import.meta.server || !formId.value) return
       try {
         sessionStorage.setItem(
-          'donation-form',
+          `donation-form-${formId.value}`,
           JSON.stringify({
             currentStep: currentStep.value,
             activeTab: activeTab.value,
@@ -257,9 +264,9 @@ export const useDonationFormStore = defineStore(
     }
 
     function $hydrate() {
-      if (import.meta.server) return
+      if (import.meta.server || !formId.value) return
       try {
-        const saved = sessionStorage.getItem('donation-form')
+        const saved = sessionStorage.getItem(`donation-form-${formId.value}`)
         if (!saved) return
 
         const data = JSON.parse(saved)
@@ -279,6 +286,7 @@ export const useDonationFormStore = defineStore(
 
     return {
       // State
+      formId,
       currentStep,
       activeTab,
       selectedCurrency,

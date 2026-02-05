@@ -4,6 +4,7 @@ import CampaignHeader from '~/features/campaigns/admin/components/CampaignHeader
 import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/CampaignMasterConfigPanel.vue'
 import CampaignPreviewSwitcher from '~/features/campaigns/admin/components/CampaignPreviewSwitcher.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
+import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import type { Campaign, CampaignStatus } from '~/features/campaigns/shared/types'
 import { openAccordionId } from '~/features/campaigns/admin/forms/campaign-config-master'
@@ -15,6 +16,7 @@ definePageMeta({
 
 const route = useRoute()
 const { getCampaignById, updateCampaign } = useCampaigns()
+const charityStore = useCharitySettingsStore()
 const store = useCampaignConfigStore()
 
 // Get campaign data
@@ -106,7 +108,7 @@ function handleStatusUpdate(newStatus: CampaignStatus) {
 
 // Preview opens the donor-facing campaign page
 const handlePreview = () => {
-  window.open(`/donor/campaign/${store.id}`, '_blank')
+  window.open(`/${charityStore.slug}/campaign/${store.id}`, '_blank')
 }
 </script>
 

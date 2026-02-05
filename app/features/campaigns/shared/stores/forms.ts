@@ -147,6 +147,31 @@ export const useFormsStore = defineStore('forms', () => {
     $persist(campaignId)
   }
 
+  // Update a form's config (and optionally products)
+  const updateFormConfig = (
+    campaignId: string,
+    formId: string,
+    config: CampaignForm['config'],
+    products?: CampaignForm['products']
+  ): void => {
+    const forms = getForms(campaignId)
+    const form = forms.find((f) => f.id === formId)
+
+    if (!form) {
+      console.error(`Form ${formId} not found`)
+      return
+    }
+
+    form.config = config
+    if (products !== undefined) {
+      form.products = products
+    }
+    form.updatedAt = new Date().toISOString()
+
+    // Persist changes
+    $persist(campaignId)
+  }
+
   // Persistence - save forms to sessionStorage
   const $persist = (campaignId: string): void => {
     try {
@@ -181,6 +206,7 @@ export const useFormsStore = defineStore('forms', () => {
     renameForm,
     addForm,
     duplicateForm,
-    deleteForm
+    deleteForm,
+    updateFormConfig
   }
 })

@@ -10,10 +10,10 @@ definePageMeta({
 })
 
 const route = useRoute()
-const campaignId = computed(() => route.params.id as string)
+const campaignSlug = computed(() => route.params.campaign_slug as string)
 
 const { getCampaignById } = useCampaigns()
-const campaign = computed(() => getCampaignById(campaignId.value))
+const campaign = computed(() => getCampaignById(campaignSlug.value))
 </script>
 
 <template>

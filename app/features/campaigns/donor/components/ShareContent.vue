@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useCampaignShare } from '~/features/campaigns/shared/composables/useCampaignShare'
 import CampaignPreviewCard from '~/features/campaigns/admin/components/CampaignPreviewCard.vue'
 import SocialShareButtons from './SocialShareButtons.vue'
@@ -6,22 +7,39 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Copy, Check } from 'lucide-vue-next'
+import type { Campaign } from '~/features/campaigns/shared/types'
 
-const { store, campaignUrl, copy, copied, hasOtherPlatforms } = useCampaignShare()
+const props = defineProps<{
+  campaign?: Campaign
+}>()
+
+// Use campaign prop if provided, otherwise fall back to store (for admin preview)
+const configStore = useCampaignConfigStore()
+const data = computed(() => props.campaign || configStore)
+
+const { campaignUrl, copy, copied } = useCampaignShare(computed(() => data.value.id))
+
+const hasOtherPlatforms = computed(() => {
+  const sharing = data.value.socialSharing
+  if (!sharing) return false
+  return (
+    sharing.facebook || sharing.twitter || sharing.linkedin || sharing.whatsapp || sharing.email
+  )
+})
 </script>
 
 <template>
   <div class="space-y-4">
     <!-- Campaign Preview Card -->
     <CampaignPreviewCard
-      :title="store.crowdfunding?.title || store.name"
-      :description="store.crowdfunding?.shortDescription"
-      :cover-photo="store.crowdfunding?.coverPhoto"
+      :title="data.crowdfunding?.title || data.name"
+      :description="data.crowdfunding?.shortDescription"
+      :cover-photo="data.crowdfunding?.coverPhoto"
       compact
     />
 
     <!-- Copy Link -->
-    <div v-if="store.socialSharing?.copyLink" class="space-y-2">
+    <div v-if="data.socialSharing?.copyLink" class="space-y-2">
       <p class="text-sm font-medium">Campaign link</p>
       <div class="flex gap-2">
         <Input :model-value="campaignUrl" readonly class="font-mono text-xs" />
@@ -40,10 +58,10 @@ const { store, campaignUrl, copy, copied, hasOtherPlatforms } = useCampaignShare
         <p class="text-sm font-medium">Share on</p>
         <div class="grid grid-cols-2 gap-2">
           <SocialShareButtons
-            :settings="store.socialSharing"
-            :campaign-id="store.id!"
-            :campaign-title="store.crowdfunding?.title || store.name"
-            :short-description="store.crowdfunding?.shortDescription"
+            :settings="data.socialSharing"
+            :campaign-url="campaignUrl"
+            :campaign-title="data.crowdfunding?.title || data.name"
+            :short-description="data.crowdfunding?.shortDescription"
             show-labels
           />
         </div>
@@ -51,7 +69,7 @@ const { store, campaignUrl, copy, copied, hasOtherPlatforms } = useCampaignShare
     </template>
 
     <p
-      v-if="!hasOtherPlatforms && !store.socialSharing?.copyLink"
+      v-if="!hasOtherPlatforms && !data.socialSharing?.copyLink"
       class="text-sm text-muted-foreground text-center py-4"
     >
       No sharing options have been enabled for this campaign.

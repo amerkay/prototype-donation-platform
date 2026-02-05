@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { defineComponent } from 'vue'
 import { setActivePinia, createPinia } from 'pinia'
@@ -10,7 +10,12 @@ import { useDonationFormStore } from '~/features/donation-form/donor/stores/dona
  * The donationForm store uses $hydrate and $persist methods to save/restore
  * state from sessionStorage. This allows users to refresh the page without
  * losing their donation form progress.
+ *
+ * Persistence is per-form: key format is `donation-form-${formId}`
  */
+const TEST_FORM_ID = 'test-form-123'
+const STORAGE_KEY = `donation-form-${TEST_FORM_ID}`
+
 describe('donationForm store persistence', () => {
   beforeEach(() => {
     // Clear sessionStorage before each test
@@ -45,7 +50,7 @@ describe('donationForm store persistence', () => {
         }
       }
 
-      sessionStorage.setItem('donation-form', JSON.stringify(savedData))
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(savedData))
 
       const TestComponent = defineComponent({
         setup() {
@@ -86,8 +91,11 @@ describe('donationForm store persistence', () => {
     })
 
     it('handles corrupted sessionStorage data gracefully', () => {
+      // Suppress expected console warning from try-catch
+      const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
       // Invalid JSON in sessionStorage
-      sessionStorage.setItem('donation-form', 'invalid-json{')
+      sessionStorage.setItem(STORAGE_KEY, 'invalid-json{')
 
       const store = useDonationFormStore()
 
@@ -97,6 +105,14 @@ describe('donationForm store persistence', () => {
       // Should keep default values (hydration failed safely)
       expect(store.currentStep).toBe(1)
       expect(store.activeTab).toBe('once')
+
+      // Verify warning was called (but suppressed from output)
+      expect(consoleWarn).toHaveBeenCalledWith(
+        'Failed to hydrate donation form:',
+        expect.any(Error)
+      )
+
+      consoleWarn.mockRestore()
     })
 
     it('only restores fields that exist in saved data', () => {
@@ -107,10 +123,10 @@ describe('donationForm store persistence', () => {
         // Missing selectedCurrency and other fields
       }
 
-      sessionStorage.setItem('donation-form', JSON.stringify(partialData))
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(partialData))
 
       const store = useDonationFormStore()
-      store.initialize('EUR') // Set a default currency
+      store.initialize(TEST_FORM_ID, 'EUR') // Set a default currency
       store.$hydrate() // Restore from partial data
 
       // Should restore the fields that were in sessionStorage
@@ -125,7 +141,7 @@ describe('donationForm store persistence', () => {
   describe('$persist', () => {
     it('saves form state to sessionStorage', () => {
       const store = useDonationFormStore()
-      store.initialize('GBP')
+      store.initialize(TEST_FORM_ID, 'GBP')
 
       // Make changes to the store
       store.setActiveTab('monthly')
@@ -137,7 +153,7 @@ describe('donationForm store persistence', () => {
       store.$persist()
 
       // Verify sessionStorage was updated
-      const saved = sessionStorage.getItem('donation-form')
+      const saved = sessionStorage.getItem(STORAGE_KEY)
       expect(saved).toBeTruthy()
 
       const parsed = JSON.parse(saved!)
@@ -175,7 +191,7 @@ describe('donationForm store persistence', () => {
       store.$persist()
 
       // Verify nested data was persisted
-      const saved = sessionStorage.getItem('donation-form')
+      const saved = sessionStorage.getItem(STORAGE_KEY)
       const parsed = JSON.parse(saved!)
 
       expect(parsed.formSections.donorInfo).toEqual({
@@ -236,7 +252,7 @@ describe('donationForm store persistence', () => {
       store.$persist()
 
       // Verify cart was persisted
-      const saved = sessionStorage.getItem('donation-form')
+      const saved = sessionStorage.getItem(STORAGE_KEY)
       const parsed = JSON.parse(saved!)
 
       expect(parsed.multipleCart).toHaveLength(2)
@@ -271,7 +287,7 @@ describe('donationForm store persistence', () => {
       const TestComponent = defineComponent({
         setup() {
           const store = useDonationFormStore()
-          store.initialize('USD')
+          store.initialize(TEST_FORM_ID, 'USD')
           return { store }
         },
         template: '<div>test</div>'
@@ -303,7 +319,7 @@ describe('donationForm store persistence', () => {
       store.$persist()
 
       // Verify sessionStorage contains the data
-      const saved = sessionStorage.getItem('donation-form')
+      const saved = sessionStorage.getItem(STORAGE_KEY)
       expect(saved).toBeTruthy()
 
       // Create fresh pinia and store instance to simulate page reload
@@ -344,7 +360,7 @@ describe('donationForm store persistence', () => {
       store.$persist()
 
       // Verify state was persisted
-      expect(sessionStorage.getItem('donation-form')).toBeTruthy()
+      expect(sessionStorage.getItem(STORAGE_KEY)).toBeTruthy()
 
       // Clear the session
       store.clearSession()
@@ -358,7 +374,7 @@ describe('donationForm store persistence', () => {
       store.$persist()
 
       // Verify sessionStorage reflects the cleared state
-      const saved = sessionStorage.getItem('donation-form')
+      const saved = sessionStorage.getItem(STORAGE_KEY)
       const parsed = JSON.parse(saved!)
       expect(parsed.currentStep).toBe(1)
       expect(parsed.activeTab).toBe('once')

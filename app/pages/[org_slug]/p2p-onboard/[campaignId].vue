@@ -33,7 +33,7 @@ const campaign = computed(() => {
           <p class="text-sm text-muted-foreground">
             This fundraiser template doesn't exist or is no longer available.
           </p>
-          <NuxtLink to="/donor/p2p-templates">
+          <NuxtLink :to="`/${route.params.org_slug}/p2p-templates`">
             <Button>Browse Templates</Button>
           </NuxtLink>
         </CardContent>

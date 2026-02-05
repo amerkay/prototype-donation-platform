@@ -6,7 +6,7 @@ import { Facebook, Twitter, Linkedin, Mail, Link2, MessageCircle } from 'lucide-
 const props = withDefaults(
   defineProps<{
     settings: SocialSharingSettings | null
-    campaignId: string
+    campaignUrl: string
     campaignTitle: string
     shortDescription?: string
     size?: 'default' | 'sm' | 'lg' | 'icon'
@@ -42,8 +42,7 @@ const enabledPlatforms = computed(() => {
 
 // Get share URL for platform
 const getShareUrl = (platform: string) => {
-  const campaignUrl = `https://donate.example.com/campaigns/${props.campaignId}`
-  const url = encodeURIComponent(campaignUrl)
+  const url = encodeURIComponent(props.campaignUrl)
   const title = encodeURIComponent(props.campaignTitle)
   const description = encodeURIComponent(props.shortDescription || '')
 
@@ -59,7 +58,7 @@ const getShareUrl = (platform: string) => {
     case 'email':
       return `mailto:?subject=${title}&body=${description}%0A%0A${url}`
     default:
-      return campaignUrl
+      return props.campaignUrl
   }
 }
 

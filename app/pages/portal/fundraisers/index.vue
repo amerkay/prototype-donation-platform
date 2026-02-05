@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
+import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import CampaignCard from '~/features/campaigns/admin/components/CampaignCard.vue'
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
 import { Button } from '@/components/ui/button'
@@ -18,6 +19,7 @@ definePageMeta({
 })
 
 const { currentUserFundraisers } = useDonorPortal()
+const charityStore = useCharitySettingsStore()
 </script>
 
 <template>
@@ -45,7 +47,7 @@ const { currentUserFundraisers } = useDonorPortal()
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <NuxtLink to="/donor/p2p-templates">
+          <NuxtLink :to="`/${charityStore.slug}/p2p-templates`">
             <Button>Browse P2P Templates</Button>
           </NuxtLink>
         </EmptyContent>

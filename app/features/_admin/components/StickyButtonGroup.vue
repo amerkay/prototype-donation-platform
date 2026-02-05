@@ -33,6 +33,8 @@ const hasErrors = computed(() => props.isDirty && !props.isValid)
     "
   >
     <div class="space-y-2">
+      <slot name="notice" />
+
       <div v-if="hasErrors" class="flex items-center gap-1 text-xs text-destructive">
         <AlertCircle class="w-3 h-3" />
         <span>Please fix errors before saving</span>

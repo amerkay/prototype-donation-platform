@@ -1,14 +1,23 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
 import { Menu, X } from 'lucide-vue-next'
+import { useForms } from '~/features/campaigns/shared/composables/useForms'
 
 const route = useRoute()
+const orgSlug = computed(() => (route.params.org_slug as string) || 'bosf')
+const campaignSlug = computed(() => (route.params.campaign_slug as string) || 'adopt-orangutan')
 
-const navLinks = [
-  { label: 'Crowdfunding', to: '/donor/crowdfunding' },
-  { label: 'Donate', to: '/donor/donate' },
-  { label: 'P2P Templates', to: '/donor/p2p-templates' }
-]
+// Get default form for the current campaign
+const { defaultForm } = useForms(campaignSlug.value)
+
+const navLinks = computed(() => [
+  { label: 'Campaign', to: `/${orgSlug.value}/${campaignSlug.value}` },
+  {
+    label: 'Donate',
+    to: `/${orgSlug.value}/${campaignSlug.value}/${defaultForm.value?.id || 'form-orangutan-full'}`
+  },
+  { label: 'P2P Templates', to: `/${orgSlug.value}/p2p-templates` }
+])
 
 const mobileMenuOpen = ref(false)
 

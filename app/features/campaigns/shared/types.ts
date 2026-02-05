@@ -90,16 +90,6 @@ export interface PeerToPeerSettings {
 }
 
 /**
- * About the charity section
- */
-export interface CharityInfo {
-  name: string
-  registrationNumber: string
-  website: string
-  description: string
-}
-
-/**
  * Social sharing settings
  */
 export interface SocialSharingSettings {
@@ -141,7 +131,6 @@ export interface Campaign {
   stats: CampaignStats
   crowdfunding: CrowdfundingSettings
   peerToPeer: PeerToPeerSettings
-  charity: CharityInfo
   socialSharing: SocialSharingSettings
   fundraisers: CampaignFundraiser[]
   recentDonations: CampaignDonation[]
