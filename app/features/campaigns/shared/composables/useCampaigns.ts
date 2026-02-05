@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { toast } from 'vue-sonner'
-import type { Campaign } from '~/features/campaigns/shared/types'
+import type { Campaign, CampaignType } from '~/features/campaigns/shared/types'
 import { campaigns as mockCampaigns } from '~/sample-api-responses/api-sample-response-campaigns'
 
 /**
@@ -38,8 +38,9 @@ export function useCampaigns() {
   /**
    * Get recent campaigns (sorted by updated date, limited to N)
    */
-  const getRecentCampaigns = (limit = 3): Campaign[] => {
+  const getRecentCampaigns = (limit = 3, campaignType: CampaignType = 'standard'): Campaign[] => {
     return [...campaigns.value]
+      .filter((c) => c.type === campaignType)
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       .slice(0, limit)
   }
