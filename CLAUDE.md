@@ -61,18 +61,18 @@ app/features/[feature-name]/
 | donation-form | `app/features/donation-form/`          | Multi-step donation wizard with 12 sub-features (cover-costs, gift-aid, impact-cart, tribute, etc.) |
 | campaigns     | `app/features/campaigns/`              | Campaign CRUD, crowdfunding, P2P fundraising, templates                                             |
 | donor-portal  | `app/features/donor-portal/`           | Donor dashboard: transaction history, subscriptions, fundraiser management                          |
-| settings      | `app/features/settings/`               | Organization-level config (currencies, multipliers)                                                 |
+| settings      | `app/features/settings/`               | Organization-level config (charity identity, currencies, per-currency overrides)                    |
 | form-builder  | `app/features/_library/form-builder/`  | Schema-driven form framework: defineForm API, 15 field types, conditions, containers                |
 | custom-fields | `app/features/_library/custom-fields/` | Admin-configurable dynamic fields with 8 field type factories                                       |
 | \_admin       | `app/features/_admin/`                 | Shared admin components: sidebar, breadcrumbs, edit layouts, sticky buttons                         |
 
-**Key stores:** `donation-form/shared/stores/formConfig.ts` (admin config), `donation-form/donor/stores/donationForm.ts` (donor state), `donation-form/features/impact-cart/donor/stores/impactCart.ts` (cart by frequency), `campaigns/shared/stores/campaignConfig.ts` (campaign config), `campaigns/shared/stores/forms.ts` (campaign forms), `settings/admin/stores/currencySettings.ts` (org currencies).
+**Key stores:** `donation-form/shared/stores/formConfig.ts` (admin config), `donation-form/donor/stores/donationForm.ts` (donor state, per-form-ID persistence), `donation-form/features/impact-cart/donor/stores/impactCart.ts` (cart by frequency, per-form-ID persistence), `campaigns/shared/stores/campaignConfig.ts` (campaign config), `campaigns/shared/stores/forms.ts` (campaign forms), `settings/admin/stores/currencySettings.ts` (org currencies), `settings/admin/stores/charitySettings.ts` (charity identity, slug, per-currency overrides).
 
-**Key composables:** `useCampaigns()`, `useForms()`, `useDonorPortal()`, `useCurrency()`, `useDonationCurrencies()`, `useAdminConfigForm()`, `useAdminEdit()`, `defineEditableStore()`.
+**Key composables:** `useCampaigns()`, `useForms()`, `useCampaignShare()`, `useDonorPortal()`, `useCurrency()`, `useDonationCurrencies()`, `useAdminConfigForm()`, `useAdminEdit()`.
 
-**Layouts:** `admin.vue`, `donor.vue`, `portal.vue`, `admin-preview.vue`, `default.vue`.
+**Layouts:** `admin.vue`, `admin-preview.vue`, `donor.vue`, `portal.vue`, `default.vue`.
 
-**Pages:** `app/pages/admin/` (campaign + settings admin), `app/pages/donor/` (donate, crowdfunding, P2P), `app/pages/portal/` (donor portal dashboard).
+**Pages:** `app/pages/admin/` (campaigns, forms, settings: charity + currency), `app/pages/[org_slug]/` (donor-facing: campaign pages, forms, P2P onboarding), `app/pages/portal/` (donor dashboard: donations, subscriptions, fundraisers), `app/pages/index.vue` (landing).
 
 <!-- end project summary -->
 
