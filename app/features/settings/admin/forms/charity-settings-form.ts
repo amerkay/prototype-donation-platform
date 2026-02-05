@@ -86,7 +86,10 @@ export const useCharitySettingsForm = defineForm('charitySettings', () => {
       wrapperClass: 'border rounded-lg p-4',
       visibleWhen: () => {
         const currencyStore = useCurrencySettingsStore()
-        return currencyStore.supportedCurrencies.includes(currency)
+        return (
+          currencyStore.supportedCurrencies.includes(currency) &&
+          currency !== currencyStore.defaultCurrency
+        )
       },
       fields: {
         enabled: toggleField('enabled', {
