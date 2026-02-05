@@ -30,7 +30,7 @@ export const fundraiserDonationColumns: ColumnDef<CampaignDonation>[] = [
         Button,
         {
           variant: 'ghost',
-          class: '-ml-4',
+          class: '-ml-2.5',
           onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
         },
         () => ['Date', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
@@ -46,19 +46,21 @@ export const fundraiserDonationColumns: ColumnDef<CampaignDonation>[] = [
   {
     accessorKey: 'amount',
     header: ({ column }) =>
-      h(
-        Button,
-        {
-          variant: 'ghost',
-          class: '-ml-4',
-          onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
-        },
-        () => ['Amount', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
-      ),
+      h('div', { class: 'flex justify-end' }, [
+        h(
+          Button,
+          {
+            variant: 'ghost',
+            class: '-mr-2',
+            onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+          },
+          () => ['Amount', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
+        )
+      ]),
     cell: ({ row }) =>
       h(
         'div',
-        { class: 'text-right font-medium text-sm' },
+        { class: 'text-right font-medium text-sm whitespace-nowrap mr-1' },
         formatCurrency(row.original.amount, row.original.currency)
       )
   }

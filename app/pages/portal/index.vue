@@ -4,14 +4,8 @@ import { useCampaignFormatters } from '~/features/campaigns/shared/composables/u
 import DataTable from '~/features/donor-portal/components/DataTable.vue'
 import { transactionColumnsCompact } from '~/features/donor-portal/columns/transactionColumns'
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card'
+import StatsCard from '@/components/StatsCard.vue'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -41,50 +35,10 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
 
       <!-- Stats row -->
       <div class="grid gap-4 grid-cols-2 md:grid-cols-4">
-        <Card>
-          <CardHeader class="flex-row items-center gap-3">
-            <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-              <DollarSign class="size-5 text-muted-foreground" />
-            </div>
-            <div class="space-y-0.5">
-              <CardDescription class="text-sm">Total Donated</CardDescription>
-              <CardTitle class="text-2xl">{{ formatAmount(totalDonated) }}</CardTitle>
-            </div>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader class="flex-row items-center gap-3">
-            <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-              <Receipt class="size-5 text-muted-foreground" />
-            </div>
-            <div class="space-y-0.5">
-              <CardDescription class="text-sm">Transactions</CardDescription>
-              <CardTitle class="text-2xl">{{ totalTransactions }}</CardTitle>
-            </div>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader class="flex-row items-center gap-3">
-            <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-              <CreditCard class="size-5 text-muted-foreground" />
-            </div>
-            <div class="space-y-0.5">
-              <CardDescription class="text-sm">Subscriptions</CardDescription>
-              <CardTitle class="text-2xl">{{ activeSubscriptions.length }}</CardTitle>
-            </div>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader class="flex-row items-center gap-3">
-            <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-              <Megaphone class="size-5 text-muted-foreground" />
-            </div>
-            <div class="space-y-0.5">
-              <CardDescription class="text-sm">Fundraisers</CardDescription>
-              <CardTitle class="text-2xl">{{ activeFundraisers.length }}</CardTitle>
-            </div>
-          </CardHeader>
-        </Card>
+        <StatsCard :icon="DollarSign" label="Total Donated" :value="formatAmount(totalDonated)" />
+        <StatsCard :icon="Receipt" label="Transactions" :value="totalTransactions" />
+        <StatsCard :icon="CreditCard" label="Subscriptions" :value="activeSubscriptions.length" />
+        <StatsCard :icon="Megaphone" label="Fundraisers" :value="activeFundraisers.length" />
       </div>
 
       <div class="grid gap-4 lg:grid-cols-2">

@@ -5,7 +5,8 @@ import { useCampaignFormatters } from '~/features/campaigns/shared/composables/u
 import DataTable from '~/features/donor-portal/components/DataTable.vue'
 import { fundraiserDonationColumns } from '~/features/donor-portal/columns/fundraiserDonationColumns'
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
-import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
+import StatsCard from '@/components/StatsCard.vue'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -17,7 +18,7 @@ import {
   EmptyMedia,
   EmptyTitle
 } from '@/components/ui/empty'
-import { ExternalLink, Megaphone, Pencil } from 'lucide-vue-next'
+import { ExternalLink, Heart, Megaphone, Pencil, TrendingUp, Users } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'portal'
@@ -70,55 +71,71 @@ const breadcrumbItems = computed(() => {
 
       <template v-else>
         <!-- Header -->
-        <div class="space-y-1.5">
-          <div class="flex items-start justify-between gap-4">
-            <h1 class="text-2xl font-semibold tracking-tight">{{ fundraiser.name }}</h1>
-            <Badge
-              variant="outline"
-              :data-campaign-status="fundraiser.status"
-              class="shrink-0 border-(--cs-border) text-(--cs-text)"
-            >
-              <span class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)" />
-              {{ fundraiser.status }}
-            </Badge>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div class="space-y-1.5">
+            <div>
+              <h1 class="inline text-2xl font-semibold tracking-tight">
+                {{ fundraiser.name }}
+              </h1>
+              <Badge
+                variant="outline"
+                :data-campaign-status="fundraiser.status"
+                class="inline-block ml-3 align-text-bottom border-(--cs-border) text-(--cs-text)"
+              >
+                <span class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)" />
+                {{ fundraiser.status }}
+              </Badge>
+            </div>
+            <p class="text-sm text-muted-foreground">
+              {{ fundraiser.crowdfunding.shortDescription }}
+            </p>
           </div>
-          <p class="text-sm text-muted-foreground">
-            {{ fundraiser.crowdfunding.shortDescription }}
-          </p>
+
+          <!-- Actions -->
+          <div class="flex gap-2 sm:shrink-0">
+            <NuxtLink :to="`/portal/fundraisers/${fundraiser.id}/edit`">
+              <Button variant="default" size="sm" as="span">
+                <Pencil class="w-3.5 h-3.5 mr-1" />
+                Edit Campaign
+              </Button>
+            </NuxtLink>
+            <NuxtLink :to="`/${charityStore.slug}/campaign/${fundraiser.id}`">
+              <Button variant="outline" size="sm" as="span">
+                <ExternalLink class="w-3.5 h-3.5 mr-1" />
+                View Page
+              </Button>
+            </NuxtLink>
+          </div>
         </div>
 
-        <!-- Actions -->
-        <div class="flex gap-2">
-          <NuxtLink :to="`/portal/fundraisers/${fundraiser.id}/edit`">
-            <Button variant="default" size="sm" as="span">
-              <Pencil class="w-3.5 h-3.5 mr-1" />
-              Edit Campaign
-            </Button>
-          </NuxtLink>
-          <NuxtLink :to="`/${charityStore.slug}/campaign/${fundraiser.id}`">
-            <Button variant="outline" size="sm" as="span">
-              <ExternalLink class="w-3.5 h-3.5 mr-1" />
-              View Page
-            </Button>
-          </NuxtLink>
-        </div>
-
-        <!-- Stats + Progress -->
-        <div class="grid gap-4 sm:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardDescription>Progress</CardDescription>
-            </CardHeader>
-            <CardContent class="pt-0 space-y-2">
-              <div v-if="fundraiser.crowdfunding.goalAmount" class="space-y-1">
-                <div class="flex justify-between text-sm">
-                  <span class="font-medium">
-                    {{ formatAmount(fundraiser.stats.totalRaised, fundraiser.stats.currency) }}
-                    raised
-                  </span>
-                  <span class="text-muted-foreground">
-                    of {{ formatAmount(fundraiser.crowdfunding.goalAmount) }}
-                  </span>
+        <!-- Stats -->
+        <div class="grid gap-4 grid-cols-2 sm:grid-cols-4 my-2">
+          <!-- Progress -->
+          <Card v-if="fundraiser.crowdfunding.goalAmount" class="col-span-2">
+            <CardContent>
+              <div class="space-y-3">
+                <div class="flex items-baseline justify-between gap-4">
+                  <div>
+                    <p class="text-3xl font-bold tracking-tight">
+                      {{ formatAmount(fundraiser.stats.totalRaised, fundraiser.stats.currency) }}
+                    </p>
+                    <p class="text-sm text-muted-foreground mt-0.5">
+                      raised of {{ formatAmount(fundraiser.crowdfunding.goalAmount) }} goal
+                    </p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-2xl font-bold text-muted-foreground">
+                      {{
+                        Math.round(
+                          getProgressPercentage(
+                            fundraiser.stats.totalRaised,
+                            fundraiser.crowdfunding.goalAmount
+                          )
+                        )
+                      }}%
+                    </p>
+                    <p class="text-xs text-muted-foreground">complete</p>
+                  </div>
                 </div>
                 <Progress
                   :model-value="
@@ -127,33 +144,13 @@ const breadcrumbItems = computed(() => {
                       fundraiser.crowdfunding.goalAmount
                     )
                   "
+                  class="h-3 mt-4 sm:mt-7"
                 />
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardDescription>Stats</CardDescription>
-            </CardHeader>
-            <CardContent class="pt-0">
-              <div class="grid grid-cols-3 gap-4 text-sm text-center">
-                <div>
-                  <p class="text-lg font-semibold">{{ fundraiser.stats.totalDonations }}</p>
-                  <p class="text-xs text-muted-foreground">donations</p>
-                </div>
-                <div>
-                  <p class="text-lg font-semibold">{{ fundraiser.stats.totalDonors }}</p>
-                  <p class="text-xs text-muted-foreground">donors</p>
-                </div>
-                <div>
-                  <p class="text-lg font-semibold">
-                    {{ formatAmount(fundraiser.stats.averageDonation, fundraiser.stats.currency) }}
-                  </p>
-                  <p class="text-xs text-muted-foreground">avg</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatsCard :icon="Heart" label="Donations" :value="fundraiser.stats.totalDonations" />
+          <StatsCard :icon="Users" label="Donors" :value="fundraiser.stats.totalDonors" />
         </div>
 
         <!-- Donations table -->
