@@ -22,7 +22,7 @@ const navLinks = computed(() => [
 const mobileMenuOpen = ref(false)
 
 const isActive = (to: string) => {
-  return route.path === to || route.path.startsWith(to + '/')
+  return route.path === to
 }
 </script>
 
