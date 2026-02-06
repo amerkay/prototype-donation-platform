@@ -63,17 +63,17 @@ app/features/[feature-name]/
 | donor-portal  | `app/features/donor-portal/`           | Donor dashboard: transaction history, fundraiser management                                         |
 | subscriptions | `app/features/subscriptions/`          | Subscription management: card component, action handlers, recurring donation state                  |
 | settings      | `app/features/settings/`               | Organization-level config (charity identity, currencies, per-currency overrides)                    |
-| form-builder  | `app/features/_library/form-builder/`  | Schema-driven form framework: defineForm API, 15 field types, conditions, containers                |
+| form-builder  | `app/features/_library/form-builder/`  | Schema-driven form framework: defineForm API, 16 field types, conditions, containers                |
 | custom-fields | `app/features/_library/custom-fields/` | Admin-configurable dynamic fields with 8 field type factories                                       |
-| \_admin       | `app/features/_admin/`                 | Shared admin components: sidebar, breadcrumbs, edit layouts, sticky buttons                         |
+| \_admin       | `app/features/_admin/`                 | Shared admin components: sidebar, breadcrumbs, edit layouts, navigation guards                      |
 
 **Key stores:** `donation-form/shared/stores/formConfig.ts` (admin config), `donation-form/donor/stores/donationForm.ts` (donor state, per-form-ID persistence), `donation-form/features/impact-cart/donor/stores/impactCart.ts` (cart by frequency, per-form-ID persistence), `campaigns/shared/stores/campaignConfig.ts` (campaign config), `campaigns/shared/stores/forms.ts` (campaign forms), `settings/admin/stores/currencySettings.ts` (org currencies), `settings/admin/stores/charitySettings.ts` (charity identity, slug, per-currency overrides).
 
-**Key composables:** `useCampaigns()`, `useForms()`, `useCampaignShare()`, `useDonorPortal()`, `useSubscriptionActions()`, `useCurrency()`, `useDonationCurrencies()`, `useAdminConfigForm()`, `useAdminEdit()`.
+**Key composables:** `useCampaigns()`, `useForms()`, `useCampaignShare()`, `useCampaignPreview()`, `useCampaignFormatters()`, `useDonorPortal()`, `useSubscriptionActions()`, `useCurrency()`, `useDonationCurrencies()`, `useAdminConfigForm()`, `useAdminEdit()`.
 
 **Layouts:** `admin.vue`, `admin-preview.vue`, `donor.vue`, `portal.vue`, `default.vue`.
 
-**Pages:** `app/pages/admin/` (campaigns, forms, settings: charity + currency), `app/pages/[org_slug]/` (donor-facing: campaign pages, forms, P2P onboarding), `app/pages/portal/` (donor dashboard: donations, subscriptions, fundraisers), `app/pages/index.vue` (landing).
+**Pages:** `app/pages/admin/` (campaigns, forms, settings: charity + currency), `app/pages/[org_slug]/` (donor-facing: campaign pages, forms, P2P onboarding/templates), `app/pages/portal/` (donor dashboard: donations, subscriptions, fundraisers), `app/pages/index.vue` (landing).
 
 <!-- end project summary -->
 
