@@ -110,7 +110,7 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
       store.isP2P
         ? 'Display list of recent supporters by default'
         : 'Display list of recent supporters',
-    visibleWhen: isEnabled,
+    visibleWhen: (ctx) => isEnabled(ctx) && !store.isFundraiser,
     optional: true
   })
 
@@ -121,7 +121,8 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
       { value: 'recent', label: 'Recent - Show latest donations first' },
       { value: 'top', label: 'Top - Show largest donations first' }
     ],
-    visibleWhen: ({ values }) => isEnabled({ values }) && values.showRecentDonations === true,
+    visibleWhen: ({ values }) =>
+      isEnabled({ values }) && values.showRecentDonations === true && !store.isFundraiser,
     rules: z.enum(['recent', 'top'])
   })
 
@@ -135,7 +136,8 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     min: 5,
     max: 50,
     step: 5,
-    visibleWhen: ({ values }) => isEnabled({ values }) && values.showRecentDonations === true,
+    visibleWhen: ({ values }) =>
+      isEnabled({ values }) && values.showRecentDonations === true && !store.isFundraiser,
     rules: z.number().min(5).max(50)
   })
 

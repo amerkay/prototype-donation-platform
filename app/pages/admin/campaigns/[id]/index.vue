@@ -4,11 +4,13 @@ import CampaignHeader from '~/features/campaigns/admin/components/CampaignHeader
 import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/CampaignMasterConfigPanel.vue'
 import CampaignPreviewSwitcher from '~/features/campaigns/admin/components/CampaignPreviewSwitcher.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
+import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import type { CampaignStatus } from '~/features/campaigns/shared/types'
 import { getCampaignTypeBreadcrumb } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import { openAccordionId } from '~/features/campaigns/admin/forms/campaign-config-master'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
+import { toast } from 'vue-sonner'
 
 definePageMeta({
   layout: 'admin'
@@ -58,6 +60,13 @@ const campaignForStore = computed(() => store.fullCampaign)
 // Form ref for validation
 const formRef = ref()
 
+// Activation guard: requires valid settings + at least one form
+const { forms } = useForms(store.id!)
+const formsCount = computed(
+  () => forms.value.filter((f) => !store.pendingFormDeletes.has(f.id)).length
+)
+const canActivate = computed(() => (formRef.value?.isValid ?? false) && formsCount.value > 0)
+
 // Use admin edit composable for save/discard logic
 const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBaseline } =
   useAdminEdit({
@@ -103,6 +112,12 @@ async function handleNameUpdate(newName: string) {
 
 async function handleStatusUpdate(newStatus: CampaignStatus) {
   if (!store.id) return
+  if (newStatus !== 'draft' && !canActivate.value) {
+    toast.error('Cannot change campaign status', {
+      description: 'Requires valid settings and at least one form.'
+    })
+    return
+  }
   store.status = newStatus
   try {
     await updateCampaignStatus(store.id, newStatus)
@@ -132,7 +147,11 @@ const handlePreview = () => {
   >
     <!-- Header slot for CampaignHeader -->
     <template #header>
-      <CampaignHeader @update:name="handleNameUpdate" @update:status="handleStatusUpdate" />
+      <CampaignHeader
+        :can-activate="canActivate"
+        @update:name="handleNameUpdate"
+        @update:status="handleStatusUpdate"
+      />
     </template>
 
     <!-- Main content -->

@@ -120,7 +120,7 @@ const activeFundraisersCount = computed(
       </div>
 
       <!-- Stats Grid -->
-      <div v-if="!compact" class="grid gap-3 pt-2" :class="isP2P ? 'grid-cols-3' : 'grid-cols-2'">
+      <div v-if="!compact" class="flex justify-between pt-2">
         <div v-if="isP2P" class="flex items-center gap-2 text-sm">
           <Users class="w-4 h-4 text-muted-foreground" />
           <div>

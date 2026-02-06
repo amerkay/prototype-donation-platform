@@ -99,7 +99,7 @@ const breadcrumbItems = computed(() => {
                 Edit Campaign
               </Button>
             </NuxtLink>
-            <NuxtLink :to="`/${charityStore.slug}/campaign/${fundraiser.id}`">
+            <NuxtLink :to="`/${charityStore.slug}/${fundraiser.id}`">
               <Button variant="outline" size="sm" as="span">
                 <ExternalLink class="w-3.5 h-3.5 mr-1" />
                 View Page

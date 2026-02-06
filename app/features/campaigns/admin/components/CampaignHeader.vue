@@ -6,6 +6,7 @@ import {
 } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import type { CampaignStatus } from '~/features/campaigns/shared/types'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -19,6 +20,10 @@ import {
 
 const store = useCampaignConfigStore()
 const { formatAmount } = useCampaignFormatters()
+
+const props = defineProps<{
+  canActivate?: boolean
+}>()
 
 const emit = defineEmits<{
   'update:name': [value: string]
@@ -71,20 +76,35 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem
-              v-for="opt in STATUS_OPTIONS"
-              :key="opt.value"
-              :value="opt.value"
-              class="text-xs"
-            >
-              <span class="flex items-center gap-2">
-                <span
-                  :data-campaign-status="opt.value"
-                  class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)"
-                />
-                {{ opt.label }}
-              </span>
-            </SelectItem>
+            <template v-for="opt in STATUS_OPTIONS" :key="opt.value">
+              <Tooltip v-if="opt.value !== 'draft' && !props.canActivate" :delay-duration="100">
+                <TooltipTrigger as-child>
+                  <div>
+                    <SelectItem :value="opt.value" disabled class="text-xs">
+                      <span class="flex items-center gap-2">
+                        <span
+                          :data-campaign-status="opt.value"
+                          class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)"
+                        />
+                        {{ opt.label }}
+                      </span>
+                    </SelectItem>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="right" class="text-xs">
+                  Requires valid settings and at least one form
+                </TooltipContent>
+              </Tooltip>
+              <SelectItem v-else :value="opt.value" class="text-xs">
+                <span class="flex items-center gap-2">
+                  <span
+                    :data-campaign-status="opt.value"
+                    class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)"
+                  />
+                  {{ opt.label }}
+                </span>
+              </SelectItem>
+            </template>
           </SelectContent>
         </Select>
       </div>
