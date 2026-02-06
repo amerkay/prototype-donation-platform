@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 import { toast } from 'vue-sonner'
 import type { Campaign, CampaignType } from '~/features/campaigns/shared/types'
 import { campaigns as mockCampaigns } from '~/sample-api-responses/api-sample-response-campaigns'
+import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
 
 /**
  * Campaigns Composable (Singleton Pattern)
@@ -206,6 +207,23 @@ export function useCampaigns() {
     return id
   }
 
+  /**
+   * Delete a campaign and its associated forms
+   */
+  const deleteCampaign = (id: string): void => {
+    const index = campaigns.value.findIndex((c) => c.id === id)
+    if (index === -1) return
+
+    campaigns.value.splice(index, 1)
+
+    // Clean up associated forms
+    const formsStore = useFormsStore()
+    formsStore.deleteCampaignForms(id)
+
+    $persist()
+    toast.success('Campaign deleted')
+  }
+
   /** Persistence - save all campaigns (modified mocks + user-created) to sessionStorage (client-only) */
   function $persist(): void {
     if (!import.meta.client) return
@@ -252,6 +270,7 @@ export function useCampaigns() {
     updateCampaign,
     updateCampaignName,
     updateCampaignStatus,
-    createCampaign
+    createCampaign,
+    deleteCampaign
   }
 }

@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import CampaignDeleteButton from './CampaignDeleteButton.vue'
 import {
   Select,
   SelectContent,
@@ -28,6 +29,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:name': [value: string]
   'update:status': [value: CampaignStatus]
+  deleted: []
 }>()
 
 const campaignTypeLabel = computed(() => getCampaignTypeShortLabel({ type: store.type }))
@@ -56,12 +58,17 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
       <!-- Left: Campaign name, type and status -->
       <div class="flex w-full items-center gap-x-3 gap-y-1.5 min-w-0 flex-wrap sm:w-auto">
-        <InlineEditableText
-          :model-value="store.name"
-          display-class="text-lg font-bold"
-          class="basis-full sm:basis-auto"
-          @update:model-value="emit('update:name', $event)"
-        />
+        <div class="flex basis-full items-center gap-2 sm:basis-auto">
+          <InlineEditableText
+            :model-value="store.name"
+            display-class="text-lg font-bold"
+            class="min-w-0"
+            @update:model-value="emit('update:name', $event)"
+          />
+          <div class="ml-auto sm:hidden">
+            <CampaignDeleteButton @deleted="emit('deleted')" />
+          </div>
+        </div>
         <Badge :variant="typeBadgeVariant" class="shrink-0 text-xs">
           {{ campaignTypeLabel }}
         </Badge>
@@ -140,6 +147,11 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
         >
           {{ store.stats.daysRemaining }}d left
         </span>
+      </div>
+
+      <!-- Delete button (desktop only — mobile shows it next to the title) -->
+      <div class="hidden shrink-0 sm:ml-auto sm:block">
+        <CampaignDeleteButton @deleted="emit('deleted')" />
       </div>
     </div>
   </div>

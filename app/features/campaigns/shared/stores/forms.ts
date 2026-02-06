@@ -202,6 +202,20 @@ export const useFormsStore = defineStore('forms', () => {
     }
   }
 
+  // Delete all forms for a campaign (used when deleting a campaign)
+  const deleteCampaignForms = (campaignId: string): void => {
+    const { [campaignId]: _, ...rest } = formsData.value
+    formsData.value = rest
+    hydratedCampaigns.value.delete(campaignId)
+    if (import.meta.client) {
+      try {
+        sessionStorage.removeItem(`forms-${campaignId}`)
+      } catch (error) {
+        console.warn('Failed to remove campaign forms from sessionStorage:', error)
+      }
+    }
+  }
+
   return {
     getForms,
     setDefaultForm,
@@ -209,6 +223,7 @@ export const useFormsStore = defineStore('forms', () => {
     addForm,
     duplicateForm,
     deleteForm,
+    deleteCampaignForms,
     updateFormConfig
   }
 })

@@ -5,6 +5,7 @@ import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/Cam
 import CampaignPreviewSwitcher from '~/features/campaigns/admin/components/CampaignPreviewSwitcher.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useForms } from '~/features/campaigns/shared/composables/useForms'
+import { useCampaignPreview } from '~/features/campaigns/shared/composables/useCampaignPreview'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import type { CampaignStatus } from '~/features/campaigns/shared/types'
 import { getCampaignTypeBreadcrumb } from '~/features/campaigns/shared/composables/useCampaignTypes'
@@ -67,6 +68,9 @@ const formsCount = computed(
 )
 const canActivate = computed(() => (formRef.value?.isValid ?? false) && formsCount.value > 0)
 
+// Preview state (centralised composable)
+const { hasActivePreview, isFormContext, previewLabel, defaultForm } = useCampaignPreview(store.id!)
+
 // Use admin edit composable for save/discard logic
 const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBaseline } =
   useAdminEdit({
@@ -127,9 +131,19 @@ async function handleStatusUpdate(newStatus: CampaignStatus) {
   }
 }
 
-// Preview handler
+// Preview handler — context-aware: opens form preview when viewing donation forms
 const handlePreview = () => {
-  window.open(`/admin/campaigns/${store.id}/preview`, '_blank')
+  if (isFormContext.value && defaultForm.value) {
+    window.open(`/admin/campaigns/${store.id}/forms/${defaultForm.value.id}/preview`, '_blank')
+  } else {
+    window.open(`/admin/campaigns/${store.id}/preview`, '_blank')
+  }
+}
+
+// After campaign is deleted, navigate back to the type list
+const handleDeleted = () => {
+  const typeBreadcrumb = getCampaignTypeBreadcrumb({ type: store.type })
+  navigateTo(typeBreadcrumb.href)
 }
 </script>
 
@@ -139,6 +153,8 @@ const handlePreview = () => {
     :breadcrumbs="breadcrumbs"
     :is-dirty="store.isDirty"
     :show-discard-dialog="showDiscardDialog"
+    :show-preview="hasActivePreview"
+    :preview-label="previewLabel"
     editable-last-item
     @preview="handlePreview"
     @update:show-discard-dialog="showDiscardDialog = $event"
@@ -151,6 +167,7 @@ const handlePreview = () => {
         :can-activate="canActivate"
         @update:name="handleNameUpdate"
         @update:status="handleStatusUpdate"
+        @deleted="handleDeleted"
       />
     </template>
 

@@ -4,6 +4,7 @@ import CampaignHeader from '~/features/campaigns/admin/components/CampaignHeader
 import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/CampaignMasterConfigPanel.vue'
 import CampaignPreviewSwitcher from '~/features/campaigns/admin/components/CampaignPreviewSwitcher.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
+import { useCampaignPreview } from '~/features/campaigns/shared/composables/useCampaignPreview'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import type { Campaign, CampaignStatus } from '~/features/campaigns/shared/types'
@@ -58,6 +59,9 @@ const campaignForStore = computed(() => store.fullCampaign)
 // Form ref for validation
 const formRef = ref()
 
+// Preview state (centralised composable)
+const { hasActivePreview, previewLabel } = useCampaignPreview(store.id!)
+
 // Reuse admin edit composable for save/discard logic
 const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBaseline } =
   useAdminEdit({
@@ -110,6 +114,11 @@ function handleStatusUpdate(newStatus: CampaignStatus) {
 const handlePreview = () => {
   window.open(`/${charityStore.slug}/campaign/${store.id}`, '_blank')
 }
+
+// After fundraiser is deleted, navigate back to fundraisers list
+const handleDeleted = () => {
+  navigateTo('/portal/fundraisers')
+}
 </script>
 
 <template>
@@ -118,6 +127,8 @@ const handlePreview = () => {
     :breadcrumbs="breadcrumbs"
     :is-dirty="store.isDirty"
     :show-discard-dialog="showDiscardDialog"
+    :show-preview="hasActivePreview"
+    :preview-label="previewLabel"
     editable-last-item
     @preview="handlePreview"
     @update:show-discard-dialog="showDiscardDialog = $event"
@@ -125,7 +136,11 @@ const handlePreview = () => {
     @update:last-item-label="handleNameUpdate"
   >
     <template #header>
-      <CampaignHeader @update:name="handleNameUpdate" @update:status="handleStatusUpdate" />
+      <CampaignHeader
+        @update:name="handleNameUpdate"
+        @update:status="handleStatusUpdate"
+        @deleted="handleDeleted"
+      />
     </template>
 
     <template #content>
