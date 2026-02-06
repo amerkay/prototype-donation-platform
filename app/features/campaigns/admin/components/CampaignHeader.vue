@@ -55,21 +55,24 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
 
 <template>
   <div v-if="store.stats" class="bg-muted/30 rounded-xl border px-4 py-3">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
       <!-- Left: Campaign name, type and status -->
       <div class="flex w-full items-center gap-x-3 gap-y-1.5 min-w-0 flex-wrap sm:w-auto">
-        <div class="flex basis-full items-center gap-2 sm:basis-auto">
+        <div class="flex basis-full min-w-0 items-center gap-2 sm:basis-auto">
           <InlineEditableText
             :model-value="store.name"
             display-class="text-lg font-bold"
             class="min-w-0"
             @update:model-value="emit('update:name', $event)"
           />
-          <div class="ml-auto sm:hidden">
+          <div class="ml-auto shrink-0 sm:hidden">
             <CampaignDeleteButton @deleted="emit('deleted')" />
           </div>
         </div>
-        <Badge :variant="typeBadgeVariant" class="shrink-0 text-xs">
+        <Badge
+          :variant="typeBadgeVariant"
+          class="h-6 shrink-0 px-2 py-0 inline-flex items-center text-xs"
+        >
           {{ campaignTypeLabel }}
         </Badge>
 
@@ -119,7 +122,7 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
       <!-- Center: Total raised only (for P2P templates) -->
       <div
         v-if="store.isP2P"
-        class="flex items-center gap-3 px-3 py-1.5 bg-background rounded-full border"
+        class="flex h-6 items-center gap-3 px-3 bg-background rounded-full border sm:ml-auto"
       >
         <span class="text-xs text-muted-foreground whitespace-nowrap">Total Raised</span>
         <span class="text-sm font-medium whitespace-nowrap">
@@ -130,7 +133,7 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
       <!-- Center: Progress chip (for standard campaigns and fundraisers with goals) -->
       <div
         v-else-if="showProgress"
-        class="flex w-full items-center gap-3 px-3 py-1.5 bg-background rounded-full border sm:w-auto"
+        class="flex h-7 w-full items-center gap-3 px-3 bg-background rounded-full border sm:w-auto sm:ml-auto"
       >
         <div class="w-24">
           <Progress :model-value="store.progressPercentage" class="h-2" />
@@ -150,7 +153,7 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
       </div>
 
       <!-- Delete button (desktop only — mobile shows it next to the title) -->
-      <div class="hidden shrink-0 sm:ml-auto sm:block">
+      <div class="hidden shrink-0 sm:block">
         <CampaignDeleteButton @deleted="emit('deleted')" />
       </div>
     </div>
