@@ -100,6 +100,7 @@ const hasSocialSharing = computed(() => {
             "
             :stats="campaign.stats"
             :goal-amount="campaign.crowdfunding.goalAmount"
+            :end-date="campaign.crowdfunding.endDate"
           />
           <CampaignActions
             :show-share="hasSocialSharing"

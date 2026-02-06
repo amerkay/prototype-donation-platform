@@ -18,6 +18,7 @@ definePageMeta({
 })
 
 const route = useRoute()
+const router = useRouter()
 const { getCampaignById, updateCampaign, updateCampaignName, updateCampaignStatus } = useCampaigns()
 const store = useCampaignConfigStore()
 
@@ -116,18 +117,61 @@ async function handleNameUpdate(newName: string) {
 
 async function handleStatusUpdate(newStatus: CampaignStatus) {
   if (!store.id) return
-  if (newStatus !== 'draft' && !canActivate.value) {
-    toast.error('Cannot change campaign status', {
-      description: 'Requires valid settings and at least one form.'
+  // Prevent reverting to draft once donations have been received
+  if (newStatus === 'draft' && (store.stats?.totalDonations ?? 0) > 0) {
+    toast.error('Cannot revert to draft', {
+      description: 'This campaign has already received donations.'
     })
     return
   }
+  const previousStatus = store.status
+
+  // Auto-clear past end date when reactivating from completed/archived
+  // A past date is meaningless for a reactivated campaign
+  const fromLocked = previousStatus === 'completed' || previousStatus === 'archived'
+  let clearedEndDate = false
+  let previousEndDate: string | null = null
+  if (fromLocked && store.crowdfunding?.endDate) {
+    const endDate = new Date(store.crowdfunding.endDate)
+    if (endDate < new Date(new Date().toDateString())) {
+      previousEndDate = store.crowdfunding.endDate
+      store.crowdfunding.endDate = null
+      // Sync to vee-validate (store → form is one-way, needs explicit push)
+      formRef.value?.setFieldValue?.('crowdfunding.endDate', null)
+      clearedEndDate = true
+    }
+  }
+
+  // Set status first so dynamic rules (e.g. endDate past-check) re-evaluate
   store.status = newStatus
+
+  // Let vee-validate re-validate with the cleared value and new status
+  await nextTick()
+
+  if (newStatus !== 'draft' && !canActivate.value) {
+    store.status = previousStatus
+    if (clearedEndDate && store.crowdfunding) {
+      store.crowdfunding.endDate = previousEndDate
+      formRef.value?.setFieldValue?.('crowdfunding.endDate', previousEndDate)
+    }
+    toast.error('Cannot change campaign status', {
+      description: 'Please fix form errors before changing status.'
+    })
+    return
+  }
   try {
     await updateCampaignStatus(store.id, newStatus)
     patchBaseline({ status: newStatus })
+    if (clearedEndDate) {
+      store.markDirty()
+      toast.info('End date cleared', {
+        description: 'The past end date was removed. You can set a new one if needed.'
+      })
+      // Navigate to the cleared field so the hash target highlights it
+      router.replace({ hash: '#crowdfunding.endDate' })
+    }
   } catch {
-    // updateCampaign handles rollback internally
+    store.status = previousStatus
   }
 }
 

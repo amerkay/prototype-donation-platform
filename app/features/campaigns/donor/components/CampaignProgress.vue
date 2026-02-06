@@ -6,9 +6,10 @@ import { Progress } from '@/components/ui/progress'
 const props = defineProps<{
   stats: CampaignStats
   goalAmount: number
+  endDate?: string | null
 }>()
 
-const { formatAmount } = useCampaignFormatters()
+const { formatAmount, formatTimeRemaining } = useCampaignFormatters()
 
 const progressPercentage = computed(() => {
   if (!props.goalAmount || !props.stats) return 0
@@ -33,7 +34,7 @@ const progressPercentage = computed(() => {
     <!-- <Separator /> -->
     <div class="flex justify-between text-xs text-muted-foreground">
       <span>{{ stats.totalDonors }} supporters</span>
-      <span v-if="stats.daysRemaining">{{ stats.daysRemaining }} days left</span>
+      <span v-if="formatTimeRemaining(endDate)">{{ formatTimeRemaining(endDate) }} left</span>
     </div>
   </div>
 </template>

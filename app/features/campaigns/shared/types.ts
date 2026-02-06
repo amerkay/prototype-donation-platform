@@ -62,7 +62,6 @@ export interface CampaignStats {
   topDonation: number
   /** Currency stats are denominated in (org base currency) */
   currency: string
-  daysRemaining?: number
 }
 
 /**
@@ -79,6 +78,8 @@ export interface CrowdfundingSettings {
   defaultDonationsView: 'recent' | 'top'
   numberOfDonationsToShow: number
   goalAmount?: number
+  /** Campaign end date (ISO date string, e.g. '2026-03-22'), null when cleared */
+  endDate?: string | null
 }
 
 /**

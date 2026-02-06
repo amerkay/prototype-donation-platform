@@ -23,7 +23,8 @@
       "WebFetch(domain:www.shadcn-vue.com)",
       "Bash(pnpm lint:*)",
       "Bash(xargs -I {} bash -c 'echo \"\"=== {} ===\"\" && ls -la {}')",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(xargs:*)"
     ]
   }
 }

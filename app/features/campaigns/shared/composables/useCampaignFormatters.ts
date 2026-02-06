@@ -1,4 +1,5 @@
 import { formatCurrency } from '~/lib/formatCurrency'
+import { differenceInCalendarDays } from 'date-fns'
 
 /**
  * Shared formatting utilities for campaign components
@@ -63,12 +64,39 @@ export function useCampaignFormatters() {
     return Math.min((raised / goal) * 100, 100)
   }
 
+  /**
+   * Get remaining calendar days from an end date.
+   * Uses differenceInCalendarDays (ignores time-of-day) so both
+   * formatTimeRemaining and formatTimeRemainingShort always agree.
+   */
+  const getRemainingDays = (endDate: string | null | undefined): number | null => {
+    if (!endDate) return null
+    const days = differenceInCalendarDays(new Date(endDate), new Date())
+    return days > 0 ? days : null
+  }
+
+  /** Human-readable time remaining (e.g. "28 days") */
+  const formatTimeRemaining = (endDate: string | null | undefined): string | null => {
+    const days = getRemainingDays(endDate)
+    if (days === null) return null
+    return days === 1 ? '1 day' : `${days} days`
+  }
+
+  /** Compact time remaining (e.g. "28d") */
+  const formatTimeRemainingShort = (endDate: string | null | undefined): string | null => {
+    const days = getRemainingDays(endDate)
+    if (days === null) return null
+    return `${days}d`
+  }
+
   return {
     formatAmount,
     formatRelativeTime,
     getDonorInitials,
     getInitials: getDonorInitials, // Alias for broader use
     formatDate,
-    getProgressPercentage
+    getProgressPercentage,
+    formatTimeRemaining,
+    formatTimeRemainingShort
   }
 }

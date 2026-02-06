@@ -31,7 +31,9 @@ const isFieldVisible = (fieldDef: FieldDef) => {
 // Check if separator should be shown after a field
 const shouldShowSeparatorAfter = (currentIndex: number, currentFieldDef: FieldDef) => {
   // Only show separator if current field is visible and has the flag
-  if (!isFieldVisible(currentFieldDef) || !currentFieldDef.showSeparatorAfter) {
+  const sep = currentFieldDef.showSeparatorAfter
+  const hasSeparator = typeof sep === 'function' ? sep() : sep
+  if (!isFieldVisible(currentFieldDef) || !hasSeparator) {
     return false
   }
 

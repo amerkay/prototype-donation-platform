@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, type Ref, type ComputedRef } from 'vue'
+import { ref, watch, computed, provide, type Ref, type ComputedRef } from 'vue'
 import { cn } from '@/lib/utils'
 import { FieldSet, FieldLegend, FieldDescription } from '@/components/ui/field'
 import {
@@ -100,6 +100,9 @@ if (props.meta.collapsible) {
 // Extract resolvedDisabled from useFieldWrapper for standard disabled support
 const { resolvedDisabled, resolvedClass } = useFieldWrapper(props.meta, props.name, () => [])
 
+// Propagate disabled state to child fields via inject/provide
+provide('parentGroupDisabled', () => resolvedDisabled.value)
+
 // Compute combined errors if fields are provided
 // Include container-level rules for schema validation when unmounted
 const hasChildErrors = props.meta.fields
@@ -172,12 +175,11 @@ if (props.meta.collapsible) {
         }
       "
       :value="name"
-      :disabled="resolvedDisabled"
       :unmount-on-hide="true"
     >
       <AccordionTrigger
         class="hover:no-underline group -my-4"
-        :class="{ 'cursor-not-allowed opacity-60': resolvedDisabled }"
+        :class="{ 'opacity-75': resolvedDisabled }"
       >
         <div class="flex items-start justify-between w-full">
           <div class="flex-1 text-left">
@@ -218,8 +220,8 @@ if (props.meta.collapsible) {
               {{ meta.description }}
             </p>
           </div>
-          <span v-if="!resolvedDisabled" class="text-sm text-muted-foreground">{{
-            isOpen ? '' : 'Edit'
+          <span class="text-sm text-muted-foreground">{{
+            isOpen ? '' : resolvedDisabled ? 'View' : 'Edit'
           }}</span>
         </div>
       </AccordionTrigger>

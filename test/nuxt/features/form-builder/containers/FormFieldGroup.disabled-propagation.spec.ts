@@ -4,26 +4,20 @@ import { defineComponent, h, provide } from 'vue'
 import { useForm } from 'vee-validate'
 import { textField } from '~/features/_library/form-builder/api'
 import FormFieldGroup from '~/features/_library/form-builder/containers/FormFieldGroup.vue'
-import type { FieldGroupDef, FieldContext } from '~/features/_library/form-builder/types'
+import type { FieldGroupDef } from '~/features/_library/form-builder/types'
 
 /**
- * Test suite for disabled property on field-group containers
- * Ensures that disabled attribute properly styles collapsible accordions
- * and propagates disabled state to child fields
+ * Test suite for disabled state propagation from field-group to child fields
+ * Verifies that when a field-group is disabled, all children inherit disabled state
  */
 
-/**
- * Create a test wrapper with proper form context to prevent vee-validate warnings
- */
 function createFormGroupWrapper(meta: FieldGroupDef, name: string) {
   return defineComponent({
     setup() {
-      // Initialize vee-validate form context
       const { setFieldValue, setFieldTouched, setFieldError } = useForm({
         initialValues: { 'test-section': {} }
       })
 
-      // Provide required form-builder context
       provide('sectionId', 'test-section')
       provide('fieldPrefix', '')
       provide('setFieldValue', (path: string, value: unknown) => {
@@ -41,13 +35,14 @@ function createFormGroupWrapper(meta: FieldGroupDef, name: string) {
   })
 }
 
-describe('FormFieldGroup - Disabled Property', () => {
-  it('applies opacity styling when disabled (collapsible)', async () => {
+describe('FormFieldGroup - Disabled Propagation', () => {
+  it('propagates disabled to child inputs when group is disabled (collapsible, open)', async () => {
     const meta: FieldGroupDef = {
       type: 'field-group',
       name: 'testGroup',
       label: 'Test Group',
       collapsible: true,
+      collapsibleDefaultOpen: true,
       fields: {
         field1: textField('field1', { label: 'Field 1' })
       },
@@ -57,37 +52,19 @@ describe('FormFieldGroup - Disabled Property', () => {
     const WrapperComponent = createFormGroupWrapper(meta, 'testGroup')
     const wrapper = await mountSuspended(WrapperComponent)
 
-    // AccordionTrigger should have reduced opacity styling
-    const accordionTrigger = wrapper.find('button')
-    expect(accordionTrigger.classes()).toContain('opacity-75')
+    // Child input should be disabled
+    const input = wrapper.find('input')
+    expect(input.exists()).toBe(true)
+    expect(input.attributes('disabled')).toBeDefined()
   })
 
-  it('shows "View" text when disabled (not "Edit")', async () => {
+  it('does not disable child inputs when group is enabled', async () => {
     const meta: FieldGroupDef = {
       type: 'field-group',
       name: 'testGroup',
       label: 'Test Group',
       collapsible: true,
-      fields: {
-        field1: textField('field1', { label: 'Field 1' })
-      },
-      disabled: true
-    }
-
-    const WrapperComponent = createFormGroupWrapper(meta, 'testGroup')
-    const wrapper = await mountSuspended(WrapperComponent)
-
-    // Should display "View" text when disabled
-    expect(wrapper.text()).toContain('View')
-    expect(wrapper.text()).not.toContain('Edit')
-  })
-
-  it('shows "Edit" text when not disabled', async () => {
-    const meta: FieldGroupDef = {
-      type: 'field-group',
-      name: 'testGroup',
-      label: 'Test Group',
-      collapsible: true,
+      collapsibleDefaultOpen: true,
       fields: {
         field1: textField('field1', { label: 'Field 1' })
       },
@@ -97,35 +74,18 @@ describe('FormFieldGroup - Disabled Property', () => {
     const WrapperComponent = createFormGroupWrapper(meta, 'testGroup')
     const wrapper = await mountSuspended(WrapperComponent)
 
-    // Should display "Edit" text when not disabled
-    expect(wrapper.text()).toContain('Edit')
+    const input = wrapper.find('input')
+    expect(input.exists()).toBe(true)
+    expect(input.attributes('disabled')).toBeUndefined()
   })
 
-  it('disables field group with dynamic function', async () => {
+  it('allows accordion to open when disabled (click trigger)', async () => {
     const meta: FieldGroupDef = {
       type: 'field-group',
       name: 'testGroup',
       label: 'Test Group',
       collapsible: true,
-      fields: {
-        field1: textField('field1', { label: 'Field 1' })
-      },
-      disabled: (ctx: FieldContext) => ctx.values.isLocked === true
-    }
-
-    const WrapperComponent = createFormGroupWrapper(meta, 'testGroup')
-    const wrapper = await mountSuspended(WrapperComponent)
-
-    // Verify the component renders without errors
-    expect(wrapper.find('button').exists()).toBe(true)
-  })
-
-  it('disabled does not affect non-collapsible field groups', async () => {
-    const meta: FieldGroupDef = {
-      type: 'field-group',
-      name: 'testGroup',
-      label: 'Test Group',
-      collapsible: false, // Not collapsible
+      collapsibleDefaultOpen: false,
       fields: {
         field1: textField('field1', { label: 'Field 1' })
       },
@@ -135,17 +95,18 @@ describe('FormFieldGroup - Disabled Property', () => {
     const WrapperComponent = createFormGroupWrapper(meta, 'testGroup')
     const wrapper = await mountSuspended(WrapperComponent)
 
-    // Non-collapsible field groups use FieldSet, not Accordion
-    // The disabled prop is still processed but doesn't have UI effect on FieldSet
-    const fieldSet = wrapper.find('fieldset')
-    expect(fieldSet.exists()).toBe(true)
+    // Click trigger to open
+    const trigger = wrapper.find('button')
+    await trigger.trigger('click')
+    await wrapper.vm.$nextTick()
 
-    // Verify child fields are still rendered (disabled doesn't hide the group)
-    expect(wrapper.find('legend').text()).toContain('Test Group')
+    // Content should be visible after click (accordion is not locked)
+    const content = wrapper.find('[data-state="open"]')
+    expect(content.exists()).toBe(true)
   })
 
-  it('prevents underline hover effect when disabled', async () => {
-    const meta: FieldGroupDef = {
+  it('shows "View" when disabled, "Edit" when enabled', async () => {
+    const disabledMeta: FieldGroupDef = {
       type: 'field-group',
       name: 'testGroup',
       label: 'Test Group',
@@ -156,11 +117,42 @@ describe('FormFieldGroup - Disabled Property', () => {
       disabled: true
     }
 
+    const enabledMeta: FieldGroupDef = {
+      ...disabledMeta,
+      disabled: false
+    }
+
+    const DisabledWrapper = createFormGroupWrapper(disabledMeta, 'testGroup')
+    const EnabledWrapper = createFormGroupWrapper(enabledMeta, 'testGroup')
+
+    const disabledW = await mountSuspended(DisabledWrapper)
+    const enabledW = await mountSuspended(EnabledWrapper)
+
+    expect(disabledW.text()).toContain('View')
+    expect(disabledW.text()).not.toContain('Edit')
+
+    expect(enabledW.text()).toContain('Edit')
+    expect(enabledW.text()).not.toContain('View')
+  })
+
+  it('propagates disabled to children in non-collapsible field group', async () => {
+    const meta: FieldGroupDef = {
+      type: 'field-group',
+      name: 'testGroup',
+      label: 'Test Group',
+      collapsible: false,
+      fields: {
+        field1: textField('field1', { label: 'Field 1' })
+      },
+      disabled: true
+    }
+
     const WrapperComponent = createFormGroupWrapper(meta, 'testGroup')
     const wrapper = await mountSuspended(WrapperComponent)
 
-    // Label should not have the hover:underline class when disabled
-    const label = wrapper.find('h3')
-    expect(label.classes()).not.toContain('group-hover:underline')
+    // Non-collapsible: children should still be disabled via provide/inject
+    const input = wrapper.find('input')
+    expect(input.exists()).toBe(true)
+    expect(input.attributes('disabled')).toBeDefined()
   })
 })

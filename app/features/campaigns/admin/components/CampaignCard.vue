@@ -18,7 +18,8 @@ const props = defineProps<{
   compact?: boolean
 }>()
 
-const { formatAmount, formatDate, getProgressPercentage } = useCampaignFormatters()
+const { formatAmount, formatDate, getProgressPercentage, formatTimeRemaining } =
+  useCampaignFormatters()
 const { getCampaignById } = useCampaigns()
 
 const progressPercentage = computed(() =>
@@ -144,14 +145,14 @@ const activeFundraisersCount = computed(
         </div>
       </div>
 
-      <!-- Days Remaining Badge -->
+      <!-- Time Remaining Badge -->
       <div
-        v-if="campaign.stats.daysRemaining && !compact"
+        v-if="formatTimeRemaining(campaign.crowdfunding.endDate) && !compact"
         class="flex items-center gap-2 pt-2 border-t"
       >
         <Target class="w-4 h-4 text-muted-foreground" />
         <span class="text-sm text-muted-foreground">
-          {{ campaign.stats.daysRemaining }} days remaining
+          {{ formatTimeRemaining(campaign.crowdfunding.endDate) }} remaining
         </span>
       </div>
 

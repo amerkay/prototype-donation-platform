@@ -31,6 +31,9 @@ export function createCampaignConfigMaster() {
     const peerToPeerFields = useP2PSettingsForm.setup(ctx)
     const socialSharingFields = useSocialSharingForm.setup(ctx)
 
+    // Lock all sections when campaign is completed or archived
+    const isStatusLocked = () => store.status === 'completed' || store.status === 'archived'
+
     // "Donation Forms" section - hidden for fundraiser (forms inherited from template)
     const donationForms = fieldGroup('donationForms', {
       label: 'Donation Forms',
@@ -39,6 +42,7 @@ export function createCampaignConfigMaster() {
       collapsibleDefaultOpen: true,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
       fields: donationFormsFields,
+      disabled: isStatusLocked,
       // Hidden for fundraiser campaigns (forms inherited from template)
       visibleWhen: () => !store.isFundraiser
     })
@@ -52,7 +56,8 @@ export function createCampaignConfigMaster() {
       collapsible: !store.isFundraiser,
       collapsibleDefaultOpen: store.isFundraiser,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: crowdfundingFields
+      fields: crowdfundingFields,
+      disabled: isStatusLocked
     })
 
     const peerToPeer = fieldGroup('peerToPeer', {
@@ -62,6 +67,7 @@ export function createCampaignConfigMaster() {
       collapsibleDefaultOpen: store.isP2P,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
       fields: peerToPeerFields,
+      disabled: isStatusLocked,
       // Hide from standard and fundraiser campaigns (fundraisers can't have sub-fundraisers)
       visibleWhen: () => store.type !== 'standard' && store.type !== 'fundraiser'
     })
@@ -73,6 +79,7 @@ export function createCampaignConfigMaster() {
       collapsibleDefaultOpen: false,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
       fields: socialSharingFields,
+      disabled: isStatusLocked,
       // Hidden for fundraiser campaigns and when crowdfunding page is disabled
       visibleWhen: ({ values }) => {
         if (store.isFundraiser) return false

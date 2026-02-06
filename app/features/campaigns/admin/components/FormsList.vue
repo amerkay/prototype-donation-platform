@@ -49,6 +49,10 @@ import {
 } from '@/components/ui/empty'
 import { Edit, Check, FileText, Plus, Eye, Copy, MoreHorizontal, Trash2 } from 'lucide-vue-next'
 
+const props = defineProps<{
+  disabled?: boolean
+}>()
+
 const router = useRouter()
 const store = useCampaignConfigStore()
 const currencySettings = useCurrencySettingsStore()
@@ -61,12 +65,13 @@ const visibleForms = computed(() => forms.value.filter((f) => !store.pendingForm
 // P2P campaigns are limited to a single donation form
 // Fundraiser campaigns cannot add forms (they use a copy from parent template)
 const canAddForm = computed(() => {
-  if (store.isFundraiser) return false
+  if (props.disabled || store.isFundraiser) return false
   return visibleForms.value.length < store.maxFormsAllowed
 })
 
 // Fundraisers cannot modify forms (they use copied forms from parent)
-const canModifyForms = computed(() => !store.isFundraiser)
+// Disabled state also prevents modifications
+const canModifyForms = computed(() => !props.disabled && !store.isFundraiser)
 
 // Track loading states
 const settingDefaultId = ref<string | null>(null)
@@ -206,7 +211,7 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
           Create your first donation form to start collecting donations for this campaign.
         </EmptyDescription>
       </EmptyHeader>
-      <EmptyContent>
+      <EmptyContent v-if="!props.disabled">
         <div class="flex flex-col sm:flex-row gap-2">
           <Button @click="handleAddForm">
             <Plus class="w-4 h-4 mr-1.5" />
@@ -255,11 +260,13 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
                 >
                   <Eye class="w-4 h-4" />
                 </Button>
-                <Button size="sm" @click="handleEditForm(form.id)">
-                  <Edit class="w-4 h-4 mr-1.5" />
-                  Edit
-                </Button>
-                <DropdownMenu>
+                <template v-if="!props.disabled">
+                  <Button size="sm" @click="handleEditForm(form.id)">
+                    <Edit class="w-4 h-4 mr-1.5" />
+                    Edit
+                  </Button>
+                </template>
+                <DropdownMenu v-if="canModifyForms">
                   <DropdownMenuTrigger as-child>
                     <Button variant="outline" size="icon" title="More actions">
                       <MoreHorizontal class="w-4 h-4" />

@@ -1,4 +1,5 @@
-import type { Ref, ComputedRef } from 'vue'
+import { ref, computed, provide, onMounted, onUnmounted, type Ref, type ComputedRef } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router'
 import { toast } from 'vue-sonner'
 
 /**
@@ -37,9 +38,21 @@ export interface UseAdminEditOptions<TStore extends EditableStore, TOriginalData
   onDiscard?: (data: TOriginalData) => void
 }
 
+/** Inject key for leave guard state shared with AdminEditLayout */
+export const LEAVE_GUARD_KEY = 'adminLeaveGuard'
+
+export type LeaveAction = 'save' | 'discard' | 'stay'
+
+export interface LeaveGuard {
+  showDialog: Ref<boolean>
+  canSave: ComputedRef<boolean>
+  resolve: (action: LeaveAction) => void
+}
+
 /**
  * Composable for managing save/discard logic in admin edit pages
  * Provides consistent validation, save state, and discard confirmation
+ * Includes navigation guard to prevent losing unsaved changes
  *
  * @example
  * ```vue
@@ -126,46 +139,47 @@ export function useAdminEdit<TStore extends EditableStore, TOriginalData>({
   }
 
   /**
+   * Restore store to last saved state (shared by confirmDiscard and leave guard)
+   */
+  const restoreLastSaved = () => {
+    if (!lastSavedData.value) return
+    if (onDiscard) {
+      onDiscard(lastSavedData.value)
+    } else {
+      if (Array.isArray(lastSavedData.value)) {
+        store.initialize(...lastSavedData.value)
+      } else {
+        store.initialize(lastSavedData.value)
+      }
+    }
+    store.markClean()
+  }
+
+  /**
    * Confirm and execute discard action
    */
   const confirmDiscard = async () => {
     // Restore to last saved state
-    if (lastSavedData.value) {
-      // Use custom onDiscard if provided, otherwise default to store.initialize
-      if (onDiscard) {
-        onDiscard(lastSavedData.value)
-      } else {
-        // Handle both single object and tuple arguments for initialize
-        if (Array.isArray(lastSavedData.value)) {
-          store.initialize(...lastSavedData.value)
-        } else {
-          store.initialize(lastSavedData.value)
-        }
-      }
+    restoreLastSaved()
 
-      // Mark clean immediately after store initialization
-      // store.initialize may trigger watchers that mark dirty
-      store.markClean()
-
-      // Reset form validation state to match updated store
-      // This updates vee-validate's internal state without remounting
-      if (formRef.value?.resetToSaved) {
-        formRef.value.resetToSaved()
-      }
-
-      // Wait for all reactive updates to settle, then mark clean again
-      // resetToSaved() triggers FormRenderer watchers which may call setData and mark dirty
-      await nextTick()
-      store.markClean()
-
-      // FormRenderer's watcher uses { flush: 'post' } which can fire after nextTick
-      // Use setTimeout to ensure we mark clean after ALL async updates complete
-      setTimeout(() => {
-        store.markClean()
-      }, 0)
-
-      toast.success('Changes discarded')
+    // Reset form validation state to match updated store
+    // This updates vee-validate's internal state without remounting
+    if (formRef.value?.resetToSaved) {
+      formRef.value.resetToSaved()
     }
+
+    // Wait for all reactive updates to settle, then mark clean again
+    // resetToSaved() triggers FormRenderer watchers which may call setData and mark dirty
+    await nextTick()
+    store.markClean()
+
+    // FormRenderer's watcher uses { flush: 'post' } which can fire after nextTick
+    // Use setTimeout to ensure we mark clean after ALL async updates complete
+    setTimeout(() => {
+      store.markClean()
+    }, 0)
+
+    toast.success('Changes discarded')
     showDiscardDialog.value = false
   }
 
@@ -179,6 +193,63 @@ export function useAdminEdit<TStore extends EditableStore, TOriginalData>({
       Object.assign(lastSavedData.value, deepClone(patch))
     }
   }
+
+  // ── Navigation guard ──────────────────────────────────────────────────
+  const showLeaveDialog = ref(false)
+  const canSave = computed(() => formRef.value?.isValid ?? false)
+  let resolveLeaveAction: ((action: LeaveAction) => void) | null = null
+
+  const leaveGuard: LeaveGuard = {
+    showDialog: showLeaveDialog,
+    canSave,
+    resolve: (action: LeaveAction) => {
+      resolveLeaveAction?.(action)
+      resolveLeaveAction = null
+    }
+  }
+
+  provide(LEAVE_GUARD_KEY, leaveGuard)
+
+  onBeforeRouteLeave(async () => {
+    if (!store.isDirty) return true
+
+    showLeaveDialog.value = true
+
+    const action = await new Promise<LeaveAction>((resolve) => {
+      resolveLeaveAction = resolve
+    })
+
+    showLeaveDialog.value = false
+
+    if (action === 'save') {
+      await handleSave()
+      // Navigate only if save succeeded (isDirty cleared)
+      return !store.isDirty
+    }
+
+    if (action === 'discard') {
+      restoreLastSaved()
+      return true
+    }
+
+    // 'stay'
+    return false
+  })
+
+  // Warn on browser close/refresh with unsaved changes
+  const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    if (store.isDirty) {
+      e.preventDefault()
+    }
+  }
+
+  onMounted(() => {
+    window.addEventListener('beforeunload', handleBeforeUnload)
+  })
+
+  onUnmounted(() => {
+    window.removeEventListener('beforeunload', handleBeforeUnload)
+  })
 
   return {
     handleSave,

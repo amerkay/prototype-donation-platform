@@ -24,6 +24,7 @@ import FormFieldCombobox from './fields/FormFieldCombobox.vue'
 import FormFieldRadioGroup from './fields/FormFieldRadioGroup.vue'
 import FormFieldSlider from './fields/FormFieldSlider.vue'
 import FormFieldAutocomplete from './fields/FormFieldAutocomplete.vue'
+import FormFieldDate from './fields/FormFieldDate.vue'
 import FormFieldEmoji from './fields/FormFieldEmoji.vue'
 import FormFieldImageUpload from './fields/FormFieldImageUpload.vue'
 import FormFieldComponent from './fields/FormFieldComponent.vue'
@@ -53,6 +54,7 @@ const FIELD_COMPONENTS: Record<string, Component> = {
   combobox: FormFieldCombobox,
   autocomplete: FormFieldAutocomplete,
   'radio-group': FormFieldRadioGroup,
+  date: FormFieldDate,
   emoji: FormFieldEmoji,
   slider: FormFieldSlider,
   'image-upload': FormFieldImageUpload,

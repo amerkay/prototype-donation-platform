@@ -23,6 +23,8 @@ import type {
   AutocompleteFieldDef,
   RadioGroupFieldConfig,
   RadioGroupFieldDef,
+  DateFieldConfig,
+  DateFieldDef,
   EmojiFieldConfig,
   EmojiFieldDef,
   SliderFieldConfig,
@@ -212,6 +214,17 @@ export function autocompleteField(
 export function radioGroupField(name: string, config: RadioGroupFieldConfig): RadioGroupFieldDef {
   return {
     type: 'radio-group',
+    name,
+    ...config
+  }
+}
+
+/**
+ * Create a date picker field
+ */
+export function dateField(name: string, config: DateFieldConfig): DateFieldDef {
+  return {
+    type: 'date',
     name,
     ...config
   }

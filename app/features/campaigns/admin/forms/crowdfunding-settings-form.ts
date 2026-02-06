@@ -7,7 +7,8 @@ import {
   imageUploadField,
   selectField,
   numberField,
-  currencyField
+  currencyField,
+  dateField
 } from '~/features/_library/form-builder/api'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 
@@ -53,6 +54,26 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
         : 'Display goal progress visualization',
     visibleWhen: isEnabled,
     optional: true,
+    showSeparatorAfter: () => store.isP2P
+  })
+
+  const endDate = dateField('endDate', {
+    label: 'End Date',
+    description: 'When the campaign closes (optional)',
+    optional: true,
+    visibleWhen: (ctx) => isEnabled(ctx) && !store.isP2P,
+    rules: () => {
+      const skipPastCheck = store.status === 'completed' || store.status === 'archived'
+      const base = z.string().date('Must be a valid date')
+      return skipPastCheck
+        ? base.nullish()
+        : base
+            .refine(
+              (d) => new Date(d) >= new Date(new Date().toDateString()),
+              'End date cannot be in the past'
+            )
+            .nullish()
+    },
     showSeparatorAfter: true
   })
 
@@ -146,6 +167,7 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
 
     goalAmount,
     showProgressBar,
+    endDate,
 
     title,
     shortDescription,

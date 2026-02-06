@@ -9,6 +9,11 @@ import { Toaster } from '@/components/ui/sonner'
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
-    <Toaster position="bottom-right" close-button close-button-position="top-right" />
+    <Toaster
+      position="bottom-right"
+      close-button
+      close-button-position="top-right"
+      :duration="7000"
+    />
   </div>
 </template>

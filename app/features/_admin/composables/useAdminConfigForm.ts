@@ -112,6 +112,14 @@ export function useAdminConfigForm<
       if (formRef.value?.resetToValues) {
         formRef.value.resetToValues(getData(store))
       }
+    },
+    /**
+     * Update a specific field value in vee-validate's internal state
+     * Use when store values change outside of form input (e.g. programmatic updates)
+     * Path is relative to the form section (e.g. 'crowdfunding.endDate')
+     */
+    setFieldValue: (path: string, value: unknown) => {
+      formRef.value?.setFieldValue(path, value)
     }
   }
 

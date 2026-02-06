@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { inject } from 'vue'
 import AdminBreadcrumbBar, { type BreadcrumbItem } from './AdminBreadcrumbBar.vue'
 import {
   AlertDialog,
@@ -12,6 +13,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Eye } from 'lucide-vue-next'
+import { LEAVE_GUARD_KEY, type LeaveGuard } from '~/features/_admin/composables/useAdminEdit'
 
 interface Props {
   /** Breadcrumb items for navigation */
@@ -43,6 +45,9 @@ withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<Emits>()
+
+// Inject leave guard from useAdminEdit (provided in parent page)
+const leaveGuard = inject<LeaveGuard | null>(LEAVE_GUARD_KEY, null)
 </script>
 
 <template>
@@ -101,6 +106,29 @@ const emit = defineEmits<Emits>()
       <AlertDialogFooter>
         <AlertDialogCancel>Cancel</AlertDialogCancel>
         <AlertDialogAction @click="emit('confirmDiscard')">Discard Changes</AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+
+  <!-- Leave Navigation Guard Dialog -->
+  <AlertDialog
+    v-if="leaveGuard"
+    :open="leaveGuard.showDialog.value"
+    @update:open="(v: boolean) => !v && leaveGuard!.resolve('stay')"
+  >
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Unsaved changes</AlertDialogTitle>
+        <AlertDialogDescription>
+          You have unsaved changes that will be lost if you leave this page.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter class="flex-col sm:flex-row gap-2">
+        <AlertDialogCancel @click="leaveGuard.resolve('stay')">Stay on page</AlertDialogCancel>
+        <Button variant="outline" @click="leaveGuard.resolve('discard')"> Discard & leave </Button>
+        <Button :disabled="!leaveGuard.canSave.value" @click="leaveGuard.resolve('save')">
+          Save & leave
+        </Button>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>

@@ -24,6 +24,7 @@ export function useFormBuilderContext() {
   const sectionId = inject<string>('sectionId', '')
   const fieldPrefix = inject<string>('fieldPrefix', '')
   const parentGroupVisible = inject<() => boolean>('parentGroupVisible', () => true)
+  const parentGroupDisabled = inject<() => boolean>('parentGroupDisabled', () => false)
   const validateOnMount = inject<boolean>('validateOnMount', true)
 
   // Inject form action setters from FormRenderer
@@ -92,6 +93,7 @@ export function useFormBuilderContext() {
     formValues,
     fieldContext,
     parentGroupVisible,
+    parentGroupDisabled,
     validateOnMount,
     setFieldValue,
     setFieldError,

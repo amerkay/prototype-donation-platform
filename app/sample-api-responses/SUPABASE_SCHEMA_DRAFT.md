@@ -205,7 +205,6 @@ CREATE TABLE campaign_stats (
   total_donors INT NOT NULL DEFAULT 0,
   average_donation DECIMAL(10,2) NOT NULL DEFAULT 0,
   top_donation DECIMAL(10,2) NOT NULL DEFAULT 0,
-  days_remaining INT,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -223,7 +222,8 @@ CREATE TABLE campaign_crowdfunding (
   default_donations_view TEXT NOT NULL DEFAULT 'recent'
     CHECK (default_donations_view IN ('recent', 'top')),
   number_of_donations_to_show INT NOT NULL DEFAULT 5,
-  goal_amount DECIMAL(12,2)
+  goal_amount DECIMAL(12,2),
+  end_date DATE
 );
 
 -- Peer-to-peer fundraising settings

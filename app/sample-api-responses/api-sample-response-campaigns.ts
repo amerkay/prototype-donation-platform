@@ -16,7 +16,7 @@ export const campaigns: Campaign[] = [
     id: 'adopt-orangutan',
     type: 'standard',
     name: 'Adopt an Orangutan',
-    status: 'active',
+    status: 'completed',
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2026-01-14T10:30:00Z',
     stats: computeCampaignStats('adopt-orangutan', {
@@ -24,8 +24,7 @@ export const campaigns: Campaign[] = [
       totalDonations: 342,
       totalDonors: 287,
       averageDonation: 134,
-      topDonation: 1000,
-      daysRemaining: 45
+      topDonation: 1000
     }),
     crowdfunding: {
       enabled: true,
@@ -38,7 +37,8 @@ export const campaigns: Campaign[] = [
       showRecentDonations: true,
       defaultDonationsView: 'recent',
       numberOfDonationsToShow: 5,
-      goalAmount: 50000
+      goalAmount: 50000,
+      endDate: '2026-01-22'
     },
     peerToPeer: {
       enabled: false

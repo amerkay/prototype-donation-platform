@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select'
 
 const store = useCampaignConfigStore()
-const { formatAmount } = useCampaignFormatters()
+const { formatAmount, formatTimeRemainingShort } = useCampaignFormatters()
 
 const props = defineProps<{
   canActivate?: boolean
@@ -31,6 +31,8 @@ const emit = defineEmits<{
   'update:status': [value: CampaignStatus]
   deleted: []
 }>()
+
+const hasDonations = computed(() => (store.stats?.totalDonations ?? 0) > 0)
 
 const campaignTypeLabel = computed(() => getCampaignTypeShortLabel({ type: store.type }))
 const typeBadgeVariant = computed(() => getCampaignTypeBadgeVariant(store.type))
@@ -87,7 +89,8 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
           </SelectTrigger>
           <SelectContent>
             <template v-for="opt in STATUS_OPTIONS" :key="opt.value">
-              <Tooltip v-if="opt.value !== 'draft' && !props.canActivate" :delay-duration="100">
+              <!-- Draft disabled when campaign has donations -->
+              <Tooltip v-if="opt.value === 'draft' && hasDonations" :delay-duration="100">
                 <TooltipTrigger as-child>
                   <div>
                     <SelectItem :value="opt.value" disabled class="text-xs">
@@ -97,6 +100,32 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
                           class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)"
                         />
                         {{ opt.label }}
+                        <span class="text-muted-foreground ml-auto text-[10px]">
+                          Has donations
+                        </span>
+                      </span>
+                    </SelectItem>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="right" class="text-xs">
+                  Cannot revert to draft after receiving donations
+                </TooltipContent>
+              </Tooltip>
+              <!-- Non-draft statuses disabled when form has errors -->
+              <Tooltip
+                v-else-if="opt.value !== 'draft' && !props.canActivate"
+                :delay-duration="100"
+              >
+                <TooltipTrigger as-child>
+                  <div>
+                    <SelectItem :value="opt.value" disabled class="text-xs">
+                      <span class="flex items-center gap-2">
+                        <span
+                          :data-campaign-status="opt.value"
+                          class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)"
+                        />
+                        {{ opt.label }}
+                        <span class="text-destructive ml-auto text-[10px]">Fix errors</span>
                       </span>
                     </SelectItem>
                   </div>
@@ -145,10 +174,10 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
           </span>
         </span>
         <span
-          v-if="store.stats.daysRemaining"
+          v-if="formatTimeRemainingShort(store.crowdfunding?.endDate)"
           class="text-xs text-muted-foreground whitespace-nowrap"
         >
-          {{ store.stats.daysRemaining }}d left
+          {{ formatTimeRemainingShort(store.crowdfunding?.endDate) }} left
         </span>
       </div>
 

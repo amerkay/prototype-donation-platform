@@ -10,7 +10,7 @@ type Props = FieldProps<unknown, ComponentFieldDef>
 const props = defineProps<Props>()
 
 // Use field wrapper composable for standardized props
-const { wrapperProps, resolvedClass } = useFieldWrapper(
+const { wrapperProps, resolvedClass, resolvedDisabled } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors,
@@ -46,7 +46,7 @@ const component = computed(() => props.meta.component as Component)
   <FormFieldWrapper v-bind="wrapperProps" :class="props.class">
     <!-- Render the custom component -->
     <div :class="cn('mt-2', resolvedClass)">
-      <component :is="component" v-bind="resolvedProps" />
+      <component :is="component" v-bind="resolvedProps" :disabled="resolvedDisabled" />
     </div>
   </FormFieldWrapper>
 </template>

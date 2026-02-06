@@ -50,12 +50,13 @@ export function useFieldWrapper(
   options: WrapperOptions = {},
   fullPath?: MaybeRefOrGetter<string | undefined>
 ) {
-  const { fieldContext } = useFormBuilderContext()
+  const { fieldContext, parentGroupDisabled } = useFormBuilderContext()
   const { resolvedLabel, resolvedDescription, resolvedPlaceholder, resolvedClass } =
     useResolvedFieldMeta(meta)
   const isFieldset = options.variant === 'fieldset'
 
   const resolvedDisabled = computed(() => {
+    if (parentGroupDisabled()) return true
     if (!meta.disabled) return false
     // Check if it's a ComputedRef
     if (typeof meta.disabled === 'object' && 'value' in meta.disabled) {
