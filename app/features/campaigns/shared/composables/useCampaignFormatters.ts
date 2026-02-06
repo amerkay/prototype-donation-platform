@@ -8,8 +8,8 @@ export function useCampaignFormatters() {
   /**
    * Format currency amount (defaults to GBP)
    */
-  const formatAmount = (amount: number, currency?: string): string => {
-    return formatCurrency(amount, currency)
+  const formatAmount = (amount: number, currency?: string, decimals?: number): string => {
+    return formatCurrency(amount, currency, decimals)
   }
 
   /**

@@ -1,10 +1,11 @@
 import type { Component } from 'vue'
 import type { Campaign, P2PPreset } from '~/features/campaigns/shared/types'
-import { Cake, Heart, Trophy, Gem } from 'lucide-vue-next'
+import { Cake, Heart, Trophy, Gem, Pencil } from 'lucide-vue-next'
 import { createBirthdayPreset } from './birthday'
 import { createTributePreset } from './tribute'
 import { createChallengePreset } from './challenge'
 import { createWeddingPreset } from './wedding'
+import { createCustomPreset } from './custom'
 
 /**
  * Metadata for display in the preset picker dialog
@@ -68,6 +69,15 @@ export const P2P_PRESET_REGISTRY: P2PCampaignPreset[] = [
       icon: Gem
     },
     factory: createWeddingPreset
+  },
+  {
+    metadata: {
+      id: 'custom',
+      name: 'Custom',
+      description: 'Start from scratch and build your own peer-to-peer campaign',
+      icon: Pencil
+    },
+    factory: createCustomPreset
   }
 ]
 

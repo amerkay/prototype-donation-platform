@@ -11,7 +11,7 @@ export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed' | 'arch
 
 export type CampaignType = 'standard' | 'p2p' | 'fundraiser'
 
-export type P2PPreset = 'birthday' | 'tribute' | 'challenge' | 'wedding'
+export type P2PPreset = 'birthday' | 'tribute' | 'challenge' | 'wedding' | 'custom'
 
 export type FundraiserStatus = 'active' | 'paused' | 'removed'
 

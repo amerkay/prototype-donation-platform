@@ -18,7 +18,7 @@ import {
   EmptyMedia,
   EmptyTitle
 } from '@/components/ui/empty'
-import { ExternalLink, Heart, Megaphone, Pencil, TrendingUp, Users } from 'lucide-vue-next'
+import { ExternalLink, Heart, Megaphone, Pencil, Users } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'portal'

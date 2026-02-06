@@ -2,6 +2,9 @@ import type { Campaign } from '~/features/campaigns/shared/types'
 import {
   adoptOrangutanForms,
   birthdayP2PForms,
+  tributeP2PForms,
+  challengeP2PForms,
+  weddingP2PForms,
   wildAmer1FundraiserForms,
   wildAmer2FundraiserForms
 } from './api-sample-response-forms'
@@ -91,6 +94,142 @@ export const campaigns: Campaign[] = [
     fundraisers: getCampaignFundraisers('birthday-p2p-template'),
     recentDonations: getRecentDonations('birthday-p2p-template'),
     forms: birthdayP2PForms
+  },
+  // P2P Template: Tribute & Memorial
+  {
+    id: 'tribute-p2p-template',
+    type: 'p2p',
+    p2pPreset: 'tribute',
+    name: 'In Memory of a Loved One',
+    status: 'active',
+    createdAt: '2025-10-01T00:00:00Z',
+    updatedAt: '2026-01-12T09:00:00Z',
+    stats: computeCampaignStats('tribute-p2p-template', {
+      totalRaised: 12450,
+      totalDonations: 89,
+      totalDonors: 76,
+      averageDonation: 140,
+      topDonation: 500
+    }),
+    crowdfunding: {
+      enabled: true,
+      title: 'In Memory of Someone Special',
+      shortDescription: 'Honouring a life well lived by supporting a cause they believed in.',
+      story:
+        'We are raising funds in memory of someone very dear to us. Their passion for this cause inspired everyone around them, and we want to continue that legacy.\n\nYour donation is a meaningful tribute that keeps their spirit alive through the work of this charity. Thank you for joining us in remembering them.',
+      showProgressBar: true,
+      showRecentDonations: true,
+      defaultDonationsView: 'recent',
+      numberOfDonationsToShow: 10,
+      goalAmount: 500
+    },
+    peerToPeer: {
+      enabled: true,
+      customMessage:
+        'Help us honour their memory by raising funds for a cause they cared deeply about.'
+    },
+    socialSharing: {
+      enabled: true,
+      facebook: true,
+      twitter: true,
+      linkedin: true,
+      whatsapp: true,
+      email: true,
+      copyLink: true
+    },
+    fundraisers: [],
+    recentDonations: getRecentDonations('tribute-p2p-template'),
+    forms: tributeP2PForms
+  },
+  // P2P Template: Challenge Fundraiser
+  {
+    id: 'challenge-p2p-template',
+    type: 'p2p',
+    p2pPreset: 'challenge',
+    name: 'Marathon Challenge Fundraiser',
+    status: 'active',
+    createdAt: '2025-09-15T00:00:00Z',
+    updatedAt: '2026-01-08T11:00:00Z',
+    stats: computeCampaignStats('challenge-p2p-template', {
+      totalRaised: 28340,
+      totalDonations: 215,
+      totalDonors: 189,
+      averageDonation: 132,
+      topDonation: 750
+    }),
+    crowdfunding: {
+      enabled: true,
+      title: "I'm Taking on a Challenge for Charity",
+      shortDescription: 'Sponsor my challenge and help raise funds for an incredible cause.',
+      story:
+        "I'm pushing myself to take on a personal challenge, and I need your support! Every donation motivates me to keep going and helps this charity do amazing work.\n\nWhether it's a marathon, a swim, a climb, or something entirely different — your sponsorship makes it all worthwhile. Follow my progress and cheer me on!",
+      showProgressBar: true,
+      showRecentDonations: true,
+      defaultDonationsView: 'recent',
+      numberOfDonationsToShow: 5,
+      goalAmount: 500
+    },
+    peerToPeer: {
+      enabled: true,
+      customMessage: 'Take on a challenge and raise funds alongside me!'
+    },
+    socialSharing: {
+      enabled: true,
+      facebook: true,
+      twitter: true,
+      linkedin: true,
+      whatsapp: true,
+      email: true,
+      copyLink: true
+    },
+    fundraisers: [],
+    recentDonations: getRecentDonations('challenge-p2p-template'),
+    forms: challengeP2PForms
+  },
+  // P2P Template: Wedding Fundraiser
+  {
+    id: 'wedding-p2p-template',
+    type: 'p2p',
+    p2pPreset: 'wedding',
+    name: 'Our Wedding Fundraiser',
+    status: 'active',
+    createdAt: '2025-08-01T00:00:00Z',
+    updatedAt: '2026-01-05T16:00:00Z',
+    stats: computeCampaignStats('wedding-p2p-template', {
+      totalRaised: 8720,
+      totalDonations: 64,
+      totalDonors: 58,
+      averageDonation: 136,
+      topDonation: 500
+    }),
+    crowdfunding: {
+      enabled: true,
+      title: 'Instead of Gifts, Please Donate',
+      shortDescription: 'We have everything we need — except your support for a cause we love.',
+      story:
+        "As we celebrate our wedding, we'd love for our guests to join us in making a difference. Instead of traditional gifts, we're asking for donations to this charity that is close to both our hearts.\n\nYour generosity will be the most meaningful gift we could receive. Thank you for being part of our special day and helping us give back.",
+      showProgressBar: true,
+      showRecentDonations: true,
+      defaultDonationsView: 'top',
+      numberOfDonationsToShow: 10,
+      goalAmount: 1000
+    },
+    peerToPeer: {
+      enabled: true,
+      customMessage: 'Help us celebrate our wedding by supporting a cause we care about!'
+    },
+    socialSharing: {
+      enabled: true,
+      facebook: true,
+      twitter: false,
+      linkedin: false,
+      whatsapp: true,
+      email: true,
+      copyLink: true
+    },
+    fundraisers: [],
+    recentDonations: getRecentDonations('wedding-p2p-template'),
+    forms: weddingP2PForms
   },
   // Fundraiser Campaign 1: Wild Amer's Birthday Fundraiser
   {

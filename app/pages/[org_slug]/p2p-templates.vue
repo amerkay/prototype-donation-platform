@@ -12,7 +12,9 @@ const { campaigns } = useCampaigns()
 const route = useRoute()
 const router = useRouter()
 
-const p2pCampaigns = computed(() => campaigns.value.filter((c) => c.type === 'p2p'))
+const p2pCampaigns = computed(() =>
+  campaigns.value.filter((c) => c.type === 'p2p' && c.status === 'active')
+)
 
 const handleSelect = (campaignId: string) => {
   router.push(`/${route.params.org_slug}/p2p-onboard/${campaignId}`)

@@ -24,6 +24,36 @@ const fullFeaturedConfigBirthday = {
   campaignId: 'birthday-p2p-template'
 }
 
+// Full-featured form configuration for Tribute P2P template
+const fullFeaturedConfigTribute = {
+  ...fullFormConfig,
+  form: {
+    title: 'Make a Tribute Donation',
+    subtitle: 'Honour a loved one with a meaningful gift'
+  },
+  campaignId: 'tribute-p2p-template'
+}
+
+// Full-featured form configuration for Challenge P2P template
+const fullFeaturedConfigChallenge = {
+  ...fullFormConfig,
+  form: {
+    title: 'Sponsor a Challenge',
+    subtitle: 'Support a fundraiser taking on a personal challenge'
+  },
+  campaignId: 'challenge-p2p-template'
+}
+
+// Full-featured form configuration for Wedding P2P template
+const fullFeaturedConfigWedding = {
+  ...fullFormConfig,
+  form: {
+    title: 'Make a Wedding Donation',
+    subtitle: 'Celebrate love by giving back'
+  },
+  campaignId: 'wedding-p2p-template'
+}
+
 // Full-featured form configuration for Wild Amer's fundraiser 1
 const fullFeaturedConfigWildAmer1 = {
   ...fullFormConfig,
@@ -193,6 +223,54 @@ export const birthdayP2PForms: CampaignForm[] = [
 ]
 
 /**
+ * Forms for "Tribute P2P Template" campaign
+ */
+export const tributeP2PForms: CampaignForm[] = [
+  {
+    id: 'form-tribute-full',
+    campaignId: 'tribute-p2p-template',
+    name: 'Full Experience Form',
+    isDefault: true,
+    config: fullFeaturedConfigTribute as unknown as FullFormConfig,
+    products: fullProducts,
+    createdAt: '2025-10-01T10:00:00Z',
+    updatedAt: '2026-01-12T14:30:00Z'
+  }
+]
+
+/**
+ * Forms for "Challenge P2P Template" campaign
+ */
+export const challengeP2PForms: CampaignForm[] = [
+  {
+    id: 'form-challenge-full',
+    campaignId: 'challenge-p2p-template',
+    name: 'Full Experience Form',
+    isDefault: true,
+    config: fullFeaturedConfigChallenge as unknown as FullFormConfig,
+    products: fullProducts,
+    createdAt: '2025-09-15T10:00:00Z',
+    updatedAt: '2026-01-08T14:30:00Z'
+  }
+]
+
+/**
+ * Forms for "Wedding P2P Template" campaign
+ */
+export const weddingP2PForms: CampaignForm[] = [
+  {
+    id: 'form-wedding-full',
+    campaignId: 'wedding-p2p-template',
+    name: 'Full Experience Form',
+    isDefault: true,
+    config: fullFeaturedConfigWedding as unknown as FullFormConfig,
+    products: fullProducts,
+    createdAt: '2025-08-01T10:00:00Z',
+    updatedAt: '2026-01-05T14:30:00Z'
+  }
+]
+
+/**
  * Forms for Wild Amer's first fundraiser campaign
  */
 export const wildAmer1FundraiserForms: CampaignForm[] = [
@@ -233,6 +311,12 @@ export function getFormsByCampaignId(campaignId: string): CampaignForm[] {
       return adoptOrangutanForms
     case 'birthday-p2p-template':
       return birthdayP2PForms
+    case 'tribute-p2p-template':
+      return tributeP2PForms
+    case 'challenge-p2p-template':
+      return challengeP2PForms
+    case 'wedding-p2p-template':
+      return weddingP2PForms
     case 'wild-amer-birthday-fundraiser':
       return wildAmer1FundraiserForms
     case 'wild-amer-birthday-2-fundraiser':
