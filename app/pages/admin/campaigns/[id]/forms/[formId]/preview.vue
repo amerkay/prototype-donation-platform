@@ -3,6 +3,7 @@ import DonationFormPreview from '~/features/donation-form/admin/components/Donat
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
+import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 
 definePageMeta({
   layout: 'admin-preview'
@@ -17,6 +18,8 @@ const formId = route.params.formId as string
 
 const campaign = computed(() => getCampaignById(campaignId))
 const form = computed(() => getForm(formId))
+
+const { brandingStyle } = useBrandingCssVars()
 
 // Initialize store synchronously so child components have store data during setup
 const store = useFormConfigStore()
@@ -42,8 +45,10 @@ watch(
 </script>
 
 <template>
-  <DonationFormPreview v-if="campaign && form" />
-  <div v-else class="text-center py-12">
-    <p class="text-muted-foreground">Form not found</p>
+  <div :style="brandingStyle">
+    <DonationFormPreview v-if="campaign && form" />
+    <div v-else class="text-center py-12">
+      <p class="text-muted-foreground">Form not found</p>
+    </div>
   </div>
 </template>

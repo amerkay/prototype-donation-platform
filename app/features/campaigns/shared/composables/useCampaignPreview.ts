@@ -75,9 +75,15 @@ export function useCampaignPreview(campaignId: string) {
   // Human-readable section label for messages
   const featureName = computed(() => currentConfig.value?.label ?? 'This feature')
 
+  // Show external preview button (hide for social sharing as it's inline only)
+  const showExternalPreview = computed(
+    () => hasActivePreview.value && activeSection.value !== 'socialSharing'
+  )
+
   return {
     activeSection,
     hasActivePreview,
+    showExternalPreview,
     isFormContext,
     previewLabel,
     isDisabled,

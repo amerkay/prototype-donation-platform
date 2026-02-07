@@ -2,6 +2,7 @@
 import CrowdfundingPagePreview from '~/features/campaigns/admin/components/CrowdfundingPagePreview.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 
 definePageMeta({
   layout: 'admin-preview'
@@ -12,6 +13,8 @@ const { getCampaignById } = useCampaigns()
 const store = useCampaignConfigStore()
 
 const campaign = computed(() => getCampaignById(route.params.id as string))
+
+const { brandingStyle } = useBrandingCssVars()
 
 // Initialize store synchronously so child components have store data during setup
 if (campaign.value) {
@@ -37,8 +40,10 @@ watch(
 </script>
 
 <template>
-  <CrowdfundingPagePreview v-if="campaign" />
-  <div v-else class="text-center py-12">
-    <p class="text-muted-foreground">Campaign not found</p>
+  <div :style="brandingStyle">
+    <CrowdfundingPagePreview v-if="campaign" />
+    <div v-else class="text-center py-12">
+      <p class="text-muted-foreground">Campaign not found</p>
+    </div>
   </div>
 </template>

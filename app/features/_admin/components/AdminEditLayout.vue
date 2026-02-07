@@ -12,7 +12,7 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { Eye } from 'lucide-vue-next'
+import { ExternalLink } from 'lucide-vue-next'
 import { LEAVE_GUARD_KEY, type LeaveGuard } from '~/features/_admin/composables/useAdminEdit'
 
 interface Props {
@@ -83,7 +83,7 @@ const leaveGuard = inject<LeaveGuard | null>(LEAVE_GUARD_KEY, null)
               <slot name="preview-label">Preview</slot>
             </p>
             <Button v-if="showPreview" variant="outline" size="sm" @click="emit('preview')">
-              <Eye class="w-4 h-4 mr-2" />
+              <ExternalLink class="w-4 h-4 mr-2" />
               {{ previewLabel }}
             </Button>
           </div>

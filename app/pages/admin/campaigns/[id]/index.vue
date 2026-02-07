@@ -70,7 +70,9 @@ const formsCount = computed(
 const canActivate = computed(() => (formRef.value?.isValid ?? false) && formsCount.value > 0)
 
 // Preview state (centralised composable)
-const { hasActivePreview, isFormContext, previewLabel, defaultForm } = useCampaignPreview(store.id!)
+const { showExternalPreview, isFormContext, previewLabel, defaultForm } = useCampaignPreview(
+  store.id!
+)
 
 // Use admin edit composable for save/discard logic
 const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBaseline } =
@@ -197,7 +199,7 @@ const handleDeleted = () => {
     :breadcrumbs="breadcrumbs"
     :is-dirty="store.isDirty"
     :show-discard-dialog="showDiscardDialog"
-    :show-preview="hasActivePreview"
+    :show-preview="showExternalPreview"
     :preview-label="previewLabel"
     editable-last-item
     @preview="handlePreview"

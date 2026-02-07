@@ -58,7 +58,8 @@ export const useBrandingSettingsForm = defineForm('brandingSettings', () => {
     maxSizeMB: 2,
     recommendedDimensions: '400x100',
     optional: true,
-    rules: z.string().nullable().optional()
+    rules: z.string().nullable().optional(),
+    showSeparatorAfter: true
   })
 
   const customCss = textareaField('customCss', {
