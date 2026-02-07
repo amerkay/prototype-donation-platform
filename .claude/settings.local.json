@@ -24,7 +24,9 @@
       "Bash(pnpm lint:*)",
       "Bash(xargs -I {} bash -c 'echo \"\"=== {} ===\"\" && ls -la {}')",
       "Bash(ls:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "WebFetch(domain:docs.stripe.com)",
+      "WebFetch(domain:developer.paypal.com)"
     ]
   }
 }
