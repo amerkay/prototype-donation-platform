@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { cn } from '@/lib/utils'
 import type { CardFieldDef } from '~/features/_library/form-builder/types'
+import { sanitizeRichText } from '~/features/_library/form-builder/utils/sanitize-html'
 import { useResolvedFieldMeta } from '~/features/_library/form-builder/composables/useResolvedFieldMeta'
 import { useContainerFieldSetup } from '~/features/_library/form-builder/composables/useContainerFieldSetup'
 
@@ -17,6 +18,11 @@ const { isVisible } = useContainerFieldSetup(props.name, props.meta.visibleWhen)
 
 // Resolve description and class using composable
 const { resolvedDescription, resolvedClass } = useResolvedFieldMeta(props.meta)
+
+// Sanitize rich HTML content for safe v-html rendering
+const sanitizedContent = computed(() =>
+  props.meta.content ? sanitizeRichText(props.meta.content) : ''
+)
 
 // Resolve card styling based on meta props
 const cardClasses = computed(() => {
@@ -48,7 +54,7 @@ const cardClasses = computed(() => {
 
       <!-- Rich HTML content (if provided) -->
       <!-- eslint-disable-next-line vue/no-v-html -->
-      <div v-if="meta.content" class="text-sm text-muted-foreground" v-html="meta.content" />
+      <div v-if="meta.content" class="text-sm text-muted-foreground" v-html="sanitizedContent" />
 
       <!-- Plain text description (fallback) -->
       <p

@@ -5,48 +5,35 @@ import {
   imageUploadField,
   selectField,
   textareaField,
-  fieldGroup
+  fieldGroup,
+  componentField
 } from '~/features/_library/form-builder/api'
+import BrandingTemplatePicker from '~/features/settings/admin/components/BrandingTemplatePicker.vue'
 
 export const useBrandingSettingsForm = defineForm('brandingSettings', () => {
-  const logoUrl = imageUploadField('logoUrl', {
-    label: 'Logo',
-    description: 'Organization logo (recommended: SVG or PNG, min 200px wide)',
-    accept: 'image/*',
-    maxSizeMB: 2,
-    recommendedDimensions: '400x100',
-    optional: true,
-    rules: z.string().nullable().optional()
-  })
-
-  const faviconUrl = imageUploadField('faviconUrl', {
-    label: 'Favicon',
-    description: 'Browser tab icon (16x16 or 32x32 PNG)',
-    accept: 'image/png,image/x-icon,image/svg+xml',
-    maxSizeMB: 1,
-    recommendedDimensions: '32x32',
-    optional: true,
-    rules: z.string().nullable().optional(),
-    showSeparatorAfter: true
-  })
-
   const primaryColor = colorField('primaryColor', {
     label: 'Primary Color',
-    description: 'Main brand color used for buttons, links, and accents',
+    description: 'Buttons, links, accents',
     rules: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Must be a valid hex color (e.g., #16a34a)')
   })
 
   const secondaryColor = colorField('secondaryColor', {
     label: 'Secondary Color',
-    description: 'Used for secondary buttons and backgrounds',
+    description: 'Highlights, notifications',
     rules: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Must be a valid hex color')
   })
 
-  const accentColor = colorField('accentColor', {
-    label: 'Accent Color',
-    description: 'Used for highlights, notifications, and call-to-action elements',
-    rules: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Must be a valid hex color'),
+  const templatePicker = componentField('templatePicker', {
+    component: BrandingTemplatePicker,
+    label: 'Color Template',
+    description: 'Start with a curated palette or choose Custom to pick your own colors.'
+  })
+
+  const colors = fieldGroup('colors', {
+    class: 'grid grid-cols-1 lg:grid-cols-2 gap-4',
+    fields: { primaryColor, secondaryColor },
     showSeparatorAfter: true
+    // No $storePath — handled by parent branding group
   })
 
   const fontFamily = selectField('fontFamily', {
@@ -60,7 +47,18 @@ export const useBrandingSettingsForm = defineForm('brandingSettings', () => {
       { value: 'Poppins', label: 'Poppins' },
       { value: 'Montserrat', label: 'Montserrat' }
     ],
-    rules: z.string().min(1)
+    rules: z.string().min(1),
+    showSeparatorAfter: true
+  })
+
+  const logoUrl = imageUploadField('logoUrl', {
+    label: 'Logo',
+    description: 'Organization logo (recommended: SVG or PNG, min 200px wide)',
+    accept: 'image/*',
+    maxSizeMB: 2,
+    recommendedDimensions: '400x100',
+    optional: true,
+    rules: z.string().nullable().optional()
   })
 
   const customCss = textareaField('customCss', {
@@ -72,27 +70,26 @@ export const useBrandingSettingsForm = defineForm('brandingSettings', () => {
     rules: z.string().optional()
   })
 
+  const customCssGroup = fieldGroup('customCssGroup', {
+    label: 'Custom CSS',
+    description: 'Advanced styling overrides for donor-facing pages.',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    fields: { customCss }
+    // No $storePath — handled by parent branding group
+  })
+
   const branding = fieldGroup('branding', {
     label: 'Branding',
     description: 'Customize the look and feel of your donation pages.',
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: {
-      logoUrl,
-      faviconUrl,
-      primaryColor,
-      secondaryColor,
-      accentColor,
-      fontFamily,
-      customCss
-    },
+    fields: { templatePicker, colors, fontFamily, logoUrl, customCssGroup },
     $storePath: {
-      logoUrl: 'logoUrl',
-      faviconUrl: 'faviconUrl',
-      primaryColor: 'primaryColor',
-      secondaryColor: 'secondaryColor',
-      accentColor: 'accentColor',
+      'colors.primaryColor': 'primaryColor',
+      'colors.secondaryColor': 'secondaryColor',
       fontFamily: 'fontFamily',
-      customCss: 'customCss'
+      logoUrl: 'logoUrl',
+      'customCssGroup.customCss': 'customCss'
     }
   })
 

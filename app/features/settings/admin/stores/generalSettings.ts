@@ -9,7 +9,7 @@ export const useGeneralSettingsStore = defineStore('generalSettings', () => {
 
   const timezone = ref(defaults.timezone)
   const dateFormat = ref(defaults.dateFormat)
-  const language = ref(defaults.language)
+  const emailSenderId = ref(defaults.emailSenderId)
   const emailSenderName = ref(defaults.emailSenderName)
   const emailSenderAddress = ref(defaults.emailSenderAddress)
   const supportEmail = ref(defaults.supportEmail)
@@ -17,7 +17,7 @@ export const useGeneralSettingsStore = defineStore('generalSettings', () => {
   function initialize(settings: GeneralSettings) {
     timezone.value = settings.timezone
     dateFormat.value = settings.dateFormat
-    language.value = settings.language
+    emailSenderId.value = settings.emailSenderId
     emailSenderName.value = settings.emailSenderName
     emailSenderAddress.value = settings.emailSenderAddress
     supportEmail.value = settings.supportEmail
@@ -27,7 +27,7 @@ export const useGeneralSettingsStore = defineStore('generalSettings', () => {
   function updateSettings(settings: Partial<GeneralSettings>) {
     if (settings.timezone !== undefined) timezone.value = settings.timezone
     if (settings.dateFormat !== undefined) dateFormat.value = settings.dateFormat
-    if (settings.language !== undefined) language.value = settings.language
+    if (settings.emailSenderId !== undefined) emailSenderId.value = settings.emailSenderId
     if (settings.emailSenderName !== undefined) emailSenderName.value = settings.emailSenderName
     if (settings.emailSenderAddress !== undefined)
       emailSenderAddress.value = settings.emailSenderAddress
@@ -54,7 +54,7 @@ export const useGeneralSettingsStore = defineStore('generalSettings', () => {
         JSON.stringify({
           timezone: timezone.value,
           dateFormat: dateFormat.value,
-          language: language.value,
+          emailSenderId: emailSenderId.value,
           emailSenderName: emailSenderName.value,
           emailSenderAddress: emailSenderAddress.value,
           supportEmail: supportEmail.value
@@ -70,7 +70,7 @@ export const useGeneralSettingsStore = defineStore('generalSettings', () => {
   return {
     timezone,
     dateFormat,
-    language,
+    emailSenderId,
     emailSenderName,
     emailSenderAddress,
     supportEmail,

@@ -1,13 +1,11 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import type { ECardTemplate } from '~/features/templates/admin/types'
 import { ecardTemplates as defaults } from '~/sample-api-responses/api-sample-response-templates'
 import { toast } from 'vue-sonner'
 
 export const useECardTemplatesStore = defineStore('ecardTemplates', () => {
   const templates = ref<ECardTemplate[]>([...defaults])
-
-  const activeTemplates = computed(() => templates.value.filter((t) => t.isActive))
 
   let hydrated = false
   function $hydrate() {
@@ -54,22 +52,12 @@ export const useECardTemplatesStore = defineStore('ecardTemplates', () => {
     toast.success('eCard template deleted')
   }
 
-  function toggleActive(id: string) {
-    const t = templates.value.find((t) => t.id === id)
-    if (t) {
-      t.isActive = !t.isActive
-      $persist()
-    }
-  }
-
   if (import.meta.client) $hydrate()
 
   return {
     templates,
-    activeTemplates,
     createTemplate,
     updateTemplate,
-    deleteTemplate,
-    toggleActive
+    deleteTemplate
   }
 })

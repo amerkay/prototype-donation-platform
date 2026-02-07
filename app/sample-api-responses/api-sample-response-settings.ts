@@ -36,33 +36,29 @@ export const charitySettings: CharitySettings = {
 export const generalSettings: GeneralSettings = {
   timezone: 'Europe/London',
   dateFormat: 'DD/MM/YYYY',
-  language: 'en',
-  emailSenderName: 'Borneo Orangutan Survival',
-  emailSenderAddress: 'noreply@borneoorangutansurvival.org',
+  emailSenderId: 'member-001',
+  emailSenderName: 'Wild Amer',
+  emailSenderAddress: 'awesome@charity.co.uk',
   supportEmail: 'support@borneoorangutansurvival.org'
 }
 
 export const brandingSettings: BrandingSettings = {
   logoUrl: '',
-  faviconUrl: '',
-  primaryColor: '#16a34a',
-  secondaryColor: '#065f46',
-  accentColor: '#f59e0b',
-  fontFamily: 'Inter',
+  primaryColor: '#fcd34d',
+  secondaryColor: '#0369a1',
+  fontFamily: 'Poppins',
   customCss: ''
 }
 
 export const paymentProcessorSettings: PaymentProcessorSettings = {
   stripe: {
-    enabled: true,
     testMode: true,
     connected: true,
     accountId: 'acct_1NqBGm2eZvKYlo2C',
     connectedAt: '2025-11-15T10:30:00Z'
   },
   paypal: {
-    enabled: true,
-    testMode: true,
+    testMode: false,
     connected: false
   }
 }

@@ -52,6 +52,10 @@ app/features/[feature-name]/
 
 **shadcn-vue**: Do not edit `app/components/ui/` unless necessary. For frontend tasks needing ready-made components, consult `.claude/shadcn-vue-components.md` (lists all components with purposes). Use the docs URL template in that file (`https://www.shadcn-vue.com/docs/components/[component].html`) to read full documentation before building custom UI.
 
+**Save/Discard actions**: All admin and donor portal settings pages with save/discard functionality MUST use `StickyButtonGroup` from `~/features/_admin/components/StickyButtonGroup.vue`. Never create custom save/discard button bars.
+
+**v-html sanitization**: ALL `v-html` usage MUST sanitize content using `sanitizeRichText()` from `~/features/_library/form-builder/utils/sanitize-html.ts`. Use `replaceRichTextVariables()` for template variable substitution. Never render unsanitized HTML.
+
 ## Project Summary
 
 <!-- regenerate with /update-project-summary -->

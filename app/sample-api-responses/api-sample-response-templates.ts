@@ -34,7 +34,7 @@ export const ecardTemplates: ECardTemplate[] = [
     bodyHtml:
       '<p>Dear {{ FIRST_NAME }},</p><p>Thank you for your generous gift of {{ AMOUNT }}. Your support makes a real difference.</p><p>With gratitude,<br/>The Team</p>',
     category: 'thank-you',
-    isActive: true,
+
     createdAt: '2025-01-15T10:00:00Z'
   },
   {
@@ -45,7 +45,7 @@ export const ecardTemplates: ECardTemplate[] = [
     bodyHtml:
       '<p>Dear {{ FIRST_NAME }},</p><p>A gift of {{ AMOUNT }} has been made in memory of {{ HONOREE_NAME }} by {{ DONOR_NAME }}.</p><p>Their memory lives on through this act of kindness.</p>',
     category: 'tribute',
-    isActive: true,
+
     createdAt: '2025-02-01T10:00:00Z'
   },
   {
@@ -56,7 +56,7 @@ export const ecardTemplates: ECardTemplate[] = [
     bodyHtml:
       '<p>Dear {{ FIRST_NAME }},</p><p>To celebrate your birthday, {{ DONOR_NAME }} has made a donation of {{ AMOUNT }} in your honor.</p><p>Wishing you a wonderful day!</p>',
     category: 'celebration',
-    isActive: false,
+
     createdAt: '2025-03-10T10:00:00Z'
   }
 ]

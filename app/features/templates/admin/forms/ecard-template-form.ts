@@ -3,8 +3,7 @@ import {
   textField,
   selectField,
   imageUploadField,
-  textareaField,
-  toggleField
+  richTextField
 } from '~/features/_library/form-builder/api'
 
 export const useECardTemplateForm = defineForm('ecardTemplate', () => {
@@ -34,17 +33,17 @@ export const useECardTemplateForm = defineForm('ecardTemplate', () => {
     maxSizeMB: 5
   })
 
-  const bodyText = textareaField('bodyText', {
+  const bodyText = richTextField('bodyText', {
     label: 'Body Content',
-    description:
-      'Available: {{ FIRST_NAME }}, {{ LAST_NAME }}, {{ DONOR_NAME }}, {{ AMOUNT }}, {{ DATE }}, {{ HONOREE_NAME }}. Blank lines create paragraphs.',
-    placeholder: 'Dear {{ FIRST_NAME }},\n\nThank you for your generous gift...',
-    rows: 5
+    variables: [
+      { value: 'FIRST_NAME', label: 'First Name' },
+      { value: 'LAST_NAME', label: 'Last Name' },
+      { value: 'DONOR_NAME', label: 'Donor Name' },
+      { value: 'AMOUNT', label: 'Amount' },
+      { value: 'DATE', label: 'Date' },
+      { value: 'HONOREE_NAME', label: 'Honoree Name' }
+    ]
   })
 
-  const isActive = toggleField('isActive', {
-    label: 'Active'
-  })
-
-  return { name, category, subject, imageUrl, bodyText, isActive }
+  return { name, category, subject, imageUrl, bodyText }
 })

@@ -3,21 +3,19 @@ import {
   defineForm,
   textField,
   selectField,
+  comboboxField,
   fieldGroup
 } from '~/features/_library/form-builder/api'
+import { getTimezoneOptions } from '~/features/settings/admin/utils/timezones'
+import { useTeamSettingsStore } from '~/features/settings/admin/stores/teamSettings'
+import { useGeneralSettingsStore } from '~/features/settings/admin/stores/generalSettings'
 
 export const useGeneralSettingsForm = defineForm('generalSettings', () => {
-  const timezone = selectField('timezone', {
+  const timezone = comboboxField('timezone', {
     label: 'Timezone',
     description: 'Used for scheduling and date display',
-    options: [
-      { value: 'Europe/London', label: 'Europe/London (GMT/BST)' },
-      { value: 'America/New_York', label: 'America/New York (EST/EDT)' },
-      { value: 'America/Los_Angeles', label: 'America/Los Angeles (PST/PDT)' },
-      { value: 'Europe/Paris', label: 'Europe/Paris (CET/CEST)' },
-      { value: 'Asia/Tokyo', label: 'Asia/Tokyo (JST)' },
-      { value: 'Australia/Sydney', label: 'Australia/Sydney (AEST/AEDT)' }
-    ],
+    searchPlaceholder: 'Search timezones...',
+    options: getTimezoneOptions(),
     rules: z.string().min(1, 'Timezone is required')
   })
 
@@ -29,34 +27,28 @@ export const useGeneralSettingsForm = defineForm('generalSettings', () => {
       { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY (US)' },
       { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD (ISO)' }
     ],
-    rules: z.string().min(1)
-  })
-
-  const language = selectField('language', {
-    label: 'Default Language',
-    description: 'Primary language for donor-facing pages',
-    options: [
-      { value: 'en', label: 'English' },
-      { value: 'es', label: 'Spanish' },
-      { value: 'fr', label: 'French' },
-      { value: 'de', label: 'German' }
-    ],
     rules: z.string().min(1),
     showSeparatorAfter: true
   })
 
-  const emailSenderName = textField('emailSenderName', {
-    label: 'Email Sender Name',
-    description: 'Name shown in donor email "From" field',
-    placeholder: 'Borneo Orangutan Survival',
-    rules: z.string().min(1, 'Sender name is required')
-  })
-
-  const emailSenderAddress = textField('emailSenderAddress', {
-    label: 'Email Sender Address',
-    description: 'Email address used to send receipts and notifications',
-    placeholder: 'noreply@example.org',
-    rules: z.string().email('Must be a valid email address')
+  const teamStore = useTeamSettingsStore()
+  const emailSender = selectField('emailSender', {
+    label: 'Email Sender',
+    description: 'Team member whose name and email appear in the "From" field',
+    options: () =>
+      teamStore.activeMembers.map((m) => ({
+        value: m.id,
+        label: `${m.name} (${m.email})`
+      })),
+    rules: z.string().min(1, 'Email sender is required'),
+    onChange: ({ value }) => {
+      const member = teamStore.activeMembers.find((m) => m.id === value)
+      if (member) {
+        const generalStore = useGeneralSettingsStore()
+        generalStore.emailSenderName = member.name
+        generalStore.emailSenderAddress = member.email
+      }
+    }
   })
 
   const supportEmail = textField('supportEmail', {
@@ -70,13 +62,11 @@ export const useGeneralSettingsForm = defineForm('generalSettings', () => {
     label: 'General Settings',
     description: 'Configure organization-wide defaults.',
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: { timezone, dateFormat, language, emailSenderName, emailSenderAddress, supportEmail },
+    fields: { timezone, dateFormat, emailSender, supportEmail },
     $storePath: {
       timezone: 'timezone',
       dateFormat: 'dateFormat',
-      language: 'language',
-      emailSenderName: 'emailSenderName',
-      emailSenderAddress: 'emailSenderAddress',
+      emailSender: 'emailSenderId',
       supportEmail: 'supportEmail'
     }
   })

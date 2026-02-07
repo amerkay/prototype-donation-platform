@@ -80,6 +80,7 @@ export type FieldType =
   | 'tabs'
   | 'color'
   | 'date'
+  | 'rich-text'
   | 'component'
 
 /**
@@ -295,6 +296,15 @@ export interface ColorFieldConfig extends BaseFieldConfig {
   // Renders a color swatch + hex input
 }
 
+export interface RichTextVariable {
+  value: string
+  label: string
+}
+
+export interface RichTextFieldConfig extends BaseFieldConfig {
+  variables?: RichTextVariable[]
+}
+
 export interface DateFieldConfig extends BaseFieldConfig {
   /** Minimum selectable date (ISO string, e.g. '2026-01-01') */
   minDate?: string
@@ -425,6 +435,7 @@ export interface FieldRegistry {
   emoji: EmojiFieldConfig
   date: DateFieldConfig
   color: ColorFieldConfig
+  'rich-text': RichTextFieldConfig
   slider: SliderFieldConfig
   'image-upload': ImageUploadFieldConfig
   array: ArrayFieldConfig
@@ -451,6 +462,7 @@ export type RadioGroupFieldDef = Field<'radio-group', RadioGroupFieldConfig>
 export type DateFieldDef = Field<'date', DateFieldConfig>
 export type EmojiFieldDef = Field<'emoji', EmojiFieldConfig>
 export type ColorFieldDef = Field<'color', ColorFieldConfig>
+export type RichTextFieldDef = Field<'rich-text', RichTextFieldConfig>
 export type SliderFieldDef = Field<'slider', SliderFieldConfig>
 export type ImageUploadFieldDef = Field<'image-upload', ImageUploadFieldConfig>
 export type ArrayFieldDef = Field<'array', ArrayFieldConfig>
@@ -493,6 +505,8 @@ export const isRadioGroupField = (field: FieldDef): field is RadioGroupFieldDef 
 export const isDateField = (field: FieldDef): field is DateFieldDef => field.type === 'date'
 export const isEmojiField = (field: FieldDef): field is EmojiFieldDef => field.type === 'emoji'
 export const isColorField = (field: FieldDef): field is ColorFieldDef => field.type === 'color'
+export const isRichTextField = (field: FieldDef): field is RichTextFieldDef =>
+  field.type === 'rich-text'
 export const isSliderField = (field: FieldDef): field is SliderFieldDef => field.type === 'slider'
 export const isImageUploadField = (field: FieldDef): field is ImageUploadFieldDef =>
   field.type === 'image-upload'

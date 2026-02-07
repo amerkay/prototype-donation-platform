@@ -41,6 +41,8 @@ export const useDonationFormStore = defineStore(
       emailOptIn: { joinEmailList: true },
       terms: {}
     })
+    const isSubmitted = ref(false)
+    const receiptId = ref<string | null>(null)
 
     // ==================== GETTERS ====================
     const currentFrequency = computed(() => activeTab.value)
@@ -218,6 +220,11 @@ export const useDonationFormStore = defineStore(
       multipleCart.value = cartItems
     }
 
+    function submitDonation() {
+      receiptId.value = `RCT-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`
+      isSubmitted.value = true
+    }
+
     function clearSession() {
       currentStep.value = 1
       activeTab.value = 'once'
@@ -234,6 +241,8 @@ export const useDonationFormStore = defineStore(
         emailOptIn: { joinEmailList: true },
         terms: {}
       }
+      isSubmitted.value = false
+      receiptId.value = null
     }
 
     function reset() {
@@ -255,7 +264,9 @@ export const useDonationFormStore = defineStore(
             tributeData: tributeData.value,
             coverCosts: coverCosts.value,
             multipleCart: multipleCart.value,
-            formSections: formSections.value
+            formSections: formSections.value,
+            isSubmitted: isSubmitted.value,
+            receiptId: receiptId.value
           })
         )
       } catch (error) {
@@ -279,6 +290,8 @@ export const useDonationFormStore = defineStore(
         if (data.coverCosts !== undefined) coverCosts.value = data.coverCosts
         if (data.multipleCart !== undefined) multipleCart.value = data.multipleCart
         if (data.formSections !== undefined) formSections.value = data.formSections
+        if (data.isSubmitted !== undefined) isSubmitted.value = data.isSubmitted
+        if (data.receiptId !== undefined) receiptId.value = data.receiptId
       } catch (error) {
         console.warn('Failed to hydrate donation form:', error)
       }
@@ -296,6 +309,8 @@ export const useDonationFormStore = defineStore(
       coverCosts,
       multipleCart,
       formSections,
+      isSubmitted,
+      receiptId,
 
       // Getters
       currentFrequency,
@@ -322,6 +337,7 @@ export const useDonationFormStore = defineStore(
       setTributeData,
       updateFormSection,
       setCoverCosts,
+      submitDonation,
       syncMultipleCart,
       clearSession,
       reset,

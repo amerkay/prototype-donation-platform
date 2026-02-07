@@ -10,7 +10,7 @@ const store = useGeneralSettingsStore()
 const originalData = computed(() => ({
   timezone: store.timezone,
   dateFormat: store.dateFormat,
-  language: store.language,
+  emailSenderId: store.emailSenderId,
   emailSenderName: store.emailSenderName,
   emailSenderAddress: store.emailSenderAddress,
   supportEmail: store.supportEmail

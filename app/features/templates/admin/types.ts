@@ -29,6 +29,5 @@ export interface ECardTemplate {
   imageUrl: string
   bodyHtml: string
   category: 'thank-you' | 'tribute' | 'celebration' | 'custom'
-  isActive: boolean
   createdAt: string
 }

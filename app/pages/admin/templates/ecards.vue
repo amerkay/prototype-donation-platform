@@ -6,10 +6,9 @@ import { useECardTemplatesStore } from '~/features/templates/admin/stores/ecardT
 import { useECardTemplateForm } from '~/features/templates/admin/forms/ecard-template-form'
 import type { ECardTemplate } from '~/features/templates/admin/types'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import AdminDeleteDialog from '~/features/_admin/components/AdminDeleteDialog.vue'
-import { Plus, Pencil, Trash2, Mail, Eye } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
 
 import { formatDate } from '~/lib/formatDate'
 
@@ -31,23 +30,6 @@ const categoryLabels: Record<string, string> = {
   custom: 'Custom'
 }
 
-/** Convert bodyHtml → plain text for editing */
-function htmlToPlainText(html: string): string {
-  return html
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p>\s*<p>/gi, '\n\n')
-    .replace(/<\/?[^>]+>/g, '')
-    .trim()
-}
-
-/** Convert plain text → bodyHtml for storage */
-function plainTextToHtml(text: string): string {
-  return text
-    .split(/\n{2,}/)
-    .map((p) => `<p>${p.replace(/\n/g, '<br/>')}</p>`)
-    .join('')
-}
-
 // Edit/Create dialog
 const showEditDialog = ref(false)
 const editFormRef = ref()
@@ -57,8 +39,7 @@ const formData = ref({
   subject: '',
   imageUrl: '',
   bodyText: '',
-  category: 'thank-you' as ECardTemplate['category'],
-  isActive: true
+  category: 'thank-you' as ECardTemplate['category']
 })
 
 function openCreate() {
@@ -68,8 +49,7 @@ function openCreate() {
     subject: '',
     imageUrl: '',
     bodyText: '',
-    category: 'thank-you',
-    isActive: true
+    category: 'thank-you'
   }
   showEditDialog.value = true
 }
@@ -80,16 +60,15 @@ function openEdit(template: ECardTemplate) {
     name: template.name,
     subject: template.subject,
     imageUrl: template.imageUrl,
-    bodyText: htmlToPlainText(template.bodyHtml),
-    category: template.category,
-    isActive: template.isActive
+    bodyText: template.bodyHtml,
+    category: template.category
   }
   showEditDialog.value = true
 }
 
 function handleSave() {
   const { bodyText, ...rest } = formData.value
-  const payload = { ...rest, bodyHtml: plainTextToHtml(bodyText) }
+  const payload = { ...rest, bodyHtml: bodyText }
   if (editingId.value) {
     store.updateTemplate(editingId.value, payload)
   } else {
@@ -107,19 +86,6 @@ function confirmDelete() {
     templateToDelete.value = null
   }
 }
-
-// Preview dialog
-const previewTemplate = ref<ECardTemplate | null>(null)
-
-function renderPreview(html: string): string {
-  return html
-    .replace(/\{\{ FIRST_NAME \}\}/g, 'John')
-    .replace(/\{\{ LAST_NAME \}\}/g, 'Smith')
-    .replace(/\{\{ DONOR_NAME \}\}/g, 'Jane Doe')
-    .replace(/\{\{ AMOUNT \}\}/g, '£50.00')
-    .replace(/\{\{ DATE \}\}/g, formatDate(new Date().toISOString()))
-    .replace(/\{\{ HONOREE_NAME \}\}/g, 'Robert Smith')
-}
 </script>
 
 <template>
@@ -130,10 +96,7 @@ function renderPreview(html: string): string {
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 class="text-3xl font-bold">eCards</h1>
-          <p class="text-sm text-muted-foreground mt-1">
-            {{ store.templates.length }} templates &middot;
-            {{ store.activeTemplates.length }} active
-          </p>
+          <p class="text-sm text-muted-foreground mt-1">{{ store.templates.length }} templates</p>
         </div>
         <Button size="sm" @click="openCreate">
           <Plus class="w-4 h-4 mr-2" />
@@ -151,19 +114,11 @@ function renderPreview(html: string): string {
           :key="template.id"
           class="overflow-hidden p-0 gap-y-0"
         >
-          <div class="relative">
-            <img
-              :src="template.imageUrl"
-              :alt="template.name"
-              class="w-full h-36 object-cover rounded-t-lg"
-            />
-            <Badge
-              :variant="template.isActive ? 'default' : 'secondary'"
-              class="absolute top-2 right-2 text-xs"
-            >
-              {{ template.isActive ? 'Active' : 'Inactive' }}
-            </Badge>
-          </div>
+          <img
+            :src="template.imageUrl"
+            :alt="template.name"
+            class="w-full h-36 object-cover rounded-t-lg"
+          />
           <CardHeader class="px-4 pt-3 pb-2">
             <div class="flex items-center justify-between">
               <CardTitle class="text-base">{{ template.name }}</CardTitle>
@@ -179,14 +134,6 @@ function renderPreview(html: string): string {
                 Created {{ formatDate(template.createdAt) }}
               </span>
               <div class="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  class="h-7 w-7"
-                  @click="previewTemplate = template"
-                >
-                  <Eye class="h-3.5 w-3.5" />
-                </Button>
                 <Button variant="ghost" size="icon" class="h-7 w-7" @click="openEdit(template)">
                   <Pencil class="h-3.5 w-3.5" />
                 </Button>
@@ -232,36 +179,5 @@ function renderPreview(html: string): string {
       @update:open="(v) => !v && (templateToDelete = null)"
       @confirm="confirmDelete"
     />
-
-    <!-- Preview Dialog -->
-    <BaseDialogOrDrawer
-      :open="!!previewTemplate"
-      max-width="sm:max-w-lg"
-      @update:open="(v) => !v && (previewTemplate = null)"
-    >
-      <template #header>
-        <span class="flex items-center gap-2">
-          <Mail class="w-4 h-4" />
-          {{ previewTemplate?.name }} Preview
-        </span>
-      </template>
-      <template #content>
-        <div v-if="previewTemplate" class="space-y-4">
-          <p class="font-mono text-xs text-muted-foreground">
-            Subject: {{ renderPreview(previewTemplate.subject) }}
-          </p>
-          <img
-            :src="previewTemplate.imageUrl"
-            :alt="previewTemplate.name"
-            class="w-full h-40 object-cover rounded"
-          />
-          <!-- eslint-disable-next-line vue/no-v-html -->
-          <div class="prose prose-sm max-w-none" v-html="renderPreview(previewTemplate.bodyHtml)" />
-        </div>
-      </template>
-      <template #footer>
-        <Button @click="previewTemplate = null">Close</Button>
-      </template>
-    </BaseDialogOrDrawer>
   </div>
 </template>

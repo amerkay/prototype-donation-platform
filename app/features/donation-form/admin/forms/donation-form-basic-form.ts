@@ -1,8 +1,14 @@
 import * as z from 'zod'
-import { defineForm, textField, fieldGroup } from '~/features/_library/form-builder/api'
+import {
+  defineForm,
+  textField,
+  fieldGroup,
+  componentField
+} from '~/features/_library/form-builder/api'
+import BrandingSettingsInfo from '~/features/settings/admin/components/BrandingSettingsInfo.vue'
 
 /**
- * Basic donation form settings (title, subtitle)
+ * Basic donation form settings (title, subtitle, branding info)
  */
 export const useDonationFormBasicForm = defineForm('formBasic', () => {
   const formTitle = textField('title', {
@@ -22,5 +28,9 @@ export const useDonationFormBasicForm = defineForm('formBasic', () => {
     fields: { title: formTitle, subtitle: formSubtitle }
   })
 
-  return { form }
+  const branding = componentField('branding', {
+    component: BrandingSettingsInfo
+  })
+
+  return { form, branding }
 })

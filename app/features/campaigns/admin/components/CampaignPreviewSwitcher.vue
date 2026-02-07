@@ -8,12 +8,14 @@ import { Eye, EyeOff, FileText } from 'lucide-vue-next'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useCampaignPreview } from '~/features/campaigns/shared/composables/useCampaignPreview'
+import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 
 const store = useCampaignConfigStore()
 const formConfigStore = useFormConfigStore()
 
 const { activeSection, hasActivePreview, isDisabled, isEmpty, featureName, defaultForm } =
   useCampaignPreview(store.id!)
+const { brandingStyle } = useBrandingCssVars()
 
 // Sync form config store with default form for donation forms preview
 watch(
@@ -42,7 +44,7 @@ watch(activeSection, async () => {
 </script>
 
 <template>
-  <div ref="containerRef">
+  <div ref="containerRef" :style="brandingStyle">
     <!-- Dynamic Preview -->
     <component :is="previewComponents[activeSection!]" v-if="hasActivePreview" />
 

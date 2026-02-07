@@ -5,6 +5,8 @@ import OrderSummary from '~/features/donation-form/donor/components/OrderSummary
 import DonationFormStep1 from '~/features/donation-form/donor/steps/step1/DonationFormStep1.vue'
 import DonationFormStep2 from '~/features/donation-form/donor/steps/step2/DonationFormStep2.vue'
 import DonationFormStep3 from '~/features/donation-form/donor/steps/step3/DonationFormStep3.vue'
+import DonationFormStep4 from '~/features/donation-form/donor/steps/step4/DonationFormStep4.vue'
+import DonationFormStep5 from '~/features/donation-form/donor/steps/step5/DonationFormStep5.vue'
 import DonationCustomFields from '~/features/donation-form/features/custom-fields/donor/components/DonationCustomFields.vue'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
@@ -21,7 +23,7 @@ const props = defineProps<{
 // Use provided config or fall back to default
 const activeConfig = computed(() => props.config ?? defaultConfig)
 
-const TOTAL_STEPS = 4 // Donation, Donor Info, Gift Aid/Cover Fees, Payment
+const TOTAL_STEPS = 5
 
 // Initialize Pinia stores
 const formConfigStore = useFormConfigStore()
@@ -69,20 +71,25 @@ watch(
   }
 )
 
-// Step 1 handlers
+// Step handlers
 const handleStep1Complete = () => {
   store.nextStep()
 }
 
-// Step 2 handlers
 const handleStep2Complete = () => {
   store.nextStep()
 }
 
-// Step 3 handlers
 const handleStep3Complete = () => {
   store.nextStep()
-  // TODO: Continue to step 4 (payment)
+}
+
+const handleStep4Complete = () => {
+  store.nextStep()
+}
+
+const handleRestart = () => {
+  store.goToStep(1)
 }
 
 // Edit handler
@@ -94,6 +101,9 @@ const handleEdit = () => {
 const handleBack = () => {
   store.previousStep()
 }
+
+// Whether we're on the confirmation step
+const isConfirmation = computed(() => store.currentStep === 5)
 </script>
 
 <template>
@@ -101,13 +111,17 @@ const handleBack = () => {
     <!-- Hidden custom fields: Always mounted for visibility condition evaluation -->
     <DonationCustomFields tab="hidden" :show-separator="false" />
 
-    <!-- Progress Bar -->
-    <ProgressBar :current-step="store.currentStep" :total-steps="TOTAL_STEPS" />
+    <!-- Progress Bar (hidden on confirmation step) -->
+    <ProgressBar
+      v-if="!isConfirmation"
+      :current-step="store.currentStep"
+      :total-steps="TOTAL_STEPS"
+    />
 
     <div class="p-4 sm:p-6">
-      <!-- Order Summary (shown from step 2 onwards) -->
+      <!-- Order Summary (shown on steps 2-3, not on review or confirmation) -->
       <OrderSummary
-        v-if="store.currentStep >= 2"
+        v-if="store.currentStep >= 2 && store.currentStep <= 3"
         :needs-shipping="store.needsShipping"
         class="mb-4"
         @back="handleBack"
@@ -131,14 +145,11 @@ const handleBack = () => {
       <!-- Step 3: Gift Aid & Preferences -->
       <DonationFormStep3 v-if="store.currentStep === 3" @complete="handleStep3Complete" />
 
-      <!-- Step 4: Payment (TODO) -->
-      <div
-        v-if="store.currentStep === 4"
-        class="rounded-lg border p-8 text-center text-muted-foreground"
-      >
-        <p>Step 4: Total &amp; Payment</p>
-        <p class="mt-2 text-sm">(Coming soon)</p>
-      </div>
+      <!-- Step 4: Order Review & Payment -->
+      <DonationFormStep4 v-if="store.currentStep === 4" @complete="handleStep4Complete" />
+
+      <!-- Step 5: Thank You & Confirmation -->
+      <DonationFormStep5 v-if="store.currentStep === 5" @restart="handleRestart" />
     </div>
   </div>
 </template>

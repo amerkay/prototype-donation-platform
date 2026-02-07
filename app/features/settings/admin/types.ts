@@ -37,7 +37,7 @@ export interface CharitySettings {
 export interface GeneralSettings {
   timezone: string
   dateFormat: string
-  language: string
+  emailSenderId: string
   emailSenderName: string
   emailSenderAddress: string
   supportEmail: string
@@ -48,10 +48,8 @@ export interface GeneralSettings {
  */
 export interface BrandingSettings {
   logoUrl: string
-  faviconUrl: string
   primaryColor: string
   secondaryColor: string
-  accentColor: string
   fontFamily: string
   customCss: string
 }
@@ -61,14 +59,12 @@ export interface BrandingSettings {
  */
 export interface PaymentProcessorSettings {
   stripe: {
-    enabled: boolean
     testMode: boolean
     connected: boolean
     accountId?: string
     connectedAt?: string
   }
   paypal: {
-    enabled: boolean
     testMode: boolean
     connected: boolean
     merchantId?: string

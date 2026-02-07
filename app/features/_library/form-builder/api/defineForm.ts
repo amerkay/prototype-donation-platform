@@ -29,6 +29,8 @@ import type {
   EmojiFieldDef,
   ColorFieldConfig,
   ColorFieldDef,
+  RichTextFieldConfig,
+  RichTextFieldDef,
   SliderFieldConfig,
   SliderFieldDef,
   ImageUploadFieldConfig,
@@ -249,6 +251,17 @@ export function emojiField(name: string, config: EmojiFieldConfig = {}): EmojiFi
 export function colorField(name: string, config: ColorFieldConfig = {}): ColorFieldDef {
   return {
     type: 'color',
+    name,
+    ...config
+  }
+}
+
+/**
+ * Create a rich text editor field
+ */
+export function richTextField(name: string, config: RichTextFieldConfig = {}): RichTextFieldDef {
+  return {
+    type: 'rich-text',
     name,
     ...config
   }

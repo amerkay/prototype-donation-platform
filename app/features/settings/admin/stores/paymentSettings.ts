@@ -13,11 +13,7 @@ export const usePaymentSettingsStore = defineStore('paymentSettings', () => {
     paypal.value = { ...settings.paypal }
   }
 
-  function toggleStripeEnabled(enabled: boolean) {
-    stripe.value = { ...stripe.value, enabled }
-    $persist()
-  }
-
+  // Stripe — all immediate actions
   function toggleStripeTestMode(testMode: boolean) {
     stripe.value = { ...stripe.value, testMode }
     $persist()
@@ -45,11 +41,7 @@ export const usePaymentSettingsStore = defineStore('paymentSettings', () => {
     toast.success('Stripe disconnected')
   }
 
-  function togglePaypalEnabled(enabled: boolean) {
-    paypal.value = { ...paypal.value, enabled }
-    $persist()
-  }
-
+  // PayPal — all immediate actions
   function togglePaypalTestMode(testMode: boolean) {
     paypal.value = { ...paypal.value, testMode }
     $persist()
@@ -106,11 +98,9 @@ export const usePaymentSettingsStore = defineStore('paymentSettings', () => {
   return {
     stripe,
     paypal,
-    toggleStripeEnabled,
     toggleStripeTestMode,
     completeStripeConnect,
     disconnectStripe,
-    togglePaypalEnabled,
     togglePaypalTestMode,
     completePaypalConnect,
     disconnectPaypal,

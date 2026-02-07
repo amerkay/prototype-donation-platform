@@ -4,6 +4,9 @@ import StickyButtonGroup from '~/features/_admin/components/StickyButtonGroup.vu
 import { useBrandingSettingsForm } from '~/features/settings/admin/forms/branding-settings-form'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
 import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
+import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
+import { Button } from '@/components/ui/button'
+import { Eye } from 'lucide-vue-next'
 
 const store = useBrandingSettingsStore()
 
@@ -12,35 +15,15 @@ const { formRef, modelValue, form, expose } = useAdminConfigForm({
   form: useBrandingSettingsForm
 })
 
-defineEmits<{ save: []; discard: [] }>()
+// Font loading handled by composable (also used by donor layout + preview)
+useBrandingCssVars()
+
+defineEmits<{ save: []; discard: []; preview: [] }>()
 defineExpose(expose)
 </script>
 
 <template>
   <div class="w-full mx-auto space-y-6">
-    <!-- Color Preview -->
-    <div class="flex items-center gap-3 p-4 bg-muted/50 rounded-xl border">
-      <span class="text-sm text-muted-foreground">Preview:</span>
-      <div
-        class="w-8 h-8 rounded-full border"
-        :style="{ backgroundColor: store.primaryColor }"
-        title="Primary"
-      />
-      <div
-        class="w-8 h-8 rounded-full border"
-        :style="{ backgroundColor: store.secondaryColor }"
-        title="Secondary"
-      />
-      <div
-        class="w-8 h-8 rounded-full border"
-        :style="{ backgroundColor: store.accentColor }"
-        title="Accent"
-      />
-      <span class="text-sm ml-2" :style="{ fontFamily: store.fontFamily }">
-        {{ store.fontFamily }}
-      </span>
-    </div>
-
     <FormRenderer
       ref="formRef"
       v-model="modelValue"
@@ -48,6 +31,10 @@ defineExpose(expose)
       validate-on-mount
       update-only-when-valid
     />
+    <Button variant="outline" size="sm" class="lg:hidden" @click="$emit('preview')">
+      <Eye class="w-4 h-4 mr-2" />
+      Preview
+    </Button>
     <StickyButtonGroup
       :is-dirty="store.isDirty"
       :is-saving="store.isSaving"

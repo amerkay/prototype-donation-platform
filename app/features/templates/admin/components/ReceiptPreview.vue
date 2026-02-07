@@ -18,7 +18,7 @@ const sampleDate = new Intl.DateTimeFormat('en-GB', {
 <template>
   <div class="bg-white text-black rounded-lg border shadow-sm p-8 max-w-md mx-auto text-sm">
     <!-- Header bar -->
-    <div class="h-1.5 rounded-full mb-6" :style="{ backgroundColor: branding.accentColor }" />
+    <div class="h-1.5 rounded-full mb-6" :style="{ backgroundColor: branding.primaryColor }" />
 
     <!-- Charity info -->
     <div class="text-center mb-4">
@@ -27,7 +27,7 @@ const sampleDate = new Intl.DateTimeFormat('en-GB', {
       <p class="text-xs text-gray-500">{{ charity.address }}</p>
     </div>
 
-    <h4 class="text-center font-semibold mb-4" :style="{ color: branding.accentColor }">
+    <h4 class="text-center font-semibold mb-4" :style="{ color: branding.primaryColor }">
       Donation Receipt
     </h4>
 
@@ -62,7 +62,7 @@ const sampleDate = new Intl.DateTimeFormat('en-GB', {
 
       <div class="flex justify-between text-base font-bold">
         <span>Amount</span>
-        <span :style="{ color: branding.accentColor }">£50.00</span>
+        <span :style="{ color: branding.primaryColor }">£50.00</span>
       </div>
     </div>
 
@@ -83,6 +83,6 @@ const sampleDate = new Intl.DateTimeFormat('en-GB', {
     <p class="text-xs text-gray-400 text-center">{{ receipt.footerText }}</p>
 
     <!-- Bottom bar -->
-    <div class="h-1 rounded-full mt-6" :style="{ backgroundColor: branding.accentColor }" />
+    <div class="h-1 rounded-full mt-6" :style="{ backgroundColor: branding.primaryColor }" />
   </div>
 </template>

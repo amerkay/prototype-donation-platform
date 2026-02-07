@@ -2,6 +2,10 @@
 import { computed } from 'vue'
 import { useCertificateTemplateStore } from '~/features/templates/admin/stores/certificateTemplate'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
+import {
+  sanitizeRichText,
+  replaceRichTextVariables
+} from '~/features/_library/form-builder/utils/sanitize-html'
 
 const cert = useCertificateTemplateStore()
 const branding = useBrandingSettingsStore()
@@ -12,12 +16,14 @@ const sampleDate = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric'
 }).format(new Date())
 
-const renderedBody = computed(() =>
-  cert.bodyText
-    .replace('{{ DONOR_NAME }}', 'John Smith')
-    .replace('{{ AMOUNT }}', '£50.00')
-    .replace('{{ DATE }}', sampleDate)
-)
+const renderedBody = computed(() => {
+  const sanitized = sanitizeRichText(cert.bodyText)
+  return replaceRichTextVariables(sanitized, {
+    DONOR_NAME: 'John Smith',
+    AMOUNT: '£50.00',
+    DATE: sampleDate
+  })
+})
 
 const borderClasses: Record<string, string> = {
   classic: 'border-4 border-double',
@@ -31,7 +37,7 @@ const borderClasses: Record<string, string> = {
   <div
     class="bg-white text-black rounded-lg shadow-sm p-10 max-w-lg mx-auto text-center"
     :class="borderClasses[cert.borderStyle]"
-    :style="{ borderColor: branding.primaryColor, '--tw-ring-color': branding.accentColor }"
+    :style="{ borderColor: branding.primaryColor, '--tw-ring-color': branding.primaryColor }"
   >
     <!-- Logo placeholder -->
     <div
@@ -55,15 +61,14 @@ const borderClasses: Record<string, string> = {
     </p>
 
     <!-- Decorative line -->
-    <div class="w-16 h-0.5 mx-auto mb-6" :style="{ backgroundColor: branding.accentColor }" />
+    <div class="w-16 h-0.5 mx-auto mb-6" :style="{ backgroundColor: branding.primaryColor }" />
 
     <!-- Body -->
-    <p
-      class="text-sm leading-relaxed text-gray-700 mb-6 max-w-xs mx-auto"
+    <div
+      class="text-sm leading-relaxed text-gray-700 mb-6 max-w-xs mx-auto certificate-body"
       :style="{ fontFamily: branding.fontFamily }"
-    >
-      {{ renderedBody }}
-    </p>
+      v-html="renderedBody"
+    />
 
     <!-- Date -->
     <p v-if="cert.showDate" class="text-xs text-gray-400 mb-6">{{ sampleDate }}</p>
@@ -78,3 +83,18 @@ const borderClasses: Record<string, string> = {
     </div>
   </div>
 </template>
+
+<style scoped>
+.certificate-body :deep(p) {
+  margin: 0;
+}
+
+.certificate-body :deep(p + p) {
+  margin-top: 0.5em;
+}
+
+.certificate-body :deep(a) {
+  color: inherit;
+  text-decoration: underline;
+}
+</style>

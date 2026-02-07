@@ -2,7 +2,6 @@ import { defineForm, fieldGroup, componentField } from '~/features/_library/form
 import type { FormContext } from '~/features/_library/form-builder/types'
 import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 import { useDonationFormBasicForm } from '~/features/donation-form/admin/forms/donation-form-basic-form'
-import { useDonationFormBrandingForm } from '~/features/donation-form/admin/forms/donation-form-branding-form'
 import { useDonationFormDonationAmountsForm } from '~/features/donation-form/admin/forms/donation-form-donation-amounts-form'
 import { useMultipleProductsConfigSection } from '~/features/donation-form/features/impact-cart/admin/forms/impact-cart-config-form'
 import { useProductSelectorConfigSection } from '~/features/donation-form/features/product-selector/admin/forms/product-selector-config-form'
@@ -25,7 +24,6 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
 
     // Extract fields from each sub-form by calling their setup functions
     const formBasicFields = useDonationFormBasicForm.setup(ctx)
-    const formBrandingFields = useDonationFormBrandingForm.setup(ctx)
     const formDonationAmountsFields = useDonationFormDonationAmountsForm.setup(ctx)
     const impactBoostFields = useImpactBoostConfigSection.setup(ctx)
     const impactCartFields = useMultipleProductsConfigSection.setup(ctx)
@@ -40,18 +38,17 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
       component: CurrencySettingsInfo
     })
 
-    // Form Settings - basic settings and branding only
+    // Form Settings - basic settings and branding info
     const formSettings = fieldGroup('formSettings', {
       label: 'Form Settings',
-      description: 'Configure basic form settings and branding.',
+      description: 'Configure basic form settings.',
       collapsible: true,
       collapsibleDefaultOpen: true,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: { ...formBasicFields, ...formBrandingFields },
+      fields: formBasicFields,
       // Flatten structure: form.formSettings.form → store.form
       $storePath: {
-        form: 'form',
-        branding: 'branding'
+        form: 'form'
       }
     })
 

@@ -1,7 +1,7 @@
 import {
   defineForm,
   textField,
-  textareaField,
+  richTextField,
   selectField,
   toggleField,
   fieldGroup
@@ -16,10 +16,13 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     label: 'Subtitle'
   })
 
-  const bodyText = textareaField('bodyText', {
+  const bodyText = richTextField('bodyText', {
     label: 'Body Text',
-    description: 'Available variables: {{ DONOR_NAME }}, {{ AMOUNT }}, {{ DATE }}',
-    rows: 3
+    variables: [
+      { value: 'DONOR_NAME', label: 'Donor Name' },
+      { value: 'AMOUNT', label: 'Amount' },
+      { value: 'DATE', label: 'Date' }
+    ]
   })
 
   const borderStyle = selectField('borderStyle', {
