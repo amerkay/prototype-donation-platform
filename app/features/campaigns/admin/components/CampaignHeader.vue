@@ -10,6 +10,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { getStatusColor } from '~/lib/statusColors'
+import { cn } from '@/lib/utils'
 import CampaignDeleteButton from './CampaignDeleteButton.vue'
 import {
   Select,
@@ -33,6 +35,7 @@ const emit = defineEmits<{
 }>()
 
 const hasDonations = computed(() => (store.stats?.totalDonations ?? 0) > 0)
+const statusColor = computed(() => getStatusColor(store.status))
 
 const campaignTypeLabel = computed(() => getCampaignTypeShortLabel({ type: store.type }))
 const typeBadgeVariant = computed(() => getCampaignTypeBadgeVariant(store.type))
@@ -81,10 +84,15 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
         <!-- Status dropdown (all campaign types) -->
         <Select :model-value="store.status" @update:model-value="handleStatusChange">
           <SelectTrigger
-            :data-campaign-status="store.status"
-            class="data-[size=default]:h-6 w-auto gap-1 rounded-full border-(--cs-border) px-2 py-0 text-xs font-medium text-(--cs-text) shadow-none"
+            :class="
+              cn(
+                'data-[size=default]:h-6 w-auto gap-1 rounded-full px-2 py-0 text-xs font-medium shadow-none',
+                statusColor.border,
+                statusColor.text
+              )
+            "
           >
-            <span class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)" />
+            <span :class="cn('size-1.5 shrink-0 rounded-full', statusColor.dot)" />
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -96,8 +104,9 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
                     <SelectItem :value="opt.value" disabled class="text-xs">
                       <span class="flex items-center gap-2">
                         <span
-                          :data-campaign-status="opt.value"
-                          class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)"
+                          :class="
+                            cn('size-1.5 shrink-0 rounded-full', getStatusColor(opt.value).dot)
+                          "
                         />
                         {{ opt.label }}
                         <span class="text-muted-foreground ml-auto text-[10px]">
@@ -121,8 +130,9 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
                     <SelectItem :value="opt.value" disabled class="text-xs">
                       <span class="flex items-center gap-2">
                         <span
-                          :data-campaign-status="opt.value"
-                          class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)"
+                          :class="
+                            cn('size-1.5 shrink-0 rounded-full', getStatusColor(opt.value).dot)
+                          "
                         />
                         {{ opt.label }}
                         <span class="text-destructive ml-auto text-[10px]">Fix errors</span>
@@ -137,8 +147,7 @@ function handleStatusChange(value: string | number | bigint | Record<string, unk
               <SelectItem v-else :value="opt.value" class="text-xs">
                 <span class="flex items-center gap-2">
                   <span
-                    :data-campaign-status="opt.value"
-                    class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)"
+                    :class="cn('size-1.5 shrink-0 rounded-full', getStatusColor(opt.value).dot)"
                   />
                   {{ opt.label }}
                 </span>

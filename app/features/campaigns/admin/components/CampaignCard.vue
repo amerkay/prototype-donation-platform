@@ -77,14 +77,7 @@ const activeFundraisersCount = computed(
           <Badge :variant="typeBadgeVariant" class="text-xs">
             {{ campaignTypeLabel }}
           </Badge>
-          <Badge
-            variant="outline"
-            :data-campaign-status="campaign.status"
-            class="border-(--cs-border) text-(--cs-text)"
-          >
-            <span class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)" />
-            {{ campaign.status }}
-          </Badge>
+          <StatusBadge :status="campaign.status" />
         </div>
         <CardDescription v-if="!compact" class="flex items-center gap-2 mt-2">
           <Calendar class="w-3 h-3" />

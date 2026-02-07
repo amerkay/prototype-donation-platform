@@ -37,8 +37,9 @@ const props = withDefaults(defineProps<SidebarProps>(), {
 const navMain = computed(() => [
   {
     title: 'Dashboard',
-    url: '#',
-    icon: LayoutDashboard
+    url: '/admin/dashboard',
+    icon: LayoutDashboard,
+    exact: true
   },
   {
     title: 'Campaigns',
@@ -57,41 +58,40 @@ const navMain = computed(() => [
   },
   {
     title: 'Donors',
-    url: '#',
+    url: '/admin/donors',
     icon: Users
   },
   {
     title: 'Donations',
-    url: '#',
+    url: '/admin/donations',
     icon: PoundSterling
   },
   {
     title: 'Subscriptions',
-    url: '#',
+    url: '/admin/subscriptions',
     icon: CreditCard
   },
   {
-    title: 'Products',
-    url: '#',
+    title: 'Impact Products',
+    url: '/admin/products',
     icon: Box
   },
   {
     title: 'Templates',
     url: '#',
     icon: FileText,
-    disabled: true,
     items: [
       {
         title: 'Receipts',
-        url: '#'
+        url: '/admin/templates/receipts'
       },
       {
         title: 'Certificates',
-        url: '#'
+        url: '/admin/templates/certificates'
       },
       {
         title: 'eCards',
-        url: '#'
+        url: '/admin/templates/ecards'
       },
       {
         title: 'Pages',
@@ -134,7 +134,7 @@ const navMain = computed(() => [
     items: [
       {
         title: 'General',
-        url: '#'
+        url: '/admin/settings/general'
       },
       {
         title: 'Currency',
@@ -146,23 +146,23 @@ const navMain = computed(() => [
       },
       {
         title: 'Branding',
-        url: '#'
+        url: '/admin/settings/branding'
       },
       {
         title: 'Payment Processors',
-        url: '#'
+        url: '/admin/settings/payments'
       },
       {
         title: 'Team',
-        url: '#'
+        url: '/admin/settings/team'
       },
       {
         title: 'Billing',
-        url: '#'
+        url: '/admin/settings/billing'
       },
       {
         title: 'API & Webhooks',
-        url: '#'
+        url: '/admin/settings/api'
       }
     ]
   }

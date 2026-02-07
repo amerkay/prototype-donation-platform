@@ -4,13 +4,7 @@ import type { CampaignDonation } from '~/features/campaigns/shared/types'
 import { Button } from '@/components/ui/button'
 import { ArrowUpDown } from 'lucide-vue-next'
 import { formatCurrency } from '~/lib/formatCurrency'
-
-const formatDate = (dateString: string): string =>
-  new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  }).format(new Date(dateString))
+import { formatDate } from '~/lib/formatDate'
 
 /**
  * Privacy-respecting donor name: "FirstName L." or "Anonymous"

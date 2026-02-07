@@ -2,7 +2,6 @@
 import type { Subscription } from '~/features/subscriptions/shared/types'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Pause, Play, RefreshCw, X } from 'lucide-vue-next'
@@ -38,14 +37,9 @@ const paymentMethodLabel = (pm: {
     <CardHeader class="pb-3">
       <div class="flex items-center justify-between">
         <CardTitle class="text-base">{{ subscription.campaignName }}</CardTitle>
-        <Badge
-          variant="outline"
-          :data-campaign-status="subscription.status"
-          class="border-(--cs-border) text-(--cs-text)"
-        >
-          <span class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)" />
+        <StatusBadge :status="subscription.status">
           {{ subscription.status.replace('_', ' ') }}
-        </Badge>
+        </StatusBadge>
       </div>
       <CardDescription>
         {{ formatAmount(subscription.amount, subscription.currency) }}/{{ subscription.frequency }}

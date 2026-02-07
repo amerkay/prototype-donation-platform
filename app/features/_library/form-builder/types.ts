@@ -78,6 +78,7 @@ export type FieldType =
   | 'field-group'
   | 'card'
   | 'tabs'
+  | 'color'
   | 'date'
   | 'component'
 
@@ -288,6 +289,12 @@ export interface SliderFieldConfig extends BaseFieldConfig {
   suffix?: string | ComputedRef<string | undefined> | ((ctx: FieldContext) => string | undefined)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ColorFieldConfig extends BaseFieldConfig {
+  // Color fields inherit all base config (label, description, etc.)
+  // Renders a color swatch + hex input
+}
+
 export interface DateFieldConfig extends BaseFieldConfig {
   /** Minimum selectable date (ISO string, e.g. '2026-01-01') */
   minDate?: string
@@ -417,6 +424,7 @@ export interface FieldRegistry {
   'radio-group': RadioGroupFieldConfig
   emoji: EmojiFieldConfig
   date: DateFieldConfig
+  color: ColorFieldConfig
   slider: SliderFieldConfig
   'image-upload': ImageUploadFieldConfig
   array: ArrayFieldConfig
@@ -442,6 +450,7 @@ export type AutocompleteFieldDef = Field<'autocomplete', AutocompleteFieldConfig
 export type RadioGroupFieldDef = Field<'radio-group', RadioGroupFieldConfig>
 export type DateFieldDef = Field<'date', DateFieldConfig>
 export type EmojiFieldDef = Field<'emoji', EmojiFieldConfig>
+export type ColorFieldDef = Field<'color', ColorFieldConfig>
 export type SliderFieldDef = Field<'slider', SliderFieldConfig>
 export type ImageUploadFieldDef = Field<'image-upload', ImageUploadFieldConfig>
 export type ArrayFieldDef = Field<'array', ArrayFieldConfig>
@@ -483,6 +492,7 @@ export const isRadioGroupField = (field: FieldDef): field is RadioGroupFieldDef 
   field.type === 'radio-group'
 export const isDateField = (field: FieldDef): field is DateFieldDef => field.type === 'date'
 export const isEmojiField = (field: FieldDef): field is EmojiFieldDef => field.type === 'emoji'
+export const isColorField = (field: FieldDef): field is ColorFieldDef => field.type === 'color'
 export const isSliderField = (field: FieldDef): field is SliderFieldDef => field.type === 'slider'
 export const isImageUploadField = (field: FieldDef): field is ImageUploadFieldDef =>
   field.type === 'image-upload'

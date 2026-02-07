@@ -1,30 +1,12 @@
 import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import type { Transaction } from '~/features/donor-portal/types'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowUpDown, RefreshCw } from 'lucide-vue-next'
 import { formatCurrency } from '~/lib/formatCurrency'
-
-const formatDate = (dateString: string): string =>
-  new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  }).format(new Date(dateString))
-
-const paymentMethodLabel = (pm: Transaction['paymentMethod']): string => {
-  if (pm.type === 'card' && pm.brand && pm.last4) return `${pm.brand} ****${pm.last4}`
-  if (pm.type === 'paypal') return 'PayPal'
-  if (pm.type === 'bank_transfer') return 'Bank Transfer'
-  return pm.type
-}
-
-const statusBadgeAttrs = (status: string) => ({
-  variant: 'outline' as const,
-  'data-campaign-status': status,
-  class: 'border-(--cs-border) text-(--cs-text)'
-})
+import { formatDate } from '~/lib/formatDate'
+import { paymentMethodLabel } from '~/lib/formatPaymentMethod'
+import StatusBadge from '~/components/StatusBadge.vue'
 
 export const transactionColumns: ColumnDef<Transaction>[] = [
   {
@@ -123,13 +105,7 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
   {
     accessorKey: 'status',
     header: 'Status',
-    cell: ({ row }) => {
-      const status = row.getValue('status') as Transaction['status']
-      return h(Badge, statusBadgeAttrs(status), () => [
-        h('span', { class: 'size-1.5 shrink-0 rounded-full bg-(--cs-dot)' }),
-        status
-      ])
-    }
+    cell: ({ row }) => h(StatusBadge, { status: row.getValue('status') as string })
   }
 ]
 
@@ -184,12 +160,6 @@ export const transactionColumnsCompact: ColumnDef<Transaction>[] = [
   {
     accessorKey: 'status',
     header: 'Status',
-    cell: ({ row }) => {
-      const status = row.getValue('status') as Transaction['status']
-      return h(Badge, statusBadgeAttrs(status), () => [
-        h('span', { class: 'size-1.5 shrink-0 rounded-full bg-(--cs-dot)' }),
-        status
-      ])
-    }
+    cell: ({ row }) => h(StatusBadge, { status: row.getValue('status') as string })
   }
 ]

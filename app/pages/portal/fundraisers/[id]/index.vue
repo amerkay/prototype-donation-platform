@@ -7,7 +7,6 @@ import { fundraiserDonationColumns } from '~/features/donor-portal/columns/fundr
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
 import StatsCard from '@/components/StatsCard.vue'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import {
@@ -77,14 +76,10 @@ const breadcrumbItems = computed(() => {
               <h1 class="inline text-2xl font-semibold tracking-tight">
                 {{ fundraiser.name }}
               </h1>
-              <Badge
-                variant="outline"
-                :data-campaign-status="fundraiser.status"
-                class="inline-block ml-3 align-text-bottom border-(--cs-border) text-(--cs-text)"
-              >
-                <span class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)" />
-                {{ fundraiser.status }}
-              </Badge>
+              <StatusBadge
+                :status="fundraiser.status"
+                class="inline-block ml-3 align-text-bottom"
+              />
             </div>
             <p class="text-sm text-muted-foreground">
               {{ fundraiser.crowdfunding.shortDescription }}

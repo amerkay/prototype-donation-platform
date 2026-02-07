@@ -27,6 +27,8 @@ import type {
   DateFieldDef,
   EmojiFieldConfig,
   EmojiFieldDef,
+  ColorFieldConfig,
+  ColorFieldDef,
   SliderFieldConfig,
   SliderFieldDef,
   ImageUploadFieldConfig,
@@ -236,6 +238,17 @@ export function dateField(name: string, config: DateFieldConfig): DateFieldDef {
 export function emojiField(name: string, config: EmojiFieldConfig = {}): EmojiFieldDef {
   return {
     type: 'emoji',
+    name,
+    ...config
+  }
+}
+
+/**
+ * Create a color picker field (swatch + hex input)
+ */
+export function colorField(name: string, config: ColorFieldConfig = {}): ColorFieldDef {
+  return {
+    type: 'color',
     name,
     ...config
   }

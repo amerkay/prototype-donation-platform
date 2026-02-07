@@ -6,7 +6,6 @@ import { transactionColumnsCompact } from '~/features/donor-portal/columns/trans
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
 import StatsCard from '@/components/StatsCard.vue'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { ArrowRight, CreditCard, DollarSign, Megaphone, Receipt } from 'lucide-vue-next'
@@ -95,14 +94,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
                   {{ formatAmount(sub.amount, sub.currency) }}/{{ sub.frequency }}
                 </p>
               </div>
-              <Badge
-                variant="outline"
-                :data-campaign-status="sub.status"
-                class="border-(--cs-border) text-(--cs-text)"
-              >
-                <span class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)" />
-                {{ sub.status }}
-              </Badge>
+              <StatusBadge :status="sub.status" />
             </div>
             <p
               v-if="activeSubscriptions.length === 0"
@@ -145,14 +137,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
               >
                 <div class="flex items-center justify-between">
                   <p class="text-sm font-medium leading-none truncate">{{ f.name }}</p>
-                  <Badge
-                    variant="outline"
-                    :data-campaign-status="f.status"
-                    class="border-(--cs-border) text-(--cs-text)"
-                  >
-                    <span class="size-1.5 shrink-0 rounded-full bg-(--cs-dot)" />
-                    {{ f.status }}
-                  </Badge>
+                  <StatusBadge :status="f.status" />
                 </div>
                 <div v-if="f.crowdfunding.goalAmount" class="space-y-1">
                   <Progress

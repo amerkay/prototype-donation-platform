@@ -65,6 +65,7 @@ export interface Transaction {
   paymentMethod: PaymentMethod
   status: TransactionStatus
 
+  donorId: string
   donorName: string
   donorEmail: string
   isAnonymous: boolean

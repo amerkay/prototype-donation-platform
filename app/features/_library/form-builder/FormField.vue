@@ -22,6 +22,7 @@ import FormFieldCheckbox from './fields/FormFieldCheckbox.vue'
 import FormFieldSelect from './fields/FormFieldSelect.vue'
 import FormFieldCombobox from './fields/FormFieldCombobox.vue'
 import FormFieldRadioGroup from './fields/FormFieldRadioGroup.vue'
+import FormFieldColor from './fields/FormFieldColor.vue'
 import FormFieldSlider from './fields/FormFieldSlider.vue'
 import FormFieldAutocomplete from './fields/FormFieldAutocomplete.vue'
 import FormFieldDate from './fields/FormFieldDate.vue'
@@ -56,6 +57,7 @@ const FIELD_COMPONENTS: Record<string, Component> = {
   'radio-group': FormFieldRadioGroup,
   date: FormFieldDate,
   emoji: FormFieldEmoji,
+  color: FormFieldColor,
   slider: FormFieldSlider,
   'image-upload': FormFieldImageUpload,
   component: FormFieldComponent,
