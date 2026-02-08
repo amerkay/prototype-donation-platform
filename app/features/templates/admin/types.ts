@@ -8,6 +8,7 @@ export interface ReceiptTemplate {
   showGiftAid: boolean
   showPaymentMethod: boolean
   showCampaignName: boolean
+  showLogo: boolean
 }
 
 export interface CertificateTemplate {
@@ -20,6 +21,8 @@ export interface CertificateTemplate {
   showSignature: boolean
   signatureName: string
   signatureTitle: string
+  orientation: 'portrait' | 'landscape'
+  backgroundImage: string | null
 }
 
 export interface ECardTemplate {

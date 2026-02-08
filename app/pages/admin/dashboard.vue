@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
 import AdminDateRangePicker from '~/features/_admin/components/AdminDateRangePicker.vue'
-import type { DateRange } from 'reka-ui'
+import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -32,7 +32,7 @@ const { activeSubscriptions, monthlyRecurringRevenue } = useAdminSubscriptions()
 
 const breadcrumbs = [{ label: 'Dashboard' }]
 
-const dateRange = ref<DateRange>({ start: undefined, end: undefined })
+const dateStore = useAdminDateRangeStore()
 
 // Stats cards with navigation targets
 const statCards = computed(() => [
@@ -66,20 +66,12 @@ const statCards = computed(() => [
   }
 ])
 
-// Filter transactions by dashboard date range
-const dashboardTransactions = computed(() => {
-  const sorted = [...transactions].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  )
-  const { start, end } = dateRange.value
-  if (!start || !end) return sorted
-  const startMs = start.toDate('UTC').getTime()
-  const endMs = end.toDate('UTC').getTime() + 86400000 - 1
-  return sorted.filter((t) => {
-    const ts = new Date(t.createdAt).getTime()
-    return ts >= startMs && ts <= endMs
-  })
-})
+// Filter transactions by shared date range
+const dashboardTransactions = computed(() =>
+  [...transactions]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .filter((t) => dateStore.isWithinRange(t.createdAt))
+)
 
 // Recent activity (first 8)
 const recentActivity = computed(() =>
@@ -159,7 +151,7 @@ const topCampaigns = computed(() =>
     <div class="flex flex-1 flex-col px-4 pt-0 pb-4 space-y-6">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 class="text-3xl font-bold">Dashboard</h1>
-        <AdminDateRangePicker v-model="dateRange" />
+        <AdminDateRangePicker v-model="dateStore.dateRange" />
       </div>
 
       <!-- Stats Cards — clickable with hover glow -->

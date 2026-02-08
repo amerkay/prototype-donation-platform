@@ -27,6 +27,11 @@ export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
     }
   })
 
+  const showLogo = toggleField('showLogo', {
+    label: 'Show Logo',
+    description: 'Display organization logo on receipt'
+  })
+
   const showGiftAid = toggleField('showGiftAid', {
     label: 'Show Gift Aid Declaration',
     description: 'Include Gift Aid section on receipts'
@@ -42,16 +47,17 @@ export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
     description: 'Show which campaign the donation was for'
   })
 
-  const display = fieldGroup('display', {
-    label: 'Display Options',
+  const design = fieldGroup('design', {
+    label: 'Design',
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: { showGiftAid, showPaymentMethod, showCampaignName },
+    fields: { showLogo, showGiftAid, showPaymentMethod, showCampaignName },
     $storePath: {
+      showLogo: 'showLogo',
       showGiftAid: 'showGiftAid',
       showPaymentMethod: 'showPaymentMethod',
       showCampaignName: 'showCampaignName'
     }
   })
 
-  return { content, display }
+  return { content, design }
 })

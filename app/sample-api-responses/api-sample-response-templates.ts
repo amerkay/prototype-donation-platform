@@ -9,7 +9,8 @@ export const receiptTemplate: ReceiptTemplate = {
   footerText: 'This receipt is issued for tax purposes. Please retain for your records.',
   showGiftAid: true,
   showPaymentMethod: true,
-  showCampaignName: true
+  showCampaignName: true,
+  showLogo: true
 }
 
 export const certificateTemplate: CertificateTemplate = {
@@ -22,7 +23,9 @@ export const certificateTemplate: CertificateTemplate = {
   showDate: true,
   showSignature: true,
   signatureName: 'Jane Smith',
-  signatureTitle: 'Executive Director'
+  signatureTitle: 'Executive Director',
+  orientation: 'landscape',
+  backgroundImage: null
 }
 
 export const ecardTemplates: ECardTemplate[] = [

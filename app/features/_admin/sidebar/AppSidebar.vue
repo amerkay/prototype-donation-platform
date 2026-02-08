@@ -204,7 +204,7 @@ const data = {
               </div>
               <div class="grid flex-1 text-left text-sm leading-tight">
                 <span class="truncate font-medium">Borneo Orangutan Survival Foundations</span>
-                <span class="truncate text-xs">Donation Platform</span>
+                <span class="truncate text-xs">Donations Stay Donations</span>
               </div>
             </a>
           </SidebarMenuButton>

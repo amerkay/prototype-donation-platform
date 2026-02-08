@@ -4,12 +4,14 @@ import {
   transactions
 } from '~/sample-api-responses/api-sample-response-transactions'
 import { formatCurrency } from '~/lib/formatCurrency'
+import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
 
 /**
  * Composable for admin subscription management.
  * Provides all subscriptions with enriched donor info from transactions.
  */
 export function useAdminSubscriptions() {
+  const dateStore = useAdminDateRangeStore()
   /** Map subscription IDs to donor info from their first transaction */
   const donorMap = computed(() => {
     const map = new Map<string, { name: string; email: string }>()
@@ -24,6 +26,7 @@ export function useAdminSubscriptions() {
   const allSubscriptions = computed<(Subscription & { donorName: string; donorEmail: string })[]>(
     () =>
       [...subscriptions]
+        .filter((sub) => dateStore.isWithinRange(sub.createdAt))
         .map((sub) => {
           const donor = donorMap.value.get(sub.id)
           return {

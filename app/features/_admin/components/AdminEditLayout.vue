@@ -78,14 +78,17 @@ const leaveGuard = inject<LeaveGuard | null>(LEAVE_GUARD_KEY, null)
           v-if="$slots.preview"
           class="w-full sm:mx-auto lg:min-w-95 lg:max-w-95 lg:w-95 lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto pb-4"
         >
-          <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center justify-between gap-2 mb-3">
             <p class="text-muted-foreground text-sm font-semibold">
               <slot name="preview-label">Preview</slot>
             </p>
-            <Button v-if="showPreview" variant="outline" size="sm" @click="emit('preview')">
-              <ExternalLink class="w-4 h-4 mr-2" />
-              {{ previewLabel }}
-            </Button>
+            <div class="flex items-center gap-2">
+              <slot name="preview-actions" />
+              <Button v-if="showPreview" variant="outline" size="sm" @click="emit('preview')">
+                <ExternalLink class="w-4 h-4 mr-2" />
+                {{ previewLabel }}
+              </Button>
+            </div>
           </div>
           <slot name="preview" />
         </div>

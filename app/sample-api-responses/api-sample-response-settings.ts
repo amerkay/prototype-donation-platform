@@ -43,7 +43,7 @@ export const generalSettings: GeneralSettings = {
 }
 
 export const brandingSettings: BrandingSettings = {
-  logoUrl: '',
+  logoUrl: '/imgs/BOS-USA-logo-green.webp',
   primaryColor: '#fcd34d',
   secondaryColor: '#0369a1',
   fontFamily: 'Poppins',

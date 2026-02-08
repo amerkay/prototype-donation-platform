@@ -1,14 +1,14 @@
-import type { DateRange } from 'reka-ui'
 import type { Transaction } from '~/features/donor-portal/types'
 import { transactions } from '~/sample-api-responses/api-sample-response-transactions'
 import { formatCurrency } from '~/lib/formatCurrency'
+import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
 
 /**
  * Composable for admin donations management.
  * Provides all transactions across all donors for the admin view.
  */
 export function useDonations() {
-  const dateRange = ref<DateRange>({ start: undefined, end: undefined })
+  const dateStore = useAdminDateRangeStore()
 
   const allTransactions = computed<Transaction[]>(() =>
     [...transactions].sort(
@@ -16,19 +16,9 @@ export function useDonations() {
     )
   )
 
-  const filteredTransactions = computed<Transaction[]>(() => {
-    const { start, end } = dateRange.value
-    if (!start || !end) return allTransactions.value
-
-    const startMs = start.toDate('UTC').getTime()
-    // End of day for inclusive end date
-    const endMs = end.toDate('UTC').getTime() + 86400000 - 1
-
-    return allTransactions.value.filter((t) => {
-      const ts = new Date(t.createdAt).getTime()
-      return ts >= startMs && ts <= endMs
-    })
-  })
+  const filteredTransactions = computed<Transaction[]>(() =>
+    allTransactions.value.filter((t) => dateStore.isWithinRange(t.createdAt))
+  )
 
   const succeededTransactions = computed(() =>
     allTransactions.value.filter((t) => t.status === 'succeeded')
@@ -59,15 +49,9 @@ export function useDonations() {
     return allTransactions.value.find((t) => t.id === id)
   }
 
-  function clearDateRange() {
-    dateRange.value = { start: undefined, end: undefined }
-  }
-
   return {
     allTransactions,
     filteredTransactions,
-    dateRange,
-    clearDateRange,
     totalRevenue,
     totalDonations,
     averageDonation,

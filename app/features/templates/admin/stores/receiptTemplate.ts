@@ -12,6 +12,7 @@ export const useReceiptTemplateStore = defineStore('receiptTemplate', () => {
   const showGiftAid = ref(defaults.showGiftAid)
   const showPaymentMethod = ref(defaults.showPaymentMethod)
   const showCampaignName = ref(defaults.showCampaignName)
+  const showLogo = ref(defaults.showLogo)
 
   function initialize(t: ReceiptTemplate) {
     headerText.value = t.headerText
@@ -19,6 +20,7 @@ export const useReceiptTemplateStore = defineStore('receiptTemplate', () => {
     showGiftAid.value = t.showGiftAid
     showPaymentMethod.value = t.showPaymentMethod
     showCampaignName.value = t.showCampaignName
+    showLogo.value = t.showLogo
     markClean()
   }
 
@@ -28,6 +30,7 @@ export const useReceiptTemplateStore = defineStore('receiptTemplate', () => {
     if (t.showGiftAid !== undefined) showGiftAid.value = t.showGiftAid
     if (t.showPaymentMethod !== undefined) showPaymentMethod.value = t.showPaymentMethod
     if (t.showCampaignName !== undefined) showCampaignName.value = t.showCampaignName
+    if (t.showLogo !== undefined) showLogo.value = t.showLogo
     markDirty()
   }
 
@@ -52,7 +55,8 @@ export const useReceiptTemplateStore = defineStore('receiptTemplate', () => {
           footerText: footerText.value,
           showGiftAid: showGiftAid.value,
           showPaymentMethod: showPaymentMethod.value,
-          showCampaignName: showCampaignName.value
+          showCampaignName: showCampaignName.value,
+          showLogo: showLogo.value
         })
       )
     } catch {
@@ -68,6 +72,7 @@ export const useReceiptTemplateStore = defineStore('receiptTemplate', () => {
     showGiftAid,
     showPaymentMethod,
     showCampaignName,
+    showLogo,
     isDirty,
     isSaving,
     initialize,

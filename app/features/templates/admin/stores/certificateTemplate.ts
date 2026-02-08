@@ -16,6 +16,8 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
   const showSignature = ref(defaults.showSignature)
   const signatureName = ref(defaults.signatureName)
   const signatureTitle = ref(defaults.signatureTitle)
+  const orientation = ref(defaults.orientation)
+  const backgroundImage = ref(defaults.backgroundImage)
 
   function initialize(t: CertificateTemplate) {
     title.value = t.title
@@ -27,6 +29,8 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     showSignature.value = t.showSignature
     signatureName.value = t.signatureName
     signatureTitle.value = t.signatureTitle
+    orientation.value = t.orientation
+    backgroundImage.value = t.backgroundImage
     markClean()
   }
 
@@ -40,6 +44,8 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     if (t.showSignature !== undefined) showSignature.value = t.showSignature
     if (t.signatureName !== undefined) signatureName.value = t.signatureName
     if (t.signatureTitle !== undefined) signatureTitle.value = t.signatureTitle
+    if (t.orientation !== undefined) orientation.value = t.orientation
+    if (t.backgroundImage !== undefined) backgroundImage.value = t.backgroundImage
     markDirty()
   }
 
@@ -68,7 +74,9 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
           showDate: showDate.value,
           showSignature: showSignature.value,
           signatureName: signatureName.value,
-          signatureTitle: signatureTitle.value
+          signatureTitle: signatureTitle.value,
+          orientation: orientation.value,
+          backgroundImage: backgroundImage.value
         })
       )
     } catch {
@@ -88,6 +96,8 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     showSignature,
     signatureName,
     signatureTitle,
+    orientation,
+    backgroundImage,
     isDirty,
     isSaving,
     initialize,

@@ -4,10 +4,14 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
+import { useReceiptTemplateStore } from '~/features/templates/admin/stores/receiptTemplate'
+import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
 import { formatCurrency } from '~/lib/formatCurrency'
 
 const store = useDonationFormStore()
 const configStore = useFormConfigStore()
+const receiptStore = useReceiptTemplateStore()
+const brandingStore = useBrandingSettingsStore()
 
 const donorInfo = computed(() => store.formSections.donorInfo as Record<string, string>)
 const giftAid = computed(() => store.formSections.giftAid as Record<string, unknown>)
@@ -48,6 +52,11 @@ const formTitle = computed(() => configStore.form?.title ?? 'Donation')
 <template>
   <Card class="print:shadow-none print:border-0">
     <CardContent class="space-y-4">
+      <!-- Logo -->
+      <div v-if="receiptStore.showLogo && brandingStore.logoUrl" class="flex justify-center">
+        <img :src="brandingStore.logoUrl" alt="Logo" class="h-10 w-auto object-contain" />
+      </div>
+
       <!-- Receipt Header -->
       <div class="flex items-center justify-between">
         <h3 class="font-semibold">Donation Receipt</h3>

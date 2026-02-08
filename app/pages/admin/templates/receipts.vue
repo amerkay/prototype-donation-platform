@@ -5,18 +5,30 @@ import ReceiptTemplateConfig from '~/features/templates/admin/components/Receipt
 import ReceiptPreview from '~/features/templates/admin/components/ReceiptPreview.vue'
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import { useReceiptTemplateStore } from '~/features/templates/admin/stores/receiptTemplate'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 
 definePageMeta({ layout: 'admin' })
 
 const store = useReceiptTemplateStore()
+const currencyStore = useCurrencySettingsStore()
+
+const previewCurrency = ref(currencyStore.defaultCurrency)
 
 const originalData = computed(() => ({
   headerText: store.headerText,
   footerText: store.footerText,
   showGiftAid: store.showGiftAid,
   showPaymentMethod: store.showPaymentMethod,
-  showCampaignName: store.showCampaignName
+  showCampaignName: store.showCampaignName,
+  showLogo: store.showLogo
 }))
 
 const formConfigRef = ref()
@@ -46,9 +58,10 @@ const breadcrumbs = [
       :breadcrumbs="breadcrumbs"
       :is-dirty="store.isDirty"
       :show-discard-dialog="showDiscardDialog"
-      :show-preview="false"
+      :show-preview="true"
       @update:show-discard-dialog="showDiscardDialog = $event"
       @confirm-discard="confirmDiscard"
+      @preview="showPreviewDialog = true"
     >
       <template #content>
         <div class="space-y-6">
@@ -61,20 +74,38 @@ const breadcrumbs = [
         </div>
       </template>
 
+      <template v-if="currencyStore.supportedCurrencies.length > 1" #preview-actions>
+        <Select v-model="previewCurrency">
+          <SelectTrigger class="h-8! w-20 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem
+              v-for="c in currencyStore.supportedCurrencies"
+              :key="c"
+              :value="c"
+              class="text-xs"
+            >
+              {{ c }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </template>
+
       <template #preview>
-        <ReceiptPreview />
+        <ReceiptPreview :currency="previewCurrency" />
       </template>
     </AdminEditLayout>
 
     <BaseDialogOrDrawer
       :open="showPreviewDialog"
       description="How the receipt will appear to donors."
-      max-width="sm:max-w-lg"
+      max-width="sm:max-w-xl"
       @update:open="showPreviewDialog = $event"
     >
       <template #header>Receipt Preview</template>
       <template #content>
-        <ReceiptPreview />
+        <ReceiptPreview :currency="previewCurrency" />
       </template>
     </BaseDialogOrDrawer>
   </div>

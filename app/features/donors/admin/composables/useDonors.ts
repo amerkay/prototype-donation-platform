@@ -2,17 +2,21 @@ import type { Donor } from '~/features/donors/admin/types'
 import type { Transaction } from '~/features/donor-portal/types'
 import { transactions } from '~/sample-api-responses/api-sample-response-transactions'
 import { formatCurrency } from '~/lib/formatCurrency'
+import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
 
 /**
  * Composable for admin donor management.
  * Aggregates unique donors from the master transactions table.
  */
 export function useDonors() {
+  const dateStore = useAdminDateRangeStore()
+
   const donors = computed<Donor[]>(() => {
     const map = new Map<string, Donor>()
 
     for (const txn of transactions) {
       if (txn.status !== 'succeeded') continue
+      if (!dateStore.isWithinRange(txn.createdAt)) continue
 
       const existing = map.get(txn.donorId)
       const baseAmount = txn.subtotal * txn.exchangeRate
