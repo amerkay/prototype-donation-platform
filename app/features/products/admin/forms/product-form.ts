@@ -2,7 +2,7 @@ import {
   defineForm,
   textField,
   textareaField,
-  emojiField,
+  imageUploadField,
   selectField,
   numberField,
   toggleField
@@ -20,9 +20,16 @@ export const useProductForm = defineForm('product', () => {
     rows: 2
   })
 
-  const icon = emojiField('icon', {
-    label: 'Icon (emoji)',
-    placeholder: '🌳'
+  const image = imageUploadField('image', {
+    label: 'Product Image',
+    optional: true
+  })
+
+  const certificateOverrideName = textField('certificateOverrideName', {
+    label: 'Certificate Display Name',
+    placeholder: 'e.g., Maya',
+    optional: true,
+    description: 'Short name shown on certificates instead of full product name'
   })
 
   const frequency = selectField('frequency', {
@@ -60,7 +67,8 @@ export const useProductForm = defineForm('product', () => {
   return {
     name,
     description,
-    icon,
+    image,
+    certificateOverrideName,
     frequency,
     price,
     minPrice,
@@ -79,8 +87,16 @@ export const useProductEditForm = defineForm('productEdit', () => {
     rows: 2
   })
 
-  const icon = emojiField('icon', {
-    label: 'Icon (emoji)'
+  const image = imageUploadField('image', {
+    label: 'Product Image',
+    optional: true
+  })
+
+  const certificateOverrideName = textField('certificateOverrideName', {
+    label: 'Certificate Display Name',
+    placeholder: 'e.g., Maya',
+    optional: true,
+    description: 'Short name shown on certificates instead of full product name'
   })
 
   const frequency = selectField('frequency', {
@@ -124,7 +140,8 @@ export const useProductEditForm = defineForm('productEdit', () => {
   return {
     name,
     description,
-    icon,
+    image,
+    certificateOverrideName,
     frequency,
     price,
     minPrice,

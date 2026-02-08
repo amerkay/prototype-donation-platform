@@ -27,6 +27,7 @@ export interface CertificateFragmentData {
     fontFamily: string
   }
   date: string
+  product?: { name: string; image: string }
 }
 
 const BORDER_STYLES: Record<string, string> = {
@@ -60,6 +61,14 @@ export function buildCertificateFragment(data: CertificateFragmentData): string 
         ? `<div style="width: 3rem; height: 3rem; border-radius: 9999px; margin: 0 auto 0.75rem; display: flex; flex-shrink: 0; align-items: center; justify-content: center; color: #fff; font-size: 1.125rem; font-weight: 700; background-color: ${branding.primaryColor};">&#10022;</div>`
         : ''
 
+  const imageSize = isLandscape ? '6rem' : '8rem'
+  const productHtml = data.product
+    ? `<div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 0.75rem; flex-shrink: 0;">
+        <img src="${data.product.image}" alt="${escapeHtml(data.product.name)}" style="width: ${imageSize}; height: ${imageSize}; border-radius: 9999px; object-fit: cover; border: 3px solid ${branding.primaryColor}; margin-bottom: 0.5rem;" />
+        <p style="font-size: 1.125rem; font-weight: 700; color: ${branding.primaryColor};">${escapeHtml(data.product.name)}</p>
+      </div>`
+    : ''
+
   const dateHtml = data.showDate
     ? `<p style="font-size: 0.75rem; color: #9ca3af; margin-bottom: 0.5rem; flex-shrink: 0;">${escapeHtml(data.date)}</p>`
     : ''
@@ -86,6 +95,8 @@ export function buildCertificateFragment(data: CertificateFragmentData): string 
     <p style="font-size: 0.75rem; color: #6b7280; margin-bottom: 1rem; width: 100%; flex-shrink: 0;">
       ${escapeHtml(data.subtitle)}
     </p>
+
+    ${productHtml}
 
     <div style="width: 4rem; height: 0.125rem; margin: 0 auto 1rem; flex-shrink: 0; background-color: ${branding.primaryColor};"></div>
 

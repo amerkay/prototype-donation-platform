@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Minus, Plus } from 'lucide-vue-next'
+import { Minus, Plus, Package } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
@@ -205,7 +205,18 @@ defineExpose({
   >
     <template #header>
       <div class="flex items-center gap-3 mb-2">
-        <div class="text-4xl">{{ product?.thumbnail }}</div>
+        <img
+          v-if="product?.image"
+          :src="product.image"
+          :alt="product.name"
+          class="w-12 h-12 rounded-md object-cover shrink-0"
+        />
+        <div
+          v-else
+          class="w-12 h-12 rounded-md bg-muted flex items-center justify-center text-muted-foreground shrink-0"
+        >
+          <Package class="size-6" />
+        </div>
         <div class="flex-1 min-w-0 text-left">
           <h2 class="text-lg font-semibold">{{ product?.name }}</h2>
         </div>

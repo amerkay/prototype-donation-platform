@@ -16,9 +16,26 @@ const frequencyLabel: Record<string, string> = {
 
 export const productColumns: ColumnDef<ImpactProduct>[] = [
   {
-    accessorKey: 'icon',
+    accessorKey: 'image',
     header: '',
-    cell: ({ row }) => h('span', { class: 'text-2xl' }, row.original.icon),
+    cell: ({ row }) => {
+      const image = row.original.image
+      if (image) {
+        return h('img', {
+          src: image,
+          alt: row.original.name,
+          class: 'w-8 h-8 rounded-md object-cover'
+        })
+      }
+      return h(
+        'div',
+        {
+          class:
+            'w-8 h-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground'
+        },
+        [h(Package, { class: 'size-4' })]
+      )
+    },
     size: 50
   },
   {

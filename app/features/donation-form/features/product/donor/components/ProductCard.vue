@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Package } from 'lucide-vue-next'
 import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 
@@ -31,7 +32,18 @@ const { getCurrencySymbol } = useCurrency(() => props.baseCurrency)
     @click="emit('click')"
   >
     <div class="flex items-center gap-2 sm:gap-3">
-      <div class="text-2xl sm:text-3xl shrink-0">{{ product.image }}</div>
+      <img
+        v-if="product.image"
+        :src="product.image"
+        :alt="product.name"
+        class="w-10 h-10 rounded-md object-cover shrink-0"
+      />
+      <div
+        v-else
+        class="w-10 h-10 rounded-md bg-muted flex items-center justify-center text-muted-foreground shrink-0"
+      >
+        <Package class="size-5" />
+      </div>
       <div class="flex-1 min-w-0">
         <h3 class="font-semibold text-sm leading-tight truncate">{{ product.name }}</h3>
         <p class="text-xs text-muted-foreground line-clamp-2">{{ product.description }}</p>

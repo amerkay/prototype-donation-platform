@@ -27,7 +27,8 @@ const createFormRef = ref()
 const newProduct = ref({
   name: '',
   description: '',
-  icon: '📦',
+  image: null as string | null,
+  certificateOverrideName: '',
   frequency: 'once' as const,
   price: undefined as number | undefined,
   minPrice: undefined as number | undefined,
@@ -39,7 +40,8 @@ function openCreate() {
   newProduct.value = {
     name: '',
     description: '',
-    icon: '📦',
+    image: null,
+    certificateOverrideName: '',
     frequency: 'once',
     price: undefined,
     minPrice: undefined,
@@ -65,7 +67,8 @@ function handleEdit(product: ImpactProduct) {
   editingProduct.value = {
     name: product.name,
     description: product.description,
-    icon: product.icon,
+    image: product.image,
+    certificateOverrideName: product.certificateOverrideName ?? '',
     frequency: product.frequency,
     price: product.price,
     minPrice: product.minPrice,

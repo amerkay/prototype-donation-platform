@@ -17,7 +17,7 @@ export const certificateTemplate: CertificateTemplate = {
   title: 'Certificate of Appreciation',
   subtitle: 'In recognition of your generous support',
   bodyText:
-    'This certifies that {{ DONOR_NAME }} has made a contribution of {{ AMOUNT }} on {{ DATE }}.',
+    'This certifies that {{ DONOR_NAME }} has adopted an orangutan with a contribution of {{ AMOUNT }} on {{ DATE }}.',
   borderStyle: 'classic',
   showLogo: true,
   showDate: true,

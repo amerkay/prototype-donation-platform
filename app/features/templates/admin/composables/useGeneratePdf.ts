@@ -6,6 +6,7 @@ import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brand
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { formatCurrency } from '~/lib/formatCurrency'
+import { products as sampleProducts } from '~/sample-api-responses/api-sample-response-products'
 
 function formatDate(): string {
   return new Intl.DateTimeFormat('en-GB', {
@@ -32,6 +33,10 @@ export function useGeneratePdf() {
 
       if (type === 'certificate') {
         const cert = useCertificateTemplateStore()
+        const sampleP = sampleProducts.find((p) => p.image && p.certificateOverrideName)
+        const product = sampleP?.image
+          ? { name: sampleP.certificateOverrideName || sampleP.name, image: sampleP.image }
+          : undefined
         body = {
           type: 'certificate',
           data: {
@@ -53,7 +58,8 @@ export function useGeneratePdf() {
             },
             donorName: 'John Smith',
             amount: formatCurrency(50, activeCurrency),
-            date: formatDate()
+            date: formatDate(),
+            product
           }
         }
       } else {

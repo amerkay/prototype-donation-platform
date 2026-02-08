@@ -10,6 +10,7 @@ import {
 } from '~/features/_library/form-builder/utils/sanitize-html'
 import { buildCertificateFragment } from '~/features/templates/admin/builders/certificate-fragment'
 import { getBunnyFontUrl } from '~/features/settings/admin/utils/fonts'
+import { products as sampleProducts } from '~/sample-api-responses/api-sample-response-products'
 
 const props = defineProps<{
   currency?: string
@@ -33,6 +34,12 @@ const sampleDate = new Intl.DateTimeFormat('en-GB', {
 }).format(new Date())
 
 const isLandscape = computed(() => cert.orientation === 'landscape')
+
+const sampleProduct = computed(() => {
+  const p = sampleProducts.find((p) => p.image && p.certificateOverrideName)
+  if (!p?.image) return undefined
+  return { name: p.certificateOverrideName || p.name, image: p.image }
+})
 
 const fragment = computed(() => {
   const processedBody = replaceRichTextVariables(sanitizeRichText(cert.bodyText), {
@@ -58,7 +65,8 @@ const fragment = computed(() => {
       primaryColor: branding.primaryColor,
       fontFamily: branding.fontFamily
     },
-    date: sampleDate
+    date: sampleDate,
+    product: sampleProduct.value
   })
 })
 </script>

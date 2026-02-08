@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { Package } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import TributeLine from '~/features/donation-form/features/tribute/donor/components/TributeLine.vue'
@@ -57,7 +58,18 @@ const hasTribute = computed(() => {
     @click="hasEditOption && emit('edit')"
   >
     <div class="flex items-center gap-3">
-      <div class="text-2xl">{{ item.thumbnail }}</div>
+      <img
+        v-if="item.image"
+        :src="item.image"
+        :alt="item.name"
+        class="w-8 h-8 rounded-md object-cover shrink-0"
+      />
+      <div
+        v-else
+        class="w-8 h-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground shrink-0"
+      >
+        <Package class="size-4" />
+      </div>
       <div class="flex-1 min-w-0">
         <p class="font-medium text-sm truncate">{{ item.name }}</p>
         <div class="flex items-center gap-2">

@@ -47,7 +47,8 @@ export default defineEventHandler(async (event) => {
         signatureTitle: data.signatureTitle,
         backgroundImage: data.backgroundImage,
         branding: data.branding,
-        date: data.date
+        date: data.date,
+        product: data.product
       })
       filename = 'certificate.pdf'
       orientation = data.orientation

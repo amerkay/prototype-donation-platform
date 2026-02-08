@@ -56,6 +56,7 @@ export interface CertificatePdfData {
   donorName: string
   amount: string
   date: string
+  product?: { name: string; image: string }
 }
 
 /** Data contract for server-side receipt PDF generation */
