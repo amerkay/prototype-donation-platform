@@ -7,13 +7,9 @@ import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import { useCertificateTemplateStore } from '~/features/templates/admin/stores/certificateTemplate'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
+import { useGeneratePdf } from '~/features/templates/admin/composables/useGeneratePdf'
+import { Button } from '@/components/ui/button'
+import { Download, Loader2 } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'admin' })
 
@@ -54,6 +50,8 @@ const previewMaxWidth = computed(() =>
   store.orientation === 'landscape' ? 'sm:max-w-3xl' : 'sm:max-w-xl'
 )
 
+const { isGenerating, downloadPdf } = useGeneratePdf()
+
 const breadcrumbs = [
   { label: 'Dashboard', href: '/admin/dashboard' },
   { label: 'Templates', href: '#' },
@@ -81,6 +79,19 @@ const breadcrumbs = [
             @preview="showPreviewDialog = true"
           />
         </div>
+      </template>
+
+      <template #preview-actions>
+        <Button
+          variant="outline"
+          size="sm"
+          :disabled="isGenerating"
+          @click="downloadPdf('certificate', previewCurrency)"
+        >
+          <Loader2 v-if="isGenerating" class="w-4 h-4 mr-2 animate-spin" />
+          <Download v-else class="w-4 h-4 mr-2" />
+          PDF
+        </Button>
       </template>
 
       <template #preview>

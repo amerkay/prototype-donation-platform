@@ -152,7 +152,7 @@
 
 @layer utilities {
   .text-primary {
-    color: oklch(from var(--primary) calc(l * 0.85) c h);
+    color: color-mix(in oklch, var(--primary) 100%, black 15%);
   }
 
   .dark .text-primary {

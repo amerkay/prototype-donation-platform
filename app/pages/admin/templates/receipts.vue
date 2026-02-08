@@ -7,6 +7,9 @@ import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import { useReceiptTemplateStore } from '~/features/templates/admin/stores/receiptTemplate'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
+import { useGeneratePdf } from '~/features/templates/admin/composables/useGeneratePdf'
+import { Button } from '@/components/ui/button'
+import { Download, Loader2 } from 'lucide-vue-next'
 import {
   Select,
   SelectContent,
@@ -45,6 +48,8 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdmi
 
 const showPreviewDialog = ref(false)
 
+const { isGenerating, downloadPdf } = useGeneratePdf()
+
 const breadcrumbs = [
   { label: 'Dashboard', href: '/admin/dashboard' },
   { label: 'Templates', href: '#' },
@@ -74,8 +79,8 @@ const breadcrumbs = [
         </div>
       </template>
 
-      <template v-if="currencyStore.supportedCurrencies.length > 1" #preview-actions>
-        <Select v-model="previewCurrency">
+      <template #preview-actions>
+        <Select v-if="currencyStore.supportedCurrencies.length > 1" v-model="previewCurrency">
           <SelectTrigger class="h-8! w-20 text-xs">
             <SelectValue />
           </SelectTrigger>
@@ -90,6 +95,16 @@ const breadcrumbs = [
             </SelectItem>
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          size="sm"
+          :disabled="isGenerating"
+          @click="downloadPdf('receipt', previewCurrency)"
+        >
+          <Loader2 v-if="isGenerating" class="w-4 h-4 mr-2 animate-spin" />
+          <Download v-else class="w-4 h-4 mr-2" />
+          PDF
+        </Button>
       </template>
 
       <template #preview>
