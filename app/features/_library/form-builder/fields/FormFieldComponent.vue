@@ -9,6 +9,10 @@ type Props = FieldProps<unknown, ComponentFieldDef>
 
 const props = defineProps<Props>()
 
+const emit = defineEmits<{
+  'update:modelValue': [value: unknown]
+}>()
+
 // Use field wrapper composable for standardized props
 const { wrapperProps, resolvedClass, resolvedDisabled } = useFieldWrapper(
   props.meta,
@@ -20,23 +24,24 @@ const { wrapperProps, resolvedClass, resolvedDisabled } = useFieldWrapper(
   () => props.fullPath
 )
 
-// Resolve component props (static or dynamic)
+// Resolve additional props (static or dynamic)
 const resolvedProps = computed(() => {
-  // modelValue contains the injected validation data (like formsCount)
-  // Merge with any static props defined in meta
-  const injectedData = (props.modelValue as Record<string, unknown>) || {}
-
-  if (!props.meta.props) return injectedData
+  if (!props.meta.props) return {}
 
   if (typeof props.meta.props === 'function') {
     // For function props, we can't easily call it without FieldContext
-    // Just return the injected data for now
-    return injectedData
+    // Return empty for now (could be enhanced later)
+    return {}
   }
 
-  // Merge static props with injected data
-  return { ...props.meta.props, ...injectedData }
+  // Return static props
+  return props.meta.props
 })
+
+// Handle value updates from child component
+function handleUpdate(value: unknown) {
+  emit('update:modelValue', value)
+}
 
 // Get component to render
 const component = computed(() => props.meta.component as Component)
@@ -44,9 +49,15 @@ const component = computed(() => props.meta.component as Component)
 
 <template>
   <FormFieldWrapper v-bind="wrapperProps" :class="props.class">
-    <!-- Render the custom component -->
+    <!-- Render the custom component with v-model binding -->
     <div :class="cn('mt-2', resolvedClass)">
-      <component :is="component" v-bind="resolvedProps" :disabled="resolvedDisabled" />
+      <component
+        :is="component"
+        :model-value="props.modelValue"
+        v-bind="resolvedProps"
+        :disabled="resolvedDisabled"
+        @update:model-value="handleUpdate"
+      />
     </div>
   </FormFieldWrapper>
 </template>

@@ -29,7 +29,13 @@ const originalData = computed(() => ({
   signatureName: store.signatureName,
   signatureTitle: store.signatureTitle,
   orientation: store.orientation,
-  backgroundImage: store.backgroundImage
+  backgroundImage: store.backgroundImage,
+  showProduct: store.showProduct,
+  productBorderRadius: store.productBorderRadius,
+  productBorderColor: store.productBorderColor,
+  productNameColor: store.productNameColor,
+  titleColor: store.titleColor,
+  signatureColor: store.signatureColor
 }))
 
 const formConfigRef = ref()
@@ -95,7 +101,7 @@ const breadcrumbs = [
       </template>
 
       <template #preview>
-        <CertificatePreview :currency="previewCurrency" />
+        <CertificatePreview :currency="previewCurrency" editable />
       </template>
     </AdminEditLayout>
 

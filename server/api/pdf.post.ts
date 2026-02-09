@@ -46,6 +46,12 @@ export default defineEventHandler(async (event) => {
         signatureName: data.signatureName,
         signatureTitle: data.signatureTitle,
         backgroundImage: data.backgroundImage,
+        showProduct: data.showProduct,
+        productBorderRadius: data.productBorderRadius,
+        productBorderColor: data.productBorderColor,
+        productNameColor: data.productNameColor,
+        titleColor: data.titleColor,
+        signatureColor: data.signatureColor,
         branding: data.branding,
         date: data.date,
         product: data.product

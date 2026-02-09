@@ -18,6 +18,12 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
   const signatureTitle = ref(defaults.signatureTitle)
   const orientation = ref(defaults.orientation)
   const backgroundImage = ref(defaults.backgroundImage)
+  const showProduct = ref(defaults.showProduct)
+  const productBorderRadius = ref(defaults.productBorderRadius)
+  const productBorderColor = ref(defaults.productBorderColor)
+  const productNameColor = ref(defaults.productNameColor)
+  const titleColor = ref(defaults.titleColor)
+  const signatureColor = ref(defaults.signatureColor)
 
   function initialize(t: CertificateTemplate) {
     title.value = t.title
@@ -31,6 +37,12 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     signatureTitle.value = t.signatureTitle
     orientation.value = t.orientation
     backgroundImage.value = t.backgroundImage
+    showProduct.value = t.showProduct ?? defaults.showProduct
+    productBorderRadius.value = t.productBorderRadius ?? defaults.productBorderRadius
+    productBorderColor.value = t.productBorderColor ?? defaults.productBorderColor
+    productNameColor.value = t.productNameColor ?? defaults.productNameColor
+    titleColor.value = t.titleColor ?? defaults.titleColor
+    signatureColor.value = t.signatureColor ?? defaults.signatureColor
     markClean()
   }
 
@@ -46,6 +58,12 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     if (t.signatureTitle !== undefined) signatureTitle.value = t.signatureTitle
     if (t.orientation !== undefined) orientation.value = t.orientation
     if (t.backgroundImage !== undefined) backgroundImage.value = t.backgroundImage
+    if (t.showProduct !== undefined) showProduct.value = t.showProduct
+    if (t.productBorderRadius !== undefined) productBorderRadius.value = t.productBorderRadius
+    if (t.productBorderColor !== undefined) productBorderColor.value = t.productBorderColor
+    if (t.productNameColor !== undefined) productNameColor.value = t.productNameColor
+    if (t.titleColor !== undefined) titleColor.value = t.titleColor
+    if (t.signatureColor !== undefined) signatureColor.value = t.signatureColor
     markDirty()
   }
 
@@ -76,7 +94,13 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
           signatureName: signatureName.value,
           signatureTitle: signatureTitle.value,
           orientation: orientation.value,
-          backgroundImage: backgroundImage.value
+          backgroundImage: backgroundImage.value,
+          showProduct: showProduct.value,
+          productBorderRadius: productBorderRadius.value,
+          productBorderColor: productBorderColor.value,
+          productNameColor: productNameColor.value,
+          titleColor: titleColor.value,
+          signatureColor: signatureColor.value
         })
       )
     } catch {
@@ -98,6 +122,12 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     signatureTitle,
     orientation,
     backgroundImage,
+    showProduct,
+    productBorderRadius,
+    productBorderColor,
+    productNameColor,
+    titleColor,
+    signatureColor,
     isDirty,
     isSaving,
     initialize,

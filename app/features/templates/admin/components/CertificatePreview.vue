@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, toRef } from 'vue'
 import { useCertificateTemplateStore } from '~/features/templates/admin/stores/certificateTemplate'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
@@ -11,10 +11,17 @@ import {
 import { buildCertificateFragment } from '~/features/templates/admin/builders/certificate-fragment'
 import { getBunnyFontUrl } from '~/features/settings/admin/utils/fonts'
 import { products as sampleProducts } from '~/sample-api-responses/api-sample-response-products'
+import { usePreviewEditable } from '~/features/templates/admin/composables/usePreviewEditable'
+import { Button } from '@/components/ui/button'
+import { Pencil } from 'lucide-vue-next'
 
-const props = defineProps<{
-  currency?: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    currency?: string
+    editable?: boolean
+  }>(),
+  { editable: false }
+)
 
 const cert = useCertificateTemplateStore()
 const branding = useBrandingSettingsStore()
@@ -60,23 +67,74 @@ const fragment = computed(() => {
     signatureName: cert.signatureName,
     signatureTitle: cert.signatureTitle,
     backgroundImage: cert.backgroundImage,
+    showProduct: cert.showProduct,
+    productBorderRadius: cert.productBorderRadius,
+    productBorderColor: cert.productBorderColor,
+    productNameColor: cert.productNameColor,
+    titleColor: cert.titleColor,
+    signatureColor: cert.signatureColor,
     branding: {
       logoUrl: branding.logoUrl,
       primaryColor: branding.primaryColor,
+      secondaryColor: branding.secondaryColor,
       fontFamily: branding.fontFamily
     },
     date: sampleDate,
     product: sampleProduct.value
   })
 })
+
+const previewRef = ref<HTMLElement | null>(null)
+const editableRef = toRef(() => props.editable)
+const { hoveredField, editButtonStyle, hoverOutlineStyle, navigateToField } = usePreviewEditable(
+  previewRef,
+  editableRef
+)
 </script>
 
 <template>
   <div
+    ref="previewRef"
     class="relative overflow-hidden rounded-lg shadow-sm mx-auto max-w-95"
-    :class="isLandscape ? 'aspect-297/210' : 'aspect-210/297'"
+    :class="[isLandscape ? 'aspect-297/210' : 'aspect-210/297', { editable: editable }]"
   >
     <!-- eslint-disable-next-line vue/no-v-html -- trusted builder output, body pre-sanitized -->
     <div class="h-full" v-html="fragment" />
+
+    <Transition name="fade">
+      <div
+        v-if="editable && hoveredField"
+        class="border-2 border-dashed border-gray-500 rounded pointer-events-none"
+        :style="hoverOutlineStyle"
+      />
+    </Transition>
+
+    <Transition name="fade">
+      <Button
+        v-if="editable && hoveredField"
+        variant="secondary"
+        size="icon"
+        class="h-6 w-6 rounded-full shadow-md pointer-events-auto"
+        :style="editButtonStyle"
+        @click.stop="navigateToField()"
+      >
+        <Pencil class="h-3 w-3" />
+      </Button>
+    </Transition>
   </div>
 </template>
+
+<style scoped>
+.editable :deep([data-field]) {
+  cursor: pointer;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

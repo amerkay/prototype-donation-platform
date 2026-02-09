@@ -28,5 +28,6 @@
       "WebFetch(domain:docs.stripe.com)",
       "WebFetch(domain:developer.paypal.com)"
     ]
-  }
+  },
+  "prefersReducedMotion": false
 }

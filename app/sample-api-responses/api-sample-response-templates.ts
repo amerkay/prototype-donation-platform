@@ -25,7 +25,13 @@ export const certificateTemplate: CertificateTemplate = {
   signatureName: 'Jane Smith',
   signatureTitle: 'Executive Director',
   orientation: 'landscape',
-  backgroundImage: null
+  backgroundImage: null,
+  showProduct: true,
+  productBorderRadius: 'circle',
+  productBorderColor: '',
+  productNameColor: 'primary',
+  titleColor: 'primary',
+  signatureColor: 'primary'
 }
 
 export const ecardTemplates: ECardTemplate[] = [

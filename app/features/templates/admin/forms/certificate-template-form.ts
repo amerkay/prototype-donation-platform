@@ -4,11 +4,16 @@ import {
   richTextField,
   selectField,
   toggleField,
+  colorField,
   imageUploadField,
-  fieldGroup
+  fieldGroup,
+  componentField
 } from '~/features/_library/form-builder/api'
+import ColorPresetSelector from '@/components/ColorPresetSelector.vue'
+import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
 
 export const useCertificateTemplateForm = defineForm('certificateTemplate', () => {
+  const branding = useBrandingSettingsStore()
   const title = textField('title', {
     label: 'Title',
     maxLength: 50
@@ -16,7 +21,8 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
 
   const subtitle = textField('subtitle', {
     label: 'Subtitle',
-    maxLength: 80
+    maxLength: 80,
+    showSeparatorAfter: true
   })
 
   const bodyText = richTextField('bodyText', {
@@ -51,7 +57,8 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
 
   const backgroundImage = imageUploadField('backgroundImage', {
     label: 'Background Image',
-    description: 'Recommended: A4 at 300dpi (3508×2480 landscape, 2480×3508 portrait)'
+    description: 'Recommended: A4 at 300dpi (3508×2480 landscape, 2480×3508 portrait)',
+    showSeparatorAfter: true
   })
 
   const borderStyle = selectField('borderStyle', {
@@ -120,5 +127,81 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     }
   })
 
-  return { content, design, display }
+  const showProduct = toggleField('showProduct', {
+    label: 'Show Product',
+    description: 'Display product badge on certificate',
+    showSeparatorAfter: true
+  })
+
+  const productBorderRadius = selectField('productBorderRadius', {
+    label: 'Border Shape',
+    options: [
+      { value: 'circle', label: 'Circle' },
+      { value: 'rounded', label: 'Rounded' },
+      { value: 'square', label: 'Square' }
+    ],
+    visibleWhen: (ctx) => !!ctx.values.showProduct
+  })
+
+  const productBorderColor = colorField('productBorderColor', {
+    label: 'Border Color',
+    description: 'Leave empty to use branding color',
+    visibleWhen: (ctx) => !!ctx.values.showProduct
+  })
+
+  const productNameColor = componentField('productNameColor', {
+    component: ColorPresetSelector,
+    label: 'Product Name Color',
+    description: 'Choose Primary, Secondary, or custom color',
+    visibleWhen: (ctx) => !!ctx.values.showProduct,
+    props: {
+      primaryColor: branding.primaryColor,
+      secondaryColor: branding.secondaryColor
+    }
+  })
+
+  const product = fieldGroup('product', {
+    label: 'Product Badge',
+    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+    fields: { showProduct, productBorderRadius, productBorderColor, productNameColor },
+    $storePath: {
+      showProduct: 'showProduct',
+      productBorderRadius: 'productBorderRadius',
+      productBorderColor: 'productBorderColor',
+      productNameColor: 'productNameColor'
+    }
+  })
+
+  const titleColor = componentField('titleColor', {
+    component: ColorPresetSelector,
+    label: 'Title Color',
+    description: 'Choose Primary, Secondary, or custom color',
+    props: {
+      primaryColor: branding.primaryColor,
+      secondaryColor: branding.secondaryColor
+    }
+  })
+
+  const signatureColor = componentField('signatureColor', {
+    component: ColorPresetSelector,
+    label: 'Signature Color',
+    description: 'Color for signature line and text',
+    visibleWhen: (ctx) => !!ctx.values.showSignature,
+    props: {
+      primaryColor: branding.primaryColor,
+      secondaryColor: branding.secondaryColor
+    }
+  })
+
+  const colors = fieldGroup('colors', {
+    label: 'Colors',
+    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+    fields: { titleColor, signatureColor },
+    $storePath: {
+      titleColor: 'titleColor',
+      signatureColor: 'signatureColor'
+    }
+  })
+
+  return { content, design, colors, product, display }
 })

@@ -23,6 +23,12 @@ export interface CertificateTemplate {
   signatureTitle: string
   orientation: 'portrait' | 'landscape'
   backgroundImage: string | null
+  showProduct: boolean
+  productBorderRadius: 'circle' | 'rounded' | 'square'
+  productBorderColor: string
+  productNameColor: string
+  titleColor: string
+  signatureColor: string
 }
 
 export interface ECardTemplate {
@@ -48,9 +54,16 @@ export interface CertificatePdfData {
   signatureTitle: string
   orientation: 'portrait' | 'landscape'
   backgroundImage: string | null
+  showProduct: boolean
+  productBorderRadius: 'circle' | 'rounded' | 'square'
+  productBorderColor: string
+  productNameColor: string
+  titleColor: string
+  signatureColor: string
   branding: {
     logoUrl: string
     primaryColor: string
+    secondaryColor: string
     fontFamily: string
   }
   donorName: string

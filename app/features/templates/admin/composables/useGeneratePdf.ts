@@ -51,9 +51,16 @@ export function useGeneratePdf() {
             signatureTitle: cert.signatureTitle,
             orientation: cert.orientation,
             backgroundImage: cert.backgroundImage,
+            showProduct: cert.showProduct,
+            productBorderRadius: cert.productBorderRadius,
+            productBorderColor: cert.productBorderColor,
+            productNameColor: cert.productNameColor,
+            titleColor: cert.titleColor,
+            signatureColor: cert.signatureColor,
             branding: {
               logoUrl: branding.logoUrl,
               primaryColor: branding.primaryColor,
+              secondaryColor: branding.secondaryColor,
               fontFamily: branding.fontFamily
             },
             donorName: 'John Smith',
