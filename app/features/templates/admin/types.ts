@@ -15,20 +15,20 @@ export interface CertificateTemplate {
   title: string
   subtitle: string
   bodyText: string
+  bodyTextFontSize: 'small' | 'medium' | 'large'
   borderStyle: 'classic' | 'modern' | 'minimal' | 'ornate'
   showLogo: boolean
-  showDate: boolean
   showSignature: boolean
   signatureName: string
   signatureTitle: string
+  signatureFontFamily: string
   orientation: 'portrait' | 'landscape'
   backgroundImage: string | null
   showProduct: boolean
   productBorderRadius: 'circle' | 'rounded' | 'square'
-  productBorderColor: string
   productNameColor: string
   titleColor: string
-  signatureColor: string
+  separatorsAndBorders: string
 }
 
 export interface ECardTemplate {
@@ -46,20 +46,20 @@ export interface CertificatePdfData {
   title: string
   subtitle: string
   bodyHtml: string
+  bodyTextFontSize: 'small' | 'medium' | 'large'
   borderStyle: 'classic' | 'modern' | 'minimal' | 'ornate'
   showLogo: boolean
-  showDate: boolean
   showSignature: boolean
   signatureName: string
   signatureTitle: string
+  signatureFontFamily: string
   orientation: 'portrait' | 'landscape'
   backgroundImage: string | null
   showProduct: boolean
   productBorderRadius: 'circle' | 'rounded' | 'square'
-  productBorderColor: string
   productNameColor: string
   titleColor: string
-  signatureColor: string
+  separatorsAndBorders: string
   branding: {
     logoUrl: string
     primaryColor: string

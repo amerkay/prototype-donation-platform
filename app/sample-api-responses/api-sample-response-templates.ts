@@ -14,24 +14,24 @@ export const receiptTemplate: ReceiptTemplate = {
 }
 
 export const certificateTemplate: CertificateTemplate = {
-  title: 'Certificate of Appreciation',
-  subtitle: 'In recognition of your generous support',
-  bodyText:
-    'This certifies that {{ DONOR_NAME }} has adopted an orangutan with a contribution of {{ AMOUNT }} on {{ DATE }}.',
+  title: 'Certificate of Adoption',
+  subtitle:
+    'This certificate is awarded to <strong>{{ DONOR_NAME }}</strong> for your symbolic adoption of',
+  bodyText: 'Thank you for helping us save Bornean Orangutans from extinction!',
+  bodyTextFontSize: 'medium',
   borderStyle: 'classic',
   showLogo: true,
-  showDate: true,
   showSignature: true,
   signatureName: 'Jane Smith',
   signatureTitle: 'Executive Director',
-  orientation: 'landscape',
+  signatureFontFamily: 'Dancing Script',
+  orientation: 'portrait',
   backgroundImage: null,
   showProduct: true,
   productBorderRadius: 'circle',
-  productBorderColor: '',
   productNameColor: 'primary',
   titleColor: 'primary',
-  signatureColor: 'primary'
+  separatorsAndBorders: 'primary'
 }
 
 export const ecardTemplates: ECardTemplate[] = [

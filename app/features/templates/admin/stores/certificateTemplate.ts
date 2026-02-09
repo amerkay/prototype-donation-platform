@@ -1,69 +1,134 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, reactive, toRefs } from 'vue'
 import type { CertificateTemplate } from '~/features/templates/admin/types'
 import { certificateTemplate as defaults } from '~/sample-api-responses/api-sample-response-templates'
 import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
 
+type LegacyCertificateTemplate = Partial<CertificateTemplate> & {
+  separatorColor?: string
+  productBorderColor?: string
+  certificate?: {
+    header?: {
+      showLogo?: boolean
+      title?: string
+      titleColor?: string
+      subtitle?: string
+    }
+    body?: {
+      bodyText?: string
+      bodyTextFontSize?: 'small' | 'medium' | 'large'
+      separatorColor?: string
+    }
+    productSettings?: {
+      showProduct?: boolean
+      productBorderRadius?: 'circle' | 'rounded' | 'square'
+      productNameColor?: string
+      productBorderColor?: string
+    }
+    signatureSettings?: {
+      showSignature?: boolean
+      signatureName?: string
+      signatureTitle?: string
+      signatureFontFamily?: string
+    }
+    design?: {
+      orientation?: 'portrait' | 'landscape'
+      backgroundImage?: string | null
+      borderStyle?: 'classic' | 'modern' | 'minimal' | 'ornate'
+      separatorsAndBorders?: string
+    }
+  }
+}
+
+function normalizeTemplate(input: Partial<LegacyCertificateTemplate> = {}): CertificateTemplate {
+  const nested = input.certificate
+
+  const separatorsAndBorders =
+    nested?.design?.separatorsAndBorders ??
+    input.separatorsAndBorders ??
+    nested?.body?.separatorColor ??
+    nested?.productSettings?.productBorderColor ??
+    input.separatorColor ??
+    input.productBorderColor ??
+    defaults.separatorsAndBorders
+
+  return {
+    ...defaults,
+    title: nested?.header?.title ?? input.title ?? defaults.title,
+    subtitle: nested?.header?.subtitle ?? input.subtitle ?? defaults.subtitle,
+    bodyText: nested?.body?.bodyText ?? input.bodyText ?? defaults.bodyText,
+    bodyTextFontSize:
+      nested?.body?.bodyTextFontSize ?? input.bodyTextFontSize ?? defaults.bodyTextFontSize,
+    borderStyle: nested?.design?.borderStyle ?? input.borderStyle ?? defaults.borderStyle,
+    showLogo: nested?.header?.showLogo ?? input.showLogo ?? defaults.showLogo,
+    showSignature:
+      nested?.signatureSettings?.showSignature ?? input.showSignature ?? defaults.showSignature,
+    signatureName:
+      nested?.signatureSettings?.signatureName ?? input.signatureName ?? defaults.signatureName,
+    signatureTitle:
+      nested?.signatureSettings?.signatureTitle ?? input.signatureTitle ?? defaults.signatureTitle,
+    signatureFontFamily:
+      nested?.signatureSettings?.signatureFontFamily ??
+      input.signatureFontFamily ??
+      defaults.signatureFontFamily,
+    orientation: nested?.design?.orientation ?? input.orientation ?? defaults.orientation,
+    backgroundImage:
+      nested?.design?.backgroundImage ?? input.backgroundImage ?? defaults.backgroundImage,
+    showProduct: nested?.productSettings?.showProduct ?? input.showProduct ?? defaults.showProduct,
+    productBorderRadius:
+      nested?.productSettings?.productBorderRadius ??
+      input.productBorderRadius ??
+      defaults.productBorderRadius,
+    productNameColor:
+      nested?.productSettings?.productNameColor ??
+      input.productNameColor ??
+      defaults.productNameColor,
+    titleColor: nested?.header?.titleColor ?? input.titleColor ?? defaults.titleColor,
+    separatorsAndBorders
+  }
+}
+
 export const useCertificateTemplateStore = defineStore('certificateTemplate', () => {
   const { isDirty, isSaving, markDirty, markClean } = useEditableState()
+  const settings = reactive<CertificateTemplate>(normalizeTemplate())
 
-  const title = ref(defaults.title)
-  const subtitle = ref(defaults.subtitle)
-  const bodyText = ref(defaults.bodyText)
-  const borderStyle = ref(defaults.borderStyle)
-  const showLogo = ref(defaults.showLogo)
-  const showDate = ref(defaults.showDate)
-  const showSignature = ref(defaults.showSignature)
-  const signatureName = ref(defaults.signatureName)
-  const signatureTitle = ref(defaults.signatureTitle)
-  const orientation = ref(defaults.orientation)
-  const backgroundImage = ref(defaults.backgroundImage)
-  const showProduct = ref(defaults.showProduct)
-  const productBorderRadius = ref(defaults.productBorderRadius)
-  const productBorderColor = ref(defaults.productBorderColor)
-  const productNameColor = ref(defaults.productNameColor)
-  const titleColor = ref(defaults.titleColor)
-  const signatureColor = ref(defaults.signatureColor)
+  const certificate = computed(() => ({
+    header: {
+      showLogo: settings.showLogo,
+      title: settings.title,
+      titleColor: settings.titleColor,
+      subtitle: settings.subtitle
+    },
+    body: {
+      bodyText: settings.bodyText,
+      bodyTextFontSize: settings.bodyTextFontSize
+    },
+    productSettings: {
+      showProduct: settings.showProduct,
+      productBorderRadius: settings.productBorderRadius,
+      productNameColor: settings.productNameColor
+    },
+    signatureSettings: {
+      showSignature: settings.showSignature,
+      signatureName: settings.signatureName,
+      signatureTitle: settings.signatureTitle,
+      signatureFontFamily: settings.signatureFontFamily
+    },
+    design: {
+      orientation: settings.orientation,
+      backgroundImage: settings.backgroundImage,
+      borderStyle: settings.borderStyle,
+      separatorsAndBorders: settings.separatorsAndBorders
+    }
+  }))
 
-  function initialize(t: CertificateTemplate) {
-    title.value = t.title
-    subtitle.value = t.subtitle
-    bodyText.value = t.bodyText
-    borderStyle.value = t.borderStyle
-    showLogo.value = t.showLogo
-    showDate.value = t.showDate
-    showSignature.value = t.showSignature
-    signatureName.value = t.signatureName
-    signatureTitle.value = t.signatureTitle
-    orientation.value = t.orientation
-    backgroundImage.value = t.backgroundImage
-    showProduct.value = t.showProduct ?? defaults.showProduct
-    productBorderRadius.value = t.productBorderRadius ?? defaults.productBorderRadius
-    productBorderColor.value = t.productBorderColor ?? defaults.productBorderColor
-    productNameColor.value = t.productNameColor ?? defaults.productNameColor
-    titleColor.value = t.titleColor ?? defaults.titleColor
-    signatureColor.value = t.signatureColor ?? defaults.signatureColor
+  function initialize(template: CertificateTemplate) {
+    Object.assign(settings, normalizeTemplate(template))
     markClean()
   }
 
-  function updateSettings(t: Partial<CertificateTemplate>) {
-    if (t.title !== undefined) title.value = t.title
-    if (t.subtitle !== undefined) subtitle.value = t.subtitle
-    if (t.bodyText !== undefined) bodyText.value = t.bodyText
-    if (t.borderStyle !== undefined) borderStyle.value = t.borderStyle
-    if (t.showLogo !== undefined) showLogo.value = t.showLogo
-    if (t.showDate !== undefined) showDate.value = t.showDate
-    if (t.showSignature !== undefined) showSignature.value = t.showSignature
-    if (t.signatureName !== undefined) signatureName.value = t.signatureName
-    if (t.signatureTitle !== undefined) signatureTitle.value = t.signatureTitle
-    if (t.orientation !== undefined) orientation.value = t.orientation
-    if (t.backgroundImage !== undefined) backgroundImage.value = t.backgroundImage
-    if (t.showProduct !== undefined) showProduct.value = t.showProduct
-    if (t.productBorderRadius !== undefined) productBorderRadius.value = t.productBorderRadius
-    if (t.productBorderColor !== undefined) productBorderColor.value = t.productBorderColor
-    if (t.productNameColor !== undefined) productNameColor.value = t.productNameColor
-    if (t.titleColor !== undefined) titleColor.value = t.titleColor
-    if (t.signatureColor !== undefined) signatureColor.value = t.signatureColor
+  function updateSettings(template: Partial<CertificateTemplate>) {
+    Object.assign(settings, normalizeTemplate({ ...settings, ...template }))
     markDirty()
   }
 
@@ -72,7 +137,10 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     if (hydrated) return
     try {
       const saved = sessionStorage.getItem('template-certificate')
-      if (saved) initialize(JSON.parse(saved))
+      if (saved) {
+        Object.assign(settings, normalizeTemplate(JSON.parse(saved) as LegacyCertificateTemplate))
+        markClean()
+      }
     } catch {
       /* ignore */
     }
@@ -81,28 +149,7 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
 
   function save() {
     try {
-      sessionStorage.setItem(
-        'template-certificate',
-        JSON.stringify({
-          title: title.value,
-          subtitle: subtitle.value,
-          bodyText: bodyText.value,
-          borderStyle: borderStyle.value,
-          showLogo: showLogo.value,
-          showDate: showDate.value,
-          showSignature: showSignature.value,
-          signatureName: signatureName.value,
-          signatureTitle: signatureTitle.value,
-          orientation: orientation.value,
-          backgroundImage: backgroundImage.value,
-          showProduct: showProduct.value,
-          productBorderRadius: productBorderRadius.value,
-          productBorderColor: productBorderColor.value,
-          productNameColor: productNameColor.value,
-          titleColor: titleColor.value,
-          signatureColor: signatureColor.value
-        })
-      )
+      sessionStorage.setItem('template-certificate', JSON.stringify(settings))
     } catch {
       /* ignore */
     }
@@ -111,23 +158,8 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
   if (import.meta.client) $hydrate()
 
   return {
-    title,
-    subtitle,
-    bodyText,
-    borderStyle,
-    showLogo,
-    showDate,
-    showSignature,
-    signatureName,
-    signatureTitle,
-    orientation,
-    backgroundImage,
-    showProduct,
-    productBorderRadius,
-    productBorderColor,
-    productNameColor,
-    titleColor,
-    signatureColor,
+    ...toRefs(settings),
+    certificate,
     isDirty,
     isSaving,
     initialize,

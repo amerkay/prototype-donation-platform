@@ -3,12 +3,13 @@ import {
   defineForm,
   colorField,
   imageUploadField,
-  selectField,
   textareaField,
   fieldGroup,
   componentField
 } from '~/features/_library/form-builder/api'
 import BrandingTemplatePicker from '~/features/settings/admin/components/BrandingTemplatePicker.vue'
+import FontFamilySelector from '@/components/FontFamilySelector.vue'
+import { BRANDING_FONT_OPTIONS } from '~/features/settings/admin/utils/fonts'
 
 export const useBrandingSettingsForm = defineForm('brandingSettings', () => {
   const primaryColor = colorField('primaryColor', {
@@ -36,19 +37,15 @@ export const useBrandingSettingsForm = defineForm('brandingSettings', () => {
     // No $storePath — handled by parent branding group
   })
 
-  const fontFamily = selectField('fontFamily', {
+  const fontFamily = componentField('fontFamily', {
+    component: FontFamilySelector,
     label: 'Font Family',
     description: 'Primary font used across donor-facing pages',
-    options: [
-      { value: 'Inter', label: 'Inter' },
-      { value: 'Roboto', label: 'Roboto' },
-      { value: 'Open Sans', label: 'Open Sans' },
-      { value: 'Lato', label: 'Lato' },
-      { value: 'Poppins', label: 'Poppins' },
-      { value: 'Montserrat', label: 'Montserrat' }
-    ],
     rules: z.string().min(1),
-    showSeparatorAfter: true
+    showSeparatorAfter: true,
+    props: {
+      options: BRANDING_FONT_OPTIONS
+    }
   })
 
   const logoUrl = imageUploadField('logoUrl', {

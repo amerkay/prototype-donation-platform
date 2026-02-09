@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
   let fragment: string
   let filename: string
   let orientation: 'portrait' | 'landscape' = 'portrait'
-  let fontFamily: string | undefined
+  let fontFamilies: string[] = []
 
   switch (body.type) {
     case 'certificate': {
@@ -34,31 +34,35 @@ export default defineEventHandler(async (event) => {
         AMOUNT: escapeHtml(data.amount),
         DATE: escapeHtml(data.date)
       })
+      const processedSubtitle = replaceVariables(data.subtitle, {
+        DONOR_NAME: escapeHtml(data.donorName),
+        AMOUNT: escapeHtml(data.amount),
+        DATE: escapeHtml(data.date)
+      })
       fragment = buildCertificateFragment({
         title: data.title,
-        subtitle: data.subtitle,
+        subtitleHtml: processedSubtitle,
         bodyHtml: processedBody,
+        bodyTextFontSize: data.bodyTextFontSize,
         borderStyle: data.borderStyle,
         orientation: data.orientation,
         showLogo: data.showLogo,
-        showDate: data.showDate,
         showSignature: data.showSignature,
         signatureName: data.signatureName,
         signatureTitle: data.signatureTitle,
+        signatureFontFamily: data.signatureFontFamily,
         backgroundImage: data.backgroundImage,
         showProduct: data.showProduct,
         productBorderRadius: data.productBorderRadius,
-        productBorderColor: data.productBorderColor,
         productNameColor: data.productNameColor,
         titleColor: data.titleColor,
-        signatureColor: data.signatureColor,
+        separatorsAndBorders: data.separatorsAndBorders,
         branding: data.branding,
-        date: data.date,
         product: data.product
       })
       filename = 'certificate.pdf'
       orientation = data.orientation
-      fontFamily = data.branding.fontFamily
+      fontFamilies = [data.branding.fontFamily, data.signatureFontFamily]
       break
     }
     case 'receipt': {
@@ -70,7 +74,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'Invalid template type' })
   }
 
-  const html = wrapInPdfPage(fragment, { orientation, fontFamily, baseUrl })
+  const html = wrapInPdfPage(fragment, { orientation, fontFamilies, baseUrl })
 
   const width = orientation === 'landscape' ? '297mm' : '210mm'
   const height = orientation === 'landscape' ? '210mm' : '297mm'

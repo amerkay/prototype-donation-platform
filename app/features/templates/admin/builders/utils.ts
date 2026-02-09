@@ -41,18 +41,27 @@ export function replaceVariables(html: string, variables: Record<string, string>
  * Uses `.cert-body` prefix to avoid scope leaking in Vue context.
  */
 export const CERT_BODY_CSS = /* css */ `
+  .cert-subtitle p { margin: 0; }
+  .cert-subtitle p + p { margin-top: 0.25em; }
+  .cert-subtitle a { color: inherit; text-decoration: underline; }
+  .cert-subtitle.clamp-subtitle {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
   .cert-body p { margin: 0; }
   .cert-body p + p { margin-top: 0.5em; }
   .cert-body a { color: inherit; text-decoration: underline; }
   .cert-body.clamp-landscape {
     display: -webkit-box;
-    -webkit-line-clamp: 4;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
   .cert-body.clamp-portrait {
     display: -webkit-box;
-    -webkit-line-clamp: 6;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }

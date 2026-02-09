@@ -33,6 +33,7 @@ export function useGeneratePdf() {
 
       if (type === 'certificate') {
         const cert = useCertificateTemplateStore()
+        const certificate = cert.certificate
         const sampleP = sampleProducts.find((p) => p.image && p.certificateOverrideName)
         const product = sampleP?.image
           ? { name: sampleP.certificateOverrideName || sampleP.name, image: sampleP.image }
@@ -40,23 +41,23 @@ export function useGeneratePdf() {
         body = {
           type: 'certificate',
           data: {
-            title: cert.title,
-            subtitle: cert.subtitle,
-            bodyHtml: cert.bodyText,
-            borderStyle: cert.borderStyle,
-            showLogo: cert.showLogo,
-            showDate: cert.showDate,
-            showSignature: cert.showSignature,
-            signatureName: cert.signatureName,
-            signatureTitle: cert.signatureTitle,
-            orientation: cert.orientation,
-            backgroundImage: cert.backgroundImage,
-            showProduct: cert.showProduct,
-            productBorderRadius: cert.productBorderRadius,
-            productBorderColor: cert.productBorderColor,
-            productNameColor: cert.productNameColor,
-            titleColor: cert.titleColor,
-            signatureColor: cert.signatureColor,
+            title: certificate.header.title,
+            subtitle: certificate.header.subtitle,
+            bodyHtml: certificate.body.bodyText,
+            bodyTextFontSize: certificate.body.bodyTextFontSize,
+            borderStyle: certificate.design.borderStyle,
+            showLogo: certificate.header.showLogo,
+            showSignature: certificate.signatureSettings.showSignature,
+            signatureName: certificate.signatureSettings.signatureName,
+            signatureTitle: certificate.signatureSettings.signatureTitle,
+            signatureFontFamily: certificate.signatureSettings.signatureFontFamily,
+            orientation: certificate.design.orientation,
+            backgroundImage: certificate.design.backgroundImage,
+            showProduct: certificate.productSettings.showProduct,
+            productBorderRadius: certificate.productSettings.productBorderRadius,
+            productNameColor: certificate.productSettings.productNameColor,
+            titleColor: certificate.header.titleColor,
+            separatorsAndBorders: certificate.design.separatorsAndBorders,
             branding: {
               logoUrl: branding.logoUrl,
               primaryColor: branding.primaryColor,

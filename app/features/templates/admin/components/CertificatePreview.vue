@@ -9,8 +9,8 @@ import {
   replaceRichTextVariables
 } from '~/features/_library/form-builder/utils/sanitize-html'
 import { buildCertificateFragment } from '~/features/templates/admin/builders/certificate-fragment'
-import { getBunnyFontUrl } from '~/features/settings/admin/utils/fonts'
-import { products as sampleProducts } from '~/sample-api-responses/api-sample-response-products'
+import { getBunnyFontUrls } from '~/features/settings/admin/utils/fonts'
+import { useProducts } from '~/features/products/admin/composables/useProducts'
 import { usePreviewEditable } from '~/features/templates/admin/composables/usePreviewEditable'
 import { Button } from '@/components/ui/button'
 import { Pencil } from 'lucide-vue-next'
@@ -26,9 +26,18 @@ const props = withDefaults(
 const cert = useCertificateTemplateStore()
 const branding = useBrandingSettingsStore()
 const currencyStore = useCurrencySettingsStore()
+const { products } = useProducts()
 
 useHead({
-  link: [{ rel: 'stylesheet', href: computed(() => getBunnyFontUrl(branding.fontFamily)) }]
+  link: computed(() =>
+    getBunnyFontUrls([
+      branding.fontFamily,
+      cert.certificate.signatureSettings.signatureFontFamily
+    ]).map((href) => ({
+      rel: 'stylesheet',
+      href
+    }))
+  )
 })
 
 const activeCurrency = computed(() => props.currency || currencyStore.defaultCurrency)
@@ -40,46 +49,53 @@ const sampleDate = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric'
 }).format(new Date())
 
-const isLandscape = computed(() => cert.orientation === 'landscape')
+const isLandscape = computed(() => cert.certificate.design.orientation === 'landscape')
 
 const sampleProduct = computed(() => {
-  const p = sampleProducts.find((p) => p.image && p.certificateOverrideName)
+  const p = products.value.find((product) => product.image && product.certificateOverrideName)
   if (!p?.image) return undefined
   return { name: p.certificateOverrideName || p.name, image: p.image }
 })
 
 const fragment = computed(() => {
-  const processedBody = replaceRichTextVariables(sanitizeRichText(cert.bodyText), {
+  const variableValues = {
     DONOR_NAME: 'John Smith',
     AMOUNT: sampleAmount.value,
     DATE: sampleDate
-  })
+  }
+  const processedSubtitle = replaceRichTextVariables(
+    sanitizeRichText(cert.certificate.header.subtitle),
+    variableValues
+  )
+  const processedBody = replaceRichTextVariables(
+    sanitizeRichText(cert.certificate.body.bodyText),
+    variableValues
+  )
 
   return buildCertificateFragment({
-    title: cert.title,
-    subtitle: cert.subtitle,
+    title: cert.certificate.header.title,
+    subtitleHtml: processedSubtitle,
     bodyHtml: processedBody,
-    borderStyle: cert.borderStyle,
-    orientation: cert.orientation,
-    showLogo: cert.showLogo,
-    showDate: cert.showDate,
-    showSignature: cert.showSignature,
-    signatureName: cert.signatureName,
-    signatureTitle: cert.signatureTitle,
-    backgroundImage: cert.backgroundImage,
-    showProduct: cert.showProduct,
-    productBorderRadius: cert.productBorderRadius,
-    productBorderColor: cert.productBorderColor,
-    productNameColor: cert.productNameColor,
-    titleColor: cert.titleColor,
-    signatureColor: cert.signatureColor,
+    bodyTextFontSize: cert.certificate.body.bodyTextFontSize,
+    borderStyle: cert.certificate.design.borderStyle,
+    orientation: cert.certificate.design.orientation,
+    showLogo: cert.certificate.header.showLogo,
+    showSignature: cert.certificate.signatureSettings.showSignature,
+    signatureName: cert.certificate.signatureSettings.signatureName,
+    signatureTitle: cert.certificate.signatureSettings.signatureTitle,
+    signatureFontFamily: cert.certificate.signatureSettings.signatureFontFamily,
+    backgroundImage: cert.certificate.design.backgroundImage,
+    showProduct: cert.certificate.productSettings.showProduct,
+    productBorderRadius: cert.certificate.productSettings.productBorderRadius,
+    productNameColor: cert.certificate.productSettings.productNameColor,
+    titleColor: cert.certificate.header.titleColor,
+    separatorsAndBorders: cert.certificate.design.separatorsAndBorders,
     branding: {
       logoUrl: branding.logoUrl,
       primaryColor: branding.primaryColor,
       secondaryColor: branding.secondaryColor,
       fontFamily: branding.fontFamily
     },
-    date: sampleDate,
     product: sampleProduct.value
   })
 })

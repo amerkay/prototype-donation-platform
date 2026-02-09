@@ -4,47 +4,50 @@ import {
   richTextField,
   selectField,
   toggleField,
-  colorField,
   imageUploadField,
   fieldGroup,
   componentField
 } from '~/features/_library/form-builder/api'
 import ColorPresetSelector from '@/components/ColorPresetSelector.vue'
+import FontFamilySelector from '@/components/FontFamilySelector.vue'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
+import { SIGNATURE_FONT_OPTIONS } from '~/features/settings/admin/utils/fonts'
+
+const CERTIFICATE_TEMPLATE_VARIABLES = [
+  { value: 'DONOR_NAME', label: 'Donor Name' },
+  { value: 'AMOUNT', label: 'Amount' },
+  { value: 'DATE', label: 'Date' }
+] as const
+
+export const certificateOpenAccordionId = ref<string | undefined>('header')
 
 export const useCertificateTemplateForm = defineForm('certificateTemplate', () => {
   const branding = useBrandingSettingsStore()
+
   const title = textField('title', {
     label: 'Title',
     maxLength: 50
   })
 
-  const subtitle = textField('subtitle', {
+  const subtitle = richTextField('subtitle', {
     label: 'Subtitle',
-    maxLength: 80,
+    variables: CERTIFICATE_TEMPLATE_VARIABLES,
     showSeparatorAfter: true
   })
 
   const bodyText = richTextField('bodyText', {
     label: 'Body Text',
     description: 'Keep to 1–2 sentences for best results.',
-    variables: [
-      { value: 'DONOR_NAME', label: 'Donor Name' },
-      { value: 'AMOUNT', label: 'Amount' },
-      { value: 'DATE', label: 'Date' }
-    ]
+    variables: CERTIFICATE_TEMPLATE_VARIABLES
   })
 
-  const content = fieldGroup('content', {
-    label: 'Certificate Content',
-    description: 'Colors and fonts are inherited from Branding Settings.',
-    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: { title, subtitle, bodyText },
-    $storePath: {
-      title: 'title',
-      subtitle: 'subtitle',
-      bodyText: 'bodyText'
-    }
+  const bodyTextFontSize = selectField('bodyTextFontSize', {
+    label: 'Body Text Size',
+    options: [
+      { value: 'small', label: 'Small' },
+      { value: 'medium', label: 'Medium' },
+      { value: 'large', label: 'Large' }
+    ]
   })
 
   const orientation = selectField('orientation', {
@@ -72,29 +75,9 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     visibleWhen: (ctx) => !ctx.values.backgroundImage
   })
 
-  const design = fieldGroup('design', {
-    label: 'Design',
-    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: {
-      orientation,
-      backgroundImage,
-      borderStyle
-    },
-    $storePath: {
-      orientation: 'orientation',
-      backgroundImage: 'backgroundImage',
-      borderStyle: 'borderStyle'
-    }
-  })
-
   const showLogo = toggleField('showLogo', {
     label: 'Show Logo',
     description: 'Display organization logo on certificate'
-  })
-
-  const showDate = toggleField('showDate', {
-    label: 'Show Date',
-    description: 'Display the donation date'
   })
 
   const showSignature = toggleField('showSignature', {
@@ -114,16 +97,13 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     visibleWhen: (ctx) => !!ctx.values.showSignature
   })
 
-  const display = fieldGroup('display', {
-    label: 'Display Options',
-    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: { showLogo, showDate, showSignature, signatureName, signatureTitle },
-    $storePath: {
-      showLogo: 'showLogo',
-      showDate: 'showDate',
-      showSignature: 'showSignature',
-      signatureName: 'signatureName',
-      signatureTitle: 'signatureTitle'
+  const signatureFontFamily = componentField('signatureFontFamily', {
+    component: FontFamilySelector,
+    label: 'Signature Font',
+    description: 'Choose a script font for the signatory name',
+    visibleWhen: (ctx) => !!ctx.values.showSignature,
+    props: {
+      options: SIGNATURE_FONT_OPTIONS
     }
   })
 
@@ -143,32 +123,14 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     visibleWhen: (ctx) => !!ctx.values.showProduct
   })
 
-  const productBorderColor = colorField('productBorderColor', {
-    label: 'Border Color',
-    description: 'Leave empty to use branding color',
-    visibleWhen: (ctx) => !!ctx.values.showProduct
-  })
-
   const productNameColor = componentField('productNameColor', {
     component: ColorPresetSelector,
     label: 'Product Name Color',
-    description: 'Choose Primary, Secondary, or custom color',
+    description: 'Choose Primary, Secondary, Black, White, or custom color',
     visibleWhen: (ctx) => !!ctx.values.showProduct,
     props: {
       primaryColor: branding.primaryColor,
       secondaryColor: branding.secondaryColor
-    }
-  })
-
-  const product = fieldGroup('product', {
-    label: 'Product Badge',
-    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: { showProduct, productBorderRadius, productBorderColor, productNameColor },
-    $storePath: {
-      showProduct: 'showProduct',
-      productBorderRadius: 'productBorderRadius',
-      productBorderColor: 'productBorderColor',
-      productNameColor: 'productNameColor'
     }
   })
 
@@ -182,26 +144,89 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     }
   })
 
-  const signatureColor = componentField('signatureColor', {
+  const separatorsAndBorders = componentField('separatorsAndBorders', {
     component: ColorPresetSelector,
-    label: 'Signature Color',
-    description: 'Color for signature line and text',
-    visibleWhen: (ctx) => !!ctx.values.showSignature,
+    label: 'Separators and Borders',
+    description: 'Color for separators and border accents',
     props: {
       primaryColor: branding.primaryColor,
       secondaryColor: branding.secondaryColor
     }
   })
 
-  const colors = fieldGroup('colors', {
-    label: 'Colors',
-    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: { titleColor, signatureColor },
+  const header = fieldGroup('header', {
+    label: 'Header',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    fields: { showLogo, title, titleColor, subtitle },
     $storePath: {
+      showLogo: 'showLogo',
+      title: 'title',
       titleColor: 'titleColor',
-      signatureColor: 'signatureColor'
-    }
+      subtitle: 'subtitle'
+    },
+    showSeparatorAfter: true
   })
 
-  return { content, design, colors, product, display }
+  const body = fieldGroup('body', {
+    label: 'Body',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    fields: { bodyText, bodyTextFontSize },
+    $storePath: {
+      bodyText: 'bodyText',
+      bodyTextFontSize: 'bodyTextFontSize'
+    },
+    showSeparatorAfter: true
+  })
+
+  const productSettings = fieldGroup('productSettings', {
+    label: 'Product Settings',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    fields: { showProduct, productBorderRadius, productNameColor },
+    $storePath: {
+      showProduct: 'showProduct',
+      productBorderRadius: 'productBorderRadius',
+      productNameColor: 'productNameColor'
+    },
+    showSeparatorAfter: true
+  })
+
+  const signatureSettings = fieldGroup('signatureSettings', {
+    label: 'Signature Settings',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    fields: { showSignature, signatureName, signatureTitle, signatureFontFamily },
+    $storePath: {
+      showSignature: 'showSignature',
+      signatureName: 'signatureName',
+      signatureTitle: 'signatureTitle',
+      signatureFontFamily: 'signatureFontFamily'
+    },
+    showSeparatorAfter: true
+  })
+
+  const design = fieldGroup('design', {
+    label: 'Design',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    fields: { orientation, backgroundImage, borderStyle, separatorsAndBorders },
+    $storePath: {
+      orientation: 'orientation',
+      backgroundImage: 'backgroundImage',
+      borderStyle: 'borderStyle',
+      separatorsAndBorders: 'separatorsAndBorders'
+    },
+    showSeparatorAfter: true
+  })
+
+  const certificate = fieldGroup('certificate', {
+    label: 'Certificate Settings',
+    description: 'Configure content, design, product, and signature sections.',
+    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+    fields: { design, header, productSettings, body, signatureSettings }
+  })
+
+  return { certificate }
 })

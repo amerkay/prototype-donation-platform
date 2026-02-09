@@ -6,25 +6,25 @@
  */
 
 import { getScaleFactor, getContentHeight, PREVIEW_WIDTH_PX } from './templates/styles'
-import { getBunnyFontUrl } from '~~/app/features/settings/admin/utils/fonts'
+import { getBunnyFontUrls } from '~~/app/features/settings/admin/utils/fonts'
 
 interface WrapOptions {
   orientation: 'portrait' | 'landscape'
-  fontFamily?: string
+  fontFamilies?: string[]
   baseUrl: string
 }
 
 export function wrapInPdfPage(fragment: string, options: WrapOptions): string {
-  const { orientation, fontFamily, baseUrl } = options
+  const { orientation, fontFamilies, baseUrl } = options
   const isLandscape = orientation === 'landscape'
   const pageWidth = isLandscape ? '297mm' : '210mm'
   const pageHeight = isLandscape ? '210mm' : '297mm'
   const scale = getScaleFactor(orientation)
   const contentHeight = getContentHeight(orientation)
 
-  const fontLink = fontFamily
-    ? `<link href="${getBunnyFontUrl(fontFamily)}" rel="stylesheet" />`
-    : ''
+  const fontLinks = getBunnyFontUrls(fontFamilies ?? [])
+    .map((href) => `<link href="${href}" rel="stylesheet" />`)
+    .join('\n  ')
 
   return `<!DOCTYPE html>
 <html>
@@ -69,7 +69,7 @@ export function wrapInPdfPage(fragment: string, options: WrapOptions): string {
       overflow: hidden;
     }
   </style>
-  ${fontLink}
+  ${fontLinks}
 </head>
 <body>
   <div class="page">

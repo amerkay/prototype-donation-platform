@@ -19,23 +19,23 @@ const currencyStore = useCurrencySettingsStore()
 const previewCurrency = ref(currencyStore.defaultCurrency)
 
 const originalData = computed(() => ({
-  title: store.title,
-  subtitle: store.subtitle,
-  bodyText: store.bodyText,
-  borderStyle: store.borderStyle,
-  showLogo: store.showLogo,
-  showDate: store.showDate,
-  showSignature: store.showSignature,
-  signatureName: store.signatureName,
-  signatureTitle: store.signatureTitle,
-  orientation: store.orientation,
-  backgroundImage: store.backgroundImage,
-  showProduct: store.showProduct,
-  productBorderRadius: store.productBorderRadius,
-  productBorderColor: store.productBorderColor,
-  productNameColor: store.productNameColor,
-  titleColor: store.titleColor,
-  signatureColor: store.signatureColor
+  certificate: {
+    header: {
+      ...store.certificate.header
+    },
+    body: {
+      ...store.certificate.body
+    },
+    productSettings: {
+      ...store.certificate.productSettings
+    },
+    signatureSettings: {
+      ...store.certificate.signatureSettings
+    },
+    design: {
+      ...store.certificate.design
+    }
+  }
 }))
 
 const formConfigRef = ref()
@@ -53,7 +53,7 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdmi
 const showPreviewDialog = ref(false)
 
 const previewMaxWidth = computed(() =>
-  store.orientation === 'landscape' ? 'sm:max-w-3xl' : 'sm:max-w-xl'
+  store.certificate.design.orientation === 'landscape' ? 'sm:max-w-3xl' : 'sm:max-w-xl'
 )
 
 const { isGenerating, downloadPdf } = useGeneratePdf()

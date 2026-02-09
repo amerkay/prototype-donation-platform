@@ -7,6 +7,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
+const DARK_PRESET_HEX = '#333'
+const WHITE_PRESET_HEX = '#ffffff'
+
 const props = withDefaults(
   defineProps<{
     modelValue?: string // 'primary' | 'secondary' | '#RRGGBB'
@@ -29,6 +32,8 @@ const currentMode = computed(() => {
   const val = props.modelValue
   if (!val || val === '' || val === 'primary') return 'primary'
   if (val === 'secondary') return 'secondary'
+  if (val.toLowerCase() === DARK_PRESET_HEX) return 'dark'
+  if (val.toLowerCase() === WHITE_PRESET_HEX) return 'white'
   return 'custom'
 })
 
@@ -37,6 +42,8 @@ const displayColor = computed(() => {
   const mode = currentMode.value
   if (mode === 'primary') return props.primaryColor
   if (mode === 'secondary') return props.secondaryColor
+  if (mode === 'dark') return DARK_PRESET_HEX
+  if (mode === 'white') return WHITE_PRESET_HEX
   return props.modelValue // Custom hex color
 })
 
@@ -45,6 +52,8 @@ const displayLabel = computed(() => {
   const mode = currentMode.value
   if (mode === 'primary') return 'Primary'
   if (mode === 'secondary') return 'Secondary'
+  if (mode === 'dark') return 'Black'
+  if (mode === 'white') return 'White'
   return 'Custom'
 })
 
@@ -54,7 +63,15 @@ const customColor = computed({
   set: (value: string) => emit('update:modelValue', value)
 })
 
-function selectPreset(preset: 'primary' | 'secondary') {
+function selectPreset(preset: 'primary' | 'secondary' | 'dark' | 'white') {
+  if (preset === 'dark') {
+    emit('update:modelValue', DARK_PRESET_HEX)
+    return
+  }
+  if (preset === 'white') {
+    emit('update:modelValue', WHITE_PRESET_HEX)
+    return
+  }
   emit('update:modelValue', preset)
 }
 
@@ -106,6 +123,30 @@ function selectCustom() {
             <ColorSwatch :color="secondaryColor" size="md" />
             <span class="flex-1 text-left">Secondary</span>
             <Check v-if="currentMode === 'secondary'" class="h-4 w-4 text-primary" />
+          </button>
+
+          <!-- Black Option -->
+          <button
+            type="button"
+            class="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm hover:bg-muted transition-colors"
+            :class="currentMode === 'dark' ? 'bg-muted' : ''"
+            @click="selectPreset('dark')"
+          >
+            <ColorSwatch :color="DARK_PRESET_HEX" size="md" />
+            <span class="flex-1 text-left">Black</span>
+            <Check v-if="currentMode === 'dark'" class="h-4 w-4 text-primary" />
+          </button>
+
+          <!-- White Option -->
+          <button
+            type="button"
+            class="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm hover:bg-muted transition-colors"
+            :class="currentMode === 'white' ? 'bg-muted' : ''"
+            @click="selectPreset('white')"
+          >
+            <ColorSwatch :color="WHITE_PRESET_HEX" size="md" />
+            <span class="flex-1 text-left">White</span>
+            <Check v-if="currentMode === 'white'" class="h-4 w-4 text-primary" />
           </button>
 
           <!-- Custom Option -->
