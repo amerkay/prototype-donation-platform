@@ -17,7 +17,7 @@ import type { RichTextVariable } from '~/features/_library/form-builder/types'
 
 interface Props {
   editor: Editor
-  variables?: RichTextVariable[]
+  variables?: ReadonlyArray<RichTextVariable>
   disabled?: boolean
 }
 

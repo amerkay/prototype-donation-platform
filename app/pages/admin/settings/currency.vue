@@ -25,6 +25,7 @@ const originalData = computed(() => ({
 
 const formConfigRef = ref()
 const showCharityCheckDialog = ref(false)
+const lastSavedDefaultCurrency = ref(store.defaultCurrency)
 
 const {
   handleSave: _handleSave,
@@ -42,10 +43,14 @@ const {
 })
 
 async function handleSave() {
+  const defaultCurrencyChanged = store.defaultCurrency !== lastSavedDefaultCurrency.value
   await _handleSave()
-  // Show charity check prompt after successful save
+  // Show charity check prompt only when default org currency actually changed
   if (!store.isDirty) {
-    showCharityCheckDialog.value = true
+    if (defaultCurrencyChanged) {
+      showCharityCheckDialog.value = true
+    }
+    lastSavedDefaultCurrency.value = store.defaultCurrency
   }
 }
 

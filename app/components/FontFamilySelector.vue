@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch, type ComponentPublicInstance } from 'vue'
 import { cn } from '@/lib/utils'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
@@ -46,8 +46,13 @@ useHead({
   )
 })
 
-function setOptionRef(value: string, element: Element | null) {
-  const htmlElement = element as HTMLElement | null
+function setOptionRef(value: string, element: Element | ComponentPublicInstance | null) {
+  let htmlElement: HTMLElement | null = null
+  if (element instanceof HTMLElement) {
+    htmlElement = element
+  } else if (element && '$el' in element && element.$el instanceof HTMLElement) {
+    htmlElement = element.$el
+  }
   const previous = optionElements.get(value)
 
   if (previous && observer) observer.unobserve(previous)

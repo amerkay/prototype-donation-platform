@@ -37,7 +37,6 @@ const { wrapperProps, resolvedPlaceholder, resolvedDisabled, resolvedClass } = u
 )
 
 const searchValue = ref('')
-const isOpen = ref(false)
 
 const searchPlaceholder = computed(() => props.meta.searchPlaceholder ?? 'Search...')
 
@@ -115,22 +114,6 @@ const isSelected = (value: string | number): boolean => {
   }
 }
 
-// Handle selection toggle
-const toggleSelection = (value: string | number) => {
-  if (props.meta.multiple) {
-    const selected = [...(modelValue.value as Array<string | number>)]
-    const index = selected.indexOf(value)
-    if (index > -1) {
-      selected.splice(index, 1)
-    } else {
-      selected.push(value)
-    }
-    modelValue.value = selected
-  } else {
-    modelValue.value = value
-  }
-}
-
 // Remove badge in multiple mode
 const removeBadge = (value: string | number, event: Event) => {
   event.stopPropagation()
@@ -149,10 +132,10 @@ const removeBadge = (value: string | number, event: Event) => {
   <FormFieldWrapper v-bind="wrapperProps" :disable-label-for="true">
     <ComboboxRoot
       v-model="modelValue"
-      v-model:open="isOpen"
       v-model:search-term="searchValue"
       :multiple="meta.multiple"
       :disabled="resolvedDisabled"
+      open-on-click
       class="relative"
     >
       <ComboboxAnchor
@@ -165,7 +148,6 @@ const removeBadge = (value: string | number, event: Event) => {
             resolvedDisabled && 'pointer-events-none'
           )
         "
-        @click="!resolvedDisabled && (isOpen = true)"
       >
         <div class="flex flex-1 flex-wrap gap-1 items-center min-w-0">
           <!-- Multiple selection badges -->
@@ -196,7 +178,6 @@ const removeBadge = (value: string | number, event: Event) => {
             :disabled="resolvedDisabled"
             class="flex-1 min-w-30 bg-transparent outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
             @blur="onBlur"
-            @focus="!resolvedDisabled && (isOpen = true)"
           />
         </div>
 
@@ -219,7 +200,6 @@ const removeBadge = (value: string | number, event: Event) => {
               :value="option.value"
               :disabled="option.disabled"
               class="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 pr-8 text-sm outline-none data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-accent data-highlighted:text-accent-foreground"
-              @click="toggleSelection(option.value)"
             >
               <ComboboxItemIndicator
                 v-if="isSelected(option.value)"

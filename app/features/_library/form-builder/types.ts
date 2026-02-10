@@ -303,7 +303,7 @@ export interface RichTextVariable {
 }
 
 export interface RichTextFieldConfig extends BaseFieldConfig {
-  variables?: RichTextVariable[]
+  variables?: ReadonlyArray<RichTextVariable>
 }
 
 export interface DateFieldConfig extends BaseFieldConfig {

@@ -94,6 +94,7 @@ Use these two sections (project summary and continuous learning) as bounded memo
 <!-- continuous learning notes -->
 
 1. `componentField` is excluded from autoMap by default; persist via `$storePath` or manual getData/setData.
+2. With `reka-ui` combobox, avoid manual open/select handlers that fight internal state.
 <!-- end ontinuous learning notes -->
 
 ## Code Rules
