@@ -39,6 +39,7 @@ type CertificateFormData = {
       orientation?: 'landscape' | 'portrait'
       backgroundImage?: string | null
       borderStyle?: 'classic' | 'modern' | 'minimal' | 'ornate'
+      borderThickness?: 'thin' | 'medium' | 'thick'
       separatorsAndBorders?: string
     }
   }
@@ -94,6 +95,7 @@ const { formRef, modelValue, form, expose } = useAdminConfigForm({
     if (design?.orientation !== undefined) next.orientation = design.orientation
     if (design?.backgroundImage !== undefined) next.backgroundImage = design.backgroundImage
     if (design?.borderStyle !== undefined) next.borderStyle = design.borderStyle
+    if (design?.borderThickness !== undefined) next.borderThickness = design.borderThickness
     if (design?.separatorsAndBorders !== undefined) {
       next.separatorsAndBorders = design.separatorsAndBorders
     }

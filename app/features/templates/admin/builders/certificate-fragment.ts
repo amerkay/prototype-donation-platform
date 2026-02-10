@@ -27,6 +27,7 @@ export interface CertificateFragmentData {
   bodyHtml: string
   bodyTextFontSize: 'small' | 'medium' | 'large'
   borderStyle: 'classic' | 'modern' | 'minimal' | 'ornate'
+  borderThickness: 'thin' | 'medium' | 'thick'
   orientation: 'portrait' | 'landscape'
   showLogo: boolean
   showSignature: boolean
@@ -61,6 +62,15 @@ const BORDER_STYLES: Record<string, string> = {
   ornate: 'border: 4px double; box-shadow: 0 0 0 4px #fff, 0 0 0 6px var(--ring-color);'
 }
 
+const THICKNESS_PRESETS: Record<
+  CertificateFragmentData['borderThickness'],
+  { borderPx: number; productPx: number; separatorPx: string }
+> = {
+  thin: { borderPx: 1, productPx: 1, separatorPx: '1px' },
+  medium: { borderPx: 2, productPx: 3, separatorPx: '2px' },
+  thick: { borderPx: 4, productPx: 5, separatorPx: '3px' }
+}
+
 const BODY_TEXT_FONT_SIZES: Record<CertificateFragmentData['bodyTextFontSize'], string> = {
   small: '0.625rem',
   medium: '0.75rem',
@@ -69,7 +79,6 @@ const BODY_TEXT_FONT_SIZES: Record<CertificateFragmentData['bodyTextFontSize'], 
 
 const FIXED_SIGNATURE_COLOR = '#333'
 const SEPARATOR_WIDTH = '6rem'
-const SEPARATOR_THICKNESS = '0.125rem'
 const FIXED_PRODUCT_NAME_COLOR = '#111827'
 const DEFAULT_TARGETS: CertificateTemplateTargets = {
   showLogo: 'showLogo',
@@ -108,6 +117,7 @@ export function buildCertificateFragment(data: CertificateFragmentData): string 
   const isLandscape = data.orientation === 'landscape'
   const hasBackground = !!data.backgroundImage
   const font = escapeHtml(branding.fontFamily || 'inherit')
+  const thickness = THICKNESS_PRESETS[data.borderThickness] ?? THICKNESS_PRESETS.medium
 
   // Resolve all configurable colors
   const titleColor = resolveColor(data.titleColor, branding.primaryColor, branding.secondaryColor)
@@ -118,9 +128,15 @@ export function buildCertificateFragment(data: CertificateFragmentData): string 
   )
   const signatureFont = escapeHtml(data.signatureFontFamily || branding.fontFamily || 'inherit')
 
-  const borderCss = !hasBackground ? (BORDER_STYLES[data.borderStyle] ?? '') : ''
-  const borderColor = !hasBackground ? `border-color: ${separatorsAndBordersColor};` : ''
-  const ringColor = !hasBackground ? `--ring-color: ${separatorsAndBordersColor};` : ''
+  const borderCssMap: Record<CertificateFragmentData['borderStyle'], string> = {
+    classic: `border: ${Math.max(2, thickness.borderPx)}px double;`,
+    modern: `border: ${thickness.borderPx}px solid;`,
+    minimal: `border: ${Math.max(1, thickness.borderPx - 1)}px solid;`,
+    ornate: `border: ${Math.max(2, thickness.borderPx)}px double; box-shadow: 0 0 0 ${thickness.borderPx}px #fff, 0 0 0 ${thickness.borderPx + 2}px var(--ring-color);`
+  }
+  const borderCss = borderCssMap[data.borderStyle] ?? BORDER_STYLES[data.borderStyle] ?? ''
+  const borderColor = `border-color: ${separatorsAndBordersColor};`
+  const ringColor = `--ring-color: ${separatorsAndBordersColor};`
   const contentPadding = isLandscape ? 'padding: 2rem 4rem;' : 'padding: 2rem 2.5rem;'
   const bodyClamp = isLandscape ? 'clamp-landscape' : 'clamp-portrait'
   const bodyFontSize = BODY_TEXT_FONT_SIZES[data.bodyTextFontSize] ?? BODY_TEXT_FONT_SIZES.medium
@@ -142,14 +158,14 @@ export function buildCertificateFragment(data: CertificateFragmentData): string 
   const productHtml =
     data.showProduct && data.product
       ? `<div data-field="${targets.productSettings}" style="display: flex; flex-direction: column; align-items: center; margin-bottom: 0.75rem; flex-shrink: 0;">
-        <img src="${data.product.image}" alt="${escapeHtml(data.product.name)}" style="width: ${imageSize}; height: ${imageSize}; border-radius: ${productRadius}; object-fit: cover; border: 3px solid ${separatorsAndBordersColor}; margin-bottom: 0.5rem;" />
+        <img src="${data.product.image}" alt="${escapeHtml(data.product.name)}" style="width: ${imageSize}; height: ${imageSize}; border-radius: ${productRadius}; object-fit: cover; border: ${thickness.productPx}px solid ${separatorsAndBordersColor}; margin-bottom: 0.5rem;" />
         <p style="font-size: 1.125rem; font-weight: 700; line-height: 1.25; color: ${FIXED_PRODUCT_NAME_COLOR}; width: 100%; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(data.product.name)}</p>
       </div>`
       : ''
 
   const signatureHtml = data.showSignature
     ? `<div data-field="${targets.signatureSettings}" style="margin-top: 0.5rem; width: 100%; flex-shrink: 0;">
-        <div style="width: ${SEPARATOR_WIDTH}; height: ${SEPARATOR_THICKNESS}; margin: 0 auto 0.5rem; background-color: ${separatorsAndBordersColor};"></div>
+        <div style="width: ${SEPARATOR_WIDTH}; height: ${thickness.separatorPx}; margin: 0 auto 0.5rem; background-color: ${separatorsAndBordersColor};"></div>
         <p style="font-size: 1.125rem; font-weight: 500; font-family: '${signatureFont}', '${font}', sans-serif; color: ${FIXED_SIGNATURE_COLOR}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; margin: 0 auto; text-align: center;">${escapeHtml(data.signatureName)}</p>
         <p style="font-size: 0.75rem; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; margin: 0 auto; text-align: center;">${escapeHtml(data.signatureTitle)}</p>
       </div>`
@@ -162,7 +178,7 @@ export function buildCertificateFragment(data: CertificateFragmentData): string 
   <div style="position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; height: 100%; text-align: center; overflow: hidden; ${contentPadding}">
     <div style="width: 100%; flex-shrink: 0;">
       ${logoHtml}
-      <h2 data-field="${targets.title}" style="font-size: 1.5rem; font-weight: 700; line-height: 1.25em; letter-spacing: 0.025em; text-transform: uppercase; margin-bottom: 1rem; overflow: hidden; text-overflow: ellipsis; width: 100%; color: ${titleColor};">
+      <h2 data-field="${targets.title}" style="font-size: 1.5rem; font-weight: 700; line-height: 1.25em; letter-spacing: 0.025em; margin-bottom: 1rem; overflow: hidden; text-overflow: ellipsis; width: 100%; color: ${titleColor};">
         ${escapeHtml(data.title)}
       </h2>
       <div data-field="${targets.subtitle}" class="cert-subtitle clamp-subtitle" style="font-size: 0.75rem; color: #333; margin-bottom: 1rem; width: 100%;">
@@ -172,7 +188,7 @@ export function buildCertificateFragment(data: CertificateFragmentData): string 
 
     <div style="width: 100%;">
       ${productHtml}
-      <div data-field="${targets.design}" style="width: ${SEPARATOR_WIDTH}; height: ${SEPARATOR_THICKNESS}; margin: 0 auto 1rem; flex-shrink: 0; background-color: ${separatorsAndBordersColor};"></div>
+      <div data-field="${targets.design}" style="width: ${SEPARATOR_WIDTH}; height: ${thickness.separatorPx}; margin: 0 auto 1rem; flex-shrink: 0; background-color: ${separatorsAndBordersColor};"></div>
       <div data-field="${targets.body}" class="cert-body ${bodyClamp}" style="font-size: ${bodyFontSize}; line-height: 1.625; margin-bottom: 0.75rem; color: #333; width: 100%; margin-left: auto; margin-right: auto;">
         ${data.bodyHtml}
       </div>

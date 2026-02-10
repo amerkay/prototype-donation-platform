@@ -34,6 +34,7 @@ type LegacyCertificateTemplate = Partial<CertificateTemplate> & {
       orientation?: 'portrait' | 'landscape'
       backgroundImage?: string | null
       borderStyle?: 'classic' | 'modern' | 'minimal' | 'ornate'
+      borderThickness?: 'thin' | 'medium' | 'thick'
       separatorsAndBorders?: string
     }
   }
@@ -59,6 +60,8 @@ function normalizeTemplate(input: Partial<LegacyCertificateTemplate> = {}): Cert
     bodyTextFontSize:
       nested?.body?.bodyTextFontSize ?? input.bodyTextFontSize ?? defaults.bodyTextFontSize,
     borderStyle: nested?.design?.borderStyle ?? input.borderStyle ?? defaults.borderStyle,
+    borderThickness:
+      nested?.design?.borderThickness ?? input.borderThickness ?? defaults.borderThickness,
     showLogo: nested?.header?.showLogo ?? input.showLogo ?? defaults.showLogo,
     showSignature:
       nested?.signatureSettings?.showSignature ?? input.showSignature ?? defaults.showSignature,
@@ -112,6 +115,7 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
       orientation: settings.orientation,
       backgroundImage: settings.backgroundImage,
       borderStyle: settings.borderStyle,
+      borderThickness: settings.borderThickness,
       separatorsAndBorders: settings.separatorsAndBorders
     }
   }))

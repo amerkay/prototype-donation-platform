@@ -17,6 +17,7 @@ export interface CertificateTemplate {
   bodyText: string
   bodyTextFontSize: 'small' | 'medium' | 'large'
   borderStyle: 'classic' | 'modern' | 'minimal' | 'ornate'
+  borderThickness: 'thin' | 'medium' | 'thick'
   showLogo: boolean
   showSignature: boolean
   signatureName: string
@@ -47,6 +48,7 @@ export interface CertificatePdfData {
   bodyHtml: string
   bodyTextFontSize: 'small' | 'medium' | 'large'
   borderStyle: 'classic' | 'modern' | 'minimal' | 'ornate'
+  borderThickness: 'thin' | 'medium' | 'thick'
   showLogo: boolean
   showSignature: boolean
   signatureName: string

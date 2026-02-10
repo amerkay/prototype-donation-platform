@@ -82,8 +82,16 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
       { value: 'modern', label: 'Modern' },
       { value: 'minimal', label: 'Minimal' },
       { value: 'ornate', label: 'Ornate' }
-    ],
-    visibleWhen: (ctx) => !ctx.values.backgroundImage
+    ]
+  })
+
+  const borderThickness = selectField('borderThickness', {
+    label: 'Border Thickness',
+    options: [
+      { value: 'thin', label: 'Thin' },
+      { value: 'medium', label: 'Medium' },
+      { value: 'thick', label: 'Thick' }
+    ]
   })
 
   const showLogo = toggleField('showLogo', {
@@ -210,11 +218,12 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     label: 'Design',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: { orientation, backgroundImage, borderStyle, separatorsAndBorders },
+    fields: { orientation, backgroundImage, borderStyle, borderThickness, separatorsAndBorders },
     $storePath: {
       orientation: 'orientation',
       backgroundImage: 'backgroundImage',
       borderStyle: 'borderStyle',
+      borderThickness: 'borderThickness',
       separatorsAndBorders: 'separatorsAndBorders'
     },
     showSeparatorAfter: true

@@ -20,6 +20,7 @@ export const certificateTemplate: CertificateTemplate = {
   bodyText: 'Thank you for helping us save Bornean Orangutans from extinction!',
   bodyTextFontSize: 'medium',
   borderStyle: 'classic',
+  borderThickness: 'medium',
   showLogo: true,
   showSignature: true,
   signatureName: 'Jane Smith',

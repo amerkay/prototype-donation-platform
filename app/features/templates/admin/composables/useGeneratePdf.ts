@@ -46,6 +46,7 @@ export function useGeneratePdf() {
             bodyHtml: certificate.body.bodyText,
             bodyTextFontSize: certificate.body.bodyTextFontSize,
             borderStyle: certificate.design.borderStyle,
+            borderThickness: certificate.design.borderThickness,
             showLogo: certificate.header.showLogo,
             showSignature: certificate.signatureSettings.showSignature,
             signatureName: certificate.signatureSettings.signatureName,

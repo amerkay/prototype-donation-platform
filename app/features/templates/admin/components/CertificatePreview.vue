@@ -79,6 +79,7 @@ const fragment = computed(() => {
     bodyHtml: processedBody,
     bodyTextFontSize: cert.certificate.body.bodyTextFontSize,
     borderStyle: cert.certificate.design.borderStyle,
+    borderThickness: cert.certificate.design.borderThickness,
     orientation: cert.certificate.design.orientation,
     showLogo: cert.certificate.header.showLogo,
     showSignature: cert.certificate.signatureSettings.showSignature,
@@ -112,7 +113,7 @@ const { hoveredField, editButtonStyle, hoverOutlineStyle, navigateToField } = us
 <template>
   <div
     ref="previewRef"
-    class="relative overflow-hidden rounded-lg shadow-sm mx-auto max-w-95"
+    class="relative overflow-hidden shadow-sm mx-auto max-w-95"
     :class="[isLandscape ? 'aspect-297/210' : 'aspect-210/297', { editable: editable }]"
   >
     <!-- eslint-disable-next-line vue/no-v-html -- trusted builder output, body pre-sanitized -->

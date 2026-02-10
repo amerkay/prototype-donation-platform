@@ -45,6 +45,7 @@ export default defineEventHandler(async (event) => {
         bodyHtml: processedBody,
         bodyTextFontSize: data.bodyTextFontSize,
         borderStyle: data.borderStyle,
+        borderThickness: data.borderThickness,
         orientation: data.orientation,
         showLogo: data.showLogo,
         showSignature: data.showSignature,
