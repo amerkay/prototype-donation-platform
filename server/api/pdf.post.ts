@@ -1,7 +1,7 @@
 import type { CertificatePdfData, ReceiptPdfData } from '~~/app/features/templates/admin/types'
 import { buildCertificateFragment } from '~~/app/features/templates/admin/builders/certificate-fragment'
 import { buildReceiptFragment } from '~~/app/features/templates/admin/builders/receipt-fragment'
-import { replaceVariables, escapeHtml } from '~~/app/features/templates/admin/builders/utils'
+import { processTemplateRichText } from '~~/app/features/templates/admin/utils/template-rich-text'
 import { wrapInPdfPage } from '../utils/pdf/wrap-pdf-page'
 import { generatePdf } from '../utils/pdf/generate-pdf'
 
@@ -29,36 +29,18 @@ export default defineEventHandler(async (event) => {
   switch (body.type) {
     case 'certificate': {
       const { data } = body
-      const processedBody = replaceVariables(data.bodyHtml, {
-        DONOR_NAME: escapeHtml(data.donorName),
-        AMOUNT: escapeHtml(data.amount),
-        DATE: escapeHtml(data.date)
-      })
-      const processedSubtitle = replaceVariables(data.subtitle, {
-        DONOR_NAME: escapeHtml(data.donorName),
-        AMOUNT: escapeHtml(data.amount),
-        DATE: escapeHtml(data.date)
-      })
+      const variables = {
+        DONOR_NAME: data.donorName,
+        AMOUNT: data.amount,
+        DATE: data.date
+      }
+      const subtitleHtml = processTemplateRichText(data.subtitle, variables)
+      const bodyHtml = processTemplateRichText(data.bodyHtml, variables)
+      const { subtitle, donorName, amount, date, ...fragmentData } = data
       fragment = buildCertificateFragment({
-        title: data.title,
-        subtitleHtml: processedSubtitle,
-        bodyHtml: processedBody,
-        bodyTextFontSize: data.bodyTextFontSize,
-        borderStyle: data.borderStyle,
-        borderThickness: data.borderThickness,
-        orientation: data.orientation,
-        showLogo: data.showLogo,
-        showSignature: data.showSignature,
-        signatureName: data.signatureName,
-        signatureTitle: data.signatureTitle,
-        signatureFontFamily: data.signatureFontFamily,
-        backgroundImage: data.backgroundImage,
-        showProduct: data.showProduct,
-        productBorderRadius: data.productBorderRadius,
-        titleColor: data.titleColor,
-        separatorsAndBorders: data.separatorsAndBorders,
-        branding: data.branding,
-        product: data.product
+        ...fragmentData,
+        subtitleHtml,
+        bodyHtml
       })
       filename = 'certificate.pdf'
       orientation = data.orientation

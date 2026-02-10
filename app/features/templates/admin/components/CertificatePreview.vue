@@ -4,15 +4,12 @@ import { useCertificateTemplateStore } from '~/features/templates/admin/stores/c
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { formatCurrency } from '~/lib/formatCurrency'
-import {
-  sanitizeRichText,
-  replaceRichTextVariables
-} from '~/features/_library/form-builder/utils/sanitize-html'
 import { buildCertificateFragment } from '~/features/templates/admin/builders/certificate-fragment'
 import { getBunnyFontUrls } from '~/features/settings/admin/utils/fonts'
 import { useProducts } from '~/features/products/admin/composables/useProducts'
 import { usePreviewEditable } from '~/features/templates/admin/composables/usePreviewEditable'
 import { CERTIFICATE_TEMPLATE_TARGETS } from '~/features/templates/admin/forms/certificate-template-form'
+import { processTemplateRichText } from '~/features/templates/admin/utils/template-rich-text'
 import { Button } from '@/components/ui/button'
 import { Pencil } from 'lucide-vue-next'
 
@@ -64,22 +61,16 @@ const fragment = computed(() => {
     AMOUNT: sampleAmount.value,
     DATE: sampleDate
   }
-  const processedSubtitle = replaceRichTextVariables(
-    sanitizeRichText(cert.certificate.header.subtitle),
-    variableValues
-  )
-  const processedBody = replaceRichTextVariables(
-    sanitizeRichText(cert.certificate.body.bodyText),
-    variableValues
-  )
+  const subtitleHtml = processTemplateRichText(cert.certificate.header.subtitle, variableValues)
+  const bodyHtml = processTemplateRichText(cert.certificate.body.bodyText, variableValues)
 
   return buildCertificateFragment({
     title: cert.certificate.header.title,
-    subtitleHtml: processedSubtitle,
-    bodyHtml: processedBody,
+    subtitleHtml,
+    bodyHtml,
     bodyTextFontSize: cert.certificate.body.bodyTextFontSize,
-    borderStyle: cert.certificate.design.borderStyle,
-    borderThickness: cert.certificate.design.borderThickness,
+    pageBorderStyle: cert.certificate.design.pageBorderStyle,
+    pageBorderThickness: cert.certificate.design.pageBorderThickness,
     orientation: cert.certificate.design.orientation,
     showLogo: cert.certificate.header.showLogo,
     showSignature: cert.certificate.signatureSettings.showSignature,
@@ -88,9 +79,9 @@ const fragment = computed(() => {
     signatureFontFamily: cert.certificate.signatureSettings.signatureFontFamily,
     backgroundImage: cert.certificate.design.backgroundImage,
     showProduct: cert.certificate.productSettings.showProduct,
-    productBorderRadius: cert.certificate.productSettings.productBorderRadius,
-    titleColor: cert.certificate.header.titleColor,
-    separatorsAndBorders: cert.certificate.design.separatorsAndBorders,
+    productImageShape: cert.certificate.productSettings.productImageShape,
+    titleTextColor: cert.certificate.header.titleTextColor,
+    separatorsAndBordersColor: cert.certificate.design.separatorsAndBordersColor,
     targets: CERTIFICATE_TEMPLATE_TARGETS,
     branding: {
       logoUrl: branding.logoUrl,

@@ -13,95 +13,9 @@ const store = useCertificateTemplateStore()
 
 provideAccordionGroup(certificateOpenAccordionId)
 
-type CertificateFormData = {
-  certificate?: {
-    header?: {
-      showLogo?: boolean
-      title?: string
-      titleColor?: string
-      subtitle?: string
-    }
-    body?: {
-      bodyText?: string
-      bodyTextFontSize?: 'small' | 'medium' | 'large'
-    }
-    productSettings?: {
-      showProduct?: boolean
-      productBorderRadius?: 'circle' | 'rounded' | 'square'
-    }
-    signatureSettings?: {
-      showSignature?: boolean
-      signatureName?: string
-      signatureTitle?: string
-      signatureFontFamily?: string
-    }
-    design?: {
-      orientation?: 'landscape' | 'portrait'
-      backgroundImage?: string | null
-      borderStyle?: 'classic' | 'modern' | 'minimal' | 'ornate'
-      borderThickness?: 'thin' | 'medium' | 'thick'
-      separatorsAndBorders?: string
-    }
-  }
-}
-
 const { formRef, modelValue, form, expose } = useAdminConfigForm({
   store,
-  form: useCertificateTemplateForm,
-  autoMap: false,
-  getData: (s): CertificateFormData => ({
-    certificate: {
-      header: { ...s.certificate.header },
-      body: { ...s.certificate.body },
-      productSettings: { ...s.certificate.productSettings },
-      signatureSettings: { ...s.certificate.signatureSettings },
-      design: { ...s.certificate.design }
-    }
-  }),
-  setData: (s, value: CertificateFormData) => {
-    const header = value.certificate?.header
-    const body = value.certificate?.body
-    const productSettings = value.certificate?.productSettings
-    const signatureSettings = value.certificate?.signatureSettings
-    const design = value.certificate?.design
-
-    const next: Record<string, unknown> = {}
-
-    if (header?.showLogo !== undefined) next.showLogo = header.showLogo
-    if (header?.title !== undefined) next.title = header.title
-    if (header?.titleColor !== undefined) next.titleColor = header.titleColor
-    if (header?.subtitle !== undefined) next.subtitle = header.subtitle
-
-    if (body?.bodyText !== undefined) next.bodyText = body.bodyText
-    if (body?.bodyTextFontSize !== undefined) next.bodyTextFontSize = body.bodyTextFontSize
-
-    if (productSettings?.showProduct !== undefined) next.showProduct = productSettings.showProduct
-    if (productSettings?.productBorderRadius !== undefined) {
-      next.productBorderRadius = productSettings.productBorderRadius
-    }
-    if (signatureSettings?.showSignature !== undefined) {
-      next.showSignature = signatureSettings.showSignature
-    }
-    if (signatureSettings?.signatureName !== undefined) {
-      next.signatureName = signatureSettings.signatureName
-    }
-    if (signatureSettings?.signatureTitle !== undefined) {
-      next.signatureTitle = signatureSettings.signatureTitle
-    }
-    if (signatureSettings?.signatureFontFamily !== undefined) {
-      next.signatureFontFamily = signatureSettings.signatureFontFamily
-    }
-
-    if (design?.orientation !== undefined) next.orientation = design.orientation
-    if (design?.backgroundImage !== undefined) next.backgroundImage = design.backgroundImage
-    if (design?.borderStyle !== undefined) next.borderStyle = design.borderStyle
-    if (design?.borderThickness !== undefined) next.borderThickness = design.borderThickness
-    if (design?.separatorsAndBorders !== undefined) {
-      next.separatorsAndBorders = design.separatorsAndBorders
-    }
-
-    s.updateSettings(next)
-  }
+  form: useCertificateTemplateForm
 })
 
 defineEmits<{ save: []; discard: []; preview: [] }>()

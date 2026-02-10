@@ -19,8 +19,8 @@ export const certificateTemplate: CertificateTemplate = {
     'This certificate is awarded to <strong>{{ DONOR_NAME }}</strong> for your symbolic adoption of',
   bodyText: 'Thank you for helping us save Bornean Orangutans from extinction!',
   bodyTextFontSize: 'medium',
-  borderStyle: 'classic',
-  borderThickness: 'medium',
+  pageBorderStyle: 'border',
+  pageBorderThickness: 'medium',
   showLogo: true,
   showSignature: true,
   signatureName: 'Jane Smith',
@@ -29,9 +29,9 @@ export const certificateTemplate: CertificateTemplate = {
   orientation: 'portrait',
   backgroundImage: null,
   showProduct: true,
-  productBorderRadius: 'circle',
-  titleColor: 'primary',
-  separatorsAndBorders: 'primary'
+  productImageShape: 'circle',
+  titleTextColor: 'primary',
+  separatorsAndBordersColor: 'primary'
 }
 
 export const ecardTemplates: ECardTemplate[] = [

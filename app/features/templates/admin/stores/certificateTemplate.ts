@@ -4,85 +4,10 @@ import type { CertificateTemplate } from '~/features/templates/admin/types'
 import { certificateTemplate as defaults } from '~/sample-api-responses/api-sample-response-templates'
 import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
 
-type LegacyCertificateTemplate = Partial<CertificateTemplate> & {
-  separatorColor?: string
-  productBorderColor?: string
-  certificate?: {
-    header?: {
-      showLogo?: boolean
-      title?: string
-      titleColor?: string
-      subtitle?: string
-    }
-    body?: {
-      bodyText?: string
-      bodyTextFontSize?: 'small' | 'medium' | 'large'
-      separatorColor?: string
-    }
-    productSettings?: {
-      showProduct?: boolean
-      productBorderRadius?: 'circle' | 'rounded' | 'square'
-      productBorderColor?: string
-    }
-    signatureSettings?: {
-      showSignature?: boolean
-      signatureName?: string
-      signatureTitle?: string
-      signatureFontFamily?: string
-    }
-    design?: {
-      orientation?: 'portrait' | 'landscape'
-      backgroundImage?: string | null
-      borderStyle?: 'classic' | 'modern' | 'minimal' | 'ornate'
-      borderThickness?: 'thin' | 'medium' | 'thick'
-      separatorsAndBorders?: string
-    }
-  }
-}
-
-function normalizeTemplate(input: Partial<LegacyCertificateTemplate> = {}): CertificateTemplate {
-  const nested = input.certificate
-
-  const separatorsAndBorders =
-    nested?.design?.separatorsAndBorders ??
-    input.separatorsAndBorders ??
-    nested?.body?.separatorColor ??
-    nested?.productSettings?.productBorderColor ??
-    input.separatorColor ??
-    input.productBorderColor ??
-    defaults.separatorsAndBorders
-
+function normalizeTemplate(input: Partial<CertificateTemplate> = {}): CertificateTemplate {
   return {
     ...defaults,
-    title: nested?.header?.title ?? input.title ?? defaults.title,
-    subtitle: nested?.header?.subtitle ?? input.subtitle ?? defaults.subtitle,
-    bodyText: nested?.body?.bodyText ?? input.bodyText ?? defaults.bodyText,
-    bodyTextFontSize:
-      nested?.body?.bodyTextFontSize ?? input.bodyTextFontSize ?? defaults.bodyTextFontSize,
-    borderStyle: nested?.design?.borderStyle ?? input.borderStyle ?? defaults.borderStyle,
-    borderThickness:
-      nested?.design?.borderThickness ?? input.borderThickness ?? defaults.borderThickness,
-    showLogo: nested?.header?.showLogo ?? input.showLogo ?? defaults.showLogo,
-    showSignature:
-      nested?.signatureSettings?.showSignature ?? input.showSignature ?? defaults.showSignature,
-    signatureName:
-      nested?.signatureSettings?.signatureName ?? input.signatureName ?? defaults.signatureName,
-    signatureTitle:
-      nested?.signatureSettings?.signatureTitle ?? input.signatureTitle ?? defaults.signatureTitle,
-    signatureFontFamily:
-      nested?.signatureSettings?.signatureFontFamily ??
-      input.signatureFontFamily ??
-      defaults.signatureFontFamily,
-    orientation: nested?.design?.orientation ?? input.orientation ?? defaults.orientation,
-    backgroundImage:
-      nested?.design?.backgroundImage ?? input.backgroundImage ?? defaults.backgroundImage,
-    showProduct: nested?.productSettings?.showProduct ?? input.showProduct ?? defaults.showProduct,
-    productBorderRadius:
-      nested?.productSettings?.productBorderRadius ??
-      input.productBorderRadius ??
-      defaults.productBorderRadius,
-    titleColor: nested?.header?.titleColor ?? input.titleColor ?? defaults.titleColor,
-    separatorsAndBorders
+    ...input
   }
 }
 
@@ -94,7 +19,7 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     header: {
       showLogo: settings.showLogo,
       title: settings.title,
-      titleColor: settings.titleColor,
+      titleTextColor: settings.titleTextColor,
       subtitle: settings.subtitle
     },
     body: {
@@ -103,7 +28,7 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     },
     productSettings: {
       showProduct: settings.showProduct,
-      productBorderRadius: settings.productBorderRadius
+      productImageShape: settings.productImageShape
     },
     signatureSettings: {
       showSignature: settings.showSignature,
@@ -114,9 +39,9 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     design: {
       orientation: settings.orientation,
       backgroundImage: settings.backgroundImage,
-      borderStyle: settings.borderStyle,
-      borderThickness: settings.borderThickness,
-      separatorsAndBorders: settings.separatorsAndBorders
+      pageBorderStyle: settings.pageBorderStyle,
+      pageBorderThickness: settings.pageBorderThickness,
+      separatorsAndBordersColor: settings.separatorsAndBordersColor
     }
   }))
 
@@ -136,7 +61,7 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     try {
       const saved = sessionStorage.getItem('template-certificate')
       if (saved) {
-        Object.assign(settings, normalizeTemplate(JSON.parse(saved) as LegacyCertificateTemplate))
+        Object.assign(settings, normalizeTemplate(JSON.parse(saved) as Partial<CertificateTemplate>))
         markClean()
       }
     } catch {

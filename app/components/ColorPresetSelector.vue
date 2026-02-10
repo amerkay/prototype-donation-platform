@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Check, ChevronDown, Palette } from 'lucide-vue-next'
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import ColorSwatch from '@/components/ColorSwatch.vue'
+import { normalizeHexColor } from '~/lib/colors'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
-const DARK_PRESET_HEX = '#333'
-const WHITE_PRESET_HEX = '#ffffff'
+const DARK_PRESET_HEX = '#333333'
 
 const props = withDefaults(
   defineProps<{
@@ -32,8 +32,7 @@ const currentMode = computed(() => {
   const val = props.modelValue
   if (!val || val === '' || val === 'primary') return 'primary'
   if (val === 'secondary') return 'secondary'
-  if (val.toLowerCase() === DARK_PRESET_HEX) return 'dark'
-  if (val.toLowerCase() === WHITE_PRESET_HEX) return 'white'
+  if (normalizeHexColor(val) === DARK_PRESET_HEX) return 'dark'
   return 'custom'
 })
 
@@ -43,7 +42,6 @@ const displayColor = computed(() => {
   if (mode === 'primary') return props.primaryColor
   if (mode === 'secondary') return props.secondaryColor
   if (mode === 'dark') return DARK_PRESET_HEX
-  if (mode === 'white') return WHITE_PRESET_HEX
   return props.modelValue // Custom hex color
 })
 
@@ -53,23 +51,38 @@ const displayLabel = computed(() => {
   if (mode === 'primary') return 'Primary'
   if (mode === 'secondary') return 'Secondary'
   if (mode === 'dark') return 'Black'
-  if (mode === 'white') return 'White'
   return 'Custom'
 })
 
-// Custom color value (only used when mode is custom)
-const customColor = computed({
-  get: () => (currentMode.value === 'custom' ? props.modelValue : '#000000'),
-  set: (value: string) => emit('update:modelValue', value)
+const customColorText = ref('#000000')
+
+watch(
+  () => [props.modelValue, currentMode.value],
+  () => {
+    if (currentMode.value !== 'custom') {
+      customColorText.value = '#000000'
+      return
+    }
+
+    const normalized = normalizeHexColor(props.modelValue ?? '')
+    customColorText.value = normalized ?? '#000000'
+  },
+  { immediate: true }
+)
+
+const customColorPicker = computed({
+  get: () => normalizeHexColor(customColorText.value) ?? '#000000',
+  set: (value: string) => {
+    const normalized = normalizeHexColor(value)
+    if (!normalized) return
+    customColorText.value = normalized
+    emit('update:modelValue', normalized)
+  }
 })
 
-function selectPreset(preset: 'primary' | 'secondary' | 'dark' | 'white') {
+function selectPreset(preset: 'primary' | 'secondary' | 'dark') {
   if (preset === 'dark') {
     emit('update:modelValue', DARK_PRESET_HEX)
-    return
-  }
-  if (preset === 'white') {
-    emit('update:modelValue', WHITE_PRESET_HEX)
     return
   }
   emit('update:modelValue', preset)
@@ -77,7 +90,25 @@ function selectPreset(preset: 'primary' | 'secondary' | 'dark' | 'white') {
 
 function selectCustom() {
   // When switching to custom mode, initialize with current display color
-  emit('update:modelValue', displayColor.value)
+  const normalized = normalizeHexColor(displayColor.value)
+  if (!normalized) {
+    emit('update:modelValue', '#000000')
+    return
+  }
+
+  // Prevent getting stuck in "dark" mode when user wants custom editing.
+  emit('update:modelValue', normalized === DARK_PRESET_HEX ? '#000000' : normalized)
+}
+
+function commitCustomColor(): void {
+  const normalized = normalizeHexColor(customColorText.value)
+  if (!normalized) {
+    customColorText.value = normalizeHexColor(props.modelValue ?? '') ?? '#000000'
+    return
+  }
+
+  customColorText.value = normalized
+  emit('update:modelValue', normalized)
 }
 </script>
 
@@ -137,18 +168,6 @@ function selectCustom() {
             <Check v-if="currentMode === 'dark'" class="h-4 w-4 text-primary" />
           </button>
 
-          <!-- White Option -->
-          <button
-            type="button"
-            class="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm hover:bg-muted transition-colors"
-            :class="currentMode === 'white' ? 'bg-muted' : ''"
-            @click="selectPreset('white')"
-          >
-            <ColorSwatch :color="WHITE_PRESET_HEX" size="md" />
-            <span class="flex-1 text-left">White</span>
-            <Check v-if="currentMode === 'white'" class="h-4 w-4 text-primary" />
-          </button>
-
           <!-- Custom Option -->
           <div class="space-y-2">
             <button
@@ -164,12 +183,14 @@ function selectCustom() {
 
             <!-- Inline Color Picker (only shown when Custom is selected) -->
             <div v-if="currentMode === 'custom'" class="flex items-center gap-2 px-3">
-              <Input v-model="customColor" type="color" class="h-9 w-16 cursor-pointer" />
+              <Input v-model="customColorPicker" type="color" class="h-9 w-16 cursor-pointer" />
               <Input
-                v-model="customColor"
+                v-model="customColorText"
                 type="text"
                 placeholder="#000000"
                 class="flex-1 font-mono text-xs"
+                @blur="commitCustomColor"
+                @keydown.enter.prevent="commitCustomColor"
               />
             </div>
           </div>

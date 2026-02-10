@@ -22,10 +22,10 @@ export const useDonationFormBasicForm = defineForm('formBasic', () => {
     fields: { title: formTitle, subtitle: formSubtitle }
   })
 
-  const branding = alertField('branding', {
+  const brandingNotice = alertField('branding', {
     variant: 'info',
     description:
-      'Branding is configured at the organization level and applies to all donor-facing pages.',
+      'Branding is configured at the organization level and applies to templates and donor facing forms and pages.',
     cta: {
       label: 'Edit branding settings',
       to: '/admin/settings/branding',
@@ -33,5 +33,5 @@ export const useDonationFormBasicForm = defineForm('formBasic', () => {
     }
   })
 
-  return { form, branding }
+  return { form, brandingNotice }
 })

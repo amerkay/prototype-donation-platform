@@ -16,8 +16,8 @@ export interface CertificateTemplate {
   subtitle: string
   bodyText: string
   bodyTextFontSize: 'small' | 'medium' | 'large'
-  borderStyle: 'classic' | 'modern' | 'minimal' | 'ornate'
-  borderThickness: 'thin' | 'medium' | 'thick'
+  pageBorderStyle: 'none' | 'border' | 'rounded' | 'double'
+  pageBorderThickness: 'thin' | 'medium' | 'thick'
   showLogo: boolean
   showSignature: boolean
   signatureName: string
@@ -26,9 +26,9 @@ export interface CertificateTemplate {
   orientation: 'portrait' | 'landscape'
   backgroundImage: string | null
   showProduct: boolean
-  productBorderRadius: 'circle' | 'rounded' | 'square'
-  titleColor: string
-  separatorsAndBorders: string
+  productImageShape: 'circle' | 'rounded' | 'square'
+  titleTextColor: string
+  separatorsAndBordersColor: string
 }
 
 export interface ECardTemplate {
@@ -47,8 +47,8 @@ export interface CertificatePdfData {
   subtitle: string
   bodyHtml: string
   bodyTextFontSize: 'small' | 'medium' | 'large'
-  borderStyle: 'classic' | 'modern' | 'minimal' | 'ornate'
-  borderThickness: 'thin' | 'medium' | 'thick'
+  pageBorderStyle: 'none' | 'border' | 'rounded' | 'double'
+  pageBorderThickness: 'thin' | 'medium' | 'thick'
   showLogo: boolean
   showSignature: boolean
   signatureName: string
@@ -57,9 +57,9 @@ export interface CertificatePdfData {
   orientation: 'portrait' | 'landscape'
   backgroundImage: string | null
   showProduct: boolean
-  productBorderRadius: 'circle' | 'rounded' | 'square'
-  titleColor: string
-  separatorsAndBorders: string
+  productImageShape: 'circle' | 'rounded' | 'square'
+  titleTextColor: string
+  separatorsAndBordersColor: string
   branding: {
     logoUrl: string
     primaryColor: string

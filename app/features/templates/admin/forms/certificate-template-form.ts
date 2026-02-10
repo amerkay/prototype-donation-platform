@@ -6,7 +6,8 @@ import {
   toggleField,
   imageUploadField,
   fieldGroup,
-  componentField
+  componentField,
+  alertField
 } from '~/features/_library/form-builder/api'
 import ColorPresetSelector from '@/components/ColorPresetSelector.vue'
 import FontFamilySelector from '@/components/FontFamilySelector.vue'
@@ -35,25 +36,39 @@ export const certificateOpenAccordionId = ref<string | undefined>(undefined)
 export const useCertificateTemplateForm = defineForm('certificateTemplate', () => {
   const branding = useBrandingSettingsStore()
 
+  const brandingNotice = alertField('branding', {
+    variant: 'info',
+    description:
+      'Branding is configured at the organization level and applies to all donor-facing pages.',
+    cta: {
+      label: 'Edit branding settings',
+      to: '/admin/settings/branding',
+      inline: true
+    }
+  })
+
   const title = textField('title', {
     label: 'Title',
+    description: 'Main certificate heading.',
     maxLength: 50
   })
 
   const subtitle = richTextField('subtitle', {
     label: 'Subtitle',
+    description: 'Short intro under title.',
     variables: CERTIFICATE_TEMPLATE_VARIABLES,
     showSeparatorAfter: true
   })
 
   const bodyText = richTextField('bodyText', {
     label: 'Body Text',
-    description: 'Keep to 1–2 sentences for best results.',
+    description: 'Main supporting message.',
     variables: CERTIFICATE_TEMPLATE_VARIABLES
   })
 
   const bodyTextFontSize = selectField('bodyTextFontSize', {
     label: 'Body Text Size',
+    description: 'Text size for body.',
     options: [
       { value: 'small', label: 'Small' },
       { value: 'medium', label: 'Medium' },
@@ -63,6 +78,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
 
   const orientation = selectField('orientation', {
     label: 'Orientation',
+    description: 'Choose page direction.',
     options: [
       { value: 'landscape', label: 'Landscape' },
       { value: 'portrait', label: 'Portrait' }
@@ -71,22 +87,24 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
 
   const backgroundImage = imageUploadField('backgroundImage', {
     label: 'Background Image',
-    description: 'Recommended: A4 at 300dpi (3508×2480 landscape, 2480×3508 portrait)',
+    description: 'Optional full-page background.',
     showSeparatorAfter: true
   })
 
-  const borderStyle = selectField('borderStyle', {
-    label: 'Border Style',
+  const pageBorderStyle = selectField('pageBorderStyle', {
+    label: 'Page Border Style',
+    description: 'Choose page border look.',
     options: [
-      { value: 'classic', label: 'Classic' },
-      { value: 'modern', label: 'Modern' },
-      { value: 'minimal', label: 'Minimal' },
-      { value: 'ornate', label: 'Ornate' }
+      { value: 'none', label: 'No border' },
+      { value: 'border', label: 'Border' },
+      { value: 'rounded', label: 'Rounded corners border' },
+      { value: 'double', label: 'Double border' }
     ]
   })
 
-  const borderThickness = selectField('borderThickness', {
+  const pageBorderThickness = selectField('pageBorderThickness', {
     label: 'Border Thickness',
+    description: 'Border width strength.',
     options: [
       { value: 'thin', label: 'Thin' },
       { value: 'medium', label: 'Medium' },
@@ -96,22 +114,24 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
 
   const showLogo = toggleField('showLogo', {
     label: 'Show Logo',
-    description: 'Display organization logo on certificate'
+    description: 'Show organization logo.'
   })
 
   const showSignature = toggleField('showSignature', {
     label: 'Show Signature',
-    description: 'Include a signature block'
+    description: 'Show signature section.'
   })
 
   const signatureName = textField('signatureName', {
     label: 'Signatory Name',
+    description: 'Name shown in signature.',
     maxLength: 40,
     visibleWhen: (ctx) => !!ctx.values.showSignature
   })
 
   const signatureTitle = textField('signatureTitle', {
     label: 'Signatory Title',
+    description: 'Role shown under name.',
     maxLength: 50,
     visibleWhen: (ctx) => !!ctx.values.showSignature
   })
@@ -119,7 +139,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
   const signatureFontFamily = componentField('signatureFontFamily', {
     component: FontFamilySelector,
     label: 'Signature Font',
-    description: 'Choose a script font for the signatory name',
+    description: 'Font for signature name.',
     visibleWhen: (ctx) => !!ctx.values.showSignature,
     props: {
       options: SIGNATURE_FONT_OPTIONS
@@ -128,12 +148,13 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
 
   const showProduct = toggleField('showProduct', {
     label: 'Show Product',
-    description: 'Display product badge on certificate',
+    description: 'Show adopted product badge.',
     showSeparatorAfter: true
   })
 
-  const productBorderRadius = selectField('productBorderRadius', {
-    label: 'Border Shape',
+  const productImageShape = selectField('productImageShape', {
+    label: 'Product Image Shape',
+    description: 'Shape of product image.',
     options: [
       { value: 'circle', label: 'Circle' },
       { value: 'rounded', label: 'Rounded' },
@@ -142,20 +163,20 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     visibleWhen: (ctx) => !!ctx.values.showProduct
   })
 
-  const titleColor = componentField('titleColor', {
+  const titleTextColor = componentField('titleTextColor', {
     component: ColorPresetSelector,
     label: 'Title Color',
-    description: 'Choose Primary, Secondary, or custom color',
+    description: 'Color for heading text.',
     props: {
       primaryColor: branding.primaryColor,
       secondaryColor: branding.secondaryColor
     }
   })
 
-  const separatorsAndBorders = componentField('separatorsAndBorders', {
+  const separatorsAndBordersColor = componentField('separatorsAndBordersColor', {
     component: ColorPresetSelector,
     label: 'Separators and Borders',
-    description: 'Color for separators and border accents',
+    description: 'Color for lines and borders.',
     props: {
       primaryColor: branding.primaryColor,
       secondaryColor: branding.secondaryColor
@@ -166,11 +187,11 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     label: 'Header',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: { showLogo, title, titleColor, subtitle },
+    fields: { showLogo, title, titleTextColor, subtitle },
     $storePath: {
       showLogo: 'showLogo',
       title: 'title',
-      titleColor: 'titleColor',
+      titleTextColor: 'titleTextColor',
       subtitle: 'subtitle'
     },
     showSeparatorAfter: true
@@ -192,10 +213,10 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     label: 'Product Settings',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: { showProduct, productBorderRadius },
+    fields: { showProduct, productImageShape },
     $storePath: {
       showProduct: 'showProduct',
-      productBorderRadius: 'productBorderRadius'
+      productImageShape: 'productImageShape'
     },
     showSeparatorAfter: true
   })
@@ -218,13 +239,20 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     label: 'Design',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: { orientation, backgroundImage, borderStyle, borderThickness, separatorsAndBorders },
+    fields: {
+      brandingNotice,
+      orientation,
+      backgroundImage,
+      pageBorderStyle,
+      pageBorderThickness,
+      separatorsAndBordersColor
+    },
     $storePath: {
       orientation: 'orientation',
       backgroundImage: 'backgroundImage',
-      borderStyle: 'borderStyle',
-      borderThickness: 'borderThickness',
-      separatorsAndBorders: 'separatorsAndBorders'
+      pageBorderStyle: 'pageBorderStyle',
+      pageBorderThickness: 'pageBorderThickness',
+      separatorsAndBordersColor: 'separatorsAndBordersColor'
     },
     showSeparatorAfter: true
   })

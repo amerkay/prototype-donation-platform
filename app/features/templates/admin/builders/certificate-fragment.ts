@@ -7,6 +7,7 @@
  */
 
 import { escapeHtml, CERT_BODY_CSS } from './utils'
+import { isHexColor } from '~/lib/colors'
 
 type CertificateTemplateTargets = {
   showLogo: string
@@ -26,8 +27,8 @@ export interface CertificateFragmentData {
   /** Pre-sanitized rich-text HTML with variables already replaced */
   bodyHtml: string
   bodyTextFontSize: 'small' | 'medium' | 'large'
-  borderStyle: 'classic' | 'modern' | 'minimal' | 'ornate'
-  borderThickness: 'thin' | 'medium' | 'thick'
+  pageBorderStyle: 'none' | 'border' | 'rounded' | 'double'
+  pageBorderThickness: 'thin' | 'medium' | 'thick'
   orientation: 'portrait' | 'landscape'
   showLogo: boolean
   showSignature: boolean
@@ -36,9 +37,9 @@ export interface CertificateFragmentData {
   signatureFontFamily: string
   backgroundImage: string | null
   showProduct: boolean
-  productBorderRadius: 'circle' | 'rounded' | 'square'
-  titleColor: string
-  separatorsAndBorders: string
+  productImageShape: 'circle' | 'rounded' | 'square'
+  titleTextColor: string
+  separatorsAndBordersColor: string
   targets?: CertificateTemplateTargets
   branding: {
     logoUrl: string
@@ -54,16 +55,8 @@ const PRODUCT_BORDER_RADIUS: Record<string, string> = {
   rounded: '0.75rem',
   square: '0'
 }
-
-const BORDER_STYLES: Record<string, string> = {
-  classic: 'border: 4px double;',
-  modern: 'border: 2px solid;',
-  minimal: 'border: 1px solid;',
-  ornate: 'border: 4px double; box-shadow: 0 0 0 4px #fff, 0 0 0 6px var(--ring-color);'
-}
-
 const THICKNESS_PRESETS: Record<
-  CertificateFragmentData['borderThickness'],
+  CertificateFragmentData['pageBorderThickness'],
   { borderPx: number; productPx: number; separatorPx: string }
 > = {
   thin: { borderPx: 1, productPx: 1, separatorPx: '1px' },
@@ -108,6 +101,7 @@ function resolveColor(
   if (!colorValue || colorValue === '') return fb
   if (colorValue === 'primary') return brandingPrimary
   if (colorValue === 'secondary') return brandingSecondary
+  if (!isHexColor(colorValue)) return fb
   return colorValue
 }
 
@@ -117,27 +111,31 @@ export function buildCertificateFragment(data: CertificateFragmentData): string 
   const isLandscape = data.orientation === 'landscape'
   const hasBackground = !!data.backgroundImage
   const font = escapeHtml(branding.fontFamily || 'inherit')
-  const thickness = THICKNESS_PRESETS[data.borderThickness] ?? THICKNESS_PRESETS.medium
+  const thickness = THICKNESS_PRESETS[data.pageBorderThickness] ?? THICKNESS_PRESETS.medium
 
   // Resolve all configurable colors
-  const titleColor = resolveColor(data.titleColor, branding.primaryColor, branding.secondaryColor)
+  const titleTextColor = resolveColor(
+    data.titleTextColor,
+    branding.primaryColor,
+    branding.secondaryColor
+  )
   const separatorsAndBordersColor = resolveColor(
-    data.separatorsAndBorders,
+    data.separatorsAndBordersColor,
     branding.primaryColor,
     branding.secondaryColor
   )
   const signatureFont = escapeHtml(data.signatureFontFamily || branding.fontFamily || 'inherit')
 
-  const borderCssMap: Record<CertificateFragmentData['borderStyle'], string> = {
-    classic: `border: ${Math.max(2, thickness.borderPx)}px double;`,
-    modern: `border: ${thickness.borderPx}px solid;`,
-    minimal: `border: ${Math.max(1, thickness.borderPx - 1)}px solid;`,
-    ornate: `border: ${Math.max(2, thickness.borderPx)}px double; box-shadow: 0 0 0 ${thickness.borderPx}px #fff, 0 0 0 ${thickness.borderPx + 2}px var(--ring-color);`
+  const borderCssMap: Record<CertificateFragmentData['pageBorderStyle'], string> = {
+    none: 'border: none;',
+    border: `border: ${thickness.borderPx}px solid;`,
+    rounded: `border: ${thickness.borderPx}px solid; border-radius: 1.25rem;`,
+    double: `border: ${thickness.borderPx}px double;`
   }
-  const borderCss = borderCssMap[data.borderStyle] ?? BORDER_STYLES[data.borderStyle] ?? ''
+  const borderCss = borderCssMap[data.pageBorderStyle] ?? borderCssMap.border
   const borderColor = `border-color: ${separatorsAndBordersColor};`
   const ringColor = `--ring-color: ${separatorsAndBordersColor};`
-  const contentPadding = isLandscape ? 'padding: 2rem 4rem;' : 'padding: 2rem 2.5rem;'
+  const contentPadding = isLandscape ? 'padding: 1.5rem 4rem 2rem;' : 'padding: 1.5rem 2.5rem 2rem;'
   const bodyClamp = isLandscape ? 'clamp-landscape' : 'clamp-portrait'
   const bodyFontSize = BODY_TEXT_FONT_SIZES[data.bodyTextFontSize] ?? BODY_TEXT_FONT_SIZES.medium
 
@@ -154,7 +152,7 @@ export function buildCertificateFragment(data: CertificateFragmentData): string 
 
   const imageSize = isLandscape ? '6rem' : '8rem'
   const productRadius =
-    PRODUCT_BORDER_RADIUS[data.productBorderRadius] ?? PRODUCT_BORDER_RADIUS.circle
+    PRODUCT_BORDER_RADIUS[data.productImageShape] ?? PRODUCT_BORDER_RADIUS.circle
   const productHtml =
     data.showProduct && data.product
       ? `<div data-field="${targets.productSettings}" style="display: flex; flex-direction: column; align-items: center; margin-bottom: 0.75rem; flex-shrink: 0;">
@@ -178,7 +176,7 @@ export function buildCertificateFragment(data: CertificateFragmentData): string 
   <div style="position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; height: 100%; text-align: center; overflow: hidden; ${contentPadding}">
     <div style="width: 100%; flex-shrink: 0;">
       ${logoHtml}
-      <h2 data-field="${targets.title}" style="font-size: 1.5rem; font-weight: 700; line-height: 1.25em; letter-spacing: 0.025em; margin-bottom: 1rem; overflow: hidden; text-overflow: ellipsis; width: 100%; color: ${titleColor};">
+      <h2 data-field="${targets.title}" style="font-size: 1.5rem; font-weight: 700; line-height: 1.25em; letter-spacing: 0.025em; margin-bottom: 1rem; overflow: hidden; text-overflow: ellipsis; width: 100%; color: ${titleTextColor};">
         ${escapeHtml(data.title)}
       </h2>
       <div data-field="${targets.subtitle}" class="cert-subtitle clamp-subtitle" style="font-size: 0.75rem; color: #333; margin-bottom: 1rem; width: 100%;">
