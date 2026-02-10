@@ -35,7 +35,7 @@ const TABS = [
 </script>
 
 <template>
-  <div class="space-y-3" :style="brandingStyle">
+  <div class="space-y-3">
     <Tabs v-model="activeTab">
       <TabsList class="w-full">
         <TabsTrigger v-for="tab in TABS" :key="tab.value" :value="tab.value" class="text-xs">
@@ -45,7 +45,7 @@ const TABS = [
 
       <!-- Donation Form — real DonationFlowWizard -->
       <TabsContent value="donation">
-        <div class="bg-muted/50 rounded-xl border">
+        <div class="bg-muted/50 rounded-xl border" :style="brandingStyle">
           <DonationFlowWizard />
         </div>
         <div class="flex justify-between text-xs text-muted-foreground px-1 mt-3">
@@ -62,10 +62,12 @@ const TABS = [
 
       <!-- Campaign — real CrowdfundingPage -->
       <TabsContent value="campaign">
-        <CrowdfundingPage v-if="previewCampaign" :campaign="previewCampaign" />
-        <p v-else class="text-sm text-muted-foreground text-center py-8">
-          No campaigns with crowdfunding pages yet.
-        </p>
+        <div :style="brandingStyle">
+          <CrowdfundingPage v-if="previewCampaign" :campaign="previewCampaign" />
+          <p v-else class="text-sm text-muted-foreground text-center py-8">
+            No campaigns with crowdfunding pages yet.
+          </p>
+        </div>
         <div class="flex justify-between text-xs text-muted-foreground px-1 mt-3">
           <span>Preview with current branding</span>
           <NuxtLink
@@ -81,7 +83,9 @@ const TABS = [
       <!-- Receipt — embedded existing component -->
       <TabsContent value="receipt">
         <div class="space-y-3">
-          <ReceiptPreview />
+          <div :style="brandingStyle">
+            <ReceiptPreview />
+          </div>
           <div class="flex justify-between text-xs text-muted-foreground px-1">
             <span>Preview with current branding</span>
             <NuxtLink
@@ -98,7 +102,9 @@ const TABS = [
       <!-- Certificate — embedded existing component -->
       <TabsContent value="certificate">
         <div class="space-y-3">
-          <CertificatePreview />
+          <div :style="brandingStyle">
+            <CertificatePreview />
+          </div>
           <div class="flex justify-between text-xs text-muted-foreground px-1">
             <span>Preview with current branding</span>
             <NuxtLink
