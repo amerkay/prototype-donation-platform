@@ -1,12 +1,15 @@
 /**
  * Wraps a template fragment in a full HTML page for Puppeteer PDF generation.
  *
- * The fragment is rendered at PREVIEW_WIDTH_PX and scaled up to fill the A4 page,
- * so it looks identical to the Vue preview component.
+ * The fragment is rendered at a canonical A4 CSS pixel geometry so
+ * preview and PDF use the same layout metrics.
  */
 
-import { getScaleFactor, getContentHeight, PREVIEW_WIDTH_PX } from './templates/styles'
 import { getBunnyFontUrls } from '~~/app/features/settings/admin/utils/fonts'
+import {
+  getCertificateRenderGeometry,
+  getCertificateContentGeometry
+} from '~~/app/features/templates/admin/builders/render-geometry'
 
 interface WrapOptions {
   orientation: 'portrait' | 'landscape'
@@ -19,8 +22,10 @@ export function wrapInPdfPage(fragment: string, options: WrapOptions): string {
   const isLandscape = orientation === 'landscape'
   const pageWidth = isLandscape ? '297mm' : '210mm'
   const pageHeight = isLandscape ? '210mm' : '297mm'
-  const scale = getScaleFactor(orientation)
-  const contentHeight = getContentHeight(orientation)
+  const { canvasWidthPx, canvasHeightPx } = getCertificateRenderGeometry(orientation)
+  const { widthPx: contentWidthPx, heightPx: contentHeightPx } =
+    getCertificateContentGeometry(orientation)
+  const contentScale = canvasWidthPx / contentWidthPx
 
   const fontLinks = getBunnyFontUrls(fontFamilies ?? [])
     .map((href) => `<link href="${href}" rel="stylesheet" />`)
@@ -62,9 +67,14 @@ export function wrapInPdfPage(fragment: string, options: WrapOptions): string {
       overflow: hidden;
     }
     .content {
-      width: ${PREVIEW_WIDTH_PX}px;
-      height: ${contentHeight}px;
-      transform: scale(${scale.toFixed(4)});
+      width: ${canvasWidthPx}px;
+      height: ${canvasHeightPx}px;
+      overflow: hidden;
+    }
+    .content-inner {
+      width: ${contentWidthPx}px;
+      height: ${contentHeightPx}px;
+      transform: scale(${contentScale.toFixed(4)});
       transform-origin: top left;
       overflow: hidden;
     }
@@ -74,7 +84,9 @@ export function wrapInPdfPage(fragment: string, options: WrapOptions): string {
 <body>
   <div class="page">
     <div class="content">
-      ${fragment}
+      <div class="content-inner">
+        ${fragment}
+      </div>
     </div>
   </div>
 </body>

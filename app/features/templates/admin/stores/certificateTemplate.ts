@@ -18,13 +18,13 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
   const certificate = computed(() => ({
     header: {
       showLogo: settings.showLogo,
+      logoSize: settings.logoSize,
       title: settings.title,
       titleTextColor: settings.titleTextColor,
       subtitle: settings.subtitle
     },
     body: {
-      bodyText: settings.bodyText,
-      bodyTextFontSize: settings.bodyTextFontSize
+      bodyText: settings.bodyText
     },
     productSettings: {
       showProduct: settings.showProduct,
@@ -36,8 +36,19 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
       signatureTitle: settings.signatureTitle,
       signatureFontFamily: settings.signatureFontFamily
     },
+    donorNameSettings: {
+      showDonorName: settings.showDonorName,
+      donorNameFontFamily: settings.donorNameFontFamily,
+      donorNamePosition: settings.donorNamePosition
+    },
+    dateSettings: {
+      showDate: settings.showDate
+    },
+    footerSettings: {
+      footerText: settings.footerText
+    },
     design: {
-      orientation: settings.orientation,
+      layout: settings.layout,
       backgroundImage: settings.backgroundImage,
       pageBorderStyle: settings.pageBorderStyle,
       pageBorderThickness: settings.pageBorderThickness,
@@ -61,7 +72,10 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     try {
       const saved = sessionStorage.getItem('template-certificate')
       if (saved) {
-        Object.assign(settings, normalizeTemplate(JSON.parse(saved) as Partial<CertificateTemplate>))
+        Object.assign(
+          settings,
+          normalizeTemplate(JSON.parse(saved) as Partial<CertificateTemplate>)
+        )
         markClean()
       }
     } catch {

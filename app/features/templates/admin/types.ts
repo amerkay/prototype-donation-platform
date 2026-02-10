@@ -2,6 +2,17 @@
  * Template types for receipts, certificates, and eCards
  */
 
+/** Available certificate layout identifiers */
+export type CertificateLayoutId = 'portrait-classic' | 'landscape-classic'
+
+/** Metadata describing a certificate layout for UI display */
+export interface CertificateLayoutMetadata {
+  id: CertificateLayoutId
+  name: string
+  description: string
+  orientation: 'portrait' | 'landscape'
+}
+
 export interface ReceiptTemplate {
   headerText: string
   footerText: string
@@ -15,20 +26,25 @@ export interface CertificateTemplate {
   title: string
   subtitle: string
   bodyText: string
-  bodyTextFontSize: 'small' | 'medium' | 'large'
   pageBorderStyle: 'none' | 'border' | 'rounded' | 'double'
   pageBorderThickness: 'thin' | 'medium' | 'thick'
   showLogo: boolean
+  logoSize: 'small' | 'medium' | 'large'
   showSignature: boolean
   signatureName: string
   signatureTitle: string
   signatureFontFamily: string
-  orientation: 'portrait' | 'landscape'
+  layout: CertificateLayoutId
   backgroundImage: string | null
   showProduct: boolean
   productImageShape: 'circle' | 'rounded' | 'square'
   titleTextColor: string
   separatorsAndBordersColor: string
+  showDate: boolean
+  showDonorName: boolean
+  donorNameFontFamily: string
+  donorNamePosition: 'above-product' | 'below-product'
+  footerText: string
 }
 
 export interface ECardTemplate {
@@ -46,20 +62,25 @@ export interface CertificatePdfData {
   title: string
   subtitle: string
   bodyHtml: string
-  bodyTextFontSize: 'small' | 'medium' | 'large'
   pageBorderStyle: 'none' | 'border' | 'rounded' | 'double'
   pageBorderThickness: 'thin' | 'medium' | 'thick'
   showLogo: boolean
+  logoSize: 'small' | 'medium' | 'large'
   showSignature: boolean
   signatureName: string
   signatureTitle: string
   signatureFontFamily: string
-  orientation: 'portrait' | 'landscape'
+  layout: CertificateLayoutId
   backgroundImage: string | null
   showProduct: boolean
   productImageShape: 'circle' | 'rounded' | 'square'
   titleTextColor: string
   separatorsAndBordersColor: string
+  showDate: boolean
+  showDonorName: boolean
+  donorNameFontFamily: string
+  donorNamePosition: 'above-product' | 'below-product'
+  footerText: string
   branding: {
     logoUrl: string
     primaryColor: string

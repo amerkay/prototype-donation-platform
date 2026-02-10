@@ -1,5 +1,8 @@
 import type { CertificatePdfData, ReceiptPdfData } from '~~/app/features/templates/admin/types'
-import { buildCertificateFragment } from '~~/app/features/templates/admin/builders/certificate-fragment'
+import {
+  buildCertificateFragment,
+  getFragmentOrientation
+} from '~~/app/features/templates/admin/builders/certificate-fragment'
 import { buildReceiptFragment } from '~~/app/features/templates/admin/builders/receipt-fragment'
 import { processTemplateRichText } from '~~/app/features/templates/admin/utils/template-rich-text'
 import { wrapInPdfPage } from '../utils/pdf/wrap-pdf-page'
@@ -36,15 +39,15 @@ export default defineEventHandler(async (event) => {
       }
       const subtitleHtml = processTemplateRichText(data.subtitle, variables)
       const bodyHtml = processTemplateRichText(data.bodyHtml, variables)
-      const { subtitle, donorName, amount, date, ...fragmentData } = data
+      const { subtitle, amount, ...fragmentData } = data
       fragment = buildCertificateFragment({
         ...fragmentData,
         subtitleHtml,
         bodyHtml
       })
       filename = 'certificate.pdf'
-      orientation = data.orientation
-      fontFamilies = [data.branding.fontFamily, data.signatureFontFamily]
+      orientation = getFragmentOrientation(data.layout)
+      fontFamilies = [data.branding.fontFamily, data.signatureFontFamily, data.donorNameFontFamily]
       break
     }
     case 'receipt': {

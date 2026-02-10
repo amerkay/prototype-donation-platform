@@ -19,6 +19,38 @@ export async function generatePdf(html: string, options?: Partial<PDFOptions>): 
   try {
     const page = await browser.newPage()
     await page.setContent(html, { waitUntil: 'networkidle0' })
+    await page.evaluate(async () => {
+      if ('fonts' in document) {
+        await document.fonts.ready
+      }
+
+      const images = Array.from(document.images)
+      await Promise.all(
+        images.map((img) => {
+          if (img.complete) return Promise.resolve()
+          return new Promise<void>((resolve) => {
+            img.addEventListener('load', () => resolve(), { once: true })
+            img.addEventListener('error', () => resolve(), { once: true })
+          })
+        })
+      )
+    })
+
+    await page.evaluate(() => {
+      const fitter = (
+        window as Window & {
+          __fitCertificateAdaptiveText?: (root?: ParentNode) => void
+        }
+      ).__fitCertificateAdaptiveText
+      fitter?.(document)
+    })
+
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) => {
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+        })
+    )
 
     const pdfBuffer = await page.pdf({
       printBackground: true,

@@ -3,6 +3,7 @@ import {
   textField,
   richTextField,
   selectField,
+  radioGroupField,
   toggleField,
   imageUploadField,
   fieldGroup,
@@ -28,6 +29,9 @@ export const CERTIFICATE_TEMPLATE_TARGETS = {
   body: 'certificate.body',
   productSettings: 'certificate.productSettings',
   signatureSettings: 'certificate.signatureSettings',
+  donorName: 'certificate.donorNameSettings',
+  date: 'certificate.dateSettings',
+  footer: 'certificate.footerSettings',
   design: 'certificate.design'
 } as const
 
@@ -66,22 +70,13 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     variables: CERTIFICATE_TEMPLATE_VARIABLES
   })
 
-  const bodyTextFontSize = selectField('bodyTextFontSize', {
-    label: 'Body Text Size',
-    description: 'Text size for body.',
+  const layout = radioGroupField('layout', {
+    label: 'Layout',
+    description: 'Choose certificate orientation.',
+    orientation: 'horizontal',
     options: [
-      { value: 'small', label: 'Small' },
-      { value: 'medium', label: 'Medium' },
-      { value: 'large', label: 'Large' }
-    ]
-  })
-
-  const orientation = selectField('orientation', {
-    label: 'Orientation',
-    description: 'Choose page direction.',
-    options: [
-      { value: 'landscape', label: 'Landscape' },
-      { value: 'portrait', label: 'Portrait' }
+      { value: 'portrait-classic', label: 'Portrait' },
+      { value: 'landscape-classic', label: 'Landscape' }
     ]
   })
 
@@ -117,6 +112,18 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     description: 'Show organization logo.'
   })
 
+  const logoSize = radioGroupField('logoSize', {
+    label: 'Logo Size',
+    description: 'Height of the logo (width adapts automatically).',
+    orientation: 'horizontal',
+    options: [
+      { value: 'small', label: 'Small' },
+      { value: 'medium', label: 'Medium' },
+      { value: 'large', label: 'Large' }
+    ],
+    visibleWhen: (ctx) => !!ctx.values.showLogo
+  })
+
   const showSignature = toggleField('showSignature', {
     label: 'Show Signature',
     description: 'Show signature section.'
@@ -144,6 +151,43 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     props: {
       options: SIGNATURE_FONT_OPTIONS
     }
+  })
+
+  const showDonorName = toggleField('showDonorName', {
+    label: 'Show Donor Name',
+    description: 'Display donor name decoratively.'
+  })
+
+  const donorNameFontFamily = componentField('donorNameFontFamily', {
+    component: FontFamilySelector,
+    label: 'Donor Name Font',
+    description: 'Decorative font for donor name.',
+    visibleWhen: (ctx) => !!ctx.values.showDonorName,
+    props: {
+      options: SIGNATURE_FONT_OPTIONS
+    }
+  })
+
+  const donorNamePosition = radioGroupField('donorNamePosition', {
+    label: 'Position',
+    description: 'Where to display the donor name relative to the product.',
+    orientation: 'horizontal',
+    options: [
+      { value: 'above-product', label: 'Above product' },
+      { value: 'below-product', label: 'Below product' }
+    ],
+    visibleWhen: (ctx) => !!ctx.values.showDonorName
+  })
+
+  const showDate = toggleField('showDate', {
+    label: 'Show Date',
+    description: 'Display donation date.'
+  })
+
+  const footerText = textField('footerText', {
+    label: 'Footer Text',
+    description: 'Optional text at bottom (e.g., website).',
+    maxLength: 100
   })
 
   const showProduct = toggleField('showProduct', {
@@ -187,9 +231,10 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     label: 'Header',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: { showLogo, title, titleTextColor, subtitle },
+    fields: { showLogo, logoSize, title, titleTextColor, subtitle },
     $storePath: {
       showLogo: 'showLogo',
+      logoSize: 'logoSize',
       title: 'title',
       titleTextColor: 'titleTextColor',
       subtitle: 'subtitle'
@@ -201,10 +246,9 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     label: 'Body',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: { bodyText, bodyTextFontSize },
+    fields: { bodyText },
     $storePath: {
-      bodyText: 'bodyText',
-      bodyTextFontSize: 'bodyTextFontSize'
+      bodyText: 'bodyText'
     },
     showSeparatorAfter: true
   })
@@ -235,20 +279,55 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     showSeparatorAfter: true
   })
 
+  const donorNameSettings = fieldGroup('donorNameSettings', {
+    label: 'Donor Name',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    fields: { showDonorName, donorNameFontFamily, donorNamePosition },
+    $storePath: {
+      showDonorName: 'showDonorName',
+      donorNameFontFamily: 'donorNameFontFamily',
+      donorNamePosition: 'donorNamePosition'
+    },
+    showSeparatorAfter: true
+  })
+
+  const dateSettings = fieldGroup('dateSettings', {
+    label: 'Date',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    fields: { showDate },
+    $storePath: {
+      showDate: 'showDate'
+    },
+    showSeparatorAfter: true
+  })
+
+  const footerSettings = fieldGroup('footerSettings', {
+    label: 'Footer',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    fields: { footerText },
+    $storePath: {
+      footerText: 'footerText'
+    },
+    showSeparatorAfter: true
+  })
+
   const design = fieldGroup('design', {
     label: 'Design',
     collapsible: true,
     collapsibleDefaultOpen: false,
     fields: {
       brandingNotice,
-      orientation,
+      layout,
       backgroundImage,
       pageBorderStyle,
       pageBorderThickness,
       separatorsAndBordersColor
     },
     $storePath: {
-      orientation: 'orientation',
+      layout: 'layout',
       backgroundImage: 'backgroundImage',
       pageBorderStyle: 'pageBorderStyle',
       pageBorderThickness: 'pageBorderThickness',
@@ -261,7 +340,16 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     label: 'Certificate Settings',
     description: 'Configure content, design, product, and signature sections.',
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: { design, header, productSettings, body, signatureSettings }
+    fields: {
+      design,
+      header,
+      body,
+      productSettings,
+      donorNameSettings,
+      dateSettings,
+      footerSettings,
+      signatureSettings
+    }
   })
 
   return { certificate }

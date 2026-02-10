@@ -1,15 +1,23 @@
 <script setup lang="ts">
-import { computed, ref, toRef } from 'vue'
+import { computed, ref, toRef, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useCertificateTemplateStore } from '~/features/templates/admin/stores/certificateTemplate'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { formatCurrency } from '~/lib/formatCurrency'
-import { buildCertificateFragment } from '~/features/templates/admin/builders/certificate-fragment'
+import {
+  buildCertificateFragment,
+  getFragmentOrientation
+} from '~/features/templates/admin/builders/certificate-fragment'
 import { getBunnyFontUrls } from '~/features/settings/admin/utils/fonts'
 import { useProducts } from '~/features/products/admin/composables/useProducts'
 import { usePreviewEditable } from '~/features/templates/admin/composables/usePreviewEditable'
 import { CERTIFICATE_TEMPLATE_TARGETS } from '~/features/templates/admin/forms/certificate-template-form'
 import { processTemplateRichText } from '~/features/templates/admin/utils/template-rich-text'
+import { fitAdaptiveText } from '~/features/templates/admin/builders/adaptive-text'
+import {
+  getCertificateRenderGeometry,
+  getCertificateContentGeometry
+} from '~/features/templates/admin/builders/render-geometry'
 import { Button } from '@/components/ui/button'
 import { Pencil } from 'lucide-vue-next'
 
@@ -30,7 +38,8 @@ useHead({
   link: computed(() =>
     getBunnyFontUrls([
       branding.fontFamily,
-      cert.certificate.signatureSettings.signatureFontFamily
+      cert.certificate.signatureSettings.signatureFontFamily,
+      cert.certificate.donorNameSettings.donorNameFontFamily
     ]).map((href) => ({
       rel: 'stylesheet',
       href
@@ -47,12 +56,23 @@ const sampleDate = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric'
 }).format(new Date())
 
-const isLandscape = computed(() => cert.certificate.design.orientation === 'landscape')
+const isLandscape = computed(
+  () => getFragmentOrientation(cert.certificate.design.layout) === 'landscape'
+)
+const geometry = computed(() => getCertificateRenderGeometry(cert.certificate.design.layout))
+const contentGeometry = computed(() =>
+  getCertificateContentGeometry(cert.certificate.design.layout)
+)
+const contentScale = computed(() => geometry.value.canvasWidthPx / contentGeometry.value.widthPx)
 
 const sampleProduct = computed(() => {
+  // Try to find a real product with image and certificate name
   const p = products.value.find((product) => product.image && product.certificateOverrideName)
-  if (!p?.image) return undefined
-  return { name: p.certificateOverrideName || p.name, image: p.image }
+  if (p?.image) {
+    return { name: p.certificateOverrideName || p.name, image: p.image }
+  }
+  // Fallback sample product for preview when no real products exist
+  return { name: 'Baby Orangutan', image: 'https://placehold.co/200x200/f97316/ffffff?text=🦧' }
 })
 
 const fragment = computed(() => {
@@ -68,11 +88,11 @@ const fragment = computed(() => {
     title: cert.certificate.header.title,
     subtitleHtml,
     bodyHtml,
-    bodyTextFontSize: cert.certificate.body.bodyTextFontSize,
     pageBorderStyle: cert.certificate.design.pageBorderStyle,
     pageBorderThickness: cert.certificate.design.pageBorderThickness,
-    orientation: cert.certificate.design.orientation,
+    layout: cert.certificate.design.layout,
     showLogo: cert.certificate.header.showLogo,
+    logoSize: cert.certificate.header.logoSize,
     showSignature: cert.certificate.signatureSettings.showSignature,
     signatureName: cert.certificate.signatureSettings.signatureName,
     signatureTitle: cert.certificate.signatureSettings.signatureTitle,
@@ -82,6 +102,13 @@ const fragment = computed(() => {
     productImageShape: cert.certificate.productSettings.productImageShape,
     titleTextColor: cert.certificate.header.titleTextColor,
     separatorsAndBordersColor: cert.certificate.design.separatorsAndBordersColor,
+    showDate: cert.certificate.dateSettings.showDate,
+    showDonorName: cert.certificate.donorNameSettings.showDonorName,
+    donorNameFontFamily: cert.certificate.donorNameSettings.donorNameFontFamily,
+    donorNamePosition: cert.certificate.donorNameSettings.donorNamePosition,
+    footerText: cert.certificate.footerSettings.footerText,
+    donorName: 'John Smith',
+    date: sampleDate,
     targets: CERTIFICATE_TEMPLATE_TARGETS,
     branding: {
       logoUrl: branding.logoUrl,
@@ -94,21 +121,90 @@ const fragment = computed(() => {
 })
 
 const previewRef = ref<HTMLElement | null>(null)
+const contentRef = ref<HTMLElement | null>(null)
 const editableRef = toRef(() => props.editable)
 const { hoveredField, editButtonStyle, hoverOutlineStyle, navigateToField } = usePreviewEditable(
   previewRef,
   editableRef
 )
+const previewScale = ref(1)
+let resizeObserver: ResizeObserver | null = null
+
+function updatePreviewScale() {
+  const container = previewRef.value
+  if (!container) return
+
+  const widthRatio = container.clientWidth / geometry.value.canvasWidthPx
+  const heightRatio = container.clientHeight / geometry.value.canvasHeightPx
+  previewScale.value = Math.min(widthRatio, heightRatio) || 1
+}
+
+function runAdaptiveTextFit() {
+  const container = contentRef.value
+  if (!container) return
+
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        fitAdaptiveText(container)
+      })
+    })
+  })
+}
+
+// Re-run adaptive text when fragment or layout orientation changes
+watch(fragment, () => runAdaptiveTextFit(), { flush: 'post' })
+watch(isLandscape, () => {
+  updatePreviewScale()
+  runAdaptiveTextFit()
+})
+
+onMounted(() => {
+  updatePreviewScale()
+  runAdaptiveTextFit()
+
+  if (previewRef.value) {
+    resizeObserver = new ResizeObserver(() => updatePreviewScale())
+    resizeObserver.observe(previewRef.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  resizeObserver = null
+})
 </script>
 
 <template>
   <div
     ref="previewRef"
-    class="relative overflow-hidden shadow-sm mx-auto max-w-95"
-    :class="[isLandscape ? 'aspect-297/210' : 'aspect-210/297', { editable: editable }]"
+    class="relative overflow-hidden shadow-sm mx-auto max-w-95 w-full"
+    :class="{ editable: editable }"
+    :style="{
+      aspectRatio: `${geometry.canvasWidthPx} / ${geometry.canvasHeightPx}`
+    }"
   >
-    <!-- eslint-disable-next-line vue/no-v-html -- trusted builder output, body pre-sanitized -->
-    <div class="h-full" v-html="fragment" />
+    <div
+      class="absolute left-0 top-0 origin-top-left"
+      :style="{
+        width: `${geometry.canvasWidthPx}px`,
+        height: `${geometry.canvasHeightPx}px`,
+        transform: `scale(${previewScale})`
+      }"
+    >
+      <div
+        ref="contentRef"
+        class="origin-top-left overflow-hidden"
+        :style="{
+          width: `${contentGeometry.widthPx}px`,
+          height: `${contentGeometry.heightPx}px`,
+          transform: `scale(${contentScale})`
+        }"
+      >
+        <!-- eslint-disable-next-line vue/no-v-html -- trusted builder output, body pre-sanitized -->
+        <div class="h-full w-full" v-html="fragment" />
+      </div>
+    </div>
 
     <Transition name="fade">
       <div

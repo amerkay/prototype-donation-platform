@@ -17,21 +17,27 @@ export const certificateTemplate: CertificateTemplate = {
   title: 'Certificate of Adoption',
   subtitle:
     'This certificate is awarded to <strong>{{ DONOR_NAME }}</strong> for your symbolic adoption of',
-  bodyText: 'Thank you for helping us save Bornean Orangutans from extinction!',
-  bodyTextFontSize: 'medium',
+  bodyText:
+    'Thank you for helping us save Bornean Orangutans from extinction! Your support provides food, medical care, and safe habitat.',
   pageBorderStyle: 'border',
   pageBorderThickness: 'medium',
   showLogo: true,
+  logoSize: 'small',
   showSignature: true,
   signatureName: 'Jane Smith',
   signatureTitle: 'Executive Director',
   signatureFontFamily: 'Dancing Script',
-  orientation: 'portrait',
+  layout: 'landscape-classic',
   backgroundImage: null,
   showProduct: true,
   productImageShape: 'circle',
   titleTextColor: 'primary',
-  separatorsAndBordersColor: 'primary'
+  separatorsAndBordersColor: 'primary',
+  showDate: true,
+  showDonorName: true,
+  donorNameFontFamily: 'Dancing Script',
+  donorNamePosition: 'below-product',
+  footerText: 'www.orangutan.org | Tax ID: 12-3456789'
 }
 
 export const ecardTemplates: ECardTemplate[] = [

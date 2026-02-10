@@ -5,6 +5,8 @@
  * and on the server (PDF generation via Puppeteer).
  */
 
+import { ADAPTIVE_TEXT_SCRIPT } from './adaptive-text'
+
 /** Escape a string for safe interpolation into HTML attributes/content. */
 export function escapeHtml(str: string): string {
   return str
@@ -30,6 +32,15 @@ export function replaceVariables(html: string, variables: Record<string, string>
   }
   return result
 }
+
+/** Common thickness presets for borders, separators, and product images */
+export const THICKNESS_PRESETS = {
+  thin: { borderPx: 1, productPx: 1, separatorPx: '1px' },
+  medium: { borderPx: 2, productPx: 3, separatorPx: '2px' },
+  thick: { borderPx: 4, productPx: 5, separatorPx: '3px' }
+} as const
+
+export type ThicknessPreset = keyof typeof THICKNESS_PRESETS
 
 /**
  * Embedded CSS for certificate body rich text.
@@ -65,4 +76,10 @@ export const CERT_BODY_CSS = /* css */ `
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+  .cert-adaptive {
+    white-space: nowrap;
+    overflow: visible;
+  }
 `
+
+export { ADAPTIVE_TEXT_SCRIPT }

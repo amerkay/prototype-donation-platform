@@ -8,6 +8,7 @@ import { useCertificateTemplateStore } from '~/features/templates/admin/stores/c
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
 import { useGeneratePdf } from '~/features/templates/admin/composables/useGeneratePdf'
+import { getFragmentOrientation } from '~/features/templates/admin/builders/certificate-fragment'
 import { Button } from '@/components/ui/button'
 import { Download, Loader2 } from 'lucide-vue-next'
 
@@ -32,6 +33,15 @@ const originalData = computed(() => ({
     signatureSettings: {
       ...store.certificate.signatureSettings
     },
+    donorNameSettings: {
+      ...store.certificate.donorNameSettings
+    },
+    dateSettings: {
+      ...store.certificate.dateSettings
+    },
+    footerSettings: {
+      ...store.certificate.footerSettings
+    },
     design: {
       ...store.certificate.design
     }
@@ -53,7 +63,9 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdmi
 const showPreviewDialog = ref(false)
 
 const previewMaxWidth = computed(() =>
-  store.certificate.design.orientation === 'landscape' ? 'sm:max-w-3xl' : 'sm:max-w-xl'
+  getFragmentOrientation(store.certificate.design.layout) === 'landscape'
+    ? 'sm:max-w-3xl'
+    : 'sm:max-w-xl'
 )
 
 const { isGenerating, downloadPdf } = useGeneratePdf()
