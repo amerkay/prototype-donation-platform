@@ -34,6 +34,7 @@ import FormFieldArray from './containers/FormFieldArray.vue'
 import FormFieldGroup from './containers/FormFieldGroup.vue'
 import FormFieldTabs from './containers/FormFieldTabs.vue'
 import FormFieldCard from './layout/FormFieldCard.vue'
+import FormFieldAlert from './layout/FormFieldAlert.vue'
 
 interface Props {
   name: string
@@ -64,6 +65,7 @@ const FIELD_COMPONENTS: Record<string, Component> = {
   'image-upload': FormFieldImageUpload,
   component: FormFieldComponent,
   card: FormFieldCard,
+  alert: FormFieldAlert,
   'field-group': FormFieldGroup,
   array: FormFieldArray,
   tabs: FormFieldTabs
@@ -146,7 +148,7 @@ const fieldRules = computed(() => {
 
 // Container fields don't need field binding (they manage children)
 const isContainerField = computed(() => {
-  return ['field-group', 'tabs', 'card'].includes(resolvedFieldType.value)
+  return ['field-group', 'tabs', 'card', 'alert'].includes(resolvedFieldType.value)
 })
 
 // Use vee-validate's useField composition API for non-container fields
@@ -241,7 +243,7 @@ const fieldProps = computed(() => {
     fullPath: resolvedVeeName.value
   }
 
-  // Container fields (group, tabs, card) don't need v-model or id
+  // Container/display fields (group, tabs, card, alert) don't need v-model or id
   if (isContainerField.value) {
     return baseProps
   }

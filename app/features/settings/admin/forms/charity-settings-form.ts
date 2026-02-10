@@ -5,10 +5,9 @@ import {
   textareaField,
   toggleField,
   fieldGroup,
-  componentField
+  alertField
 } from '~/features/_library/form-builder/api'
 import type { FieldContext } from '~/features/_library/form-builder/types'
-import CharitySettingsInfo from '~/features/settings/admin/components/CharitySettingsInfo.vue'
 import { getCurrencyOptionsForSelect } from '~/features/donation-form/shared/composables/useCurrency'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 
@@ -19,6 +18,8 @@ const CURRENCY_OPTIONS = getCurrencyOptionsForSelect()
  * Used in organization settings to configure charity identity
  */
 export const useCharitySettingsForm = defineForm('charitySettings', () => {
+  const currencyStore = useCurrencySettingsStore()
+
   const slug = textField('slug', {
     label: 'Organization Slug',
     description: 'URL-friendly identifier used in donor-facing routes',
@@ -86,7 +87,6 @@ export const useCharitySettingsForm = defineForm('charitySettings', () => {
       collapsibleDefaultOpen: false,
       wrapperClass: 'border rounded-lg p-4',
       visibleWhen: () => {
-        const currencyStore = useCurrencySettingsStore()
         return (
           currencyStore.supportedCurrencies.includes(currency) &&
           currency !== currencyStore.defaultCurrency
@@ -128,7 +128,6 @@ export const useCharitySettingsForm = defineForm('charitySettings', () => {
       'Override charity details for specific currencies (e.g., different registration in another jurisdiction).',
     collapsible: true,
     visibleWhen: () => {
-      const currencyStore = useCurrencySettingsStore()
       return currencyStore.supportedCurrencies.length > 1
     },
     fields: {
@@ -136,8 +135,20 @@ export const useCharitySettingsForm = defineForm('charitySettings', () => {
     }
   })
 
-  const charityInfoCard = componentField('charityInfoCard', {
-    component: CharitySettingsInfo
+  const charityInfoAlert = alertField('charityInfoAlert', {
+    variant: 'info',
+    description: () => {
+      if (currencyStore.supportedCurrencies.length > 1) {
+        return `Shown to donors paying in ${currencyStore.defaultCurrency} (your default currency). For other currencies, use the overrides below.`
+      }
+
+      return `Shown to donors paying in ${currencyStore.defaultCurrency} (your default currency).`
+    },
+    cta: {
+      label: 'Change default currency',
+      to: '/admin/settings/currency#defaultCurrency',
+      inline: true
+    }
   })
 
   const charityInfo = fieldGroup('charityInfo', {
@@ -145,7 +156,7 @@ export const useCharitySettingsForm = defineForm('charitySettings', () => {
     description: "Configure your organization's charity identity displayed on donor-facing pages.",
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
     fields: {
-      charityInfoCard,
+      charityInfoAlert,
       slug,
       name,
       registrationNumber,

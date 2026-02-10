@@ -174,6 +174,7 @@ import {
   sliderField,
   emojiField,
   cardField,
+  alertField,
   hiddenField,
   componentField
 } from '~/features/form-builder/api'
@@ -206,6 +207,17 @@ const info = cardField('info', {
   content: '<p>Rich HTML content</p>' // Optional raw HTML
 })
 
+// Display-only alert (uses shadcn Alert variants)
+const currencyNotice = alertField('currencyNotice', {
+  variant: 'info',
+  label: 'Currency Configuration',
+  description: 'This form uses your organization-level currency settings.',
+  cta: {
+    label: 'Edit currency settings',
+    to: '/admin/settings/currency#currencyMultipliers'
+  }
+})
+
 // Hidden field (for tracking data not shown to user)
 const source = hiddenField('source', {
   defaultValue: 'campaign-123'
@@ -235,6 +247,7 @@ const formsList = componentField('formsList', {
 - `tabsField` → Exclusive sections, one active (payment methods, preferences)
 - `arrayField` → Repeating user-added items (skills, contacts)
 - `cardField` → Display-only, no nesting (instructions, tips)
+- `alertField` → Display-only alert/callout (info, destructive, default)
 
 ```typescript
 import {

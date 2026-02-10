@@ -42,12 +42,13 @@ function extractFormFields(
   for (const [key, fieldDef] of Object.entries(fields)) {
     const fullKey = prefix ? `${prefix}.${key}` : key
 
-    // Skip container fields (field-group, tabs, array, card)
+    // Skip container/display fields (field-group, tabs, array, card, alert)
     if (
       fieldDef.type === 'field-group' ||
       fieldDef.type === 'tabs' ||
       fieldDef.type === 'array' ||
-      fieldDef.type === 'card'
+      fieldDef.type === 'card' ||
+      fieldDef.type === 'alert'
     ) {
       // Recursively extract children for field-group
       if (fieldDef.type === 'field-group' && 'fields' in fieldDef && fieldDef.fields) {

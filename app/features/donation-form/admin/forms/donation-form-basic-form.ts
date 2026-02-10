@@ -1,11 +1,5 @@
 import * as z from 'zod'
-import {
-  defineForm,
-  textField,
-  fieldGroup,
-  componentField
-} from '~/features/_library/form-builder/api'
-import BrandingSettingsInfo from '~/features/settings/admin/components/BrandingSettingsInfo.vue'
+import { defineForm, textField, fieldGroup, alertField } from '~/features/_library/form-builder/api'
 
 /**
  * Basic donation form settings (title, subtitle, branding info)
@@ -28,8 +22,15 @@ export const useDonationFormBasicForm = defineForm('formBasic', () => {
     fields: { title: formTitle, subtitle: formSubtitle }
   })
 
-  const branding = componentField('branding', {
-    component: BrandingSettingsInfo
+  const branding = alertField('branding', {
+    variant: 'info',
+    description:
+      'Branding is configured at the organization level and applies to all donor-facing pages.',
+    cta: {
+      label: 'Edit branding settings',
+      to: '/admin/settings/branding',
+      inline: true
+    }
   })
 
   return { form, branding }

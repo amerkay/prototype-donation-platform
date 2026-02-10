@@ -29,6 +29,7 @@ export {
   fieldGroup,
   tabsField,
   cardField,
+  alertField,
   componentField
 } from './defineForm'
 
@@ -55,5 +56,6 @@ export {
   isFieldGroup,
   isTabsField,
   isCardField,
+  isAlertField,
   isComponentField
 } from '../types'

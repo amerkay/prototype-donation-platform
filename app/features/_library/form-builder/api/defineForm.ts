@@ -45,6 +45,8 @@ import type {
   TabsFieldDef,
   CardFieldConfig,
   CardFieldDef,
+  AlertFieldConfig,
+  AlertFieldDef,
   ComponentFieldConfig,
   ComponentFieldDef,
   FieldDef
@@ -331,6 +333,17 @@ export function tabsField(name: string, config: TabsFieldConfig): TabsFieldDef {
 export function cardField(name: string, config: CardFieldConfig = {}): CardFieldDef {
   return {
     type: 'card',
+    name,
+    ...config
+  }
+}
+
+/**
+ * Create an alert field (display only)
+ */
+export function alertField(name: string, config: AlertFieldConfig = {}): AlertFieldDef {
+  return {
+    type: 'alert',
     name,
     ...config
   }

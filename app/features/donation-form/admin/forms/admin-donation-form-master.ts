@@ -1,4 +1,4 @@
-import { defineForm, fieldGroup, componentField } from '~/features/_library/form-builder/api'
+import { defineForm, fieldGroup, alertField } from '~/features/_library/form-builder/api'
 import type { FormContext } from '~/features/_library/form-builder/types'
 import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 import { useDonationFormBasicForm } from '~/features/donation-form/admin/forms/donation-form-basic-form'
@@ -11,7 +11,7 @@ import { useGiftAidConfigSection } from '~/features/donation-form/features/gift-
 import { useTributeConfigSection } from '~/features/donation-form/features/tribute/admin/forms/tribute-config-form'
 import { createDonationCustomFieldsConfigSection } from '~/features/donation-form/features/custom-fields/admin/forms/donation-custom-fields-config-form'
 import type { ContextSchema } from '~/features/_library/form-builder/conditions'
-import CurrencySettingsInfo from '~/features/settings/admin/components/CurrencySettingsInfo.vue'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 
 /**
  * Master admin form that consolidates all donation form configuration sections
@@ -19,6 +19,8 @@ import CurrencySettingsInfo from '~/features/settings/admin/components/CurrencyS
  */
 export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
   return defineForm('donationFormAdmin', (ctx: FormContext) => {
+    const currencyStore = useCurrencySettingsStore()
+
     // Provide accordion group for single-open behavior
     provideAccordionGroup()
 
@@ -34,8 +36,27 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
     const customFieldsFields = createDonationCustomFieldsConfigSection(contextSchema).setup(ctx)
 
     // Currency settings info - display organization's currency config
-    const currencyInfo = componentField('currencyInfo', {
-      component: CurrencySettingsInfo
+    const currencyInfo = alertField('currencyInfo', {
+      variant: 'info',
+      label: 'Organization currency settings',
+      description: () => {
+        const supportedCurrenciesDisplay = currencyStore.supportedCurrencies.join(', ')
+
+        const multipliers = currencyStore.currencyMultipliers
+        const multiplierEntries = Object.entries(multipliers)
+        const multipliersDisplay =
+          multiplierEntries.length === 0
+            ? 'All at default (1.0×)'
+            : multiplierEntries
+                .map(([currency, value]) => `${currency}: ${value.toFixed(2)}×`)
+                .join(', ')
+
+        return `Supported: ${supportedCurrenciesDisplay || 'None configured'}\nMultipliers: ${multipliersDisplay}`
+      },
+      cta: {
+        label: 'Edit currency settings',
+        to: '/admin/settings/currency#currencyMultipliers'
+      }
     })
 
     // Form Settings - basic settings and branding info

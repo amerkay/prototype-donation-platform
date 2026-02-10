@@ -77,6 +77,7 @@ export type FieldType =
   | 'condition-builder'
   | 'field-group'
   | 'card'
+  | 'alert'
   | 'tabs'
   | 'color'
   | 'date'
@@ -396,6 +397,19 @@ export interface CardFieldConfig extends BaseFieldConfig {
   showBorder?: boolean
 }
 
+export interface AlertFieldConfig extends BaseFieldConfig {
+  variant?: 'default' | 'destructive' | 'info'
+  icon?: string
+  content?: string
+  cta?: {
+    label: string
+    to: string
+    icon?: string
+    class?: string
+    inline?: boolean
+  }
+}
+
 export interface ComponentFieldConfig<TProps = Record<string, unknown>> extends BaseFieldConfig {
   /** Vue component to render */
   component: Component
@@ -442,6 +456,7 @@ export interface FieldRegistry {
   'field-group': FieldGroupConfig
   tabs: TabsFieldConfig
   card: CardFieldConfig
+  alert: AlertFieldConfig
   component: ComponentFieldConfig<Record<string, unknown>>
 }
 
@@ -469,6 +484,7 @@ export type ArrayFieldDef = Field<'array', ArrayFieldConfig>
 export type FieldGroupDef = Field<'field-group', FieldGroupConfig>
 export type TabsFieldDef = Field<'tabs', TabsFieldConfig>
 export type CardFieldDef = Field<'card', CardFieldConfig>
+export type AlertFieldDef = Field<'alert', AlertFieldConfig>
 export type ComponentFieldDef<TProps = Record<string, unknown>> = Field<
   'component',
   ComponentFieldConfig<TProps>
@@ -515,6 +531,7 @@ export const isFieldGroup = (field: FieldDef): field is FieldGroupDef =>
   field.type === 'field-group'
 export const isTabsField = (field: FieldDef): field is TabsFieldDef => field.type === 'tabs'
 export const isCardField = (field: FieldDef): field is CardFieldDef => field.type === 'card'
+export const isAlertField = (field: FieldDef): field is AlertFieldDef => field.type === 'alert'
 export const isComponentField = (field: FieldDef): field is ComponentFieldDef =>
   field.type === 'component'
 
