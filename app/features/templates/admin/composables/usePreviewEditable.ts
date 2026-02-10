@@ -1,13 +1,12 @@
 import { ref, computed, onMounted, onUnmounted, type Ref, type CSSProperties } from 'vue'
-import { useRouter } from '#app'
+import { activateHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
 
 /**
  * Makes preview elements with `data-field` attributes interactive.
- * Hover shows a dashed outline + floating edit button; click navigates
- * via URL hash which triggers the form-builder's useHashTarget system.
+ * Hover shows a dashed outline + floating edit button; click triggers
+ * the form-builder hash-target scroll/highlight logic without URL changes.
  */
-export function usePreviewEditable(containerRef: Ref<HTMLElement | null>, enabled: Ref<boolean>) {
-  const router = useRouter()
+export function usePreviewEditable(containerRef: { value: Element | null }, enabled: Ref<boolean>) {
   const hoveredField = ref<string | null>(null)
   const hoveredRect = ref<DOMRect | null>(null)
 
@@ -20,36 +19,39 @@ export function usePreviewEditable(containerRef: Ref<HTMLElement | null>, enable
     return null
   }
 
-  function onMouseOver(e: MouseEvent) {
+  function onMouseOver(e: Event) {
     if (!enabled.value) return
-    const el = findFieldElement(e.target)
+    const mouseEvent = e as MouseEvent
+    const el = findFieldElement(mouseEvent.target)
     if (el) {
       hoveredField.value = el.dataset.field!
       hoveredRect.value = el.getBoundingClientRect()
     }
   }
 
-  function onMouseOut(e: MouseEvent) {
+  function onMouseOut(e: Event) {
     if (!enabled.value) return
-    const el = findFieldElement(e.relatedTarget)
+    const mouseEvent = e as MouseEvent
+    const el = findFieldElement(mouseEvent.relatedTarget)
     if (!el || el.dataset.field !== hoveredField.value) {
       hoveredField.value = null
       hoveredRect.value = null
     }
   }
 
-  function onClick(e: MouseEvent) {
+  function onClick(e: Event) {
     if (!enabled.value) return
-    const el = findFieldElement(e.target)
+    const mouseEvent = e as MouseEvent
+    const el = findFieldElement(mouseEvent.target)
     if (el?.dataset.field) {
-      e.preventDefault()
+      mouseEvent.preventDefault()
       navigateToField(el.dataset.field)
     }
   }
 
   function navigateToField(field?: string) {
     const target = field ?? hoveredField.value
-    if (target) router.replace({ hash: `#${target}` })
+    if (target) activateHashTarget(target)
   }
 
   const editButtonStyle = computed<CSSProperties>(() => {

@@ -55,7 +55,6 @@ export function useGeneratePdf() {
             backgroundImage: certificate.design.backgroundImage,
             showProduct: certificate.productSettings.showProduct,
             productBorderRadius: certificate.productSettings.productBorderRadius,
-            productNameColor: certificate.productSettings.productNameColor,
             titleColor: certificate.header.titleColor,
             separatorsAndBorders: certificate.design.separatorsAndBorders,
             branding: {

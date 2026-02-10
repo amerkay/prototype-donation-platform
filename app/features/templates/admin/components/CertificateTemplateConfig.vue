@@ -28,7 +28,6 @@ type CertificateFormData = {
     productSettings?: {
       showProduct?: boolean
       productBorderRadius?: 'circle' | 'rounded' | 'square'
-      productNameColor?: string
     }
     signatureSettings?: {
       showSignature?: boolean
@@ -79,10 +78,6 @@ const { formRef, modelValue, form, expose } = useAdminConfigForm({
     if (productSettings?.productBorderRadius !== undefined) {
       next.productBorderRadius = productSettings.productBorderRadius
     }
-    if (productSettings?.productNameColor !== undefined) {
-      next.productNameColor = productSettings.productNameColor
-    }
-
     if (signatureSettings?.showSignature !== undefined) {
       next.showSignature = signatureSettings.showSignature
     }

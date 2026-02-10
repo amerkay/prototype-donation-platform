@@ -22,6 +22,15 @@ const CLEAR_LISTENER_DELAY_MS = 2000 // Don't clear on navigation click
 interface HashTargetContext {
   targetPath: Ref<string | null>
   cleared: Ref<boolean>
+  activateTarget: (target: string) => void
+}
+
+let activeHashTargetActivator: ((target: string) => void) | null = null
+
+export function activateHashTarget(target: string): boolean {
+  if (!target || !activeHashTargetActivator) return false
+  activeHashTargetActivator(target)
+  return true
 }
 
 // --- Hash Resolution ---
@@ -76,8 +85,7 @@ export function provideHashTarget(fields: Record<string, FieldDef>) {
   const route = useRoute()
   const targetPath = ref<string | null>(null)
   const cleared = ref(false)
-
-  provide<HashTargetContext>(HASH_TARGET_KEY, { targetPath, cleared })
+  let clearListenerTimeout: ReturnType<typeof setTimeout> | null = null
 
   const clearHighlight = () => {
     cleared.value = true
@@ -85,29 +93,57 @@ export function provideHashTarget(fields: Record<string, FieldDef>) {
     document.removeEventListener('keydown', clearHighlight)
   }
 
+  const setResolvedTarget = (nextTarget: string | null) => {
+    // Reset existing clear listeners so a stale listener from a previous activation
+    // can't immediately clear the new target during the same click event.
+    document.removeEventListener('click', clearHighlight)
+    document.removeEventListener('keydown', clearHighlight)
+
+    cleared.value = false
+    targetPath.value = nextTarget
+
+    if (clearListenerTimeout) {
+      clearTimeout(clearListenerTimeout)
+      clearListenerTimeout = null
+    }
+
+    if (targetPath.value) {
+      clearListenerTimeout = setTimeout(() => {
+        if (!cleared.value) {
+          document.addEventListener('click', clearHighlight)
+          document.addEventListener('keydown', clearHighlight)
+        }
+      }, CLEAR_LISTENER_DELAY_MS)
+    }
+  }
+
+  const activateTarget = (target: string) => {
+    setResolvedTarget(resolveHash(target, fields))
+  }
+
+  provide<HashTargetContext>(HASH_TARGET_KEY, { targetPath, cleared, activateTarget })
+
   onMounted(() => {
+    activeHashTargetActivator = activateTarget
+
     watch(
       () => route.hash,
       (hash) => {
-        cleared.value = false
-        targetPath.value = resolveHash(hash, fields)
-
-        if (targetPath.value) {
-          setTimeout(() => {
-            if (!cleared.value) {
-              document.addEventListener('click', clearHighlight)
-              document.addEventListener('keydown', clearHighlight)
-            }
-          }, CLEAR_LISTENER_DELAY_MS)
-        }
+        setResolvedTarget(resolveHash(hash, fields))
       },
       { immediate: true }
     )
   })
 
   onUnmounted(() => {
+    if (clearListenerTimeout) {
+      clearTimeout(clearListenerTimeout)
+    }
     document.removeEventListener('click', clearHighlight)
     document.removeEventListener('keydown', clearHighlight)
+    if (activeHashTargetActivator === activateTarget) {
+      activeHashTargetActivator = null
+    }
   })
 }
 
@@ -119,9 +155,10 @@ export function provideHashTarget(fields: Record<string, FieldDef>) {
  */
 export function useHashTarget(fullPath: ComputedRef<string>, options: { animate?: boolean } = {}) {
   const sectionId = inject<string>('sectionId', '')
-  const { targetPath, cleared } = inject<HashTargetContext>(HASH_TARGET_KEY, {
+  const { targetPath, cleared, activateTarget } = inject<HashTargetContext>(HASH_TARGET_KEY, {
     targetPath: ref(null),
-    cleared: ref(false)
+    cleared: ref(false),
+    activateTarget: () => {}
   })
 
   const relativePath = computed(() => {
@@ -150,7 +187,14 @@ export function useHashTarget(fullPath: ComputedRef<string>, options: { animate?
 
   // Non-animated: return detection only
   if (!options.animate) {
-    return { isHashTarget, isAncestorOfHashTarget, hashTargetChildSegment, cleared, fieldId }
+    return {
+      isHashTarget,
+      isAncestorOfHashTarget,
+      hashTargetChildSegment,
+      cleared,
+      fieldId,
+      activateTarget
+    }
   }
 
   // Animated: add highlight classes and scroll behavior
@@ -197,6 +241,7 @@ export function useHashTarget(fullPath: ComputedRef<string>, options: { animate?
     hashTargetChildSegment,
     cleared,
     fieldId,
+    activateTarget,
     elementRef,
     hashHighlightClass
   }

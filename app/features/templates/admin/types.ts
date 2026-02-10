@@ -26,7 +26,6 @@ export interface CertificateTemplate {
   backgroundImage: string | null
   showProduct: boolean
   productBorderRadius: 'circle' | 'rounded' | 'square'
-  productNameColor: string
   titleColor: string
   separatorsAndBorders: string
 }
@@ -57,7 +56,6 @@ export interface CertificatePdfData {
   backgroundImage: string | null
   showProduct: boolean
   productBorderRadius: 'circle' | 'rounded' | 'square'
-  productNameColor: string
   titleColor: string
   separatorsAndBorders: string
   branding: {

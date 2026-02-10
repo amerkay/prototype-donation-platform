@@ -54,7 +54,6 @@ export default defineEventHandler(async (event) => {
         backgroundImage: data.backgroundImage,
         showProduct: data.showProduct,
         productBorderRadius: data.productBorderRadius,
-        productNameColor: data.productNameColor,
         titleColor: data.titleColor,
         separatorsAndBorders: data.separatorsAndBorders,
         branding: data.branding,

@@ -19,7 +19,18 @@ const CERTIFICATE_TEMPLATE_VARIABLES = [
   { value: 'DATE', label: 'Date' }
 ] as const
 
-export const certificateOpenAccordionId = ref<string | undefined>('header')
+export const CERTIFICATE_TEMPLATE_TARGETS = {
+  showLogo: 'certificate.header.showLogo',
+  title: 'certificate.header.title',
+  subtitle: 'certificate.header.subtitle',
+  header: 'certificate.header',
+  body: 'certificate.body',
+  productSettings: 'certificate.productSettings',
+  signatureSettings: 'certificate.signatureSettings',
+  design: 'certificate.design'
+} as const
+
+export const certificateOpenAccordionId = ref<string | undefined>(undefined)
 
 export const useCertificateTemplateForm = defineForm('certificateTemplate', () => {
   const branding = useBrandingSettingsStore()
@@ -123,17 +134,6 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     visibleWhen: (ctx) => !!ctx.values.showProduct
   })
 
-  const productNameColor = componentField('productNameColor', {
-    component: ColorPresetSelector,
-    label: 'Product Name Color',
-    description: 'Choose Primary, Secondary, Black, White, or custom color',
-    visibleWhen: (ctx) => !!ctx.values.showProduct,
-    props: {
-      primaryColor: branding.primaryColor,
-      secondaryColor: branding.secondaryColor
-    }
-  })
-
   const titleColor = componentField('titleColor', {
     component: ColorPresetSelector,
     label: 'Title Color',
@@ -184,11 +184,10 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     label: 'Product Settings',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: { showProduct, productBorderRadius, productNameColor },
+    fields: { showProduct, productBorderRadius },
     $storePath: {
       showProduct: 'showProduct',
-      productBorderRadius: 'productBorderRadius',
-      productNameColor: 'productNameColor'
+      productBorderRadius: 'productBorderRadius'
     },
     showSeparatorAfter: true
   })

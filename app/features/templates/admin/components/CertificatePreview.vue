@@ -12,6 +12,7 @@ import { buildCertificateFragment } from '~/features/templates/admin/builders/ce
 import { getBunnyFontUrls } from '~/features/settings/admin/utils/fonts'
 import { useProducts } from '~/features/products/admin/composables/useProducts'
 import { usePreviewEditable } from '~/features/templates/admin/composables/usePreviewEditable'
+import { CERTIFICATE_TEMPLATE_TARGETS } from '~/features/templates/admin/forms/certificate-template-form'
 import { Button } from '@/components/ui/button'
 import { Pencil } from 'lucide-vue-next'
 
@@ -87,9 +88,9 @@ const fragment = computed(() => {
     backgroundImage: cert.certificate.design.backgroundImage,
     showProduct: cert.certificate.productSettings.showProduct,
     productBorderRadius: cert.certificate.productSettings.productBorderRadius,
-    productNameColor: cert.certificate.productSettings.productNameColor,
     titleColor: cert.certificate.header.titleColor,
     separatorsAndBorders: cert.certificate.design.separatorsAndBorders,
+    targets: CERTIFICATE_TEMPLATE_TARGETS,
     branding: {
       logoUrl: branding.logoUrl,
       primaryColor: branding.primaryColor,

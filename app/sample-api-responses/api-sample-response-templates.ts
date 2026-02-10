@@ -29,7 +29,6 @@ export const certificateTemplate: CertificateTemplate = {
   backgroundImage: null,
   showProduct: true,
   productBorderRadius: 'circle',
-  productNameColor: 'primary',
   titleColor: 'primary',
   separatorsAndBorders: 'primary'
 }

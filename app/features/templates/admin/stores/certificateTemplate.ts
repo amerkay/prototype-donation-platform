@@ -22,7 +22,6 @@ type LegacyCertificateTemplate = Partial<CertificateTemplate> & {
     productSettings?: {
       showProduct?: boolean
       productBorderRadius?: 'circle' | 'rounded' | 'square'
-      productNameColor?: string
       productBorderColor?: string
     }
     signatureSettings?: {
@@ -79,10 +78,6 @@ function normalizeTemplate(input: Partial<LegacyCertificateTemplate> = {}): Cert
       nested?.productSettings?.productBorderRadius ??
       input.productBorderRadius ??
       defaults.productBorderRadius,
-    productNameColor:
-      nested?.productSettings?.productNameColor ??
-      input.productNameColor ??
-      defaults.productNameColor,
     titleColor: nested?.header?.titleColor ?? input.titleColor ?? defaults.titleColor,
     separatorsAndBorders
   }
@@ -105,8 +100,7 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     },
     productSettings: {
       showProduct: settings.showProduct,
-      productBorderRadius: settings.productBorderRadius,
-      productNameColor: settings.productNameColor
+      productBorderRadius: settings.productBorderRadius
     },
     signatureSettings: {
       showSignature: settings.showSignature,
