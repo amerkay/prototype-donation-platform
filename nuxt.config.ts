@@ -9,14 +9,26 @@ export default defineNuxtConfig({
   // Explicitly set Netlify preset for deployment
   // Auto-detection should work, but explicit is safer
   nitro: {
-    preset: 'netlify'
+    preset: 'netlify',
+    // Storage for PDF token data (persists across serverless invocations)
+    storage: {
+      'pdf-tokens': {
+        driver: 'netlify-blobs',
+        name: 'pdf-tokens'
+      }
+    },
+    // Local dev uses filesystem storage
+    devStorage: {
+      'pdf-tokens': {
+        driver: 'fs',
+        base: './.data/pdf-tokens'
+      }
+    }
   },
 
   // Disable SSR for admin routes (they use sessionStorage and require auth)
-  // Exclude print routes from prerendering (they require runtime token data)
   routeRules: {
-    '/admin/**': { ssr: false },
-    '/print/**': { prerender: false }
+    '/admin/**': { ssr: false }
   },
 
   runtimeConfig: {

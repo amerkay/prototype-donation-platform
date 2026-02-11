@@ -111,9 +111,9 @@ export default defineEventHandler(async (event) => {
       const width = orientation === 'landscape' ? '297mm' : '210mm'
       const height = orientation === 'landscape' ? '210mm' : '297mm'
 
-      // Build the certificate model and store it
+      // Build the certificate model and store with token
       const model = buildCertificateModel(data)
-      const token = storePrintData(model)
+      const token = await storePrintData(model)
 
       // Generate PDF by navigating to the print page
       const printUrl = `${baseUrl}/print/certificate?token=${token}`
@@ -129,9 +129,9 @@ export default defineEventHandler(async (event) => {
       break
     }
     case 'receipt': {
-      // Build the receipt model and store it
+      // Build the receipt model and store with token
       const model = buildReceiptModel(body.data)
-      const token = storePrintData(model)
+      const token = await storePrintData(model)
 
       // Generate PDF by navigating to the print page
       const printUrl = `${baseUrl}/print/receipt?token=${token}`

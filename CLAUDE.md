@@ -83,7 +83,7 @@ app/features/[feature-name]/
 
 **Pages:** `app/pages/admin/` (dashboard, campaigns, forms, donations, donors, products, subscriptions, templates: certificates/ecards/receipts, settings: general/branding/charity/currency/team/api/billing/payments), `app/pages/[org_slug]/` (donor-facing: campaign pages, forms, P2P onboarding/templates), `app/pages/portal/` (donor dashboard: donations, subscriptions, fundraisers), `app/pages/print/` (PDF render routes: certificate, receipt), `app/pages/index.vue` (landing).
 
-**Server API:** `server/api/pdf.post.ts` (PDF generation: receives template data, stores model with 30s token, Puppeteer navigates to print route, returns PDF buffer), `server/api/print-data.get.ts` (token-based model retrieval for print pages), `server/api/export.post.ts` (data export). **PDF utils:** `server/utils/pdf/generate-pdf.ts` (Puppeteer + @sparticuz/chromium), `server/utils/pdf/print-data-store.ts` (in-memory token store with TTL).
+**Server API:** `server/api/pdf.post.ts` (PDF generation: stores model via useStorage, Puppeteer navigates to print route, returns PDF buffer), `server/api/print-data.get.ts` (token-based model retrieval for print pages), `server/api/export.post.ts` (data export). **PDF utils:** `server/utils/pdf/generate-pdf.ts` (Puppeteer + @sparticuz/chromium), `server/utils/pdf/print-data-store.ts` (Nitro useStorage with netlify-blobs/fs drivers, 30s TTL).
 
 <!-- end project summary -->
 

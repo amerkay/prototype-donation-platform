@@ -24,6 +24,7 @@
   "dependencies": {
     "@formkit/auto-animate": "^0.9.0",
     "@internationalized/date": "^3.11.0",
+    "@netlify/blobs": "^10.6.0",
     "@nuxt/eslint": "1.14.0",
     "@nuxt/fonts": "0.13.0",
     "@nuxt/hints": "1.0.0-alpha.6",

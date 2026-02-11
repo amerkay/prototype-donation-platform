@@ -7,7 +7,7 @@
 
 import { getPrintData } from '../utils/pdf/print-data-store'
 
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const token = query.token as string | undefined
 
@@ -18,7 +18,7 @@ export default defineEventHandler((event) => {
     })
   }
 
-  const data = getPrintData(token)
+  const data = await getPrintData(token)
 
   if (!data) {
     throw createError({
