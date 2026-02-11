@@ -62,28 +62,39 @@ app/features/[feature-name]/
 
 | Feature       | Path                                   | Purpose                                                                                              |
 | ------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| donation-form | `app/features/donation-form/`          | Multi-step donation wizard with 12 sub-features (cover-costs, gift-aid, impact-cart, tribute, etc.)  |
+| donation-form | `app/features/donation-form/`          | Multi-step donation wizard with 12 sub-features (cover-costs, gift-aid, impact-cart, tribute, etc.) |
 | campaigns     | `app/features/campaigns/`              | Campaign CRUD, crowdfunding, P2P fundraising, templates                                              |
 | donations     | `app/features/donations/`              | Admin donation list/detail: columns, composables                                                     |
 | donors        | `app/features/donors/`                 | Admin donor list/detail: columns, composables, types                                                 |
 | donor-portal  | `app/features/donor-portal/`           | Donor dashboard: transaction history, fundraiser management                                          |
 | products      | `app/features/products/`               | Admin product management: columns, composables, forms, types                                         |
 | subscriptions | `app/features/subscriptions/`          | Subscription management: admin list/detail, donor card + actions                                     |
-| settings      | `app/features/settings/`               | Org config: general, branding, team, API, billing, payments (Stripe/PayPal Connect)                  |
-| templates     | `app/features/templates/`              | Admin template config: certificates, receipts, ecards with preview components                        |
+| settings      | `app/features/settings/`               | Org config: general, branding, charity, currency, team, API, billing, payments                       |
+| templates     | `app/features/templates/`              | PDF/print templates: certificates, receipts, ecards with model-driven Vue SFC rendering             |
 | form-builder  | `app/features/_library/form-builder/`  | Schema-driven form framework: defineForm API, 16 field types, conditions, containers                 |
 | custom-fields | `app/features/_library/custom-fields/` | Admin-configurable dynamic fields with 8 field type factories                                        |
 | \_admin       | `app/features/_admin/`                 | Shared admin UI: sidebar, breadcrumbs, data table, detail rows, delete dialog, edit layouts, columns |
 
 **Key stores:** `donation-form/shared/stores/formConfig.ts` (admin config), `donation-form/donor/stores/donationForm.ts` (donor state, per-form-ID persistence), `donation-form/features/impact-cart/donor/stores/impactCart.ts` (cart by frequency, per-form-ID persistence), `campaigns/shared/stores/campaignConfig.ts` (campaign config), `campaigns/shared/stores/forms.ts` (campaign forms), `settings/admin/stores/charitySettings.ts` (charity identity, slug, per-currency overrides), `settings/admin/stores/currencySettings.ts` (org currencies), `settings/admin/stores/generalSettings.ts`, `settings/admin/stores/brandingSettings.ts`, `settings/admin/stores/teamSettings.ts`, `settings/admin/stores/paymentSettings.ts`, `settings/admin/stores/apiSettings.ts`, `settings/admin/stores/billingSettings.ts`, `templates/admin/stores/certificateTemplate.ts`, `templates/admin/stores/ecardTemplates.ts`, `templates/admin/stores/receiptTemplate.ts`.
 
-**Key composables:** `useCampaigns()`, `useForms()`, `useCampaignShare()`, `useCampaignPreview()`, `useCampaignFormatters()`, `useDonorPortal()`, `useSubscriptionActions()`, `useAdminSubscriptions()`, `useDonations()`, `useDonors()`, `useProducts()`, `useCurrency()`, `useDonationCurrencies()`, `useAdminConfigForm()`, `useAdminEdit()`.
+**Key composables:** `useCampaigns()`, `useForms()`, `useCampaignShare()`, `useCampaignPreview()`, `useCampaignFormatters()`, `useDonorPortal()`, `useSubscriptionActions()`, `useAdminSubscriptions()`, `useDonations()`, `useDonors()`, `useProducts()`, `useCurrency()`, `useDonationCurrencies()`, `useAdminConfigForm()`, `useAdminEdit()`, `useGeneratePdf()`.
 
-**Layouts:** `admin.vue`, `admin-preview.vue`, `donor.vue`, `portal.vue`, `default.vue`.
+**Layouts:** `admin.vue`, `admin-preview.vue`, `donor.vue`, `portal.vue`, `print.vue`, `default.vue`.
 
-**Pages:** `app/pages/admin/` (dashboard, campaigns, forms, donations, donors, products, subscriptions, templates: certificates/ecards/receipts, settings: general/branding/team/api/billing/payments), `app/pages/[org_slug]/` (donor-facing: campaign pages, forms, P2P onboarding/templates), `app/pages/portal/` (donor dashboard: donations, subscriptions, fundraisers), `app/pages/index.vue` (landing).
+**Pages:** `app/pages/admin/` (dashboard, campaigns, forms, donations, donors, products, subscriptions, templates: certificates/ecards/receipts, settings: general/branding/charity/currency/team/api/billing/payments), `app/pages/[org_slug]/` (donor-facing: campaign pages, forms, P2P onboarding/templates), `app/pages/portal/` (donor dashboard: donations, subscriptions, fundraisers), `app/pages/print/` (PDF render routes: certificate, receipt), `app/pages/index.vue` (landing).
+
+**Server API:** `server/api/pdf.post.ts` (PDF generation: receives template data, stores model with 30s token, Puppeteer navigates to print route, returns PDF buffer), `server/api/print-data.get.ts` (token-based model retrieval for print pages), `server/api/export.post.ts` (data export). **PDF utils:** `server/utils/pdf/generate-pdf.ts` (Puppeteer + @sparticuz/chromium), `server/utils/pdf/print-data-store.ts` (in-memory token store with TTL).
 
 <!-- end project summary -->
+
+## Continuous Learning
+
+<!-- continuous learning notes -->
+
+1. `componentField` excluded from autoMap by default; persist via `$storePath` or manual getData/setData
+2. With `reka-ui` combobox, avoid manual open/select handlers that fight internal state
+
+<!-- end continuous learning notes -->
 
 ## Code Rules
 
@@ -105,5 +116,7 @@ YOU MUST ALWAYS FOLLOW THESE RULES (COMMANDMENTS):
 14. **`_library/` IS SACRED**: `app/features/_library/form-builder` and `app/features/_library/custom-fields` CAN NEVER have donation platform logic. They MUST be treated as independent reusable units.
 15. **READ THE DOCS**: When working with form-builder or custom-fields, ALWAYS read the relevant README.md first (`app/features/_library/form-builder/README.md` or `app/features/_library/custom-fields/README.md`).
 16. **SHORT SUMMARIES**: MUST provide brief updates after EACH answer. End with minimal conventional commit message about all the work we did in the entire session including compacted summaries unless I instruct you otherwise. The conv. commit first line must be a summary of all work done, and then bullet points with more details, keeping it concise.
-17. **KEEP PROJECT SUMMARY CURRENT**: After completing any task that adds, removes, renames, or restructures features, stores, composables, pages, or layouts, you MUST ask yourself: "Did I change the project structure?" If yes, tell the user in **bold** at the end of your final message: **"Project structure changed — run `/update-project-summary` to keep CLAUDE.md current."**
+17. **KEEP MEMORY CURRENT**: After completing any task:
+    - Ask: "Did I change project structure?" If yes, bold reminder to run `/update-project-summary`
+    - Ask: "Did I learn something crucial, durable, and reusable?" If yes, update the Continuous Learning section. Rules: keep bullets short (1 line, ~100 chars), NEVER duplicate — always merge or clarify existing bullets when related. Prune stale/obsolete entries.
 18. **COMMIT MESSAGE STANDARD**: Use short conventional commits following rule #16. NEVER include the "Authored by Anthropic" line in commit messages. Always check for all staged changes `git --no-pager diff --staged` before writing the commit message.
