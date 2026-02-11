@@ -13,8 +13,10 @@ export default defineNuxtConfig({
   },
 
   // Disable SSR for admin routes (they use sessionStorage and require auth)
+  // Exclude print routes from prerendering (they require runtime token data)
   routeRules: {
-    '/admin/**': { ssr: false }
+    '/admin/**': { ssr: false },
+    '/print/**': { prerender: false }
   },
 
   runtimeConfig: {
