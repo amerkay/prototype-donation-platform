@@ -24,16 +24,20 @@ function isNavigateOptions(opts: GeneratePdfOptions): opts is NavigatePdfOptions
  * 1. URL navigation: Puppeteer navigates to a URL (preferred for Vue SFC rendering)
  * 2. HTML content: Puppeteer sets HTML content directly (legacy mode for receipts)
  *
- * Uses @sparticuz/chromium for a lightweight Chromium binary that works
- * in serverless environments (~50MB compressed vs ~280MB full Chrome).
+ * Uses @sparticuz/chromium for serverless environments (Netlify, AWS Lambda).
+ * For local development, set CHROME_EXECUTABLE_PATH to your local Chrome path.
  */
 export async function generatePdf(options: GeneratePdfOptions): Promise<Buffer> {
   const chromium = await import('@sparticuz/chromium')
   const puppeteer = await import('puppeteer-core')
 
+  // Use local Chrome for development, @sparticuz/chromium for serverless
+  const executablePath =
+    process.env.CHROME_EXECUTABLE_PATH || (await chromium.default.executablePath())
+
   const browser = await puppeteer.default.launch({
     args: chromium.default.args,
-    executablePath: await chromium.default.executablePath(),
+    executablePath,
     headless: true
   })
 

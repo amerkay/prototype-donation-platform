@@ -1,0 +1,13 @@
+[build]
+  command = "pnpm build"
+  publish = "dist"
+
+[functions]
+  # Use esbuild bundler - required for native modules
+  node_bundler = "esbuild"
+  # Don't bundle chromium - it has native binaries
+  external_node_modules = ["@sparticuz/chromium", "puppeteer-core"]
+
+[build.environment]
+  # Skip downloading Chromium during build (using @sparticuz/chromium instead)
+  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"

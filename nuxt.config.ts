@@ -6,6 +6,12 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   ssr: true,
 
+  // Explicitly set Netlify preset for deployment
+  // Auto-detection should work, but explicit is safer
+  nitro: {
+    preset: 'netlify'
+  },
+
   // Disable SSR for admin routes (they use sessionStorage and require auth)
   routeRules: {
     '/admin/**': { ssr: false }
