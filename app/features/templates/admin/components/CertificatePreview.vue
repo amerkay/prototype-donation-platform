@@ -2,6 +2,7 @@
 import { computed, ref, toRef, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useCertificateTemplateStore } from '~/features/templates/admin/stores/certificateTemplate'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
+import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { getBunnyFontUrls } from '~/features/settings/admin/utils/fonts'
@@ -26,6 +27,7 @@ const props = withDefaults(
 
 const cert = useCertificateTemplateStore()
 const branding = useBrandingSettingsStore()
+const charity = useCharitySettingsStore()
 const currencyStore = useCurrencySettingsStore()
 const { products } = useProducts()
 
@@ -34,7 +36,7 @@ useHead({
     getBunnyFontUrls([
       branding.fontFamily,
       cert.certificate.signatureSettings.signatureFontFamily,
-      cert.certificate.donorNameSettings.donorNameFontFamily
+      cert.certificate.awardBlock.donorNameFontFamily
     ]).map((href) => ({
       rel: 'stylesheet',
       href
@@ -70,13 +72,17 @@ const certificateModel = computed<CertificateModel>(() => {
     AMOUNT: sampleAmount.value,
     DATE: sampleDate
   }
-  const subtitleHtml = processTemplateRichText(cert.certificate.header.subtitle, variableValues)
+  const awardTextLine2Html = processTemplateRichText(
+    cert.certificate.awardBlock.awardTextLine2,
+    variableValues
+  )
   const bodyHtml = processTemplateRichText(cert.certificate.body.bodyText, variableValues)
 
   return {
     layout: cert.certificate.design.layout,
     branding: {
       logoUrl: branding.logoUrl,
+      charityName: charity.name,
       primaryColor: branding.primaryColor,
       secondaryColor: branding.secondaryColor,
       fontFamily: branding.fontFamily
@@ -90,10 +96,22 @@ const certificateModel = computed<CertificateModel>(() => {
     header: {
       showLogo: cert.certificate.header.showLogo,
       logoSize: cert.certificate.header.logoSize,
-      title: cert.certificate.header.title,
+      logoPosition: cert.certificate.header.logoPosition,
+      titleLine1: cert.certificate.header.titleLine1,
+      titleLine2: cert.certificate.header.titleLine2,
       titleTextColor: cert.certificate.header.titleTextColor
     },
-    subtitleHtml,
+    awardBlock: {
+      textLine1: cert.certificate.awardBlock.awardTextLine1,
+      donorName: cert.certificate.awardBlock.showDonorName
+        ? {
+            value: 'John Smith',
+            show: true,
+            fontFamily: cert.certificate.awardBlock.donorNameFontFamily
+          }
+        : undefined,
+      textLine2Html: awardTextLine2Html
+    },
     bodyHtml,
     product: cert.certificate.productSettings.showProduct
       ? {
@@ -101,14 +119,6 @@ const certificateModel = computed<CertificateModel>(() => {
           image: sampleProduct.value.image,
           show: true,
           imageShape: cert.certificate.productSettings.productImageShape
-        }
-      : undefined,
-    donorName: cert.certificate.donorNameSettings.showDonorName
-      ? {
-          value: 'John Smith',
-          show: true,
-          fontFamily: cert.certificate.donorNameSettings.donorNameFontFamily,
-          position: cert.certificate.donorNameSettings.donorNamePosition
         }
       : undefined,
     date: cert.certificate.dateSettings.showDate ? { value: sampleDate, show: true } : undefined,

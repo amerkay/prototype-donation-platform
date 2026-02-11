@@ -8,6 +8,7 @@ import type { CertificateLayoutId } from '~/features/templates/admin/types'
 /** Branding information for certificate rendering */
 export interface CertificateBranding {
   logoUrl: string
+  charityName: string
   primaryColor: string
   secondaryColor: string
   fontFamily: string
@@ -25,7 +26,9 @@ export interface CertificateDesign {
 export interface CertificateHeader {
   showLogo: boolean
   logoSize: 'small' | 'medium' | 'large'
-  title: string
+  logoPosition: 'center' | 'left'
+  titleLine1: string
+  titleLine2: string
   titleTextColor: string
 }
 
@@ -37,12 +40,18 @@ export interface CertificateProduct {
   imageShape: 'circle' | 'rounded' | 'square'
 }
 
-/** Donor name display settings */
+/** Donor name display settings (used within award block) */
 export interface CertificateDonorName {
   value: string
   show: boolean
   fontFamily: string
-  position: 'above-product' | 'below-product'
+}
+
+/** Award block with 3 rows: text line 1, donor name, text line 2 */
+export interface CertificateAwardBlock {
+  textLine1: string
+  donorName?: CertificateDonorName
+  textLine2Html: string
 }
 
 /** Date display settings */
@@ -66,19 +75,18 @@ export interface CertificateFooterSettings {
 
 /**
  * Complete certificate model for rendering.
- * All rich text (subtitleHtml, bodyHtml) should be pre-sanitized with variables replaced.
+ * All rich text (bodyHtml, awardBlock.textLine2Html) should be pre-sanitized with variables replaced.
  */
 export interface CertificateModel {
   layout: CertificateLayoutId
   branding: CertificateBranding
   design: CertificateDesign
   header: CertificateHeader
-  /** Pre-sanitized rich-text HTML with variables replaced */
-  subtitleHtml: string
+  /** Award block with 3 rows: text line 1, donor name (optional), text line 2 */
+  awardBlock: CertificateAwardBlock
   /** Pre-sanitized rich-text HTML with variables replaced */
   bodyHtml: string
   product?: CertificateProduct
-  donorName?: CertificateDonorName
   date?: CertificateDate
   signature?: CertificateSignature
   footer?: CertificateFooterSettings
@@ -89,14 +97,14 @@ export interface CertificateModel {
 /** Target field paths for editable preview navigation */
 export interface CertificateTemplateTargets {
   showLogo: string
-  title: string
-  subtitle: string
+  titleLine1: string
+  titleLine2: string
   header: string
+  awardBlock: string
   body: string
   productSettings: string
   signatureSettings: string
   design: string
-  donorName: string
   date: string
   footer: string
 }

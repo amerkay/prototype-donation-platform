@@ -44,7 +44,7 @@ const fontFamilies = computed(() => {
   return [
     model.value.branding.fontFamily,
     model.value.signature?.fontFamily,
-    model.value.donorName?.fontFamily
+    model.value.awardBlock.donorName?.fontFamily
   ].filter(Boolean) as string[]
 })
 

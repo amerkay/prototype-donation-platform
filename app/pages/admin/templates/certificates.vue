@@ -24,6 +24,9 @@ const originalData = computed(() => ({
     header: {
       ...store.certificate.header
     },
+    awardBlock: {
+      ...store.certificate.awardBlock
+    },
     body: {
       ...store.certificate.body
     },
@@ -32,9 +35,6 @@ const originalData = computed(() => ({
     },
     signatureSettings: {
       ...store.certificate.signatureSettings
-    },
-    donorNameSettings: {
-      ...store.certificate.donorNameSettings
     },
     dateSettings: {
       ...store.certificate.dateSettings

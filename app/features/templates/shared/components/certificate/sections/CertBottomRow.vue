@@ -59,6 +59,6 @@ const hasFooter = computed(() => !!props.footer?.text)
       :data-field="targets?.signatureSettings"
     />
 
-    <CertFooter v-if="hasFooter" :text="footer!.text" :data-field="targets?.footer" />
+    <CertFooter v-if="hasFooter" class="mt-4" :text="footer!.text" :data-field="targets?.footer" />
   </div>
 </template>

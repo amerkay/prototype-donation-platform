@@ -8,7 +8,7 @@ defineProps<{
 <template>
   <p
     :data-field="dataField"
-    class="text-gray-500 text-center m-0 whitespace-nowrap overflow-hidden text-ellipsis w-full text-base mt-1"
+    class="text-gray-800 text-center m-0 whitespace-nowrap overflow-hidden text-ellipsis w-full text-base"
   >
     {{ text }}
   </p>

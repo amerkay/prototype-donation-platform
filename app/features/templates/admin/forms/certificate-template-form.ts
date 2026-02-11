@@ -23,13 +23,13 @@ const CERTIFICATE_TEMPLATE_VARIABLES = [
 
 export const CERTIFICATE_TEMPLATE_TARGETS = {
   showLogo: 'certificate.header.showLogo',
-  title: 'certificate.header.title',
-  subtitle: 'certificate.header.subtitle',
+  titleLine1: 'certificate.header.titleLine1',
+  titleLine2: 'certificate.header.titleLine2',
   header: 'certificate.header',
+  awardBlock: 'certificate.awardBlock',
   body: 'certificate.body',
   productSettings: 'certificate.productSettings',
   signatureSettings: 'certificate.signatureSettings',
-  donorName: 'certificate.donorNameSettings',
   date: 'certificate.dateSettings',
   footer: 'certificate.footerSettings',
   design: 'certificate.design'
@@ -51,17 +51,28 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     }
   })
 
-  const title = textField('title', {
-    label: 'Title',
-    description: 'Main certificate heading.',
-    maxLength: 50
+  const titleLine1 = textField('titleLine1', {
+    label: 'Title Line 1',
+    description: 'Smaller text above main title (e.g., "Certificate of").',
+    maxLength: 30
   })
 
-  const subtitle = richTextField('subtitle', {
-    label: 'Subtitle',
-    description: 'Short intro under title.',
-    variables: CERTIFICATE_TEMPLATE_VARIABLES,
+  const titleLine2 = textField('titleLine2', {
+    label: 'Title Line 2',
+    description: 'Main title text, uses title color.',
+    maxLength: 35,
     showSeparatorAfter: true
+  })
+
+  const logoPosition = radioGroupField('logoPosition', {
+    label: 'Logo Position',
+    description: 'Position of logo relative to title.',
+    orientation: 'horizontal',
+    options: [
+      { value: 'center', label: 'Center' },
+      { value: 'left', label: 'Left of Title' }
+    ],
+    visibleWhen: (ctx) => !!ctx.values.showLogo
   })
 
   const bodyText = richTextField('bodyText', {
@@ -107,9 +118,27 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     ]
   })
 
+  const noLogoAlert = alertField('noLogoAlert', {
+    variant: 'info',
+    description: 'Upload a logo in branding settings to enable this option.',
+    cta: {
+      label: 'Go to branding',
+      to: '/admin/settings/branding#logo',
+      inline: true
+    },
+    visibleWhen: () => !branding.logoUrl
+  })
+
   const showLogo = toggleField('showLogo', {
     label: 'Show Logo',
-    description: 'Show organization logo.'
+    description: 'Show organization logo.',
+    disabled: () => !branding.logoUrl,
+    onChange: ({ value, setValue }) => {
+      // Force false if no logo available
+      if (value && !branding.logoUrl) {
+        setValue('showLogo', false)
+      }
+    }
   })
 
   const logoSize = radioGroupField('logoSize', {
@@ -153,9 +182,15 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     }
   })
 
+  const awardTextLine1 = textField('awardTextLine1', {
+    label: 'Award Text Line 1',
+    description: 'Plain text above donor name (e.g., "This certificate is awarded to").',
+    maxLength: 60
+  })
+
   const showDonorName = toggleField('showDonorName', {
     label: 'Show Donor Name',
-    description: 'Display donor name decoratively.'
+    description: 'Display donor name decoratively in award block.'
   })
 
   const donorNameFontFamily = componentField('donorNameFontFamily', {
@@ -168,15 +203,10 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     }
   })
 
-  const donorNamePosition = radioGroupField('donorNamePosition', {
-    label: 'Position',
-    description: 'Where to display the donor name relative to the product.',
-    orientation: 'horizontal',
-    options: [
-      { value: 'above-product', label: 'Above product' },
-      { value: 'below-product', label: 'Below product' }
-    ],
-    visibleWhen: (ctx) => !!ctx.values.showDonorName
+  const awardTextLine2 = richTextField('awardTextLine2', {
+    label: 'Award Text Line 2',
+    description: 'Rich text below donor name (e.g., "for your symbolic adoption of").',
+    variables: CERTIFICATE_TEMPLATE_VARIABLES
   })
 
   const showDate = toggleField('showDate', {
@@ -231,13 +261,22 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     label: 'Header',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: { showLogo, logoSize, title, titleTextColor, subtitle },
+    fields: {
+      showLogo,
+      noLogoAlert,
+      logoSize,
+      logoPosition,
+      titleLine1,
+      titleLine2,
+      titleTextColor
+    },
     $storePath: {
       showLogo: 'showLogo',
       logoSize: 'logoSize',
-      title: 'title',
-      titleTextColor: 'titleTextColor',
-      subtitle: 'subtitle'
+      logoPosition: 'logoPosition',
+      titleLine1: 'titleLine1',
+      titleLine2: 'titleLine2',
+      titleTextColor: 'titleTextColor'
     },
     showSeparatorAfter: true
   })
@@ -279,15 +318,16 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     showSeparatorAfter: true
   })
 
-  const donorNameSettings = fieldGroup('donorNameSettings', {
-    label: 'Donor Name',
+  const awardBlock = fieldGroup('awardBlock', {
+    label: 'Award Block',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: { showDonorName, donorNameFontFamily, donorNamePosition },
+    fields: { awardTextLine1, showDonorName, donorNameFontFamily, awardTextLine2 },
     $storePath: {
+      awardTextLine1: 'awardTextLine1',
       showDonorName: 'showDonorName',
       donorNameFontFamily: 'donorNameFontFamily',
-      donorNamePosition: 'donorNamePosition'
+      awardTextLine2: 'awardTextLine2'
     },
     showSeparatorAfter: true
   })
@@ -343,9 +383,9 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     fields: {
       design,
       header,
+      awardBlock,
       body,
       productSettings,
-      donorNameSettings,
       dateSettings,
       footerSettings,
       signatureSettings

@@ -23,8 +23,11 @@ export interface ReceiptTemplate {
 }
 
 export interface CertificateTemplate {
-  title: string
-  subtitle: string
+  titleLine1: string
+  titleLine2: string
+  logoPosition: 'center' | 'left'
+  awardTextLine1: string
+  awardTextLine2: string
   bodyText: string
   pageBorderStyle: 'none' | 'border' | 'rounded' | 'double'
   pageBorderThickness: 'thin' | 'medium' | 'thick'
@@ -43,7 +46,6 @@ export interface CertificateTemplate {
   showDate: boolean
   showDonorName: boolean
   donorNameFontFamily: string
-  donorNamePosition: 'above-product' | 'below-product'
   footerText: string
 }
 
@@ -59,8 +61,11 @@ export interface ECardTemplate {
 
 /** Data contract for server-side certificate PDF generation */
 export interface CertificatePdfData {
-  title: string
-  subtitle: string
+  titleLine1: string
+  titleLine2: string
+  logoPosition: 'center' | 'left'
+  awardTextLine1: string
+  awardTextLine2: string
   bodyHtml: string
   pageBorderStyle: 'none' | 'border' | 'rounded' | 'double'
   pageBorderThickness: 'thin' | 'medium' | 'thick'
@@ -79,10 +84,10 @@ export interface CertificatePdfData {
   showDate: boolean
   showDonorName: boolean
   donorNameFontFamily: string
-  donorNamePosition: 'above-product' | 'below-product'
   footerText: string
   branding: {
     logoUrl: string
+    charityName: string
     primaryColor: string
     secondaryColor: string
     fontFamily: string

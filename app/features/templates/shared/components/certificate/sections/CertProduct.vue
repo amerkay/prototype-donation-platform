@@ -25,7 +25,7 @@ const borderRadius = computed(() => BORDER_RADIUS[props.imageShape] ?? BORDER_RA
     :data-field="dataField"
     :class="
       cn(
-        'flex flex-col items-center justify-center mb-4',
+        'flex flex-col items-center justify-center',
         adaptive ? 'flex-1 min-h-0 max-h-full' : 'flex-1 min-h-0'
       )
     "

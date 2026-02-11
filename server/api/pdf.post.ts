@@ -18,7 +18,7 @@ function buildCertificateModel(data: CertificatePdfData): CertificateModel {
     DATE: data.date
   }
 
-  const subtitleHtml = processTemplateRichText(data.subtitle, variables)
+  const awardTextLine2Html = processTemplateRichText(data.awardTextLine2, variables)
   const bodyHtml = processTemplateRichText(data.bodyHtml, variables)
 
   return {
@@ -33,10 +33,22 @@ function buildCertificateModel(data: CertificatePdfData): CertificateModel {
     header: {
       showLogo: data.showLogo,
       logoSize: data.logoSize,
-      title: data.title,
+      logoPosition: data.logoPosition,
+      titleLine1: data.titleLine1,
+      titleLine2: data.titleLine2,
       titleTextColor: data.titleTextColor
     },
-    subtitleHtml,
+    awardBlock: {
+      textLine1: data.awardTextLine1,
+      donorName: data.showDonorName
+        ? {
+            value: data.donorName,
+            show: true,
+            fontFamily: data.donorNameFontFamily
+          }
+        : undefined,
+      textLine2Html: awardTextLine2Html
+    },
     bodyHtml,
     product:
       data.showProduct && data.product
@@ -47,14 +59,6 @@ function buildCertificateModel(data: CertificatePdfData): CertificateModel {
             imageShape: data.productImageShape
           }
         : undefined,
-    donorName: data.showDonorName
-      ? {
-          value: data.donorName,
-          show: true,
-          fontFamily: data.donorNameFontFamily,
-          position: data.donorNamePosition
-        }
-      : undefined,
     date: data.showDate ? { value: data.date, show: true } : undefined,
     signature: data.showSignature
       ? {

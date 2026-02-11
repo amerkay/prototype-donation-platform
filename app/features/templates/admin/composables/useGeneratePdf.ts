@@ -33,6 +33,7 @@ export function useGeneratePdf() {
 
       if (type === 'certificate') {
         const cert = useCertificateTemplateStore()
+        const charity = useCharitySettingsStore()
         const certificate = cert.certificate
         const sampleP = sampleProducts.find((p) => p.image && p.certificateOverrideName)
         const product = sampleP?.image
@@ -41,8 +42,11 @@ export function useGeneratePdf() {
         body = {
           type: 'certificate',
           data: {
-            title: certificate.header.title,
-            subtitle: certificate.header.subtitle,
+            titleLine1: certificate.header.titleLine1,
+            titleLine2: certificate.header.titleLine2,
+            logoPosition: certificate.header.logoPosition,
+            awardTextLine1: certificate.awardBlock.awardTextLine1,
+            awardTextLine2: certificate.awardBlock.awardTextLine2,
             bodyHtml: certificate.body.bodyText,
             pageBorderStyle: certificate.design.pageBorderStyle,
             pageBorderThickness: certificate.design.pageBorderThickness,
@@ -59,12 +63,12 @@ export function useGeneratePdf() {
             titleTextColor: certificate.header.titleTextColor,
             separatorsAndBordersColor: certificate.design.separatorsAndBordersColor,
             showDate: certificate.dateSettings.showDate,
-            showDonorName: certificate.donorNameSettings.showDonorName,
-            donorNameFontFamily: certificate.donorNameSettings.donorNameFontFamily,
-            donorNamePosition: certificate.donorNameSettings.donorNamePosition,
+            showDonorName: certificate.awardBlock.showDonorName,
+            donorNameFontFamily: certificate.awardBlock.donorNameFontFamily,
             footerText: certificate.footerSettings.footerText,
             branding: {
               logoUrl: branding.logoUrl,
+              charityName: charity.name,
               primaryColor: branding.primaryColor,
               secondaryColor: branding.secondaryColor,
               fontFamily: branding.fontFamily

@@ -1,20 +1,32 @@
 <script setup lang="ts">
+const COLOR_LINE1 = '#333333'
+
 defineProps<{
-  title: string
-  color: string
-  dataField?: string
+  titleLine1: string
+  titleLine2: string
+  colorLine2: string
+  dataFieldLine1?: string
+  dataFieldLine2?: string
 }>()
 </script>
 
 <template>
-  <div class="w-full overflow-hidden mb-6">
-    <h2
-      :data-field="dataField"
-      data-max-lines="2"
-      class="font-bold leading-tight tracking-wide m-0 text-6xl line-clamp-2"
-      :style="{ color }"
+  <div class="w-full">
+    <h3
+      :data-field="dataFieldLine1"
+      data-max-lines="1"
+      class="font-medium text-3xl line-clamp-1 m-0"
+      :style="{ color: COLOR_LINE1 }"
     >
-      {{ title }}
+      {{ titleLine1 }}
+    </h3>
+    <h2
+      :data-field="dataFieldLine2"
+      data-min-font="32"
+      class="cert-adaptive font-bold text-6xl mt-0 m-0"
+      :style="{ color: colorLine2 }"
+    >
+      {{ titleLine2 }}
     </h2>
   </div>
 </template>

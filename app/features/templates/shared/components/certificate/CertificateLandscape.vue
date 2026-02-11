@@ -4,11 +4,11 @@ import { useCertificateColors } from '~/features/templates/shared/composables/us
 import CertBackground from './sections/CertBackground.vue'
 import CertLogo from './sections/CertLogo.vue'
 import CertTitle from './sections/CertTitle.vue'
-import CertSubtitle from './sections/CertSubtitle.vue'
-import CertDonorName from './sections/CertDonorName.vue'
+import CertAwardBlock from './sections/CertAwardBlock.vue'
 import CertProduct from './sections/CertProduct.vue'
 import CertBody from './sections/CertBody.vue'
 import CertBottomRow from './sections/CertBottomRow.vue'
+import CertSeparator from './sections/CertSeparator.vue'
 
 const props = defineProps<{
   model: CertificateModel
@@ -30,13 +30,15 @@ const borderRadius = computed(() =>
   props.model.design.pageBorderStyle === 'rounded' ? '1.5rem' : undefined
 )
 
-const showDonorNameAbove = computed(
-  () => props.model.donorName?.show && props.model.donorName.position === 'above-product'
+const isLogoLeft = computed(
+  () => props.model.header.showLogo && props.model.header.logoPosition === 'left'
 )
 
-const showDonorNameBelow = computed(
-  () => props.model.donorName?.show && props.model.donorName.position === 'below-product'
+const isLogoCentered = computed(
+  () => props.model.header.showLogo && props.model.header.logoPosition !== 'left'
 )
+
+const headerZoom = computed(() => (isLogoCentered.value ? 0.75 : undefined))
 </script>
 
 <template>
@@ -54,36 +56,48 @@ const showDonorNameBelow = computed(
       :data-field="model.targets?.design"
     />
 
-    <div class="relative z-10 flex flex-col h-full overflow-hidden px-12 py-4 pb-3">
+    <!-- Logo absolutely positioned in corner when 'left' -->
+    <CertLogo
+      v-if="isLogoLeft"
+      position="left"
+      :logo-url="model.branding.logoUrl"
+      :size="model.header.logoSize"
+      :data-field="model.targets?.showLogo"
+      class="absolute top-7 left-7 z-20"
+    />
+
+    <div class="relative z-10 flex flex-col h-full overflow-hidden px-12 pt-8 pb-4">
       <!-- Header -->
-      <div class="text-center shrink-0">
+      <div class="text-center shrink-0" :style="{ zoom: headerZoom }">
+        <!-- Centered logo (default) -->
         <CertLogo
-          v-if="model.header.showLogo"
+          v-if="isLogoCentered"
+          position="center"
           :logo-url="model.branding.logoUrl"
-          :primary-color="model.branding.primaryColor"
           :size="model.header.logoSize"
           :data-field="model.targets?.showLogo"
         />
 
         <CertTitle
-          :title="model.header.title"
-          :color="colors.titleText"
-          :data-field="model.targets?.title"
+          :title-line1="model.header.titleLine1"
+          :title-line2="model.header.titleLine2"
+          :color-line2="colors.titleText"
+          :data-field-line1="model.targets?.titleLine1"
+          :data-field-line2="model.targets?.titleLine2"
+          class="max-w-xl mx-auto"
         />
 
-        <CertSubtitle :subtitle-html="model.subtitleHtml" :data-field="model.targets?.subtitle" />
-
-        <CertDonorName
-          v-if="showDonorNameAbove"
-          :name="model.donorName!.value"
-          :font-family="model.donorName!.fontFamily"
-          :data-field="model.targets?.donorName"
+        <!-- Award block -->
+        <CertAwardBlock
+          class="mt-6"
+          :award-block="model.awardBlock"
+          :data-field="model.targets?.awardBlock"
         />
       </div>
 
       <!-- Content -->
       <div
-        class="flex-1 flex flex-col items-center justify-start text-center min-h-0 overflow-hidden"
+        class="flex-1 flex flex-col items-center justify-start text-center min-h-0 overflow-hidden mt-4"
       >
         <CertProduct
           v-if="model.product?.show"
@@ -94,19 +108,20 @@ const showDonorNameBelow = computed(
           :border-width="props.thickness.productPx"
           :adaptive="true"
           :data-field="model.targets?.productSettings"
+          class="mb-4"
         />
 
-        <CertDonorName
-          v-if="showDonorNameBelow"
-          :name="model.donorName!.value"
-          :font-family="model.donorName!.fontFamily"
-          :data-field="model.targets?.donorName"
+        <CertSeparator
+          v-if="!model.product?.show"
+          :color="colors.separatorsAndBorders"
+          :thickness="props.thickness.separatorPx"
         />
 
         <CertBody
           v-if="model.bodyHtml"
           :body-html="model.bodyHtml"
           :data-field="model.targets?.body"
+          class="mb-3"
         />
       </div>
 

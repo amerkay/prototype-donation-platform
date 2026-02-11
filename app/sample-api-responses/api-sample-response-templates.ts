@@ -14,9 +14,11 @@ export const receiptTemplate: ReceiptTemplate = {
 }
 
 export const certificateTemplate: CertificateTemplate = {
-  title: 'Certificate of Adoption',
-  subtitle:
-    'This certificate is awarded to <strong>{{ DONOR_NAME }}</strong> for your symbolic adoption of',
+  titleLine1: 'Certificate of',
+  titleLine2: 'Adoption',
+  logoPosition: 'center',
+  awardTextLine1: 'This certificate is awarded to',
+  awardTextLine2: 'for your symbolic adoption of',
   bodyText:
     'Thank you for helping us save Bornean Orangutans from extinction! Your support provides food, medical care, and safe habitat.',
   pageBorderStyle: 'border',
@@ -36,7 +38,6 @@ export const certificateTemplate: CertificateTemplate = {
   showDate: true,
   showDonorName: true,
   donorNameFontFamily: 'Dancing Script',
-  donorNamePosition: 'below-product',
   footerText: 'www.orangutan.org | Tax ID: 12-3456789'
 }
 

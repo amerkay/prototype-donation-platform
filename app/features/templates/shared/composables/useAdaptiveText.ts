@@ -34,7 +34,6 @@ export function fitAdaptiveText(root: ParentNode = document): void {
     void el.offsetWidth
 
     let fontSize = parseFloat(getComputedStyle(el).fontSize)
-    const originalSize = fontSize
 
     // Shrink font until it fits or hits minimum
     while (el.scrollWidth > maxWidth && fontSize > minFont) {
@@ -42,11 +41,10 @@ export function fitAdaptiveText(root: ParentNode = document): void {
       el.style.fontSize = `${fontSize}px`
     }
 
-    // If still too wide, allow word break
+    // If still too wide at minimum font, allow wrapping but never break words
     if (el.scrollWidth > maxWidth) {
-      el.style.fontSize = `${originalSize}px`
       el.style.whiteSpace = 'normal'
-      el.style.wordBreak = 'break-word'
+      el.style.wordBreak = 'normal'
     }
   })
 }

@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
-import { computed, reactive, toRefs } from 'vue'
+import { computed, reactive, toRefs, watch } from 'vue'
 import type { CertificateTemplate } from '~/features/templates/admin/types'
 import { certificateTemplate as defaults } from '~/sample-api-responses/api-sample-response-templates'
 import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
+import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
 
 function normalizeTemplate(input: Partial<CertificateTemplate> = {}): CertificateTemplate {
   return {
@@ -19,9 +20,16 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     header: {
       showLogo: settings.showLogo,
       logoSize: settings.logoSize,
-      title: settings.title,
-      titleTextColor: settings.titleTextColor,
-      subtitle: settings.subtitle
+      logoPosition: settings.logoPosition,
+      titleLine1: settings.titleLine1,
+      titleLine2: settings.titleLine2,
+      titleTextColor: settings.titleTextColor
+    },
+    awardBlock: {
+      awardTextLine1: settings.awardTextLine1,
+      awardTextLine2: settings.awardTextLine2,
+      showDonorName: settings.showDonorName,
+      donorNameFontFamily: settings.donorNameFontFamily
     },
     body: {
       bodyText: settings.bodyText
@@ -35,11 +43,6 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
       signatureName: settings.signatureName,
       signatureTitle: settings.signatureTitle,
       signatureFontFamily: settings.signatureFontFamily
-    },
-    donorNameSettings: {
-      showDonorName: settings.showDonorName,
-      donorNameFontFamily: settings.donorNameFontFamily,
-      donorNamePosition: settings.donorNamePosition
     },
     dateSettings: {
       showDate: settings.showDate
@@ -93,6 +96,18 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
   }
 
   if (import.meta.client) $hydrate()
+
+  // Force showLogo to false when no logo is available
+  const branding = useBrandingSettingsStore()
+  watch(
+    () => branding.logoUrl,
+    (logoUrl) => {
+      if (!logoUrl && settings.showLogo) {
+        settings.showLogo = false
+      }
+    },
+    { immediate: true }
+  )
 
   return {
     ...toRefs(settings),

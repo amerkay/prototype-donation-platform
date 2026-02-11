@@ -1,18 +1,45 @@
 <script setup lang="ts">
-const LOGO_SIZES = {
-  small: { height: '3rem', fallbackSize: '3.5rem', margin: '1rem' },
-  medium: { height: '4rem', fallbackSize: '4.5rem', margin: '1.5rem' },
-  large: { height: '5.5rem', fallbackSize: '6rem', margin: '2rem' }
+import { cn } from '@/lib/utils'
+
+// Height-based sizing for centered logos
+const LOGO_SIZES_CENTER = {
+  small: { height: '3rem', margin: '1rem' },
+  medium: { height: '4rem', margin: '1.25rem' },
+  large: { height: '5.5rem', margin: '1.5rem' }
+} as const
+
+// Width-based sizing for left-positioned logos
+const LOGO_SIZES_LEFT = {
+  small: { maxWidth: '4rem' },
+  medium: { maxWidth: '5.5rem' },
+  large: { maxWidth: '7rem' }
 } as const
 
 const props = defineProps<{
   logoUrl: string
-  primaryColor: string
   size: 'small' | 'medium' | 'large'
+  position?: 'center' | 'left'
   dataField?: string
 }>()
 
-const sizeConfig = computed(() => LOGO_SIZES[props.size] ?? LOGO_SIZES.medium)
+const centered = computed(() => props.position !== 'left')
+
+const imageStyle = computed(() => {
+  if (centered.value) {
+    const config = LOGO_SIZES_CENTER[props.size] ?? LOGO_SIZES_CENTER.medium
+    return {
+      marginBottom: config.margin,
+      height: config.height,
+      width: 'auto'
+    }
+  }
+  const config = LOGO_SIZES_LEFT[props.size] ?? LOGO_SIZES_LEFT.medium
+  return {
+    maxWidth: config.maxWidth,
+    height: 'auto',
+    width: '100%'
+  }
+})
 </script>
 
 <template>
@@ -21,25 +48,7 @@ const sizeConfig = computed(() => LOGO_SIZES[props.size] ?? LOGO_SIZES.medium)
     :data-field="dataField"
     :src="logoUrl"
     alt="Logo"
-    class="mx-auto shrink-0 object-contain"
-    :style="{
-      marginBottom: sizeConfig.margin,
-      height: sizeConfig.height,
-      width: 'auto'
-    }"
+    :class="cn('shrink-0 object-contain', centered && 'mx-auto')"
+    :style="imageStyle"
   />
-  <div
-    v-else
-    :data-field="dataField"
-    class="rounded-full mx-auto shrink-0 flex items-center justify-center text-white font-bold"
-    :style="{
-      width: sizeConfig.fallbackSize,
-      height: sizeConfig.fallbackSize,
-      marginBottom: sizeConfig.margin,
-      fontSize: '1.5rem',
-      backgroundColor: primaryColor
-    }"
-  >
-    &#10022;
-  </div>
 </template>
