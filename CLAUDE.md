@@ -93,6 +93,7 @@ app/features/[feature-name]/
 
 1. `componentField` excluded from autoMap by default; persist via `$storePath` or manual getData/setData
 2. With `reka-ui` combobox, avoid manual open/select handlers that fight internal state
+3. `pnpm analyze` outputs chunk sizes mid-stream, not at end; grep for `.js` to find bundle info
 
 <!-- end continuous learning notes -->
 

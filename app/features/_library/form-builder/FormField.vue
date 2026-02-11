@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, type Component } from 'vue'
+import { computed, watch, defineAsyncComponent, type Component } from 'vue'
 import { useField, useFormErrors } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
@@ -23,7 +23,6 @@ import FormFieldSelect from './fields/FormFieldSelect.vue'
 import FormFieldCombobox from './fields/FormFieldCombobox.vue'
 import FormFieldRadioGroup from './fields/FormFieldRadioGroup.vue'
 import FormFieldColor from './fields/FormFieldColor.vue'
-import FormFieldRichText from './fields/FormFieldRichText.vue'
 import FormFieldSlider from './fields/FormFieldSlider.vue'
 import FormFieldAutocomplete from './fields/FormFieldAutocomplete.vue'
 import FormFieldDate from './fields/FormFieldDate.vue'
@@ -60,7 +59,7 @@ const FIELD_COMPONENTS: Record<string, Component> = {
   date: FormFieldDate,
   emoji: FormFieldEmoji,
   color: FormFieldColor,
-  'rich-text': FormFieldRichText,
+  'rich-text': defineAsyncComponent(() => import('./fields/FormFieldRichText.vue')),
   slider: FormFieldSlider,
   'image-upload': FormFieldImageUpload,
   component: FormFieldComponent,
