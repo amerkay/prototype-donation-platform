@@ -1,23 +1,18 @@
 <script setup lang="ts">
-import { computed, ref, toRef, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { computed, ref, toRef, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useCertificateTemplateStore } from '~/features/templates/admin/stores/certificateTemplate'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { formatCurrency } from '~/lib/formatCurrency'
-import {
-  buildCertificateFragment,
-  getFragmentOrientation
-} from '~/features/templates/admin/builders/certificate-fragment'
 import { getBunnyFontUrls } from '~/features/settings/admin/utils/fonts'
 import { useProducts } from '~/features/products/admin/composables/useProducts'
 import { usePreviewEditable } from '~/features/templates/admin/composables/usePreviewEditable'
 import { CERTIFICATE_TEMPLATE_TARGETS } from '~/features/templates/admin/forms/certificate-template-form'
 import { processTemplateRichText } from '~/features/templates/admin/utils/template-rich-text'
-import { fitAdaptiveText } from '~/features/templates/admin/builders/adaptive-text'
-import {
-  getCertificateRenderGeometry,
-  getCertificateContentGeometry
-} from '~/features/templates/admin/builders/render-geometry'
+import { getPageRenderGeometry } from '~/features/templates/admin/utils/page-geometry'
+import { useAdaptiveText } from '~/features/templates/shared/composables/useAdaptiveText'
+import type { CertificateModel } from '~/features/templates/shared/types'
+import CertificateLayout from '~/features/templates/shared/components/certificate/CertificateLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Pencil } from 'lucide-vue-next'
 
@@ -56,14 +51,8 @@ const sampleDate = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric'
 }).format(new Date())
 
-const isLandscape = computed(
-  () => getFragmentOrientation(cert.certificate.design.layout) === 'landscape'
-)
-const geometry = computed(() => getCertificateRenderGeometry(cert.certificate.design.layout))
-const contentGeometry = computed(() =>
-  getCertificateContentGeometry(cert.certificate.design.layout)
-)
-const contentScale = computed(() => geometry.value.canvasWidthPx / contentGeometry.value.widthPx)
+const isLandscape = computed(() => cert.certificate.design.layout === 'landscape-classic')
+const geometry = computed(() => getPageRenderGeometry(cert.certificate.design.layout))
 
 const sampleProduct = computed(() => {
   // Try to find a real product with image and certificate name
@@ -75,7 +64,7 @@ const sampleProduct = computed(() => {
   return { name: 'Baby Orangutan', image: 'https://placehold.co/200x200/f97316/ffffff?text=🦧' }
 })
 
-const fragment = computed(() => {
+const certificateModel = computed<CertificateModel>(() => {
   const variableValues = {
     DONOR_NAME: 'John Smith',
     AMOUNT: sampleAmount.value,
@@ -84,40 +73,58 @@ const fragment = computed(() => {
   const subtitleHtml = processTemplateRichText(cert.certificate.header.subtitle, variableValues)
   const bodyHtml = processTemplateRichText(cert.certificate.body.bodyText, variableValues)
 
-  return buildCertificateFragment({
-    title: cert.certificate.header.title,
-    subtitleHtml,
-    bodyHtml,
-    pageBorderStyle: cert.certificate.design.pageBorderStyle,
-    pageBorderThickness: cert.certificate.design.pageBorderThickness,
+  return {
     layout: cert.certificate.design.layout,
-    showLogo: cert.certificate.header.showLogo,
-    logoSize: cert.certificate.header.logoSize,
-    showSignature: cert.certificate.signatureSettings.showSignature,
-    signatureName: cert.certificate.signatureSettings.signatureName,
-    signatureTitle: cert.certificate.signatureSettings.signatureTitle,
-    signatureFontFamily: cert.certificate.signatureSettings.signatureFontFamily,
-    backgroundImage: cert.certificate.design.backgroundImage,
-    showProduct: cert.certificate.productSettings.showProduct,
-    productImageShape: cert.certificate.productSettings.productImageShape,
-    titleTextColor: cert.certificate.header.titleTextColor,
-    separatorsAndBordersColor: cert.certificate.design.separatorsAndBordersColor,
-    showDate: cert.certificate.dateSettings.showDate,
-    showDonorName: cert.certificate.donorNameSettings.showDonorName,
-    donorNameFontFamily: cert.certificate.donorNameSettings.donorNameFontFamily,
-    donorNamePosition: cert.certificate.donorNameSettings.donorNamePosition,
-    footerText: cert.certificate.footerSettings.footerText,
-    donorName: 'John Smith',
-    date: sampleDate,
-    targets: CERTIFICATE_TEMPLATE_TARGETS,
     branding: {
       logoUrl: branding.logoUrl,
       primaryColor: branding.primaryColor,
       secondaryColor: branding.secondaryColor,
       fontFamily: branding.fontFamily
     },
-    product: sampleProduct.value
-  })
+    design: {
+      pageBorderStyle: cert.certificate.design.pageBorderStyle,
+      pageBorderThickness: cert.certificate.design.pageBorderThickness,
+      backgroundImage: cert.certificate.design.backgroundImage,
+      separatorsAndBordersColor: cert.certificate.design.separatorsAndBordersColor
+    },
+    header: {
+      showLogo: cert.certificate.header.showLogo,
+      logoSize: cert.certificate.header.logoSize,
+      title: cert.certificate.header.title,
+      titleTextColor: cert.certificate.header.titleTextColor
+    },
+    subtitleHtml,
+    bodyHtml,
+    product: cert.certificate.productSettings.showProduct
+      ? {
+          name: sampleProduct.value.name,
+          image: sampleProduct.value.image,
+          show: true,
+          imageShape: cert.certificate.productSettings.productImageShape
+        }
+      : undefined,
+    donorName: cert.certificate.donorNameSettings.showDonorName
+      ? {
+          value: 'John Smith',
+          show: true,
+          fontFamily: cert.certificate.donorNameSettings.donorNameFontFamily,
+          position: cert.certificate.donorNameSettings.donorNamePosition
+        }
+      : undefined,
+    date: cert.certificate.dateSettings.showDate ? { value: sampleDate, show: true } : undefined,
+    signature: cert.certificate.signatureSettings.showSignature
+      ? {
+          show: true,
+          name: cert.certificate.signatureSettings.signatureName,
+          title: cert.certificate.signatureSettings.signatureTitle,
+          fontFamily: cert.certificate.signatureSettings.signatureFontFamily
+        }
+      : undefined,
+    footer: cert.certificate.footerSettings.footerText
+      ? { text: cert.certificate.footerSettings.footerText }
+      : undefined,
+    targets: CERTIFICATE_TEMPLATE_TARGETS
+  }
 })
 
 const previewRef = ref<HTMLElement | null>(null)
@@ -139,29 +146,17 @@ function updatePreviewScale() {
   previewScale.value = Math.min(widthRatio, heightRatio) || 1
 }
 
-function runAdaptiveTextFit() {
-  const container = contentRef.value
-  if (!container) return
+// Use adaptive text composable
+const { runFit } = useAdaptiveText(contentRef, [certificateModel])
 
-  nextTick(() => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        fitAdaptiveText(container)
-      })
-    })
-  })
-}
-
-// Re-run adaptive text when fragment or layout orientation changes
-watch(fragment, () => runAdaptiveTextFit(), { flush: 'post' })
+// Re-run on layout orientation changes
 watch(isLandscape, () => {
   updatePreviewScale()
-  runAdaptiveTextFit()
+  runFit()
 })
 
 onMounted(() => {
   updatePreviewScale()
-  runAdaptiveTextFit()
 
   if (previewRef.value) {
     resizeObserver = new ResizeObserver(() => updatePreviewScale())
@@ -185,25 +180,15 @@ onBeforeUnmount(() => {
     }"
   >
     <div
-      class="absolute left-0 top-0 origin-top-left"
+      ref="contentRef"
+      class="absolute left-0 top-0 origin-top-left overflow-hidden"
       :style="{
         width: `${geometry.canvasWidthPx}px`,
         height: `${geometry.canvasHeightPx}px`,
         transform: `scale(${previewScale})`
       }"
     >
-      <div
-        ref="contentRef"
-        class="origin-top-left overflow-hidden"
-        :style="{
-          width: `${contentGeometry.widthPx}px`,
-          height: `${contentGeometry.heightPx}px`,
-          transform: `scale(${contentScale})`
-        }"
-      >
-        <!-- eslint-disable-next-line vue/no-v-html -- trusted builder output, body pre-sanitized -->
-        <div class="h-full w-full" v-html="fragment" />
-      </div>
+      <CertificateLayout :model="certificateModel" />
     </div>
 
     <Transition name="fade">

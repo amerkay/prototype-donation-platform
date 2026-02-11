@@ -8,7 +8,7 @@ import { useCertificateTemplateStore } from '~/features/templates/admin/stores/c
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
 import { useGeneratePdf } from '~/features/templates/admin/composables/useGeneratePdf'
-import { getFragmentOrientation } from '~/features/templates/admin/builders/certificate-fragment'
+import { getLayoutOrientation } from '~/features/templates/admin/utils/page-geometry'
 import { Button } from '@/components/ui/button'
 import { Download, Loader2 } from 'lucide-vue-next'
 
@@ -63,7 +63,7 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdmi
 const showPreviewDialog = ref(false)
 
 const previewMaxWidth = computed(() =>
-  getFragmentOrientation(store.certificate.design.layout) === 'landscape'
+  getLayoutOrientation(store.certificate.design.layout) === 'landscape'
     ? 'sm:max-w-3xl'
     : 'sm:max-w-xl'
 )
