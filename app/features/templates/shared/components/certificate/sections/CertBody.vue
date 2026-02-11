@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
-
 defineProps<{
   bodyHtml: string
-  compact?: boolean
   dataField?: string
 }>()
 </script>
@@ -11,12 +8,7 @@ defineProps<{
 <template>
   <div
     :data-field="dataField"
-    :class="
-      cn(
-        'cert-body w-full max-w-[95%] mx-auto line-clamp-2 text-gray-700 text-center leading-relaxed',
-        compact ? 'text-lg' : 'text-xl mb-6'
-      )
-    "
+    class="cert-body w-full max-w-[95%] mx-auto line-clamp-2 text-gray-700 text-center leading-relaxed text-xl mb-6"
   >
     <!-- eslint-disable-next-line vue/no-v-html -- sanitized -->
     <div v-html="bodyHtml" />

@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
-
 defineProps<{
   subtitleHtml: string
-  compact?: boolean
   dataField?: string
 }>()
 </script>
@@ -11,12 +8,7 @@ defineProps<{
 <template>
   <div
     :data-field="dataField"
-    :class="
-      cn(
-        'cert-subtitle w-full line-clamp-2 text-gray-700',
-        compact ? 'text-xl mb-4' : 'text-2xl mb-6'
-      )
-    "
+    class="cert-subtitle w-full line-clamp-2 text-gray-700 text-2xl mb-6"
   >
     <!-- eslint-disable-next-line vue/no-v-html -- sanitized -->
     <div v-html="subtitleHtml" />

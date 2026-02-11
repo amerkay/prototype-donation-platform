@@ -101,62 +101,6 @@ export interface CertificateTemplateTargets {
   footer: string
 }
 
-/** Resolved colors for consistent styling across sections */
-export interface ResolvedColors {
-  titleText: string
-  separatorsAndBorders: string
-}
-
-/** Resolved thickness values from preset */
-export interface ResolvedThickness {
-  borderPx: number
-  productPx: number
-  separatorPx: string
-}
-
-/** Common thickness presets for borders, separators, and product images */
-export const THICKNESS_PRESETS = {
-  thin: { borderPx: 2, productPx: 2, separatorPx: '2px' },
-  medium: { borderPx: 4, productPx: 4, separatorPx: '3px' },
-  thick: { borderPx: 6, productPx: 6, separatorPx: '4px' }
-} as const
-
-export type ThicknessPreset = keyof typeof THICKNESS_PRESETS
-
-/** Get resolved thickness from preset name */
-export function getThickness(preset: ThicknessPreset): ResolvedThickness {
-  return THICKNESS_PRESETS[preset] ?? THICKNESS_PRESETS.medium
-}
-
-/** Logo size configuration for portrait and landscape modes */
-export const LOGO_SIZES = {
-  portrait: {
-    small: { height: '3rem', fallbackSize: '3.5rem', margin: '1rem' },
-    medium: { height: '4rem', fallbackSize: '4.5rem', margin: '1.5rem' },
-    large: { height: '5.5rem', fallbackSize: '6rem', margin: '2rem' }
-  },
-  landscape: {
-    small: { height: '3rem', fallbackSize: '3.5rem', margin: '1rem' },
-    medium: { height: '4rem', fallbackSize: '4.5rem', margin: '1.5rem' },
-    large: { height: '5.5rem', fallbackSize: '6rem', margin: '2rem' }
-  }
-} as const
-
-/** Product image border radius by shape */
-export const PRODUCT_BORDER_RADIUS: Record<string, string> = {
-  circle: '9999px',
-  rounded: '0.75rem',
-  square: '0'
-}
-
-/** Border style CSS generators */
-export const BORDER_STYLES = {
-  none: () => 'none',
-  border: (thickness: number) => `${thickness}px solid`,
-  rounded: (thickness: number) => `${thickness}px solid`,
-  double: (thickness: number) => `${thickness}px double`
-} as const
-
 // ============================================================================
 // Receipt Types
 // ============================================================================

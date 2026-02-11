@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { LOGO_SIZES } from '~/features/templates/shared/types'
+const LOGO_SIZES = {
+  small: { height: '3rem', fallbackSize: '3.5rem', margin: '1rem' },
+  medium: { height: '4rem', fallbackSize: '4.5rem', margin: '1.5rem' },
+  large: { height: '5.5rem', fallbackSize: '6rem', margin: '2rem' }
+} as const
 
 const props = defineProps<{
   logoUrl: string
   primaryColor: string
   size: 'small' | 'medium' | 'large'
-  compact?: boolean
   dataField?: string
 }>()
 
-const sizeConfig = computed(() => {
-  const mode = props.compact ? 'landscape' : 'portrait'
-  return LOGO_SIZES[mode][props.size] ?? LOGO_SIZES[mode].medium
-})
+const sizeConfig = computed(() => LOGO_SIZES[props.size] ?? LOGO_SIZES.medium)
 </script>
 
 <template>
@@ -36,7 +36,7 @@ const sizeConfig = computed(() => {
       width: sizeConfig.fallbackSize,
       height: sizeConfig.fallbackSize,
       marginBottom: sizeConfig.margin,
-      fontSize: compact ? '1.25rem' : '1.5rem',
+      fontSize: '1.5rem',
       backgroundColor: primaryColor
     }"
   >

@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import type {
-  CertificateModel,
-  ResolvedColors,
-  ResolvedThickness
-} from '~/features/templates/shared/types'
-import { getThickness, BORDER_STYLES } from '~/features/templates/shared/types'
+import type { CertificateModel } from '~/features/templates/shared/types'
 import { useCertificateColors } from '~/features/templates/shared/composables/useCertificateColors'
 import CertBackground from './sections/CertBackground.vue'
 import CertLogo from './sections/CertLogo.vue'
@@ -17,21 +12,18 @@ import CertBottomRow from './sections/CertBottomRow.vue'
 
 const props = defineProps<{
   model: CertificateModel
+  thickness: { borderPx: number; productPx: number; separatorPx: string }
 }>()
 
-const colors = computed<ResolvedColors>(() =>
+const colors = computed(() =>
   useCertificateColors(props.model.branding, props.model.design, props.model.header.titleTextColor)
-)
-
-const thickness = computed<ResolvedThickness>(() =>
-  getThickness(props.model.design.pageBorderThickness)
 )
 
 const borderStyle = computed(() => {
   const style = props.model.design.pageBorderStyle
   if (style === 'none') return 'none'
-  const styleFn = BORDER_STYLES[style] ?? BORDER_STYLES.border
-  return styleFn(thickness.value.borderPx)
+  const px = props.thickness.borderPx
+  return style === 'double' ? `${px}px double` : `${px}px solid`
 })
 
 const borderRadius = computed(() =>
@@ -70,28 +62,21 @@ const showDonorNameBelow = computed(
           :logo-url="model.branding.logoUrl"
           :primary-color="model.branding.primaryColor"
           :size="model.header.logoSize"
-          :compact="true"
           :data-field="model.targets?.showLogo"
         />
 
         <CertTitle
           :title="model.header.title"
           :color="colors.titleText"
-          :compact="true"
           :data-field="model.targets?.title"
         />
 
-        <CertSubtitle
-          :subtitle-html="model.subtitleHtml"
-          :compact="true"
-          :data-field="model.targets?.subtitle"
-        />
+        <CertSubtitle :subtitle-html="model.subtitleHtml" :data-field="model.targets?.subtitle" />
 
         <CertDonorName
           v-if="showDonorNameAbove"
           :name="model.donorName!.value"
           :font-family="model.donorName!.fontFamily"
-          :compact="true"
           :data-field="model.targets?.donorName"
         />
       </div>
@@ -106,8 +91,7 @@ const showDonorNameBelow = computed(
           :image="model.product.image"
           :image-shape="model.product.imageShape"
           :border-color="colors.separatorsAndBorders"
-          :border-width="thickness.productPx"
-          :compact="true"
+          :border-width="props.thickness.productPx"
           :adaptive="true"
           :data-field="model.targets?.productSettings"
         />
@@ -116,14 +100,12 @@ const showDonorNameBelow = computed(
           v-if="showDonorNameBelow"
           :name="model.donorName!.value"
           :font-family="model.donorName!.fontFamily"
-          :compact="true"
           :data-field="model.targets?.donorName"
         />
 
         <CertBody
           v-if="model.bodyHtml"
           :body-html="model.bodyHtml"
-          :compact="true"
           :data-field="model.targets?.body"
         />
       </div>
@@ -134,8 +116,7 @@ const showDonorNameBelow = computed(
         :signature="model.signature"
         :footer="model.footer"
         :separator-color="colors.separatorsAndBorders"
-        :separator-thickness="thickness.separatorPx"
-        :compact="true"
+        :separator-thickness="props.thickness.separatorPx"
         :targets="model.targets"
       />
     </div>

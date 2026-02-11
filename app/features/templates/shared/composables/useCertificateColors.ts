@@ -3,10 +3,9 @@
  */
 
 import { isHexColor } from '~/lib/colors'
-import type { CertificateBranding, CertificateDesign, ResolvedColors } from '../types'
+import type { CertificateBranding, CertificateDesign } from '../types'
 
-/** Resolve color value from preset name or hex color */
-export function resolveColor(
+function resolveColor(
   colorValue: string | undefined,
   brandingPrimary: string,
   brandingSecondary: string,
@@ -25,7 +24,7 @@ export function useCertificateColors(
   branding: CertificateBranding,
   design: CertificateDesign,
   titleTextColor: string
-): ResolvedColors {
+) {
   return {
     titleText: resolveColor(titleTextColor, branding.primaryColor, branding.secondaryColor),
     separatorsAndBorders: resolveColor(

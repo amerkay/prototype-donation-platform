@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { cn } from '@/lib/utils'
-import { PRODUCT_BORDER_RADIUS } from '~/features/templates/shared/types'
+
+const BORDER_RADIUS = {
+  circle: '9999px',
+  rounded: '1.25rem',
+  square: '0'
+} as const
 
 const props = defineProps<{
   name: string
@@ -8,14 +13,11 @@ const props = defineProps<{
   imageShape: 'circle' | 'rounded' | 'square'
   borderColor: string
   borderWidth: number
-  compact?: boolean
   adaptive?: boolean
   dataField?: string
 }>()
 
-const borderRadius = computed(
-  () => PRODUCT_BORDER_RADIUS[props.imageShape] ?? PRODUCT_BORDER_RADIUS.circle
-)
+const borderRadius = computed(() => BORDER_RADIUS[props.imageShape] ?? BORDER_RADIUS.circle)
 </script>
 
 <template>
@@ -23,9 +25,8 @@ const borderRadius = computed(
     :data-field="dataField"
     :class="
       cn(
-        'flex flex-col items-center justify-center',
-        adaptive ? 'flex-1 min-h-0 max-h-full' : 'flex-1 min-h-0',
-        compact ? 'mb-2' : 'mb-4'
+        'flex flex-col items-center justify-center mb-4',
+        adaptive ? 'flex-1 min-h-0 max-h-full' : 'flex-1 min-h-0'
       )
     "
   >
@@ -43,8 +44,7 @@ const borderRadius = computed(
     <p
       :class="
         cn(
-          'font-bold leading-tight text-gray-900 text-center',
-          compact ? 'text-xl mt-2' : 'text-3xl mt-4',
+          'font-bold leading-tight text-gray-900 text-center text-3xl mt-4',
           !adaptive && 'line-clamp-2'
         )
       "
