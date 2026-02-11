@@ -9,7 +9,12 @@ export default defineNuxtConfig({
   // Explicitly set Netlify preset for deployment
   // Auto-detection should work, but explicit is safer
   nitro: {
-    preset: 'netlify'
+    preset: 'netlify',
+    // Externalize modules with ESM/CJS compatibility issues
+    // jsdom (via isomorphic-dompurify) has transitive ESM-only deps
+    externals: {
+      external: ['jsdom', 'isomorphic-dompurify']
+    }
   },
 
   // Disable SSR for admin routes (they use sessionStorage and require auth)

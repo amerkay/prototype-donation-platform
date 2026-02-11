@@ -5,8 +5,8 @@
 [functions]
   # Use esbuild bundler - required for native modules
   node_bundler = "esbuild"
-  # Don't bundle chromium - it has native binaries
-  external_node_modules = ["@sparticuz/chromium", "puppeteer-core"]
+  # Don't bundle these - native binaries or ESM compatibility issues
+  external_node_modules = ["@sparticuz/chromium", "puppeteer-core", "jsdom", "isomorphic-dompurify"]
 
 [build.environment]
   # Skip downloading Chromium during build (using @sparticuz/chromium instead)
