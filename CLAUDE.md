@@ -54,7 +54,7 @@ app/features/[feature-name]/
 
 **Save/Discard actions**: All admin and donor portal settings pages with save/discard functionality MUST use `StickyButtonGroup` from `~/features/_admin/components/StickyButtonGroup.vue`. Never create custom save/discard button bars.
 
-**v-html sanitization**: ALL `v-html` usage MUST sanitize content using `sanitizeRichText()` from `~/features/_library/form-builder/utils/sanitize-html.ts`. Use `replaceRichTextVariables()` for template variable substitution. Never render unsanitized HTML.
+**v-html sanitization**: ALL `v-html` usage MUST sanitize content using `sanitizeRichText()` from `~/features/_library/form-builder/utils/sanitize-html.ts`. For templates with variables, use `processTemplateRichText()` from `~/features/templates/admin/utils/template-rich-text.ts`. Never render unsanitized HTML.
 
 ## Project Summary
 
