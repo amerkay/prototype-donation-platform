@@ -21,7 +21,10 @@ function replaceVariables(html: string, variables: Record<string, string>): stri
   for (const [key, value] of Object.entries(variables)) {
     const escaped = escapeHtml(value)
     const safeKey = escapeRegExp(key)
-    result = result.replace(new RegExp(`<span data-variable="${safeKey}">[^<]*</span>`, 'g'), escaped)
+    result = result.replace(
+      new RegExp(`<span data-variable="${safeKey}">[^<]*</span>`, 'g'),
+      escaped
+    )
     result = result.replace(new RegExp(`\\{\\{\\s*${safeKey}\\s*\\}\\}`, 'g'), escaped)
   }
   return result

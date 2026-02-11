@@ -17,9 +17,10 @@ defineProps<{
         compact ? 'text-xl mb-4' : 'text-2xl mb-6'
       )
     "
-    v-html="subtitleHtml"
-  />
-  <!-- eslint-disable vue/no-v-html -- pre-sanitized rich text -->
+  >
+    <!-- eslint-disable-next-line vue/no-v-html -- sanitized -->
+    <div v-html="subtitleHtml" />
+  </div>
 </template>
 
 <style scoped>

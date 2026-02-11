@@ -17,9 +17,10 @@ defineProps<{
         compact ? 'text-lg' : 'text-xl mb-6'
       )
     "
-    v-html="bodyHtml"
-  />
-  <!-- eslint-disable vue/no-v-html -- pre-sanitized rich text -->
+  >
+    <!-- eslint-disable-next-line vue/no-v-html -- sanitized -->
+    <div v-html="bodyHtml" />
+  </div>
 </template>
 
 <style scoped>

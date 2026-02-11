@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 import type { PDFOptions } from 'puppeteer-core'
 
 interface NavigatePdfOptions extends Partial<PDFOptions> {

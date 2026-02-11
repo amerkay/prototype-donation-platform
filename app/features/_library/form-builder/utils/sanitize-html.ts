@@ -40,7 +40,7 @@ export function sanitizeRichText(html: string): string {
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS,
     ALLOWED_ATTR,
-    ALLOW_DATA_ATTR: false,
+    ALLOW_DATA_ATTR: false
   })
 }
 
