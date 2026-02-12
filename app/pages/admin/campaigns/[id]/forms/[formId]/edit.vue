@@ -6,6 +6,7 @@ import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaig
 import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
+import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 
 definePageMeta({
   layout: 'admin'
@@ -24,6 +25,7 @@ const form = computed(() => getForm(formId))
 
 // Initialize store synchronously so child components have store data during setup
 const store = useFormConfigStore()
+const { brandingStyle } = useBrandingCssVars()
 if (form.value) {
   store.initialize(form.value.config, form.value.products, form.value.id)
 }
@@ -99,7 +101,9 @@ const handlePreview = () => {
     <!-- Preview panel -->
     <template #preview-label>Form Preview</template>
     <template #preview>
-      <DonationFormPreview />
+      <div :style="brandingStyle">
+        <DonationFormPreview />
+      </div>
     </template>
   </AdminEditLayout>
 </template>
