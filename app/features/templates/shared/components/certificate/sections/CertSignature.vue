@@ -9,13 +9,16 @@ defineProps<{
 
 <template>
   <div :data-field="dataField" class="text-right shrink-0">
-    <p
-      class="font-medium text-gray-700 m-0 whitespace-nowrap overflow-hidden text-ellipsis text-4xl"
-      :style="{ fontFamily: `'${fontFamily}', sans-serif` }"
-    >
-      {{ name }}
-    </p>
-    <p class="text-gray-500 m-0 whitespace-nowrap overflow-hidden text-ellipsis text-lg">
+    <div class="min-h-[2.8rem] flex items-end justify-end">
+      <p
+        class="template-adaptive font-medium text-gray-700 m-0 text-4xl leading-tight -mb-1"
+        data-min-font="8"
+        :style="{ fontFamily: `'${fontFamily}', sans-serif` }"
+      >
+        {{ name }}
+      </p>
+    </div>
+    <p class="template-adaptive text-gray-500 m-0 text-lg" data-min-font="12">
       {{ title }}
     </p>
   </div>
