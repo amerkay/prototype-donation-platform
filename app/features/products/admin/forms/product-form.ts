@@ -5,7 +5,8 @@ import {
   imageUploadField,
   selectField,
   numberField,
-  toggleField
+  toggleField,
+  fieldGroup
 } from '~/features/_library/form-builder/api'
 
 export const useProductForm = defineForm('product', () => {
@@ -19,12 +20,13 @@ export const useProductForm = defineForm('product', () => {
     label: 'Short Description',
     placeholder: 'Brief description...',
     rows: 2,
-    maxLength: 200
+    maxLength: 60
   })
 
   const image = imageUploadField('image', {
     label: 'Product Image',
-    optional: true
+    optional: true,
+    showSeparatorAfter: true
   })
 
   const certificateOverrideName = textField('certificateOverrideName', {
@@ -42,6 +44,15 @@ export const useProductForm = defineForm('product', () => {
     rows: 3,
     optional: true,
     maxLength: 250
+  })
+
+  const certificateSettings = fieldGroup('certificateSettings', {
+    label: 'Certificate Settings',
+    description: 'Customize how this product appears on donation certificates.',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    fields: { certificateOverrideName, certificateText },
+    showSeparatorAfter: true
   })
 
   const frequency = selectField('frequency', {
@@ -80,99 +91,11 @@ export const useProductForm = defineForm('product', () => {
     name,
     description,
     image,
-    certificateOverrideName,
-    certificateText,
+    certificateSettings,
     frequency,
     price,
     minPrice,
     default: defaultPrice,
     isShippingRequired
-  }
-})
-
-export const useProductEditForm = defineForm('productEdit', () => {
-  const name = textField('name', {
-    label: 'Name',
-    maxLength: 25
-  })
-
-  const description = textareaField('description', {
-    label: 'Description',
-    rows: 2,
-    maxLength: 60
-  })
-
-  const image = imageUploadField('image', {
-    label: 'Product Image',
-    optional: true
-  })
-
-  const certificateOverrideName = textField('certificateOverrideName', {
-    label: 'Certificate Display Name',
-    placeholder: 'e.g., Maya',
-    optional: true,
-    description: 'Short name shown on certificates instead of full product name',
-    maxLength: 60
-  })
-
-  const certificateText = textareaField('certificateText', {
-    label: 'Certificate Description',
-    description: 'Text shown next to product image on certificates',
-    placeholder: 'e.g., Your support helps provide food, shelter, and medical care...',
-    rows: 3,
-    optional: true,
-    maxLength: 250
-  })
-
-  const frequency = selectField('frequency', {
-    label: 'Frequency',
-    options: [
-      { value: 'once', label: 'One-time' },
-      { value: 'monthly', label: 'Monthly' },
-      { value: 'yearly', label: 'Yearly' }
-    ]
-  })
-
-  const price = numberField('price', {
-    label: 'Fixed Price',
-    optional: true
-  })
-
-  const minPrice = numberField('minPrice', {
-    label: 'Min Price',
-    optional: true
-  })
-
-  const defaultPrice = numberField('default', {
-    label: 'Default Price',
-    optional: true
-  })
-
-  const isShippingRequired = toggleField('isShippingRequired', {
-    label: 'Requires Shipping',
-    description: 'Product requires a shipping address'
-  })
-
-  const status = selectField('status', {
-    label: 'Status',
-    options: [
-      { value: 'active', label: 'Active' },
-      { value: 'draft', label: 'Draft' },
-      { value: 'archived', label: 'Archived' }
-    ]
-  })
-
-  return {
-    name,
-    description,
-    image,
-    certificateOverrideName,
-    certificateText,
-    frequency,
-    price,
-    minPrice,
-    default: defaultPrice,
-    isShippingRequired,
-    status
   }
 })

@@ -5,7 +5,7 @@ import AdminDataTable from '~/features/_admin/components/AdminDataTable.vue'
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import { useProducts } from '~/features/products/admin/composables/useProducts'
-import { useProductForm, useProductEditForm } from '~/features/products/admin/forms/product-form'
+import { useProductForm } from '~/features/products/admin/forms/product-form'
 import { productColumns } from '~/features/products/admin/columns/productColumns'
 import type { ImpactProduct } from '~/features/products/admin/types'
 import { Button } from '@/components/ui/button'
@@ -18,8 +18,7 @@ const { products, stats, createProduct, updateProduct, deleteProduct } = useProd
 
 const breadcrumbs = [{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Impact Products' }]
 
-const createForm = useProductForm
-const editForm = useProductEditForm
+const productForm = useProductForm
 
 // Create dialog
 const showCreateDialog = ref(false)
@@ -28,8 +27,10 @@ const newProduct = ref({
   name: '',
   description: '',
   image: null as string | null,
-  certificateOverrideName: '',
-  certificateText: '',
+  certificateSettings: {
+    certificateOverrideName: '',
+    certificateText: ''
+  },
   frequency: 'once' as const,
   price: undefined as number | undefined,
   minPrice: undefined as number | undefined,
@@ -42,8 +43,10 @@ function openCreate() {
     name: '',
     description: '',
     image: null,
-    certificateOverrideName: '',
-    certificateText: '',
+    certificateSettings: {
+      certificateOverrideName: '',
+      certificateText: ''
+    },
     frequency: 'once',
     price: undefined,
     minPrice: undefined,
@@ -54,7 +57,8 @@ function openCreate() {
 }
 
 function handleCreate() {
-  createProduct(newProduct.value)
+  const { certificateSettings, ...rest } = newProduct.value
+  createProduct({ ...rest, ...certificateSettings })
   showCreateDialog.value = false
 }
 
@@ -70,21 +74,24 @@ function handleEdit(product: ImpactProduct) {
     name: product.name,
     description: product.description,
     image: product.image,
-    certificateOverrideName: product.certificateOverrideName ?? '',
-    certificateText: product.certificateText ?? '',
+    certificateSettings: {
+      certificateOverrideName: product.certificateOverrideName ?? '',
+      certificateText: product.certificateText ?? ''
+    },
     frequency: product.frequency,
     price: product.price,
     minPrice: product.minPrice,
     default: product.default,
-    isShippingRequired: product.isShippingRequired ?? false,
-    status: product.status
+    isShippingRequired: product.isShippingRequired ?? false
   }
   showEditDialog.value = true
 }
 
 function handleSaveEdit() {
   if (!editingId.value) return
-  updateProduct(editingId.value, editingProduct.value as unknown as ImpactProduct)
+  const { certificateSettings, ...rest } = editingProduct.value as Record<string, unknown>
+  const flatData = { ...rest, ...(certificateSettings as Record<string, unknown>) }
+  updateProduct(editingId.value, flatData as unknown as ImpactProduct)
   showEditDialog.value = false
   editingId.value = null
 }
@@ -166,7 +173,7 @@ const columnsWithActions = computed(() => [
     >
       <template #header>New Impact Product</template>
       <template #content>
-        <FormRenderer ref="createFormRef" v-model="newProduct" :section="createForm" />
+        <FormRenderer ref="createFormRef" v-model="newProduct" :section="productForm" />
       </template>
       <template #footer>
         <Button variant="outline" @click="showCreateDialog = false">Cancel</Button>
@@ -182,7 +189,7 @@ const columnsWithActions = computed(() => [
     >
       <template #header>Edit Product</template>
       <template #content>
-        <FormRenderer ref="editFormRef" v-model="editingProduct" :section="editForm" />
+        <FormRenderer ref="editFormRef" v-model="editingProduct" :section="productForm" />
       </template>
       <template #footer>
         <Button variant="outline" @click="showEditDialog = false">Cancel</Button>

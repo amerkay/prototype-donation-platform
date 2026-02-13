@@ -217,8 +217,19 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
 
   const showProduct = toggleField('showProduct', {
     label: 'Show Product',
-    description: 'Show adopted product badge.',
-    showSeparatorAfter: true
+    description: 'Show adopted product badge.'
+  })
+
+  const productInfoNotice = alertField('productInfoNotice', {
+    variant: 'info',
+    description:
+      'Product name, image, and description are configured per product in Impact Products.',
+    cta: {
+      label: 'Edit products',
+      to: '/admin/products',
+      inline: true
+    },
+    visibleWhen: (ctx) => !!ctx.values.showProduct
   })
 
   const productImageShape = selectField('productImageShape', {
@@ -312,7 +323,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     label: 'Product',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: { showProduct, productImageShape },
+    fields: { showProduct, productInfoNotice, productImageShape },
     $storePath: {
       showProduct: 'showProduct',
       productImageShape: 'productImageShape'
