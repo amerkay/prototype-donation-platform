@@ -11,13 +11,15 @@ import {
 export const useProductForm = defineForm('product', () => {
   const name = textField('name', {
     label: 'Name',
-    placeholder: 'e.g., Plant 10 Trees'
+    placeholder: 'e.g., Plant 10 Trees',
+    maxLength: 50
   })
 
   const description = textareaField('description', {
-    label: 'Description',
+    label: 'Short Description',
     placeholder: 'Brief description...',
-    rows: 2
+    rows: 2,
+    maxLength: 200
   })
 
   const image = imageUploadField('image', {
@@ -29,7 +31,17 @@ export const useProductForm = defineForm('product', () => {
     label: 'Certificate Display Name',
     placeholder: 'e.g., Maya',
     optional: true,
-    description: 'Short name shown on certificates instead of full product name'
+    description: 'Short name shown on certificates instead of full product name',
+    maxLength: 50
+  })
+
+  const certificateText = textareaField('certificateText', {
+    label: 'Certificate Description',
+    description: 'Text shown next to product image on certificates',
+    placeholder: 'e.g., Your support helps provide food, shelter, and medical care...',
+    rows: 3,
+    optional: true,
+    maxLength: 250
   })
 
   const frequency = selectField('frequency', {
@@ -69,6 +81,7 @@ export const useProductForm = defineForm('product', () => {
     description,
     image,
     certificateOverrideName,
+    certificateText,
     frequency,
     price,
     minPrice,
@@ -79,12 +92,14 @@ export const useProductForm = defineForm('product', () => {
 
 export const useProductEditForm = defineForm('productEdit', () => {
   const name = textField('name', {
-    label: 'Name'
+    label: 'Name',
+    maxLength: 25
   })
 
   const description = textareaField('description', {
     label: 'Description',
-    rows: 2
+    rows: 2,
+    maxLength: 60
   })
 
   const image = imageUploadField('image', {
@@ -96,7 +111,17 @@ export const useProductEditForm = defineForm('productEdit', () => {
     label: 'Certificate Display Name',
     placeholder: 'e.g., Maya',
     optional: true,
-    description: 'Short name shown on certificates instead of full product name'
+    description: 'Short name shown on certificates instead of full product name',
+    maxLength: 60
+  })
+
+  const certificateText = textareaField('certificateText', {
+    label: 'Certificate Description',
+    description: 'Text shown next to product image on certificates',
+    placeholder: 'e.g., Your support helps provide food, shelter, and medical care...',
+    rows: 3,
+    optional: true,
+    maxLength: 250
   })
 
   const frequency = selectField('frequency', {
@@ -142,6 +167,7 @@ export const useProductEditForm = defineForm('productEdit', () => {
     description,
     image,
     certificateOverrideName,
+    certificateText,
     frequency,
     price,
     minPrice,

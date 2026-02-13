@@ -14,8 +14,9 @@ defineProps<{
   <div class="w-full">
     <h3
       :data-field="dataFieldLine1"
+      class="template-adaptive font-medium text-3xl m-0"
       data-max-lines="1"
-      class="font-medium text-3xl line-clamp-1 m-0"
+      data-min-font="18"
       :style="{ color: COLOR_LINE1 }"
     >
       {{ titleLine1 }}
@@ -23,7 +24,7 @@ defineProps<{
     <h2
       :data-field="dataFieldLine2"
       data-min-font="32"
-      class="cert-adaptive font-bold text-6xl mt-0 m-0"
+      class="template-adaptive font-bold text-6xl mt-0 m-0"
       :style="{ color: colorLine2 }"
     >
       {{ titleLine2 }}

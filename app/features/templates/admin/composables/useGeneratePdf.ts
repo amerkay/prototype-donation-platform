@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import type { CertificatePdfData, ReceiptPdfData } from '~/features/templates/admin/types'
+import type { Product } from '~/features/donation-form/features/product/shared/types'
 import { useCertificateTemplateStore } from '~/features/templates/admin/stores/certificateTemplate'
 import { useReceiptTemplateStore } from '~/features/templates/admin/stores/receiptTemplate'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
@@ -7,6 +8,11 @@ import { useCharitySettingsStore } from '~/features/settings/admin/stores/charit
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { products as sampleProducts } from '~/sample-api-responses/api-sample-response-products'
+
+interface CertificatePdfOptions {
+  currency?: string
+  product?: Product
+}
 
 function formatDate(): string {
   return new Intl.DateTimeFormat('en-GB', {
@@ -20,14 +26,19 @@ export function useGeneratePdf() {
   const isGenerating = ref(false)
   const error = ref<string | null>(null)
 
-  async function downloadPdf(type: 'certificate' | 'receipt', currency?: string) {
+  async function downloadPdf(type: 'certificate', options?: CertificatePdfOptions): Promise<void>
+  async function downloadPdf(type: 'receipt', options?: { currency?: string }): Promise<void>
+  async function downloadPdf(
+    type: 'certificate' | 'receipt',
+    options?: CertificatePdfOptions | { currency?: string }
+  ) {
     isGenerating.value = true
     error.value = null
 
     try {
       const branding = useBrandingSettingsStore()
       const currencyStore = useCurrencySettingsStore()
-      const activeCurrency = currency || currencyStore.defaultCurrency
+      const activeCurrency = options?.currency || currencyStore.defaultCurrency
 
       let body: { type: string; data: CertificatePdfData | ReceiptPdfData }
 
@@ -35,37 +46,43 @@ export function useGeneratePdf() {
         const cert = useCertificateTemplateStore()
         const charity = useCharitySettingsStore()
         const certificate = cert.certificate
-        const sampleP = sampleProducts.find((p) => p.image && p.certificateOverrideName)
-        const product = sampleP?.image
-          ? { name: sampleP.certificateOverrideName || sampleP.name, image: sampleP.image }
+        const certOptions = options as CertificatePdfOptions | undefined
+        const selectedProduct = certOptions?.product
+        const sampleP =
+          selectedProduct || sampleProducts.find((p) => p.image && p.certificateOverrideName)
+        const product = sampleP
+          ? {
+              name: sampleP.certificateOverrideName || sampleP.name,
+              image: sampleP.image || '',
+              text: sampleP.certificateText
+            }
           : undefined
         body = {
           type: 'certificate',
           data: {
-            titleLine1: certificate.header.titleLine1,
-            titleLine2: certificate.header.titleLine2,
-            logoPosition: certificate.header.logoPosition,
-            awardTextLine1: certificate.awardBlock.awardTextLine1,
-            awardTextLine2: certificate.awardBlock.awardTextLine2,
+            titleLine1: certificate.title.titleLine1,
+            titleLine2: certificate.title.titleLine2,
+            logoPosition: certificate.logo.logoPosition,
+            awardTextLine1: certificate.award.awardTextLine1,
             bodyHtml: certificate.body.bodyText,
-            pageBorderStyle: certificate.design.pageBorderStyle,
-            pageBorderThickness: certificate.design.pageBorderThickness,
-            showLogo: certificate.header.showLogo,
-            logoSize: certificate.header.logoSize,
-            showSignature: certificate.signatureSettings.showSignature,
-            signatureName: certificate.signatureSettings.signatureName,
-            signatureTitle: certificate.signatureSettings.signatureTitle,
-            signatureFontFamily: certificate.signatureSettings.signatureFontFamily,
-            layout: certificate.design.layout,
-            backgroundImage: certificate.design.backgroundImage,
-            showProduct: certificate.productSettings.showProduct,
-            productImageShape: certificate.productSettings.productImageShape,
-            titleTextColor: certificate.header.titleTextColor,
-            separatorsAndBordersColor: certificate.design.separatorsAndBordersColor,
-            showDate: certificate.dateSettings.showDate,
-            showDonorName: certificate.awardBlock.showDonorName,
-            donorNameFontFamily: certificate.awardBlock.donorNameFontFamily,
-            footerText: certificate.footerSettings.footerText,
+            pageBorderStyle: certificate.page.pageBorderStyle,
+            pageBorderThickness: certificate.page.pageBorderThickness,
+            showLogo: certificate.logo.showLogo,
+            logoSize: certificate.logo.logoSize,
+            showSignature: certificate.footer.showSignature,
+            signatureName: certificate.footer.signatureName,
+            signatureTitle: certificate.footer.signatureTitle,
+            signatureFontFamily: certificate.footer.signatureFontFamily,
+            layout: certificate.page.layout,
+            backgroundImage: certificate.page.backgroundImage,
+            showProduct: certificate.product.showProduct,
+            productImageShape: certificate.product.productImageShape,
+            titleTextColor: certificate.title.titleTextColor,
+            separatorsAndBordersColor: certificate.page.separatorsAndBordersColor,
+            showDate: certificate.footer.showDate,
+            showAwardSection: certificate.award.showAwardSection,
+            donorNameFontFamily: certificate.award.donorNameFontFamily,
+            footerText: certificate.footer.footerText,
             branding: {
               logoUrl: branding.logoUrl,
               charityName: charity.name,

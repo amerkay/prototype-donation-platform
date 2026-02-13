@@ -38,6 +38,8 @@ export interface CertificateProduct {
   image: string
   show: boolean
   imageShape: 'circle' | 'rounded' | 'square'
+  /** Text shown next to product image on certificates */
+  text?: string
 }
 
 /** Donor name display settings (used within award block) */
@@ -47,11 +49,10 @@ export interface CertificateDonorName {
   fontFamily: string
 }
 
-/** Award block with 3 rows: text line 1, donor name, text line 2 */
+/** Award block with 2 rows: text line 1, donor name */
 export interface CertificateAwardBlock {
   textLine1: string
   donorName?: CertificateDonorName
-  textLine2Html: string
 }
 
 /** Date display settings */
@@ -75,15 +76,15 @@ export interface CertificateFooterSettings {
 
 /**
  * Complete certificate model for rendering.
- * All rich text (bodyHtml, awardBlock.textLine2Html) should be pre-sanitized with variables replaced.
+ * All rich text (bodyHtml) should be pre-sanitized with variables replaced.
  */
 export interface CertificateModel {
   layout: CertificateLayoutId
   branding: CertificateBranding
   design: CertificateDesign
   header: CertificateHeader
-  /** Award block with 3 rows: text line 1, donor name (optional), text line 2 */
-  awardBlock: CertificateAwardBlock
+  /** Award block with 2 rows: text line 1, donor name (optional) */
+  awardBlock?: CertificateAwardBlock
   /** Pre-sanitized rich-text HTML with variables replaced */
   bodyHtml: string
   product?: CertificateProduct
@@ -99,14 +100,13 @@ export interface CertificateTemplateTargets {
   showLogo: string
   titleLine1: string
   titleLine2: string
-  header: string
-  awardBlock: string
+  logo: string
+  title: string
+  award: string
   body: string
-  productSettings: string
-  signatureSettings: string
-  design: string
-  date: string
+  product: string
   footer: string
+  page: string
 }
 
 // ============================================================================

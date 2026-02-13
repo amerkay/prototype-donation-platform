@@ -15,17 +15,75 @@ const props = defineProps<{
   borderWidth: number
   adaptive?: boolean
   dataField?: string
+  /** Text shown next to product image on certificates */
+  text?: string
+  /** Force single column layout even when both image and text exist */
+  forceOneColumn?: boolean
 }>()
 
 const borderRadius = computed(() => BORDER_RADIUS[props.imageShape] ?? BORDER_RADIUS.circle)
+const hasImage = computed(() => !!props.image)
+const hasText = computed(() => !!props.text)
+const isTwoColumn = computed(() => !props.forceOneColumn && hasImage.value && hasText.value)
 </script>
 
 <template>
+  <!-- Two-column layout: name on top, image left + text right below -->
   <div
+    v-if="isTwoColumn"
     :data-field="dataField"
     :class="
       cn(
-        'flex flex-col items-center justify-center',
+        'flex flex-col items-center gap-3 max-w-2xl mx-auto w-full',
+        adaptive ? 'flex-1 min-h-0 max-h-full' : 'flex-1 min-h-0'
+      )
+    "
+  >
+    <!-- Product name centered above columns -->
+    <div class="w-full max-w-lg text-center shrink-0 mx-auto">
+      <p
+        class="template-adaptive font-bold leading-tight text-gray-900 text-2xl"
+        data-max-lines="1"
+        data-min-font="14"
+      >
+        {{ name }}
+      </p>
+    </div>
+
+    <!-- Image left, text right -->
+    <div class="grid grid-cols-2 gap-4 w-full flex-1 min-h-0 items-center py-2">
+      <div class="flex items-center justify-center h-full max-h-[95%] min-h-0">
+        <img
+          :src="image"
+          :alt="name"
+          class="h-full w-auto max-w-full"
+          :style="{
+            aspectRatio: '1',
+            objectFit: 'cover',
+            borderRadius,
+            border: `${borderWidth}px solid ${borderColor}`
+          }"
+        />
+      </div>
+      <div class="flex items-center">
+        <p
+          class="template-adaptive text-gray-700 text-sm leading-relaxed text-left"
+          data-max-lines="7"
+          data-min-font="10"
+        >
+          {{ text }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Single column: image + name + optional text -->
+  <div
+    v-else-if="hasImage"
+    :data-field="dataField"
+    :class="
+      cn(
+        'flex flex-col items-center justify-center text-center',
         adaptive ? 'flex-1 min-h-0 max-h-full' : 'flex-1 min-h-0'
       )
     "
@@ -41,15 +99,52 @@ const borderRadius = computed(() => BORDER_RADIUS[props.imageShape] ?? BORDER_RA
         border: `${borderWidth}px solid ${borderColor}`
       }"
     />
+    <div class="w-full max-w-2xl mt-4 shrink-0">
+      <p
+        class="template-adaptive font-bold leading-tight text-gray-900 text-3xl"
+        data-max-lines="1"
+        data-min-font="16"
+      >
+        {{ name }}
+      </p>
+    </div>
     <p
-      :class="
-        cn(
-          'font-bold leading-tight text-gray-900 text-center text-3xl mt-4',
-          !adaptive && 'line-clamp-2'
-        )
-      "
+      v-if="hasText"
+      class="template-adaptive text-gray-700 text-lg leading-relaxed mt-3 max-w-xl"
+      data-max-lines="3"
+      data-min-font="12"
     >
-      {{ name }}
+      {{ text }}
+    </p>
+  </div>
+
+  <!-- Single column: name + text only (no image) -->
+  <div
+    v-else
+    :data-field="dataField"
+    :class="
+      cn(
+        'flex flex-col items-center justify-center text-center max-w-xl',
+        adaptive ? 'flex-1 min-h-0 max-h-full' : 'flex-1 min-h-0'
+      )
+    "
+  >
+    <div class="w-full max-w-2xl">
+      <p
+        class="template-adaptive font-bold leading-tight text-gray-900 text-3xl"
+        data-max-lines="1"
+        data-min-font="16"
+      >
+        {{ name }}
+      </p>
+    </div>
+    <p
+      v-if="hasText"
+      class="template-adaptive text-gray-700 text-lg leading-relaxed mt-3"
+      data-max-lines="4"
+      data-min-font="12"
+    >
+      {{ text }}
     </p>
   </div>
 </template>

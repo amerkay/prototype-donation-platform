@@ -6,45 +6,41 @@ import CertificatePreview from '~/features/templates/admin/components/Certificat
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import { useCertificateTemplateStore } from '~/features/templates/admin/stores/certificateTemplate'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
+import { useProducts } from '~/features/products/admin/composables/useProducts'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
 import { useGeneratePdf } from '~/features/templates/admin/composables/useGeneratePdf'
-import { getLayoutOrientation } from '~/features/templates/admin/utils/page-geometry'
 import { Button } from '@/components/ui/button'
-import { Download, Loader2 } from 'lucide-vue-next'
+import { Download, Loader2, ImageIcon } from 'lucide-vue-next'
+import type { Product } from '~/features/donation-form/features/product/shared/types'
 
 definePageMeta({ layout: 'admin' })
 
 const store = useCertificateTemplateStore()
 const currencyStore = useCurrencySettingsStore()
+const { products } = useProducts()
 
 const previewCurrency = ref(currencyStore.defaultCurrency)
+const previewProductId = ref<string | undefined>(undefined)
+const showProductSelector = ref(false)
+
+const previewProduct = computed(() =>
+  previewProductId.value ? products.value.find((p) => p.id === previewProductId.value) : undefined
+)
+
+function selectProduct(product: Product) {
+  previewProductId.value = product.id
+  showProductSelector.value = false
+}
 
 const originalData = computed(() => ({
   certificate: {
-    header: {
-      ...store.certificate.header
-    },
-    awardBlock: {
-      ...store.certificate.awardBlock
-    },
-    body: {
-      ...store.certificate.body
-    },
-    productSettings: {
-      ...store.certificate.productSettings
-    },
-    signatureSettings: {
-      ...store.certificate.signatureSettings
-    },
-    dateSettings: {
-      ...store.certificate.dateSettings
-    },
-    footerSettings: {
-      ...store.certificate.footerSettings
-    },
-    design: {
-      ...store.certificate.design
-    }
+    page: { ...store.certificate.page },
+    logo: { ...store.certificate.logo },
+    title: { ...store.certificate.title },
+    award: { ...store.certificate.award },
+    body: { ...store.certificate.body },
+    product: { ...store.certificate.product },
+    footer: { ...store.certificate.footer }
   }
 }))
 
@@ -59,14 +55,6 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdmi
     store.save()
   }
 })
-
-const showPreviewDialog = ref(false)
-
-const previewMaxWidth = computed(() =>
-  getLayoutOrientation(store.certificate.design.layout) === 'landscape'
-    ? 'sm:max-w-3xl'
-    : 'sm:max-w-xl'
-)
 
 const { isGenerating, downloadPdf } = useGeneratePdf()
 
@@ -83,10 +71,9 @@ const breadcrumbs = [
       :breadcrumbs="breadcrumbs"
       :is-dirty="store.isDirty"
       :show-discard-dialog="showDiscardDialog"
-      :show-preview="true"
+      :show-preview="false"
       @update:show-discard-dialog="showDiscardDialog = $event"
       @confirm-discard="confirmDiscard"
-      @preview="showPreviewDialog = true"
     >
       <template #content>
         <div class="space-y-6">
@@ -94,17 +81,22 @@ const breadcrumbs = [
             ref="formConfigRef"
             @save="handleSave"
             @discard="handleDiscard"
-            @preview="showPreviewDialog = true"
           />
         </div>
       </template>
 
       <template #preview-actions>
+        <Button variant="outline" size="sm" @click="showProductSelector = true">
+          <ImageIcon class="w-4 h-4 mr-2" />
+          Product
+        </Button>
         <Button
           variant="outline"
           size="sm"
           :disabled="isGenerating"
-          @click="downloadPdf('certificate', previewCurrency)"
+          @click="
+            downloadPdf('certificate', { currency: previewCurrency, product: previewProduct })
+          "
         >
           <Loader2 v-if="isGenerating" class="w-4 h-4 mr-2 animate-spin" />
           <Download v-else class="w-4 h-4 mr-2" />
@@ -113,19 +105,47 @@ const breadcrumbs = [
       </template>
 
       <template #preview>
-        <CertificatePreview :currency="previewCurrency" editable />
+        <CertificatePreview :currency="previewCurrency" :product="previewProduct" editable />
       </template>
     </AdminEditLayout>
 
     <BaseDialogOrDrawer
-      :open="showPreviewDialog"
-      description="How the certificate will appear to donors."
-      :max-width="previewMaxWidth"
-      @update:open="showPreviewDialog = $event"
+      :open="showProductSelector"
+      description="Select which product to display in the preview"
+      max-width="sm:max-w-md"
+      @update:open="showProductSelector = $event"
     >
-      <template #header>Certificate Preview</template>
+      <template #header>Choose Preview Product</template>
       <template #content>
-        <CertificatePreview :currency="previewCurrency" />
+        <div class="space-y-2">
+          <button
+            v-for="product in products"
+            :key="product.id"
+            type="button"
+            class="w-full flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors text-left overflow-hidden"
+            :class="{ 'ring-2 ring-primary': previewProduct?.id === product.id }"
+            @click="selectProduct(product)"
+          >
+            <img
+              v-if="product.image"
+              :src="product.image"
+              :alt="product.name"
+              class="w-12 h-12 rounded-md object-cover shrink-0"
+            />
+            <div
+              v-else
+              class="w-12 h-12 rounded-md bg-muted flex items-center justify-center shrink-0"
+            >
+              <ImageIcon class="w-6 h-6 text-muted-foreground" />
+            </div>
+            <div class="w-0 flex-1">
+              <p class="font-medium truncate">
+                {{ product.certificateOverrideName || product.name }}
+              </p>
+              <p class="text-sm text-muted-foreground truncate">{{ product.name }}</p>
+            </div>
+          </button>
+        </div>
       </template>
     </BaseDialogOrDrawer>
   </div>

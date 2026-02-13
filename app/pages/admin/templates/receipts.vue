@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
 import ReceiptTemplateConfig from '~/features/templates/admin/components/ReceiptTemplateConfig.vue'
 import ReceiptPreview from '~/features/templates/admin/components/ReceiptPreview.vue'
-import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import { useReceiptTemplateStore } from '~/features/templates/admin/stores/receiptTemplate'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
@@ -46,8 +45,6 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdmi
   }
 })
 
-const showPreviewDialog = ref(false)
-
 const { isGenerating, downloadPdf } = useGeneratePdf()
 
 const breadcrumbs = [
@@ -63,19 +60,13 @@ const breadcrumbs = [
       :breadcrumbs="breadcrumbs"
       :is-dirty="store.isDirty"
       :show-discard-dialog="showDiscardDialog"
-      :show-preview="true"
+      :show-preview="false"
       @update:show-discard-dialog="showDiscardDialog = $event"
       @confirm-discard="confirmDiscard"
-      @preview="showPreviewDialog = true"
     >
       <template #content>
         <div class="space-y-6">
-          <ReceiptTemplateConfig
-            ref="formConfigRef"
-            @save="handleSave"
-            @discard="handleDiscard"
-            @preview="showPreviewDialog = true"
-          />
+          <ReceiptTemplateConfig ref="formConfigRef" @save="handleSave" @discard="handleDiscard" />
         </div>
       </template>
 
@@ -99,7 +90,7 @@ const breadcrumbs = [
           variant="outline"
           size="sm"
           :disabled="isGenerating"
-          @click="downloadPdf('receipt', previewCurrency)"
+          @click="downloadPdf('receipt', { currency: previewCurrency })"
         >
           <Loader2 v-if="isGenerating" class="w-4 h-4 mr-2 animate-spin" />
           <Download v-else class="w-4 h-4 mr-2" />
@@ -111,17 +102,5 @@ const breadcrumbs = [
         <ReceiptPreview :currency="previewCurrency" />
       </template>
     </AdminEditLayout>
-
-    <BaseDialogOrDrawer
-      :open="showPreviewDialog"
-      description="How the receipt will appear to donors."
-      max-width="sm:max-w-xl"
-      @update:open="showPreviewDialog = $event"
-    >
-      <template #header>Receipt Preview</template>
-      <template #content>
-        <ReceiptPreview :currency="previewCurrency" />
-      </template>
-    </BaseDialogOrDrawer>
   </div>
 </template>

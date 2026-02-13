@@ -51,7 +51,7 @@ const isLogoCentered = computed(
   >
     <CertBackground
       :background-image="model.design.backgroundImage"
-      :data-field="model.targets?.design"
+      :data-field="model.targets?.page"
     />
 
     <!-- Logo absolutely positioned in corner when 'left' -->
@@ -89,9 +89,10 @@ const isLogoCentered = computed(
 
         <!-- Award block -->
         <CertAwardBlock
+          v-if="model.awardBlock"
           class="my-10"
           :award-block="model.awardBlock"
-          :data-field="model.targets?.awardBlock"
+          :data-field="model.targets?.award"
         />
       </div>
 
@@ -105,7 +106,9 @@ const isLogoCentered = computed(
           :border-color="colors.separatorsAndBorders"
           :border-width="props.thickness.productPx"
           :adaptive="true"
-          :data-field="model.targets?.productSettings"
+          :text="model.product.text"
+          :data-field="model.targets?.product"
+          force-one-column
         />
 
         <CertSeparator

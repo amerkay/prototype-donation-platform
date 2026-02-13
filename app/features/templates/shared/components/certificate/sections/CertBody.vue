@@ -8,7 +8,9 @@ defineProps<{
 <template>
   <div
     :data-field="dataField"
-    class="cert-body w-full mx-auto line-clamp-2 text-gray-700 text-center leading-relaxed text-xl max-w-xl"
+    class="cert-body template-adaptive w-full mx-auto text-gray-700 text-center leading-relaxed text-xl max-w-2xl"
+    data-max-lines="2"
+    data-min-font="12"
   >
     <!-- eslint-disable-next-line vue/no-v-html -- sanitized -->
     <div v-html="bodyHtml" />

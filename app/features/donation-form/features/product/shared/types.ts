@@ -12,4 +12,6 @@ export interface Product {
   isShippingRequired?: boolean
   /** Override name shown on certificates (e.g., "Maya" instead of full product name) */
   certificateOverrideName?: string
+  /** Text shown next to product image on certificates */
+  certificateText?: string
 }

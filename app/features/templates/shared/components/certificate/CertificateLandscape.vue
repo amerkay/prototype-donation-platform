@@ -38,7 +38,7 @@ const isLogoCentered = computed(
   () => props.model.header.showLogo && props.model.header.logoPosition !== 'left'
 )
 
-const headerZoom = computed(() => (isLogoCentered.value ? 0.75 : undefined))
+const headerZoom = computed(() => (isLogoCentered.value ? 0.8 : undefined))
 </script>
 
 <template>
@@ -53,7 +53,7 @@ const headerZoom = computed(() => (isLogoCentered.value ? 0.75 : undefined))
   >
     <CertBackground
       :background-image="model.design.backgroundImage"
-      :data-field="model.targets?.design"
+      :data-field="model.targets?.page"
     />
 
     <!-- Logo absolutely positioned in corner when 'left' -->
@@ -89,9 +89,10 @@ const headerZoom = computed(() => (isLogoCentered.value ? 0.75 : undefined))
 
         <!-- Award block -->
         <CertAwardBlock
+          v-if="model.awardBlock"
           class="mt-6"
           :award-block="model.awardBlock"
-          :data-field="model.targets?.awardBlock"
+          :data-field="model.targets?.award"
         />
       </div>
 
@@ -107,7 +108,8 @@ const headerZoom = computed(() => (isLogoCentered.value ? 0.75 : undefined))
           :border-color="colors.separatorsAndBorders"
           :border-width="props.thickness.productPx"
           :adaptive="true"
-          :data-field="model.targets?.productSettings"
+          :text="model.product.text"
+          :data-field="model.targets?.product"
           class="mb-4"
         />
 

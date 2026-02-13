@@ -27,7 +27,6 @@ export interface CertificateTemplate {
   titleLine2: string
   logoPosition: 'center' | 'left'
   awardTextLine1: string
-  awardTextLine2: string
   bodyText: string
   pageBorderStyle: 'none' | 'border' | 'rounded' | 'double'
   pageBorderThickness: 'thin' | 'medium' | 'thick'
@@ -44,7 +43,7 @@ export interface CertificateTemplate {
   titleTextColor: string
   separatorsAndBordersColor: string
   showDate: boolean
-  showDonorName: boolean
+  showAwardSection: boolean
   donorNameFontFamily: string
   footerText: string
 }
@@ -65,7 +64,6 @@ export interface CertificatePdfData {
   titleLine2: string
   logoPosition: 'center' | 'left'
   awardTextLine1: string
-  awardTextLine2: string
   bodyHtml: string
   pageBorderStyle: 'none' | 'border' | 'rounded' | 'double'
   pageBorderThickness: 'thin' | 'medium' | 'thick'
@@ -82,7 +80,7 @@ export interface CertificatePdfData {
   titleTextColor: string
   separatorsAndBordersColor: string
   showDate: boolean
-  showDonorName: boolean
+  showAwardSection: boolean
   donorNameFontFamily: string
   footerText: string
   branding: {
@@ -95,7 +93,7 @@ export interface CertificatePdfData {
   donorName: string
   amount: string
   date: string
-  product?: { name: string; image: string }
+  product?: { name: string; image: string; text?: string }
 }
 
 /** Data contract for server-side receipt PDF generation */

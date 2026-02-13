@@ -140,7 +140,7 @@ Landscape certificates use `compact={true}` on section components for tighter sp
 Long donor names automatically shrink to fit using `useAdaptiveText`:
 
 ```vue
-<p class="cert-adaptive" :data-min-font="16">{{ donorName }}</p>
+<p class="template-adaptive" :data-min-font="16">{{ donorName }}</p>
 ```
 
 ## Adding New Templates

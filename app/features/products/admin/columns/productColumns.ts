@@ -52,8 +52,16 @@ export const productColumns: ColumnDef<ImpactProduct>[] = [
       ),
     cell: ({ row }) =>
       h('div', {}, [
-        h('span', { class: 'text-sm font-medium block' }, row.getValue('name') as string),
-        h('span', { class: 'text-xs text-muted-foreground line-clamp-1' }, row.original.description)
+        h(
+          'span',
+          { class: 'text-sm font-medium block truncate max-w-76' },
+          row.getValue('name') as string
+        ),
+        h(
+          'span',
+          { class: 'text-xs text-muted-foreground block truncate max-w-76' },
+          row.original.description
+        )
       ])
   },
   {

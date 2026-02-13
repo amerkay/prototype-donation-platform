@@ -174,7 +174,11 @@ export function createTributeFormSection(config: TributeSettings): ComposableFor
       recipientName,
       recipientEmail,
       // Message fields - visible when sendECard is true
-      ...createMessageFields(({ values }) => values.type !== 'none' && values.sendECard === true)
+      ...createMessageFields({
+        toggleLabel: 'Include a message to recipient',
+        toggleDescription: 'This message will be shown in the eCard email and the certificate',
+        visibleWhen: ({ values }) => values.type !== 'none' && values.sendECard === true
+      })
     }
   })
 }

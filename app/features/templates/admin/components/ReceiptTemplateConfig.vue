@@ -12,7 +12,7 @@ const { formRef, modelValue, form, expose } = useAdminConfigForm({
   form: useReceiptTemplateForm
 })
 
-defineEmits<{ save: []; discard: []; preview: [] }>()
+defineEmits<{ save: []; discard: [] }>()
 defineExpose(expose)
 </script>
 

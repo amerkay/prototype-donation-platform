@@ -18,7 +18,7 @@ const { formRef, modelValue, form, expose } = useAdminConfigForm({
   form: useCertificateTemplateForm
 })
 
-defineEmits<{ save: []; discard: []; preview: [] }>()
+defineEmits<{ save: []; discard: [] }>()
 defineExpose(expose)
 </script>
 

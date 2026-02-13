@@ -3,6 +3,22 @@ import type { FieldDef } from '~/features/_library/form-builder/types'
 import { toggleField, textareaField } from '~/features/_library/form-builder/api'
 
 /**
+ * Options for customizing message field labels and behavior
+ */
+export interface MessageFieldOptions {
+  /** Label for the toggle field (default: 'Include a Message') */
+  toggleLabel?: string
+  /** Description for the toggle field (default: 'Why are you donating today?') */
+  toggleDescription?: string
+  /** Label for the textarea field (default: 'Your Message') */
+  fieldLabel?: string
+  /** Placeholder for the textarea (default: 'Enter your message (max 250 characters)') */
+  placeholder?: string
+  /** Visibility condition for the entire message section */
+  visibleWhen?: (ctx: { values: Record<string, unknown> }) => boolean
+}
+
+/**
  * Create reusable message fields (toggle + textarea)
  *
  * Provides a consistent message input pattern with:
@@ -11,31 +27,48 @@ import { toggleField, textareaField } from '~/features/_library/form-builder/api
  * - Dynamic character counter
  * - Conditional validation
  *
- * @param visibleWhen - Function that determines when message fields should be visible
+ * @param options - Configuration options for customizing labels and visibility
  * @returns Object with isIncludeMessage toggle and message textarea fields
  *
  * @example
  * ```typescript
+ * // Default usage (donor info form)
  * const fields = {
  *   ...otherFields,
- *   ...createMessageFields((values) => values.sendEmail === true)
+ *   ...createMessageFields()
+ * }
+ *
+ * // Custom labels (tribute form)
+ * const fields = {
+ *   ...otherFields,
+ *   ...createMessageFields({
+ *     toggleLabel: 'Include a message to recipient',
+ *     toggleDescription: 'This message will be shown in the eCard email and the certificate',
+ *     visibleWhen: ({ values }) => values.sendECard === true
+ *   })
  * }
  * ```
  */
-export function createMessageFields(
-  visibleWhen?: (ctx: { values: Record<string, unknown> }) => boolean
-): Record<string, FieldDef> {
+export function createMessageFields(options: MessageFieldOptions = {}): Record<string, FieldDef> {
+  const {
+    toggleLabel = 'Include a Message',
+    toggleDescription = 'Why are you donating today?',
+    fieldLabel = 'Your Message',
+    placeholder = 'Enter your message (max 250 characters)',
+    visibleWhen
+  } = options
+
   const isIncludeMessage = toggleField('isIncludeMessage', {
-    label: 'Include a Message',
-    description: 'Why are you donating today?',
+    label: toggleLabel,
+    description: toggleDescription,
     optional: true,
     visibleWhen,
     defaultValue: false
   })
 
   const message = textareaField('message', {
-    label: 'Your Message',
-    placeholder: 'Enter your message (max 250 characters)',
+    label: fieldLabel,
+    placeholder,
     maxLength: 250,
     isShowMaxLengthIndicator: true,
     defaultValue: '',

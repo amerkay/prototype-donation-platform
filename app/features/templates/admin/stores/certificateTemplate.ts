@@ -17,45 +17,42 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
   const settings = reactive<CertificateTemplate>(normalizeTemplate())
 
   const certificate = computed(() => ({
-    header: {
-      showLogo: settings.showLogo,
-      logoSize: settings.logoSize,
-      logoPosition: settings.logoPosition,
-      titleLine1: settings.titleLine1,
-      titleLine2: settings.titleLine2,
-      titleTextColor: settings.titleTextColor
-    },
-    awardBlock: {
-      awardTextLine1: settings.awardTextLine1,
-      awardTextLine2: settings.awardTextLine2,
-      showDonorName: settings.showDonorName,
-      donorNameFontFamily: settings.donorNameFontFamily
-    },
-    body: {
-      bodyText: settings.bodyText
-    },
-    productSettings: {
-      showProduct: settings.showProduct,
-      productImageShape: settings.productImageShape
-    },
-    signatureSettings: {
-      showSignature: settings.showSignature,
-      signatureName: settings.signatureName,
-      signatureTitle: settings.signatureTitle,
-      signatureFontFamily: settings.signatureFontFamily
-    },
-    dateSettings: {
-      showDate: settings.showDate
-    },
-    footerSettings: {
-      footerText: settings.footerText
-    },
-    design: {
+    page: {
       layout: settings.layout,
       backgroundImage: settings.backgroundImage,
       pageBorderStyle: settings.pageBorderStyle,
       pageBorderThickness: settings.pageBorderThickness,
       separatorsAndBordersColor: settings.separatorsAndBordersColor
+    },
+    logo: {
+      showLogo: settings.showLogo,
+      logoSize: settings.logoSize,
+      logoPosition: settings.logoPosition
+    },
+    title: {
+      titleLine1: settings.titleLine1,
+      titleLine2: settings.titleLine2,
+      titleTextColor: settings.titleTextColor
+    },
+    award: {
+      showAwardSection: settings.showAwardSection,
+      awardTextLine1: settings.awardTextLine1,
+      donorNameFontFamily: settings.donorNameFontFamily
+    },
+    body: {
+      bodyText: settings.bodyText
+    },
+    product: {
+      showProduct: settings.showProduct,
+      productImageShape: settings.productImageShape
+    },
+    footer: {
+      showDate: settings.showDate,
+      footerText: settings.footerText,
+      showSignature: settings.showSignature,
+      signatureName: settings.signatureName,
+      signatureTitle: settings.signatureTitle,
+      signatureFontFamily: settings.signatureFontFamily
     }
   }))
 

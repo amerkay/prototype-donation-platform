@@ -22,17 +22,16 @@ const CERTIFICATE_TEMPLATE_VARIABLES = [
 ] as const
 
 export const CERTIFICATE_TEMPLATE_TARGETS = {
-  showLogo: 'certificate.header.showLogo',
-  titleLine1: 'certificate.header.titleLine1',
-  titleLine2: 'certificate.header.titleLine2',
-  header: 'certificate.header',
-  awardBlock: 'certificate.awardBlock',
+  showLogo: 'certificate.logo.showLogo',
+  titleLine1: 'certificate.title.titleLine1',
+  titleLine2: 'certificate.title.titleLine2',
+  logo: 'certificate.logo',
+  title: 'certificate.title',
+  award: 'certificate.award',
   body: 'certificate.body',
-  productSettings: 'certificate.productSettings',
-  signatureSettings: 'certificate.signatureSettings',
-  date: 'certificate.dateSettings',
-  footer: 'certificate.footerSettings',
-  design: 'certificate.design'
+  product: 'certificate.product',
+  footer: 'certificate.footer',
+  page: 'certificate.page'
 } as const
 
 export const certificateOpenAccordionId = ref<string | undefined>(undefined)
@@ -182,31 +181,26 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     }
   })
 
+  const showAwardSection = toggleField('showAwardSection', {
+    label: 'Show Award Section',
+    description: 'Display award text and donor name block.'
+  })
+
   const awardTextLine1 = textField('awardTextLine1', {
     label: 'Award Text Line 1',
     description: 'Plain text above donor name (e.g., "This certificate is awarded to").',
-    maxLength: 60
-  })
-
-  const showDonorName = toggleField('showDonorName', {
-    label: 'Show Donor Name',
-    description: 'Display donor name decoratively in award block.'
+    maxLength: 60,
+    visibleWhen: (ctx) => !!ctx.values.showAwardSection
   })
 
   const donorNameFontFamily = componentField('donorNameFontFamily', {
     component: FontFamilySelector,
     label: 'Donor Name Font',
     description: 'Decorative font for donor name.',
-    visibleWhen: (ctx) => !!ctx.values.showDonorName,
+    visibleWhen: (ctx) => !!ctx.values.showAwardSection,
     props: {
       options: SIGNATURE_FONT_OPTIONS
     }
-  })
-
-  const awardTextLine2 = richTextField('awardTextLine2', {
-    label: 'Award Text Line 2',
-    description: 'Rich text below donor name (e.g., "for your symbolic adoption of").',
-    variables: CERTIFICATE_TEMPLATE_VARIABLES
   })
 
   const showDate = toggleField('showDate', {
@@ -217,7 +211,8 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
   const footerText = textField('footerText', {
     label: 'Footer Text',
     description: 'Optional text at bottom (e.g., website).',
-    maxLength: 100
+    maxLength: 100,
+    showSeparatorAfter: true
   })
 
   const showProduct = toggleField('showProduct', {
@@ -257,26 +252,47 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     }
   })
 
-  const header = fieldGroup('header', {
-    label: 'Header',
+  const tributeNotice = alertField('tributeNotice', {
+    variant: 'info',
+    description:
+      'When a donor includes a personal message with their tribute donation, it will replace this body text on the certificate.'
+  })
+
+  const logo = fieldGroup('logo', {
+    label: 'Logo',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: {
-      showLogo,
-      noLogoAlert,
-      logoSize,
-      logoPosition,
-      titleLine1,
-      titleLine2,
-      titleTextColor
-    },
+    fields: { showLogo, noLogoAlert, logoSize, logoPosition },
     $storePath: {
       showLogo: 'showLogo',
       logoSize: 'logoSize',
-      logoPosition: 'logoPosition',
+      logoPosition: 'logoPosition'
+    },
+    showSeparatorAfter: true
+  })
+
+  const title = fieldGroup('title', {
+    label: 'Title',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    fields: { titleLine1, titleLine2, titleTextColor },
+    $storePath: {
       titleLine1: 'titleLine1',
       titleLine2: 'titleLine2',
       titleTextColor: 'titleTextColor'
+    },
+    showSeparatorAfter: true
+  })
+
+  const award = fieldGroup('award', {
+    label: 'Award',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    fields: { showAwardSection, awardTextLine1, donorNameFontFamily },
+    $storePath: {
+      showAwardSection: 'showAwardSection',
+      awardTextLine1: 'awardTextLine1',
+      donorNameFontFamily: 'donorNameFontFamily'
     },
     showSeparatorAfter: true
   })
@@ -285,15 +301,15 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     label: 'Body',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: { bodyText },
+    fields: { bodyText, tributeNotice },
     $storePath: {
       bodyText: 'bodyText'
     },
     showSeparatorAfter: true
   })
 
-  const productSettings = fieldGroup('productSettings', {
-    label: 'Product Settings',
+  const product = fieldGroup('product', {
+    label: 'Product',
     collapsible: true,
     collapsibleDefaultOpen: false,
     fields: { showProduct, productImageShape },
@@ -304,12 +320,21 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     showSeparatorAfter: true
   })
 
-  const signatureSettings = fieldGroup('signatureSettings', {
-    label: 'Signature Settings',
+  const footer = fieldGroup('footer', {
+    label: 'Footer',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: { showSignature, signatureName, signatureTitle, signatureFontFamily },
+    fields: {
+      showDate,
+      footerText,
+      showSignature,
+      signatureName,
+      signatureTitle,
+      signatureFontFamily
+    },
     $storePath: {
+      showDate: 'showDate',
+      footerText: 'footerText',
       showSignature: 'showSignature',
       signatureName: 'signatureName',
       signatureTitle: 'signatureTitle',
@@ -318,44 +343,8 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     showSeparatorAfter: true
   })
 
-  const awardBlock = fieldGroup('awardBlock', {
-    label: 'Award Block',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    fields: { awardTextLine1, showDonorName, donorNameFontFamily, awardTextLine2 },
-    $storePath: {
-      awardTextLine1: 'awardTextLine1',
-      showDonorName: 'showDonorName',
-      donorNameFontFamily: 'donorNameFontFamily',
-      awardTextLine2: 'awardTextLine2'
-    },
-    showSeparatorAfter: true
-  })
-
-  const dateSettings = fieldGroup('dateSettings', {
-    label: 'Date',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    fields: { showDate },
-    $storePath: {
-      showDate: 'showDate'
-    },
-    showSeparatorAfter: true
-  })
-
-  const footerSettings = fieldGroup('footerSettings', {
-    label: 'Footer',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    fields: { footerText },
-    $storePath: {
-      footerText: 'footerText'
-    },
-    showSeparatorAfter: true
-  })
-
-  const design = fieldGroup('design', {
-    label: 'Design',
+  const page = fieldGroup('page', {
+    label: 'Page',
     collapsible: true,
     collapsibleDefaultOpen: false,
     fields: {
@@ -381,14 +370,13 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     description: 'Configure content, design, product, and signature sections.',
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
     fields: {
-      design,
-      header,
-      awardBlock,
+      page,
+      logo,
+      title,
+      award,
       body,
-      productSettings,
-      dateSettings,
-      footerSettings,
-      signatureSettings
+      product,
+      footer
     }
   })
 

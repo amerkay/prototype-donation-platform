@@ -13,6 +13,7 @@ import { processTemplateRichText } from '~/features/templates/admin/utils/templa
 import { getPageRenderGeometry } from '~/features/templates/admin/utils/page-geometry'
 import { useAdaptiveText } from '~/features/templates/shared/composables/useAdaptiveText'
 import type { CertificateModel } from '~/features/templates/shared/types'
+import type { Product } from '~/features/donation-form/features/product/shared/types'
 import CertificateLayout from '~/features/templates/shared/components/certificate/CertificateLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Pencil } from 'lucide-vue-next'
@@ -21,6 +22,8 @@ const props = withDefaults(
   defineProps<{
     currency?: string
     editable?: boolean
+    /** Override the auto-selected product for preview */
+    product?: Product
   }>(),
   { editable: false }
 )
@@ -35,8 +38,8 @@ useHead({
   link: computed(() =>
     getBunnyFontUrls([
       branding.fontFamily,
-      cert.certificate.signatureSettings.signatureFontFamily,
-      cert.certificate.awardBlock.donorNameFontFamily
+      cert.certificate.footer.signatureFontFamily,
+      cert.certificate.award.donorNameFontFamily
     ]).map((href) => ({
       rel: 'stylesheet',
       href
@@ -53,14 +56,26 @@ const sampleDate = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric'
 }).format(new Date())
 
-const isLandscape = computed(() => cert.certificate.design.layout === 'landscape-classic')
-const geometry = computed(() => getPageRenderGeometry(cert.certificate.design.layout))
+const isLandscape = computed(() => cert.certificate.page.layout === 'landscape-classic')
+const geometry = computed(() => getPageRenderGeometry(cert.certificate.page.layout))
 
 const sampleProduct = computed(() => {
+  // Use override product if provided
+  if (props.product) {
+    return {
+      name: props.product.certificateOverrideName || props.product.name,
+      image: props.product.image || '',
+      text: props.product.certificateText
+    }
+  }
   // Try to find a real product with image and certificate name
   const p = products.value.find((product) => product.image && product.certificateOverrideName)
   if (p?.image) {
-    return { name: p.certificateOverrideName || p.name, image: p.image }
+    return {
+      name: p.certificateOverrideName || p.name,
+      image: p.image,
+      text: p.certificateText
+    }
   }
   // Fallback sample product for preview when no real products exist
   return { name: 'Baby Orangutan', image: 'https://placehold.co/200x200/f97316/ffffff?text=🦧' }
@@ -72,14 +87,10 @@ const certificateModel = computed<CertificateModel>(() => {
     AMOUNT: sampleAmount.value,
     DATE: sampleDate
   }
-  const awardTextLine2Html = processTemplateRichText(
-    cert.certificate.awardBlock.awardTextLine2,
-    variableValues
-  )
   const bodyHtml = processTemplateRichText(cert.certificate.body.bodyText, variableValues)
 
   return {
-    layout: cert.certificate.design.layout,
+    layout: cert.certificate.page.layout,
     branding: {
       logoUrl: branding.logoUrl,
       charityName: charity.name,
@@ -88,50 +99,50 @@ const certificateModel = computed<CertificateModel>(() => {
       fontFamily: branding.fontFamily
     },
     design: {
-      pageBorderStyle: cert.certificate.design.pageBorderStyle,
-      pageBorderThickness: cert.certificate.design.pageBorderThickness,
-      backgroundImage: cert.certificate.design.backgroundImage,
-      separatorsAndBordersColor: cert.certificate.design.separatorsAndBordersColor
+      pageBorderStyle: cert.certificate.page.pageBorderStyle,
+      pageBorderThickness: cert.certificate.page.pageBorderThickness,
+      backgroundImage: cert.certificate.page.backgroundImage,
+      separatorsAndBordersColor: cert.certificate.page.separatorsAndBordersColor
     },
     header: {
-      showLogo: cert.certificate.header.showLogo,
-      logoSize: cert.certificate.header.logoSize,
-      logoPosition: cert.certificate.header.logoPosition,
-      titleLine1: cert.certificate.header.titleLine1,
-      titleLine2: cert.certificate.header.titleLine2,
-      titleTextColor: cert.certificate.header.titleTextColor
+      showLogo: cert.certificate.logo.showLogo,
+      logoSize: cert.certificate.logo.logoSize,
+      logoPosition: cert.certificate.logo.logoPosition,
+      titleLine1: cert.certificate.title.titleLine1,
+      titleLine2: cert.certificate.title.titleLine2,
+      titleTextColor: cert.certificate.title.titleTextColor
     },
-    awardBlock: {
-      textLine1: cert.certificate.awardBlock.awardTextLine1,
-      donorName: cert.certificate.awardBlock.showDonorName
-        ? {
+    awardBlock: cert.certificate.award.showAwardSection
+      ? {
+          textLine1: cert.certificate.award.awardTextLine1,
+          donorName: {
             value: 'John Smith',
             show: true,
-            fontFamily: cert.certificate.awardBlock.donorNameFontFamily
+            fontFamily: cert.certificate.award.donorNameFontFamily
           }
-        : undefined,
-      textLine2Html: awardTextLine2Html
-    },
+        }
+      : undefined,
     bodyHtml,
-    product: cert.certificate.productSettings.showProduct
+    product: cert.certificate.product.showProduct
       ? {
           name: sampleProduct.value.name,
           image: sampleProduct.value.image,
           show: true,
-          imageShape: cert.certificate.productSettings.productImageShape
+          imageShape: cert.certificate.product.productImageShape,
+          text: sampleProduct.value.text
         }
       : undefined,
-    date: cert.certificate.dateSettings.showDate ? { value: sampleDate, show: true } : undefined,
-    signature: cert.certificate.signatureSettings.showSignature
+    date: cert.certificate.footer.showDate ? { value: sampleDate, show: true } : undefined,
+    signature: cert.certificate.footer.showSignature
       ? {
           show: true,
-          name: cert.certificate.signatureSettings.signatureName,
-          title: cert.certificate.signatureSettings.signatureTitle,
-          fontFamily: cert.certificate.signatureSettings.signatureFontFamily
+          name: cert.certificate.footer.signatureName,
+          title: cert.certificate.footer.signatureTitle,
+          fontFamily: cert.certificate.footer.signatureFontFamily
         }
       : undefined,
-    footer: cert.certificate.footerSettings.footerText
-      ? { text: cert.certificate.footerSettings.footerText }
+    footer: cert.certificate.footer.footerText
+      ? { text: cert.certificate.footer.footerText }
       : undefined,
     targets: CERTIFICATE_TEMPLATE_TARGETS
   }
