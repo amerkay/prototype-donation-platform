@@ -97,7 +97,8 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     options: [
       { value: 'white', label: 'White' },
       { value: 'image', label: 'Image' }
-    ]
+    ],
+    showSeparatorAfter: (ctx) => ctx.values.backgroundType === 'white'
   })
 
   const backgroundImage = imageUploadField('backgroundImage', {

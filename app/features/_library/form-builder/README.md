@@ -779,7 +779,7 @@ All fields support:
   rules?: z.ZodTypeAny | ComputedRef<z.ZodTypeAny> | (ctx: FieldContext) => z.ZodTypeAny
   onChange?: (ctx: OnChangeContext) => void
   onVisibilityChange?: (ctx: OnVisibilityChangeContext) => void
-  showSeparatorAfter?: boolean       // Show separator after field
+  showSeparatorAfter?: boolean | (ctx: FieldContext) => boolean  // Conditional separator
   class?: string | ComputedRef<string> | (ctx: FieldContext) => string
   labelClass?: string
   descriptionClass?: string
@@ -831,7 +831,7 @@ interface Condition {
 - **Dynamic when needed:** Use functions/ComputedRef only when depending on other fields
 - **onChange sparingly:** Most logic better served by `visibleWhen` + dynamic `rules`
 - **Extract patterns:** Reuse common field sets via factory functions returning `Record<string, FieldDef>`
-- **Separators:** Add `showSeparatorAfter: true` for visual separation between sections
+- **Separators:** Add `showSeparatorAfter: true` or `(ctx) => condition` for visual separation
 - **Validation on edit forms:** Set `validate-on-mount` for pre-filled forms
 - **Form submission:** Text fields submit on Enter; textareas use Shift+Enter for newline
 - **Container validation:** Use `rules` on field-groups/tabs for cross-field validation ("at least one required")
@@ -847,10 +847,13 @@ const enabled = toggleField('enabled', {
   showSeparatorAfter: true // Add visual separator after this field
 })
 
-const heading = textField('heading', {
-  label: 'Heading',
-  description: 'The heading shown above the cover costs option',
-  placeholder: 'Send 100% to the [Your Cause]',
-  rules: z.string().min(1, 'Heading is required when enabled')
+// Conditional separator based on field value
+const backgroundType = radioGroupField('backgroundType', {
+  label: 'Background',
+  options: [
+    { value: 'white', label: 'White' },
+    { value: 'image', label: 'Image' }
+  ],
+  showSeparatorAfter: (ctx) => ctx.values.backgroundType === 'white'
 })
 ```

@@ -32,7 +32,7 @@ const isFieldVisible = (fieldDef: FieldDef) => {
 const shouldShowSeparatorAfter = (currentIndex: number, currentFieldDef: FieldDef) => {
   // Only show separator if current field is visible and has the flag
   const sep = currentFieldDef.showSeparatorAfter
-  const hasSeparator = typeof sep === 'function' ? sep() : sep
+  const hasSeparator = typeof sep === 'function' ? sep(props.fieldContext) : sep
   if (!isFieldVisible(currentFieldDef) || !hasSeparator) {
     return false
   }
