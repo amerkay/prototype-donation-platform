@@ -13,12 +13,13 @@ defineProps<{
       <p
         class="template-adaptive font-medium text-gray-700 m-0 text-4xl leading-tight -mb-1"
         data-min-font="8"
+        data-max-lines="1"
         :style="{ fontFamily: `'${fontFamily}', sans-serif` }"
       >
         {{ name }}
       </p>
     </div>
-    <p class="template-adaptive text-gray-500 m-0 text-lg" data-min-font="12">
+    <p class="template-adaptive text-gray-500 m-0 text-lg" data-min-font="12" data-max-lines="1">
       {{ title }}
     </p>
   </div>
