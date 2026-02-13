@@ -50,6 +50,7 @@ const isLogoCentered = computed(
     }"
   >
     <CertBackground
+      :background-type="model.design.backgroundType"
       :background-image="model.design.backgroundImage"
       :data-field="model.targets?.page"
     />

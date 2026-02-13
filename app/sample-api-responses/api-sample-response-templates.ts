@@ -29,6 +29,7 @@ export const certificateTemplate: CertificateTemplate = {
   signatureTitle: 'Executive Director',
   signatureFontFamily: 'Alex Brush',
   layout: 'portrait-classic',
+  backgroundType: 'white',
   backgroundImage: null,
   showProduct: true,
   productImageShape: 'circle',

@@ -6,10 +6,12 @@ import { useEditableState } from '~/features/_admin/composables/defineEditableSt
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
 
 function normalizeTemplate(input: Partial<CertificateTemplate> = {}): CertificateTemplate {
-  return {
-    ...defaults,
-    ...input
+  const merged = { ...defaults, ...input }
+  // Derive backgroundType for backward compatibility
+  if (merged.backgroundType === undefined) {
+    merged.backgroundType = merged.backgroundImage ? 'image' : 'white'
   }
+  return merged
 }
 
 export const useCertificateTemplateStore = defineStore('certificateTemplate', () => {
@@ -19,6 +21,7 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
   const certificate = computed(() => ({
     page: {
       layout: settings.layout,
+      backgroundType: settings.backgroundType,
       backgroundImage: settings.backgroundImage,
       pageBorderStyle: settings.pageBorderStyle,
       pageBorderThickness: settings.pageBorderThickness,

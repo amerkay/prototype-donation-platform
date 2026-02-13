@@ -1,5 +1,6 @@
 <script setup lang="ts">
 defineProps<{
+  backgroundType: 'white' | 'image'
   backgroundImage: string | null
   dataField?: string
 }>()
@@ -7,7 +8,7 @@ defineProps<{
 
 <template>
   <img
-    v-if="backgroundImage"
+    v-if="backgroundType === 'image' && backgroundImage"
     :data-field="dataField"
     :src="backgroundImage"
     alt=""

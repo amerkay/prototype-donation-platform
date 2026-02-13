@@ -101,6 +101,7 @@ const certificateModel = computed<CertificateModel>(() => {
     design: {
       pageBorderStyle: cert.certificate.page.pageBorderStyle,
       pageBorderThickness: cert.certificate.page.pageBorderThickness,
+      backgroundType: cert.certificate.page.backgroundType,
       backgroundImage: cert.certificate.page.backgroundImage,
       separatorsAndBordersColor: cert.certificate.page.separatorsAndBordersColor
     },

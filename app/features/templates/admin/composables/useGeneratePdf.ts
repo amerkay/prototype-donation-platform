@@ -74,6 +74,7 @@ export function useGeneratePdf() {
             signatureTitle: certificate.footer.signatureTitle,
             signatureFontFamily: certificate.footer.signatureFontFamily,
             layout: certificate.page.layout,
+            backgroundType: certificate.page.backgroundType,
             backgroundImage: certificate.page.backgroundImage,
             showProduct: certificate.product.showProduct,
             productImageShape: certificate.product.productImageShape,

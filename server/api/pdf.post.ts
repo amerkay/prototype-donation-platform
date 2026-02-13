@@ -26,6 +26,7 @@ function buildCertificateModel(data: CertificatePdfData): CertificateModel {
     design: {
       pageBorderStyle: data.pageBorderStyle,
       pageBorderThickness: data.pageBorderThickness,
+      backgroundType: data.backgroundType,
       backgroundImage: data.backgroundImage,
       separatorsAndBordersColor: data.separatorsAndBordersColor
     },

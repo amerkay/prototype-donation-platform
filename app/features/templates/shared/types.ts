@@ -3,7 +3,7 @@
  * Used by both Vue preview components and PDF generation.
  */
 
-import type { CertificateLayoutId } from '~/features/templates/admin/types'
+import type { BackgroundType, CertificateLayoutId } from '~/features/templates/admin/types'
 
 /** Branding information for certificate rendering */
 export interface CertificateBranding {
@@ -18,6 +18,7 @@ export interface CertificateBranding {
 export interface CertificateDesign {
   pageBorderStyle: 'none' | 'border' | 'rounded' | 'double'
   pageBorderThickness: 'thin' | 'medium' | 'thick'
+  backgroundType: BackgroundType
   backgroundImage: string | null
   separatorsAndBordersColor: string
 }

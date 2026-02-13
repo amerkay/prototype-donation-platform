@@ -2,6 +2,9 @@
  * Template types for receipts, certificates, and eCards
  */
 
+/** Background type for certificates */
+export type BackgroundType = 'white' | 'image'
+
 /** Available certificate layout identifiers */
 export type CertificateLayoutId = 'portrait-classic' | 'landscape-classic'
 
@@ -37,6 +40,7 @@ export interface CertificateTemplate {
   signatureTitle: string
   signatureFontFamily: string
   layout: CertificateLayoutId
+  backgroundType: BackgroundType
   backgroundImage: string | null
   showProduct: boolean
   productImageShape: 'circle' | 'rounded' | 'square'
@@ -74,6 +78,7 @@ export interface CertificatePdfData {
   signatureTitle: string
   signatureFontFamily: string
   layout: CertificateLayoutId
+  backgroundType: BackgroundType
   backgroundImage: string | null
   showProduct: boolean
   productImageShape: 'circle' | 'rounded' | 'square'

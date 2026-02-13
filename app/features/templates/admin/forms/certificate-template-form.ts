@@ -90,10 +90,21 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     ]
   })
 
+  const backgroundType = radioGroupField('backgroundType', {
+    label: 'Background',
+    description: 'Choose background style.',
+    orientation: 'horizontal',
+    options: [
+      { value: 'white', label: 'White' },
+      { value: 'image', label: 'Image' }
+    ]
+  })
+
   const backgroundImage = imageUploadField('backgroundImage', {
     label: 'Background Image',
-    description: 'Optional full-page background.',
-    showSeparatorAfter: true
+    description: 'Upload a full-page background image.',
+    showSeparatorAfter: true,
+    visibleWhen: (ctx) => ctx.values.backgroundType === 'image'
   })
 
   const pageBorderStyle = selectField('pageBorderStyle', {
@@ -361,6 +372,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     fields: {
       brandingNotice,
       layout,
+      backgroundType,
       backgroundImage,
       pageBorderStyle,
       pageBorderThickness,
@@ -368,6 +380,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     },
     $storePath: {
       layout: 'layout',
+      backgroundType: 'backgroundType',
       backgroundImage: 'backgroundImage',
       pageBorderStyle: 'pageBorderStyle',
       pageBorderThickness: 'pageBorderThickness',

@@ -52,6 +52,7 @@ const headerZoom = computed(() => (isLogoCentered.value ? 0.8 : undefined))
     }"
   >
     <CertBackground
+      :background-type="model.design.backgroundType"
       :background-image="model.design.backgroundImage"
       :data-field="model.targets?.page"
     />
