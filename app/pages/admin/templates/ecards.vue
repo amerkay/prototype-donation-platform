@@ -7,8 +7,8 @@ import { useECardTemplateForm } from '~/features/templates/admin/forms/ecard-tem
 import type { ECardTemplate } from '~/features/templates/admin/types'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import AdminDeleteDialog from '~/features/_admin/components/AdminDeleteDialog.vue'
-import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
+import AdminDeleteButton from '~/features/_admin/components/AdminDeleteButton.vue'
+import { Plus, Pencil } from 'lucide-vue-next'
 
 import { formatDate } from '~/lib/formatDate'
 
@@ -76,16 +76,6 @@ function handleSave() {
   }
   showEditDialog.value = false
 }
-
-// Delete dialog
-const templateToDelete = ref<string | null>(null)
-
-function confirmDelete() {
-  if (templateToDelete.value) {
-    store.deleteTemplate(templateToDelete.value)
-    templateToDelete.value = null
-  }
-}
 </script>
 
 <template>
@@ -137,14 +127,11 @@ function confirmDelete() {
                 <Button variant="ghost" size="icon" class="h-7 w-7" @click="openEdit(template)">
                   <Pencil class="h-3.5 w-3.5" />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  class="h-7 w-7 text-destructive hover:text-destructive"
-                  @click="templateToDelete = template.id"
-                >
-                  <Trash2 class="h-3.5 w-3.5" />
-                </Button>
+                <AdminDeleteButton
+                  :entity-name="template.name"
+                  entity-type="eCard Template"
+                  @deleted="store.deleteTemplate(template.id)"
+                />
               </div>
             </div>
           </CardContent>
@@ -170,14 +157,5 @@ function confirmDelete() {
         </Button>
       </template>
     </BaseDialogOrDrawer>
-
-    <!-- Delete Dialog -->
-    <AdminDeleteDialog
-      :open="!!templateToDelete"
-      title="Delete eCard Template"
-      description="This template will be permanently removed. This action cannot be undone."
-      @update:open="(v) => !v && (templateToDelete = null)"
-      @confirm="confirmDelete"
-    />
   </div>
 </template>

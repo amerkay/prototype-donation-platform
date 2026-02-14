@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
-import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -14,24 +12,28 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Trash2 } from 'lucide-vue-next'
 
-const store = useCampaignConfigStore()
-const { deleteCampaign } = useCampaigns()
+defineProps<{
+  /** Entity name shown in confirmation, e.g. "New Campaign" */
+  entityName?: string
+  /** Entity type for dialog title, e.g. "Campaign", "Certificate Template" */
+  entityType?: string
+  /** Disable the button with a tooltip reason */
+  disabled?: boolean
+  disabledReason?: string
+}>()
 
 const emit = defineEmits<{ deleted: [] }>()
 
-const hasDonations = computed(() => (store.stats?.totalDonations ?? 0) > 0)
 const showDialog = ref(false)
 
 function handleConfirm() {
-  if (!store.id) return
-  deleteCampaign(store.id)
   showDialog.value = false
   emit('deleted')
 }
 </script>
 
 <template>
-  <Tooltip v-if="hasDonations" :delay-duration="100">
+  <Tooltip v-if="disabled" :delay-duration="100">
     <TooltipTrigger as-child>
       <span class="inline-flex">
         <Button variant="ghost" size="icon" class="pointer-events-none text-destructive opacity-30">
@@ -39,7 +41,7 @@ function handleConfirm() {
         </Button>
       </span>
     </TooltipTrigger>
-    <TooltipContent>Cannot delete a campaign that has received donations</TooltipContent>
+    <TooltipContent>{{ disabledReason }}</TooltipContent>
   </Tooltip>
   <Button
     v-else
@@ -54,9 +56,12 @@ function handleConfirm() {
   <AlertDialog v-model:open="showDialog">
     <AlertDialogContent>
       <AlertDialogHeader>
-        <AlertDialogTitle>Delete Campaign</AlertDialogTitle>
+        <AlertDialogTitle>Delete {{ entityType ?? 'Item' }}?</AlertDialogTitle>
         <AlertDialogDescription>
-          Are you sure you want to delete "{{ store.name }}"? This action cannot be undone.
+          Are you sure you want to delete
+          <template v-if="entityName">"{{ entityName }}"</template>
+          <template v-else>this {{ entityType?.toLowerCase() ?? 'item' }}</template
+          >? This action cannot be undone.
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>

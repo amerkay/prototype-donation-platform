@@ -13,7 +13,10 @@ import { certificateTemplates as mockTemplates } from '~/sample-api-responses/ap
 const templates = ref<CertificateTemplate[]>([])
 let hydrated = false
 
-const DEFAULT_TEMPLATE: Omit<CertificateTemplate, 'id' | 'name' | 'createdAt' | 'updatedAt'> = {
+const DEFAULT_TEMPLATE: Omit<
+  CertificateTemplate,
+  'id' | 'name' | 'status' | 'createdAt' | 'updatedAt'
+> = {
   titleLine1: 'Certificate of',
   titleLine2: 'Achievement',
   logoPosition: 'center',
@@ -47,7 +50,8 @@ function $hydrate(): void {
   try {
     const saved = sessionStorage.getItem('templates-certificates')
     if (saved) {
-      templates.value = JSON.parse(saved)
+      const parsed: CertificateTemplate[] = JSON.parse(saved)
+      templates.value = parsed.map((t) => ({ ...t, status: t.status ?? 'active' }))
     } else {
       templates.value = [...mockTemplates]
     }
@@ -74,7 +78,11 @@ export function useCertificateTemplates() {
     templates.value.map((t) => ({ value: t.id, label: t.name }))
   )
 
-  const stats = computed(() => [{ value: templates.value.length, label: 'templates' }])
+  const activeCount = computed(() => templates.value.filter((t) => t.status === 'active').length)
+  const stats = computed(() => [
+    { value: templates.value.length, label: 'templates' },
+    { value: activeCount.value, label: 'active' }
+  ])
 
   function getTemplateById(id: string): CertificateTemplate | undefined {
     return templates.value.find((t) => t.id === id)
@@ -88,6 +96,7 @@ export function useCertificateTemplates() {
       ...DEFAULT_TEMPLATE,
       id,
       name: 'Untitled Certificate',
+      status: 'active',
       createdAt: now,
       updatedAt: now
     }
@@ -109,6 +118,7 @@ export function useCertificateTemplates() {
       ...source,
       id: newId,
       name: `${source.name} (Copy)`,
+      status: 'active',
       createdAt: now,
       updatedAt: now
     }

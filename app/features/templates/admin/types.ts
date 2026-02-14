@@ -25,9 +25,13 @@ export interface ReceiptTemplate {
   showLogo: boolean
 }
 
+/** Certificate template status */
+export type CertificateTemplateStatus = 'active' | 'archived'
+
 export interface CertificateTemplate {
   id: string
   name: string
+  status: CertificateTemplateStatus
   createdAt: string
   updatedAt: string
   titleLine1: string
@@ -59,7 +63,7 @@ export interface CertificateTemplate {
 /** Certificate design settings (CertificateTemplate without identity/metadata fields) */
 export type CertificateTemplateSettings = Omit<
   CertificateTemplate,
-  'id' | 'name' | 'createdAt' | 'updatedAt'
+  'id' | 'name' | 'status' | 'createdAt' | 'updatedAt'
 >
 
 export interface ECardTemplate {

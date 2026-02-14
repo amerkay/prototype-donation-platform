@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
 import CertificateTemplateConfig from '~/features/templates/admin/components/CertificateTemplateConfig.vue'
 import CertificatePreview from '~/features/templates/admin/components/CertificatePreview.vue'
+import CertificateHeader from '~/features/templates/admin/components/CertificateHeader.vue'
 import { useCertificateTemplateStore } from '~/features/templates/admin/stores/certificateTemplate'
 import { useCertificateTemplates } from '~/features/templates/admin/composables/useCertificateTemplates'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
@@ -19,7 +20,7 @@ import { Download, Loader2 } from 'lucide-vue-next'
 definePageMeta({ layout: 'admin' })
 
 const route = useRoute()
-const { getTemplateById, updateTemplate } = useCertificateTemplates()
+const { getTemplateById, updateTemplate, deleteTemplate } = useCertificateTemplates()
 const store = useCertificateTemplateStore()
 const currencyStore = useCurrencySettingsStore()
 const { products } = useProducts()
@@ -93,6 +94,18 @@ function handleNameUpdate(newName: string) {
   store.name = newName
   updateTemplate(store.id, { name: newName })
 }
+
+function handleStatusUpdate(newStatus: string) {
+  if (!store.id) return
+  store.status = newStatus as 'active' | 'archived'
+  updateTemplate(store.id, { status: store.status })
+}
+
+function handleDeleted() {
+  if (!store.id) return
+  deleteTemplate(store.id)
+  navigateTo('/admin/templates/certificates')
+}
 </script>
 
 <template>
@@ -107,6 +120,14 @@ function handleNameUpdate(newName: string) {
       @confirm-discard="confirmDiscard"
       @update:last-item-label="handleNameUpdate"
     >
+      <template #header>
+        <CertificateHeader
+          @update:name="handleNameUpdate"
+          @update:status="handleStatusUpdate"
+          @deleted="handleDeleted"
+        />
+      </template>
+
       <template #content>
         <div class="space-y-6">
           <CertificateTemplateConfig

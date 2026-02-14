@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
 import AdminPageHeader from '~/features/_admin/components/AdminPageHeader.vue'
-import AdminDeleteDialog from '~/features/_admin/components/AdminDeleteDialog.vue'
 import CertificateTemplateCard from '~/features/templates/admin/components/CertificateTemplateCard.vue'
 import { useCertificateTemplates } from '~/features/templates/admin/composables/useCertificateTemplates'
 import { Button } from '@/components/ui/button'
@@ -28,24 +27,8 @@ function handleDuplicate(id: string) {
   if (newId) navigateTo(`/admin/templates/certificates/${newId}`)
 }
 
-const deleteTarget = ref<string | undefined>(undefined)
-const showDeleteDialog = ref(false)
-
 function handleRename(id: string, name: string) {
   updateTemplate(id, { name })
-}
-
-function handleDelete(id: string) {
-  deleteTarget.value = id
-  showDeleteDialog.value = true
-}
-
-function confirmDelete() {
-  if (deleteTarget.value) {
-    deleteTemplate(deleteTarget.value)
-  }
-  deleteTarget.value = undefined
-  showDeleteDialog.value = false
 }
 </script>
 
@@ -70,7 +53,7 @@ function confirmDelete() {
           :template="template"
           @rename="handleRename(template.id, $event)"
           @duplicate="handleDuplicate(template.id)"
-          @delete="handleDelete(template.id)"
+          @delete="deleteTemplate(template.id)"
         />
       </div>
 
@@ -79,13 +62,5 @@ function confirmDelete() {
         <p class="text-sm mt-1">Create your first certificate template to get started.</p>
       </div>
     </div>
-
-    <AdminDeleteDialog
-      :open="showDeleteDialog"
-      title="Delete certificate template?"
-      description="This action cannot be undone. The template will be permanently removed."
-      @update:open="showDeleteDialog = false"
-      @confirm="confirmDelete"
-    />
   </div>
 </template>

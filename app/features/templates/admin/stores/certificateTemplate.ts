@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia'
 import { computed, reactive, ref, toRefs, watch } from 'vue'
-import type { CertificateTemplate, CertificateTemplateSettings } from '~/features/templates/admin/types'
+import type {
+  CertificateTemplate,
+  CertificateTemplateSettings
+} from '~/features/templates/admin/types'
 import { certificateTemplate as fullDefaults } from '~/sample-api-responses/api-sample-response-templates'
 import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
@@ -11,8 +14,9 @@ import { useProducts } from '~/features/products/admin/composables/useProducts'
 const {
   id: _,
   name: __,
-  createdAt: ___,
-  updatedAt: ____,
+  status: ___,
+  createdAt: ____,
+  updatedAt: _____,
   ...DEFAULTS
 } = fullDefaults as unknown as Record<string, unknown>
 
@@ -22,6 +26,7 @@ function normalizeTemplate(
   const {
     id: _id,
     name: _name,
+    status: _status,
     createdAt: _ca,
     updatedAt: _ua,
     ...rest
@@ -39,6 +44,7 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
   const settings = reactive<CertificateTemplateSettings>(normalizeTemplate())
   const templateId = ref<string | undefined>(undefined)
   const templateName = ref('')
+  const templateStatus = ref<'active' | 'archived'>('active')
 
   // Pending product assignment changes (like campaign pendingFormDeletes pattern)
   const pendingProductLinks = ref<Set<string>>(new Set())
@@ -91,6 +97,7 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
   function initialize(template: CertificateTemplate) {
     templateId.value = template.id
     templateName.value = template.name
+    templateStatus.value = template.status ?? 'active'
     pendingProductLinks.value = new Set()
     pendingProductUnlinks.value = new Set()
     Object.assign(settings, normalizeTemplate(template))
@@ -146,7 +153,8 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     const { updateTemplate } = useCertificateTemplates()
     updateTemplate(templateId.value, {
       ...settings,
-      name: templateName.value
+      name: templateName.value,
+      status: templateStatus.value
     })
     commitProductChanges()
   }
@@ -167,6 +175,7 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     ...toRefs(settings),
     id: templateId,
     name: templateName,
+    status: templateStatus,
     certificate,
     flatSettings,
     pendingProductLinks,

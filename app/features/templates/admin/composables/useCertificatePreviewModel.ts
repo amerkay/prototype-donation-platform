@@ -4,7 +4,10 @@ import { useCharitySettingsStore } from '~/features/settings/admin/stores/charit
 import { getBunnyFontUrls } from '~/features/settings/admin/utils/fonts'
 import { processTemplateRichText } from '~/features/templates/admin/utils/template-rich-text'
 import type { CertificateTemplateSettings } from '~/features/templates/admin/types'
-import type { CertificateModel, CertificateTemplateTargets } from '~/features/templates/shared/types'
+import type {
+  CertificateModel,
+  CertificateTemplateTargets
+} from '~/features/templates/shared/types'
 
 export interface ProductPreviewData {
   name: string
@@ -43,9 +46,11 @@ export function useCertificatePreviewModel(
   useHead({
     link: computed(() => {
       const t = toValue(template)
-      return getBunnyFontUrls([branding.fontFamily, t.signatureFontFamily, t.donorNameFontFamily]).map(
-        (href) => ({ rel: 'stylesheet', href })
-      )
+      return getBunnyFontUrls([
+        branding.fontFamily,
+        t.signatureFontFamily,
+        t.donorNameFontFamily
+      ]).map((href) => ({ rel: 'stylesheet', href }))
     })
   })
 

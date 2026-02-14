@@ -17,6 +17,7 @@ export const certificateTemplates: CertificateTemplate[] = [
   {
     id: 'cert-adoption',
     name: 'Adoption Certificate',
+    status: 'active',
     createdAt: '2025-09-15T10:00:00Z',
     updatedAt: '2026-01-20T14:30:00Z',
     titleLine1: 'Certificate of',
@@ -48,6 +49,7 @@ export const certificateTemplates: CertificateTemplate[] = [
   {
     id: 'cert-donation',
     name: 'Donation Certificate',
+    status: 'active',
     createdAt: '2025-11-01T09:00:00Z',
     updatedAt: '2026-01-18T11:00:00Z',
     titleLine1: 'Certificate of',

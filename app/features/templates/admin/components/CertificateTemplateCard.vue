@@ -2,9 +2,11 @@
 import type { CertificateTemplate } from '~/features/templates/admin/types'
 import CertificatePreviewThumbnail from './CertificatePreviewThumbnail.vue'
 import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
+import AdminDeleteButton from '~/features/_admin/components/AdminDeleteButton.vue'
+import StatusBadge from '~/components/StatusBadge.vue'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Calendar, Copy, Pencil, Trash2 } from 'lucide-vue-next'
+import { Calendar, Copy, Pencil } from 'lucide-vue-next'
 import { formatDistance } from 'date-fns'
 
 const props = defineProps<{
@@ -36,10 +38,13 @@ const formattedDate = computed(() =>
         display-class="text-base font-semibold"
         @update:model-value="$emit('rename', $event)"
       />
-      <p class="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Calendar class="w-3 h-3" />
-        Updated {{ formattedDate }}
-      </p>
+      <div class="flex items-center gap-1.5">
+        <StatusBadge :status="template.status ?? 'active'" class="text-[10px] px-1.5 py-0" />
+        <p class="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Calendar class="w-3 h-3" />
+          Updated {{ formattedDate }}
+        </p>
+      </div>
     </CardHeader>
 
     <CardContent class="flex gap-2">
@@ -52,9 +57,11 @@ const formattedDate = computed(() =>
       <Button variant="outline" size="sm" @click="$emit('duplicate')">
         <Copy class="w-3.5 h-3.5" />
       </Button>
-      <Button variant="outline" size="sm" @click="$emit('delete')">
-        <Trash2 class="w-3.5 h-3.5 text-destructive" />
-      </Button>
+      <AdminDeleteButton
+        :entity-name="template.name"
+        entity-type="Certificate Template"
+        @deleted="$emit('delete')"
+      />
     </CardContent>
   </Card>
 </template>
