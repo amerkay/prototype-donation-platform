@@ -3,7 +3,8 @@ import {
   textField,
   selectField,
   imageUploadField,
-  richTextField
+  richTextField,
+  fieldGroup
 } from '~/features/_library/form-builder/api'
 
 export const useECardTemplateForm = defineForm('ecardTemplate', () => {
@@ -40,5 +41,19 @@ export const useECardTemplateForm = defineForm('ecardTemplate', () => {
     ]
   })
 
-  return { category, subject, imageUrl, bodyHtml }
+  const ecardSettings = fieldGroup('ecard', {
+    collapsible: false,
+    label: 'eCard Settings',
+    description: 'Configure category, subject, image, and message content.',
+    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+    fields: { category, subject, imageUrl, bodyHtml },
+    $storePath: {
+      category: 'category',
+      subject: 'subject',
+      imageUrl: 'imageUrl',
+      bodyHtml: 'bodyHtml'
+    }
+  })
+
+  return { ecard: ecardSettings }
 })

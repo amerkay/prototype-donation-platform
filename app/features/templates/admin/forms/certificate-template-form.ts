@@ -398,7 +398,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     showSeparatorAfter: true
   })
 
-  const certificate = fieldGroup('certificate', {
+  const certificateSettings = fieldGroup('certificate', {
     label: 'Certificate Settings',
     description: 'Configure content, design, product, and signature sections.',
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
@@ -413,5 +413,5 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     }
   })
 
-  return { certificate }
+  return { certificate: certificateSettings }
 })

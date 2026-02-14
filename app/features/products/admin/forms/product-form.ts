@@ -74,6 +74,7 @@ export const useProductForm = defineForm('product', () => {
     description: 'Customize how this product appears on donation certificates.',
     collapsible: true,
     collapsibleDefaultOpen: false,
+    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
     fields: {
       certificateTemplateId,
       certificateTemplateAlert,
@@ -120,14 +121,44 @@ export const useProductForm = defineForm('product', () => {
     description: 'Product requires a shipping address'
   })
 
-  return {
-    description,
-    image,
-    certificateSettings,
-    frequency,
-    price,
-    minPrice,
-    default: defaultPrice,
-    isShippingRequired
-  }
+  const basic = fieldGroup('basic', {
+    label: 'Basic',
+    collapsible: true,
+    collapsibleDefaultOpen: true,
+    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+    fields: { description, image },
+    $storePath: {
+      description: 'description',
+      image: 'image'
+    },
+    showSeparatorAfter: true
+  })
+
+  const pricing = fieldGroup('pricing', {
+    label: 'Pricing',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+    fields: { frequency, price, minPrice, default: defaultPrice },
+    $storePath: {
+      frequency: 'frequency',
+      price: 'price',
+      minPrice: 'minPrice',
+      default: 'default'
+    },
+    showSeparatorAfter: true
+  })
+
+  const shipping = fieldGroup('shipping', {
+    label: 'Shipping',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+    fields: { isShippingRequired },
+    $storePath: {
+      isShippingRequired: 'isShippingRequired'
+    }
+  })
+
+  return { basic, certificateSettings, pricing, shipping }
 })
