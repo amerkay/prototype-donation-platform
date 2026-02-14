@@ -29,7 +29,9 @@ const charCount = computed(() => {
 })
 
 const maxLengthDisplay = computed(() => {
-  if (!props.meta.isShowMaxLengthIndicator || !props.meta.maxLength) {
+  // Show indicator by default when maxLength is set, unless explicitly disabled
+  const shouldShow = props.meta.showMaxLengthIndicator !== false
+  if (!shouldShow || !props.meta.maxLength) {
     return undefined
   }
   return `${charCount.value}/${props.meta.maxLength} characters`

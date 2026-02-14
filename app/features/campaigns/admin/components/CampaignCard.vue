@@ -6,21 +6,30 @@ import {
   getCampaignTypeBadgeVariant
 } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
+import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
+import AdminDeleteButton from '~/features/_admin/components/AdminDeleteButton.vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Calendar, Heart, Users, TrendingUp, Target } from 'lucide-vue-next'
+import { Calendar, Heart, Users, TrendingUp, Target, Pencil } from 'lucide-vue-next'
 
 const props = defineProps<{
   campaign: Campaign
   compact?: boolean
 }>()
 
+defineEmits<{
+  rename: [name: string]
+  delete: []
+}>()
+
 const { formatAmount, formatDate, getProgressPercentage, formatTimeRemaining } =
   useCampaignFormatters()
-const { getCampaignById } = useCampaigns()
+const { getCampaignById, getDeleteProtection } = useCampaigns()
+
+const deleteProtection = computed(() => getDeleteProtection(props.campaign.id))
 
 const progressPercentage = computed(() =>
   getProgressPercentage(
@@ -45,6 +54,10 @@ const parentTemplate = computed(() => {
 const activeFundraisersCount = computed(
   () => props.campaign.fundraisers.filter((f) => f.status === 'active').length
 )
+
+const editUrl = computed(() => `/admin/campaigns/${props.campaign.id}`)
+
+const NuxtLinkComponent = resolveComponent('NuxtLink')
 </script>
 
 <template>
@@ -52,24 +65,37 @@ const activeFundraisersCount = computed(
     :class="cn('transition-all hover:shadow-md h-full overflow-hidden pt-0', compact ? '' : '')"
   >
     <!-- Cover Photo -->
-    <div class="relative aspect-3/1 bg-muted overflow-hidden">
-      <img
-        v-if="campaign.crowdfunding.coverPhoto"
-        :src="campaign.crowdfunding.coverPhoto"
-        :alt="campaign.name"
-        class="w-full h-full object-cover"
-      />
-      <div
-        v-else
-        class="w-full h-full flex items-center justify-center bg-linear-to-br from-primary/20 to-primary/5"
-      >
-        <Heart class="w-8 h-8 text-primary/40" />
+    <component
+      :is="compact ? 'div' : NuxtLinkComponent"
+      :to="compact ? undefined : editUrl"
+      :class="compact ? '' : 'block'"
+    >
+      <div class="relative aspect-3/1 bg-muted overflow-hidden">
+        <img
+          v-if="campaign.crowdfunding.coverPhoto"
+          :src="campaign.crowdfunding.coverPhoto"
+          :alt="campaign.name"
+          class="w-full h-full object-cover"
+        />
+        <div
+          v-else
+          class="w-full h-full flex items-center justify-center bg-linear-to-br from-primary/20 to-primary/5"
+        >
+          <Heart class="w-8 h-8 text-primary/40" />
+        </div>
       </div>
-    </div>
+    </component>
 
     <CardHeader>
       <div class="min-w-0">
-        <CardTitle class="text-lg truncate">{{ campaign.name }}</CardTitle>
+        <InlineEditableText
+          v-if="!compact"
+          :model-value="campaign.name"
+          display-class="text-base font-semibold"
+          :max-length="75"
+          @update:model-value="$emit('rename', $event)"
+        />
+        <CardTitle v-else class="text-lg truncate">{{ campaign.name }}</CardTitle>
         <CardDescription v-if="parentTemplate && !compact" class="text-xs mt-1">
           Parent Template: {{ parentTemplate.name }}
         </CardDescription>
@@ -152,7 +178,21 @@ const activeFundraisersCount = computed(
       <!-- Actions -->
       <div v-if="!compact" class="pt-2">
         <slot name="actions">
-          <Button variant="default" size="sm" class="w-full"> Edit Campaign </Button>
+          <div class="flex gap-2">
+            <Button variant="default" size="sm" class="flex-1" as-child>
+              <NuxtLink :to="editUrl">
+                <Pencil class="w-3.5 h-3.5 mr-1.5" />
+                Edit
+              </NuxtLink>
+            </Button>
+            <AdminDeleteButton
+              :entity-name="campaign.name"
+              entity-type="Campaign"
+              :disabled="!deleteProtection.canDelete"
+              :disabled-reason="deleteProtection.reason"
+              @deleted="$emit('delete')"
+            />
+          </div>
         </slot>
       </div>
     </CardContent>

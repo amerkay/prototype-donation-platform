@@ -28,6 +28,8 @@ interface Props {
   showDiscardDialog?: boolean
   /** Allow editing the last breadcrumb item */
   editableLastItem?: boolean
+  /** Maximum length for editable last item */
+  maxLength?: number
 }
 
 interface Emits {
@@ -56,6 +58,7 @@ const leaveGuard = inject<LeaveGuard | null>(LEAVE_GUARD_KEY, null)
     :items="breadcrumbs"
     :is-dirty="isDirty"
     :editable-last-item="editableLastItem"
+    :max-length="maxLength"
     @update:last-item-label="emit('update:lastItemLabel', $event)"
   />
 

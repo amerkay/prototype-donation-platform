@@ -241,6 +241,7 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
                 <InlineEditableText
                   v-if="canModifyForms"
                   :model-value="form.name"
+                  :max-length="75"
                   @update:model-value="renameForm(form.id, $event)"
                 />
                 <span v-else class="font-medium">{{ form.name }}</span>

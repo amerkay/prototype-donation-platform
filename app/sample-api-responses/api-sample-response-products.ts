@@ -3,7 +3,7 @@ import type { Product } from '~/features/donation-form/features/product/shared/t
 export const products: Product[] = [
   {
     id: 'adopt-bumi',
-    name: 'Adopt Bumi the Rescued Baby Orangutan Today', // 46 chars
+    name: 'Adopt Bumi the Rescued Baby', // 46 chars
     description: "Support Bumi's care, rehab, and release to the wild.", // 52 chars
     minPrice: 3,
     default: 10,
@@ -16,8 +16,8 @@ export const products: Product[] = [
   },
   {
     id: 'adopt-maya',
-    name: 'Adopt Maya the Healing Orangutan Survivor', // 42 chars
-    description: "Thank you for funding Maya's rehabilitation journey!", // 52 chars
+    name: 'Adopt Maya the Survivor',
+    description: "Fund Maya's rehabilitation journey!", // 52 chars
     minPrice: 3,
     default: 10,
     frequency: 'monthly',

@@ -20,7 +20,8 @@ import { Download, Loader2 } from 'lucide-vue-next'
 definePageMeta({ layout: 'admin' })
 
 const route = useRoute()
-const { getTemplateById, updateTemplate, deleteTemplate } = useCertificateTemplates()
+const { getTemplateById, updateTemplateName, updateTemplateStatus, deleteTemplate } =
+  useCertificateTemplates()
 const store = useCertificateTemplateStore()
 const currencyStore = useCurrencySettingsStore()
 const { products } = useProducts()
@@ -92,13 +93,13 @@ const breadcrumbs = computed(() => [
 function handleNameUpdate(newName: string) {
   if (!store.id) return
   store.name = newName
-  updateTemplate(store.id, { name: newName })
+  updateTemplateName(store.id, newName)
 }
 
 function handleStatusUpdate(newStatus: string) {
   if (!store.id) return
   store.status = newStatus as 'active' | 'archived'
-  updateTemplate(store.id, { status: store.status })
+  updateTemplateStatus(store.id, store.status)
 }
 
 function handleDeleted() {
@@ -116,6 +117,7 @@ function handleDeleted() {
       :show-discard-dialog="showDiscardDialog"
       :show-preview="false"
       editable-last-item
+      :max-length="75"
       @update:show-discard-dialog="showDiscardDialog = $event"
       @confirm-discard="confirmDiscard"
       @update:last-item-label="handleNameUpdate"

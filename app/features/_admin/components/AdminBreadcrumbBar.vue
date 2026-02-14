@@ -24,6 +24,8 @@ interface Props {
   isDirty?: boolean
   /** Allow editing the last breadcrumb item label */
   editableLastItem?: boolean
+  /** Maximum length for editable last item */
+  maxLength?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -64,6 +66,7 @@ const lastItem = computed(() =>
             <InlineEditableText
               v-if="editableLastItem"
               :model-value="lastItem.label"
+              :max-length="maxLength"
               @update:model-value="emit('update:lastItemLabel', $event)"
             />
             <BreadcrumbPage v-else>{{ lastItem.label }}</BreadcrumbPage>

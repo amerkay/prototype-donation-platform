@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { toast } from 'vue-sonner'
 import type { Campaign, CampaignType } from '~/features/campaigns/shared/types'
+import type { DeleteProtection } from '~/features/_admin/composables/useAdminEdit'
 import { campaigns as mockCampaigns } from '~/sample-api-responses/api-sample-response-campaigns'
 import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
 
@@ -208,6 +209,18 @@ export function useCampaigns() {
   }
 
   /**
+   * Check if a campaign can be deleted
+   */
+  function getDeleteProtection(id: string): DeleteProtection {
+    const campaign = getCampaignById(id)
+    if (!campaign) return { canDelete: false, reason: 'Campaign not found' }
+    if ((campaign.stats?.totalDonations ?? 0) > 0) {
+      return { canDelete: false, reason: 'Cannot delete a campaign that has received donations' }
+    }
+    return { canDelete: true }
+  }
+
+  /**
    * Delete a campaign and its associated forms
    */
   const deleteCampaign = (id: string): void => {
@@ -271,6 +284,7 @@ export function useCampaigns() {
     updateCampaignName,
     updateCampaignStatus,
     createCampaign,
-    deleteCampaign
+    deleteCampaign,
+    getDeleteProtection
   }
 }

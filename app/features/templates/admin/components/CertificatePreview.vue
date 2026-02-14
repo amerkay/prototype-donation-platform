@@ -34,8 +34,17 @@ const sampleAmount = computed(() => formatCurrency(50, activeCurrency.value))
 const isLandscape = computed(() => cert.certificate.page.layout === 'landscape-classic')
 const geometry = computed(() => getPageRenderGeometry(cert.certificate.page.layout))
 
+// Effective linked products (same logic as CertificateProductAssignment)
+const linkedProducts = computed(() =>
+  products.value.filter((p) => {
+    if (cert.pendingProductUnlinks.has(p.id)) return false
+    if (cert.pendingProductLinks.has(p.id)) return true
+    return p.certificateTemplateId === cert.id
+  })
+)
+
 const sampleProduct = computed(() => {
-  // Use override product if provided
+  // Use override product if provided (explicit eye-icon selection)
   if (props.product) {
     return {
       name: props.product.certificateOverrideName || props.product.name,
@@ -43,17 +52,17 @@ const sampleProduct = computed(() => {
       text: props.product.certificateText
     }
   }
-  // Try to find a real product with image and certificate name
-  const p = products.value.find((product) => product.image && product.certificateOverrideName)
-  if (p?.image) {
+  // Use first linked product, then fall back to first available product
+  const p = linkedProducts.value[0] || products.value[0]
+  if (p) {
     return {
       name: p.certificateOverrideName || p.name,
-      image: p.image,
+      image: p.image || '',
       text: p.certificateText
     }
   }
-  // Fallback sample product for preview when no real products exist
-  return { name: 'Baby Orangutan', image: 'https://placehold.co/200x200/f97316/ffffff?text=🦧' }
+  // Fallback only when no products exist at all
+  return { name: 'Sample Product', image: '' }
 })
 
 const { certificateModel } = useCertificatePreviewModel(() => cert.flatSettings, {

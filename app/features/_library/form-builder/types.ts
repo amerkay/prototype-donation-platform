@@ -200,7 +200,7 @@ export interface TextFieldConfig extends BaseFieldConfig {
 export interface TextareaFieldConfig extends BaseFieldConfig {
   rows?: number
   maxLength?: number
-  isShowMaxLengthIndicator?: boolean
+  showMaxLengthIndicator?: boolean
 }
 
 export interface NumberFieldConfig extends BaseFieldConfig {

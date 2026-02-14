@@ -1,11 +1,22 @@
 <script setup lang="ts">
 import type { Campaign } from '~/features/campaigns/shared/types'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import CampaignCard from './CampaignCard.vue'
 
 defineProps<{
   campaigns: Campaign[]
   compact?: boolean
 }>()
+
+const { updateCampaignName, deleteCampaign } = useCampaigns()
+
+function handleRename(id: string, name: string) {
+  updateCampaignName(id, name)
+}
+
+function handleDelete(id: string) {
+  deleteCampaign(id)
+}
 </script>
 
 <template>
@@ -18,13 +29,13 @@ defineProps<{
     class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
     :class="{ 'lg:grid-cols-2': compact }"
   >
-    <NuxtLink
+    <CampaignCard
       v-for="campaign in campaigns"
       :key="campaign.id"
-      :to="`/admin/campaigns/${campaign.id}`"
-      class="block h-full"
-    >
-      <CampaignCard :campaign="campaign" :compact="compact" />
-    </NuxtLink>
+      :campaign="campaign"
+      :compact="compact"
+      @rename="handleRename(campaign.id, $event)"
+      @delete="handleDelete(campaign.id)"
+    />
   </div>
 </template>

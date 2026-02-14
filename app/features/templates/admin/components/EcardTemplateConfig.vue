@@ -1,17 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import AdminConfigPanel from '~/features/_admin/components/AdminConfigPanel.vue'
-import {
-  useCertificateTemplateForm,
-  certificateOpenAccordionId
-} from '~/features/templates/admin/forms/certificate-template-form'
-import { useCertificateTemplateStore } from '~/features/templates/admin/stores/certificateTemplate'
-import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
+import { useECardTemplateForm } from '~/features/templates/admin/forms/ecard-template-form'
+import { useEcardTemplateStore } from '~/features/templates/admin/stores/ecardTemplate'
 
-const store = useCertificateTemplateStore()
-
-provideAccordionGroup(certificateOpenAccordionId)
-
+const store = useEcardTemplateStore()
 const configRef = ref<InstanceType<typeof AdminConfigPanel> | null>(null)
 
 defineEmits<{ save: []; discard: [] }>()
@@ -27,7 +20,7 @@ defineExpose({
   <AdminConfigPanel
     ref="configRef"
     :store="store"
-    :form="useCertificateTemplateForm"
+    :form="useECardTemplateForm"
     @save="$emit('save')"
     @discard="$emit('discard')"
   />

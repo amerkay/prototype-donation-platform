@@ -50,6 +50,15 @@ export interface LeaveGuard {
 }
 
 /**
+ * Delete protection result from composable-level business rules.
+ * Used by both Card and Header components for consistent protection.
+ */
+export interface DeleteProtection {
+  canDelete: boolean
+  reason?: string
+}
+
+/**
  * Composable for managing save/discard logic in admin edit pages
  * Provides consistent validation, save state, and discard confirmation
  * Includes navigation guard to prevent losing unsaved changes

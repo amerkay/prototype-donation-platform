@@ -202,6 +202,7 @@ const handleDeleted = () => {
     :show-preview="showExternalPreview"
     :preview-label="previewLabel"
     editable-last-item
+    :max-length="75"
     @preview="handlePreview"
     @update:show-discard-dialog="showDiscardDialog = $event"
     @confirm-discard="confirmDiscard"

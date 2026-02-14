@@ -96,9 +96,9 @@ const isTwoColumn = computed(() => !props.forceOneColumn && hasImage.value && ha
         border: `${borderWidth}px solid ${borderColor}`
       }"
     />
-    <div class="w-full max-w-2xl mt-4 shrink-0">
+    <div class="w-full mt-4 shrink-0">
       <p
-        class="template-adaptive font-bold leading-tight text-gray-900 text-3xl"
+        class="template-adaptive font-bold leading-tight text-gray-900 w-full text-3xl"
         data-max-lines="1"
         data-min-font="16"
       >

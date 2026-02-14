@@ -7,11 +7,6 @@ import {
 } from '~/features/_library/form-builder/api'
 
 export const useECardTemplateForm = defineForm('ecardTemplate', () => {
-  const name = textField('name', {
-    label: 'Name',
-    placeholder: 'Template name'
-  })
-
   const category = selectField('category', {
     label: 'Category',
     options: [
@@ -33,7 +28,7 @@ export const useECardTemplateForm = defineForm('ecardTemplate', () => {
     maxSizeMB: 5
   })
 
-  const bodyText = richTextField('bodyText', {
+  const bodyHtml = richTextField('bodyHtml', {
     label: 'Body Content',
     variables: [
       { value: 'FIRST_NAME', label: 'First Name' },
@@ -45,5 +40,5 @@ export const useECardTemplateForm = defineForm('ecardTemplate', () => {
     ]
   })
 
-  return { name, category, subject, imageUrl, bodyText }
+  return { category, subject, imageUrl, bodyHtml }
 })

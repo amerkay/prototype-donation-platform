@@ -4,6 +4,7 @@ import {
   getCampaignTypeShortLabel,
   getCampaignTypeBadgeVariant
 } from '~/features/campaigns/shared/composables/useCampaignTypes'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import type { CampaignStatus } from '~/features/campaigns/shared/types'
 import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
@@ -14,6 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 
 const store = useCampaignConfigStore()
+const { getDeleteProtection } = useCampaigns()
 const { formatAmount, formatTimeRemainingShort } = useCampaignFormatters()
 
 const props = defineProps<{
@@ -27,6 +29,9 @@ const emit = defineEmits<{
 }>()
 
 const hasDonations = computed(() => (store.stats?.totalDonations ?? 0) > 0)
+const deleteProtection = computed(() =>
+  store.id ? getDeleteProtection(store.id) : { canDelete: false, reason: 'Campaign not found' }
+)
 
 const campaignTypeLabel = computed(() => getCampaignTypeShortLabel({ type: store.type }))
 const typeBadgeVariant = computed(() => getCampaignTypeBadgeVariant(store.type))
@@ -68,14 +73,15 @@ const disabledOptions = computed(() => {
           :model-value="store.name"
           display-class="text-lg font-bold"
           class="min-w-0"
+          :max-length="75"
           @update:model-value="emit('update:name', $event)"
         />
         <div class="ml-auto shrink-0 sm:hidden">
           <AdminDeleteButton
             :entity-name="store.name"
             entity-type="Campaign"
-            :disabled="hasDonations"
-            disabled-reason="Cannot delete a campaign that has received donations"
+            :disabled="!deleteProtection.canDelete"
+            :disabled-reason="deleteProtection.reason"
             @deleted="emit('deleted')"
           />
         </div>
@@ -133,8 +139,8 @@ const disabledOptions = computed(() => {
       <AdminDeleteButton
         :entity-name="store.name"
         entity-type="Campaign"
-        :disabled="hasDonations"
-        disabled-reason="Cannot delete a campaign that has received donations"
+        :disabled="!deleteProtection.canDelete"
+        :disabled-reason="deleteProtection.reason"
         @deleted="emit('deleted')"
       />
     </template>

@@ -66,15 +66,26 @@ export type CertificateTemplateSettings = Omit<
   'id' | 'name' | 'status' | 'createdAt' | 'updatedAt'
 >
 
+/** eCard template status */
+export type ECardTemplateStatus = 'active' | 'archived'
+
 export interface ECardTemplate {
   id: string
   name: string
+  status: ECardTemplateStatus
   subject: string
   imageUrl: string
   bodyHtml: string
   category: 'thank-you' | 'tribute' | 'celebration' | 'custom'
   createdAt: string
+  updatedAt: string
 }
+
+/** eCard design settings (ECardTemplate without identity/metadata fields) */
+export type ECardTemplateSettings = Omit<
+  ECardTemplate,
+  'id' | 'name' | 'status' | 'createdAt' | 'updatedAt'
+>
 
 /** Data contract for server-side certificate PDF generation */
 export interface CertificatePdfData {

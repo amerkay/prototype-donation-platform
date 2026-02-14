@@ -70,7 +70,7 @@ export function createMessageFields(options: MessageFieldOptions = {}): Record<s
     label: fieldLabel,
     placeholder,
     maxLength: 250,
-    isShowMaxLengthIndicator: true,
+    showMaxLengthIndicator: true,
     defaultValue: '',
     visibleWhen: ({ values }) => {
       // First check parent visibility condition

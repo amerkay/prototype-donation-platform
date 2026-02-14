@@ -88,6 +88,7 @@ const handlePreview = () => {
     :show-discard-dialog="showDiscardDialog"
     preview-label="Form Preview"
     editable-last-item
+    :max-length="75"
     @preview="handlePreview"
     @update:show-discard-dialog="showDiscardDialog = $event"
     @confirm-discard="confirmDiscard"

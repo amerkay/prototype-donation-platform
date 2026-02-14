@@ -9,7 +9,11 @@
       <div v-if="$slots.center" class="sm:ml-auto">
         <slot name="center" />
       </div>
-      <div v-if="$slots.right" class="hidden shrink-0 sm:block" :class="{ 'sm:ml-auto': !$slots.center }">
+      <div
+        v-if="$slots.right"
+        class="hidden shrink-0 sm:block"
+        :class="{ 'sm:ml-auto': !$slots.center }"
+      >
         <slot name="right" />
       </div>
     </div>

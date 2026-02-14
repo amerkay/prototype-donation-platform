@@ -1,30 +1,30 @@
 <script setup lang="ts">
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
 import AdminPageHeader from '~/features/_admin/components/AdminPageHeader.vue'
-import CertificateTemplateCard from '~/features/templates/admin/components/CertificateTemplateCard.vue'
-import { useCertificateTemplates } from '~/features/templates/admin/composables/useCertificateTemplates'
+import EcardTemplateCard from '~/features/templates/admin/components/EcardTemplateCard.vue'
+import { useEcardTemplates } from '~/features/templates/admin/composables/useEcardTemplates'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'admin' })
 
 const { templates, stats, createTemplate, duplicateTemplate, updateTemplateName, deleteTemplate } =
-  useCertificateTemplates()
+  useEcardTemplates()
 
 const breadcrumbs = [
   { label: 'Dashboard', href: '/admin/dashboard' },
   { label: 'Templates', href: '#' },
-  { label: 'Certificates' }
+  { label: 'eCards' }
 ]
 
 function handleNew() {
   const id = createTemplate()
-  navigateTo(`/admin/templates/certificates/${id}`)
+  navigateTo(`/admin/templates/ecards/${id}`)
 }
 
 function handleDuplicate(id: string) {
   const newId = duplicateTemplate(id)
-  if (newId) navigateTo(`/admin/templates/certificates/${newId}`)
+  if (newId) navigateTo(`/admin/templates/ecards/${newId}`)
 }
 
 function handleRename(id: string, name: string) {
@@ -37,17 +37,17 @@ function handleRename(id: string, name: string) {
     <AdminBreadcrumbBar :items="breadcrumbs" />
 
     <div class="flex flex-1 flex-col px-4 pt-0 pb-4">
-      <AdminPageHeader title="Certificate Templates" :stats="stats">
+      <AdminPageHeader title="eCard Templates" :stats="stats">
         <template #action>
           <Button class="w-full sm:w-auto" size="sm" @click="handleNew">
             <Plus class="w-4 h-4 mr-2" />
-            New Certificate
+            New eCard
           </Button>
         </template>
       </AdminPageHeader>
 
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <CertificateTemplateCard
+        <EcardTemplateCard
           v-for="template in templates"
           :key="template.id"
           :template="template"
@@ -58,8 +58,8 @@ function handleRename(id: string, name: string) {
       </div>
 
       <div v-if="!templates.length" class="text-center py-12 text-muted-foreground">
-        <p class="text-lg font-medium">No certificate templates yet</p>
-        <p class="text-sm mt-1">Create your first certificate template to get started.</p>
+        <p class="text-lg font-medium">No eCard templates yet</p>
+        <p class="text-sm mt-1">Create your first eCard template to get started.</p>
       </div>
     </div>
   </div>

@@ -8,6 +8,8 @@ const props = defineProps<{
   modelValue: string
   /** Override display text classes (default: 'text-sm font-medium') */
   displayClass?: string
+  /** Maximum length for the input */
+  maxLength?: number
 }>()
 
 const emit = defineEmits<{
@@ -57,6 +59,7 @@ function onKeydown(e: KeyboardEvent) {
       ref="inputRef"
       v-model="editValue"
       class="h-7 text-sm min-w-40 max-w-64"
+      :maxlength="maxLength"
       @keydown="onKeydown"
       @blur="submitEdit"
     />

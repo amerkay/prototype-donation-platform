@@ -1,15 +1,15 @@
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { toast } from 'vue-sonner'
 import type { ImpactProduct } from '~/features/products/admin/types'
+import type { DeleteProtection } from '~/features/_admin/composables/useAdminEdit'
 import { products as mockProducts } from '~/sample-api-responses/api-sample-response-products'
+import { useSessionStorageSingleton } from '~/features/_admin/composables/useSessionStorageSingleton'
+import { generateEntityId } from '~/lib/generateEntityId'
 
 /**
  * Composable for admin impact product management.
  * Singleton pattern with sessionStorage persistence.
  */
-
-const products = ref<ImpactProduct[]>([])
-let hydrated = false
 
 function createImpactProduct(base: (typeof mockProducts)[0], linkedFormsCount = 0): ImpactProduct {
   return {
@@ -21,37 +21,18 @@ function createImpactProduct(base: (typeof mockProducts)[0], linkedFormsCount = 
   }
 }
 
-function $hydrate(): void {
-  if (hydrated) return
-  if (!import.meta.client) return
+const defaultProducts = mockProducts.map((p) =>
+  createImpactProduct(p, p.id === 'adopt-bumi' ? 2 : 1)
+)
 
-  try {
-    const saved = sessionStorage.getItem('impact-products')
-    if (saved) {
-      products.value = JSON.parse(saved)
-    } else {
-      products.value = mockProducts.map((p) =>
-        createImpactProduct(p, p.id === 'adopt-bumi' ? 2 : 1)
-      )
-    }
-    hydrated = true
-  } catch {
-    products.value = mockProducts.map((p) => createImpactProduct(p, 1))
-    hydrated = true
-  }
-}
-
-function $persist(): void {
-  if (!import.meta.client) return
-  try {
-    sessionStorage.setItem('impact-products', JSON.stringify(products.value))
-  } catch {
-    /* ignore */
-  }
-}
+const {
+  items: products,
+  $persist,
+  ensureHydrated
+} = useSessionStorageSingleton<ImpactProduct>('impact-products', defaultProducts)
 
 export function useProducts() {
-  if (!hydrated) $hydrate()
+  ensureHydrated()
 
   const activeProducts = computed(() => products.value.filter((p) => p.status === 'active'))
 
@@ -68,8 +49,12 @@ export function useProducts() {
     }
   ])
 
-  const createProduct = (data: Partial<ImpactProduct>): string => {
-    const id = `product-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+  function getProductById(id: string): ImpactProduct | undefined {
+    return products.value.find((p) => p.id === id)
+  }
+
+  function createProduct(data: Partial<ImpactProduct>): string {
+    const id = generateEntityId('product')
     const now = new Date().toISOString()
 
     const newProduct: ImpactProduct = {
@@ -94,7 +79,30 @@ export function useProducts() {
     return id
   }
 
-  const updateProduct = (id: string, updates: Partial<ImpactProduct>): void => {
+  function duplicateProduct(id: string): string | undefined {
+    const source = getProductById(id)
+    if (!source) return undefined
+
+    const newId = generateEntityId('product')
+    const now = new Date().toISOString()
+
+    const duplicate: ImpactProduct = {
+      ...source,
+      id: newId,
+      name: `${source.name} (Copy)`,
+      status: 'active',
+      createdAt: now,
+      updatedAt: now,
+      linkedFormsCount: 0
+    }
+
+    products.value.push(duplicate)
+    $persist()
+    toast.success('Product duplicated')
+    return newId
+  }
+
+  function updateProduct(id: string, updates: Partial<ImpactProduct>): void {
     const now = new Date().toISOString()
     products.value = products.value.map((p) =>
       p.id === id ? { ...p, ...updates, updatedAt: now } : p
@@ -102,7 +110,27 @@ export function useProducts() {
     $persist()
   }
 
-  const deleteProduct = (id: string): void => {
+  function getDeleteProtection(id: string): DeleteProtection {
+    const product = getProductById(id)
+    if (!product) return { canDelete: false, reason: 'Product not found' }
+    const n = product.linkedFormsCount ?? 0
+    if (n > 0) {
+      return { canDelete: false, reason: `Linked to ${n} form${n !== 1 ? 's' : ''} — unlink first` }
+    }
+    return { canDelete: true }
+  }
+
+  function updateProductName(id: string, name: string): void {
+    updateProduct(id, { name })
+    toast.success('Product name updated')
+  }
+
+  function updateProductStatus(id: string, status: ImpactProduct['status']): void {
+    updateProduct(id, { status })
+    toast.success('Product status updated')
+  }
+
+  function deleteProduct(id: string): void {
     const index = products.value.findIndex((p) => p.id === id)
     if (index === -1) return
 
@@ -115,8 +143,13 @@ export function useProducts() {
     products: computed(() => products.value),
     activeProducts,
     stats,
+    getProductById,
     createProduct,
+    duplicateProduct,
     updateProduct,
-    deleteProduct
+    updateProductName,
+    updateProductStatus,
+    deleteProduct,
+    getDeleteProtection
   }
 }

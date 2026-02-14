@@ -87,34 +87,37 @@ export const ecardTemplates: ECardTemplate[] = [
   {
     id: 'ecard-1',
     name: 'Thank You',
+    status: 'active',
     subject: 'Thank you for your donation, {{ FIRST_NAME }}!',
     imageUrl: 'https://placehold.co/600x300/2563eb/ffffff?text=Thank+You',
     bodyHtml:
       '<p>Dear {{ FIRST_NAME }},</p><p>Thank you for your generous gift of {{ AMOUNT }}. Your support makes a real difference.</p><p>With gratitude,<br/>The Team</p>',
     category: 'thank-you',
-
-    createdAt: '2025-01-15T10:00:00Z'
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2026-01-20T14:30:00Z'
   },
   {
     id: 'ecard-2',
     name: 'In Memory Tribute',
+    status: 'active',
     subject: 'A donation has been made in memory of {{ HONOREE_NAME }}',
     imageUrl: 'https://placehold.co/600x300/6b7280/ffffff?text=In+Memory',
     bodyHtml:
       '<p>Dear {{ FIRST_NAME }},</p><p>A gift of {{ AMOUNT }} has been made in memory of {{ HONOREE_NAME }} by {{ DONOR_NAME }}.</p><p>Their memory lives on through this act of kindness.</p>',
     category: 'tribute',
-
-    createdAt: '2025-02-01T10:00:00Z'
+    createdAt: '2025-02-01T10:00:00Z',
+    updatedAt: '2026-01-18T11:00:00Z'
   },
   {
     id: 'ecard-3',
     name: 'Birthday Celebration',
+    status: 'active',
     subject: 'Happy Birthday, {{ FIRST_NAME }}! A gift was made in your honor',
     imageUrl: 'https://placehold.co/600x300/f59e0b/ffffff?text=Happy+Birthday',
     bodyHtml:
       '<p>Dear {{ FIRST_NAME }},</p><p>To celebrate your birthday, {{ DONOR_NAME }} has made a donation of {{ AMOUNT }} in your honor.</p><p>Wishing you a wonderful day!</p>',
     category: 'celebration',
-
-    createdAt: '2025-03-10T10:00:00Z'
+    createdAt: '2025-03-10T10:00:00Z',
+    updatedAt: '2026-01-15T09:00:00Z'
   }
 ]

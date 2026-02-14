@@ -24,6 +24,14 @@ const { getTemplateById } = useCertificateTemplates()
 const store = useCertificateTemplateStore()
 
 const currentId = computed(() => store.id)
+const isArchived = computed(() => store.status === 'archived')
+
+// Effective preview product: explicit selection if still linked, otherwise first linked product
+const activePreviewProductId = computed(() => {
+  const explicit = certificatePreviewProductId.value
+  if (explicit && linkedProducts.value.some((p) => p.id === explicit)) return explicit
+  return linkedProducts.value[0]?.id
+})
 
 // Effective linked products: (currently linked - pending unlinks) + pending links
 const linkedProducts = computed(() =>
@@ -86,6 +94,10 @@ function confirmSelection() {
 
 function unlinkProduct(productId: string) {
   store.addPendingProductUnlink(productId)
+  // Reset explicit selection so preview auto-selects next linked product
+  if (certificatePreviewProductId.value === productId) {
+    certificatePreviewProductId.value = undefined
+  }
 }
 
 function getOtherTemplateName(templateId?: string): string | undefined {
@@ -116,9 +128,8 @@ function getOtherTemplateName(templateId?: string): string | undefined {
           variant="ghost"
           size="icon"
           class="h-7 w-7 shrink-0"
-          :class="
-            certificatePreviewProductId === product.id ? 'text-primary' : 'text-muted-foreground'
-          "
+          :class="activePreviewProductId === product.id ? 'text-primary' : 'text-muted-foreground'"
+          :disabled="activePreviewProductId === product.id"
           @click="certificatePreviewProductId = product.id"
         >
           <Eye class="h-3.5 w-3.5" />
@@ -136,7 +147,7 @@ function getOtherTemplateName(templateId?: string): string | undefined {
 
     <p v-else class="text-sm text-muted-foreground">No products linked to this template.</p>
 
-    <Button variant="outline" size="sm" @click="openProductDialog">
+    <Button variant="outline" size="sm" :disabled="isArchived" @click="openProductDialog">
       <Plus class="w-3.5 h-3.5 mr-1.5" />
       Add Product
     </Button>

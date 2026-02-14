@@ -1,7 +1,11 @@
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { toast } from 'vue-sonner'
 import type { CertificateTemplate } from '~/features/templates/admin/types'
+import type { DeleteProtection } from '~/features/_admin/composables/useAdminEdit'
 import { certificateTemplates as mockTemplates } from '~/sample-api-responses/api-sample-response-templates'
+import { useSessionStorageSingleton } from '~/features/_admin/composables/useSessionStorageSingleton'
+import { generateEntityId } from '~/lib/generateEntityId'
+import { useProducts } from '~/features/products/admin/composables/useProducts'
 
 /**
  * Certificate Templates Composable (Singleton Pattern)
@@ -9,9 +13,6 @@ import { certificateTemplates as mockTemplates } from '~/sample-api-responses/ap
  * Provides reactive access to certificate template data with CRUD operations.
  * Uses sessionStorage for persistence until API is available.
  */
-
-const templates = ref<CertificateTemplate[]>([])
-let hydrated = false
 
 const DEFAULT_TEMPLATE: Omit<
   CertificateTemplate,
@@ -43,36 +44,16 @@ const DEFAULT_TEMPLATE: Omit<
   footerText: ''
 }
 
-function $hydrate(): void {
-  if (hydrated) return
-  if (!import.meta.client) return
-
-  try {
-    const saved = sessionStorage.getItem('templates-certificates')
-    if (saved) {
-      const parsed: CertificateTemplate[] = JSON.parse(saved)
-      templates.value = parsed.map((t) => ({ ...t, status: t.status ?? 'active' }))
-    } else {
-      templates.value = [...mockTemplates]
-    }
-    hydrated = true
-  } catch {
-    templates.value = [...mockTemplates]
-    hydrated = true
-  }
-}
-
-function $persist(): void {
-  if (!import.meta.client) return
-  try {
-    sessionStorage.setItem('templates-certificates', JSON.stringify(templates.value))
-  } catch {
-    /* ignore */
-  }
-}
+const {
+  items: templates,
+  $persist,
+  ensureHydrated
+} = useSessionStorageSingleton<CertificateTemplate>('templates-certificates', mockTemplates, {
+  migrate: (t) => ({ ...t, status: t.status ?? 'active' })
+})
 
 export function useCertificateTemplates() {
-  if (!hydrated) $hydrate()
+  ensureHydrated()
 
   const templateOptions = computed(() =>
     templates.value.map((t) => ({ value: t.id, label: t.name }))
@@ -89,7 +70,7 @@ export function useCertificateTemplates() {
   }
 
   function createTemplate(): string {
-    const id = `cert-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const id = generateEntityId('cert')
     const now = new Date().toISOString()
 
     const newTemplate: CertificateTemplate = {
@@ -111,7 +92,7 @@ export function useCertificateTemplates() {
     const source = getTemplateById(id)
     if (!source) return undefined
 
-    const newId = `cert-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const newId = generateEntityId('cert')
     const now = new Date().toISOString()
 
     const duplicate: CertificateTemplate = {
@@ -137,6 +118,31 @@ export function useCertificateTemplates() {
     $persist()
   }
 
+  function getDeleteProtection(id: string): DeleteProtection {
+    const template = getTemplateById(id)
+    if (!template) return { canDelete: false, reason: 'Template not found' }
+    // Lazy import to avoid circular dependency at module level
+    const { products } = useProducts()
+    const n = products.value.filter((p) => p.certificateTemplateId === id).length
+    if (n > 0) {
+      return {
+        canDelete: false,
+        reason: `Linked to ${n} product${n !== 1 ? 's' : ''} — unlink or archive instead`
+      }
+    }
+    return { canDelete: true }
+  }
+
+  function updateTemplateName(id: string, name: string): void {
+    updateTemplate(id, { name })
+    toast.success('Certificate name updated')
+  }
+
+  function updateTemplateStatus(id: string, status: CertificateTemplate['status']): void {
+    updateTemplate(id, { status })
+    toast.success('Certificate status updated')
+  }
+
   function deleteTemplate(id: string): void {
     const index = templates.value.findIndex((t) => t.id === id)
     if (index === -1) return
@@ -154,6 +160,9 @@ export function useCertificateTemplates() {
     createTemplate,
     duplicateTemplate,
     updateTemplate,
-    deleteTemplate
+    updateTemplateName,
+    updateTemplateStatus,
+    deleteTemplate,
+    getDeleteProtection
   }
 }

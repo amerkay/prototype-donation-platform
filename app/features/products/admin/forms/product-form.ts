@@ -14,17 +14,12 @@ import { useCertificateTemplates } from '~/features/templates/admin/composables/
 export const useProductForm = defineForm('product', () => {
   const { templateOptions } = useCertificateTemplates()
 
-  const name = textField('name', {
-    label: 'Name',
-    placeholder: 'e.g., Plant 10 Trees',
-    maxLength: 50
-  })
-
   const description = textareaField('description', {
     label: 'Short Description',
     placeholder: 'Brief description...',
     rows: 2,
-    maxLength: 60
+    maxLength: 85,
+    showMaxLengthIndicator: true
   })
 
   const image = imageUploadField('image', {
@@ -85,6 +80,11 @@ export const useProductForm = defineForm('product', () => {
       certificateOverrideName,
       certificateText
     },
+    $storePath: {
+      certificateTemplateId: 'certificateTemplateId',
+      certificateOverrideName: 'certificateOverrideName',
+      certificateText: 'certificateText'
+    },
     showSeparatorAfter: true
   })
 
@@ -121,7 +121,6 @@ export const useProductForm = defineForm('product', () => {
   })
 
   return {
-    name,
     description,
     image,
     certificateSettings,

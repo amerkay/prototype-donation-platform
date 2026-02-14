@@ -63,25 +63,27 @@ app/features/[feature-name]/
 | Feature       | Path                                   | Purpose                                                                                              |
 | ------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | donation-form | `app/features/donation-form/`          | Multi-step donation wizard with 12 sub-features (cover-costs, gift-aid, impact-cart, tribute, etc.) |
-| campaigns     | `app/features/campaigns/`              | Campaign CRUD, crowdfunding, P2P fundraising, templates                                              |
+| campaigns     | `app/features/campaigns/`              | Campaign CRUD, crowdfunding, P2P fundraising, card grid listing + edit pages                         |
 | donations     | `app/features/donations/`              | Admin donation list/detail: columns, composables                                                     |
 | donors        | `app/features/donors/`                 | Admin donor list/detail: columns, composables, types                                                 |
 | donor-portal  | `app/features/donor-portal/`           | Donor dashboard: transaction history, fundraiser management                                          |
-| products      | `app/features/products/`               | Admin product management: columns, composables, forms, types                                         |
+| products      | `app/features/products/`              | Impact product CRUD: card grid listing, edit page with preview, forms, store                         |
 | subscriptions | `app/features/subscriptions/`          | Subscription management: admin list/detail, donor card + actions                                     |
 | settings      | `app/features/settings/`               | Org config: general, branding, charity, currency, team, API, billing, payments                       |
-| templates     | `app/features/templates/`              | PDF/print templates: certificates, receipts, ecards with model-driven Vue SFC rendering             |
+| templates     | `app/features/templates/`              | Certificates, receipts, ecards: card grid listing, edit pages, model-driven Vue SFC rendering       |
 | form-builder  | `app/features/_library/form-builder/`  | Schema-driven form framework: defineForm API, 16 field types, conditions, containers                 |
 | custom-fields | `app/features/_library/custom-fields/` | Admin-configurable dynamic fields with 8 field type factories                                        |
-| \_admin       | `app/features/_admin/`                 | Shared admin UI: sidebar, breadcrumbs, data table, detail rows, delete dialog, edit layouts, columns |
+| \_admin       | `app/features/_admin/`                 | Shared admin UI: sidebar, breadcrumbs, data table, edit layouts, AdminConfigPanel, DRY composables   |
 
-**Key stores:** `donation-form/shared/stores/formConfig.ts` (admin config), `donation-form/donor/stores/donationForm.ts` (donor state, per-form-ID persistence), `donation-form/features/impact-cart/donor/stores/impactCart.ts` (cart by frequency, per-form-ID persistence), `campaigns/shared/stores/campaignConfig.ts` (campaign config), `campaigns/shared/stores/forms.ts` (campaign forms), `settings/admin/stores/charitySettings.ts` (charity identity, slug, per-currency overrides), `settings/admin/stores/currencySettings.ts` (org currencies), `settings/admin/stores/generalSettings.ts`, `settings/admin/stores/brandingSettings.ts`, `settings/admin/stores/teamSettings.ts`, `settings/admin/stores/paymentSettings.ts`, `settings/admin/stores/apiSettings.ts`, `settings/admin/stores/billingSettings.ts`, `templates/admin/stores/certificateTemplate.ts`, `templates/admin/stores/ecardTemplates.ts`, `templates/admin/stores/receiptTemplate.ts`.
+**CRUD pattern (campaigns, products, certificates, ecards):** Singleton composable (`useSessionStorageSingleton`) → Card listing (`index.vue` + `*Card.vue` with InlineEditableText/StatusBadge/AdminDeleteButton) → Pinia edit store (`useEditableState`) → Edit page (`[id].vue` + `AdminEditLayout` + `useAdminEdit`) → Config form (`AdminConfigPanel` wrapping FormRenderer + StickyButtonGroup). Utility: `app/lib/generateEntityId.ts`. **Delete protection:** Each composable exposes `getDeleteProtection(id): DeleteProtection` (interface in `useAdminEdit.ts`) — Cards and Headers both call it for consistent disabled state. **Toast wrappers:** `update*Name()`/`update*Status()` methods in each composable show sonner toasts; raw `update*()` is silent (used by `store.save()` which toasts via `useAdminEdit`).
 
-**Key composables:** `useCampaigns()`, `useForms()`, `useCampaignShare()`, `useCampaignPreview()`, `useCampaignFormatters()`, `useDonorPortal()`, `useSubscriptionActions()`, `useAdminSubscriptions()`, `useDonations()`, `useDonors()`, `useProducts()`, `useCurrency()`, `useDonationCurrencies()`, `useAdminConfigForm()`, `useAdminEdit()`, `useGeneratePdf()`.
+**Key stores:** `donation-form/shared/stores/formConfig.ts` (admin config), `donation-form/donor/stores/donationForm.ts` (donor state, per-form-ID persistence), `donation-form/features/impact-cart/donor/stores/impactCart.ts` (cart by frequency, per-form-ID persistence), `campaigns/shared/stores/campaignConfig.ts` (campaign config), `campaigns/shared/stores/forms.ts` (campaign forms), `settings/admin/stores/charitySettings.ts` (charity identity, slug, per-currency overrides), `settings/admin/stores/currencySettings.ts` (org currencies), `settings/admin/stores/generalSettings.ts`, `settings/admin/stores/brandingSettings.ts`, `settings/admin/stores/teamSettings.ts`, `settings/admin/stores/paymentSettings.ts`, `settings/admin/stores/apiSettings.ts`, `settings/admin/stores/billingSettings.ts`, `templates/admin/stores/certificateTemplate.ts`, `templates/admin/stores/ecardTemplate.ts`, `templates/admin/stores/receiptTemplate.ts`, `products/admin/stores/product.ts`.
+
+**Key composables:** `useCampaigns()`, `useForms()`, `useCampaignShare()`, `useCampaignPreview()`, `useCampaignFormatters()`, `useDonorPortal()`, `useSubscriptionActions()`, `useAdminSubscriptions()`, `useDonations()`, `useDonors()`, `useProducts()`, `useCertificateTemplates()`, `useEcardTemplates()`, `useCurrency()`, `useDonationCurrencies()`, `useAdminConfigForm()`, `useAdminEdit()`, `useSessionStorageSingleton()`, `useGeneratePdf()`.
 
 **Layouts:** `admin.vue`, `admin-preview.vue`, `donor.vue`, `portal.vue`, `print.vue`, `default.vue`.
 
-**Pages:** `app/pages/admin/` (dashboard, campaigns, forms, donations, donors, products, subscriptions, templates: certificates/ecards/receipts, settings: general/branding/charity/currency/team/api/billing/payments), `app/pages/[org_slug]/` (donor-facing: campaign pages, forms, P2P onboarding/templates), `app/pages/portal/` (donor dashboard: donations, subscriptions, fundraisers), `app/pages/print/` (PDF render routes: certificate, receipt), `app/pages/index.vue` (landing).
+**Pages:** `app/pages/admin/` (dashboard, campaigns/standard+p2p/[id], donations, donors, products/[id], subscriptions, templates: certificates/[id] + ecards/[id] + receipts, settings: general/branding/charity/currency/team/api/billing/payments + payments/callback/stripe-connect/paypal-connect), `app/pages/[org_slug]/` (donor-facing: campaign pages, forms, P2P onboarding/templates), `app/pages/portal/` (donor dashboard: donations, subscriptions, fundraisers/[id]/edit), `app/pages/print/` (PDF render routes: certificate, receipt), `app/pages/index.vue` (landing).
 
 **Server API:** `server/api/pdf.post.ts` (PDF generation: stores model via useStorage, Puppeteer navigates to print route, returns PDF buffer), `server/api/print-data.get.ts` (token-based model retrieval for print pages), `server/api/export.post.ts` (data export). **PDF utils:** `server/utils/pdf/generate-pdf.ts` (Puppeteer + @sparticuz/chromium), `server/utils/pdf/print-data-store.ts` (Nitro useStorage with netlify-blobs/fs drivers, 30s TTL).
 
@@ -94,6 +96,8 @@ app/features/[feature-name]/
 1. `componentField` excluded from autoMap by default; persist via `$storePath` or manual getData/setData
 2. With `reka-ui` combobox, avoid manual open/select handlers that fight internal state
 3. `pnpm analyze` outputs chunk sizes mid-stream, not at end; grep for `.js` to find bundle info
+4. UX polish: previews show real data (linked products, not placeholders), toasts on every save
+5. Archived entities must disable destructive/additive actions (e.g., no adding products to archived templates)
 
 <!-- end continuous learning notes -->
 
