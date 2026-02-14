@@ -9,6 +9,7 @@ export const products: Product[] = [
     default: 10,
     frequency: 'monthly',
     image: '/imgs/orangutan-images/baimah.jpg',
+    certificateTemplateId: 'cert-adoption',
     certificateOverrideName: 'Thank you for adopting Bumi!', // 39 chars
     certificateText:
       'Your adoption helps provide daily food, medical care, and rehabilitation support for Bumi as he learns the skills needed to return to the wild. Every contribution helps us protect endangered orangutans and preserve their rainforest home.' // 240 chars
@@ -21,6 +22,7 @@ export const products: Product[] = [
     default: 10,
     frequency: 'monthly',
     image: '/imgs/orangutan-images/jeni.jpg',
+    certificateTemplateId: 'cert-adoption',
     certificateOverrideName: 'Maya',
     certificateText:
       'Maya requires specialized medical care due to injuries from the illegal pet trade. Your support ensures she receives the treatment she needs and helps fund her path to recovery and eventual release.' // 199 chars

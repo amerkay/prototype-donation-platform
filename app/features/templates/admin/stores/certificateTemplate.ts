@@ -1,12 +1,32 @@
 import { defineStore } from 'pinia'
-import { computed, reactive, toRefs, watch } from 'vue'
-import type { CertificateTemplate } from '~/features/templates/admin/types'
-import { certificateTemplate as defaults } from '~/sample-api-responses/api-sample-response-templates'
+import { computed, reactive, ref, toRefs, watch } from 'vue'
+import type { CertificateTemplate, CertificateTemplateSettings } from '~/features/templates/admin/types'
+import { certificateTemplate as fullDefaults } from '~/sample-api-responses/api-sample-response-templates'
 import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
+import { useCertificateTemplates } from '~/features/templates/admin/composables/useCertificateTemplates'
+import { useProducts } from '~/features/products/admin/composables/useProducts'
 
-function normalizeTemplate(input: Partial<CertificateTemplate> = {}): CertificateTemplate {
-  const merged = { ...defaults, ...input }
+// Strip identity fields from defaults — they must never leak into settings
+const {
+  id: _,
+  name: __,
+  createdAt: ___,
+  updatedAt: ____,
+  ...DEFAULTS
+} = fullDefaults as unknown as Record<string, unknown>
+
+function normalizeTemplate(
+  input: Partial<CertificateTemplateSettings> = {}
+): CertificateTemplateSettings {
+  const {
+    id: _id,
+    name: _name,
+    createdAt: _ca,
+    updatedAt: _ua,
+    ...rest
+  } = input as Record<string, unknown>
+  const merged = { ...DEFAULTS, ...rest } as CertificateTemplateSettings
   // Derive backgroundType for backward compatibility
   if (merged.backgroundType === undefined) {
     merged.backgroundType = merged.backgroundImage ? 'image' : 'white'
@@ -16,7 +36,13 @@ function normalizeTemplate(input: Partial<CertificateTemplate> = {}): Certificat
 
 export const useCertificateTemplateStore = defineStore('certificateTemplate', () => {
   const { isDirty, isSaving, markDirty, markClean } = useEditableState()
-  const settings = reactive<CertificateTemplate>(normalizeTemplate())
+  const settings = reactive<CertificateTemplateSettings>(normalizeTemplate())
+  const templateId = ref<string | undefined>(undefined)
+  const templateName = ref('')
+
+  // Pending product assignment changes (like campaign pendingFormDeletes pattern)
+  const pendingProductLinks = ref<Set<string>>(new Set())
+  const pendingProductUnlinks = ref<Set<string>>(new Set())
 
   const certificate = computed(() => ({
     page: {
@@ -59,43 +85,71 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     }
   }))
 
+  /** Flat settings snapshot for composables (e.g., useCertificatePreviewModel) */
+  const flatSettings = computed<CertificateTemplateSettings>(() => ({ ...settings }))
+
   function initialize(template: CertificateTemplate) {
+    templateId.value = template.id
+    templateName.value = template.name
+    pendingProductLinks.value = new Set()
+    pendingProductUnlinks.value = new Set()
     Object.assign(settings, normalizeTemplate(template))
     markClean()
   }
 
-  function updateSettings(template: Partial<CertificateTemplate>) {
+  function updateSettings(template: Partial<CertificateTemplateSettings>) {
     Object.assign(settings, normalizeTemplate({ ...settings, ...template }))
     markDirty()
   }
 
-  let hydrated = false
-  function $hydrate() {
-    if (hydrated) return
-    try {
-      const saved = sessionStorage.getItem('template-certificate')
-      if (saved) {
-        Object.assign(
-          settings,
-          normalizeTemplate(JSON.parse(saved) as Partial<CertificateTemplate>)
-        )
-        markClean()
-      }
-    } catch {
-      /* ignore */
+  /** Stage a product to be linked on save */
+  function addPendingProductLink(productId: string) {
+    // If it was pending unlink, just cancel that
+    if (pendingProductUnlinks.value.has(productId)) {
+      pendingProductUnlinks.value = new Set(
+        [...pendingProductUnlinks.value].filter((id) => id !== productId)
+      )
+    } else {
+      pendingProductLinks.value = new Set([...pendingProductLinks.value, productId])
     }
-    hydrated = true
+    markDirty()
+  }
+
+  /** Stage a product to be unlinked on save */
+  function addPendingProductUnlink(productId: string) {
+    // If it was pending link, just cancel that
+    if (pendingProductLinks.value.has(productId)) {
+      pendingProductLinks.value = new Set(
+        [...pendingProductLinks.value].filter((id) => id !== productId)
+      )
+    } else {
+      pendingProductUnlinks.value = new Set([...pendingProductUnlinks.value, productId])
+    }
+    markDirty()
+  }
+
+  /** Commit pending product changes to the products store */
+  function commitProductChanges() {
+    const { updateProduct } = useProducts()
+    for (const productId of pendingProductLinks.value) {
+      updateProduct(productId, { certificateTemplateId: templateId.value })
+    }
+    for (const productId of pendingProductUnlinks.value) {
+      updateProduct(productId, { certificateTemplateId: undefined })
+    }
+    pendingProductLinks.value = new Set()
+    pendingProductUnlinks.value = new Set()
   }
 
   function save() {
-    try {
-      sessionStorage.setItem('template-certificate', JSON.stringify(settings))
-    } catch {
-      /* ignore */
-    }
+    if (!templateId.value) return
+    const { updateTemplate } = useCertificateTemplates()
+    updateTemplate(templateId.value, {
+      ...settings,
+      name: templateName.value
+    })
+    commitProductChanges()
   }
-
-  if (import.meta.client) $hydrate()
 
   // Force showLogo to false when no logo is available
   const branding = useBrandingSettingsStore()
@@ -111,14 +165,20 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
 
   return {
     ...toRefs(settings),
+    id: templateId,
+    name: templateName,
     certificate,
+    flatSettings,
+    pendingProductLinks,
+    pendingProductUnlinks,
     isDirty,
     isSaving,
     initialize,
     updateSettings,
     markDirty,
     markClean,
-    $hydrate,
+    addPendingProductLink,
+    addPendingProductUnlink,
     save
   }
 })

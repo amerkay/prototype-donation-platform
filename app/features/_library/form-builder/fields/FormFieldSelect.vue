@@ -38,6 +38,11 @@ const resolvedOptions = computed(() => {
 const selectValue = computed({
   get: () => props.modelValue,
   set: (value) => {
+    // Placeholder selected — clear the field
+    if (value === '' || value === undefined) {
+      emit('update:modelValue', '')
+      return
+    }
     // Find the original option to preserve correct type
     const option = resolvedOptions.value.find(
       (o: { value: string | number }) => String(o.value) === String(value)

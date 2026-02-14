@@ -5,8 +5,12 @@ import { cn } from '@/lib/utils'
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
 import type { AlertFieldDef } from '~/features/_library/form-builder/types'
 import { sanitizeRichText } from '~/features/_library/form-builder/utils/sanitize-html'
-import { useResolvedFieldMeta } from '~/features/_library/form-builder/composables/useResolvedFieldMeta'
+import {
+  useResolvedFieldMeta,
+  resolveText
+} from '~/features/_library/form-builder/composables/useResolvedFieldMeta'
 import { useContainerFieldSetup } from '~/features/_library/form-builder/composables/useContainerFieldSetup'
+import { useFormBuilderContext } from '~/features/_library/form-builder/composables/useFormBuilderContext'
 
 interface Props {
   meta: AlertFieldDef
@@ -35,6 +39,12 @@ const showDestructiveIcon = computed(() => {
   )
 })
 
+const { fieldContext } = useFormBuilderContext()
+const resolvedCtaTo = computed(() => {
+  const to = props.meta.cta?.to
+  return to ? (resolveText(to, fieldContext.value) ?? '') : ''
+})
+
 const isInlineCta = computed(() => {
   return !!props.meta.cta?.inline && !props.meta.content && !!resolvedDescription.value
 })
@@ -53,7 +63,7 @@ const isInlineCta = computed(() => {
         {{ resolvedDescription }}
         <NuxtLink
           v-if="meta.cta && isInlineCta"
-          :to="meta.cta.to"
+          :to="resolvedCtaTo"
           :class="
             cn(
               'inline-flex items-center gap-1 align-baseline font-medium hover:underline',
@@ -68,7 +78,7 @@ const isInlineCta = computed(() => {
       </p>
       <NuxtLink
         v-if="meta.cta && !isInlineCta"
-        :to="meta.cta.to"
+        :to="resolvedCtaTo"
         :class="
           cn(
             'mt-2 inline-flex items-center gap-1 font-medium hover:underline',

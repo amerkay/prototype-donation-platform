@@ -28,6 +28,7 @@ const newProduct = ref({
   description: '',
   image: null as string | null,
   certificateSettings: {
+    certificateTemplateId: '' as string | undefined,
     certificateOverrideName: '',
     certificateText: ''
   },
@@ -44,6 +45,7 @@ function openCreate() {
     description: '',
     image: null,
     certificateSettings: {
+      certificateTemplateId: undefined,
       certificateOverrideName: '',
       certificateText: ''
     },
@@ -58,7 +60,8 @@ function openCreate() {
 
 function handleCreate() {
   const { certificateSettings, ...rest } = newProduct.value
-  createProduct({ ...rest, ...certificateSettings })
+  const flatData = { ...rest, ...certificateSettings }
+  createProduct(flatData)
   showCreateDialog.value = false
 }
 
@@ -75,6 +78,7 @@ function handleEdit(product: ImpactProduct) {
     description: product.description,
     image: product.image,
     certificateSettings: {
+      certificateTemplateId: product.certificateTemplateId ?? '',
       certificateOverrideName: product.certificateOverrideName ?? '',
       certificateText: product.certificateText ?? ''
     },

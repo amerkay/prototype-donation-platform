@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowUpDown, Package } from 'lucide-vue-next'
 import { formatCurrency } from '~/lib/formatCurrency'
+import { useCertificateTemplates } from '~/features/templates/admin/composables/useCertificateTemplates'
 
 import StatusBadge from '~/components/StatusBadge.vue'
 
@@ -54,12 +55,12 @@ export const productColumns: ColumnDef<ImpactProduct>[] = [
       h('div', {}, [
         h(
           'span',
-          { class: 'text-sm font-medium block truncate max-w-76' },
+          { class: 'text-sm font-medium block truncate max-w-56' },
           row.getValue('name') as string
         ),
         h(
           'span',
-          { class: 'text-xs text-muted-foreground block truncate max-w-76' },
+          { class: 'text-xs text-muted-foreground block truncate max-w-56' },
           row.original.description
         )
       ])
@@ -105,6 +106,19 @@ export const productColumns: ColumnDef<ImpactProduct>[] = [
             'Required'
           ])
         : null
+  },
+  {
+    id: 'certificate',
+    header: 'Certificate',
+    cell: ({ row }) => {
+      const templateId = row.original.certificateTemplateId
+      if (!templateId) return h('span', { class: 'text-sm text-muted-foreground' }, '\u2014')
+      const { getTemplateById } = useCertificateTemplates()
+      const template = getTemplateById(templateId)
+      const name = template?.name ?? 'Unknown'
+      const display = name.length > 20 ? `${name.slice(0, 20)}\u2026` : name
+      return h('span', { class: 'text-sm text-muted-foreground' }, display)
+    }
   },
   {
     accessorKey: 'linkedFormsCount',

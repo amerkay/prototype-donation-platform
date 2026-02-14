@@ -26,6 +26,10 @@ export interface ReceiptTemplate {
 }
 
 export interface CertificateTemplate {
+  id: string
+  name: string
+  createdAt: string
+  updatedAt: string
   titleLine1: string
   titleLine2: string
   logoPosition: 'center' | 'left'
@@ -51,6 +55,12 @@ export interface CertificateTemplate {
   donorNameFontFamily: string
   footerText: string
 }
+
+/** Certificate design settings (CertificateTemplate without identity/metadata fields) */
+export type CertificateTemplateSettings = Omit<
+  CertificateTemplate,
+  'id' | 'name' | 'createdAt' | 'updatedAt'
+>
 
 export interface ECardTemplate {
   id: string

@@ -12,6 +12,7 @@ import {
 } from '~/features/_library/form-builder/api'
 import ColorPresetSelector from '@/components/ColorPresetSelector.vue'
 import FontFamilySelector from '@/components/FontFamilySelector.vue'
+import CertificateProductAssignment from '~/features/templates/admin/components/CertificateProductAssignment.vue'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
 import { SIGNATURE_FONT_OPTIONS } from '~/features/settings/admin/utils/fonts'
 
@@ -35,6 +36,7 @@ export const CERTIFICATE_TEMPLATE_TARGETS = {
 } as const
 
 export const certificateOpenAccordionId = ref<string | undefined>(undefined)
+export const certificatePreviewProductId = ref<string | undefined>(undefined)
 
 export const useCertificateTemplateForm = defineForm('certificateTemplate', () => {
   const branding = useBrandingSettingsStore()
@@ -227,6 +229,12 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     showSeparatorAfter: true
   })
 
+  const linkedProducts = componentField('linkedProducts', {
+    component: CertificateProductAssignment,
+    label: 'Linked Products',
+    description: 'Products that use this certificate template.'
+  })
+
   const showProduct = toggleField('showProduct', {
     label: 'Show Product',
     description: 'Show adopted product badge.'
@@ -335,7 +343,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     label: 'Product',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: { showProduct, productInfoNotice, productImageShape },
+    fields: { showProduct, productInfoNotice, productImageShape, linkedProducts },
     $storePath: {
       showProduct: 'showProduct',
       productImageShape: 'productImageShape'

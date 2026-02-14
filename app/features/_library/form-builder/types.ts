@@ -403,7 +403,7 @@ export interface AlertFieldConfig extends BaseFieldConfig {
   content?: string
   cta?: {
     label: string
-    to: string
+    to: string | ((ctx: FieldContext) => string)
     icon?: string
     class?: string
     inline?: boolean

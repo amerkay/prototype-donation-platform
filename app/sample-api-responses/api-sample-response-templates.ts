@@ -13,33 +13,73 @@ export const receiptTemplate: ReceiptTemplate = {
   showLogo: true
 }
 
-export const certificateTemplate: CertificateTemplate = {
-  titleLine1: 'Certificate of',
-  titleLine2: 'Adoption',
-  logoPosition: 'center',
-  awardTextLine1: 'This certificate is awarded to',
-  bodyText:
-    'Thank you for helping us save Bornean Orangutans from extinction! Your support provides food, medical care, and safe habitat.',
-  pageBorderStyle: 'border',
-  pageBorderThickness: 'thick',
-  showLogo: true,
-  logoSize: 'large',
-  showSignature: true,
-  signatureName: 'Jane Smith',
-  signatureTitle: 'Executive Director',
-  signatureFontFamily: 'Alex Brush',
-  layout: 'portrait-classic',
-  backgroundType: 'white',
-  backgroundImage: null,
-  showProduct: true,
-  productImageShape: 'circle',
-  titleTextColor: 'primary',
-  separatorsAndBordersColor: 'secondary',
-  showDate: true,
-  showAwardSection: true,
-  donorNameFontFamily: 'Pacifico',
-  footerText: 'www.orangutan.org | Tax ID: 12-3456789'
-}
+export const certificateTemplates: CertificateTemplate[] = [
+  {
+    id: 'cert-adoption',
+    name: 'Adoption Certificate',
+    createdAt: '2025-09-15T10:00:00Z',
+    updatedAt: '2026-01-20T14:30:00Z',
+    titleLine1: 'Certificate of',
+    titleLine2: 'Adoption',
+    logoPosition: 'center',
+    awardTextLine1: 'This certificate is awarded to',
+    bodyText:
+      'Thank you for helping us save Bornean Orangutans from extinction! Your support provides food, medical care, and safe habitat.',
+    pageBorderStyle: 'border',
+    pageBorderThickness: 'thick',
+    showLogo: true,
+    logoSize: 'large',
+    showSignature: true,
+    signatureName: 'Jane Smith',
+    signatureTitle: 'Executive Director',
+    signatureFontFamily: 'Alex Brush',
+    layout: 'portrait-classic',
+    backgroundType: 'white',
+    backgroundImage: null,
+    showProduct: true,
+    productImageShape: 'circle',
+    titleTextColor: 'primary',
+    separatorsAndBordersColor: 'secondary',
+    showDate: true,
+    showAwardSection: true,
+    donorNameFontFamily: 'Pacifico',
+    footerText: 'www.orangutan.org | Tax ID: 12-3456789'
+  },
+  {
+    id: 'cert-donation',
+    name: 'Donation Certificate',
+    createdAt: '2025-11-01T09:00:00Z',
+    updatedAt: '2026-01-18T11:00:00Z',
+    titleLine1: 'Certificate of',
+    titleLine2: 'Donation',
+    logoPosition: 'center',
+    awardTextLine1: 'This certificate is presented to',
+    bodyText:
+      'Your generous contribution helps protect endangered wildlife and preserve critical rainforest habitats for future generations.',
+    pageBorderStyle: 'rounded',
+    pageBorderThickness: 'medium',
+    showLogo: true,
+    logoSize: 'medium',
+    showSignature: true,
+    signatureName: 'Jane Smith',
+    signatureTitle: 'Executive Director',
+    signatureFontFamily: 'Alex Brush',
+    layout: 'landscape-classic',
+    backgroundType: 'white',
+    backgroundImage: null,
+    showProduct: false,
+    productImageShape: 'circle',
+    titleTextColor: 'primary',
+    separatorsAndBordersColor: 'primary',
+    showDate: true,
+    showAwardSection: true,
+    donorNameFontFamily: 'Pacifico',
+    footerText: 'www.orangutan.org | Tax ID: 12-3456789'
+  }
+]
+
+/** @deprecated Use certificateTemplates array instead */
+export const certificateTemplate: CertificateTemplate = certificateTemplates[0]!
 
 export const ecardTemplates: ECardTemplate[] = [
   {

@@ -6,10 +6,14 @@ import {
   selectField,
   numberField,
   toggleField,
+  alertField,
   fieldGroup
 } from '~/features/_library/form-builder/api'
+import { useCertificateTemplates } from '~/features/templates/admin/composables/useCertificateTemplates'
 
 export const useProductForm = defineForm('product', () => {
+  const { templateOptions } = useCertificateTemplates()
+
   const name = textField('name', {
     label: 'Name',
     placeholder: 'e.g., Plant 10 Trees',
@@ -29,12 +33,35 @@ export const useProductForm = defineForm('product', () => {
     showSeparatorAfter: true
   })
 
+  const certificateTemplateId = selectField('certificateTemplateId', {
+    label: 'Certificate Template',
+    description: 'Select a template to email certificates when this product is purchased.',
+    placeholder: 'No certificate',
+    optional: true,
+    options: () => templateOptions.value
+  })
+
+  const certificateTemplateAlert = alertField('certificateTemplateAlert', {
+    variant: 'info',
+    description: 'Certificate templates can be customized in the Templates section.',
+    cta: {
+      label: 'Edit template',
+      to: (ctx) =>
+        ctx.values.certificateTemplateId
+          ? `/admin/templates/certificates/${ctx.values.certificateTemplateId}`
+          : '/admin/templates/certificates',
+      inline: true
+    },
+    visibleWhen: (ctx) => !!ctx.values.certificateTemplateId
+  })
+
   const certificateOverrideName = textField('certificateOverrideName', {
     label: 'Certificate Display Name',
     placeholder: 'e.g., Maya',
     optional: true,
     description: 'Short name shown on certificates instead of full product name',
-    maxLength: 50
+    maxLength: 50,
+    visibleWhen: (ctx) => !!ctx.values.certificateTemplateId
   })
 
   const certificateText = textareaField('certificateText', {
@@ -43,7 +70,8 @@ export const useProductForm = defineForm('product', () => {
     placeholder: 'e.g., Your support helps provide food, shelter, and medical care...',
     rows: 3,
     optional: true,
-    maxLength: 250
+    maxLength: 250,
+    visibleWhen: (ctx) => !!ctx.values.certificateTemplateId
   })
 
   const certificateSettings = fieldGroup('certificateSettings', {
@@ -51,7 +79,12 @@ export const useProductForm = defineForm('product', () => {
     description: 'Customize how this product appears on donation certificates.',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: { certificateOverrideName, certificateText },
+    fields: {
+      certificateTemplateId,
+      certificateTemplateAlert,
+      certificateOverrideName,
+      certificateText
+    },
     showSeparatorAfter: true
   })
 

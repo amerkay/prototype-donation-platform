@@ -10,6 +10,8 @@ export interface Product {
   thumbnail?: string
   icon?: string
   isShippingRequired?: boolean
+  /** ID of the certificate template to use */
+  certificateTemplateId?: string
   /** Override name shown on certificates (e.g., "Maya" instead of full product name) */
   certificateOverrideName?: string
   /** Text shown next to product image on certificates */

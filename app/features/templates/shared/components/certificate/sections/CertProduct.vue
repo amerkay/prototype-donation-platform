@@ -39,17 +39,6 @@ const isTwoColumn = computed(() => !props.forceOneColumn && hasImage.value && ha
       )
     "
   >
-    <!-- Product name centered above columns -->
-    <div class="w-full max-w-lg text-center shrink-0 mx-auto">
-      <p
-        class="template-adaptive font-bold leading-tight text-gray-900 text-2xl"
-        data-max-lines="1"
-        data-min-font="14"
-      >
-        {{ name }}
-      </p>
-    </div>
-
     <!-- Image left, text right -->
     <div class="grid grid-cols-2 gap-4 w-full flex-1 min-h-0 items-center py-2">
       <div class="flex items-center justify-center h-full max-h-[95%] min-h-0">
@@ -65,7 +54,15 @@ const isTwoColumn = computed(() => !props.forceOneColumn && hasImage.value && ha
           }"
         />
       </div>
-      <div class="flex items-center">
+      <div class="">
+        <!-- Product name centered above columns -->
+        <p
+          class="template-adaptive text-left font-bold leading-tight text-gray-900 text-2xl mb-2"
+          data-max-lines="1"
+          data-min-font="14"
+        >
+          {{ name }}
+        </p>
         <p
           class="template-adaptive text-gray-700 text-sm leading-relaxed text-left"
           data-max-lines="7"
