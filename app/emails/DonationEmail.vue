@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import EmailProductCard from '~/emails/components/EmailProductCard.vue'
 import { sanitizeRichText } from '~/features/_library/form-builder/utils/sanitize-html'
+
+interface EmailProductCardData {
+  name: string
+  description: string
+  imageUrl?: string
+}
 
 interface Props {
   bodyHtml: string
   imageUrl?: string
+  productCard?: EmailProductCardData
   signatureText?: string
   preview?: boolean
   withFieldTargets?: boolean
@@ -16,6 +24,12 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const sanitizedBodyHtml = computed(() => sanitizeRichText(props.bodyHtml, { profile: 'email' }))
+const bodyHtmlParts = computed(() =>
+  sanitizedBodyHtml.value.split(/\{\{\s*IMPACT_PRODUCT_CARD\s*\}\}/)
+)
+const hasProductCardPlaceholder = computed(
+  () => !!props.productCard && bodyHtmlParts.value.length > 1
+)
 const fieldTarget = (path: string): string | undefined =>
   props.withFieldTargets ? path : undefined
 </script>
@@ -45,13 +59,25 @@ const fieldTarget = (path: string): string | undefined =>
 
         <!-- Body content -->
         <ESection :data-field="fieldTarget('email.bodyHtml')">
+          <template v-if="hasProductCardPlaceholder">
+            <template v-for="(part, index) in bodyHtmlParts" :key="`${part}-${index}`">
+              <!-- eslint-disable-next-line vue/no-v-html -- sanitized -->
+              <div v-if="part" v-html="part" />
+              <EmailProductCard
+                v-if="index < bodyHtmlParts.length - 1 && props.productCard"
+                :name="props.productCard.name"
+                :description="props.productCard.description"
+                :image-url="props.productCard.imageUrl"
+              />
+            </template>
+          </template>
           <!-- eslint-disable-next-line vue/no-v-html -- sanitized -->
-          <div v-html="sanitizedBodyHtml" />
+          <div v-else v-html="sanitizedBodyHtml" />
         </ESection>
 
         <!-- Signature -->
         <ESection v-if="signatureText" :data-field="fieldTarget('email.signatureNotice')">
-          <p style="margin-top: 16px; color: #6b7280; white-space: pre-line">
+          <p style="margin-top: 16px; white-space: pre-line; opacity: 0.9">
             {{ signatureText }}
           </p>
         </ESection>

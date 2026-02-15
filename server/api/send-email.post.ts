@@ -4,6 +4,11 @@ import { sanitizeRichText } from '~~/app/features/_library/form-builder/utils/sa
 interface SendEmailRequest {
   bodyHtml: string
   imageUrl?: string
+  productCard?: {
+    name: string
+    description: string
+    imageUrl?: string
+  }
   signatureText?: string
   subject: string
   fromName: string
@@ -21,6 +26,7 @@ export default defineEventHandler(async (event) => {
   const rendered = await renderEmailComponent('DonationEmail', {
     bodyHtml: sanitizeRichText(body.bodyHtml || '', { profile: 'email' }),
     imageUrl: body.imageUrl,
+    productCard: body.productCard,
     signatureText: body.signatureText
   })
   const html = typeof rendered === 'string' ? rendered : rendered.html

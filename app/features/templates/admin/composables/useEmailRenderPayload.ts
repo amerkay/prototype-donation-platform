@@ -3,10 +3,7 @@ import { useGeneralSettingsStore } from '~/features/settings/admin/stores/genera
 import { useProducts } from '~/features/products/admin/composables/useProducts'
 import { EMAIL_TEMPLATE_META } from '~/features/templates/admin/email-templates'
 import type { EmailTemplateCategory } from '~/features/templates/admin/types'
-import {
-  processTemplateRichText,
-  escapeHtml
-} from '~/features/templates/admin/utils/template-rich-text'
+import { processTemplateRichText } from '~/features/templates/admin/utils/template-rich-text'
 
 /** Make a relative URL absolute using the site URL */
 function toAbsoluteUrl(url: string, siteUrl: string): string {
@@ -57,31 +54,17 @@ const SAMPLE_VARIABLES: Record<EmailTemplateCategory, Record<string, string>> = 
   }
 }
 
-/** Build an inline product card from active products */
-function buildProductCardHtml(
-  product: { name: string; description: string; image: string | null },
-  siteUrl: string
-): string {
-  const name = escapeHtml(product.name)
-  const desc = escapeHtml(
-    product.description.slice(0, 60) + (product.description.length > 60 ? '…' : '')
-  )
-  const imgHtml = product.image
-    ? `<img src="${escapeHtml(toAbsoluteUrl(product.image, siteUrl))}" alt="${name}" width="48" height="48" style="width:48px;height:48px;border-radius:6px;object-fit:cover;flex-shrink:0" />`
-    : `<div style="width:48px;height:48px;border-radius:6px;background:#e5e7eb;flex-shrink:0"></div>`
-
-  return (
-    `<div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;display:flex;align-items:center;gap:12px;margin:8px 0;background:#f9fafb">` +
-    imgHtml +
-    `<div><div style="font-size:14px;font-weight:500">${name}</div>` +
-    `<div style="font-size:12px;color:#6b7280">${desc}</div></div></div>`
-  )
+export interface EmailProductCardData {
+  name: string
+  description: string
+  imageUrl?: string
 }
 
 /** Payload shape sent to the server for rendering/sending */
 export interface EmailRenderPayload {
   bodyHtml: string
   imageUrl?: string
+  productCard?: EmailProductCardData
   signatureText?: string
   subject: string
   fromName: string
@@ -113,11 +96,15 @@ export function useEmailRenderPayload() {
   const fromName = computed(() => generalStore.emailSenderName)
   const fromEmail = computed(() => generalStore.emailSenderAddress)
 
-  /** Product card HTML from first active product with image */
-  const productCardHtml = computed(() => {
+  /** Product card data from first active product with image */
+  const productCard = computed<EmailProductCardData | undefined>(() => {
     const product = activeProducts.value.find((p) => p.image) ?? activeProducts.value[0]
     if (!product) return undefined
-    return buildProductCardHtml(product, siteUrl)
+    return {
+      name: product.name,
+      description: product.description,
+      imageUrl: product.image ? toAbsoluteUrl(product.image, siteUrl) : undefined
+    }
   })
 
   /** Signature as plain text (newlines preserved at render-time) */
@@ -129,13 +116,12 @@ export function useEmailRenderPayload() {
   /** Body HTML with all variables + product card replaced */
   const processedBodyHtml = computed(() => {
     let html = processTemplateRichText(store.bodyHtml || '', sampleVars.value)
-    if (productCardHtml.value) {
-      html = html.replace(/\{\{\s*IMPACT_PRODUCT_CARD\s*\}\}/g, productCardHtml.value)
-      html = html.replace(
-        new RegExp(`<span data-variable="IMPACT_PRODUCT_CARD">[^<]*</span>`, 'g'),
-        productCardHtml.value
-      )
-    }
+    const replacement = productCard.value ? '{{ IMPACT_PRODUCT_CARD }}' : ''
+    html = html.replace(/\{\{\s*IMPACT_PRODUCT_CARD\s*\}\}/g, replacement)
+    html = html.replace(
+      new RegExp(`<span data-variable="IMPACT_PRODUCT_CARD">[^<]*</span>`, 'g'),
+      replacement
+    )
     return html
   })
 
@@ -144,6 +130,7 @@ export function useEmailRenderPayload() {
     bodyHtml: processedBodyHtml.value,
     imageUrl:
       meta.value.hasImage && store.imageUrl ? toAbsoluteUrl(store.imageUrl, siteUrl) : undefined,
+    productCard: productCard.value,
     signatureText: signatureText.value,
     subject: resolvedSubject.value,
     fromName: fromName.value,

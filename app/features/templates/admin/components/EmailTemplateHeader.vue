@@ -43,7 +43,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <AdminResourceHeader>
+  <AdminResourceHeader :hide-right-on-mobile="false">
     <template #left>
       <InlineEditableText
         :model-value="store.name"

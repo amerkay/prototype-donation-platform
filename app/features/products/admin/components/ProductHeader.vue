@@ -28,13 +28,24 @@ const deleteProtection = computed(() =>
 <template>
   <AdminResourceHeader>
     <template #left>
-      <InlineEditableText
-        :model-value="store.name"
-        display-class="text-lg font-bold"
-        class="min-w-0"
-        :max-length="35"
-        @update:model-value="emit('update:name', $event)"
-      />
+      <div class="flex basis-full min-w-0 items-center gap-2 sm:basis-auto">
+        <InlineEditableText
+          :model-value="store.name"
+          display-class="text-lg font-bold"
+          class="min-w-0"
+          :max-length="35"
+          @update:model-value="emit('update:name', $event)"
+        />
+        <div class="ml-auto shrink-0 sm:hidden">
+          <AdminDeleteButton
+            :entity-name="store.name"
+            entity-type="Product"
+            :disabled="!deleteProtection.canDelete"
+            :disabled-reason="deleteProtection.reason"
+            @deleted="emit('deleted')"
+          />
+        </div>
+      </div>
       <AdminStatusSelect
         :model-value="store.status ?? 'active'"
         :options="STATUS_OPTIONS"

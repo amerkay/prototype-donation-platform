@@ -1,4 +1,13 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+withDefaults(
+  defineProps<{
+    hideRightOnMobile?: boolean
+  }>(),
+  {
+    hideRightOnMobile: true
+  }
+)
+</script>
 
 <template>
   <div class="bg-muted/30 rounded-xl border px-4 py-3">
@@ -11,8 +20,12 @@
       </div>
       <div
         v-if="$slots.right"
-        class="hidden shrink-0 sm:block"
-        :class="{ 'sm:ml-auto': !$slots.center }"
+        class="shrink-0"
+        :class="{
+          'hidden sm:block': hideRightOnMobile,
+          'w-full sm:w-auto': !hideRightOnMobile,
+          'sm:ml-auto': !$slots.center
+        }"
       >
         <slot name="right" />
       </div>
