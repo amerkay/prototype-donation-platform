@@ -101,9 +101,23 @@ const resolvedVeeName = computed(() => {
   })
 })
 
-// Generate unique HTML ID from vee-validate path
-// Ensures no duplicate IDs across array items or nested field-groups
-const fieldId = computed(() => sanitizePathToId(resolvedVeeName.value))
+// Resolve custom id override (string, computed, or function) with fallback to path-based id
+const fieldId = computed(() => {
+  const configuredId = props.meta.id
+  if (configuredId) {
+    if (typeof configuredId === 'function') {
+      return configuredId(fieldContext.value)
+    }
+    if (typeof configuredId === 'object' && 'value' in configuredId) {
+      return configuredId.value
+    }
+    return configuredId
+  }
+
+  // Generate unique HTML ID from vee-validate path
+  // Ensures no duplicate IDs across array items or nested field-groups
+  return sanitizePathToId(resolvedVeeName.value)
+})
 
 // Check if field should be visible using unified visibility utility
 const isVisible = computed(() => {
@@ -259,6 +273,7 @@ const fieldProps = computed(() => {
   // Add id for input fields (needed for label/input association)
   const propsWithId = {
     ...baseProps,
+    name: fieldId.value,
     id: fieldId.value
   }
 

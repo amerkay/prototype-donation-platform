@@ -41,6 +41,7 @@ export interface GeneralSettings {
   emailSenderName: string
   emailSenderAddress: string
   supportEmail: string
+  emailSignature: string
 }
 
 /**

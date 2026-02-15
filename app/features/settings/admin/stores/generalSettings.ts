@@ -13,6 +13,7 @@ export const useGeneralSettingsStore = defineStore('generalSettings', () => {
   const emailSenderName = ref(defaults.emailSenderName)
   const emailSenderAddress = ref(defaults.emailSenderAddress)
   const supportEmail = ref(defaults.supportEmail)
+  const emailSignature = ref(defaults.emailSignature)
 
   function initialize(settings: GeneralSettings) {
     timezone.value = settings.timezone
@@ -21,6 +22,7 @@ export const useGeneralSettingsStore = defineStore('generalSettings', () => {
     emailSenderName.value = settings.emailSenderName
     emailSenderAddress.value = settings.emailSenderAddress
     supportEmail.value = settings.supportEmail
+    emailSignature.value = settings.emailSignature
     markClean()
   }
 
@@ -32,6 +34,7 @@ export const useGeneralSettingsStore = defineStore('generalSettings', () => {
     if (settings.emailSenderAddress !== undefined)
       emailSenderAddress.value = settings.emailSenderAddress
     if (settings.supportEmail !== undefined) supportEmail.value = settings.supportEmail
+    if (settings.emailSignature !== undefined) emailSignature.value = settings.emailSignature
     markDirty()
   }
 
@@ -57,7 +60,8 @@ export const useGeneralSettingsStore = defineStore('generalSettings', () => {
           emailSenderId: emailSenderId.value,
           emailSenderName: emailSenderName.value,
           emailSenderAddress: emailSenderAddress.value,
-          supportEmail: supportEmail.value
+          supportEmail: supportEmail.value,
+          emailSignature: emailSignature.value
         })
       )
     } catch {
@@ -74,6 +78,7 @@ export const useGeneralSettingsStore = defineStore('generalSettings', () => {
     emailSenderName,
     emailSenderAddress,
     supportEmail,
+    emailSignature,
     isDirty,
     isSaving,
     initialize,

@@ -1,4 +1,4 @@
-import type { ComputedRef } from 'vue'
+import type { Component, ComputedRef, Ref } from 'vue'
 import type { z } from 'zod'
 import type { ConditionGroup } from './conditions'
 
@@ -146,6 +146,7 @@ export type VisibilityFn = ((ctx: FieldContext) => boolean) | ComputedRef<boolea
  * Base configuration for all fields (omits type and name - handled by constructors)
  */
 export interface BaseFieldConfig {
+  id?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   label?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   description?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   placeholder?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
@@ -195,6 +196,7 @@ export interface AutocompleteOption {
 
 export interface TextFieldConfig extends BaseFieldConfig {
   maxLength?: number
+  variables?: ReadonlyArray<RichTextVariable> | ComputedRef<ReadonlyArray<RichTextVariable>>
 }
 
 export interface TextareaFieldConfig extends BaseFieldConfig {
@@ -303,7 +305,7 @@ export interface RichTextVariable {
 }
 
 export interface RichTextFieldConfig extends BaseFieldConfig {
-  variables?: ReadonlyArray<RichTextVariable>
+  variables?: ReadonlyArray<RichTextVariable> | ComputedRef<ReadonlyArray<RichTextVariable>>
 }
 
 export interface DateFieldConfig extends BaseFieldConfig {

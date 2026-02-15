@@ -49,7 +49,9 @@
     "exceljs": "^4.4.0",
     "isomorphic-dompurify": "3.0.0-rc.2",
     "lucide-vue-next": "^0.563.0",
+    "nodemailer": "^8.0.1",
     "nuxt": "^4.3.0",
+    "nuxt-email-renderer": "^2.4.0",
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",
     "puppeteer-core": "^24.37.2",
@@ -67,6 +69,7 @@
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.89",
     "@nuxt/test-utils": "^4.0.0",
+    "@types/nodemailer": "^7.0.9",
     "@typescript-eslint/eslint-plugin": "^8.54.0",
     "@typescript-eslint/parser": "^8.54.0",
     "@vitest/coverage-v8": "4.0.18",

@@ -11,10 +11,12 @@ import {
 } from '~/features/_library/form-builder/composables/useResolvedFieldMeta'
 import { useContainerFieldSetup } from '~/features/_library/form-builder/composables/useContainerFieldSetup'
 import { useFormBuilderContext } from '~/features/_library/form-builder/composables/useFormBuilderContext'
+import { useHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
 
 interface Props {
   meta: AlertFieldDef
   name: string
+  fullPath?: string
 }
 
 const props = defineProps<Props>()
@@ -48,10 +50,25 @@ const resolvedCtaTo = computed(() => {
 const isInlineCta = computed(() => {
   return !!props.meta.cta?.inline && !props.meta.content && !!resolvedDescription.value
 })
+
+const fullPathComputed = computed(() => props.fullPath || '')
+const {
+  elementRef: alertEl,
+  hashHighlightClass,
+  fieldId
+} = useHashTarget(fullPathComputed, {
+  animate: true
+})
 </script>
 
 <template>
-  <Alert v-show="isVisible" :variant="alertVariant" :class="cn(resolvedClass)">
+  <Alert
+    v-show="isVisible"
+    :id="fieldId || undefined"
+    ref="alertEl"
+    :variant="alertVariant"
+    :class="cn(hashHighlightClass, resolvedClass)"
+  >
     <Info v-if="showInfoIcon" class="size-4" />
     <TriangleAlert v-else-if="showDestructiveIcon" class="size-4" />
 

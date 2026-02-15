@@ -769,6 +769,7 @@ All fields support:
 
 ```typescript
 {
+  id?: string | ComputedRef<string> | (ctx: FieldContext) => string // Custom input id override
   label?: string | ComputedRef<string> | (ctx: FieldContext) => string
   description?: string | ComputedRef<string> | (ctx: FieldContext) => string
   placeholder?: string | ComputedRef<string> | (ctx: FieldContext) => string

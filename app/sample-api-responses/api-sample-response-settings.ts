@@ -39,7 +39,8 @@ export const generalSettings: GeneralSettings = {
   emailSenderId: 'member-001',
   emailSenderName: 'Wild Amer',
   emailSenderAddress: 'awesome@charity.co.uk',
-  supportEmail: 'support@borneoorangutansurvival.org'
+  supportEmail: 'support@borneoorangutansurvival.org',
+  emailSignature: 'With gratitude,\nThe Borneo Orangutan Survival Team'
 }
 
 export const brandingSettings: BrandingSettings = {

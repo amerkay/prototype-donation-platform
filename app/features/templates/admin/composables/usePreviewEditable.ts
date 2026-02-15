@@ -10,9 +10,22 @@ export function usePreviewEditable(containerRef: { value: Element | null }, enab
   const hoveredField = ref<string | null>(null)
   const hoveredRect = ref<DOMRect | null>(null)
 
+  function getContainerElement(): Element | null {
+    const container = containerRef.value
+    if (!container) return null
+    if (container instanceof Element) return container
+
+    // Support refs pointing to Vue component instances (e.g., shadcn Card)
+    const maybeComponent = container as unknown as { $el?: unknown }
+    return maybeComponent.$el instanceof Element ? maybeComponent.$el : null
+  }
+
   function findFieldElement(target: EventTarget | null): HTMLElement | null {
+    const containerEl = getContainerElement()
+    if (!containerEl) return null
+
     let el = target as HTMLElement | null
-    while (el && el !== containerRef.value) {
+    while (el && el !== containerEl) {
       if (el.dataset?.field) return el
       el = el.parentElement
     }
@@ -55,8 +68,9 @@ export function usePreviewEditable(containerRef: { value: Element | null }, enab
   }
 
   const editButtonStyle = computed<CSSProperties>(() => {
-    if (!hoveredRect.value || !containerRef.value) return { display: 'none' }
-    const containerRect = containerRef.value.getBoundingClientRect()
+    const containerEl = getContainerElement()
+    if (!hoveredRect.value || !containerEl) return { display: 'none' }
+    const containerRect = containerEl.getBoundingClientRect()
     return {
       position: 'absolute',
       top: `${hoveredRect.value.top - containerRect.top + 4}px`,
@@ -66,8 +80,9 @@ export function usePreviewEditable(containerRef: { value: Element | null }, enab
   })
 
   const hoverOutlineStyle = computed<CSSProperties>(() => {
-    if (!hoveredRect.value || !containerRef.value) return { display: 'none' }
-    const containerRect = containerRef.value.getBoundingClientRect()
+    const containerEl = getContainerElement()
+    if (!hoveredRect.value || !containerEl) return { display: 'none' }
+    const containerRect = containerEl.getBoundingClientRect()
     return {
       position: 'absolute',
       top: `${hoveredRect.value.top - containerRect.top}px`,
@@ -80,7 +95,7 @@ export function usePreviewEditable(containerRef: { value: Element | null }, enab
   })
 
   onMounted(() => {
-    const el = containerRef.value
+    const el = getContainerElement()
     if (!el) return
     el.addEventListener('mouseover', onMouseOver)
     el.addEventListener('mouseout', onMouseOut)
@@ -88,7 +103,7 @@ export function usePreviewEditable(containerRef: { value: Element | null }, enab
   })
 
   onUnmounted(() => {
-    const el = containerRef.value
+    const el = getContainerElement()
     if (!el) return
     el.removeEventListener('mouseover', onMouseOver)
     el.removeEventListener('mouseout', onMouseOut)

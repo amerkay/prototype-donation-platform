@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { SubscriptionStatus, Subscription } from '~/features/subscriptions/shared/types'
+import type { SubscriptionStatus } from '~/features/subscriptions/shared/types'
 import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import FilterTabs from '~/components/FilterTabs.vue'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { CreditCard } from 'lucide-vue-next'
 import SubscriptionCard from '~/features/subscriptions/donor/components/SubscriptionCard.vue'
@@ -30,7 +30,7 @@ definePageMeta({
 const { formatDate } = useCampaignFormatters()
 const { subscriptions } = useDonorPortal()
 
-const statusFilters: { value: SubscriptionStatus | 'all'; label: string }[] = [
+const statusFilters = [
   { value: 'active', label: 'Active' },
   { value: 'paused', label: 'Paused' },
   { value: 'cancelled', label: 'Cancelled' },
@@ -38,23 +38,12 @@ const statusFilters: { value: SubscriptionStatus | 'all'; label: string }[] = [
 ]
 
 const activeFilter = ref<SubscriptionStatus | 'all'>('active')
-const filteredSubscriptions = ref<Subscription[]>([])
 
-const applyFilter = () => {
-  filteredSubscriptions.value =
-    activeFilter.value === 'all'
-      ? [...subscriptions.value]
-      : subscriptions.value.filter((s) => s.status === activeFilter.value)
-}
-
-const setFilter = (status: SubscriptionStatus | 'all') => {
-  activeFilter.value = status
-  applyFilter()
-}
-
-onMounted(() => {
-  applyFilter()
-})
+const filteredSubscriptions = computed(() =>
+  activeFilter.value === 'all'
+    ? subscriptions.value
+    : subscriptions.value.filter((s) => s.status === activeFilter.value)
+)
 
 const subscriptionsByCharity = computed(() => {
   const grouped = new Map<string, typeof filteredSubscriptions.value>()
@@ -66,10 +55,13 @@ const subscriptionsByCharity = computed(() => {
   return grouped
 })
 
-const filterCount = (status: SubscriptionStatus | 'all') =>
-  status === 'all'
-    ? subscriptions.value.length
-    : subscriptions.value.filter((s) => s.status === status).length
+const filterCounts = computed(() => {
+  const counts: Record<string, number> = { all: subscriptions.value.length }
+  for (const s of subscriptions.value) {
+    counts[s.status] = (counts[s.status] ?? 0) + 1
+  }
+  return counts
+})
 
 const {
   showPauseDialog,
@@ -98,20 +90,7 @@ const {
       </div>
 
       <!-- Status filters -->
-      <div class="flex flex-wrap gap-2">
-        <Button
-          v-for="filter in statusFilters"
-          :key="filter.value"
-          :variant="activeFilter === filter.value ? 'default' : 'outline'"
-          size="sm"
-          @click="setFilter(filter.value)"
-        >
-          {{ filter.label }}
-          <Badge variant="secondary" class="ml-1.5 px-1.5 min-w-5 justify-center">
-            {{ filterCount(filter.value) }}
-          </Badge>
-        </Button>
-      </div>
+      <FilterTabs v-model="activeFilter" :filters="statusFilters" :counts="filterCounts" />
 
       <Empty v-if="filteredSubscriptions.length === 0">
         <EmptyHeader>

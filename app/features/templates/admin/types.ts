@@ -1,6 +1,9 @@
 /**
- * Template types for receipts, certificates, and eCards
+ * Template types for receipts, certificates, and email templates.
+ * Runtime constants (EMAIL_TEMPLATE_META, etc.) live in ./email-templates.ts.
  */
+
+import type { RichTextVariable } from '~/features/_library/form-builder/types'
 
 /** Background type for certificates */
 export type BackgroundType = 'white' | 'image'
@@ -66,26 +69,57 @@ export type CertificateTemplateSettings = Omit<
   'id' | 'name' | 'status' | 'createdAt' | 'updatedAt'
 >
 
-/** eCard template status */
-export type ECardTemplateStatus = 'active' | 'archived'
+// ============================================================================
+// EMAIL TEMPLATES
+// ============================================================================
 
-export interface ECardTemplate {
+/** All 12 system email template type keys */
+export type EmailTemplateType =
+  | 'ecard-gift'
+  | 'ecard-in-memory'
+  | 'donor-donation-success'
+  | 'donor-new-subscription'
+  | 'donor-subscription-paused'
+  | 'donor-subscription-resumed'
+  | 'donor-subscription-cancelled'
+  | 'donor-payment-failed'
+  | 'admin-new-donation'
+  | 'admin-new-p2p-fundraiser'
+  | 'p2p-new-donation'
+  | 'team-invitation'
+
+/** Email template categories for filtering */
+export type EmailTemplateCategory = 'ecard' | 'donor' | 'admin' | 'p2p' | 'team'
+
+/** Metadata for each email template type */
+export interface EmailTemplateMeta {
+  displayName: string
+  category: EmailTemplateCategory
+  hasImage: boolean
+  variables: ReadonlyArray<RichTextVariable>
+}
+
+/** System email template */
+export interface EmailTemplate {
   id: string
   name: string
-  status: ECardTemplateStatus
+  type: EmailTemplateType
   subject: string
-  imageUrl: string
   bodyHtml: string
-  category: 'thank-you' | 'tribute' | 'celebration' | 'custom'
+  imageUrl: string
   createdAt: string
   updatedAt: string
 }
 
-/** eCard design settings (ECardTemplate without identity/metadata fields) */
-export type ECardTemplateSettings = Omit<
-  ECardTemplate,
-  'id' | 'name' | 'status' | 'createdAt' | 'updatedAt'
+/** Email template settings (editable fields only) */
+export type EmailTemplateSettings = Omit<
+  EmailTemplate,
+  'id' | 'name' | 'type' | 'createdAt' | 'updatedAt'
 >
+
+// ============================================================================
+// PDF DATA CONTRACTS
+// ============================================================================
 
 /** Data contract for server-side certificate PDF generation */
 export interface CertificatePdfData {

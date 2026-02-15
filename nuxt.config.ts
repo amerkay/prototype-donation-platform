@@ -32,6 +32,11 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    // SMTP config for email sending (defaults to mailpit in dev)
+    smtpHost: process.env.NUXT_SMTP_HOST || 'localhost',
+    smtpPort: process.env.NUXT_SMTP_PORT || '1025',
+    smtpUser: process.env.NUXT_SMTP_USER || '',
+    smtpPass: process.env.NUXT_SMTP_PASS || '',
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
     }
@@ -68,6 +73,8 @@ export default defineNuxtConfig({
     // docs https://pinia.vuejs.org/ssr/nuxt.html
     '@pinia/nuxt',
     // docs https://nuxt.com/docs/4.x/getting-started/testing
-    '@nuxt/test-utils/module'
+    '@nuxt/test-utils/module',
+    // https://nuxtemail.com/getting-started/installation
+    'nuxt-email-renderer'
   ]
 })

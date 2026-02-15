@@ -90,8 +90,8 @@ const navMain = computed(() => [
         url: '/admin/templates/certificates'
       },
       {
-        title: 'eCards',
-        url: '/admin/templates/ecards'
+        title: 'Emails',
+        url: '/admin/templates/emails'
       },
       {
         title: 'Pages',

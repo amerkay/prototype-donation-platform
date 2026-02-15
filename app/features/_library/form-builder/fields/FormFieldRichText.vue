@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { watch, toValue } from 'vue'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -83,7 +83,11 @@ watch(resolvedDisabled, (disabled) => {
         )
       "
     >
-      <RichTextToolbar :editor="editor" :variables="meta.variables" :disabled="resolvedDisabled" />
+      <RichTextToolbar
+        :editor="editor"
+        :variables="toValue(meta.variables)"
+        :disabled="resolvedDisabled"
+      />
       <EditorContent
         :editor="editor"
         :class="cn('rich-text-editor', resolvedDisabled && 'pointer-events-none')"

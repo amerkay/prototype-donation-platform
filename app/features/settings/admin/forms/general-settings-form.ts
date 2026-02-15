@@ -2,6 +2,7 @@ import * as z from 'zod'
 import {
   defineForm,
   textField,
+  textareaField,
   selectField,
   comboboxField,
   fieldGroup
@@ -55,19 +56,27 @@ export const useGeneralSettingsForm = defineForm('generalSettings', () => {
     label: 'Support Email',
     description: 'Displayed on error pages and in footer',
     placeholder: 'support@example.org',
-    rules: z.string().email('Must be a valid email address')
+    rules: z.string().email('Must be a valid email address'),
+    showSeparatorAfter: true
+  })
+
+  const emailSignature = textareaField('emailSignature', {
+    label: 'Email Signature',
+    description: 'Appended to all outgoing emails as {{ SIGNATURE }}',
+    placeholder: 'With gratitude,\nYour Team'
   })
 
   const general = fieldGroup('general', {
     label: 'General Settings',
     description: 'Configure organization-wide defaults.',
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: { timezone, dateFormat, emailSender, supportEmail },
+    fields: { timezone, dateFormat, emailSender, supportEmail, emailSignature },
     $storePath: {
       timezone: 'timezone',
       dateFormat: 'dateFormat',
       emailSender: 'emailSenderId',
-      supportEmail: 'supportEmail'
+      supportEmail: 'supportEmail',
+      emailSignature: 'emailSignature'
     }
   })
 
