@@ -74,7 +74,7 @@ const {
 
     <AlertTitle v-if="resolvedLabel">{{ resolvedLabel }}</AlertTitle>
     <AlertDescription :class="meta.descriptionClass">
-      <!-- eslint-disable-next-line vue/no-v-html -->
+      <!-- eslint-disable-next-line vue/no-v-html -- sanitized -->
       <div v-if="meta.content" class="space-y-2" v-html="sanitizedContent" />
       <p v-else-if="resolvedDescription" class="whitespace-pre-line">
         {{ resolvedDescription }}

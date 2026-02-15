@@ -1,9 +1,10 @@
 import { createTransport } from 'nodemailer'
+import { sanitizeRichText } from '~~/app/features/_library/form-builder/utils/sanitize-html'
 
 interface SendEmailRequest {
   bodyHtml: string
   imageUrl?: string
-  signatureHtml?: string
+  signatureText?: string
   subject: string
   fromName: string
   fromEmail: string
@@ -18,9 +19,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const rendered = await renderEmailComponent('DonationEmail', {
-    bodyHtml: body.bodyHtml,
+    bodyHtml: sanitizeRichText(body.bodyHtml || '', { profile: 'email' }),
     imageUrl: body.imageUrl,
-    signatureHtml: body.signatureHtml
+    signatureText: body.signatureText
   })
   const html = typeof rendered === 'string' ? rendered : rendered.html
 

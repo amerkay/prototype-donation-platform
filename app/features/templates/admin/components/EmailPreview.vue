@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import DonationEmail from '~/emails/DonationEmail.vue'
 import { useEmailRenderPayload } from '~/features/templates/admin/composables/useEmailRenderPayload'
 import { usePreviewEditable } from '~/features/templates/admin/composables/usePreviewEditable'
-import EmailBodyPreview from '~/features/templates/admin/components/EmailBodyPreview.vue'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Mail, Pencil } from 'lucide-vue-next'
@@ -31,10 +31,12 @@ const { hoveredField, editButtonStyle, hoverOutlineStyle, navigateToField } = us
 
     <!-- Live email preview (client-safe body renderer) -->
     <div class="email-preview-body px-4">
-      <EmailBodyPreview
+      <DonationEmail
         :body-html="payload.bodyHtml"
         :image-url="payload.imageUrl"
-        :signature-html="payload.signatureHtml"
+        :signature-text="payload.signatureText"
+        preview
+        with-field-targets
       />
     </div>
 

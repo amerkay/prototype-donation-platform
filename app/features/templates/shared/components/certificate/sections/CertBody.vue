@@ -1,8 +1,13 @@
 <script setup lang="ts">
-defineProps<{
+import { computed } from 'vue'
+import { sanitizeRichText } from '~/features/_library/form-builder/utils/sanitize-html'
+
+const props = defineProps<{
   bodyHtml: string
   dataField?: string
 }>()
+
+const sanitizedBodyHtml = computed(() => sanitizeRichText(props.bodyHtml))
 </script>
 
 <template>
@@ -13,7 +18,7 @@ defineProps<{
     data-min-font="12"
   >
     <!-- eslint-disable-next-line vue/no-v-html -- sanitized -->
-    <div v-html="bodyHtml" />
+    <div v-html="sanitizedBodyHtml" />
   </div>
 </template>
 

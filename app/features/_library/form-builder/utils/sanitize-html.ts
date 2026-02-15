@@ -9,8 +9,13 @@
 
 import DOMPurify from 'isomorphic-dompurify'
 
-const ALLOWED_TAGS = ['p', 'strong', 'em', 'u', 'a', 'span', 'br']
-const ALLOWED_ATTR = ['href', 'target', 'rel', 'data-variable']
+type SanitizeProfile = 'rich-text' | 'email'
+
+const RICH_TEXT_ALLOWED_TAGS = ['p', 'strong', 'em', 'u', 'a', 'span', 'br']
+const RICH_TEXT_ALLOWED_ATTR = ['href', 'target', 'rel', 'data-variable']
+
+const EMAIL_ALLOWED_TAGS = [...RICH_TEXT_ALLOWED_TAGS, 'div', 'img']
+const EMAIL_ALLOWED_ATTR = [...RICH_TEXT_ALLOWED_ATTR, 'style', 'src', 'alt', 'width', 'height']
 
 // Enforce safe link attributes on all anchors
 DOMPurify.addHook('afterSanitizeAttributes', (node) => {
@@ -35,11 +40,17 @@ DOMPurify.addHook('afterSanitizeAttributes', (node) => {
  * // Use with v-html="safe"
  * ```
  */
-export function sanitizeRichText(html: string): string {
+export function sanitizeRichText(
+  html: string,
+  options?: {
+    profile?: SanitizeProfile
+  }
+): string {
   if (!html) return ''
+  const profile = options?.profile ?? 'rich-text'
   return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS,
-    ALLOWED_ATTR,
+    ALLOWED_TAGS: profile === 'email' ? EMAIL_ALLOWED_TAGS : RICH_TEXT_ALLOWED_TAGS,
+    ALLOWED_ATTR: profile === 'email' ? EMAIL_ALLOWED_ATTR : RICH_TEXT_ALLOWED_ATTR,
     ALLOW_DATA_ATTR: false
   })
 }

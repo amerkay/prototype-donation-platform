@@ -82,7 +82,7 @@ function buildProductCardHtml(
 export interface EmailRenderPayload {
   bodyHtml: string
   imageUrl?: string
-  signatureHtml?: string
+  signatureText?: string
   subject: string
   fromName: string
   fromEmail: string
@@ -120,10 +120,10 @@ export function useEmailRenderPayload() {
     return buildProductCardHtml(product, siteUrl)
   })
 
-  /** Signature as inline HTML */
-  const signatureHtml = computed(() => {
-    if (!generalStore.emailSignature) return undefined
-    return `<p style="font-size:14px;color:#6b7280;white-space:pre-line">${escapeHtml(generalStore.emailSignature)}</p>`
+  /** Signature as plain text (newlines preserved at render-time) */
+  const signatureText = computed(() => {
+    const text = generalStore.emailSignature?.trim()
+    return text || undefined
   })
 
   /** Body HTML with all variables + product card replaced */
@@ -144,7 +144,7 @@ export function useEmailRenderPayload() {
     bodyHtml: processedBodyHtml.value,
     imageUrl:
       meta.value.hasImage && store.imageUrl ? toAbsoluteUrl(store.imageUrl, siteUrl) : undefined,
-    signatureHtml: signatureHtml.value,
+    signatureText: signatureText.value,
     subject: resolvedSubject.value,
     fromName: fromName.value,
     fromEmail: fromEmail.value

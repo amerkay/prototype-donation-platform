@@ -53,7 +53,7 @@ const cardClasses = computed(() => {
       </h3>
 
       <!-- Rich HTML content (if provided) -->
-      <!-- eslint-disable-next-line vue/no-v-html -->
+      <!-- eslint-disable-next-line vue/no-v-html -- sanitized -->
       <div v-if="meta.content" class="text-sm text-muted-foreground" v-html="sanitizedContent" />
 
       <!-- Plain text description (fallback) -->
