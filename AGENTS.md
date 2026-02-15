@@ -74,18 +74,18 @@ Use these two sections (project summary and continuous learning) as bounded memo
 | products      | `app/features/products/`               | Admin product management: columns, composables, forms, types                                         |
 | subscriptions | `app/features/subscriptions/`          | Subscription management: admin list/detail, donor card + actions                                     |
 | settings      | `app/features/settings/`               | Org config: general, branding, team, API, billing, payments (Stripe/PayPal Connect)                  |
-| templates     | `app/features/templates/`              | Admin template config: certificates, receipts, ecards with preview components                        |
+| templates     | `app/features/templates/`              | Admin template config: certificates, receipts, ecards, and tokenized email cards with preview tooling |
 | form-builder  | `app/features/_library/form-builder/`  | Schema-driven form framework: defineForm API, 16 field types, conditions, containers                 |
 | custom-fields | `app/features/_library/custom-fields/` | Admin-configurable dynamic fields with 8 field type factories                                        |
 | \_admin       | `app/features/_admin/`                 | Shared admin UI: sidebar, breadcrumbs, data table, detail rows, delete dialog, edit layouts, columns |
 
 **Key stores:** `donation-form/shared/stores/formConfig.ts` (admin config), `donation-form/donor/stores/donationForm.ts` (donor state, per-form-ID persistence), `donation-form/features/impact-cart/donor/stores/impactCart.ts` (cart by frequency, per-form-ID persistence), `campaigns/shared/stores/campaignConfig.ts` (campaign config), `campaigns/shared/stores/forms.ts` (campaign forms), `settings/admin/stores/charitySettings.ts` (charity identity, slug, per-currency overrides), `settings/admin/stores/currencySettings.ts` (org currencies), `settings/admin/stores/generalSettings.ts`, `settings/admin/stores/brandingSettings.ts`, `settings/admin/stores/teamSettings.ts`, `settings/admin/stores/paymentSettings.ts`, `settings/admin/stores/apiSettings.ts`, `settings/admin/stores/billingSettings.ts`, `templates/admin/stores/certificateTemplate.ts`, `templates/admin/stores/ecardTemplates.ts`, `templates/admin/stores/receiptTemplate.ts`.
 
-**Key composables:** `useCampaigns()`, `useForms()`, `useCampaignShare()`, `useCampaignPreview()`, `useCampaignFormatters()`, `useDonorPortal()`, `useSubscriptionActions()`, `useAdminSubscriptions()`, `useDonations()`, `useDonors()`, `useProducts()`, `useCurrency()`, `useDonationCurrencies()`, `useAdminConfigForm()`, `useAdminEdit()`.
+**Key composables:** `useCampaigns()`, `useForms()`, `useCampaignShare()`, `useCampaignPreview()`, `useCampaignFormatters()`, `useDonorPortal()`, `useSubscriptionActions()`, `useAdminSubscriptions()`, `useDonations()`, `useDonors()`, `useProducts()`, `useCurrency()`, `useDonationCurrencies()`, `useAdminConfigForm()`, `useAdminEdit()`, `useEmailPreviewContext()`, `useEmailRenderPayload()`.
 
 **Layouts:** `admin.vue`, `admin-preview.vue`, `donor.vue`, `portal.vue`, `default.vue`.
 
-**Pages:** `app/pages/admin/` (dashboard, campaigns, forms, donations, donors, products, subscriptions, templates: certificates/ecards/receipts, settings: general/branding/team/api/billing/payments), `app/pages/[org_slug]/` (donor-facing: campaign pages, forms, P2P onboarding/templates), `app/pages/portal/` (donor dashboard: donations, subscriptions, fundraisers), `app/pages/index.vue` (landing).
+**Pages:** `app/pages/admin/` (dashboard, campaigns, forms, donations, donors, products, subscriptions, templates: certificates/ecards/receipts/email-cards-preview, settings: general/branding/team/api/billing/payments), `app/pages/[org_slug]/` (donor-facing: campaign pages, forms, P2P onboarding/templates), `app/pages/portal/` (donor dashboard: donations, subscriptions, fundraisers), `app/pages/index.vue` (landing).
 
 <!-- end project summary -->
 
@@ -95,6 +95,7 @@ Use these two sections (project summary and continuous learning) as bounded memo
 
 1. `componentField` is excluded from autoMap by default; persist via `$storePath` or manual getData/setData.
 2. With `reka-ui` combobox, avoid manual open/select handlers that fight internal state.
+3. Normalize `*_CARD` rich-text `<span data-variable>` markers back to `{{ TOKEN }}` before email rendering.
 <!-- end ontinuous learning notes -->
 
 ## Code Rules
