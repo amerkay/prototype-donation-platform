@@ -1,18 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import EmailProductCard from '~/emails/components/EmailProductCard.vue'
+import {
+  EMAIL_CARD_COMPONENTS,
+  splitBodyIntoCardSegments
+} from '~/emails/components/cards/registry'
+import type { EmailCardsPayload } from '~/emails/components/cards/types'
 import { sanitizeRichText } from '~/features/_library/form-builder/utils/sanitize-html'
-
-interface EmailProductCardData {
-  name: string
-  description: string
-  imageUrl?: string
-}
 
 interface Props {
   bodyHtml: string
   imageUrl?: string
-  productCard?: EmailProductCardData
+  cards?: EmailCardsPayload
   signatureText?: string
   preview?: boolean
   withFieldTargets?: boolean
@@ -24,12 +22,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const sanitizedBodyHtml = computed(() => sanitizeRichText(props.bodyHtml, { profile: 'email' }))
-const bodyHtmlParts = computed(() =>
-  sanitizedBodyHtml.value.split(/\{\{\s*IMPACT_PRODUCT_CARD\s*\}\}/)
-)
-const hasProductCardPlaceholder = computed(
-  () => !!props.productCard && bodyHtmlParts.value.length > 1
-)
+const bodySegments = computed(() => splitBodyIntoCardSegments(sanitizedBodyHtml.value, props.cards))
 const fieldTarget = (path: string): string | undefined =>
   props.withFieldTargets ? path : undefined
 </script>
@@ -45,7 +38,6 @@ const fieldTarget = (path: string): string | undefined =>
     </EHead>
     <EBody style="background-color: #ffffff; font-family: sans-serif; margin: 0; padding: 0">
       <EContainer>
-        <!-- Hero image -->
         <ESection v-if="imageUrl" :data-field="fieldTarget('email.imageUrl')">
           <img
             v-if="props.preview"
@@ -57,25 +49,18 @@ const fieldTarget = (path: string): string | undefined =>
           <EImg v-else :src="imageUrl" alt="Email hero" :width="600" />
         </ESection>
 
-        <!-- Body content -->
         <ESection :data-field="fieldTarget('email.bodyHtml')">
-          <template v-if="hasProductCardPlaceholder">
-            <template v-for="(part, index) in bodyHtmlParts" :key="`${part}-${index}`">
-              <!-- eslint-disable-next-line vue/no-v-html -- sanitized -->
-              <div v-if="part" v-html="part" />
-              <EmailProductCard
-                v-if="index < bodyHtmlParts.length - 1 && props.productCard"
-                :name="props.productCard.name"
-                :description="props.productCard.description"
-                :image-url="props.productCard.imageUrl"
-              />
-            </template>
+          <template v-for="(segment, index) in bodySegments" :key="index">
+            <!-- eslint-disable-next-line vue/no-v-html -- sanitized -->
+            <div v-if="segment.kind === 'html' && segment.html" v-html="segment.html" />
+            <component
+              :is="EMAIL_CARD_COMPONENTS[segment.token]"
+              v-else-if="segment.kind === 'card'"
+              v-bind="segment.data"
+            />
           </template>
-          <!-- eslint-disable-next-line vue/no-v-html -- sanitized -->
-          <div v-else v-html="sanitizedBodyHtml" />
         </ESection>
 
-        <!-- Signature -->
         <ESection v-if="signatureText" :data-field="fieldTarget('email.signatureNotice')">
           <p style="margin-top: 16px; white-space: pre-line; opacity: 0.9">
             {{ signatureText }}

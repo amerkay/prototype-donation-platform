@@ -17,9 +17,7 @@ export const useEmailTemplateForm = defineForm('emailTemplate', () => {
     id: 'template-subject',
     label: 'Subject',
     placeholder: 'Enter subject...',
-    variables: computed(() =>
-      meta.value.variables.filter((v) => v.value !== 'IMPACT_PRODUCT_CARD')
-    ),
+    variables: computed(() => meta.value.variables.filter((v) => !v.value.endsWith('_CARD'))),
     autocomplete: 'off'
   })
 

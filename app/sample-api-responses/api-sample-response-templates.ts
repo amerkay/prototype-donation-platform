@@ -88,9 +88,9 @@ export const emailTemplates: EmailTemplate[] = [
     id: 'email-ecard-gift',
     name: 'eCard: Gift',
     type: 'ecard-gift',
-    subject: 'A gift has been made in your honor, {{ FIRST_NAME }}!',
+    subject: 'A thoughtful gift was made in your honor, {{ FIRST_NAME }}',
     bodyHtml:
-      '<p>Dear {{ FIRST_NAME }},</p><p>{{ DONOR_NAME }} has made a generous gift of {{ AMOUNT }} in your honor on {{ DATE }}.</p><p>Their kindness helps protect endangered orangutans and their rainforest home.</p><p>{{ IMPACT_PRODUCT_CARD }}</p>',
+      '<p>Dear {{ FIRST_NAME }},</p><p>{{ DONOR_NAME }} made a gift of {{ AMOUNT }} in your honor on {{ DATE }}.</p><p>We are grateful to celebrate this meaningful moment with you.</p><p>{{ IMPACT_PRODUCT_CARD }}</p><p>{{ CAMPAIGN_CONTEXT_CARD }}</p>',
     imageUrl: 'https://placehold.co/600x300/2563eb/ffffff?text=Gift+eCard',
     createdAt: '2025-01-15T10:00:00Z',
     updatedAt: '2026-01-20T14:30:00Z'
@@ -99,9 +99,9 @@ export const emailTemplates: EmailTemplate[] = [
     id: 'email-ecard-in-memory',
     name: 'eCard: In Memory',
     type: 'ecard-in-memory',
-    subject: 'A donation has been made in memory of {{ HONOREE_NAME }}',
+    subject: 'A donation was made in memory of {{ HONOREE_NAME }}',
     bodyHtml:
-      '<p>Dear {{ FIRST_NAME }},</p><p>A gift of {{ AMOUNT }} has been made in memory of {{ HONOREE_NAME }} by {{ DONOR_NAME }}.</p><p>Their memory lives on through this act of kindness.</p><p>{{ IMPACT_PRODUCT_CARD }}</p>',
+      '<p>Dear {{ FIRST_NAME }},</p><p>{{ DONOR_NAME }} made a gift of {{ AMOUNT }} in memory of {{ HONOREE_NAME }}.</p><p>Thank you for helping us honor their memory through compassionate action.</p><p>{{ IMPACT_PRODUCT_CARD }}</p><p>{{ CAMPAIGN_CONTEXT_CARD }}</p>',
     imageUrl: 'https://placehold.co/600x300/6b7280/ffffff?text=In+Memory',
     createdAt: '2025-02-01T10:00:00Z',
     updatedAt: '2026-01-18T11:00:00Z'
@@ -110,9 +110,9 @@ export const emailTemplates: EmailTemplate[] = [
     id: 'email-donor-donation-success',
     name: 'Donation Success',
     type: 'donor-donation-success',
-    subject: 'Thank you for your donation, {{ FIRST_NAME }}!',
+    subject: 'Thank you for your support, {{ FIRST_NAME }}',
     bodyHtml:
-      '<p>Dear {{ FIRST_NAME }},</p><p>Thank you for your generous gift of {{ AMOUNT }} to {{ CAMPAIGN_NAME }} on {{ DATE }}.</p><p>Your support makes a real difference for orangutan conservation.</p><p>{{ IMPACT_PRODUCT_CARD }}</p>',
+      '<p>Dear {{ FIRST_NAME }},</p><p>Thank you for your gift of {{ AMOUNT }} on {{ DATE }}.</p><p>Your support helps us continue this work with care and consistency.</p><p>{{ DONATION_SUMMARY_CARD }}</p><p>{{ ORDER_BREAKDOWN_CARD }}</p><p>{{ CAMPAIGN_CONTEXT_CARD }}</p><p>{{ IMPACT_PRODUCT_CARD }}</p>',
     imageUrl: 'https://placehold.co/600x300/16a34a/ffffff?text=Thank+You',
     createdAt: '2025-03-01T10:00:00Z',
     updatedAt: '2026-01-15T09:00:00Z'
@@ -121,9 +121,9 @@ export const emailTemplates: EmailTemplate[] = [
     id: 'email-donor-new-subscription',
     name: 'New Subscription',
     type: 'donor-new-subscription',
-    subject: 'Your {{ FREQUENCY }} subscription is confirmed!',
+    subject: 'Your {{ FREQUENCY }} support is now active',
     bodyHtml:
-      '<p>Dear {{ FIRST_NAME }},</p><p>Your {{ FREQUENCY }} subscription of {{ AMOUNT }} has been set up successfully.</p><p>Your next billing date is {{ NEXT_BILLING_DATE }}. You can manage your subscription at any time from your donor portal.</p><p>{{ IMPACT_PRODUCT_CARD }}</p>',
+      '<p>Dear {{ FIRST_NAME }},</p><p>Your {{ FREQUENCY }} support of {{ AMOUNT }} is now active.</p><p>Your next billing date is {{ NEXT_BILLING_DATE }}.</p><p>{{ SUBSCRIPTION_STATUS_CARD }}</p><p>{{ ORDER_BREAKDOWN_CARD }}</p><p>{{ PAYMENT_METHOD_CARD }}</p><p>{{ IMPACT_PRODUCT_CARD }}</p>',
     imageUrl: '',
     createdAt: '2025-03-10T10:00:00Z',
     updatedAt: '2026-01-10T09:00:00Z'
@@ -132,9 +132,9 @@ export const emailTemplates: EmailTemplate[] = [
     id: 'email-donor-subscription-paused',
     name: 'Subscription Paused',
     type: 'donor-subscription-paused',
-    subject: 'Your subscription has been paused',
+    subject: 'Your subscription is paused',
     bodyHtml:
-      "<p>Dear {{ FIRST_NAME }},</p><p>Your {{ FREQUENCY }} subscription of {{ AMOUNT }} has been paused. You won't be charged until you resume it.</p><p>You can resume your subscription at any time from your donor portal.</p>",
+      '<p>Dear {{ FIRST_NAME }},</p><p>Your {{ FREQUENCY }} support has been paused, and no further payments will be taken until you resume.</p><p>{{ SUBSCRIPTION_STATUS_CARD }}</p>',
     imageUrl: '',
     createdAt: '2025-03-15T10:00:00Z',
     updatedAt: '2026-01-08T09:00:00Z'
@@ -143,9 +143,9 @@ export const emailTemplates: EmailTemplate[] = [
     id: 'email-donor-subscription-resumed',
     name: 'Subscription Resumed',
     type: 'donor-subscription-resumed',
-    subject: 'Your subscription has been resumed!',
+    subject: 'Your subscription is active again',
     bodyHtml:
-      '<p>Dear {{ FIRST_NAME }},</p><p>Your {{ FREQUENCY }} subscription of {{ AMOUNT }} has been resumed.</p><p>Your next billing date is {{ NEXT_BILLING_DATE }}. Thank you for your continued support!</p><p>{{ IMPACT_PRODUCT_CARD }}</p>',
+      '<p>Dear {{ FIRST_NAME }},</p><p>Your {{ FREQUENCY }} support is active again.</p><p>Your next billing date is {{ NEXT_BILLING_DATE }}.</p><p>{{ SUBSCRIPTION_STATUS_CARD }}</p><p>{{ IMPACT_PRODUCT_CARD }}</p>',
     imageUrl: '',
     createdAt: '2025-03-20T10:00:00Z',
     updatedAt: '2026-01-05T09:00:00Z'
@@ -156,7 +156,7 @@ export const emailTemplates: EmailTemplate[] = [
     type: 'donor-subscription-cancelled',
     subject: 'Your subscription has been cancelled',
     bodyHtml:
-      "<p>Dear {{ FIRST_NAME }},</p><p>Your subscription has been cancelled. You will not be charged again.</p><p>If you'd like to support us again in the future, you can always start a new subscription.</p>",
+      '<p>Dear {{ FIRST_NAME }},</p><p>Your subscription has now been cancelled, and you will not be charged again.</p><p>We are grateful for your support and would be glad to welcome you back in the future.</p><p>{{ SUBSCRIPTION_STATUS_CARD }}</p>',
     imageUrl: '',
     createdAt: '2025-04-01T10:00:00Z',
     updatedAt: '2026-01-03T09:00:00Z'
@@ -165,9 +165,9 @@ export const emailTemplates: EmailTemplate[] = [
     id: 'email-donor-payment-failed',
     name: 'Recurring Payment Failed',
     type: 'donor-payment-failed',
-    subject: 'Action needed: Your {{ FREQUENCY }} payment failed',
+    subject: 'Action needed: we could not process your {{ FREQUENCY }} payment',
     bodyHtml:
-      '<p>Dear {{ FIRST_NAME }},</p><p>We were unable to process your {{ FREQUENCY }} payment of {{ AMOUNT }}.</p><p>Please update your payment method in your donor portal to avoid interruption to your subscription.</p>',
+      '<p>Dear {{ FIRST_NAME }},</p><p>We were unable to process your {{ FREQUENCY }} payment of {{ AMOUNT }}.</p><p>Please review your payment details so your support can continue without interruption.</p><p>{{ PAYMENT_RETRY_CARD }}</p><p>{{ PAYMENT_METHOD_CARD }}</p><p>{{ SUBSCRIPTION_STATUS_CARD }}</p>',
     imageUrl: '',
     createdAt: '2025-04-10T10:00:00Z',
     updatedAt: '2026-01-01T09:00:00Z'
@@ -176,9 +176,9 @@ export const emailTemplates: EmailTemplate[] = [
     id: 'email-admin-new-donation',
     name: 'New Donation',
     type: 'admin-new-donation',
-    subject: 'New {{ FREQUENCY }} donation of {{ AMOUNT }}',
+    subject: 'New {{ FREQUENCY }} donation: {{ AMOUNT }}',
     bodyHtml:
-      '<p>A new donation has been received:</p><p><strong>Donor:</strong> {{ DONOR_NAME }}<br/><strong>Amount:</strong> {{ AMOUNT }}<br/><strong>Campaign:</strong> {{ CAMPAIGN_NAME }}<br/><strong>Date:</strong> {{ DATE }}<br/><strong>Frequency:</strong> {{ FREQUENCY }}</p>',
+      '<p>A new donation has been received.</p><p>{{ DONATION_SUMMARY_CARD }}</p><p><strong>Donor:</strong> {{ DONOR_NAME }}</p>',
     imageUrl: '',
     createdAt: '2025-05-01T10:00:00Z',
     updatedAt: '2025-12-28T09:00:00Z'
@@ -187,9 +187,9 @@ export const emailTemplates: EmailTemplate[] = [
     id: 'email-admin-new-p2p-fundraiser',
     name: 'New P2P Fundraiser',
     type: 'admin-new-p2p-fundraiser',
-    subject: 'New P2P fundraiser: {{ FUNDRAISER_NAME }}',
+    subject: 'New P2P fundraiser created: {{ FUNDRAISER_NAME }}',
     bodyHtml:
-      '<p>A new P2P fundraiser has been created:</p><p><strong>Fundraiser:</strong> {{ FUNDRAISER_NAME }}<br/><strong>Campaign:</strong> {{ CAMPAIGN_NAME }}<br/><strong>Goal:</strong> {{ GOAL_AMOUNT }}</p>',
+      '<p>A new P2P fundraiser has been created.</p><p><strong>Fundraiser:</strong> {{ FUNDRAISER_NAME }}<br/><strong>Campaign:</strong> {{ CAMPAIGN_NAME }}<br/><strong>Goal:</strong> {{ GOAL_AMOUNT }}</p>',
     imageUrl: '',
     createdAt: '2025-05-10T10:00:00Z',
     updatedAt: '2025-12-25T09:00:00Z'
@@ -198,9 +198,9 @@ export const emailTemplates: EmailTemplate[] = [
     id: 'email-p2p-new-donation',
     name: 'New Donation',
     type: 'p2p-new-donation',
-    subject: '{{ DONOR_NAME }} donated {{ AMOUNT }} to your fundraiser!',
+    subject: '{{ DONOR_NAME }} just supported your fundraiser',
     bodyHtml:
-      "<p>Great news! {{ DONOR_NAME }} has donated {{ AMOUNT }} to your fundraiser.</p><p>You've now raised {{ TOTAL_RAISED }} in total. Keep up the amazing work, {{ FUNDRAISER_NAME }}!</p>",
+      '<p>Great news, {{ FUNDRAISER_NAME }}.</p><p>{{ DONOR_NAME }} donated {{ AMOUNT }} to your fundraiser.</p><p>Your total raised is now {{ TOTAL_RAISED }}.</p>',
     imageUrl: '',
     createdAt: '2025-06-01T10:00:00Z',
     updatedAt: '2025-12-20T09:00:00Z'
@@ -209,9 +209,9 @@ export const emailTemplates: EmailTemplate[] = [
     id: 'email-team-invitation',
     name: 'Team Invitation',
     type: 'team-invitation',
-    subject: "You've been invited to join {{ ORG_NAME }}",
+    subject: "You're invited to join {{ ORG_NAME }}",
     bodyHtml:
-      '<p>Hi {{ INVITEE_NAME }},</p><p>You\'ve been invited to join {{ ORG_NAME }} as a {{ ROLE }}.</p><p>Click the link below to accept your invitation:</p><p><a href="{{ INVITE_LINK }}">Accept Invitation</a></p>',
+      '<p>Hi {{ INVITEE_NAME }},</p><p>You have been invited to join {{ ORG_NAME }} as a {{ ROLE }}.</p><p><a href="{{ INVITE_LINK }}">Accept your invitation</a></p>',
     imageUrl: '',
     createdAt: '2025-06-10T10:00:00Z',
     updatedAt: '2025-12-15T09:00:00Z'

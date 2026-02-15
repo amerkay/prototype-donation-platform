@@ -34,7 +34,7 @@ const { hoveredField, editButtonStyle, hoverOutlineStyle, navigateToField } = us
       <DonationEmail
         :body-html="payload.bodyHtml"
         :image-url="payload.imageUrl"
-        :product-card="payload.productCard"
+        :cards="payload.cards"
         :signature-text="payload.signatureText"
         preview
         with-field-targets
