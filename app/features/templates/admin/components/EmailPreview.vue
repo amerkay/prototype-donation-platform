@@ -69,14 +69,6 @@ const { hoveredField, editButtonStyle, hoverOutlineStyle, navigateToField } = us
   cursor: pointer;
 }
 
-/* Restore paragraph spacing inside the email preview */
-.email-preview-body :deep(p) {
-  margin: 0 0 12px 0 !important;
-}
-.email-preview-body :deep(p:last-child) {
-  margin-bottom: 0 !important;
-}
-
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.15s ease;

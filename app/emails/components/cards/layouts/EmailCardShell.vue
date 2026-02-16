@@ -12,6 +12,7 @@
         <tr>
           <td style="padding: 8px 0; vertical-align: top">
             <table
+              class="email-card-shell"
               align="center"
               width="100%"
               role="presentation"

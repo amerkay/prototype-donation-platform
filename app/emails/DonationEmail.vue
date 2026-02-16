@@ -28,6 +28,22 @@ const signatureLines = computed(() =>
 )
 const fieldTarget = (path: string): string | undefined =>
   props.withFieldTargets ? path : undefined
+
+const EMAIL_SHARED_STYLES = `
+.donation-email-body p {
+  margin: 0 0 12px;
+}
+
+.donation-email-body .email-card-shell {
+  border-color: #c7c7c7 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .donation-email-body .email-card-shell {
+    border-color: #4a4a4a !important;
+  }
+}
+`.trim()
 </script>
 
 <template>
@@ -35,9 +51,13 @@ const fieldTarget = (path: string): string | undefined =>
     <EHead v-if="!props.preview">
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-      <EStyle> p { margin: 0 0 12px; } </EStyle>
+      <EStyle>{{ EMAIL_SHARED_STYLES }}</EStyle>
     </EHead>
-    <EBody :style="{ backgroundColor: '#ffffff', fontFamily: 'sans-serif', padding: '0' }">
+    <EBody
+      class="donation-email-body"
+      :style="{ backgroundColor: '#ffffff', fontFamily: 'sans-serif', padding: '0' }"
+    >
+      <component :is="'style'" v-if="props.preview">{{ EMAIL_SHARED_STYLES }}</component>
       <EContainer>
         <ESection v-if="imageUrl" :data-field="fieldTarget('email.imageUrl')">
           <img
