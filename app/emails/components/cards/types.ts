@@ -52,6 +52,7 @@ export interface EmailPaymentRetryCardData {
   actionText?: string
   portalUrl?: string
   portalLinkText?: string
+  buttonBackgroundColor?: string
 }
 
 export interface EmailPaymentMethodCardData {
@@ -61,6 +62,7 @@ export interface EmailPaymentMethodCardData {
   actionText?: string
   portalUrl?: string
   portalLinkText?: string
+  buttonBackgroundColor?: string
 }
 
 export interface EmailCampaignContextCardData {
@@ -68,6 +70,7 @@ export interface EmailCampaignContextCardData {
   description: string
   imageUrl?: string
   campaignUrl?: string
+  buttonBackgroundColor?: string
 }
 
 export interface EmailCardsPayload {

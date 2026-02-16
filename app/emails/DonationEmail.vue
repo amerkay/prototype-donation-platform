@@ -21,27 +21,7 @@ const props = withDefaults(defineProps<Props>(), {
   withFieldTargets: false
 })
 
-function normalizeEmailParagraphMargins(html: string): string {
-  return html.replace(/<p\b([^>]*)>/gi, (_fullMatch, attrs: string) => {
-    if (/style\s*=/i.test(attrs)) {
-      const mergedAttrs = attrs.replace(/style\s*=\s*(["'])(.*?)\1/i, (_m, quote, styleValue) => {
-        const normalized = styleValue.trim()
-        const withTerminator =
-          normalized && !normalized.endsWith(';') ? `${normalized};` : normalized
-        const withMargin = /(^|;)\s*margin\s*:/i.test(withTerminator)
-          ? withTerminator
-          : `${withTerminator}margin:0;`
-        return `style=${quote}${withMargin}${quote}`
-      })
-      return `<p${mergedAttrs}>`
-    }
-    return `<p${attrs} style="margin:0;">`
-  })
-}
-
-const sanitizedBodyHtml = computed(() =>
-  normalizeEmailParagraphMargins(sanitizeRichText(props.bodyHtml, { profile: 'email' }))
-)
+const sanitizedBodyHtml = computed(() => sanitizeRichText(props.bodyHtml, { profile: 'email' }))
 const bodySegments = computed(() => splitBodyIntoCardSegments(sanitizedBodyHtml.value, props.cards))
 const signatureLines = computed(() =>
   props.signatureText ? props.signatureText.split(/\r?\n/) : []
@@ -55,6 +35,7 @@ const fieldTarget = (path: string): string | undefined =>
     <EHead v-if="!props.preview">
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+      <EStyle> p { margin: 0 0 12px; } </EStyle>
     </EHead>
     <EBody :style="{ backgroundColor: '#ffffff', fontFamily: 'sans-serif', padding: '0' }">
       <EContainer>

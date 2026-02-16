@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import EmailCardInfoPanel from '~/emails/components/cards/layouts/EmailCardInfoPanel.vue'
+import EmailCardActionButton from '~/emails/components/cards/layouts/EmailCardActionButton.vue'
 
 interface Props {
   methodLabel?: string
@@ -8,6 +9,7 @@ interface Props {
   actionText?: string
   portalUrl?: string
   portalLinkText?: string
+  buttonBackgroundColor?: string
 }
 
 withDefaults(defineProps<Props>(), {
@@ -48,13 +50,12 @@ withDefaults(defineProps<Props>(), {
           <td style="height: 10px; font-size: 0">&nbsp;</td>
         </tr>
         <tr>
-          <td
-            align="center"
-            style="padding: 10px 12px; border: 1px solid #b8b8b8; border-radius: 8px"
-          >
-            <a :href="portalUrl" style="text-decoration: none; font-weight: 600">
-              {{ portalLinkText }}
-            </a>
+          <td>
+            <EmailCardActionButton
+              :href="portalUrl"
+              :label="portalLinkText"
+              :background-color="buttonBackgroundColor"
+            />
           </td>
         </tr>
       </tbody>

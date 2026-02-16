@@ -9,7 +9,7 @@ interface Props {
 
 withDefaults(defineProps<Props>(), {
   imageAlt: 'Card image',
-  imageSize: 48
+  imageSize: 84
 })
 </script>
 
@@ -18,20 +18,20 @@ withDefaults(defineProps<Props>(), {
     <table width="100%" role="presentation" cellspacing="0" cellpadding="0" border="0">
       <tbody>
         <tr>
-          <td v-if="imageUrl" width="62" style="padding: 14px 10px 14px 14px; vertical-align: top">
+          <td v-if="imageUrl" :width="imageSize" style="padding: 12px; vertical-align: middle">
             <img
               :src="imageUrl"
               :alt="imageAlt"
               :width="imageSize"
               :height="imageSize"
-              style="border-radius: 8px; height: auto"
+              style="display: block; border-radius: 8px; height: auto"
             />
           </td>
           <td
             :style="
               imageUrl
-                ? 'padding: 12px 12px 12px 0; vertical-align: top'
-                : 'padding: 12px; vertical-align: top'
+                ? 'padding: 12px 12px 12px 0; vertical-align: middle'
+                : 'padding: 12px; vertical-align: middle'
             "
           >
             <slot />

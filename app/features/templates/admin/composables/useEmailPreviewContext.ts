@@ -8,6 +8,7 @@ import { useProducts } from '~/features/products/admin/composables/useProducts'
 import { useAdminSubscriptions } from '~/features/subscriptions/admin/composables/useAdminSubscriptions'
 import { useGeneralSettingsStore } from '~/features/settings/admin/stores/generalSettings'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
+import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
 import type { EmailCardsPayload } from '~/emails/components/cards/types'
 
 function toAbsoluteUrl(url: string | null | undefined, siteUrl?: string): string | undefined {
@@ -79,6 +80,7 @@ export function useEmailPreviewContext(
   const { activeProducts } = useProducts()
   const generalStore = useGeneralSettingsStore()
   const charityStore = useCharitySettingsStore()
+  const brandingStore = useBrandingSettingsStore()
   const siteUrl = (useRuntimeConfig().public.siteUrl as string | undefined) || ''
   const templateCategory = computed<EmailTemplateCategory>(() => {
     const type = toValue(templateType)
@@ -138,6 +140,7 @@ export function useEmailPreviewContext(
     )
   )
   const donorPortalUrl = computed(() => toAbsoluteUrl('/portal', siteUrl))
+  const buttonBackgroundColor = computed(() => brandingStore.primaryColor || '#5f259f')
   const campaignCardUrl = computed(() => {
     const campaign = latestCampaign.value
     if (!campaign?.id) return undefined
@@ -296,7 +299,8 @@ export function useEmailPreviewContext(
       retryDate: formatDate(latestSubscription.value?.nextBillingDate),
       actionText: 'Please update your payment details so your ongoing support can continue.',
       portalUrl: donorPortalUrl.value,
-      portalLinkText: 'Open donor portal'
+      portalLinkText: 'Open donor portal',
+      buttonBackgroundColor: buttonBackgroundColor.value
     },
     PAYMENT_METHOD_CARD: {
       methodLabel: formatPaymentMethod(
@@ -308,7 +312,8 @@ export function useEmailPreviewContext(
       billingContact: latestDonor.value?.email || generalStore.emailSenderAddress,
       actionText: 'Update payment details any time in your donor portal.',
       portalUrl: donorPortalUrl.value,
-      portalLinkText: 'Open donor portal'
+      portalLinkText: 'Open donor portal',
+      buttonBackgroundColor: buttonBackgroundColor.value
     },
     CAMPAIGN_CONTEXT_CARD: {
       campaignName: latestCampaign.value?.name || latestSucceededDonation.value?.campaignName,
@@ -317,7 +322,8 @@ export function useEmailPreviewContext(
         latestCampaign.value?.crowdfunding?.title ||
         'Your support helps us continue practical services and long-term impact.',
       imageUrl: campaignCardImageUrl.value,
-      campaignUrl: campaignCardUrl.value
+      campaignUrl: campaignCardUrl.value,
+      buttonBackgroundColor: buttonBackgroundColor.value
     }
   }))
 

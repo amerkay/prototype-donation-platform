@@ -27,7 +27,7 @@ const imageStyle = computed(() => {
     <table width="100%" role="presentation" cellspacing="0" cellpadding="0" border="0">
       <tbody>
         <tr v-if="imageUrl">
-          <td style="padding: 12px 12px 0; text-align: center">
+          <td style="padding: 12px 12px 0; text-align: left">
             <img
               :src="imageUrl"
               :alt="imageAlt"
