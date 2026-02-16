@@ -17,14 +17,21 @@ const remainingCount = computed(() => Math.max(props.items.length - 1, 0))
 
 <template>
   <EmailCardMediaRow :image-url="leadItem?.imageUrl" :image-alt="leadItem?.name || 'Order item'">
-    <p style="margin: 0; font-weight: 600">Order details</p>
-    <p style="margin: 4px 0 0; opacity: 0.9">
+    <div style="font-weight: 600">Order details</div>
+    <table width="100%" role="presentation" cellspacing="0" cellpadding="0" border="0">
+      <tbody>
+        <tr>
+          <td style="height: 4px; font-size: 0">&nbsp;</td>
+        </tr>
+      </tbody>
+    </table>
+    <div>
       <template v-if="leadItem">
         {{ leadItem.name }}<template v-if="leadItem.quantity"> x{{ leadItem.quantity }}</template>
       </template>
       <template v-if="remainingCount"> and {{ remainingCount }} more</template>
       <template v-if="total"><br /><strong>Total:</strong> {{ total }}</template>
       <template v-if="frequency"><br /><strong>Frequency:</strong> {{ frequency }}</template>
-    </p>
+    </div>
   </EmailCardMediaRow>
 </template>

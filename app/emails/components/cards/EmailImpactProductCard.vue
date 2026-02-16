@@ -18,11 +18,16 @@ const resolvedImageUrl = computed(() => props.imageUrl || '/imgs/orangutan-image
 
 <template>
   <EmailCardMediaRow :image-url="resolvedImageUrl" :image-alt="name">
-    <p style="margin: 0; font-weight: 600">
+    <div style="font-weight: 600">
       {{ name }}
-    </p>
-    <p style="margin: 4px 0 0; opacity: 0.9">
-      {{ shortDescription }}
-    </p>
+    </div>
+    <table width="100%" role="presentation" cellspacing="0" cellpadding="0" border="0">
+      <tbody>
+        <tr>
+          <td style="height: 4px; font-size: 0">&nbsp;</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="opacity: 0.9">{{ shortDescription }}</div>
   </EmailCardMediaRow>
 </template>

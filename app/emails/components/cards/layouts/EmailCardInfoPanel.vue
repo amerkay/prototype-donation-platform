@@ -15,12 +15,19 @@ defineProps<Props>()
       <tbody>
         <tr>
           <td style="padding: 12px 12px 0; vertical-align: top">
-            <p style="margin: 0; font-weight: 600">
+            <div style="font-weight: 600">
               {{ title }}
-            </p>
-            <p v-if="status" style="margin: 4px 0 0; opacity: 0.85">
-              {{ status }}
-            </p>
+            </div>
+            <template v-if="status">
+              <table width="100%" role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tbody>
+                  <tr>
+                    <td style="height: 4px; font-size: 0">&nbsp;</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div>{{ status }}</div>
+            </template>
           </td>
         </tr>
         <tr>

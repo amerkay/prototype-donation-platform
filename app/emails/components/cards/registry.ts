@@ -41,6 +41,12 @@ export function splitBodyIntoCardSegments(
       segments.push({ kind: 'html', html: sanitizedHtml.slice(cursor, index) })
     }
 
+    if (!token) {
+      segments.push({ kind: 'html', html: fullMatch })
+      cursor = index + fullMatch.length
+      continue
+    }
+
     if (isEmailCardToken(token)) {
       const data = cards?.[token]
       if (data) {

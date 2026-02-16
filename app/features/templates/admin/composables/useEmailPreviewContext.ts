@@ -91,7 +91,9 @@ export function useEmailPreviewContext(
   const latestCampaign = computed(() => {
     const standardCampaigns = campaigns.value.filter((campaign) => campaign.type === 'standard')
     const source = standardCampaigns.length > 0 ? standardCampaigns : campaigns.value
-    return [...source].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0]
+    return [...source].sort(
+      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    )[0]
   })
 
   const latestDonation = computed(() => allTransactions.value[0])
@@ -123,7 +125,7 @@ export function useEmailPreviewContext(
     fallbackImageUrl(
       latestProduct.value?.image,
       latestCampaign.value?.crowdfunding?.coverPhoto,
-      '/imgs/baby-orangutan-hammick.webp',
+      '/imgs/orangutan-images/baimah.jpg',
       siteUrl
     )
   )
@@ -131,7 +133,7 @@ export function useEmailPreviewContext(
     fallbackImageUrl(
       latestCampaign.value?.crowdfunding?.coverPhoto,
       latestProduct.value?.image,
-      '/imgs/baby-orangutan-hammick.webp',
+      '/imgs/orangutan-images/baimah.jpg',
       siteUrl
     )
   )

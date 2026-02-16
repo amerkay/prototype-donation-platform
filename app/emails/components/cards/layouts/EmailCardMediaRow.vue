@@ -18,17 +18,13 @@ withDefaults(defineProps<Props>(), {
     <table width="100%" role="presentation" cellspacing="0" cellpadding="0" border="0">
       <tbody>
         <tr>
-          <td
-            v-if="imageUrl"
-            width="62"
-            style="padding: 14px 0 14px 14px; vertical-align: top; box-sizing: content-box"
-          >
+          <td v-if="imageUrl" width="62" style="padding: 14px 10px 14px 14px; vertical-align: top">
             <img
               :src="imageUrl"
               :alt="imageAlt"
               :width="imageSize"
               :height="imageSize"
-              style="display: block; border-radius: 8px; object-fit: cover"
+              style="border-radius: 8px; height: auto"
             />
           </td>
           <td

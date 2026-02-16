@@ -14,13 +14,13 @@ defineProps<Props>()
 
 <template>
   <EmailCardInfoPanel title="Subscription status" :status="status">
-    <p style="margin: 0">
+    <div>
       <template v-if="amount"><strong>Amount:</strong> {{ amount }}<br /></template>
       <template v-if="frequency"><strong>Frequency:</strong> {{ frequency }}<br /></template>
       <template v-if="nextBillingDate"
         ><strong>Next billing:</strong> {{ nextBillingDate }}<br
       /></template>
       <template v-if="effectiveDate"><strong>Effective:</strong> {{ effectiveDate }}</template>
-    </p>
+    </div>
   </EmailCardInfoPanel>
 </template>

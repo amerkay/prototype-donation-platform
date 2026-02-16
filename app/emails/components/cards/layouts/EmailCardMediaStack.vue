@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const imageStyle = computed(() => {
   const maxHeight = props.imageMaxHeight ? ` max-height: ${props.imageMaxHeight}px;` : ''
-  return `display: inline-block; width: 100%; max-width: ${props.imageMaxWidth}px; height: auto;${maxHeight} border-radius: 8px`
+  return `max-width: 100%; height: auto;${maxHeight} border-radius: 8px`
 })
 </script>
 
@@ -28,23 +28,18 @@ const imageStyle = computed(() => {
       <tbody>
         <tr v-if="imageUrl">
           <td style="padding: 12px 12px 0; text-align: center">
-            <a
-              v-if="linkUrl"
-              :href="linkUrl"
-              style="display: inline-block; text-decoration: none"
-            >
-              <img :src="imageUrl" :alt="imageAlt" :style="imageStyle" />
-            </a>
-            <img v-else :src="imageUrl" :alt="imageAlt" :style="imageStyle" />
+            <img
+              :src="imageUrl"
+              :alt="imageAlt"
+              :width="imageMaxWidth"
+              :height="imageMaxHeight"
+              :style="imageStyle"
+            />
           </td>
         </tr>
         <tr>
           <td style="padding: 12px; vertical-align: top">
-            <a
-              v-if="linkUrl"
-              :href="linkUrl"
-              style="display: block; text-decoration: none"
-            >
+            <a v-if="linkUrl" :href="linkUrl" style="text-decoration: none; color: inherit">
               <slot />
             </a>
             <slot v-else />

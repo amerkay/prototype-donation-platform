@@ -20,6 +20,13 @@ function normalizeCardTokenPlaceholders(html: string): string {
       new RegExp(`<span data-variable="${token}">[^<]*<\\/span>`, 'g'),
       replacement
     )
+    normalized = normalized.replace(
+      new RegExp(
+        `<p[^>]*>\\s*(?:<br\\s*\\/?\\s*>\\s*)*(?:&nbsp;\\s*)*\\{\\{\\s*${token}\\s*\\}\\}(?:\\s*&nbsp;)*(?:\\s*<br\\s*\\/?\\s*>)*\\s*<\\/p>`,
+        'gi'
+      ),
+      replacement
+    )
     normalized = normalized.replace(new RegExp(`\\{\\{\\s*${token}\\s*\\}\\}`, 'g'), replacement)
   }
   return normalized

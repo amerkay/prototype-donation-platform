@@ -19,11 +19,23 @@ defineProps<Props>()
     :image-max-height="320"
     :link-url="campaignUrl"
   >
-    <p v-if="campaignName" style="margin: 0; font-weight: 600">
+    <div v-if="campaignName" style="font-weight: 600">
       {{ campaignName }}
-    </p>
-    <p style="margin: 4px 0 0; opacity: 0.9">
-      {{ description }}
-    </p>
+    </div>
+    <table
+      v-if="campaignName"
+      width="100%"
+      role="presentation"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+    >
+      <tbody>
+        <tr>
+          <td style="height: 4px; font-size: 0">&nbsp;</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="opacity: 0.9">{{ description }}</div>
   </EmailCardMediaStack>
 </template>

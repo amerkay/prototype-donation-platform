@@ -14,12 +14,12 @@ defineProps<Props>()
 
 <template>
   <EmailCardInfoPanel title="Donation summary">
-    <p style="margin: 0">
+    <div>
       <strong>Amount:</strong> {{ amount }}<br />
       <strong>Date:</strong> {{ date }}<br />
       <template v-if="frequency"><strong>Frequency:</strong> {{ frequency }}<br /></template>
       <template v-if="campaignName"><strong>Fund:</strong> {{ campaignName }}<br /></template>
       <template v-if="reference"><strong>Reference:</strong> {{ reference }}</template>
-    </p>
+    </div>
   </EmailCardInfoPanel>
 </template>
