@@ -24,15 +24,21 @@ export function useBrandingCssVars() {
     } as CSSProperties
   })
 
+  // Inject branding CSS vars on teleported portals (direct children of <body>
+  // outside #__nuxt) so DialogPortal modals inherit branding without affecting admin UI
   useHead({
-    bodyAttrs: {
-      style: computed(() =>
-        Object.entries(brandingStyle.value)
-          .filter(([key]) => key.startsWith('--'))
-          .map(([key, val]) => `${key}:${val}`)
-          .join(';')
-      )
-    },
+    style: [
+      {
+        key: 'branding-portals',
+        innerHTML: computed(() => {
+          const vars = Object.entries(brandingStyle.value)
+            .filter(([key]) => key.startsWith('--'))
+            .map(([key, val]) => `${key}:${val}`)
+            .join(';')
+          return `body > :not(#__nuxt):not(script):not(link):not(style) { ${vars} }`
+        })
+      }
+    ],
     link: [
       {
         rel: 'stylesheet',

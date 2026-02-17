@@ -291,6 +291,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
 
   const logo = fieldGroup('logo', {
     label: 'Logo',
+    description: 'Organization logo display and positioning.',
     collapsible: true,
     collapsibleDefaultOpen: false,
     fields: { showLogo, noLogoAlert, logoSize, logoPosition },
@@ -304,6 +305,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
 
   const title = fieldGroup('title', {
     label: 'Title',
+    description: 'Certificate heading text and color.',
     collapsible: true,
     collapsibleDefaultOpen: false,
     fields: { titleLine1, titleLine2, titleTextColor },
@@ -317,6 +319,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
 
   const award = fieldGroup('award', {
     label: 'Award',
+    description: 'Award text and donor name styling.',
     collapsible: true,
     collapsibleDefaultOpen: false,
     fields: { showAwardSection, awardTextLine1, donorNameFontFamily },
@@ -330,6 +333,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
 
   const body = fieldGroup('body', {
     label: 'Body',
+    description: 'Main message with support for donor name, amount, and date variables.',
     collapsible: true,
     collapsibleDefaultOpen: false,
     fields: { bodyText, tributeNotice },
@@ -341,6 +345,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
 
   const product = fieldGroup('product', {
     label: 'Product',
+    description: 'Show adopted product badge with image and details.',
     collapsible: true,
     collapsibleDefaultOpen: false,
     fields: { showProduct, productInfoNotice, productImageShape, linkedProducts },
@@ -353,6 +358,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
 
   const footer = fieldGroup('footer', {
     label: 'Footer',
+    description: 'Date, footer text, and signature section.',
     collapsible: true,
     collapsibleDefaultOpen: false,
     fields: {
@@ -376,6 +382,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
 
   const page = fieldGroup('page', {
     label: 'Page',
+    description: 'Layout, background, and border styling.',
     collapsible: true,
     collapsibleDefaultOpen: false,
     fields: {

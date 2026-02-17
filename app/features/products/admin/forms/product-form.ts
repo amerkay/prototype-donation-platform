@@ -121,6 +121,7 @@ export const useProductForm = defineForm('product', () => {
 
   const basic = fieldGroup('basic', {
     label: 'Basic',
+    description: 'Product image and short description shown to donors.',
     collapsible: true,
     collapsibleDefaultOpen: false,
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
@@ -133,6 +134,7 @@ export const useProductForm = defineForm('product', () => {
 
   const pricing = fieldGroup('pricing', {
     label: 'Pricing',
+    description: 'Set fixed or flexible pricing and donation frequency.',
     collapsible: true,
     collapsibleDefaultOpen: false,
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
@@ -147,6 +149,7 @@ export const useProductForm = defineForm('product', () => {
 
   const shipping = fieldGroup('shipping', {
     label: 'Shipping',
+    description: 'Require a shipping address for physical products.',
     collapsible: true,
     collapsibleDefaultOpen: false,
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
