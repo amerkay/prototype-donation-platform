@@ -25,7 +25,6 @@ const previewProduct = computed<Product>(() => ({
 
 <template>
   <div class="space-y-2">
-    <p class="text-xs text-muted-foreground">Impact cart preview</p>
     <DonorProductCard
       :product="previewProduct"
       :currency="currencyStore.defaultCurrency"

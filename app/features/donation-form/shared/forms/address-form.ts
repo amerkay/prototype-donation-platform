@@ -171,18 +171,58 @@ function getCountryLabels(country: string | undefined) {
  * const addressFields = useAddressFields(undefined, 'billing', 'GB')
  * ```
  */
+/**
+ * Container-level all-or-nothing validation for address fields.
+ * When applied as `rules` on a fieldGroup wrapping address fields,
+ * this validates that either ALL required fields are filled or NONE are.
+ * Container rules don't block FormRenderer emission (skipContainerValidation),
+ * so the store stays dirty and StickyButtonGroup appears correctly.
+ */
+export const ADDRESS_ALL_OR_NOTHING_RULES = z
+  .object({
+    address1: z.string().optional(),
+    address2: z.string().optional(),
+    city: z.string().optional(),
+    country: z.string().optional(),
+    group1: z
+      .object({
+        region: z.string().optional(),
+        postcode: z.string().optional()
+      })
+      .optional()
+  })
+  .refine(
+    (data) => {
+      const g = data.group1 ?? { region: '', postcode: '' }
+      const required = [
+        { val: data.address1, min: 5 },
+        { val: data.city, min: 2 },
+        { val: data.country, min: 1 },
+        { val: g.region, min: 2 },
+        { val: g.postcode, min: 3 }
+      ]
+      const filled = required.filter((f) => f.val && f.val.length > 0)
+      if (filled.length === 0) return true
+      return required.every((f) => f.val && f.val.length >= f.min)
+    },
+    { message: 'Complete all address fields or leave empty' }
+  )
+
 export function useAddressFields(
   visibleWhen?: VisibilityFn,
   autocompleteSection = 'shipping',
-  forcedCountry?: string
+  forcedCountry?: string,
+  allOrNothing = false
 ): Record<string, FieldDef> {
+  const address1Rule = z.string().min(5, 'Address is required')
   const address1 = textField('address1', {
     label: 'Address Line 1',
     placeholder: '123 High Street',
     autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-line1`,
     defaultValue: '',
     visibleWhen,
-    rules: z.string().min(5, 'Address is required')
+    ...(allOrNothing && { optional: true }),
+    rules: allOrNothing ? z.string().optional() : address1Rule
   })
 
   const address2 = textField('address2', {
@@ -194,13 +234,15 @@ export function useAddressFields(
     rules: z.string().optional()
   })
 
+  const cityRule = z.string().min(2, 'Town/City is required')
   const city = textField('city', {
     label: 'City/Town',
     placeholder: 'London',
     autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level2`,
     defaultValue: '',
     visibleWhen,
-    rules: z.string().min(2, 'Town/City is required')
+    ...(allOrNothing && { optional: true }),
+    rules: allOrNothing ? z.string().optional() : cityRule
   })
 
   const region = textField('region', {
@@ -214,7 +256,8 @@ export function useAddressFields(
     },
     autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level1`,
     defaultValue: '',
-    rules: z.string().min(2, 'State/Region is required')
+    ...(allOrNothing && { optional: true }),
+    rules: allOrNothing ? z.string().optional() : z.string().min(2, 'State/Region is required')
   })
 
   const postcode = textField('postcode', {
@@ -228,7 +271,8 @@ export function useAddressFields(
     },
     autocomplete: `section-${autocompleteSection} ${autocompleteSection} postal-code`,
     defaultValue: '',
-    rules: z.string().min(3, 'Postcode is required')
+    ...(allOrNothing && { optional: true }),
+    rules: allOrNothing ? z.string().optional() : z.string().min(3, 'Postcode is required')
   })
 
   const group1 = fieldGroup('group1', {
@@ -263,7 +307,8 @@ export function useAddressFields(
       { value: 'DK', label: 'Denmark' },
       { value: 'FI', label: 'Finland' }
     ],
-    rules: z.string().min(1, 'Country is required'),
+    ...(allOrNothing && { optional: true }),
+    rules: allOrNothing ? z.string().optional() : z.string().min(1, 'Country is required'),
     disabled: !!forcedCountry,
     autocomplete: `section-${autocompleteSection} ${autocompleteSection} country`,
     visibleWhen,

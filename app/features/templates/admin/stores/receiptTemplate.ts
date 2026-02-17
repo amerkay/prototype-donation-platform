@@ -13,6 +13,8 @@ export const useReceiptTemplateStore = defineStore('receiptTemplate', () => {
   const showPaymentMethod = ref(defaults.showPaymentMethod)
   const showCampaignName = ref(defaults.showCampaignName)
   const showLogo = ref(defaults.showLogo)
+  const taxDeductibleStatement = ref(defaults.taxDeductibleStatement)
+  const showDonorAddress = ref(defaults.showDonorAddress)
 
   function initialize(t: ReceiptTemplate) {
     headerText.value = t.headerText
@@ -21,6 +23,8 @@ export const useReceiptTemplateStore = defineStore('receiptTemplate', () => {
     showPaymentMethod.value = t.showPaymentMethod
     showCampaignName.value = t.showCampaignName
     showLogo.value = t.showLogo
+    taxDeductibleStatement.value = t.taxDeductibleStatement
+    showDonorAddress.value = t.showDonorAddress
     markClean()
   }
 
@@ -31,6 +35,9 @@ export const useReceiptTemplateStore = defineStore('receiptTemplate', () => {
     if (t.showPaymentMethod !== undefined) showPaymentMethod.value = t.showPaymentMethod
     if (t.showCampaignName !== undefined) showCampaignName.value = t.showCampaignName
     if (t.showLogo !== undefined) showLogo.value = t.showLogo
+    if (t.taxDeductibleStatement !== undefined)
+      taxDeductibleStatement.value = t.taxDeductibleStatement
+    if (t.showDonorAddress !== undefined) showDonorAddress.value = t.showDonorAddress
     markDirty()
   }
 
@@ -56,7 +63,9 @@ export const useReceiptTemplateStore = defineStore('receiptTemplate', () => {
           showGiftAid: showGiftAid.value,
           showPaymentMethod: showPaymentMethod.value,
           showCampaignName: showCampaignName.value,
-          showLogo: showLogo.value
+          showLogo: showLogo.value,
+          taxDeductibleStatement: taxDeductibleStatement.value,
+          showDonorAddress: showDonorAddress.value
         })
       )
     } catch {
@@ -73,6 +82,8 @@ export const useReceiptTemplateStore = defineStore('receiptTemplate', () => {
     showPaymentMethod,
     showCampaignName,
     showLogo,
+    taxDeductibleStatement,
+    showDonorAddress,
     isDirty,
     isSaving,
     initialize,

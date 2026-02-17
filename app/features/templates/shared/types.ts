@@ -132,7 +132,9 @@ export interface ReceiptDonation {
   receiptNumber: string
   date: string
   donorName: string
+  donorAddress?: string
   amount: string
+  currency: string
   campaign?: string
   paymentMethod?: string
 }
@@ -148,6 +150,8 @@ export interface ReceiptModel {
   showPaymentMethod: boolean
   showCampaignName: boolean
   showLogo: boolean
+  taxDeductibleStatement: string
+  showDonorAddress: boolean
   branding: ReceiptBranding
   charity: ReceiptCharity
   donation: ReceiptDonation

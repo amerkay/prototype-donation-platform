@@ -166,8 +166,8 @@ const hasSocialSharing = computed(() => {
                     Registered Charity: {{ charityStore.registrationNumber }}
                   </p>
                 </div>
-                <p v-if="charityStore.address" class="text-xs text-muted-foreground">
-                  {{ charityStore.address }}
+                <p v-if="charityStore.formattedAddress" class="text-xs text-muted-foreground">
+                  {{ charityStore.formattedAddress }}
                 </p>
                 <p class="text-sm text-muted-foreground line-clamp-3">
                   {{ charityStore.description }}

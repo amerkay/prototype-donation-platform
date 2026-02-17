@@ -25,6 +25,14 @@ export function useBrandingCssVars() {
   })
 
   useHead({
+    bodyAttrs: {
+      style: computed(() =>
+        Object.entries(brandingStyle.value)
+          .filter(([key]) => key.startsWith('--'))
+          .map(([key, val]) => `${key}:${val}`)
+          .join(';')
+      )
+    },
     link: [
       {
         rel: 'stylesheet',

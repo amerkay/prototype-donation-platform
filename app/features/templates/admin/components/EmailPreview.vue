@@ -64,17 +64,6 @@ const { hoveredField, editButtonStyle, hoverOutlineStyle, navigateToField } = us
   </Card>
 </template>
 
-<style scoped>
-.editable :deep([data-field]) {
-  cursor: pointer;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.15s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
+<style>
+@import '~/features/templates/admin/composables/preview-editable.css';
 </style>

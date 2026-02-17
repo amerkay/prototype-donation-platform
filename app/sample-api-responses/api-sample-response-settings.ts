@@ -22,14 +22,36 @@ export const charitySettings: CharitySettings = {
   slug: 'bosf',
   name: 'Borneo Orangutan Survival Foundation',
   registrationNumber: 'RCN123456',
-  address: '123 Conservation Way, Palangka Raya, Central Kalimantan, Indonesia',
+  address: {
+    address1: '4 Millbank',
+    address2: '',
+    city: 'London',
+    region: 'Greater London',
+    postcode: 'SW1P 3JA',
+    country: 'GB'
+  },
   website: 'https://borneoorangutansurvival.org/',
   description:
     'We rescue, rehabilitate, and release orangutans while protecting their natural habitat through community engagement and sustainable forest management programs across Borneo and Sumatra.',
   currencyOverrides: {
-    GBP: { enabled: false, name: '', registrationNumber: '', address: '' },
-    USD: { enabled: false, name: '', registrationNumber: '', address: '' },
-    EUR: { enabled: false, name: '', registrationNumber: '', address: '' }
+    GBP: {
+      enabled: false,
+      name: '',
+      registrationNumber: '',
+      address: { address1: '', address2: '', city: '', region: '', postcode: '', country: '' }
+    },
+    USD: {
+      enabled: false,
+      name: '',
+      registrationNumber: '',
+      address: { address1: '', address2: '', city: '', region: '', postcode: '', country: '' }
+    },
+    EUR: {
+      enabled: false,
+      name: '',
+      registrationNumber: '',
+      address: { address1: '', address2: '', city: '', region: '', postcode: '', country: '' }
+    }
   }
 }
 

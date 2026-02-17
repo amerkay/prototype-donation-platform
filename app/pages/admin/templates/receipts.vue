@@ -30,7 +30,9 @@ const originalData = computed(() => ({
   showGiftAid: store.showGiftAid,
   showPaymentMethod: store.showPaymentMethod,
   showCampaignName: store.showCampaignName,
-  showLogo: store.showLogo
+  showLogo: store.showLogo,
+  taxDeductibleStatement: store.taxDeductibleStatement,
+  showDonorAddress: store.showDonorAddress
 }))
 
 const formConfigRef = ref()
@@ -99,7 +101,7 @@ const breadcrumbs = [
       </template>
 
       <template #preview>
-        <ReceiptPreview :currency="previewCurrency" />
+        <ReceiptPreview :currency="previewCurrency" editable />
       </template>
     </AdminEditLayout>
   </div>

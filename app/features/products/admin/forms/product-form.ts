@@ -24,8 +24,7 @@ export const useProductForm = defineForm('product', () => {
 
   const image = imageUploadField('image', {
     label: 'Product Image',
-    optional: true,
-    showSeparatorAfter: true
+    optional: true
   })
 
   const certificateTemplateId = selectField('certificateTemplateId', {
@@ -85,8 +84,7 @@ export const useProductForm = defineForm('product', () => {
       certificateTemplateId: 'certificateTemplateId',
       certificateOverrideName: 'certificateOverrideName',
       certificateText: 'certificateText'
-    },
-    showSeparatorAfter: true
+    }
   })
 
   const frequency = selectField('frequency', {
@@ -124,14 +122,13 @@ export const useProductForm = defineForm('product', () => {
   const basic = fieldGroup('basic', {
     label: 'Basic',
     collapsible: true,
-    collapsibleDefaultOpen: true,
+    collapsibleDefaultOpen: false,
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
     fields: { description, image },
     $storePath: {
       description: 'description',
       image: 'image'
-    },
-    showSeparatorAfter: true
+    }
   })
 
   const pricing = fieldGroup('pricing', {
@@ -145,8 +142,7 @@ export const useProductForm = defineForm('product', () => {
       price: 'price',
       minPrice: 'minPrice',
       default: 'default'
-    },
-    showSeparatorAfter: true
+    }
   })
 
   const shipping = fieldGroup('shipping', {

@@ -68,6 +68,21 @@ if (props.meta.collapsible) {
   provideAccordionGroup()
 
   isOpen = computed(() => accordionValue.value === props.name)
+
+  // Bidirectional sync with external collapsibleStateRef if provided
+  if (props.meta.collapsibleStateRef) {
+    const externalRef = props.meta.collapsibleStateRef
+    watch(
+      externalRef,
+      (val) => {
+        accordionValue.value = val
+      },
+      { flush: 'sync' }
+    )
+    watch(accordionValue, (val) => {
+      externalRef.value = val
+    })
+  }
 } else {
   // Non-collapsible: no accordion state needed
   accordionValue = ref(undefined)

@@ -1,8 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { CharitySettings, CharityCurrencyOverride } from '~/features/settings/admin/types'
+import type {
+  CharitySettings,
+  CharityAddress,
+  CharityCurrencyOverride
+} from '~/features/settings/admin/types'
 import { charitySettings } from '~/sample-api-responses/api-sample-response-settings'
 import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
+import { formatCharityAddress } from '~/features/settings/admin/utils/formatCharityAddress'
 
 /**
  * Organization-level charity settings store
@@ -17,7 +22,7 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
   const slug = ref(charitySettings.slug)
   const name = ref(charitySettings.name)
   const registrationNumber = ref(charitySettings.registrationNumber)
-  const address = ref(charitySettings.address)
+  const address = ref<CharityAddress>({ ...charitySettings.address })
   const website = ref(charitySettings.website)
   const description = ref(charitySettings.description)
   const currencyOverrides = ref<Record<string, CharityCurrencyOverride>>({
@@ -25,21 +30,25 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
   })
 
   // Getters
+  const formattedAddress = computed(() => formatCharityAddress(address.value))
+
   const getCharityForCurrency = computed(
     () =>
       (currency: string): { name: string; registrationNumber: string; address: string } => {
+        const formatted = formattedAddress.value
         const override = currencyOverrides.value[currency]
         if (override?.enabled) {
+          const overrideAddr = override.address ? formatCharityAddress(override.address) : ''
           return {
             name: override.name || name.value,
             registrationNumber: override.registrationNumber || registrationNumber.value,
-            address: override.address || address.value
+            address: overrideAddr || formatted
           }
         }
         return {
           name: name.value,
           registrationNumber: registrationNumber.value,
-          address: address.value
+          address: formatted
         }
       }
   )
@@ -49,7 +58,7 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
     slug.value = settings.slug
     name.value = settings.name
     registrationNumber.value = settings.registrationNumber
-    address.value = settings.address
+    address.value = { ...settings.address }
     website.value = settings.website
     description.value = settings.description
     currencyOverrides.value = { ...settings.currencyOverrides }
@@ -61,7 +70,7 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
     if (settings.name !== undefined) name.value = settings.name
     if (settings.registrationNumber !== undefined)
       registrationNumber.value = settings.registrationNumber
-    if (settings.address !== undefined) address.value = settings.address
+    if (settings.address !== undefined) address.value = { ...settings.address }
     if (settings.website !== undefined) website.value = settings.website
     if (settings.description !== undefined) description.value = settings.description
     if (settings.currencyOverrides !== undefined)
@@ -112,6 +121,7 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
     name,
     registrationNumber,
     address,
+    formattedAddress,
     website,
     description,
     currencyOverrides,

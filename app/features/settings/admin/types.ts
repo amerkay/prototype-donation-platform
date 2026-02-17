@@ -15,7 +15,19 @@ export interface CharityCurrencyOverride {
   enabled: boolean
   name?: string
   registrationNumber?: string
-  address?: string
+  address?: CharityAddress
+}
+
+/**
+ * Structured charity address
+ */
+export interface CharityAddress {
+  address1: string
+  address2: string
+  city: string
+  region: string
+  postcode: string
+  country: string
 }
 
 /**
@@ -25,7 +37,7 @@ export interface CharitySettings {
   slug: string
   name: string
   registrationNumber: string
-  address: string
+  address: CharityAddress
   website: string
   description: string
   currencyOverrides: Record<string, CharityCurrencyOverride>

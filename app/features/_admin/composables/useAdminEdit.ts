@@ -1,4 +1,12 @@
-import { ref, computed, provide, onMounted, onUnmounted, type Ref, type ComputedRef } from 'vue'
+import {
+  ref,
+  computed,
+  provide,
+  onMounted,
+  onUnmounted,
+  type Ref,
+  type ComputedRef
+} from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import { toast } from 'vue-sonner'
 
@@ -103,6 +111,17 @@ export function useAdminEdit<TStore extends EditableStore, TOriginalData>({
       lastSavedData.value = deepClone(originalData.value)
     }
   })
+
+  // Smart dirty detection: auto-clear isDirty when store returns to last-saved state.
+  // Patch markDirty so that setData's explicit call is a no-op when values match saved state.
+  const hasChanges = computed(() => {
+    if (!lastSavedData.value || !originalData.value) return false
+    return JSON.stringify(originalData.value) !== JSON.stringify(lastSavedData.value)
+  })
+
+  store.markDirty = () => {
+    store.isDirty = hasChanges.value
+  }
 
   // Discard state
   const showDiscardDialog = ref(false)

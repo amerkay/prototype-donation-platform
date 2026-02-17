@@ -26,6 +26,8 @@ export interface ReceiptTemplate {
   showPaymentMethod: boolean
   showCampaignName: boolean
   showLogo: boolean
+  taxDeductibleStatement: string
+  showDonorAddress: boolean
 }
 
 /** Certificate template status */
@@ -177,11 +179,15 @@ export interface ReceiptPdfData {
     registrationNumber: string
     address: string
   }
+  taxDeductibleStatement: string
+  showDonorAddress: boolean
   donation: {
     receiptNumber: string
     date: string
     donorName: string
+    donorAddress?: string
     amount: string
+    currency: string
     campaign?: string
     paymentMethod?: string
   }

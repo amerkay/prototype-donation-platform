@@ -19,7 +19,8 @@ const emit = defineEmits<{
   discard: []
 }>()
 
-const hasErrors = computed(() => props.isDirty && !props.isValid)
+const isActive = computed(() => props.isDirty || !props.isValid)
+const hasErrors = computed(() => !props.isValid)
 </script>
 
 <template>
@@ -27,7 +28,7 @@ const hasErrors = computed(() => props.isDirty && !props.isValid)
     :class="
       cn(
         'py-4 -mx-4 px-4',
-        props.isDirty &&
+        isActive &&
           'sticky bottom-0 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-t'
       )
     "
@@ -52,7 +53,7 @@ const hasErrors = computed(() => props.isDirty && !props.isValid)
           {{ props.isSaving ? 'Saving...' : 'Save Changes' }}
         </Button>
         <Button
-          v-if="props.isDirty"
+          v-if="isActive"
           variant="outline"
           size="lg"
           :disabled="props.isSaving"

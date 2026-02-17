@@ -110,6 +110,8 @@ export function useGeneratePdf() {
             showPaymentMethod: receipt.showPaymentMethod,
             showCampaignName: receipt.showCampaignName,
             showLogo: receipt.showLogo,
+            taxDeductibleStatement: receipt.taxDeductibleStatement,
+            showDonorAddress: receipt.showDonorAddress,
             branding: {
               logoUrl: branding.logoUrl,
               primaryColor: branding.primaryColor
@@ -123,7 +125,9 @@ export function useGeneratePdf() {
               receiptNumber: 'RCP-2025-001234',
               date: formatDate(),
               donorName: 'John Smith',
+              donorAddress: '123 Example Street\nLondon, SW1A 1AA',
               amount: formatCurrency(50, activeCurrency),
+              currency: activeCurrency,
               campaign: 'Emergency Relief Fund',
               paymentMethod: 'Visa \u2022\u2022\u2022\u2022 4242'
             }
