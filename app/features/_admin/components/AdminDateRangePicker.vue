@@ -3,8 +3,10 @@ import type { DateRange } from 'reka-ui'
 import { RangeCalendar } from '@/components/ui/range-calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import { CalendarIcon, X } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
+import { CalendarDate, today, getLocalTimeZone } from '@internationalized/date'
 
 // Use `any` for model to avoid Nuxt type inference propagating RangeCalendar's wider emit type.
 // Consumers pass DateRange; the component is transparent but types can't flow through cleanly.
@@ -28,6 +30,42 @@ const triggerLabel = computed(() => {
 function clear() {
   model.value = { start: undefined, end: undefined }
 }
+
+interface DatePreset {
+  label: string
+  days?: number
+  ytd?: boolean
+}
+
+const presets: DatePreset[] = [
+  { label: 'Last 7 days', days: 7 },
+  { label: 'Last 30 days', days: 30 },
+  { label: 'Last 6 months', days: 183 },
+  { label: 'Last year', days: 365 },
+  { label: 'Year to date', ytd: true }
+]
+
+function getPresetRange(preset: DatePreset) {
+  const tz = getLocalTimeZone()
+  const end = today(tz)
+  const start = preset.ytd ? new CalendarDate(end.year, 1, 1) : end.subtract({ days: preset.days! })
+  return { start, end }
+}
+
+function applyPreset(preset: DatePreset) {
+  model.value = getPresetRange(preset)
+}
+
+const activePreset = computed(() => {
+  const r = range.value
+  if (!r.start || !r.end) return null
+  return (
+    presets.find((p) => {
+      const { start, end } = getPresetRange(p)
+      return r.start!.compare(start) === 0 && r.end!.compare(end) === 0
+    })?.label ?? null
+  )
+})
 </script>
 
 <template>
@@ -37,13 +75,26 @@ function clear() {
         <Button
           variant="outline"
           size="sm"
-          :class="cn('justify-start text-left font-normal', !hasRange && 'text-muted-foreground')"
+          :class="cn('justify-start text-left font-normal')"
         >
           <CalendarIcon class="mr-2 h-4 w-4" />
           {{ triggerLabel }}
         </Button>
       </PopoverTrigger>
       <PopoverContent class="w-auto p-0" align="start">
+        <div class="grid grid-cols-3 gap-1.5 p-3">
+          <Button
+            v-for="preset in presets"
+            :key="preset.label"
+            :variant="activePreset === preset.label ? 'default' : 'outline'"
+            size="sm"
+            class="h-7 text-xs"
+            @click="applyPreset(preset)"
+          >
+            {{ preset.label }}
+          </Button>
+        </div>
+        <Separator />
         <RangeCalendar
           :model-value="model"
           :number-of-months="2"

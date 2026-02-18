@@ -55,6 +55,7 @@ export const transactions: Transaction[] = [
     donorEmail: 'awesome@charity.co.uk',
     isAnonymous: false,
     giftAid: true,
+    customFields: { source: 'website', company_name: 'Amer Holdings' },
     createdAt: '2026-01-28T14:30:00Z',
     receiptUrl: '#'
   },
@@ -93,6 +94,7 @@ export const transactions: Transaction[] = [
     message: 'In loving memory of Grandma Rose',
     tribute: { type: 'memorial', honoreeName: 'Rose Amer' },
     giftAid: false,
+    customFields: { source: 'social_media', referral_code: 'MEMORIAL2026' },
     createdAt: '2026-01-20T10:15:00Z',
     receiptUrl: '#'
   },
@@ -175,6 +177,7 @@ export const transactions: Transaction[] = [
     isAnonymous: false,
     message: 'Keep up the great work!',
     giftAid: true,
+    customFields: { source: 'email_campaign', department: 'Marketing' },
     createdAt: '2026-01-10T16:45:00Z',
     receiptUrl: '#'
   },
@@ -476,6 +479,7 @@ export const transactions: Transaction[] = [
     donorEmail: 'awesome@charity.co.uk',
     isAnonymous: true,
     giftAid: true,
+    customFields: { source: 'direct_mail', designation: 'General Fund' },
     createdAt: '2025-11-10T14:00:00Z',
     receiptUrl: '#'
   },
@@ -517,6 +521,7 @@ export const transactions: Transaction[] = [
     isAnonymous: false,
     message: 'Keep up the amazing work saving these beautiful creatures!',
     giftAid: false,
+    customFields: { source: 'google_ads', referral_code: 'GADS2026' },
     createdAt: '2026-01-14T09:30:00Z',
     receiptUrl: '#'
   },
@@ -590,6 +595,11 @@ export const transactions: Transaction[] = [
     isAnonymous: false,
     message: 'Donated on behalf of my company.',
     giftAid: false,
+    customFields: {
+      source: 'website',
+      company_name: 'Lee Enterprises',
+      designation: 'Habitat Restoration'
+    },
     createdAt: '2026-01-11T09:00:00Z',
     receiptUrl: '#'
   },
@@ -900,6 +910,7 @@ export const transactions: Transaction[] = [
     isAnonymous: false,
     message: 'Happy Birthday Michael!',
     giftAid: false,
+    customFields: { event_name: "Michael's 25th Birthday", source: 'social_media' },
     createdAt: '2026-01-12T10:00:00Z',
     receiptUrl: '#'
   },
@@ -937,6 +948,7 @@ export const transactions: Transaction[] = [
     isAnonymous: false,
     message: 'Great cause mate!',
     giftAid: false,
+    customFields: { event_name: "Michael's 25th Birthday", referral_code: 'BDAY25' },
     createdAt: '2026-01-10T14:30:00Z',
     receiptUrl: '#'
   },
@@ -1087,6 +1099,7 @@ export const transactions: Transaction[] = [
     isAnonymous: false,
     message: 'Happy 40th David!',
     giftAid: false,
+    customFields: { event_name: "David's 40th Birthday", department: 'HR' },
     createdAt: '2026-01-20T10:00:00Z',
     receiptUrl: '#'
   },
@@ -1200,6 +1213,7 @@ export const transactions: Transaction[] = [
     isAnonymous: false,
     message: 'Happy Birthday Lisa!',
     giftAid: true,
+    customFields: { event_name: "Lisa's Birthday", source: 'email_campaign' },
     createdAt: '2025-12-05T12:00:00Z',
     receiptUrl: '#'
   },

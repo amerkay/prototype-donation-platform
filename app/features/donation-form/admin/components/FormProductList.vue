@@ -57,11 +57,11 @@ function setQty(productId: string, value: number | undefined) {
   store.markDirty()
 }
 
-function handleUpdate(productId: string, value: number) {
-  if (Number.isNaN(value)) {
+function handleUpdate(productId: string, value: number | undefined) {
+  if (value === undefined || value === null || Number.isNaN(value) || value < 0) {
     setQty(productId, undefined)
   } else {
-    setQty(productId, Math.max(0, value))
+    setQty(productId, value)
   }
 }
 </script>
@@ -80,7 +80,6 @@ function handleUpdate(productId: string, value: number) {
         <span class="text-xs text-muted-foreground">Remaining</span>
         <NumberField
           :model-value="getQty(product.id)"
-          :min="0"
           class="w-24"
           @update:model-value="handleUpdate(product.id, $event)"
         >
@@ -100,7 +99,6 @@ function handleUpdate(productId: string, value: number) {
         <span class="text-xs text-muted-foreground">Remaining</span>
         <NumberField
           :model-value="getQty(product.id)"
-          :min="0"
           class="w-24"
           @update:model-value="handleUpdate(product.id, $event)"
         >
