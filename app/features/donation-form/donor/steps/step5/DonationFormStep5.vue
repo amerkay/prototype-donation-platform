@@ -6,6 +6,7 @@ import DonationReceipt from '~/features/donation-form/donor/components/DonationR
 import RecurringUpsell from '~/features/donation-form/donor/components/RecurringUpsell.vue'
 import DonationSharePrompt from '~/features/donation-form/donor/components/DonationSharePrompt.vue'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
+import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
 import { formatCurrency } from '~/lib/formatCurrency'
 
 const emit = defineEmits<{
@@ -13,6 +14,7 @@ const emit = defineEmits<{
 }>()
 
 const store = useDonationFormStore()
+const { labels, isDonation } = useFormTypeLabels()
 const showContent = ref(false)
 
 const donorFirstName = computed(() => {
@@ -66,9 +68,11 @@ onMounted(() => {
         </svg>
       </div>
 
-      <h2 class="text-2xl font-bold">Thank you, {{ donorFirstName }}!</h2>
+      <h2 class="text-2xl font-bold">
+        {{ labels.confirmationTitle.replace('{name}', donorFirstName) }}
+      </h2>
       <p class="text-muted-foreground">
-        Your {{ formattedTotal }} donation has been processed successfully.
+        {{ labels.confirmationMessage.replace('{amount}', formattedTotal) }}
       </p>
     </div>
 
@@ -84,9 +88,9 @@ onMounted(() => {
       <DonationReceipt />
     </div>
 
-    <!-- Recurring Upsell (one-time donors only) -->
+    <!-- Recurring Upsell (one-time donation donors only) -->
     <div
-      v-if="isOneTime"
+      v-if="isOneTime && isDonation"
       :class="[
         'transition-all duration-500 delay-300',
         showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
@@ -120,7 +124,7 @@ onMounted(() => {
       </Button>
       <Button variant="outline" class="w-full" @click="handleRestart">
         <Icon name="lucide:plus" class="mr-2 h-4 w-4" />
-        Make Another Donation
+        {{ labels.restartLabel }}
       </Button>
       <NuxtLink to="/portal/donations" class="block">
         <Button variant="ghost" class="w-full">

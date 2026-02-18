@@ -2,9 +2,11 @@
 import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
 import CampaignHeader from '~/features/campaigns/admin/components/CampaignHeader.vue'
 import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/CampaignMasterConfigPanel.vue'
-import CampaignPreviewSwitcher from '~/features/campaigns/admin/components/CampaignPreviewSwitcher.vue'
+import CrowdfundingPagePreview from '~/features/campaigns/admin/components/CrowdfundingPagePreview.vue'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
+import { EyeOff } from 'lucide-vue-next'
+import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
-import { useCampaignPreview } from '~/features/campaigns/shared/composables/useCampaignPreview'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import type { Campaign, CampaignStatus } from '~/features/campaigns/shared/types'
@@ -59,8 +61,8 @@ const campaignForStore = computed(() => store.fullCampaign)
 // Form ref for validation
 const formRef = ref()
 
-// Preview state (centralised composable)
-const { hasActivePreview, previewLabel } = useCampaignPreview(store.id!)
+const crowdfundingEnabled = computed(() => store.crowdfunding?.enabled !== false)
+const { brandingStyle } = useBrandingCssVars()
 
 // Reuse admin edit composable for save/discard logic
 const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBaseline } =
@@ -76,8 +78,7 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBasel
         status: store.status,
         stats: store.stats!,
         crowdfunding: store.crowdfunding!,
-        peerToPeer: store.peerToPeer!,
-        socialSharing: store.socialSharing!
+        peerToPeer: store.peerToPeer!
       })
     }
   })
@@ -127,8 +128,8 @@ const handleDeleted = () => {
     :breadcrumbs="breadcrumbs"
     :is-dirty="store.isDirty"
     :show-discard-dialog="showDiscardDialog"
-    :show-preview="hasActivePreview"
-    :preview-label="previewLabel"
+    :show-preview="crowdfundingEnabled"
+    preview-label="Preview"
     editable-last-item
     :max-length="75"
     @preview="handlePreview"
@@ -149,7 +150,18 @@ const handleDeleted = () => {
     </template>
 
     <template #preview>
-      <CampaignPreviewSwitcher />
+      <div :style="brandingStyle">
+        <CrowdfundingPagePreview v-if="crowdfundingEnabled" />
+        <Empty v-else class="border border-dashed">
+          <EmptyHeader>
+            <EmptyMedia variant="icon"><EyeOff /></EmptyMedia>
+            <EmptyTitle>Preview Unavailable</EmptyTitle>
+            <EmptyDescription>
+              Crowdfunding Page is currently disabled. Enable it in the settings to see the preview.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      </div>
     </template>
   </AdminEditLayout>
 </template>

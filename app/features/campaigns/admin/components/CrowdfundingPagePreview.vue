@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import CrowdfundingPage from '~/features/campaigns/donor/components/CrowdfundingPage.vue'
+import PreviewEditable from '~/features/_admin/components/PreviewEditable.vue'
 import type { Campaign } from '~/features/campaigns/shared/types'
+
+withDefaults(defineProps<{ editable?: boolean }>(), { editable: false })
 
 const store = useCampaignConfigStore()
 
@@ -31,5 +34,7 @@ const campaignForPreview = computed<Campaign | null>(() => {
 </script>
 
 <template>
-  <CrowdfundingPage v-if="campaignForPreview" :campaign="campaignForPreview" />
+  <PreviewEditable v-if="campaignForPreview" :enabled="editable">
+    <CrowdfundingPage :campaign="campaignForPreview" />
+  </PreviewEditable>
 </template>

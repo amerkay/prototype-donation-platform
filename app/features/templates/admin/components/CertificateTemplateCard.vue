@@ -2,10 +2,9 @@
 import type { CertificateTemplate } from '~/features/templates/admin/types'
 import { useCertificateTemplates } from '~/features/templates/admin/composables/useCertificateTemplates'
 import CertificatePreviewThumbnail from './CertificatePreviewThumbnail.vue'
-import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
 import AdminDeleteButton from '~/features/_admin/components/AdminDeleteButton.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Calendar, Copy, Pencil } from 'lucide-vue-next'
 import { formatDistance } from 'date-fns'
@@ -15,7 +14,6 @@ const props = defineProps<{
 }>()
 
 defineEmits<{
-  rename: [name: string]
   duplicate: []
   delete: []
 }>()
@@ -37,12 +35,9 @@ const formattedDate = computed(() =>
     </NuxtLink>
 
     <CardHeader class="pb-2">
-      <InlineEditableText
-        :model-value="template.name"
-        display-class="text-base font-semibold"
-        :max-length="75"
-        @update:model-value="$emit('rename', $event)"
-      />
+      <NuxtLink :to="`/admin/templates/certificates/${template.id}`" class="hover:underline">
+        <CardTitle class="text-base truncate">{{ template.name }}</CardTitle>
+      </NuxtLink>
       <div class="flex items-center gap-1.5">
         <StatusBadge :status="template.status ?? 'active'" class="text-[10px] px-1.5 py-0" />
         <p class="flex items-center gap-1.5 text-xs text-muted-foreground">

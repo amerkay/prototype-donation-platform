@@ -15,6 +15,7 @@ import type { FieldDef } from '../types'
 
 // --- Constants ---
 const HASH_TARGET_KEY = Symbol('hashTarget')
+export const HASH_TARGET_PASSIVE_KEY = Symbol('hashTargetPassive')
 const FLASH_DURATION_MS = 1500 // 3 × 500ms CSS pulses
 const SCROLL_DELAY_MS = 350 // Wait for accordion/tab animation
 const CLEAR_LISTENER_DELAY_MS = 2000 // Don't clear on navigation click
@@ -82,6 +83,7 @@ function resolveHash(hash: string, fields: Record<string, FieldDef>): string | n
  * Resolves URL hash to field path and manages clear-on-interaction.
  */
 export function provideHashTarget(fields: Record<string, FieldDef>) {
+  const isPassive = inject<boolean>(HASH_TARGET_PASSIVE_KEY, false)
   const route = useRoute()
   const targetPath = ref<string | null>(null)
   const cleared = ref(false)
@@ -124,7 +126,7 @@ export function provideHashTarget(fields: Record<string, FieldDef>) {
   provide<HashTargetContext>(HASH_TARGET_KEY, { targetPath, cleared, activateTarget })
 
   onMounted(() => {
-    activeHashTargetActivator = activateTarget
+    if (!isPassive) activeHashTargetActivator = activateTarget
 
     watch(
       () => route.hash,
@@ -141,7 +143,7 @@ export function provideHashTarget(fields: Record<string, FieldDef>) {
     }
     document.removeEventListener('click', clearHighlight)
     document.removeEventListener('keydown', clearHighlight)
-    if (activeHashTargetActivator === activateTarget) {
+    if (!isPassive && activeHashTargetActivator === activateTarget) {
       activeHashTargetActivator = null
     }
   })

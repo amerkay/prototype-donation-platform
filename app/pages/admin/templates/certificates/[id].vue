@@ -60,6 +60,7 @@ watch(
 )
 
 const previewCurrency = ref(currencyStore.defaultCurrency)
+const editableMode = ref(true)
 
 const previewProduct = computed(() =>
   certificatePreviewProductId.value
@@ -112,6 +113,7 @@ function handleDeleted() {
 <template>
   <div v-if="template">
     <AdminEditLayout
+      v-model:editable="editableMode"
       :breadcrumbs="breadcrumbs"
       :is-dirty="store.isDirty"
       :show-discard-dialog="showDiscardDialog"
@@ -156,7 +158,11 @@ function handleDeleted() {
       </template>
 
       <template #preview>
-        <CertificatePreview :currency="previewCurrency" :product="previewProduct" editable />
+        <CertificatePreview
+          :currency="previewCurrency"
+          :product="previewProduct"
+          :editable="editableMode"
+        />
       </template>
     </AdminEditLayout>
   </div>

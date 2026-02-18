@@ -19,20 +19,12 @@ export function createChallengePreset(): Partial<Campaign> {
       showRecentDonations: true,
       defaultDonationsView: 'recent',
       numberOfDonationsToShow: 5,
-      goalAmount: 500
+      goalAmount: 500,
+      enableSocialSharing: true
     },
     peerToPeer: {
       enabled: true,
       customMessage: 'Take on a challenge and raise funds alongside me!'
-    },
-    socialSharing: {
-      enabled: true,
-      facebook: true,
-      twitter: true,
-      linkedin: true,
-      whatsapp: true,
-      email: true,
-      copyLink: true
     }
   }
 }

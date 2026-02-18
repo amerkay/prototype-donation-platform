@@ -20,20 +20,12 @@ export function createBirthdayPreset(): Partial<Campaign> {
       showRecentDonations: true,
       defaultDonationsView: 'recent',
       numberOfDonationsToShow: 5,
-      goalAmount: 500
+      goalAmount: 500,
+      enableSocialSharing: true
     },
     peerToPeer: {
       enabled: true,
       customMessage: 'Join me in celebrating by raising funds for a great cause!'
-    },
-    socialSharing: {
-      enabled: true,
-      facebook: true,
-      twitter: true,
-      linkedin: false,
-      whatsapp: true,
-      email: true,
-      copyLink: true
     }
   }
 }

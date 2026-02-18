@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { computed, ref, toRef, watch, onMounted, onBeforeUnmount } from 'vue'
+import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useCertificateTemplateStore } from '~/features/templates/admin/stores/certificateTemplate'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { useProducts } from '~/features/products/admin/composables/useProducts'
-import { usePreviewEditable } from '~/features/templates/admin/composables/usePreviewEditable'
 import { useCertificatePreviewModel } from '~/features/templates/admin/composables/useCertificatePreviewModel'
 import { CERTIFICATE_TEMPLATE_TARGETS } from '~/features/templates/admin/forms/certificate-template-form'
 import { getPageRenderGeometry } from '~/features/templates/admin/utils/page-geometry'
 import { useAdaptiveText } from '~/features/templates/shared/composables/useAdaptiveText'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 import CertificateLayout from '~/features/templates/shared/components/certificate/CertificateLayout.vue'
-import { Button } from '@/components/ui/button'
-import { Pencil } from 'lucide-vue-next'
+import PreviewEditable from '~/features/_admin/components/PreviewEditable.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -71,18 +69,17 @@ const { certificateModel } = useCertificatePreviewModel(() => cert.flatSettings,
   targets: CERTIFICATE_TEMPLATE_TARGETS
 })
 
-const previewRef = ref<HTMLElement | null>(null)
+const previewEditableRef = ref<InstanceType<typeof PreviewEditable> | null>(null)
 const contentRef = ref<HTMLElement | null>(null)
-const editableRef = toRef(() => props.editable)
-const { hoveredField, editButtonStyle, hoverOutlineStyle, navigateToField } = usePreviewEditable(
-  previewRef,
-  editableRef
-)
 const previewScale = ref(1)
 let resizeObserver: ResizeObserver | null = null
 
+function getContainerEl() {
+  return previewEditableRef.value?.$el as HTMLElement | null
+}
+
 function updatePreviewScale() {
-  const container = previewRef.value
+  const container = getContainerEl()
   if (!container) return
 
   const widthRatio = container.clientWidth / geometry.value.canvasWidthPx
@@ -102,9 +99,10 @@ watch(isLandscape, () => {
 onMounted(() => {
   updatePreviewScale()
 
-  if (previewRef.value) {
+  const el = getContainerEl()
+  if (el) {
     resizeObserver = new ResizeObserver(() => updatePreviewScale())
-    resizeObserver.observe(previewRef.value)
+    resizeObserver.observe(el)
   }
 })
 
@@ -115,10 +113,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div
-    ref="previewRef"
-    class="relative overflow-hidden shadow-sm mx-auto max-w-95 w-full"
-    :class="{ editable: editable }"
+  <PreviewEditable
+    ref="previewEditableRef"
+    :enabled="editable"
+    class="overflow-hidden shadow-sm mx-auto max-w-95 w-full"
     :style="{
       aspectRatio: `${geometry.canvasWidthPx} / ${geometry.canvasHeightPx}`
     }"
@@ -134,30 +132,5 @@ onBeforeUnmount(() => {
     >
       <CertificateLayout :model="certificateModel" />
     </div>
-
-    <Transition name="fade">
-      <div
-        v-if="editable && hoveredField"
-        class="border-2 border-dashed border-gray-500 rounded pointer-events-none"
-        :style="hoverOutlineStyle"
-      />
-    </Transition>
-
-    <Transition name="fade">
-      <Button
-        v-if="editable && hoveredField"
-        variant="secondary"
-        size="icon"
-        class="h-6 w-6 rounded-full shadow-md pointer-events-auto"
-        :style="editButtonStyle"
-        @click.stop="navigateToField()"
-      >
-        <Pencil class="h-3 w-3" />
-      </Button>
-    </Transition>
-  </div>
+  </PreviewEditable>
 </template>
-
-<style>
-@import '~/features/templates/admin/composables/preview-editable.css';
-</style>

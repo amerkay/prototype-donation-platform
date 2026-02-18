@@ -4,8 +4,7 @@ import {
   EMAIL_TEMPLATE_META,
   EMAIL_CATEGORY_LABELS
 } from '~/features/templates/admin/email-templates'
-import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Calendar, Pencil } from 'lucide-vue-next'
@@ -13,10 +12,6 @@ import { formatDistance } from 'date-fns'
 
 const props = defineProps<{
   template: EmailTemplate
-}>()
-
-defineEmits<{
-  rename: [name: string]
 }>()
 
 const meta = computed(() => EMAIL_TEMPLATE_META[props.template.type])
@@ -43,12 +38,9 @@ const formattedDate = computed(() =>
     </NuxtLink>
 
     <CardHeader class="pb-2">
-      <InlineEditableText
-        :model-value="template.name"
-        display-class="text-base font-semibold"
-        :max-length="75"
-        @update:model-value="$emit('rename', $event)"
-      />
+      <NuxtLink :to="`/admin/templates/emails/${template.id}`" class="hover:underline">
+        <CardTitle class="text-base truncate">{{ template.name }}</CardTitle>
+      </NuxtLink>
       <div class="flex items-center gap-1.5 flex-wrap">
         <Badge variant="outline" class="text-[10px] px-1.5 py-0">
           {{ EMAIL_CATEGORY_LABELS[meta.category] }}

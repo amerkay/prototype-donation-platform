@@ -14,11 +14,12 @@ import { useFormConfigStore } from '~/features/donation-form/shared/stores/formC
 import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
+import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
 import { formConfig as defaultConfig } from '~/sample-api-responses/api-sample-response-form-config'
 
 // Get products from store
 const configStore = useFormConfigStore()
-const products = configStore.products
+const products = computed(() => configStore.products)
 
 interface Props {
   config?: FullFormConfig
@@ -46,6 +47,7 @@ const currentFormId = computed(() => configStore.formId || 'default')
 store.initialize(currentFormId.value, formConfig.value.donationAmounts.baseDefaultCurrency)
 
 const cartStore = useImpactCartStore()
+const { isDonation } = useFormTypeLabels()
 
 // Alias for convenience
 const selectedFrequency = computed({
@@ -82,7 +84,7 @@ const BASE_FREQUENCIES = computed(() => {
 
 const ALLOW_MULTIPLE_ITEMS = computed(() => formConfig.value.features.impactCart.enabled)
 const INITIAL_PRODUCTS_DISPLAYED = computed(
-  () => formConfig.value.features.impactCart.settings.initialDisplay
+  () => formConfig.value.features.impactCart.settings?.initialDisplay ?? 3
 )
 
 // Refs
@@ -260,6 +262,17 @@ defineExpose({
   clearSession: () => store.clearSession()
 })
 
+// Non-donation forms: force "multiple" tab (cart-based UX)
+watch(
+  isDonation,
+  (donation) => {
+    if (!donation) {
+      selectedFrequency.value = 'multiple'
+    }
+  },
+  { immediate: true }
+)
+
 // Watch for tab switches to "multiple" - auto-add selected product if cart is empty
 watch(selectedFrequency, (newFreq, oldFreq) => {
   if (newFreq === 'multiple' && (oldFreq === 'monthly' || oldFreq === 'yearly')) {
@@ -277,8 +290,12 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
     <!-- Header with Currency Selector -->
     <div class="flex items-start justify-between gap-2">
       <div>
-        <h2 class="text-xl font-semibold">{{ formConfig.form.title }}</h2>
-        <p class="text-sm text-muted-foreground">{{ formConfig.form.subtitle }}</p>
+        <h2 class="text-xl font-semibold" data-field="formSettings.form.title">
+          {{ formConfig.form.title }}
+        </h2>
+        <p class="text-sm text-muted-foreground" data-field="formSettings.form.subtitle">
+          {{ formConfig.form.subtitle }}
+        </p>
       </div>
       <select
         id="currency"
@@ -291,8 +308,21 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
       </select>
     </div>
 
-    <!-- Frequency Tabs -->
-    <Tabs v-model="selectedFrequency">
+    <!-- Non-donation: Direct cart view (no frequency tabs) -->
+    <DonationFormMultiple
+      v-if="!isDonation"
+      ref="multipleFormRef"
+      :currency="selectedCurrency"
+      :products="products"
+      :enabled-frequencies="enabledFrequencies"
+      :initial-products-displayed="INITIAL_PRODUCTS_DISPLAYED"
+      :form-config="formConfig"
+      @next="handleNext"
+      @switch-to-tab="handleSwitchToTab"
+    />
+
+    <!-- Donation: Frequency Tabs -->
+    <Tabs v-else v-model="selectedFrequency">
       <TabsList
         class="grid w-full h-12"
         :class="{
@@ -301,6 +331,7 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           'grid-cols-3': frequencies.length === 3,
           'grid-cols-4': frequencies.length === 4
         }"
+        data-field="donationAmounts.frequencies"
       >
         <TabsTrigger
           v-for="freq in frequencies"

@@ -19,20 +19,12 @@ export function createWeddingPreset(): Partial<Campaign> {
       showRecentDonations: true,
       defaultDonationsView: 'top',
       numberOfDonationsToShow: 10,
-      goalAmount: 1000
+      goalAmount: 1000,
+      enableSocialSharing: true
     },
     peerToPeer: {
       enabled: true,
       customMessage: 'Help us celebrate our wedding by supporting a cause we care about!'
-    },
-    socialSharing: {
-      enabled: true,
-      facebook: true,
-      twitter: false,
-      linkedin: false,
-      whatsapp: true,
-      email: true,
-      copyLink: true
     }
   }
 }

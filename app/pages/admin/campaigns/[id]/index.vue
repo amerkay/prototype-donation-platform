@@ -2,15 +2,17 @@
 import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
 import CampaignHeader from '~/features/campaigns/admin/components/CampaignHeader.vue'
 import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/CampaignMasterConfigPanel.vue'
-import CampaignPreviewSwitcher from '~/features/campaigns/admin/components/CampaignPreviewSwitcher.vue'
+import CrowdfundingPagePreview from '~/features/campaigns/admin/components/CrowdfundingPagePreview.vue'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
+import { EyeOff } from 'lucide-vue-next'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useForms } from '~/features/campaigns/shared/composables/useForms'
-import { useCampaignPreview } from '~/features/campaigns/shared/composables/useCampaignPreview'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import type { CampaignStatus } from '~/features/campaigns/shared/types'
 import { getCampaignTypeBreadcrumb } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import { openAccordionId } from '~/features/campaigns/admin/forms/campaign-config-master'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
+import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { toast } from 'vue-sonner'
 
 definePageMeta({
@@ -69,10 +71,9 @@ const formsCount = computed(
 )
 const canActivate = computed(() => (formRef.value?.isValid ?? false) && formsCount.value > 0)
 
-// Preview state (centralised composable)
-const { showExternalPreview, isFormContext, previewLabel, defaultForm } = useCampaignPreview(
-  store.id!
-)
+const crowdfundingEnabled = computed(() => store.crowdfunding?.enabled !== false)
+const { brandingStyle } = useBrandingCssVars()
+const editableMode = ref(true)
 
 // Use admin edit composable for save/discard logic
 const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBaseline } =
@@ -88,8 +89,7 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBasel
         status: store.status,
         stats: store.stats!,
         crowdfunding: store.crowdfunding!,
-        peerToPeer: store.peerToPeer!,
-        socialSharing: store.socialSharing!
+        peerToPeer: store.peerToPeer!
       })
     }
   })
@@ -177,13 +177,8 @@ async function handleStatusUpdate(newStatus: CampaignStatus) {
   }
 }
 
-// Preview handler — context-aware: opens form preview when viewing donation forms
 const handlePreview = () => {
-  if (isFormContext.value && defaultForm.value) {
-    window.open(`/admin/campaigns/${store.id}/forms/${defaultForm.value.id}/preview`, '_blank')
-  } else {
-    window.open(`/admin/campaigns/${store.id}/preview`, '_blank')
-  }
+  window.open(`/admin/campaigns/${store.id}/preview`, '_blank')
 }
 
 // After campaign is deleted, navigate back to the type list
@@ -196,11 +191,12 @@ const handleDeleted = () => {
 <template>
   <AdminEditLayout
     v-if="campaign"
+    v-model:editable="editableMode"
     :breadcrumbs="breadcrumbs"
     :is-dirty="store.isDirty"
     :show-discard-dialog="showDiscardDialog"
-    :show-preview="showExternalPreview"
-    :preview-label="previewLabel"
+    :show-preview="crowdfundingEnabled"
+    preview-label="Preview"
     editable-last-item
     :max-length="75"
     @preview="handlePreview"
@@ -223,9 +219,19 @@ const handleDeleted = () => {
       <CampaignMasterConfigPanel ref="formRef" @save="handleSave" @discard="handleDiscard" />
     </template>
 
-    <!-- Preview panel -->
     <template #preview>
-      <CampaignPreviewSwitcher />
+      <div :style="brandingStyle">
+        <CrowdfundingPagePreview v-if="crowdfundingEnabled" :editable="editableMode" />
+        <Empty v-else class="border border-dashed">
+          <EmptyHeader>
+            <EmptyMedia variant="icon"><EyeOff /></EmptyMedia>
+            <EmptyTitle>Preview Unavailable</EmptyTitle>
+            <EmptyDescription>
+              Crowdfunding Page is currently disabled. Enable it in the settings to see the preview.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      </div>
     </template>
   </AdminEditLayout>
 </template>

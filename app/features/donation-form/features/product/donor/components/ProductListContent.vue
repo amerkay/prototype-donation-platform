@@ -13,6 +13,7 @@ interface Props {
   searchQuery: string
   showAllProducts: boolean
   initialProductsDisplayed: number
+  remainingByProduct?: Record<string, number>
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -82,7 +83,9 @@ const handleSearchUpdate = (value: string | number) => {
         :product="product"
         :currency="currency"
         :base-currency="baseCurrency"
-        @click="handleProductClick(product)"
+        :remaining="remainingByProduct?.[product.id]"
+        :disabled="remainingByProduct?.[product.id] === 0"
+        @click="remainingByProduct?.[product.id] !== 0 && handleProductClick(product)"
       />
     </TransitionGroup>
 

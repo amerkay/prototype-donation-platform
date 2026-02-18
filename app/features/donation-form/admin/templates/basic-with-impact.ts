@@ -164,7 +164,8 @@ export function createBasicWithImpactTemplate(
         },
         customFields: {
           customFieldsTabs: {}
-        }
+        },
+        entryFields: { enabled: false, mode: 'shared' as const, fields: [] }
       }
     },
     products: []

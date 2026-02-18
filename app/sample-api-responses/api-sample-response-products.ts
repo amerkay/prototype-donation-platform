@@ -1,5 +1,7 @@
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 
+// --- Donation products (adopt-orangutan campaign) ---
+
 export const products: Product[] = [
   {
     id: 'adopt-bumi',
@@ -45,5 +47,100 @@ export const products: Product[] = [
     image: null,
     certificateText:
       'Your support funds conservation education programs that teach local communities sustainable practices and inspire the next generation of wildlife protectors.'
+  }
+]
+
+// --- Stall booking products (registration) ---
+
+export const stallBookingProducts: Product[] = [
+  {
+    id: 'stall-standard',
+    name: 'Standard Stall (3m x 3m)',
+    description: 'Indoor stall with table and two chairs.',
+    price: 25,
+    frequency: 'once',
+    image: null
+  },
+  {
+    id: 'stall-large',
+    name: 'Large Stall (3m x 6m)',
+    description: 'Double-width stall with extra display space.',
+    price: 45,
+    frequency: 'once',
+    image: null
+  },
+  {
+    id: 'stall-corner',
+    name: 'Corner Stall (3m x 3m)',
+    description: 'Prime corner position with two open sides.',
+    price: 35,
+    frequency: 'once',
+    image: null
+  }
+]
+
+// --- Dog show products (ticketing, £2.50 per category) ---
+
+export const dogShowProducts: Product[] = [
+  {
+    id: 'dog-top-survivor',
+    name: 'Top Survivor',
+    description: 'For rescue dogs who have overcome adversity.',
+    price: 2.5,
+    frequency: 'once',
+    image: null
+  },
+  {
+    id: 'dog-cutest-puppy',
+    name: 'Cutest Puppy',
+    description: 'Puppies under 12 months — cutest face wins!',
+    price: 2.5,
+    frequency: 'once',
+    image: null
+  },
+  {
+    id: 'dog-best-in-show',
+    name: 'Best in Show',
+    description: 'Overall champion judged on appearance and temperament.',
+    price: 2.5,
+    frequency: 'once',
+    image: null
+  },
+  {
+    id: 'dog-waggiest-tail',
+    name: 'Waggiest Tail',
+    description: 'The happiest tail wins the prize!',
+    price: 2.5,
+    frequency: 'once',
+    image: null
+  },
+  {
+    id: 'dog-best-trick',
+    name: 'Best Trick',
+    description: "Show off your dog's best party trick.",
+    price: 2.5,
+    frequency: 'once',
+    image: null
+  },
+  {
+    id: 'dog-golden-oldie',
+    name: 'Golden Oldie',
+    description: 'Veteran dogs aged 8 and over.',
+    price: 2.5,
+    frequency: 'once',
+    image: null
+  }
+]
+
+// --- Classic car show products (registration, free) ---
+
+export const classicCarProducts: Product[] = [
+  {
+    id: 'classic-car-entry',
+    name: 'Classic Car Entry',
+    description: 'Register your classic car for the show.',
+    price: 0,
+    frequency: 'once',
+    image: null
   }
 ]

@@ -96,6 +96,7 @@ defineExpose({
   <div ref="formContainerRef" class="space-y-4">
     <!-- Donation Amount Selector -->
     <AmountSelector
+      data-field="donationAmounts.frequencies"
       :model-value="donationAmount"
       :amounts="availableAmounts"
       :currency="currency"
@@ -117,6 +118,7 @@ defineExpose({
     <!-- Product Selector -->
     <ProductSelectorButton
       ref="productSelectorRef"
+      data-field="features.productSelector"
       :frequency="frequency"
       :currency="currency"
       :base-currency="formConfig.donationAmounts.baseDefaultCurrency"
@@ -131,7 +133,10 @@ defineExpose({
     />
 
     <!-- Gift or In Memory (only for recurring donations) -->
-    <template v-if="formConfig.features.tribute.enabled && showTributeSection">
+    <div
+      v-if="formConfig.features.tribute.enabled && showTributeSection"
+      data-field="features.tribute"
+    >
       <TributeCard
         v-if="hasTribute"
         :tribute="tributeData!"
@@ -142,13 +147,14 @@ defineExpose({
       <Button v-else variant="outline" class="w-full h-10 text-sm" @click="handleOpenTributeModal">
         💝 Gift or In Memory of (with eCard)
       </Button>
-    </template>
+    </div>
 
     <Separator v-if="formConfig.features.impactBoost.enabled" />
 
     <!-- Impact Boost -->
     <ImpactBoostCard
       v-if="formConfig.features.impactBoost.enabled"
+      data-field="features.impactBoost"
       :frequency="frequency"
       :donation-amount="donationAmount"
       :currency="currency"

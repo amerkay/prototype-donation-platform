@@ -8,7 +8,7 @@ import { Plus } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'admin' })
 
-const { templates, stats, createTemplate, duplicateTemplate, updateTemplateName, deleteTemplate } =
+const { templates, stats, createTemplate, duplicateTemplate, deleteTemplate } =
   useCertificateTemplates()
 
 const breadcrumbs = [
@@ -25,10 +25,6 @@ function handleNew() {
 function handleDuplicate(id: string) {
   const newId = duplicateTemplate(id)
   if (newId) navigateTo(`/admin/templates/certificates/${newId}`)
-}
-
-function handleRename(id: string, name: string) {
-  updateTemplateName(id, name)
 }
 </script>
 
@@ -51,7 +47,6 @@ function handleRename(id: string, name: string) {
           v-for="template in templates"
           :key="template.id"
           :template="template"
-          @rename="handleRename(template.id, $event)"
           @duplicate="handleDuplicate(template.id)"
           @delete="deleteTemplate(template.id)"
         />

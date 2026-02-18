@@ -8,11 +8,7 @@ defineProps<{
   compact?: boolean
 }>()
 
-const { updateCampaignName, deleteCampaign } = useCampaigns()
-
-function handleRename(id: string, name: string) {
-  updateCampaignName(id, name)
-}
+const { deleteCampaign } = useCampaigns()
 
 function handleDelete(id: string) {
   deleteCampaign(id)
@@ -34,7 +30,6 @@ function handleDelete(id: string) {
       :key="campaign.id"
       :campaign="campaign"
       :compact="compact"
-      @rename="handleRename(campaign.id, $event)"
       @delete="handleDelete(campaign.id)"
     />
   </div>

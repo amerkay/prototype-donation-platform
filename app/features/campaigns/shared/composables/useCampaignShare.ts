@@ -2,6 +2,7 @@ import { computed, toValue, type MaybeRef } from 'vue'
 import { useClipboard } from '@vueuse/core'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
+import { useSocialSharingSettingsStore } from '~/features/settings/admin/stores/socialSharingSettings'
 
 /**
  * Composable for campaign sharing functionality
@@ -15,6 +16,7 @@ export function useCampaignShare(campaignSlug?: MaybeRef<string | null | undefin
     public: { siteUrl }
   } = useRuntimeConfig()
   const charityStore = useCharitySettingsStore()
+  const orgSharing = useSocialSharingSettingsStore()
 
   // Generate campaign URL
   const campaignUrl = computed(() => {
@@ -26,22 +28,26 @@ export function useCampaignShare(campaignSlug?: MaybeRef<string | null | undefin
   // Clipboard functionality
   const { copy, copied } = useClipboard({ source: campaignUrl })
 
-  // Check if non-copyLink platforms are enabled
+  // Check if non-copyLink platforms are enabled (org-level)
   const hasOtherPlatforms = computed(() => {
-    if (!store.socialSharing) return false
     return (
-      store.socialSharing.facebook ||
-      store.socialSharing.twitter ||
-      store.socialSharing.linkedin ||
-      store.socialSharing.whatsapp ||
-      store.socialSharing.email
+      orgSharing.facebook ||
+      orgSharing.twitter ||
+      orgSharing.linkedin ||
+      orgSharing.whatsapp ||
+      orgSharing.email
     )
   })
 
-  // Count enabled platforms
+  // Count enabled platforms (org-level)
   const enabledPlatformsCount = computed(() => {
-    if (!store.socialSharing) return 0
-    return Object.values(store.socialSharing).filter(Boolean).length
+    return [
+      orgSharing.facebook,
+      orgSharing.twitter,
+      orgSharing.linkedin,
+      orgSharing.whatsapp,
+      orgSharing.email
+    ].filter(Boolean).length
   })
 
   return {

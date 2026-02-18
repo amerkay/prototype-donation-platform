@@ -140,10 +140,10 @@ const handleLaunch = () => {
       showRecentDonations: true,
       defaultDonationsView: 'recent',
       numberOfDonationsToShow: 5,
-      goalAmount: goal.value
+      goalAmount: goal.value,
+      enableSocialSharing: true
     },
-    peerToPeer: { enabled: false },
-    socialSharing: { ...props.campaign.socialSharing }
+    peerToPeer: { enabled: false }
   })
 
   createdCampaignId.value = id

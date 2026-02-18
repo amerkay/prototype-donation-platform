@@ -180,19 +180,11 @@ export function useCampaigns() {
         showProgressBar: true,
         showRecentDonations: true,
         defaultDonationsView: 'recent',
-        numberOfDonationsToShow: 5
+        numberOfDonationsToShow: 5,
+        enableSocialSharing: true
       },
       peerToPeer: campaignData.peerToPeer ?? {
         enabled: false
-      },
-      socialSharing: campaignData.socialSharing ?? {
-        enabled: true,
-        facebook: true,
-        twitter: true,
-        linkedin: true,
-        whatsapp: true,
-        email: true,
-        copyLink: true
       },
       fundraisers: [],
       recentDonations: [],

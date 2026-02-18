@@ -3,7 +3,8 @@ import { ref, computed } from 'vue'
 import type {
   FormSettings,
   DonationAmountsSettings,
-  DonationCustomFieldsSettings
+  DonationCustomFieldsSettings,
+  EntryFieldsSettings
 } from '~/features/donation-form/shared/types'
 import type { ImpactCartSettings } from '~/features/donation-form/features/impact-cart/admin/types'
 import type { ProductSelectorSettings } from '~/features/donation-form/features/product-selector/admin/types'
@@ -47,7 +48,11 @@ export const useFormConfigStore = defineStore('formConfig', () => {
   const giftAid = ref<GiftAidSettings | null>(null)
   const tribute = ref<TributeSettings | null>(null)
   const customFields = ref<DonationCustomFieldsSettings | null>(null)
+  const entryFields = ref<EntryFieldsSettings | null>(null)
   const products = ref<Product[]>([])
+
+  // Product quantity limits — stored separately so auto-mapping for impactCart doesn't overwrite them
+  const quantityRemaining = ref<Record<string, number> | undefined>(undefined)
 
   // Getters
   const fullConfig = computed((): FullFormConfig | null => {
@@ -55,18 +60,26 @@ export const useFormConfigStore = defineStore('formConfig', () => {
       return null
     }
 
+    // Merge quantityRemaining back into impactCart.settings for serialization
+    const ic = impactCart.value!
+    const mergedImpactCart: ImpactCartSettings = {
+      ...ic,
+      settings: { ...ic.settings, quantityRemaining: quantityRemaining.value }
+    }
+
     return {
       version: version.value,
       form: form.value,
       donationAmounts: donationAmounts.value,
       features: {
-        impactCart: impactCart.value!,
+        impactCart: mergedImpactCart,
         productSelector: productSelector.value!,
         impactBoost: impactBoost.value!,
         coverCosts: coverCosts.value!,
         giftAid: giftAid.value!,
         tribute: tribute.value!,
-        customFields: customFields.value!
+        customFields: customFields.value!,
+        entryFields: entryFields.value!
       }
     }
   })
@@ -78,12 +91,18 @@ export const useFormConfigStore = defineStore('formConfig', () => {
     form.value = config.form
     donationAmounts.value = config.donationAmounts
     impactCart.value = config.features.impactCart
+    quantityRemaining.value = config.features.impactCart?.settings?.quantityRemaining
     productSelector.value = config.features.productSelector
     impactBoost.value = config.features.impactBoost
     coverCosts.value = config.features.coverCosts
     giftAid.value = config.features.giftAid
     tribute.value = config.features.tribute
     customFields.value = config.features.customFields
+    entryFields.value = config.features.entryFields ?? {
+      enabled: false,
+      mode: 'shared',
+      fields: []
+    }
     products.value = productList
     markClean()
   }
@@ -101,7 +120,9 @@ export const useFormConfigStore = defineStore('formConfig', () => {
     giftAid,
     tribute,
     customFields,
+    entryFields,
     products,
+    quantityRemaining,
     isDirty,
     isSaving,
     // Getters
@@ -129,5 +150,6 @@ export interface FullFormConfig {
     giftAid: GiftAidSettings
     tribute: TributeSettings
     customFields: DonationCustomFieldsSettings
+    entryFields: EntryFieldsSettings
   }
 }

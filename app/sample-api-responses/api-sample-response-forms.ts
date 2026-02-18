@@ -1,7 +1,12 @@
 import type { CampaignForm } from '~/features/campaigns/shared/types'
 import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
 import { formConfig as fullFormConfig } from './api-sample-response-form-config'
-import { products as fullProducts } from './api-sample-response-products'
+import {
+  products as fullProducts,
+  stallBookingProducts,
+  dogShowProducts,
+  classicCarProducts
+} from './api-sample-response-products'
 
 /**
  * Sample forms for campaigns
@@ -74,111 +79,195 @@ const fullFeaturedConfigWildAmer2 = {
   campaignId: 'wild-amer-birthday-2-fundraiser'
 }
 
-// Minimal form configuration (most features disabled)
-const minimalFormConfig = {
-  version: '1.0',
-  campaignId: 'adopt-orangutan',
-  form: {
-    title: 'Quick Donation',
-    subtitle: 'Support orangutan conservation'
+// --- Non-donation form configurations ---
+
+/** Shared disabled features for non-donation forms */
+const disabledDonationFeatures = {
+  impactBoost: {
+    enabled: false,
+    messages: { recurringBoostMessage: '', increaseBoostMessage: '' },
+    upsells: { enableRecurringBoost: false, enableIncreaseBoost: false }
   },
-  donationAmounts: {
-    baseDefaultCurrency: 'GBP',
-    frequencies: {
-      once: {
-        enabled: true,
-        label: 'One-time',
-        presetAmounts: [{ amount: 10 }, { amount: 25 }, { amount: 50 }, { amount: 100 }],
-        customAmount: { min: 5, max: 1000 }
-      },
-      monthly: {
-        enabled: false,
-        label: 'Monthly',
-        presetAmounts: [{ amount: 5 }, { amount: 10 }, { amount: 25 }, { amount: 50 }],
-        customAmount: { min: 3, max: 500 }
-      },
-      yearly: {
-        enabled: false,
-        label: 'Yearly',
-        presetAmounts: [{ amount: 50 }, { amount: 100 }, { amount: 250 }, { amount: 500 }],
-        customAmount: { min: 25, max: 2000 }
-      }
-    }
+  coverCosts: {
+    enabled: false,
+    settings: { heading: '', description: '', defaultPercentage: 0 }
   },
-  features: {
-    impactCart: {
+  giftAid: { enabled: false },
+  tribute: {
+    enabled: false,
+    icons: { gift: '', memorial: '', tribute: '' },
+    types: { none: { label: '' }, giftEnabled: false, memorialEnabled: false },
+    relationships: [],
+    modal: { title: '', subtitle: '' }
+  },
+  customFields: { customFieldsTabs: {} }
+}
+
+/** Minimal donationAmounts for non-donation forms (unused but structurally required) */
+const minimalDonationAmounts = {
+  baseDefaultCurrency: 'GBP',
+  frequencies: {
+    once: {
+      enabled: true,
+      label: 'One-time',
+      presetAmounts: [] as { amount: number }[],
+      customAmount: { min: 0, max: 1000 }
+    },
+    monthly: {
       enabled: false,
-      settings: {
-        initialDisplay: 3
-      }
+      label: 'Monthly',
+      presetAmounts: [] as { amount: number }[],
+      customAmount: { min: 0, max: 500 }
     },
-    productSelector: {
+    yearly: {
       enabled: false,
-      config: {
-        icon: '🦧',
-        entity: { singular: 'Orangutan', plural: 'Orangutans' },
-        action: { verb: 'Adopt', noun: 'adoption' }
-      }
-    },
-    impactBoost: {
-      enabled: false,
-      messages: {
-        recurringBoostMessage: '',
-        increaseBoostMessage: ''
-      },
-      upsells: {
-        enableRecurringBoost: false,
-        enableIncreaseBoost: false
-      }
-    },
-    coverCosts: {
-      enabled: false,
-      settings: {
-        heading: 'Cover processing costs',
-        description: 'Help us cover transaction fees',
-        defaultPercentage: 0
-      }
-    },
-    giftAid: {
-      enabled: true
-    },
-    tribute: {
-      enabled: false,
-      icons: {
-        gift: '🎁',
-        memorial: '🕊️',
-        tribute: '💝'
-      },
-      types: {
-        none: { label: 'No, thank you' },
-        giftEnabled: false,
-        memorialEnabled: false
-      },
-      relationships: [],
-      modal: {
-        title: 'Gift or In Memory',
-        subtitle: ''
-      }
-    },
-    customFields: {
-      customFieldsTabs: {}
+      label: 'Yearly',
+      presetAmounts: [] as { amount: number }[],
+      customAmount: { min: 0, max: 2000 }
     }
   }
 }
 
-// Minimal products list (just one product)
-const minimalProducts = [
-  {
-    id: 'orangutan-basic',
-    name: 'Support an Orangutan',
-    description: 'Your donation helps provide care for rescued orangutans',
-    price: 25,
-    frequency: 'once' as const,
-    image: '🦧',
-    thumbnail: '🦧',
-    icon: '🦧'
+const stallBookingFormConfig = {
+  version: '1.0',
+  campaignId: 'summer-fete-stalls',
+  form: {
+    title: 'Book a Stall',
+    subtitle: 'Reserve your stall for the Summer Fete 2026',
+    formType: 'registration' as const
+  },
+  donationAmounts: minimalDonationAmounts,
+  features: {
+    impactCart: {
+      enabled: true,
+      settings: {
+        initialDisplay: 3,
+        quantityRemaining: {
+          'stall-standard': 94,
+          'stall-large': 4,
+          'stall-corner': 8
+        }
+      }
+    },
+    productSelector: {
+      enabled: true,
+      config: {
+        icon: '🏪',
+        entity: { singular: 'Stall', plural: 'Stalls' },
+        action: { verb: 'Book', noun: 'booking' }
+      }
+    },
+    entryFields: {
+      enabled: true,
+      mode: 'per-item' as const,
+      fields: [
+        {
+          type: 'text' as const,
+          id: 'holder_name',
+          label: 'Stall Holder Name',
+          placeholder: 'Your full name'
+        },
+        {
+          type: 'text' as const,
+          id: 'business_name',
+          label: 'Business / Organisation',
+          optional: true,
+          placeholder: 'Business or org name'
+        },
+        {
+          type: 'textarea' as const,
+          id: 'goods_description',
+          label: 'What Will You Be Selling?',
+          placeholder: 'Brief description of your goods or services'
+        },
+        { type: 'checkbox' as const, id: 'power_required', label: 'Mains power supply needed' }
+      ]
+    },
+    ...disabledDonationFeatures
   }
-]
+}
+
+const dogShowFormConfig = {
+  version: '1.0',
+  campaignId: 'annual-dog-show',
+  form: {
+    title: 'Enter the Dog Show',
+    subtitle: 'Pick your categories — £2.50 per entry',
+    formType: 'registration' as const
+  },
+  donationAmounts: minimalDonationAmounts,
+  features: {
+    impactCart: {
+      enabled: true,
+      settings: {
+        initialDisplay: 6,
+        quantityRemaining: {
+          'dog-best-in-show': 50,
+          'dog-cutest-puppy': 30
+        }
+      }
+    },
+    productSelector: {
+      enabled: true,
+      config: {
+        icon: '🐕',
+        entity: { singular: 'Category', plural: 'Categories' },
+        action: { verb: 'Enter', noun: 'entry' }
+      }
+    },
+    entryFields: {
+      enabled: true,
+      mode: 'shared' as const,
+      fields: [
+        {
+          type: 'text' as const,
+          id: 'dog_name',
+          label: 'Dog Name',
+          placeholder: "Your dog's name"
+        },
+        {
+          type: 'text' as const,
+          id: 'breed',
+          label: 'Breed',
+          placeholder: 'e.g., Labrador, Mixed'
+        },
+        {
+          type: 'text' as const,
+          id: 'handler_name',
+          label: 'Handler Name',
+          placeholder: 'Person showing the dog'
+        }
+      ]
+    },
+    ...disabledDonationFeatures
+  }
+}
+
+const classicCarFormConfig = {
+  version: '1.0',
+  campaignId: 'classic-car-show',
+  form: {
+    title: 'Register Your Classic Car',
+    subtitle: 'Free entry — all classic cars welcome',
+    formType: 'registration' as const
+  },
+  donationAmounts: minimalDonationAmounts,
+  features: {
+    impactCart: { enabled: true, settings: { initialDisplay: 1 } },
+    productSelector: {
+      enabled: true,
+      config: {
+        icon: '🚗',
+        entity: { singular: 'Entry', plural: 'Entries' },
+        action: { verb: 'Register', noun: 'registration' }
+      }
+    },
+    entryFields: { enabled: false, mode: 'shared' as const, fields: [] },
+    ...disabledDonationFeatures
+  }
+}
+
+// --- Campaign form arrays ---
 
 /**
  * Forms for "Adopt an Orangutan" campaign
@@ -193,16 +282,6 @@ export const adoptOrangutanForms: CampaignForm[] = [
     products: fullProducts,
     createdAt: '2024-01-15T10:00:00Z',
     updatedAt: '2024-12-15T14:30:00Z'
-  },
-  {
-    id: 'form-orangutan-simple',
-    campaignId: 'adopt-orangutan',
-    name: 'Simple Quick Donation',
-    isDefault: false,
-    config: minimalFormConfig as unknown as FullFormConfig,
-    products: minimalProducts,
-    createdAt: '2024-02-01T09:00:00Z',
-    updatedAt: '2024-11-20T11:00:00Z'
   }
 ]
 
@@ -303,6 +382,54 @@ export const wildAmer2FundraiserForms: CampaignForm[] = [
 ]
 
 /**
+ * Forms for "Summer Fete Stall Booking" campaign (registration)
+ */
+export const stallBookingForms: CampaignForm[] = [
+  {
+    id: 'form-stall-booking',
+    campaignId: 'summer-fete-stalls',
+    name: 'Stall Booking Form',
+    isDefault: true,
+    config: stallBookingFormConfig as unknown as FullFormConfig,
+    products: stallBookingProducts,
+    createdAt: '2026-01-05T09:00:00Z',
+    updatedAt: '2026-02-01T11:00:00Z'
+  }
+]
+
+/**
+ * Forms for "Annual Dog Show" campaign (registration)
+ */
+export const dogShowForms: CampaignForm[] = [
+  {
+    id: 'form-dog-show',
+    campaignId: 'annual-dog-show',
+    name: 'Dog Show Entry Form',
+    isDefault: true,
+    config: dogShowFormConfig as unknown as FullFormConfig,
+    products: dogShowProducts,
+    createdAt: '2026-01-10T09:00:00Z',
+    updatedAt: '2026-02-05T11:00:00Z'
+  }
+]
+
+/**
+ * Forms for "Classic Car Show" campaign (registration)
+ */
+export const classicCarForms: CampaignForm[] = [
+  {
+    id: 'form-classic-car',
+    campaignId: 'classic-car-show',
+    name: 'Classic Car Registration',
+    isDefault: true,
+    config: classicCarFormConfig as unknown as FullFormConfig,
+    products: classicCarProducts,
+    createdAt: '2026-01-12T09:00:00Z',
+    updatedAt: '2026-02-08T11:00:00Z'
+  }
+]
+
+/**
  * Get all forms for a specific campaign
  */
 export function getFormsByCampaignId(campaignId: string): CampaignForm[] {
@@ -321,6 +448,12 @@ export function getFormsByCampaignId(campaignId: string): CampaignForm[] {
       return wildAmer1FundraiserForms
     case 'wild-amer-birthday-2-fundraiser':
       return wildAmer2FundraiserForms
+    case 'summer-fete-stalls':
+      return stallBookingForms
+    case 'annual-dog-show':
+      return dogShowForms
+    case 'classic-car-show':
+      return classicCarForms
     default:
       return []
   }
@@ -338,6 +471,17 @@ export function getDefaultForm(campaignId: string): CampaignForm | undefined {
  * Get specific form by ID
  */
 export function getFormById(formId: string): CampaignForm | undefined {
-  const allForms = [...adoptOrangutanForms]
+  const allForms = [
+    ...adoptOrangutanForms,
+    ...birthdayP2PForms,
+    ...tributeP2PForms,
+    ...challengeP2PForms,
+    ...weddingP2PForms,
+    ...wildAmer1FundraiserForms,
+    ...wildAmer2FundraiserForms,
+    ...stallBookingForms,
+    ...dogShowForms,
+    ...classicCarForms
+  ]
   return allForms.find((form) => form.id === formId)
 }

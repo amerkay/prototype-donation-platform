@@ -26,6 +26,20 @@ import { buildConditionItemField } from './condition-field-builder'
 import { validateCustomFieldConditions } from './validation-helpers'
 import { extractAvailableFields } from './field-extraction'
 
+/** Static schema or function that resolves schema from live root form values */
+export type ContextSchemaInput =
+  | ContextSchema
+  | ((rootValues: Record<string, unknown>) => ContextSchema)
+
+/** Resolve context schema from static or dynamic input */
+function resolveSchema(
+  input: ContextSchemaInput | undefined,
+  rootValues: Record<string, unknown>
+): ContextSchema | undefined {
+  if (!input) return undefined
+  return typeof input === 'function' ? input(rootValues) : input
+}
+
 /**
  * Create custom fields config form (Composition API)
  * Returns a composable form for editing custom fields in admin
@@ -33,12 +47,12 @@ import { extractAvailableFields } from './field-extraction'
  * Uses field-specific factories and dynamic itemField resolution based on selected type.
  * Each field type's configuration is loaded from its own factory module.
  *
- * @param contextSchema - Optional external context schema for condition builder
+ * @param contextSchema - Optional external context schema for condition builder (static or resolver function)
  * @param resolveExternalFields - Optional function to resolve external fields from root form values
  * @param allowedFieldTypes - Optional array of allowed field types. Defaults to all types.
  */
 export function useCustomFieldsConfigForm(
-  contextSchema?: ContextSchema,
+  contextSchema?: ContextSchemaInput,
   resolveExternalFields?: (rootValues: Record<string, unknown>) => AvailableField[],
   allowedFieldTypes?: CustomFieldType[]
 ): ComposableForm {
@@ -74,9 +88,10 @@ export function useCustomFieldsConfigForm(
     })
 
     const fields = arrayField('fields', {
-      onChange: ({ value, setFieldError, setFieldTouched, path }: OnChangeContext) => {
+      onChange: ({ value, root, setFieldError, setFieldTouched, path }: OnChangeContext) => {
         if (Array.isArray(value) && setFieldError && setFieldTouched && path) {
-          validateCustomFieldConditions(value as Record<string, unknown>[], contextSchema, path, {
+          const resolved = resolveSchema(contextSchema, root)
+          validateCustomFieldConditions(value as Record<string, unknown>[], resolved, path, {
             setFieldError,
             setFieldTouched
           })
@@ -227,7 +242,10 @@ export function useCustomFieldsConfigForm(
                     addButtonText: 'Add Condition',
                     rules: z.array(z.any()).min(1, 'At least one condition is required'),
                     // Use extracted condition field builder
-                    itemField: buildConditionItemField(precedingFields, contextSchema)
+                    itemField: buildConditionItemField(
+                      precedingFields,
+                      resolveSchema(contextSchema, context.root || {})
+                    )
                   })
                 }
               })

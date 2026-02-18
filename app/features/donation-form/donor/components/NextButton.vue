@@ -74,7 +74,7 @@ const handleClick = () => {
 </script>
 
 <template>
-  <div ref="containerRef" class="relative">
+  <div ref="containerRef" data-preview-nav class="relative">
     <!-- Spacer to prevent layout shift when button becomes fixed -->
     <div v-if="shouldFloat" class="h-18" />
 

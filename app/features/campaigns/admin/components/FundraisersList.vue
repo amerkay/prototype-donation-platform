@@ -323,7 +323,7 @@ const sendInvites = async () => {
     <BaseDialogOrDrawer
       v-model:open="showInviteSheet"
       description="Send invitations to join your campaign as fundraisers"
-      max-width="sm:max-w-lg"
+      size="md"
     >
       <template #header>Invite Fundraisers</template>
 

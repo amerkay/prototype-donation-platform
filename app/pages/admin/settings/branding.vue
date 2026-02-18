@@ -69,7 +69,7 @@ definePageMeta({ layout: 'admin' })
     <BaseDialogOrDrawer
       :open="showPreviewDialog"
       description="See how your branding appears across the platform."
-      max-width="sm:max-w-lg"
+      size="md"
       @update:open="showPreviewDialog = $event"
     >
       <template #header>Branding Preview</template>

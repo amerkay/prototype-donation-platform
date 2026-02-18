@@ -26,3 +26,4 @@ coverage/
 data/mailpit*
 
 .netlify/
+report/

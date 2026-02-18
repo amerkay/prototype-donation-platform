@@ -1,12 +1,26 @@
 import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
-import { Zap, Heart, TrendingUp, ShoppingCart, Sparkles, Crown } from 'lucide-vue-next'
+import type { FormType } from '~/features/donation-form/shared/types'
+import {
+  Zap,
+  Heart,
+  TrendingUp,
+  ShoppingCart,
+  Sparkles,
+  Crown,
+  ClipboardList,
+  Store,
+  PawPrint
+} from 'lucide-vue-next'
 import { createBasicTemplate } from './basic'
 import { createBasicWithImpactTemplate } from './basic-with-impact'
 import { createUpsellsTemplate } from './upsells'
 import { createMultipleProductsTemplate } from './multiple-products'
 import { createRecurringAdoptionsTemplate } from './recurring-adoptions'
 import { createFullExperienceTemplate } from './full-experience'
+import { createRegistrationTemplate } from './registration'
+import { createStallBookingTemplate } from './stall-booking'
+import { createDogShowEntriesTemplate } from './dog-show-entries'
 
 /**
  * Template metadata for display in selection dialog
@@ -18,6 +32,8 @@ export interface TemplateMetadata {
   icon: typeof Zap
   category: 'simple' | 'enhanced' | 'advanced'
   requiresProducts?: boolean
+  /** Form type this template creates. Defaults to 'donation' when undefined */
+  formType?: FormType
 }
 
 /**
@@ -104,6 +120,39 @@ export const TEMPLATE_REGISTRY: DonationFormTemplate[] = [
       category: 'advanced'
     },
     factory: createFullExperienceTemplate
+  },
+  {
+    metadata: {
+      id: 'registration',
+      name: 'Registration',
+      description: 'Per-item entry fields for event registrations',
+      icon: ClipboardList,
+      category: 'simple',
+      formType: 'registration'
+    },
+    factory: createRegistrationTemplate
+  },
+  {
+    metadata: {
+      id: 'stall-booking',
+      name: 'Stall Booking',
+      description: 'Per-item entry fields for market or fete stall bookings',
+      icon: Store,
+      category: 'simple',
+      formType: 'registration'
+    },
+    factory: createStallBookingTemplate
+  },
+  {
+    metadata: {
+      id: 'dog-show-entries',
+      name: 'Dog Show Entries',
+      description: 'Shared entry fields for one dog entering multiple categories',
+      icon: PawPrint,
+      category: 'simple',
+      formType: 'registration'
+    },
+    factory: createDogShowEntriesTemplate
   }
 ]
 

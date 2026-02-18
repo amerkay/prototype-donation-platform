@@ -16,7 +16,7 @@ const toasterTheme = computed(() => (colorMode.value === 'dark' ? 'dark' : 'ligh
       position="bottom-right"
       close-button
       close-button-position="top-right"
-      :duration="7000"
+      :duration="5000"
       :theme="toasterTheme"
     />
   </div>

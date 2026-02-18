@@ -4,8 +4,10 @@ import {
   toggleField,
   fieldGroup,
   emojiField,
-  textField
+  textField,
+  componentField
 } from '~/features/_library/form-builder/api'
+import FormProductList from '~/features/donation-form/admin/components/FormProductList.vue'
 
 /**
  * Create product selector config section definition
@@ -22,16 +24,12 @@ export const useProductSelectorConfigSection = defineForm('productSelector', (_c
     showSeparatorAfter: true
   })
 
-  const productList = fieldGroup('productList', {
+  const productList = componentField('productList', {
     label: 'Products Available',
+    description: 'Products shown in the product selector.',
+    component: FormProductList,
     visibleWhen: ({ values }) => values.enabled === true,
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    badgeLabel: 'On my TODO list',
-    badgeVariant: 'secondary',
-    disabled: true,
-    showSeparatorAfter: true,
-    fields: {}
+    showSeparatorAfter: true
   })
 
   const icon = emojiField('icon', {

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
+import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
 
 describe('useFormsStore', () => {
   beforeEach(() => {
@@ -22,8 +23,11 @@ describe('useFormsStore', () => {
     const store = useFormsStore()
     const campaignId = 'adopt-orangutan'
 
-    // Get initial forms
+    // Ensure at least 2 forms exist
     const forms = store.getForms(campaignId)
+    if (forms.length < 2) {
+      store.addForm(campaignId, 'form-test-second', 'Second Test Form', {} as FullFormConfig, [])
+    }
     expect(forms.length).toBeGreaterThanOrEqual(2)
 
     const firstFormId = forms[0]!.id

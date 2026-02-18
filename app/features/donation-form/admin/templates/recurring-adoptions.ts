@@ -122,7 +122,8 @@ export function createRecurringAdoptionsTemplate(
         },
         customFields: {
           customFieldsTabs: {}
-        }
+        },
+        entryFields: { enabled: false, mode: 'shared' as const, fields: [] }
       }
     },
     products: [

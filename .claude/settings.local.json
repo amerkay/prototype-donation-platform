@@ -27,7 +27,8 @@
       "Bash(xargs:*)",
       "WebFetch(domain:docs.stripe.com)",
       "WebFetch(domain:developer.paypal.com)",
-      "WebFetch(domain:nuxtemail.com)"
+      "WebFetch(domain:nuxtemail.com)",
+      "Bash(echo:*)"
     ]
   },
   "prefersReducedMotion": false

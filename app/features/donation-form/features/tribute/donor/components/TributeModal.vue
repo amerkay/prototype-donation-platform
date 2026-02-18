@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
+import { useInjectedBrandingStyle } from '~/features/settings/admin/composables/useBrandingCssVars'
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
 import { createTributeFormSection } from '~/features/donation-form/features/tribute/donor/forms/tribute-form'
@@ -12,6 +13,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const brandingStyle = useInjectedBrandingStyle()
 
 const emit = defineEmits<{
   save: [tributeData: TributeData | undefined]
@@ -62,6 +64,7 @@ defineExpose({
   <BaseDialogOrDrawer
     v-model:open="isOpen"
     :dismissible="true"
+    :content-style="brandingStyle"
     :description="
       config.modal?.subtitle ?? 'Make this donation in honor or memory of someone special'
     "

@@ -12,7 +12,7 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { ExternalLink } from 'lucide-vue-next'
+import { ExternalLink, Pencil } from 'lucide-vue-next'
 import { LEAVE_GUARD_KEY, type LeaveGuard } from '~/features/_admin/composables/useAdminEdit'
 
 interface Props {
@@ -30,11 +30,13 @@ interface Props {
   editableLastItem?: boolean
   /** Maximum length for editable last item */
   maxLength?: number
+  /** Toggle preview editable mode (v-model:editable) */
+  editable?: boolean
 }
 
 interface Emits {
   (e: 'preview' | 'confirmDiscard'): void
-  (e: 'update:showDiscardDialog', value: boolean): void
+  (e: 'update:showDiscardDialog' | 'update:editable', value: boolean): void
   (e: 'update:lastItemLabel', value: string): void
 }
 
@@ -43,7 +45,8 @@ withDefaults(defineProps<Props>(), {
   showPreview: true,
   previewLabel: 'Preview',
   showDiscardDialog: false,
-  editableLastItem: false
+  editableLastItem: false,
+  editable: undefined
 })
 
 const emit = defineEmits<Emits>()
@@ -86,6 +89,16 @@ const leaveGuard = inject<LeaveGuard | null>(LEAVE_GUARD_KEY, null)
               <slot name="preview-label">Preview</slot>
             </p>
             <div class="flex items-center gap-2">
+              <Button
+                v-if="editable !== undefined"
+                variant="ghost"
+                size="sm"
+                :class="editable && 'bg-accent'"
+                @click="emit('update:editable', !editable)"
+              >
+                <Pencil class="w-4 h-4" />
+                <span v-if="editable">Editing</span>
+              </Button>
               <slot name="preview-actions" />
               <Button v-if="showPreview" variant="outline" size="sm" @click="emit('preview')">
                 <ExternalLink class="w-4 h-4 mr-2" />

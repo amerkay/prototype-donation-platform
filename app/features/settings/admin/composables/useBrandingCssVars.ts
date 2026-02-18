@@ -1,7 +1,24 @@
-import type { CSSProperties } from 'vue'
+import type { CSSProperties, InjectionKey, ComputedRef } from 'vue'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
 import { getBunnyFontUrl } from '~/features/settings/admin/utils/fonts'
 import { contrastForeground } from '~/features/settings/admin/utils/color-contrast'
+
+/**
+ * Injection key for branding style. Components that call `useBrandingCssVars()`
+ * and `provide(BRANDING_STYLE_KEY, brandingStyle)` make branding available to
+ * all descendants — including teleported dialogs/drawers (Vue preserves the
+ * logical component tree across Teleport).
+ */
+export const BRANDING_STYLE_KEY: InjectionKey<ComputedRef<CSSProperties>> = Symbol('branding-style')
+
+/**
+ * Inject branding style from a parent provider. Returns the computed style
+ * or undefined if no provider exists (e.g. admin pages without branding).
+ * Use in teleported components (BaseDialogOrDrawer, Dialog) to inherit branding.
+ */
+export function useInjectedBrandingStyle() {
+  return inject(BRANDING_STYLE_KEY, undefined)
+}
 
 /**
  * Returns a computed `CSSProperties` object that overrides `--primary`,
@@ -9,6 +26,8 @@ import { contrastForeground } from '~/features/settings/admin/utils/color-contra
  * hex values. Also loads the selected Bunny Font via `useHead()`.
  *
  * Bind on any container to scope branding to that subtree.
+ * Call `provide(BRANDING_STYLE_KEY, brandingStyle)` in donor-facing components
+ * so their teleported modals inherit branding via `useInjectedBrandingStyle()`.
  */
 export function useBrandingCssVars() {
   const store = useBrandingSettingsStore()
@@ -24,21 +43,8 @@ export function useBrandingCssVars() {
     } as CSSProperties
   })
 
-  // Inject branding CSS vars on teleported portals (direct children of <body>
-  // outside #__nuxt) so DialogPortal modals inherit branding without affecting admin UI
+  // Load font stylesheet
   useHead({
-    style: [
-      {
-        key: 'branding-portals',
-        innerHTML: computed(() => {
-          const vars = Object.entries(brandingStyle.value)
-            .filter(([key]) => key.startsWith('--'))
-            .map(([key, val]) => `${key}:${val}`)
-            .join(';')
-          return `body > :not(#__nuxt):not(script):not(link):not(style) { ${vars} }`
-        })
-      }
-    ],
     link: [
       {
         rel: 'stylesheet',

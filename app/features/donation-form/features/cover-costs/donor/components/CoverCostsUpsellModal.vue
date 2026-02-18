@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
+import { useInjectedBrandingStyle } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -28,6 +29,7 @@ interface OperationalCost {
 
 defineProps<Props>()
 const emit = defineEmits<Emits>()
+const brandingStyle = useInjectedBrandingStyle()
 
 const operationalCosts: OperationalCost[] = [
   {
@@ -93,7 +95,11 @@ const handleClose = () => {
 </script>
 
 <template>
-  <BaseDialogOrDrawer :open="open" @update:open="emit('update:open', $event)">
+  <BaseDialogOrDrawer
+    :open="open"
+    :content-style="brandingStyle"
+    @update:open="emit('update:open', $event)"
+  >
     <template #header>Help Us Keep More for the Orangutans</template>
 
     <template #content>

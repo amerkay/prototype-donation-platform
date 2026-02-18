@@ -115,7 +115,8 @@ export function createBasicTemplate(
         },
         customFields: {
           customFieldsTabs: {}
-        }
+        },
+        entryFields: { enabled: false, mode: 'shared' as const, fields: [] }
       }
     },
     products: []

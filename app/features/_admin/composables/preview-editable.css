@@ -1,0 +1,22 @@
+.editable [data-field] {
+  cursor: pointer;
+}
+
+.editable [data-field] * {
+  pointer-events: none;
+}
+
+.editable [data-field] [data-field],
+.editable [data-field] [data-preview-nav],
+.editable [data-field] [data-preview-nav] * {
+  pointer-events: auto;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}

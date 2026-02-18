@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Package } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import TributeLine from '~/features/donation-form/features/tribute/donor/components/TributeLine.vue'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
 import type { CartItem } from '~/features/donation-form/features/impact-cart/donor/types'
+import type { CustomFieldDefinition } from '~/features/_library/custom-fields/types'
 
 interface Props {
   item: CartItem | Product
@@ -15,6 +15,8 @@ interface Props {
   isPulsing?: boolean
   price?: number
   tributeConfig: TributeSettings
+  entryFieldDefinitions?: CustomFieldDefinition[]
+  editable?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -38,13 +40,34 @@ const displayQuantity = computed(() => {
 
 const isOneTime = computed(() => props.item.frequency === 'once')
 
+const hasEntryData = computed(() => {
+  const item = props.item as CartItem
+  return item.entryData && Object.keys(item.entryData).length > 0
+})
+
 const hasEditOption = computed(() => {
-  return !!(props.item.minPrice || props.item.default || isOneTime.value)
+  if (props.editable === false) return false
+  return !!(props.item.minPrice || props.item.default || isOneTime.value || hasEntryData.value)
 })
 
 const hasTribute = computed(() => {
   const item = props.item as CartItem
   return item.tribute && item.tribute.type !== 'none'
+})
+
+/** Summarize entry data as "Label: value" pairs, using form-level field definitions for labels */
+const entryDataSummary = computed(() => {
+  const item = props.item as CartItem
+  if (!item.entryData || !props.entryFieldDefinitions?.length) return ''
+  const pairs: string[] = []
+  for (const field of props.entryFieldDefinitions) {
+    const value = item.entryData[field.id]
+    if (value === undefined || value === null || value === '') continue
+    const display = Array.isArray(value) ? value.join(', ') : String(value)
+    pairs.push(`${field.label}: ${display}`)
+  }
+  const summary = pairs.join(' | ')
+  return summary.length > 80 ? `${summary.slice(0, 77)}...` : summary
 })
 </script>
 
@@ -64,12 +87,6 @@ const hasTribute = computed(() => {
         :alt="item.name"
         class="w-8 h-8 rounded-md object-cover shrink-0"
       />
-      <div
-        v-else
-        class="w-8 h-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground shrink-0"
-      >
-        <Package class="size-4" />
-      </div>
       <div class="flex-1 min-w-0">
         <p class="font-medium text-sm truncate">{{ item.name }}</p>
         <div class="flex items-center gap-2">
@@ -97,6 +114,10 @@ const hasTribute = computed(() => {
           :tribute="(item as CartItem).tribute!"
           :config="tributeConfig"
         />
+
+        <p v-if="entryDataSummary" class="mt-1 text-xs text-muted-foreground truncate">
+          {{ entryDataSummary }}
+        </p>
       </div>
       <Button variant="ghost" size="sm" @click.stop="emit('remove')"> ✕ </Button>
     </div>

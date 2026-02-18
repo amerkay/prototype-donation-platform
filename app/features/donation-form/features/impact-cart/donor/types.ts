@@ -11,4 +11,6 @@ export interface CartItem extends Product {
   addedAt: number
   quantity?: number
   tribute?: TributeData
+  /** Custom field values collected via form-level entry fields */
+  entryData?: Record<string, unknown>
 }

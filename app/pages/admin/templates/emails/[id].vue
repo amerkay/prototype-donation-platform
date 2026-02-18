@@ -34,6 +34,7 @@ watch(
   }
 )
 
+const editableMode = ref(true)
 const originalData = computed(() => template.value)
 const formConfigRef = ref()
 
@@ -64,6 +65,7 @@ function handleNameUpdate(newName: string) {
 <template>
   <div v-if="template">
     <AdminEditLayout
+      v-model:editable="editableMode"
       :breadcrumbs="breadcrumbs"
       :is-dirty="store.isDirty"
       :show-discard-dialog="showDiscardDialog"
@@ -87,7 +89,7 @@ function handleNameUpdate(newName: string) {
       <template #preview-label>Email Preview</template>
 
       <template #preview>
-        <EmailPreview />
+        <EmailPreview :editable="editableMode" />
       </template>
     </AdminEditLayout>
   </div>

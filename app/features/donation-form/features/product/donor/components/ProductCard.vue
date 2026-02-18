@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Package } from 'lucide-vue-next'
+import { computed } from 'vue'
+import { cn } from '@/lib/utils'
 import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 
@@ -9,12 +10,15 @@ interface Props {
   baseCurrency?: string
   icon?: string
   active?: boolean
+  remaining?: number
+  disabled?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   baseCurrency: 'GBP',
   icon: 'lucide:plus',
-  active: false
+  active: false,
+  disabled: false
 })
 
 const emit = defineEmits<{
@@ -22,13 +26,24 @@ const emit = defineEmits<{
 }>()
 
 const { getCurrencySymbol } = useCurrency(() => props.baseCurrency)
+
+const isSoldOut = computed(() => props.remaining === 0)
 </script>
 
 <template>
   <button
     type="button"
     class="w-full rounded-lg border p-3 transition-all text-left"
-    :class="active ? 'bg-primary/10 border-primary hover:bg-primary/15' : 'bg-card hover:shadow-sm'"
+    :class="
+      cn(
+        disabled || isSoldOut
+          ? 'opacity-50 cursor-not-allowed bg-muted'
+          : active
+            ? 'bg-primary/10 border-primary hover:bg-primary/15'
+            : 'bg-card hover:shadow-sm'
+      )
+    "
+    :disabled="disabled || isSoldOut"
     @click="emit('click')"
   >
     <div class="flex items-center gap-2 sm:gap-3">
@@ -38,24 +53,28 @@ const { getCurrencySymbol } = useCurrency(() => props.baseCurrency)
         :alt="product.name"
         class="w-10 h-10 rounded-md object-cover shrink-0"
       />
-      <div
-        v-else
-        class="w-10 h-10 rounded-md bg-muted flex items-center justify-center text-muted-foreground shrink-0"
-      >
-        <Package class="size-5" />
-      </div>
       <div class="flex-1 min-w-0">
         <h3 class="font-semibold text-sm leading-tight truncate">{{ product.name }}</h3>
         <p class="text-xs text-muted-foreground line-clamp-2">{{ product.description }}</p>
-        <p class="text-xs font-semibold text-foreground mt-0.5">
-          <span v-if="product.frequency === 'once'">
-            {{ getCurrencySymbol(currency) }}{{ product.price }} one-time
+        <div class="flex items-center gap-2 mt-0.5">
+          <p class="text-xs font-semibold text-foreground">
+            <span v-if="product.frequency === 'once'">
+              {{ getCurrencySymbol(currency) }}{{ product.price }} one-time
+            </span>
+            <span v-else-if="product.frequency === 'monthly'"> Monthly </span>
+            <span v-else-if="product.frequency === 'yearly'"> Yearly </span>
+          </p>
+          <span v-if="isSoldOut" class="text-xs font-medium text-destructive"> Sold out </span>
+          <span
+            v-else-if="remaining !== undefined"
+            class="text-xs font-medium text-muted-foreground"
+          >
+            {{ remaining }} remaining
           </span>
-          <span v-else-if="product.frequency === 'monthly'"> Monthly </span>
-          <span v-else-if="product.frequency === 'yearly'"> Yearly </span>
-        </p>
+        </div>
       </div>
       <div
+        v-if="!isSoldOut"
         class="shrink-0 flex items-center justify-center w-8 h-8 rounded-md bg-primary text-primary-foreground"
       >
         <Icon :name="icon" class="size-4" />

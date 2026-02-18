@@ -54,12 +54,14 @@ export function usePreviewEditable(containerRef: { value: Element | null }, enab
 
   function onClick(e: Event) {
     if (!enabled.value) return
-    const mouseEvent = e as MouseEvent
-    const el = findFieldElement(mouseEvent.target)
-    if (el?.dataset.field) {
-      mouseEvent.preventDefault()
-      navigateToField(el.dataset.field)
-    }
+    const target = e.target as HTMLElement
+    if (target.closest('[data-preview-nav]')) return
+    e.stopPropagation()
+    e.preventDefault()
+    // Navigate to specific field under cursor, or current hovered field (e.g. edit button click)
+    const el = findFieldElement(e.target)
+    const field = el?.dataset.field ?? hoveredField.value
+    if (field) navigateToField(field)
   }
 
   function navigateToField(field?: string) {
@@ -99,7 +101,7 @@ export function usePreviewEditable(containerRef: { value: Element | null }, enab
     if (!el) return
     el.addEventListener('mouseover', onMouseOver)
     el.addEventListener('mouseout', onMouseOut)
-    el.addEventListener('click', onClick)
+    el.addEventListener('click', onClick, true)
   })
 
   onUnmounted(() => {
@@ -107,7 +109,7 @@ export function usePreviewEditable(containerRef: { value: Element | null }, enab
     if (!el) return
     el.removeEventListener('mouseover', onMouseOver)
     el.removeEventListener('mouseout', onMouseOut)
-    el.removeEventListener('click', onClick)
+    el.removeEventListener('click', onClick, true)
   })
 
   return { hoveredField, editButtonStyle, hoverOutlineStyle, navigateToField }

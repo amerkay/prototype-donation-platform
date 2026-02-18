@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import type { Campaign } from '~/features/campaigns/shared/types'
+import type { SocialSharingSettings } from '~/features/settings/admin/stores/socialSharingSettings'
+import {
+  useBrandingCssVars,
+  BRANDING_STYLE_KEY
+} from '~/features/settings/admin/composables/useBrandingCssVars'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
+import { useSocialSharingSettingsStore } from '~/features/settings/admin/stores/socialSharingSettings'
 import { useCampaignShare } from '~/features/campaigns/shared/composables/useCampaignShare'
 import ShareDialog from './ShareDialog.vue'
 import DonateDialog from './DonateDialog.vue'
@@ -17,8 +23,26 @@ const props = defineProps<{
   campaign: Campaign
 }>()
 
+// Provide branding to teleported modals (ShareDialog, DonateDialog)
+const { brandingStyle } = useBrandingCssVars()
+provide(BRANDING_STYLE_KEY, brandingStyle)
+
 const charityStore = useCharitySettingsStore()
+const orgSharing = useSocialSharingSettingsStore()
 const { campaignUrl } = useCampaignShare(computed(() => props.campaign.id))
+
+// Effective sharing: campaign must enable sharing, then org-level controls which platforms
+const effectiveSharing = computed<(SocialSharingSettings & { copyLink: boolean }) | null>(() => {
+  if (!props.campaign.crowdfunding?.enableSocialSharing) return null
+  return {
+    facebook: orgSharing.facebook,
+    twitter: orgSharing.twitter,
+    linkedin: orgSharing.linkedin,
+    whatsapp: orgSharing.whatsapp,
+    email: orgSharing.email,
+    copyLink: true
+  }
+})
 
 // Dialog states
 const showShareDialog = ref(false)
@@ -52,12 +76,11 @@ const handleSocialShare = (platform: string) => {
   }
 }
 
-// Check if any social sharing is enabled
+// Check if any social sharing is enabled (respects both org + campaign settings)
 const hasSocialSharing = computed(() => {
-  if (!props.campaign.socialSharing) return false
-  if (props.campaign.socialSharing.enabled === false) return false
-  const { enabled, ...platforms } = props.campaign.socialSharing
-  return Object.values(platforms).some((platformEnabled) => platformEnabled)
+  const s = effectiveSharing.value
+  if (!s) return false
+  return s.facebook || s.twitter || s.linkedin || s.whatsapp || s.email || s.copyLink
 })
 </script>
 
@@ -67,7 +90,10 @@ const hasSocialSharing = computed(() => {
       <!-- Hero Section: Cover Photo + Campaign Info -->
       <div class="@3xl:flex @3xl:mb-8">
         <!-- Cover Photo - reaches top and left edges on desktop -->
-        <div class="relative aspect-video @3xl:aspect-auto @3xl:w-3/5 bg-muted overflow-hidden">
+        <div
+          data-field="crowdfunding.coverPhoto"
+          class="relative aspect-video @3xl:aspect-auto @3xl:w-3/5 bg-muted overflow-hidden"
+        >
           <img
             v-if="campaign.crowdfunding.coverPhoto"
             :src="campaign.crowdfunding.coverPhoto"
@@ -86,10 +112,13 @@ const hasSocialSharing = computed(() => {
         <div
           class="p-4 space-y-3 @3xl:w-2/5 @3xl:p-8 @3xl:pl-12 @3xl:flex @3xl:flex-col @3xl:justify-center @3xl:space-y-4"
         >
-          <h2 class="text-xl @3xl:text-2xl font-bold leading-tight">
+          <h2 data-field="crowdfunding.title" class="text-xl @3xl:text-2xl font-bold leading-tight">
             {{ campaign.crowdfunding.title }}
           </h2>
-          <p class="text-sm @3xl:text-base text-muted-foreground leading-relaxed">
+          <p
+            data-field="crowdfunding.shortDescription"
+            class="text-sm @3xl:text-base text-muted-foreground leading-relaxed"
+          >
             {{ campaign.crowdfunding.shortDescription }}
           </p>
           <CampaignProgress
@@ -98,6 +127,7 @@ const hasSocialSharing = computed(() => {
               campaign.crowdfunding.goalAmount &&
               campaign.stats
             "
+            data-field="crowdfunding.goalAmount"
             :stats="campaign.stats"
             :goal-amount="campaign.crowdfunding.goalAmount"
             :end-date="campaign.crowdfunding.endDate"
@@ -119,7 +149,7 @@ const hasSocialSharing = computed(() => {
           <!-- Left Column: Story, Charity, Social -->
           <div class="flex-1 space-y-4">
             <!-- Story Section -->
-            <div class="space-y-3">
+            <div data-field="crowdfunding.story" class="space-y-3">
               <h3 class="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
                 Our Story
               </h3>
@@ -144,6 +174,7 @@ const hasSocialSharing = computed(() => {
             <!-- Recent Donations (Mobile/Tablet only - moves to right column on desktop) -->
             <DonationsList
               v-if="campaign.crowdfunding.showRecentDonations"
+              data-field="crowdfunding.showRecentDonations"
               class="@3xl:hidden"
               :donations="displayedDonations"
               :total-count="campaign.stats?.totalDonations || 0"
@@ -153,7 +184,7 @@ const hasSocialSharing = computed(() => {
             <Separator class="@3xl:hidden" />
 
             <!-- About the Charity -->
-            <Card class="gap-2">
+            <Card data-field="crowdfunding.charityNotice" class="gap-2">
               <CardHeader class="pb-0 px-5">
                 <h3 class="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
                   About the Charity
@@ -185,8 +216,12 @@ const hasSocialSharing = computed(() => {
               </CardContent>
             </Card>
 
-            <!-- Social Sharing (respects campaign.socialSharing settings) -->
-            <div v-if="hasSocialSharing" class="space-y-3 pb-20 @3xl:pb-0">
+            <!-- Social Sharing (respects campaign + org-level settings) -->
+            <div
+              v-if="hasSocialSharing"
+              class="space-y-3 pb-4 @3xl:pb-0"
+              data-field="crowdfunding.enableSocialSharing"
+            >
               <h3
                 class="font-semibold text-sm uppercase tracking-wide text-muted-foreground text-center"
               >
@@ -194,7 +229,7 @@ const hasSocialSharing = computed(() => {
               </h3>
               <div class="flex justify-center gap-2 flex-wrap">
                 <SocialShareButtons
-                  :settings="campaign.socialSharing"
+                  :settings="effectiveSharing"
                   :campaign-url="campaignUrl"
                   :campaign-title="campaign.crowdfunding?.title || campaign.name"
                   :short-description="campaign.crowdfunding?.shortDescription"
@@ -212,6 +247,7 @@ const hasSocialSharing = computed(() => {
           >
             <div class="sticky top-6">
               <DonationsList
+                data-field="crowdfunding.showRecentDonations"
                 :donations="displayedDonations"
                 :total-count="campaign.stats?.totalDonations || 0"
                 :default-view="campaign.crowdfunding.defaultDonationsView"

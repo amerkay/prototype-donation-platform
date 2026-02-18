@@ -3,7 +3,8 @@ export const formConfig = {
   campaignId: 'adopt-orangutan',
   form: {
     title: 'Make a Donation',
-    subtitle: 'Choose your donation amount'
+    subtitle: 'Choose your donation amount',
+    formType: 'donation' as const
   },
   donationAmounts: {
     baseDefaultCurrency: 'GBP',
@@ -135,6 +136,7 @@ export const formConfig = {
         subtitle: 'Make this donation in honor or memory of someone special'
       }
     },
+    entryFields: { enabled: false, mode: 'shared' as const, fields: [] },
     customFields: {
       customFieldsTabs: {
         //   step2: {

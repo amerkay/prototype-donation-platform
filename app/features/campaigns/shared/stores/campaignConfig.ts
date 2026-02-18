@@ -7,7 +7,6 @@ import type {
   CampaignStats,
   CrowdfundingSettings,
   PeerToPeerSettings,
-  SocialSharingSettings,
   CampaignDonation,
   CampaignFundraiser,
   CampaignStatus
@@ -47,7 +46,6 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
   const stats = ref<CampaignStats | null>(null)
   const crowdfunding = ref<CrowdfundingSettings | null>(null)
   const peerToPeer = ref<PeerToPeerSettings | null>(null)
-  const socialSharing = ref<SocialSharingSettings | null>(null)
   const fundraisers = ref<CampaignFundraiser[]>([])
   const recentDonations = ref<CampaignDonation[]>([])
   const createdAt = ref('')
@@ -92,13 +90,7 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
   })
 
   const fullCampaign = computed((): Campaign | null => {
-    if (
-      !id.value ||
-      !stats.value ||
-      !crowdfunding.value ||
-      !peerToPeer.value ||
-      !socialSharing.value
-    ) {
+    if (!id.value || !stats.value || !crowdfunding.value || !peerToPeer.value) {
       return null
     }
 
@@ -114,7 +106,6 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
       stats: stats.value,
       crowdfunding: crowdfunding.value,
       peerToPeer: peerToPeer.value,
-      socialSharing: socialSharing.value,
       fundraisers: fundraisers.value,
       recentDonations: recentDonations.value,
       forms: []
@@ -132,7 +123,6 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     stats.value = { ...campaign.stats }
     crowdfunding.value = { ...campaign.crowdfunding }
     peerToPeer.value = { ...campaign.peerToPeer }
-    socialSharing.value = { ...campaign.socialSharing }
     fundraisers.value = [...campaign.fundraisers]
     recentDonations.value = [...campaign.recentDonations]
     createdAt.value = campaign.createdAt
@@ -151,7 +141,6 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     stats.value = null
     crowdfunding.value = null
     peerToPeer.value = null
-    socialSharing.value = null
     fundraisers.value = []
     recentDonations.value = []
     createdAt.value = ''
@@ -184,7 +173,6 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     stats,
     crowdfunding,
     peerToPeer,
-    socialSharing,
     fundraisers,
     recentDonations,
     createdAt,

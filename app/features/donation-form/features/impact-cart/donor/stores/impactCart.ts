@@ -86,9 +86,17 @@ export const useImpactCartStore = defineStore(
       price: number,
       frequency: Frequency = 'multiple',
       quantity?: number,
-      tribute?: TributeData
+      tribute?: TributeData,
+      entryData?: Record<string, unknown>
     ) {
-      const cartItem: CartItem = { ...product, price, addedAt: Date.now(), quantity, tribute }
+      const cartItem: CartItem = {
+        ...product,
+        price,
+        addedAt: Date.now(),
+        quantity,
+        tribute,
+        entryData
+      }
       getCart(frequency).value.push(cartItem)
       return cartItem
     }
@@ -134,6 +142,15 @@ export const useImpactCartStore = defineStore(
       frequency: Frequency = 'multiple'
     ) {
       updateCartItem(frequency, itemId, addedAt, 'tribute', tribute)
+    }
+
+    function updateCartItemEntryData(
+      itemId: string,
+      addedAt: number,
+      entryData: Record<string, unknown>,
+      frequency: Frequency = 'multiple'
+    ) {
+      updateCartItem(frequency, itemId, addedAt, 'entryData', entryData)
     }
 
     function clearCart(frequency?: Frequency) {
@@ -225,9 +242,11 @@ export const useImpactCartStore = defineStore(
       updateCartItemPrice,
       updateCartItemQuantity,
       updateCartItemTribute,
+      updateCartItemEntryData,
       clearCart,
       clearRecurringItems,
       canAddRecurringFrequency,
+      findItem,
       restoreState,
       reset,
       $persist,

@@ -1,8 +1,14 @@
 import * as z from 'zod'
-import { defineForm, textField, fieldGroup, alertField } from '~/features/_library/form-builder/api'
+import {
+  defineForm,
+  textField,
+  selectField,
+  fieldGroup,
+  alertField
+} from '~/features/_library/form-builder/api'
 
 /**
- * Basic donation form settings (title, subtitle, branding info)
+ * Basic donation form settings (title, subtitle, form type, branding info)
  */
 export const useDonationFormBasicForm = defineForm('formBasic', () => {
   const formTitle = textField('title', {
@@ -17,9 +23,20 @@ export const useDonationFormBasicForm = defineForm('formBasic', () => {
     optional: true
   })
 
+  const formType = selectField('formType', {
+    label: 'Form Type',
+    description:
+      'Non-donation types hide donation-specific features (Gift Aid, Cover Costs, Tribute, Impact Boost, Donation Amounts).',
+    defaultValue: 'donation',
+    options: [
+      { value: 'donation', label: 'Donation' },
+      { value: 'registration', label: 'Registration' }
+    ]
+  })
+
   const form = fieldGroup('form', {
     showSeparatorAfter: true,
-    fields: { title: formTitle, subtitle: formSubtitle }
+    fields: { title: formTitle, subtitle: formSubtitle, formType }
   })
 
   const brandingNotice = alertField('branding', {

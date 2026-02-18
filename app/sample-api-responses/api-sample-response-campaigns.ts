@@ -6,7 +6,10 @@ import {
   challengeP2PForms,
   weddingP2PForms,
   wildAmer1FundraiserForms,
-  wildAmer2FundraiserForms
+  wildAmer2FundraiserForms,
+  stallBookingForms,
+  dogShowForms,
+  classicCarForms
 } from './api-sample-response-forms'
 import { getRecentDonations, computeCampaignStats } from './api-sample-response-transactions'
 import { getCampaignFundraisers } from './api-sample-response-fundraisers'
@@ -38,19 +41,11 @@ export const campaigns: Campaign[] = [
       defaultDonationsView: 'recent',
       numberOfDonationsToShow: 5,
       goalAmount: 50000,
-      endDate: '2026-10-22'
+      endDate: '2026-10-22',
+      enableSocialSharing: true
     },
     peerToPeer: {
       enabled: false
-    },
-    socialSharing: {
-      enabled: true,
-      facebook: true,
-      twitter: true,
-      linkedin: true,
-      whatsapp: true,
-      email: true,
-      copyLink: true
     },
     fundraisers: [],
     recentDonations: getRecentDonations('adopt-orangutan'),
@@ -76,20 +71,12 @@ export const campaigns: Campaign[] = [
       showRecentDonations: true,
       defaultDonationsView: 'recent',
       numberOfDonationsToShow: 5,
-      goalAmount: 500
+      goalAmount: 500,
+      enableSocialSharing: true
     },
     peerToPeer: {
       enabled: true,
       customMessage: 'Join me in celebrating by raising funds for a great cause!'
-    },
-    socialSharing: {
-      enabled: true,
-      facebook: true,
-      twitter: true,
-      linkedin: false,
-      whatsapp: true,
-      email: true,
-      copyLink: true
     },
     fundraisers: getCampaignFundraisers('birthday-p2p-template'),
     recentDonations: getRecentDonations('birthday-p2p-template'),
@@ -121,21 +108,13 @@ export const campaigns: Campaign[] = [
       showRecentDonations: true,
       defaultDonationsView: 'recent',
       numberOfDonationsToShow: 10,
-      goalAmount: 500
+      goalAmount: 500,
+      enableSocialSharing: true
     },
     peerToPeer: {
       enabled: true,
       customMessage:
         'Help us honour their memory by raising funds for a cause they cared deeply about.'
-    },
-    socialSharing: {
-      enabled: true,
-      facebook: true,
-      twitter: true,
-      linkedin: true,
-      whatsapp: true,
-      email: true,
-      copyLink: true
     },
     fundraisers: [],
     recentDonations: getRecentDonations('tribute-p2p-template'),
@@ -167,20 +146,12 @@ export const campaigns: Campaign[] = [
       showRecentDonations: true,
       defaultDonationsView: 'recent',
       numberOfDonationsToShow: 5,
-      goalAmount: 500
+      goalAmount: 500,
+      enableSocialSharing: true
     },
     peerToPeer: {
       enabled: true,
       customMessage: 'Take on a challenge and raise funds alongside me!'
-    },
-    socialSharing: {
-      enabled: true,
-      facebook: true,
-      twitter: true,
-      linkedin: true,
-      whatsapp: true,
-      email: true,
-      copyLink: true
     },
     fundraisers: [],
     recentDonations: getRecentDonations('challenge-p2p-template'),
@@ -212,20 +183,12 @@ export const campaigns: Campaign[] = [
       showRecentDonations: true,
       defaultDonationsView: 'top',
       numberOfDonationsToShow: 10,
-      goalAmount: 1000
+      goalAmount: 1000,
+      enableSocialSharing: true
     },
     peerToPeer: {
       enabled: true,
       customMessage: 'Help us celebrate our wedding by supporting a cause we care about!'
-    },
-    socialSharing: {
-      enabled: true,
-      facebook: true,
-      twitter: false,
-      linkedin: false,
-      whatsapp: true,
-      email: true,
-      copyLink: true
     },
     fundraisers: [],
     recentDonations: getRecentDonations('wedding-p2p-template'),
@@ -253,19 +216,11 @@ export const campaigns: Campaign[] = [
       showRecentDonations: true,
       defaultDonationsView: 'recent',
       numberOfDonationsToShow: 5,
-      goalAmount: 1000
+      goalAmount: 1000,
+      enableSocialSharing: true
     },
     peerToPeer: {
       enabled: false
-    },
-    socialSharing: {
-      enabled: true,
-      facebook: true,
-      twitter: true,
-      linkedin: false,
-      whatsapp: true,
-      email: true,
-      copyLink: true
     },
     fundraisers: [],
     recentDonations: getRecentDonations('wild-amer-birthday-fundraiser'),
@@ -292,22 +247,114 @@ export const campaigns: Campaign[] = [
       showRecentDonations: true,
       defaultDonationsView: 'recent',
       numberOfDonationsToShow: 5,
-      goalAmount: 500
+      goalAmount: 500,
+      enableSocialSharing: true
     },
     peerToPeer: {
       enabled: false
     },
-    socialSharing: {
-      enabled: true,
-      facebook: true,
-      twitter: true,
-      linkedin: false,
-      whatsapp: true,
-      email: true,
-      copyLink: true
-    },
     fundraisers: [],
     recentDonations: getRecentDonations('wild-amer-birthday-2-fundraiser'),
     forms: wildAmer2FundraiserForms
+  },
+  // --- Non-donation campaigns ---
+  // Registration: Summer Fete Stall Booking
+  {
+    id: 'summer-fete-stalls',
+    type: 'standard',
+    name: 'Summer Fete Stall Booking',
+    status: 'active',
+    createdAt: '2026-01-05T00:00:00Z',
+    updatedAt: '2026-02-01T10:00:00Z',
+    stats: computeCampaignStats('summer-fete-stalls', {
+      totalRaised: 875,
+      totalDonations: 28,
+      totalDonors: 28,
+      averageDonation: 31,
+      topDonation: 45
+    }),
+    crowdfunding: {
+      enabled: true,
+      title: 'Summer Fete 2026 — Book Your Stall',
+      shortDescription:
+        'Reserve a stall for the annual Summer Fete. Choose from standard, large, or corner positions.',
+      story:
+        'Our annual Summer Fete returns on 12 July 2026! Stall holders can sell crafts, baked goods, plants, vintage finds, and more.\n\nAll proceeds from stall fees go towards the village hall renovation fund. Book early — spaces fill up fast!',
+      showProgressBar: false,
+      showRecentDonations: false,
+      defaultDonationsView: 'recent',
+      numberOfDonationsToShow: 0,
+      enableSocialSharing: true
+    },
+    peerToPeer: { enabled: false },
+    fundraisers: [],
+    recentDonations: [],
+    forms: stallBookingForms
+  },
+  // Ticketing: Annual Dog Show
+  {
+    id: 'annual-dog-show',
+    type: 'standard',
+    name: 'Annual Dog Show',
+    status: 'active',
+    createdAt: '2026-01-10T00:00:00Z',
+    updatedAt: '2026-02-05T10:00:00Z',
+    stats: computeCampaignStats('annual-dog-show', {
+      totalRaised: 142.5,
+      totalDonations: 57,
+      totalDonors: 34,
+      averageDonation: 2.5,
+      topDonation: 15
+    }),
+    crowdfunding: {
+      enabled: true,
+      title: 'Village Dog Show 2026',
+      shortDescription:
+        'Enter your dog into one or more categories — just £2.50 per entry. All welcome, pedigree or not!',
+      story:
+        "Our beloved village dog show is back! Categories include Top Survivor, Cutest Puppy, Best in Show, Waggiest Tail, Best Trick, and Golden Oldie.\n\nEnter as many categories as you like at £2.50 each. Rosettes for all winners and a trophy for Best in Show. All entry fees support the local animal rescue centre.\n\nBring the whole family — there'll be refreshments, a raffle, and plenty of tail-wagging fun!",
+      showProgressBar: false,
+      showRecentDonations: false,
+      defaultDonationsView: 'recent',
+      numberOfDonationsToShow: 0,
+      enableSocialSharing: true
+    },
+    peerToPeer: { enabled: false },
+    fundraisers: [],
+    recentDonations: [],
+    forms: dogShowForms
+  },
+  // Registration: Classic Car Show (free entry)
+  {
+    id: 'classic-car-show',
+    type: 'standard',
+    name: 'Classic Car Show',
+    status: 'active',
+    createdAt: '2026-01-12T00:00:00Z',
+    updatedAt: '2026-02-08T10:00:00Z',
+    stats: computeCampaignStats('classic-car-show', {
+      totalRaised: 0,
+      totalDonations: 41,
+      totalDonors: 41,
+      averageDonation: 0,
+      topDonation: 0
+    }),
+    crowdfunding: {
+      enabled: true,
+      title: 'Classic Car Show — Free Entry',
+      shortDescription:
+        'Register your classic car for the annual show. All makes, models, and years welcome.',
+      story:
+        "Calling all classic car enthusiasts! Register your pride and joy for our open-air display on the village green.\n\nEntry is completely free. Simply register and turn up on the day. There's no judging — just a chance to show off your car and meet fellow petrolheads.\n\nSpectators welcome, no registration needed.",
+      showProgressBar: false,
+      showRecentDonations: false,
+      defaultDonationsView: 'recent',
+      numberOfDonationsToShow: 0,
+      enableSocialSharing: true
+    },
+    peerToPeer: { enabled: false },
+    fundraisers: [],
+    recentDonations: [],
+    forms: classicCarForms
   }
 ]

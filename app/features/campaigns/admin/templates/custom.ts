@@ -20,20 +20,12 @@ export function createCustomPreset(): Partial<Campaign> {
       showRecentDonations: true,
       defaultDonationsView: 'recent',
       numberOfDonationsToShow: 5,
-      goalAmount: 500
+      goalAmount: 500,
+      enableSocialSharing: true
     },
     peerToPeer: {
       enabled: true,
       customMessage: 'Start your own fundraiser and help us reach our goal!'
-    },
-    socialSharing: {
-      enabled: true,
-      facebook: true,
-      twitter: true,
-      linkedin: true,
-      whatsapp: true,
-      email: true,
-      copyLink: true
     }
   }
 }

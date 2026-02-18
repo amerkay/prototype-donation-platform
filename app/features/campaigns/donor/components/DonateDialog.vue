@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DonationFlowWizard from '~/features/donation-form/donor/DonationFlowWizard.vue'
+import { useInjectedBrandingStyle } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
@@ -20,6 +21,7 @@ const formConfigStore = useFormConfigStore()
 const donationStore = useDonationFormStore()
 const cartStore = useImpactCartStore()
 const { defaultForm } = useForms(props.campaignId)
+const brandingStyle = useInjectedBrandingStyle()
 
 // Initialize form config when dialog opens
 watch(
@@ -46,7 +48,10 @@ watch(
 
 <template>
   <Dialog :open="props.open" @update:open="emit('update:open', $event)">
-    <DialogContent class="max-w-2xl max-h-[90vh] p-0 overflow-hidden flex flex-col">
+    <DialogContent
+      class="max-w-2xl max-h-[90vh] p-0 overflow-hidden flex flex-col"
+      :style="brandingStyle"
+    >
       <!-- Header -->
       <!-- <DialogHeader class="px-6 py-4 border-b shrink-0">
         <DialogTitle>Make a Donation</DialogTitle>

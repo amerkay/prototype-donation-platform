@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { useSocialSharingSettingsStore } from '~/features/settings/admin/stores/socialSharingSettings'
 import { useCampaignShare } from '~/features/campaigns/shared/composables/useCampaignShare'
 import CampaignPreviewCard from '~/features/campaigns/admin/components/CampaignPreviewCard.vue'
 import SocialShareButtons from './SocialShareButtons.vue'
@@ -9,22 +10,35 @@ import { Separator } from '@/components/ui/separator'
 import { Copy, Check } from 'lucide-vue-next'
 import type { Campaign } from '~/features/campaigns/shared/types'
 
-const props = defineProps<{
-  campaign?: Campaign
-}>()
+const props = withDefaults(
+  defineProps<{
+    campaign?: Campaign
+    /** Hide the copy-link section (used in ShareDialog where copy-link is already on the page) */
+    hideCopyLink?: boolean
+  }>(),
+  { hideCopyLink: false }
+)
 
-// Use campaign prop if provided, otherwise fall back to store (for admin preview)
+// Campaign data for display (title, description, cover photo)
 const configStore = useCampaignConfigStore()
 const data = computed(() => props.campaign || configStore)
+
+// Social sharing settings from org-level settings store
+const sharingStore = useSocialSharingSettingsStore()
+const sharingSettings = computed(() => ({
+  facebook: sharingStore.facebook,
+  twitter: sharingStore.twitter,
+  linkedin: sharingStore.linkedin,
+  whatsapp: sharingStore.whatsapp,
+  email: sharingStore.email,
+  copyLink: !props.hideCopyLink
+}))
 
 const { campaignUrl, copy, copied } = useCampaignShare(computed(() => data.value.id))
 
 const hasOtherPlatforms = computed(() => {
-  const sharing = data.value.socialSharing
-  if (!sharing) return false
-  return (
-    sharing.facebook || sharing.twitter || sharing.linkedin || sharing.whatsapp || sharing.email
-  )
+  const s = sharingSettings.value
+  return s.facebook || s.twitter || s.linkedin || s.whatsapp || s.email
 })
 </script>
 
@@ -39,7 +53,7 @@ const hasOtherPlatforms = computed(() => {
     />
 
     <!-- Copy Link -->
-    <div v-if="data.socialSharing?.copyLink" class="space-y-2">
+    <div class="space-y-2">
       <p class="text-sm font-medium">Campaign link</p>
       <div class="flex gap-2">
         <Input :model-value="campaignUrl" readonly class="font-mono text-xs" />
@@ -58,7 +72,7 @@ const hasOtherPlatforms = computed(() => {
         <p class="text-sm font-medium">Share on</p>
         <div class="grid grid-cols-2 gap-2">
           <SocialShareButtons
-            :settings="data.socialSharing"
+            :settings="sharingSettings"
             :campaign-url="campaignUrl"
             :campaign-title="data.crowdfunding?.title || data.name"
             :short-description="data.crowdfunding?.shortDescription"
@@ -68,11 +82,8 @@ const hasOtherPlatforms = computed(() => {
       </div>
     </template>
 
-    <p
-      v-if="!hasOtherPlatforms && !data.socialSharing?.copyLink"
-      class="text-sm text-muted-foreground text-center py-4"
-    >
-      No sharing options have been enabled for this campaign.
+    <p v-if="!hasOtherPlatforms" class="text-sm text-muted-foreground text-center py-4">
+      No sharing platforms have been enabled.
     </p>
   </div>
 </template>

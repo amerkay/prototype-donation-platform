@@ -3,7 +3,6 @@ import type { FormContext } from '~/features/_library/form-builder/types'
 import { useCampaignDonationFormsForm } from '~/features/campaigns/admin/forms/donation-forms-form'
 import { useCrowdfundingSettingsForm } from '~/features/campaigns/admin/forms/crowdfunding-settings-form'
 import { useP2PSettingsForm } from '~/features/campaigns/admin/forms/p2p-settings-form'
-import { useSocialSharingForm } from '~/features/campaigns/admin/forms/social-sharing-form'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 
 /**
@@ -17,9 +16,11 @@ export const openAccordionId = ref<string | undefined>('campaignConfigMaster.don
  * Each section is wrapped in a collapsible field-group with card styling
  *
  * Campaign type behavior:
- * - Standard: All sections visible (Donation Forms, Crowdfunding Page, Fundraisers, Social Sharing)
- * - P2P Template: Donation Forms, Template Defaults, Fundraisers, Social Sharing
+ * - Standard: All sections visible (Donation Forms, Crowdfunding Page, Fundraisers)
+ * - P2P Template: Donation Forms, Template Defaults, Fundraisers
  * - Fundraiser (P2P Child): Crowdfunding Page only (non-collapsible, status in header)
+ *
+ * Social sharing has been moved to org-level settings (/admin/settings/social-sharing)
  */
 export function createCampaignConfigMaster() {
   return defineForm('campaignConfigMaster', (ctx: FormContext) => {
@@ -29,7 +30,6 @@ export function createCampaignConfigMaster() {
     const donationFormsFields = useCampaignDonationFormsForm.setup(ctx)
     const crowdfundingFields = useCrowdfundingSettingsForm.setup(ctx)
     const peerToPeerFields = useP2PSettingsForm.setup(ctx)
-    const socialSharingFields = useSocialSharingForm.setup(ctx)
 
     // Lock all sections when campaign is completed or archived
     const isStatusLocked = () => store.status === 'completed' || store.status === 'archived'
@@ -72,27 +72,10 @@ export function createCampaignConfigMaster() {
       visibleWhen: () => store.type !== 'standard' && store.type !== 'fundraiser'
     })
 
-    const socialSharing = fieldGroup('socialSharing', {
-      label: 'Social Sharing',
-      description: 'Enable sharing to Facebook, Twitter, LinkedIn, WhatsApp, and email.',
-      collapsible: true,
-      collapsibleDefaultOpen: false,
-      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: socialSharingFields,
-      disabled: isStatusLocked,
-      // Hidden for fundraiser campaigns and when crowdfunding page is disabled
-      visibleWhen: ({ values }) => {
-        if (store.isFundraiser) return false
-        const cf = values.crowdfunding as Record<string, unknown> | undefined
-        return cf?.enabled === true || store.isP2P
-      }
-    })
-
     return {
       donationForms,
       crowdfunding,
-      peerToPeer,
-      socialSharing
+      peerToPeer
     }
   })
 }

@@ -2,9 +2,21 @@
 import { watch } from 'vue'
 import DonationFlowWizard from '~/features/donation-form/donor/DonationFlowWizard.vue'
 import DevJsonPreview from '~/features/_admin/components/DevJsonPreview.vue'
+import PreviewEditable from '~/features/_admin/components/PreviewEditable.vue'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { extractCustomFieldDefaults } from '~/features/_library/custom-fields/utils'
+import { HASH_TARGET_PASSIVE_KEY } from '~/features/_library/form-builder/composables/useHashTarget'
+
+withDefaults(
+  defineProps<{
+    editable?: boolean
+  }>(),
+  { editable: false }
+)
+
+// Prevent preview FormRenderers from stealing the global hash target activator
+provide(HASH_TARGET_PASSIVE_KEY, true)
 
 // Get shared form config from store
 const store = useFormConfigStore()
@@ -72,9 +84,9 @@ watch(
 
 <template>
   <div v-if="store.fullConfig" class="space-y-4">
-    <div class="bg-muted/50 rounded-xl w-full border">
+    <PreviewEditable :enabled="editable" class="bg-muted/50 rounded-xl w-full border">
       <DonationFlowWizard :config="store.fullConfig" />
-    </div>
+    </PreviewEditable>
     <DevJsonPreview :data="donationStore.completeState" />
   </div>
 </template>

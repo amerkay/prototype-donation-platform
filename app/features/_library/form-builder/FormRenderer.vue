@@ -153,9 +153,11 @@ const sectionValues = computed(() => {
 })
 
 // Create field context for visibility checks
+// root must be section-level values (not raw vee-validate values which include section ID prefix)
+// to match the live validation context built by useFormBuilderContext
 const sectionFieldContext = computed(() => ({
   values: sectionValues.value,
-  root: values
+  root: sectionValues.value
 }))
 
 // Auto-scroll to newly visible fields (scroll to top of element)

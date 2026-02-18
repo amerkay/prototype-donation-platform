@@ -6,9 +6,10 @@ import {
   textareaField,
   imageUploadField,
   selectField,
-  numberField,
+  sliderField,
   currencyField,
-  dateField
+  dateField,
+  alertField
 } from '~/features/_library/form-builder/api'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 
@@ -147,19 +148,53 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     rules: z.enum(['recent', 'top'])
   })
 
-  const numberOfDonationsToShow = numberField('numberOfDonationsToShow', {
+  const numberOfDonationsToShow = sliderField('numberOfDonationsToShow', {
     label: () =>
       store.isP2P ? 'Default Number of Donations to Show' : 'Number of Donations to Show',
     description: () =>
       store.isP2P
         ? 'How many donations to display in the list by default'
         : 'How many donations to display in the list',
-    min: 5,
-    max: 50,
-    step: 5,
+    min: 3,
+    max: 12,
+    step: 1,
+    defaultValue: 5,
     visibleWhen: ({ values }) =>
       isEnabled({ values }) && values.showRecentDonations === true && !store.isFundraiser,
-    rules: z.number().min(5).max(50)
+    rules: z.number().min(3).max(12),
+    showSeparatorAfter: true
+  })
+
+  const charityNotice = alertField('charityNotice', {
+    variant: 'info',
+    description:
+      'Charity information shown on the crowdfunding page can be updated in organization settings.',
+    cta: {
+      label: 'Edit charity settings',
+      to: '/admin/settings/charity',
+      inline: true
+    },
+    visibleWhen: isEnabled,
+    showSeparatorAfter: true
+  })
+
+  const enableSocialSharing = toggleField('enableSocialSharing', {
+    label: 'Enable Social Sharing',
+    description: 'Allow visitors to share this campaign on social media',
+    labelClass: 'font-bold',
+    visibleWhen: isEnabled,
+    optional: true
+  })
+
+  const sharingNotice = alertField('sharingNotice', {
+    variant: 'info',
+    description: 'Platform availability is controlled in global sharing settings.',
+    cta: {
+      label: 'Edit sharing settings',
+      to: '/admin/settings/social-sharing',
+      inline: true
+    },
+    visibleWhen: (ctx) => isEnabled(ctx) && ctx.values.enableSocialSharing === true
   })
 
   return {
@@ -176,6 +211,11 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
 
     showRecentDonations,
     defaultDonationsView,
-    numberOfDonationsToShow
+    numberOfDonationsToShow,
+
+    charityNotice,
+
+    enableSocialSharing,
+    sharingNotice
   }
 })

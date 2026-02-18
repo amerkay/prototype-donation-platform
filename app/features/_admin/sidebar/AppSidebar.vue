@@ -149,6 +149,10 @@ const navMain = computed(() => [
         url: '/admin/settings/branding'
       },
       {
+        title: 'Social Sharing',
+        url: '/admin/settings/social-sharing'
+      },
+      {
         title: 'Payment Processors',
         url: '/admin/settings/payments'
       },

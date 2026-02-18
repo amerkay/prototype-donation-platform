@@ -8,8 +8,7 @@ import { Plus } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'admin' })
 
-const { products, stats, createProduct, duplicateProduct, updateProductName, deleteProduct } =
-  useProducts()
+const { products, stats, createProduct, duplicateProduct, deleteProduct } = useProducts()
 
 const breadcrumbs = [{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Impact Products' }]
 
@@ -21,10 +20,6 @@ function handleNew() {
 function handleDuplicate(id: string) {
   const newId = duplicateProduct(id)
   if (newId) navigateTo(`/admin/products/${newId}`)
-}
-
-function handleRename(id: string, name: string) {
-  updateProductName(id, name)
 }
 </script>
 
@@ -47,7 +42,6 @@ function handleRename(id: string, name: string) {
           v-for="product in products"
           :key="product.id"
           :product="product"
-          @rename="handleRename(product.id, $event)"
           @duplicate="handleDuplicate(product.id)"
           @delete="deleteProduct(product.id)"
         />

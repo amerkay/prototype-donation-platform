@@ -15,11 +15,23 @@ const emit = defineEmits<{
 
 <template>
   <div class="flex gap-2 @3xl:flex-col">
-    <Button class="flex-1 @3xl:flex-auto @3xl:w-full" size="lg" @click="emit('donate')">
+    <Button
+      class="flex-1 @3xl:flex-auto @3xl:w-full"
+      size="lg"
+      data-field="donationForms"
+      @click="emit('donate')"
+    >
       <Heart class="w-4 h-4 mr-2" />
       Donate Now
     </Button>
-    <Button v-if="showShare" variant="outline" class="@3xl:w-full" size="lg" @click="emit('share')">
+    <Button
+      v-if="showShare"
+      variant="outline"
+      class="@3xl:w-full"
+      size="lg"
+      data-field="crowdfunding.enableSocialSharing"
+      @click="emit('share')"
+    >
       <Share2 class="w-4 h-4 @3xl:mr-2" />
       <span class="sr-only @3xl:not-sr-only">Share Campaign</span>
     </Button>

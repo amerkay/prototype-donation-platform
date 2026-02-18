@@ -6,6 +6,7 @@ import { useImpactCartStore } from '~/features/donation-form/features/impact-car
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
+import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
 
 interface Props {
   needsShipping: boolean
@@ -25,6 +26,7 @@ const formConfig = computed(() => configStore.fullConfig)
 const cartStore = useImpactCartStore()
 const store = useDonationFormStore()
 const { getCurrencySymbol } = useCurrency()
+const { labels } = useFormTypeLabels()
 
 // Cover costs calculation (only shown from step 3 onwards AND if enabled)
 const displayCoverFeesAmount = computed(() => {
@@ -37,10 +39,11 @@ const totalWithFees = computed(() => {
 })
 
 const frequencyLabel = computed(() => {
-  if (store.activeTab === 'once') return 'one-time donation'
-  if (store.activeTab === 'monthly') return 'monthly donation'
-  if (store.activeTab === 'yearly') return 'yearly donation'
-  return 'mixed donations'
+  const noun = labels.value.frequencyLabel
+  if (store.activeTab === 'once') return `one-time ${noun}`
+  if (store.activeTab === 'monthly') return `monthly ${noun}`
+  if (store.activeTab === 'yearly') return `yearly ${noun}`
+  return `mixed ${noun}s`
 })
 
 // Item count for multiple cart
@@ -96,7 +99,13 @@ const descriptionText = computed(() => {
   <div class="rounded-lg border bg-accent/50 p-3">
     <div class="flex items-start gap-3">
       <!-- Back Button -->
-      <Button variant="outline" size="icon" class="h-11 w-11 shrink-0" @click="emit('back')">
+      <Button
+        data-preview-nav
+        variant="outline"
+        size="icon"
+        class="h-11 w-11 shrink-0"
+        @click="emit('back')"
+      >
         <Icon name="lucide:chevron-left" class="size-4!" />
       </Button>
 

@@ -160,7 +160,7 @@ const {
     </AlertDialog>
 
     <!-- Change Amount Dialog -->
-    <BaseDialogOrDrawer v-model:open="changeAmountState.open" max-width="sm:max-w-md">
+    <BaseDialogOrDrawer v-model:open="changeAmountState.open" size="sm">
       <template #header>Change Subscription Amount</template>
       <template #content>
         <div class="space-y-4 py-4">

@@ -1,8 +1,14 @@
 import { computed } from 'vue'
 import { toast } from 'vue-sonner'
 import type { ImpactProduct } from '~/features/products/admin/types'
+import type { Product } from '~/features/donation-form/features/product/shared/types'
 import type { DeleteProtection } from '~/features/_admin/composables/useAdminEdit'
-import { products as mockProducts } from '~/sample-api-responses/api-sample-response-products'
+import {
+  products as donationProducts,
+  stallBookingProducts,
+  dogShowProducts,
+  classicCarProducts
+} from '~/sample-api-responses/api-sample-response-products'
 import { useSessionStorageSingleton } from '~/features/_admin/composables/useSessionStorageSingleton'
 import { generateEntityId } from '~/lib/generateEntityId'
 
@@ -11,7 +17,17 @@ import { generateEntityId } from '~/lib/generateEntityId'
  * Singleton pattern with sessionStorage persistence.
  */
 
-function createImpactProduct(base: (typeof mockProducts)[0], linkedFormsCount = 0): ImpactProduct {
+const allMockProducts = [
+  ...donationProducts,
+  ...stallBookingProducts,
+  ...dogShowProducts,
+  ...classicCarProducts
+]
+
+function createImpactProduct(
+  base: (typeof allMockProducts)[0],
+  linkedFormsCount = 0
+): ImpactProduct {
   return {
     ...base,
     status: 'active',
@@ -21,7 +37,7 @@ function createImpactProduct(base: (typeof mockProducts)[0], linkedFormsCount = 
   }
 }
 
-const defaultProducts = mockProducts.map((p) =>
+const defaultProducts = allMockProducts.map((p) =>
   createImpactProduct(p, p.id === 'adopt-bumi' ? 2 : 1)
 )
 
@@ -139,6 +155,37 @@ export function useProducts() {
     toast.success('Product deleted')
   }
 
+  /**
+   * Find-or-create products by name from blueprint definitions.
+   * Used when seeding products from form templates.
+   * Returns resolved ImpactProduct[] with real org-level IDs.
+   */
+  function seedProducts(blueprints: Product[]): ImpactProduct[] {
+    const created: string[] = []
+    const resolved = blueprints.map((bp) => {
+      const existing = products.value.find((p) => p.name === bp.name)
+      if (existing) return existing
+      const id = generateEntityId('product')
+      const now = new Date().toISOString()
+      const newProduct: ImpactProduct = {
+        ...bp,
+        id,
+        status: 'active',
+        createdAt: now,
+        updatedAt: now,
+        linkedFormsCount: 0
+      }
+      products.value.push(newProduct)
+      created.push(bp.name)
+      return newProduct
+    })
+    if (created.length) {
+      $persist()
+      toast.success(`${created.length} product${created.length > 1 ? 's' : ''} added to catalog`)
+    }
+    return resolved
+  }
+
   return {
     products: computed(() => products.value),
     activeProducts,
@@ -150,6 +197,7 @@ export function useProducts() {
     updateProductName,
     updateProductStatus,
     deleteProduct,
-    getDeleteProtection
+    getDeleteProtection,
+    seedProducts
   }
 }

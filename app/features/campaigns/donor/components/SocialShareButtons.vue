@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import type { SocialSharingSettings } from '~/features/campaigns/shared/types'
+import type { SocialSharingSettings } from '~/features/settings/admin/stores/socialSharingSettings'
 import { Button } from '@/components/ui/button'
 import { Facebook, Twitter, Linkedin, Mail, Link2, MessageCircle } from 'lucide-vue-next'
 
+type ShareSettings = SocialSharingSettings & { copyLink?: boolean }
+
 const props = withDefaults(
   defineProps<{
-    settings: SocialSharingSettings | null
+    settings: ShareSettings | null
     campaignUrl: string
     campaignTitle: string
     shortDescription?: string
@@ -37,7 +39,7 @@ const socialPlatforms = [
 // Get enabled platforms from settings
 const enabledPlatforms = computed(() => {
   if (!props.settings) return []
-  return socialPlatforms.filter((p) => props.settings?.[p.key as keyof SocialSharingSettings])
+  return socialPlatforms.filter((p) => props.settings?.[p.key as keyof ShareSettings])
 })
 
 // Get share URL for platform

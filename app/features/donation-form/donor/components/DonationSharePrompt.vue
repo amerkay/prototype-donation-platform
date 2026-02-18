@@ -2,11 +2,13 @@
 import { Card, CardContent } from '@/components/ui/card'
 import SocialShareButtons from '~/features/campaigns/donor/components/SocialShareButtons.vue'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { useSocialSharingSettingsStore } from '~/features/settings/admin/stores/socialSharingSettings'
 import { useCampaignShare } from '~/features/campaigns/shared/composables/useCampaignShare'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { formatCurrency } from '~/lib/formatCurrency'
 
 const campaignStore = useCampaignConfigStore()
+const orgSharing = useSocialSharingSettingsStore()
 const donationStore = useDonationFormStore()
 
 const campaignSlug = computed(() => campaignStore.id)
@@ -41,7 +43,7 @@ const handleShare = (platform: string) => {
       </p>
       <div class="flex flex-wrap gap-2">
         <SocialShareButtons
-          :settings="campaignStore.socialSharing"
+          :settings="orgSharing"
           :campaign-url="campaignUrl"
           :campaign-title="campaignStore.name || 'Donation Campaign'"
           :short-description="shareDescription"

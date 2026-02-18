@@ -38,6 +38,7 @@ export const useDonationFormStore = defineStore(
       shipping: {},
       giftAid: {},
       customFields: {},
+      entryFields: {},
       emailOptIn: { joinEmailList: true },
       terms: {}
     })
@@ -142,6 +143,11 @@ export const useDonationFormStore = defineStore(
         // Custom fields
         customFields: formSections.value.customFields || {},
 
+        // Entry fields (shared mode — per-item entry data is on cart items)
+        ...(Object.keys(formSections.value.entryFields || {}).length > 0 && {
+          entryFields: formSections.value.entryFields
+        }),
+
         // Email opt-in
         emailOptIn: formSections.value.emailOptIn || {},
 
@@ -238,6 +244,7 @@ export const useDonationFormStore = defineStore(
         shipping: {},
         giftAid: {},
         customFields: {},
+        entryFields: {},
         emailOptIn: { joinEmailList: true },
         terms: {}
       }

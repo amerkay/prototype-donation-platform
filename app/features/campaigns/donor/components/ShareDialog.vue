@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ShareContent from './ShareContent.vue'
+import { useInjectedBrandingStyle } from '~/features/settings/admin/composables/useBrandingCssVars'
 import {
   Dialog,
   DialogContent,
@@ -18,11 +19,13 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:open': [value: boolean]
 }>()
+
+const brandingStyle = useInjectedBrandingStyle()
 </script>
 
 <template>
   <Dialog :open="props.open" @update:open="emit('update:open', $event)">
-    <DialogContent class="sm:max-w-md">
+    <DialogContent class="sm:max-w-md" :style="brandingStyle">
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2">
           <Share2 class="w-5 h-5" />
@@ -34,7 +37,7 @@ const emit = defineEmits<{
       </DialogHeader>
 
       <div class="py-4">
-        <ShareContent :campaign="campaign" />
+        <ShareContent :campaign="campaign" hide-copy-link />
       </div>
     </DialogContent>
   </Dialog>

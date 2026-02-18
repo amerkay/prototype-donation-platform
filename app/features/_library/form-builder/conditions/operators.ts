@@ -112,6 +112,7 @@ export const OPERATORS: Record<ComparisonOperator, OperatorFn> = {
    */
   in: (fieldValue, conditionValue) => {
     if (!Array.isArray(conditionValue)) return false
+    if (Array.isArray(fieldValue)) return fieldValue.some((v) => conditionValue.includes(v))
     return conditionValue.includes(fieldValue)
   },
 

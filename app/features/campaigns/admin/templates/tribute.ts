@@ -19,21 +19,13 @@ export function createTributePreset(): Partial<Campaign> {
       showRecentDonations: true,
       defaultDonationsView: 'recent',
       numberOfDonationsToShow: 10,
-      goalAmount: 500
+      goalAmount: 500,
+      enableSocialSharing: true
     },
     peerToPeer: {
       enabled: true,
       customMessage:
         'Help us honour their memory by raising funds for a cause they cared deeply about.'
-    },
-    socialSharing: {
-      enabled: true,
-      facebook: true,
-      twitter: true,
-      linkedin: true,
-      whatsapp: true,
-      email: true,
-      copyLink: true
     }
   }
 }

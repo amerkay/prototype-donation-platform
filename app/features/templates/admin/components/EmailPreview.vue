@@ -1,23 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import DonationEmail from '~/emails/DonationEmail.vue'
 import { useEmailRenderPayload } from '~/features/templates/admin/composables/useEmailRenderPayload'
-import { usePreviewEditable } from '~/features/templates/admin/composables/usePreviewEditable'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Mail, Pencil } from 'lucide-vue-next'
+import PreviewEditable from '~/features/_admin/components/PreviewEditable.vue'
+import { Mail } from 'lucide-vue-next'
+
+withDefaults(defineProps<{ editable?: boolean }>(), { editable: false })
 
 const { payload, resolvedSubject, fromName, fromEmail } = useEmailRenderPayload()
-const previewRef = ref<HTMLElement | null>(null)
-const editable = ref(true)
-const { hoveredField, editButtonStyle, hoverOutlineStyle, navigateToField } = usePreviewEditable(
-  previewRef,
-  editable
-)
 </script>
 
 <template>
-  <Card ref="previewRef" class="relative overflow-hidden pt-0 editable">
+  <PreviewEditable
+    :enabled="editable"
+    class="rounded-xl border bg-card text-card-foreground overflow-hidden pt-0"
+  >
     <!-- Email header bar (UI chrome, not part of rendered email) -->
     <div class="px-4 py-3 bg-muted/50 border-b space-y-1">
       <div class="flex items-center gap-2">
@@ -40,30 +36,5 @@ const { hoveredField, editButtonStyle, hoverOutlineStyle, navigateToField } = us
         with-field-targets
       />
     </div>
-
-    <Transition name="fade">
-      <div
-        v-if="hoveredField"
-        class="border-2 border-dashed border-gray-500 rounded pointer-events-none"
-        :style="hoverOutlineStyle"
-      />
-    </Transition>
-
-    <Transition name="fade">
-      <Button
-        v-if="hoveredField"
-        variant="secondary"
-        size="icon"
-        class="h-6 w-6 rounded-full shadow-md pointer-events-auto"
-        :style="editButtonStyle"
-        @click.stop="navigateToField()"
-      >
-        <Pencil class="h-3 w-3" />
-      </Button>
-    </Transition>
-  </Card>
+  </PreviewEditable>
 </template>
-
-<style>
-@import '~/features/templates/admin/composables/preview-editable.css';
-</style>

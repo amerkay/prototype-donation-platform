@@ -22,7 +22,7 @@ const handlePresetSelect = (preset: P2PCampaignPreset) => {
 <template>
   <BaseDialogOrDrawer
     :open="props.open"
-    max-width="md:min-w-xl lg:min-w-3xl"
+    size="lg"
     dismissible
     description="Choose a preset to create a new peer-to-peer fundraising campaign"
     @update:open="emit('update:open', $event)"

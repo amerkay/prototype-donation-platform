@@ -1,12 +1,4 @@
-import {
-  ref,
-  computed,
-  provide,
-  onMounted,
-  onUnmounted,
-  type Ref,
-  type ComputedRef
-} from 'vue'
+import { ref, computed, provide, onMounted, onUnmounted, type Ref, type ComputedRef } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import { toast } from 'vue-sonner'
 

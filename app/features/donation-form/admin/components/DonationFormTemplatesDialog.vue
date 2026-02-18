@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import {
   TEMPLATE_REGISTRY,
   type DonationFormTemplate
@@ -6,6 +7,7 @@ import {
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 
 const props = defineProps<{
@@ -18,16 +20,33 @@ const emit = defineEmits<{
   select: [template: DonationFormTemplate]
 }>()
 
-// Group templates by category
-const simpleTemplates = computed(() =>
-  TEMPLATE_REGISTRY.filter((t) => t.metadata.category === 'simple')
+const CATEGORIES = [
+  { key: 'simple', label: 'Simple', variant: 'secondary' as const, desc: 'Quick setup' },
+  {
+    key: 'enhanced',
+    label: 'Enhanced',
+    variant: 'default' as const,
+    desc: 'Advanced features for better engagement'
+  },
+  {
+    key: 'advanced',
+    label: 'Advanced',
+    variant: 'destructive' as const,
+    desc: 'Full-featured experience'
+  }
+]
+
+const donationTemplates = computed(() =>
+  TEMPLATE_REGISTRY.filter((t) => !t.metadata.formType || t.metadata.formType === 'donation')
 )
-const enhancedTemplates = computed(() =>
-  TEMPLATE_REGISTRY.filter((t) => t.metadata.category === 'enhanced')
+
+const registrationTemplates = computed(() =>
+  TEMPLATE_REGISTRY.filter((t) => t.metadata.formType === 'registration')
 )
-const advancedTemplates = computed(() =>
-  TEMPLATE_REGISTRY.filter((t) => t.metadata.category === 'advanced')
-)
+
+function byCategory(templates: DonationFormTemplate[], category: string) {
+  return templates.filter((t) => t.metadata.category === category)
+}
 
 const handleTemplateSelect = (template: DonationFormTemplate) => {
   emit('select', template)
@@ -38,122 +57,93 @@ const handleTemplateSelect = (template: DonationFormTemplate) => {
 <template>
   <BaseDialogOrDrawer
     :open="props.open"
-    max-width="md:min-w-xl lg:min-w-4xl"
+    size="xl"
     dismissible
-    description="Select a template to create a new donation form for your campaign"
+    description="Select a template to create a new form for your campaign"
     @update:open="emit('update:open', $event)"
   >
     <template #header>
-      <span>Choose a Donation Form Template</span>
+      <span>Choose a Form Template</span>
     </template>
 
     <template #content>
-      <div class="space-y-6 py-4">
-        <!-- Simple Templates -->
-        <div v-if="simpleTemplates.length > 0">
-          <h3 class="text-sm font-medium mb-3 flex items-center gap-2">
-            <Badge variant="secondary">Simple</Badge>
-            Quick setup for basic donation forms
-          </h3>
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-            <Card
-              v-for="template in simpleTemplates"
-              :key="template.metadata.id"
-              :class="
-                cn(
-                  'cursor-pointer transition-all hover:border-primary hover:shadow-md',
-                  'hover:scale-[1.02]'
-                )
-              "
-              @click="handleTemplateSelect(template)"
-            >
-              <CardHeader>
-                <div class="flex items-start gap-3">
-                  <div class="p-2 rounded-lg bg-primary/10 text-primary">
-                    <component :is="template.metadata.icon" class="w-6 h-6" />
-                  </div>
-                  <div class="flex-1 space-y-1">
-                    <CardTitle class="text-base">{{ template.metadata.name }}</CardTitle>
-                    <CardDescription class="text-xs">
-                      {{ template.metadata.description }}
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-          </div>
+      <div class="py-4 space-y-8">
+        <!-- Donation section -->
+        <div class="space-y-6">
+          <h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Donation
+          </h2>
+          <template v-for="cat in CATEGORIES" :key="cat.key">
+            <div v-if="byCategory(donationTemplates, cat.key).length" class="space-y-3">
+              <h3 class="text-sm font-medium flex items-center gap-2">
+                <Badge :variant="cat.variant">{{ cat.label }}</Badge>
+                {{ cat.desc }}
+              </h3>
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <Card
+                  v-for="tmpl in byCategory(donationTemplates, cat.key)"
+                  :key="tmpl.metadata.id"
+                  :class="
+                    cn(
+                      'cursor-pointer transition-all hover:border-primary hover:shadow-md hover:scale-[1.02]'
+                    )
+                  "
+                  @click="handleTemplateSelect(tmpl)"
+                >
+                  <CardHeader>
+                    <div class="flex items-start gap-3">
+                      <div class="p-2 rounded-lg bg-primary/10 text-primary">
+                        <component :is="tmpl.metadata.icon" class="w-6 h-6" />
+                      </div>
+                      <div class="flex-1 space-y-1">
+                        <CardTitle class="text-base">{{ tmpl.metadata.name }}</CardTitle>
+                        <Badge
+                          v-if="tmpl.metadata.requiresProducts"
+                          variant="outline"
+                          class="text-xs"
+                        >
+                          Products
+                        </Badge>
+                        <CardDescription class="text-xs">{{
+                          tmpl.metadata.description
+                        }}</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                </Card>
+              </div>
+            </div>
+          </template>
         </div>
 
-        <!-- Enhanced Templates -->
-        <div v-if="enhancedTemplates.length > 0">
-          <h3 class="text-sm font-medium mb-3 flex items-center gap-2">
-            <Badge variant="default">Enhanced</Badge>
-            Advanced features for better engagement
-          </h3>
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-            <Card
-              v-for="template in enhancedTemplates"
-              :key="template.metadata.id"
-              :class="
-                cn(
-                  'cursor-pointer transition-all hover:border-primary hover:shadow-md',
-                  'hover:scale-[1.02]'
-                )
-              "
-              @click="handleTemplateSelect(template)"
-            >
-              <CardHeader>
-                <div class="flex items-start gap-3">
-                  <div class="p-2 rounded-lg bg-primary/10 text-primary">
-                    <component :is="template.metadata.icon" class="w-6 h-6" />
-                  </div>
-                  <div class="flex-1 space-y-1">
-                    <CardTitle class="text-base">{{ template.metadata.name }}</CardTitle>
-                    <Badge
-                      v-if="template.metadata.requiresProducts"
-                      variant="outline"
-                      class="text-xs"
-                    >
-                      Products
-                    </Badge>
-                    <CardDescription class="text-xs">
-                      {{ template.metadata.description }}
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-          </div>
-        </div>
+        <Separator />
 
-        <!-- Advanced Templates -->
-        <div v-if="advancedTemplates.length > 0">
-          <h3 class="text-sm font-medium mb-3 flex items-center gap-2">
-            <Badge variant="destructive">Advanced</Badge>
-            Full-featured experience
-          </h3>
+        <!-- Registration / Ticketing section -->
+        <div class="space-y-3">
+          <h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Registration / Ticketing
+          </h2>
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
             <Card
-              v-for="template in advancedTemplates"
-              :key="template.metadata.id"
+              v-for="tmpl in registrationTemplates"
+              :key="tmpl.metadata.id"
               :class="
                 cn(
-                  'cursor-pointer transition-all hover:border-primary hover:shadow-md',
-                  'hover:scale-[1.02]'
+                  'cursor-pointer transition-all hover:border-primary hover:shadow-md hover:scale-[1.02]'
                 )
               "
-              @click="handleTemplateSelect(template)"
+              @click="handleTemplateSelect(tmpl)"
             >
               <CardHeader>
                 <div class="flex items-start gap-3">
                   <div class="p-2 rounded-lg bg-primary/10 text-primary">
-                    <component :is="template.metadata.icon" class="w-6 h-6" />
+                    <component :is="tmpl.metadata.icon" class="w-6 h-6" />
                   </div>
                   <div class="flex-1 space-y-1">
-                    <CardTitle class="text-base">{{ template.metadata.name }}</CardTitle>
-                    <CardDescription class="text-xs">
-                      {{ template.metadata.description }}
-                    </CardDescription>
+                    <CardTitle class="text-base">{{ tmpl.metadata.name }}</CardTitle>
+                    <CardDescription class="text-xs">{{
+                      tmpl.metadata.description
+                    }}</CardDescription>
                   </div>
                 </div>
               </CardHeader>

@@ -6,7 +6,6 @@ import {
   getCampaignTypeBadgeVariant
 } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
-import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
 import AdminDeleteButton from '~/features/_admin/components/AdminDeleteButton.vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -21,7 +20,6 @@ const props = defineProps<{
 }>()
 
 defineEmits<{
-  rename: [name: string]
   delete: []
 }>()
 
@@ -88,14 +86,9 @@ const NuxtLinkComponent = resolveComponent('NuxtLink')
 
     <CardHeader>
       <div class="min-w-0">
-        <InlineEditableText
-          v-if="!compact"
-          :model-value="campaign.name"
-          display-class="text-base font-semibold"
-          :max-length="75"
-          @update:model-value="$emit('rename', $event)"
-        />
-        <CardTitle v-else class="text-lg truncate">{{ campaign.name }}</CardTitle>
+        <NuxtLink :to="editUrl" class="hover:underline">
+          <CardTitle class="text-base truncate">{{ campaign.name }}</CardTitle>
+        </NuxtLink>
         <CardDescription v-if="parentTemplate && !compact" class="text-xs mt-1">
           Parent Template: {{ parentTemplate.name }}
         </CardDescription>

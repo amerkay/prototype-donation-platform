@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CSSProperties } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import {
   Dialog,
@@ -21,8 +22,16 @@ interface Props {
   open?: boolean
   dismissible?: boolean
   description?: string
-  maxWidth?: string
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  contentStyle?: CSSProperties
 }
+
+const SIZE_CLASSES = {
+  sm: 'sm:max-w-md',
+  md: 'sm:max-w-xl',
+  lg: 'sm:max-w-2xl',
+  xl: 'sm:max-w-4xl'
+} as const
 
 interface Emits {
   (e: 'update:open', value: boolean): void
@@ -32,7 +41,8 @@ const props = withDefaults(defineProps<Props>(), {
   open: false,
   dismissible: true,
   description: undefined,
-  maxWidth: 'sm:max-w-md'
+  size: 'sm',
+  contentStyle: undefined
 })
 
 const emit = defineEmits<Emits>()
@@ -55,12 +65,12 @@ const openModel = computed({
 
 const rootProps = computed(() => (isDesktop.value ? {} : { dismissible: props.dismissible }))
 
-const contentClass = computed(() => (isDesktop.value ? props.maxWidth : 'flex flex-col'))
+const contentClass = computed(() => (isDesktop.value ? SIZE_CLASSES[props.size] : 'flex flex-col'))
 </script>
 
 <template>
   <component :is="Modal.Root" v-model:open="openModel" v-bind="rootProps">
-    <component :is="Modal.Content" :class="contentClass">
+    <component :is="Modal.Content" :class="contentClass" :style="props.contentStyle">
       <component :is="Modal.Header" v-if="$slots.header" :class="{ 'shrink-0': !isDesktop }">
         <component :is="Modal.Title"><slot name="header" /></component>
         <component :is="Modal.Description" v-if="props.description">

@@ -133,6 +133,21 @@
   --radius: 0.5rem;
 }
 
+/* Platform-specific colors, not to be overridden by app/features/settings/admin/composables/useBrandingCssVars.ts */
+:root {
+  --platform-primary: oklch(0.852 0.199 91.936);
+  --platform-primary-foreground: oklch(0.421 0.095 57.708);
+  --platform-secondary: oklch(38.943% 0.1876 277.863);
+  --platform-secondary-foreground: oklch(0.985 0 0);
+}
+
+.dark {
+  --platform-primary: oklch(0.795 0.184 86.047);
+  --platform-primary-foreground: oklch(0.421 0.095 57.708);
+  --platform-secondary: oklch(34.096% 0.1379 280.982);
+  --platform-secondary-foreground: oklch(0.985 0 0);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -1,5 +1,5 @@
 import { defineForm, fieldGroup, alertField } from '~/features/_library/form-builder/api'
-import type { FormContext } from '~/features/_library/form-builder/types'
+import type { FieldContext, FormContext } from '~/features/_library/form-builder/types'
 import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 import { useDonationFormBasicForm } from '~/features/donation-form/admin/forms/donation-form-basic-form'
 import { useDonationFormDonationAmountsForm } from '~/features/donation-form/admin/forms/donation-form-donation-amounts-form'
@@ -10,16 +10,37 @@ import { useCoverCostsConfigSection } from '~/features/donation-form/features/co
 import { useGiftAidConfigSection } from '~/features/donation-form/features/gift-aid/admin/forms/gift-aid-config-form'
 import { useTributeConfigSection } from '~/features/donation-form/features/tribute/admin/forms/tribute-config-form'
 import { createDonationCustomFieldsConfigSection } from '~/features/donation-form/features/custom-fields/admin/forms/donation-custom-fields-config-form'
-import type { ContextSchema } from '~/features/_library/form-builder/conditions'
+import { createEntryFieldsConfigSection } from '~/features/donation-form/features/entry-fields/admin/forms/entry-fields-config-form'
+import type { ContextSchemaInput } from '~/features/_library/custom-fields/forms/custom-fields-config-form'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
+import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
+import { FEATURE_FORM_TYPE_SUPPORT, type FormType } from '~/features/donation-form/shared/types'
+
+/** Check if a feature is supported for the current form type from root form values */
+function isDonationFormType(ctx: FieldContext): boolean {
+  const formType = (
+    (ctx.root?.formSettings as Record<string, unknown>)?.form as Record<string, unknown>
+  )?.formType as FormType | undefined
+  return (formType ?? 'donation') === 'donation'
+}
+
+function isFeatureSupportedForFormType(featureKey: string, ctx: FieldContext): boolean {
+  const formType = (
+    (ctx.root?.formSettings as Record<string, unknown>)?.form as Record<string, unknown>
+  )?.formType as FormType | undefined
+  const supported = FEATURE_FORM_TYPE_SUPPORT[featureKey]
+  if (!supported) return true
+  return supported.includes(formType ?? 'donation')
+}
 
 /**
  * Master admin form that consolidates all donation form configuration sections
  * Each section is wrapped in a collapsible field-group with card styling
  */
-export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
+export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput) {
   return defineForm('donationFormAdmin', (ctx: FormContext) => {
     const currencyStore = useCurrencySettingsStore()
+    const formConfigStore = useFormConfigStore()
 
     // Provide accordion group for single-open behavior
     provideAccordionGroup()
@@ -33,6 +54,10 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
     const coverCostsFields = useCoverCostsConfigSection.setup(ctx)
     const giftAidFields = useGiftAidConfigSection.setup(ctx)
     const tributeFields = useTributeConfigSection.setup(ctx)
+    const entryFieldsFields = createEntryFieldsConfigSection(
+      formConfigStore.products,
+      currencyStore.supportedCurrencies
+    ).setup(ctx)
     const customFieldsFields = createDonationCustomFieldsConfigSection(contextSchema).setup(ctx)
 
     // Currency settings info - display organization's currency config
@@ -73,13 +98,14 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
       }
     })
 
-    // Donation Amounts - standalone section for donation amounts and frequencies
+    // Donation Amounts - standalone section (donation type only)
     const donationAmounts = fieldGroup('donationAmounts', {
       label: 'Donation Amounts',
       description: 'Configure donation amounts and frequency options.',
       collapsible: true,
       collapsibleDefaultOpen: false,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+      visibleWhen: (ctx: FieldContext) => isDonationFormType(ctx),
       fields: {
         currencyInfo,
         ...formDonationAmountsFields
@@ -103,6 +129,7 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
         impactBoost: fieldGroup('impactBoost', {
           // label: 'Impact Boost',
           wrapperClass: 'p-4 bg-background rounded-lg border',
+          visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('impactBoost', ctx),
           fields: impactBoostFields
         }),
         impactCart: fieldGroup('impactCart', {
@@ -113,22 +140,31 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
         productSelector: fieldGroup('productSelector', {
           // label: 'Product Selector',
           wrapperClass: 'p-4 bg-background rounded-lg border',
+          visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('productSelector', ctx),
           fields: productSelectorFields
         }),
         coverCosts: fieldGroup('coverCosts', {
           // label: 'Cover Costs',
           wrapperClass: 'p-4 bg-background rounded-lg border',
+          visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('coverCosts', ctx),
           fields: coverCostsFields
         }),
         giftAid: fieldGroup('giftAid', {
           // label: 'Gift Aid',
           wrapperClass: 'p-4 bg-background rounded-lg border',
+          visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('giftAid', ctx),
           fields: giftAidFields
         }),
         tribute: fieldGroup('tribute', {
           // label: 'Tribute Settings',
           wrapperClass: 'p-4 bg-background rounded-lg border',
+          visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('tribute', ctx),
           fields: tributeFields
+        }),
+        entryFields: fieldGroup('entryFields', {
+          wrapperClass: 'p-4 bg-background rounded-lg border',
+          visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('entryFields', ctx),
+          fields: entryFieldsFields
         })
       },
       // Flatten nested structure: form.features.impactBoost → store.impactBoost
@@ -138,7 +174,8 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchema) {
         productSelector: 'productSelector',
         coverCosts: 'coverCosts',
         giftAid: 'giftAid',
-        tribute: 'tribute'
+        tribute: 'tribute',
+        entryFields: 'entryFields'
       }
     })
 

@@ -80,6 +80,8 @@ export interface CrowdfundingSettings {
   goalAmount?: number
   /** Campaign end date (ISO date string, e.g. '2026-03-22'), null when cleared */
   endDate?: string | null
+  /** Whether social sharing is enabled for this campaign */
+  enableSocialSharing: boolean
 }
 
 /**
@@ -88,19 +90,6 @@ export interface CrowdfundingSettings {
 export interface PeerToPeerSettings {
   enabled: boolean
   customMessage?: string
-}
-
-/**
- * Social sharing settings
- */
-export interface SocialSharingSettings {
-  enabled: boolean
-  facebook: boolean
-  twitter: boolean
-  linkedin: boolean
-  whatsapp: boolean
-  email: boolean
-  copyLink: boolean
 }
 
 /**
@@ -132,7 +121,6 @@ export interface Campaign {
   stats: CampaignStats
   crowdfunding: CrowdfundingSettings
   peerToPeer: PeerToPeerSettings
-  socialSharing: SocialSharingSettings
   fundraisers: CampaignFundraiser[]
   recentDonations: CampaignDonation[]
   forms: CampaignForm[]

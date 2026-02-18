@@ -23,6 +23,7 @@ const store = useReceiptTemplateStore()
 const currencyStore = useCurrencySettingsStore()
 
 const previewCurrency = ref(currencyStore.defaultCurrency)
+const editableMode = ref(true)
 
 const originalData = computed(() => ({
   headerText: store.headerText,
@@ -59,6 +60,7 @@ const breadcrumbs = [
 <template>
   <div>
     <AdminEditLayout
+      v-model:editable="editableMode"
       :breadcrumbs="breadcrumbs"
       :is-dirty="store.isDirty"
       :show-discard-dialog="showDiscardDialog"
@@ -101,7 +103,7 @@ const breadcrumbs = [
       </template>
 
       <template #preview>
-        <ReceiptPreview :currency="previewCurrency" editable />
+        <ReceiptPreview :currency="previewCurrency" :editable="editableMode" />
       </template>
     </AdminEditLayout>
   </div>

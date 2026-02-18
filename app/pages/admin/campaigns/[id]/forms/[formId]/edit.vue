@@ -26,6 +26,7 @@ const form = computed(() => getForm(formId))
 // Initialize store synchronously so child components have store data during setup
 const store = useFormConfigStore()
 const { brandingStyle } = useBrandingCssVars()
+const editableMode = ref(true)
 if (form.value) {
   store.initialize(form.value.config, form.value.products, form.value.id)
 }
@@ -62,7 +63,7 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdmi
   originalData: formForStore,
   onSave: async () => {
     if (!store.formId || !store.fullConfig) return
-    await updateForm(store.formId, store.fullConfig)
+    await updateForm(store.formId, store.fullConfig, store.products)
   }
 })
 
@@ -83,6 +84,7 @@ const handlePreview = () => {
 <template>
   <AdminEditLayout
     v-if="campaign && form"
+    v-model:editable="editableMode"
     :breadcrumbs="breadcrumbs"
     :is-dirty="store.isDirty"
     :show-discard-dialog="showDiscardDialog"
@@ -98,12 +100,10 @@ const handlePreview = () => {
     <template #content>
       <AdminDonationFormConfig ref="formConfigRef" @save="handleSave" @discard="handleDiscard" />
     </template>
-
-    <!-- Preview panel -->
     <template #preview-label>Form Preview</template>
     <template #preview>
       <div :style="brandingStyle">
-        <DonationFormPreview />
+        <DonationFormPreview :editable="editableMode" />
       </div>
     </template>
   </AdminEditLayout>

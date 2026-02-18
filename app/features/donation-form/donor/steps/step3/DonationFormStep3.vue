@@ -11,12 +11,14 @@ import { createTermsAcceptanceField } from '~/features/donation-form/features/te
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import Separator from '~/components/ui/separator/Separator.vue'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
+import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
 import DonationCustomFields from '~/features/donation-form/features/custom-fields/donor/components/DonationCustomFields.vue'
 import type { FieldDef } from '~/features/_library/form-builder/types'
 
 // Get shared form config from store
 const configStore = useFormConfigStore()
 const formConfig = computed(() => configStore.fullConfig)
+const { isFeatureSupported } = useFormTypeLabels()
 
 // Gift Aid form section (dynamically enabled from config)
 const giftAidFormSection = computed(() =>
@@ -173,16 +175,25 @@ const handleNext = () => {
 
 <template>
   <div ref="formContainerRef" class="space-y-6">
-    <!-- Cover Costs Field (separate component for dynamic percentage/amount switching) -->
-    <div v-if="formConfig?.features.coverCosts.enabled" @click="handleFormClick">
+    <!-- Cover Costs Field (donation type only) -->
+    <div
+      v-if="formConfig?.features.coverCosts.enabled && isFeatureSupported('coverCosts')"
+      data-field="features.coverCosts"
+      @click="handleFormClick"
+    >
       <CoverCostsField :config="formConfig.features.coverCosts" />
     </div>
 
-    <Separator v-if="formConfig?.features.coverCosts.enabled" />
+    <Separator v-if="formConfig?.features.coverCosts.enabled && isFeatureSupported('coverCosts')" />
 
-    <!-- Gift Aid Form (wrapped for click delegation) -->
+    <!-- Gift Aid Form (donation type only) -->
     <div
-      v-if="formConfig?.features.giftAid.enabled && store.selectedCurrency === 'GBP'"
+      v-if="
+        formConfig?.features.giftAid.enabled &&
+        isFeatureSupported('giftAid') &&
+        store.selectedCurrency === 'GBP'
+      "
+      data-field="features.giftAid"
       @click="handleFormClick"
     >
       <FormRenderer
@@ -193,10 +204,21 @@ const handleNext = () => {
       />
     </div>
 
-    <Separator v-if="formConfig?.features.giftAid.enabled && store.selectedCurrency === 'GBP'" />
+    <Separator
+      v-if="
+        formConfig?.features.giftAid.enabled &&
+        isFeatureSupported('giftAid') &&
+        store.selectedCurrency === 'GBP'
+      "
+    />
 
     <!-- Custom Fields (dynamically generated from admin config) -->
-    <DonationCustomFields ref="customFieldsRef" tab="step3" @submit="handleNext" />
+    <DonationCustomFields
+      ref="customFieldsRef"
+      tab="step3"
+      data-field="customFields"
+      @submit="handleNext"
+    />
 
     <!-- Email Opt-in -->
     <div>

@@ -2,10 +2,9 @@
 import type { ImpactProduct } from '~/features/products/admin/types'
 import { useProducts } from '~/features/products/admin/composables/useProducts'
 import { useCertificateTemplates } from '~/features/templates/admin/composables/useCertificateTemplates'
-import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
 import AdminDeleteButton from '~/features/_admin/components/AdminDeleteButton.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Calendar, Copy, Package, Pencil, Award } from 'lucide-vue-next'
@@ -22,7 +21,6 @@ const props = defineProps<{
 }>()
 
 defineEmits<{
-  rename: [name: string]
   duplicate: []
   delete: []
 }>()
@@ -63,12 +61,9 @@ const certificateName = computed(() => {
     </NuxtLink>
 
     <CardHeader class="pb-2">
-      <InlineEditableText
-        :model-value="product.name"
-        display-class="text-base font-semibold"
-        :max-length="35"
-        @update:model-value="$emit('rename', $event)"
-      />
+      <NuxtLink :to="`/admin/products/${product.id}`" class="hover:underline">
+        <CardTitle class="text-base truncate">{{ product.name }}</CardTitle>
+      </NuxtLink>
       <p v-if="product.description" class="text-xs text-muted-foreground truncate">
         {{ product.description }}
       </p>

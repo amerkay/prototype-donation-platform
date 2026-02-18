@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, ref, nextTick } from 'vue'
+import { watch, ref, nextTick, provide } from 'vue'
 import ProgressBar from '~/features/donation-form/donor/components/ProgressBar.vue'
 import OrderSummary from '~/features/donation-form/donor/components/OrderSummary.vue'
 import DonationFormStep1 from '~/features/donation-form/donor/steps/step1/DonationFormStep1.vue'
@@ -15,10 +15,18 @@ import {
   type FullFormConfig
 } from '~/features/donation-form/shared/stores/formConfig'
 import { formConfig as defaultConfig } from '~/sample-api-responses/api-sample-response-form-config'
+import {
+  useBrandingCssVars,
+  BRANDING_STYLE_KEY
+} from '~/features/settings/admin/composables/useBrandingCssVars'
 
 const props = defineProps<{
   config?: FullFormConfig
 }>()
+
+// Provide branding to teleported modals (ProductOptionsModal, TributeModal, etc.)
+const { brandingStyle } = useBrandingCssVars()
+provide(BRANDING_STYLE_KEY, brandingStyle)
 
 // Use provided config or fall back to default
 const activeConfig = computed(() => props.config ?? defaultConfig)

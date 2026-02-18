@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useInjectedBrandingStyle } from '~/features/settings/admin/composables/useBrandingCssVars'
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import ProductCard from '~/features/donation-form/features/product/donor/components/ProductCard.vue'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
@@ -23,6 +24,7 @@ const emit = defineEmits<{
   select: [product: Product]
 }>()
 
+const brandingStyle = useInjectedBrandingStyle()
 const isOpen = ref(false)
 
 const handleSelect = (product: Product) => {
@@ -38,7 +40,12 @@ defineExpose({
 </script>
 
 <template>
-  <BaseDialogOrDrawer v-model:open="isOpen" :dismissible="true" :description="description">
+  <BaseDialogOrDrawer
+    v-model:open="isOpen"
+    :dismissible="true"
+    :description="description"
+    :content-style="brandingStyle"
+  >
     <template #header>
       <h2 class="text-2xl font-semibold">{{ title }}</h2>
     </template>

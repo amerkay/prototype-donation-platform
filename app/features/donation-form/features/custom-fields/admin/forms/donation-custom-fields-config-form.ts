@@ -1,7 +1,10 @@
 import { defineForm, toggleField, tabsField } from '~/features/_library/form-builder/api'
 import type { ComposableForm, FormContext } from '~/features/_library/form-builder/types'
 import type { ContextSchema } from '~/features/_library/form-builder/conditions'
-import { useCustomFieldsConfigForm } from '~/features/_library/custom-fields/forms/custom-fields-config-form'
+import {
+  useCustomFieldsConfigForm,
+  type ContextSchemaInput
+} from '~/features/_library/custom-fields/forms/custom-fields-config-form'
 import { extractAvailableFields } from '~/features/_library/custom-fields/forms/field-extraction'
 import { computed } from 'vue'
 
@@ -35,11 +38,23 @@ function filterContextSchemaByStep(schema: ContextSchema, stepNumber: number): C
  * @param contextSchema - Optional external context schema for condition builder
  */
 export function createDonationCustomFieldsConfigSection(
-  contextSchema?: ContextSchema
+  contextSchema?: ContextSchemaInput
 ): ComposableForm {
-  // Filter context schema for each step
-  const step2Schema = contextSchema ? filterContextSchemaByStep(contextSchema, 2) : undefined
-  const step3Schema = contextSchema ? filterContextSchemaByStep(contextSchema, 3) : undefined
+  // Wrap schema resolvers with step filtering
+  const step2Schema: ContextSchemaInput | undefined = contextSchema
+    ? (rootValues: Record<string, unknown>) => {
+        const resolved =
+          typeof contextSchema === 'function' ? contextSchema(rootValues) : contextSchema
+        return filterContextSchemaByStep(resolved, 2)
+      }
+    : undefined
+  const step3Schema: ContextSchemaInput | undefined = contextSchema
+    ? (rootValues: Record<string, unknown>) => {
+        const resolved =
+          typeof contextSchema === 'function' ? contextSchema(rootValues) : contextSchema
+        return filterContextSchemaByStep(resolved, 3)
+      }
+    : undefined
 
   // Define allowed field types for each tab
   const visibleFieldTypes: import('~/features/_library/custom-fields/fields').CustomFieldType[] = [

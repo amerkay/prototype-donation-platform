@@ -6,6 +6,8 @@ import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
+import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
+import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
 import { formatCurrency } from '~/lib/formatCurrency'
 
 const emit = defineEmits<{
@@ -14,6 +16,15 @@ const emit = defineEmits<{
 
 const store = useDonationFormStore()
 const cartStore = useImpactCartStore()
+const formConfigStore = useFormConfigStore()
+const { labels, isFeatureSupported } = useFormTypeLabels()
+
+const entryFieldsConfig = computed(() => formConfigStore.fullConfig?.features.entryFields)
+const entryFieldDefinitions = computed(() => entryFieldsConfig.value?.fields ?? [])
+const isSharedEntryMode = computed(
+  () => entryFieldsConfig.value?.enabled && entryFieldsConfig.value.mode === 'shared'
+)
+const sharedEntryData = computed(() => store.formSections.entryFields ?? {})
 
 const isProcessing = ref(false)
 
@@ -74,7 +85,7 @@ const handlePay = async () => {
 
 <template>
   <div class="space-y-4">
-    <h2 class="text-xl font-semibold">Review Your Donation</h2>
+    <h2 class="text-xl font-semibold">{{ labels.reviewTitle }}</h2>
 
     <!-- Donation Summary -->
     <Card>
@@ -98,15 +109,52 @@ const handlePay = async () => {
 
         <!-- Multiple cart items -->
         <template v-else>
-          <div v-for="item in cartItems" :key="item.id" class="flex justify-between text-sm">
-            <span class="text-muted-foreground">
-              {{ item.name }} <span v-if="(item.quantity ?? 1) > 1">x{{ item.quantity }}</span>
-            </span>
-            <span>{{
-              formatCurrency((item.price ?? 0) * (item.quantity ?? 1), store.selectedCurrency)
-            }}</span>
+          <div v-for="item in cartItems" :key="`${item.id}-${item.addedAt}`" class="text-sm">
+            <div class="flex justify-between">
+              <span class="text-muted-foreground">
+                {{ item.name }} <span v-if="(item.quantity ?? 1) > 1">x{{ item.quantity }}</span>
+              </span>
+              <span>{{
+                formatCurrency((item.price ?? 0) * (item.quantity ?? 1), store.selectedCurrency)
+              }}</span>
+            </div>
+            <!-- Per-item entry data summary -->
+            <div
+              v-if="item.entryData && entryFieldDefinitions.length > 0"
+              class="text-xs text-muted-foreground mt-0.5 ml-2"
+            >
+              <span v-for="(field, idx) in entryFieldDefinitions" :key="field.id">
+                <template
+                  v-if="item.entryData[field.id] != null && item.entryData[field.id] !== ''"
+                >
+                  {{ field.label }}:
+                  {{
+                    Array.isArray(item.entryData[field.id])
+                      ? (item.entryData[field.id] as unknown[]).join(', ')
+                      : item.entryData[field.id]
+                  }}{{ idx < entryFieldDefinitions.length - 1 ? ' · ' : '' }}
+                </template>
+              </span>
+            </div>
           </div>
         </template>
+
+        <!-- Shared entry data (displayed once for all items) -->
+        <div
+          v-if="isSharedEntryMode && Object.keys(sharedEntryData).length > 0"
+          class="text-xs text-muted-foreground ml-2"
+        >
+          <span v-for="(field, idx) in entryFieldDefinitions" :key="field.id">
+            <template v-if="sharedEntryData[field.id] != null && sharedEntryData[field.id] !== ''">
+              {{ field.label }}:
+              {{
+                Array.isArray(sharedEntryData[field.id])
+                  ? (sharedEntryData[field.id] as unknown[]).join(', ')
+                  : sharedEntryData[field.id]
+              }}{{ idx < entryFieldDefinitions.length - 1 ? ' · ' : '' }}
+            </template>
+          </span>
+        </div>
 
         <!-- Cover costs -->
         <div v-if="hasCoverCosts" class="flex justify-between text-sm">
@@ -141,11 +189,11 @@ const handlePay = async () => {
 
         <!-- Badges -->
         <div class="flex flex-wrap gap-2 pt-1">
-          <Badge v-if="hasGiftAid" variant="secondary">
+          <Badge v-if="hasGiftAid && isFeatureSupported('giftAid')" variant="secondary">
             <Icon name="lucide:heart-handshake" class="mr-1 h-3 w-3" />
             Gift Aid
           </Badge>
-          <Badge v-if="store.isTribute" variant="secondary">
+          <Badge v-if="store.isTribute && isFeatureSupported('tribute')" variant="secondary">
             <Icon name="lucide:ribbon" class="mr-1 h-3 w-3" />
             Tribute
           </Badge>
@@ -180,7 +228,7 @@ const handlePay = async () => {
       </template>
       <template v-else>
         <Icon name="lucide:lock" class="mr-2 h-4 w-4" />
-        Complete Donation &mdash; {{ formattedTotal }}
+        {{ labels.completeCta }} &mdash; {{ formattedTotal }}
       </template>
     </Button>
 

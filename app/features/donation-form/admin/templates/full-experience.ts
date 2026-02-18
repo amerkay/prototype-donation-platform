@@ -140,7 +140,8 @@ export function createFullExperienceTemplate(
         },
         customFields: {
           customFieldsTabs: {}
-        }
+        },
+        entryFields: { enabled: false, mode: 'shared' as const, fields: [] }
       }
     },
     products: [

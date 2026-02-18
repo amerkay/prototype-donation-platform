@@ -11,6 +11,7 @@ import {
 import type { DonationFormTemplate } from '~/features/donation-form/admin/templates'
 import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import DonationFormTemplatesDialog from '~/features/donation-form/admin/components/DonationFormTemplatesDialog.vue'
+import { useProducts } from '~/features/products/admin/composables/useProducts'
 import CopyFormFromCampaignDialog from '~/features/campaigns/admin/components/CopyFormFromCampaignDialog.vue'
 import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
 import {
@@ -59,6 +60,7 @@ const currencySettings = useCurrencySettingsStore()
 const { smartRound } = useCurrency()
 
 const { forms, setDefaultForm, renameForm, createForm, duplicateForm } = useForms(store.id!)
+const { seedProducts } = useProducts()
 
 const visibleForms = computed(() => forms.value.filter((f) => !store.pendingFormDeletes.has(f.id)))
 
@@ -121,8 +123,11 @@ const handleTemplateSelect = async (template: DonationFormTemplate) => {
       smartRound(amount, defaultCurrency, 'GBP')
     )
 
+    // Seed template products into org catalog (find-or-create by name) and get resolved IDs
+    const resolvedProducts = products.length ? seedProducts(products) : []
+
     // Create form
-    await createForm(formId, formName, config, products)
+    await createForm(formId, formName, config, resolvedProducts)
 
     // Navigate to edit page
     router.push(`/admin/campaigns/${store.id}/forms/${formId}/edit`)

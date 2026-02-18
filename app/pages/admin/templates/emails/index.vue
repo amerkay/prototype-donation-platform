@@ -9,7 +9,7 @@ import { EMAIL_TEMPLATE_META } from '~/features/templates/admin/email-templates'
 
 definePageMeta({ layout: 'admin' })
 
-const { templates, stats, categoryCounts, updateTemplateName } = useEmailTemplates()
+const { templates, stats, categoryCounts } = useEmailTemplates()
 
 const breadcrumbs = [
   { label: 'Dashboard', href: '/admin/dashboard' },
@@ -51,7 +51,6 @@ const filteredTemplates = computed(() =>
           v-for="template in filteredTemplates"
           :key="template.id"
           :template="template"
-          @rename="updateTemplateName(template.id, $event)"
         />
       </div>
     </div>

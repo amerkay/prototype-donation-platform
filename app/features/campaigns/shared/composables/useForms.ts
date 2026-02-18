@@ -60,12 +60,16 @@ export function useForms(campaignId: string) {
   }
 
   // Update form (mock - would call API in real app)
-  const updateForm = async (formId: string, config: CampaignForm['config']): Promise<void> => {
+  const updateForm = async (
+    formId: string,
+    config: CampaignForm['config'],
+    products: CampaignForm['products']
+  ): Promise<void> => {
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 300))
 
     // Update store and persist to sessionStorage
-    formsStore.updateFormConfig(campaignId, formId, config)
+    formsStore.updateFormConfig(campaignId, formId, config, products)
   }
 
   // Create a new form from template
