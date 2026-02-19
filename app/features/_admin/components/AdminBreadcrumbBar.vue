@@ -42,7 +42,9 @@ const lastItem = computed(() =>
 </script>
 
 <template>
-  <header class="flex shrink-0 items-center gap-2 border-b mb-4 min-h-14 py-3">
+  <header
+    class="sticky top-0 z-10 flex shrink-0 items-center gap-2 border-b mb-4 min-h-14 py-3 bg-background"
+  >
     <div class="flex items-center gap-2 px-4 w-full flex-wrap">
       <SidebarTrigger class="-ml-1 mt-0.5" />
       <Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4 mt-0.5" />

@@ -53,10 +53,7 @@ const EMAIL_SHARED_STYLES = `
       <meta http-equiv="X-UA-Compatible" content="IE=edge" />
       <EStyle>{{ EMAIL_SHARED_STYLES }}</EStyle>
     </EHead>
-    <EBody
-      class="donation-email-body"
-      :style="{ backgroundColor: '#ffffff', fontFamily: 'sans-serif', padding: '0' }"
-    >
+    <EBody class="donation-email-body" :style="{ fontFamily: 'sans-serif', padding: '8px' }">
       <component :is="'style'" v-if="props.preview">{{ EMAIL_SHARED_STYLES }}</component>
       <EContainer>
         <ESection v-if="imageUrl" :data-field="fieldTarget('email.imageUrl')">

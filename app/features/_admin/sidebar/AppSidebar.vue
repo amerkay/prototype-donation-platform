@@ -27,12 +27,21 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem
+  SidebarMenuItem,
+  useSidebar
 } from '@/components/ui/sidebar'
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   variant: 'inset'
 })
+
+// Close mobile sidebar on navigation
+const { setOpenMobile } = useSidebar()
+const route = useRoute()
+watch(
+  () => route.path,
+  () => setOpenMobile(false)
+)
 
 const navMain = computed(() => [
   {

@@ -548,4 +548,10 @@ function removeItem(index: number) {
   margin-left: var(--ff-accordion-ml, 0);
   margin-right: var(--ff-accordion-mr, 0);
 }
+
+/* Non-collapsible field-group content also bleeds edge-to-edge */
+.ff-array__item :deep([data-slot='field-set'] > .grid),
+.ff-array__item--simple :deep([data-slot='field-set'] > .grid) {
+  margin-right: var(--ff-accordion-mr, 0);
+}
 </style>
