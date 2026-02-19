@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { watch, toValue } from 'vue'
+import { watch, toValue, computed } from 'vue'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import Link from '@tiptap/extension-link'
+import CharacterCount from '@tiptap/extension-character-count'
 import { cn } from '@/lib/utils'
 import type {
   FieldProps,
@@ -42,7 +43,8 @@ const editor = useEditor({
     }),
     Underline,
     Link.configure({ openOnClick: false }),
-    VariableNode
+    VariableNode,
+    ...(props.meta.maxLength ? [CharacterCount.configure({ limit: props.meta.maxLength })] : [])
   ],
   editable: !resolvedDisabled.value,
   onUpdate: ({ editor: e }) => {
@@ -67,6 +69,14 @@ watch(
 // Sync disabled state
 watch(resolvedDisabled, (disabled) => {
   editor.value?.setEditable(!disabled)
+})
+
+const charCount = computed(() => editor.value?.storage.characterCount?.characters() ?? 0)
+
+const maxLengthDisplay = computed(() => {
+  const shouldShow = props.meta.showMaxLengthIndicator !== false
+  if (!shouldShow || !props.meta.maxLength) return undefined
+  return `${charCount.value}/${props.meta.maxLength} characters`
 })
 </script>
 
@@ -93,6 +103,9 @@ watch(resolvedDisabled, (disabled) => {
         :class="cn('rich-text-editor', resolvedDisabled && 'pointer-events-none')"
       />
     </div>
+    <p v-if="maxLengthDisplay" class="text-xs text-muted-foreground mt-1">
+      {{ maxLengthDisplay }}
+    </p>
   </FormFieldWrapper>
 </template>
 

@@ -61,6 +61,7 @@ const campaignForStore = computed(() => store.fullCampaign)
 // Form ref for validation
 const formRef = ref()
 
+const editableMode = ref(true)
 const crowdfundingEnabled = computed(() => store.crowdfunding?.enabled !== false)
 const { brandingStyle } = useBrandingCssVars()
 
@@ -125,6 +126,7 @@ const handleDeleted = () => {
 <template>
   <AdminEditLayout
     v-if="campaign"
+    v-model:editable="editableMode"
     :breadcrumbs="breadcrumbs"
     :is-dirty="store.isDirty"
     :show-discard-dialog="showDiscardDialog"
@@ -151,7 +153,7 @@ const handleDeleted = () => {
 
     <template #preview>
       <div :style="brandingStyle">
-        <CrowdfundingPagePreview v-if="crowdfundingEnabled" />
+        <CrowdfundingPagePreview v-if="crowdfundingEnabled" :editable="editableMode" />
         <Empty v-else class="border border-dashed">
           <EmptyHeader>
             <EmptyMedia variant="icon"><EyeOff /></EmptyMedia>

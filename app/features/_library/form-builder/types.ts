@@ -306,6 +306,10 @@ export interface RichTextVariable {
 
 export interface RichTextFieldConfig extends BaseFieldConfig {
   variables?: ReadonlyArray<RichTextVariable> | ComputedRef<ReadonlyArray<RichTextVariable>>
+  /** Maximum character count (plain text, excludes HTML tags) */
+  maxLength?: number
+  /** Show character counter when maxLength is set (default: true) */
+  showMaxLengthIndicator?: boolean
 }
 
 export interface DateFieldConfig extends BaseFieldConfig {

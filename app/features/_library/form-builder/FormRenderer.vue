@@ -99,10 +99,14 @@ const {
 })
 
 // Provide section id so nested fields can resolve absolute vee-validate names
-provide('sectionId', resolvedSection.value.id)
+const sectionId = resolvedSection.value.id
+provide('sectionId', sectionId)
 
 // Provide hash target for URL deep-linking (e.g. /settings#currencies.currencyMultipliers)
-provideHashTarget(resolvedSection.value.fields)
+// Pass form values getter so canResolveHashTarget can evaluate visibleWhen conditions
+provideHashTarget(resolvedSection.value.fields, () => {
+  return (values[sectionId] as Record<string, unknown>) || {}
+})
 
 // Provide validateOnMount for all nested fields and containers
 provide('validateOnMount', props.validateOnMount)

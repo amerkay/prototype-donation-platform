@@ -1,4 +1,4 @@
-.editable [data-field] {
+.editable [data-field].field-editable {
   cursor: pointer;
 }
 

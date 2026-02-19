@@ -174,7 +174,7 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
       to: '/admin/settings/charity',
       inline: true
     },
-    visibleWhen: isEnabled,
+    visibleWhen: (ctx) => isEnabled(ctx) && !store.isFundraiser,
     showSeparatorAfter: true
   })
 
@@ -182,7 +182,7 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     label: 'Enable Social Sharing',
     description: 'Allow visitors to share this campaign on social media',
     labelClass: 'font-bold',
-    visibleWhen: isEnabled,
+    visibleWhen: (ctx) => isEnabled(ctx) && !store.isFundraiser,
     optional: true
   })
 
@@ -194,7 +194,8 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
       to: '/admin/settings/social-sharing',
       inline: true
     },
-    visibleWhen: (ctx) => isEnabled(ctx) && ctx.values.enableSocialSharing === true
+    visibleWhen: (ctx) =>
+      isEnabled(ctx) && ctx.values.enableSocialSharing === true && !store.isFundraiser
   })
 
   return {

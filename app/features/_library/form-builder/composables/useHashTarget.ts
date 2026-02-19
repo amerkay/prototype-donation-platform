@@ -11,7 +11,8 @@ import {
   type ComputedRef
 } from 'vue'
 import { useRoute } from '#app'
-import type { FieldDef } from '../types'
+import type { FieldDef, FieldContext } from '../types'
+import { checkFieldVisibility } from './useFieldPath'
 
 // --- Constants ---
 const HASH_TARGET_KEY = Symbol('hashTarget')
@@ -27,11 +28,69 @@ interface HashTargetContext {
 }
 
 let activeHashTargetActivator: ((target: string) => void) | null = null
+let activeHashTargetFields: Record<string, FieldDef> | null = null
+let activeHashTargetGetValues: (() => Record<string, unknown>) | null = null
 
 export function activateHashTarget(target: string): boolean {
   if (!target || !activeHashTargetActivator) return false
   activeHashTargetActivator(target)
   return true
+}
+
+/**
+ * Walk the field tree along the resolved path and check each field's visibleWhen.
+ * Returns false if any field along the path is hidden by its visibleWhen condition.
+ * Fields inside collapsed accordions remain valid — only visibleWhen is checked.
+ */
+function isFieldVisibleInTree(
+  resolvedPath: string,
+  fields: Record<string, FieldDef>,
+  formValues: Record<string, unknown>
+): boolean {
+  const segments = resolvedPath.split('.')
+  let currentFields = fields
+  let currentValues: Record<string, unknown> = formValues
+
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i]!
+    const field = currentFields[segment]
+    if (!field) return true // Unknown field, assume visible
+
+    const ctx: FieldContext = { values: currentValues, root: formValues }
+    if (!checkFieldVisibility(field, ctx, { skipContainerValidation: true })) {
+      return false
+    }
+
+    // Descend into children for next segment
+    if (field.type === 'field-group' && 'fields' in field && field.fields) {
+      currentFields = field.fields as Record<string, FieldDef>
+      currentValues = (currentValues[segment] as Record<string, unknown>) || {}
+    } else if (field.type === 'tabs' && 'tabs' in field) {
+      // Next segment is the tab value — find matching tab and descend
+      const nextSegment = segments[i + 1]
+      if (nextSegment) {
+        const typedField = field as {
+          tabs: Array<{ value: string; fields: Record<string, FieldDef> }>
+        }
+        const tab = typedField.tabs.find((t) => t.value === nextSegment)
+        if (tab) {
+          currentFields = tab.fields
+          currentValues = (currentValues[segment] as Record<string, unknown>) || {}
+          i++ // Skip the tab segment
+        }
+      }
+    }
+  }
+  return true
+}
+
+/** Check if a hash target path would resolve and is not hidden by visibleWhen */
+export function canResolveHashTarget(target: string): boolean {
+  if (!target || !activeHashTargetFields) return false
+  const resolved = resolveHash(target, activeHashTargetFields)
+  if (!resolved) return false
+  if (!activeHashTargetGetValues) return true
+  return isFieldVisibleInTree(resolved, activeHashTargetFields, activeHashTargetGetValues())
 }
 
 // --- Hash Resolution ---
@@ -82,7 +141,10 @@ function resolveHash(hash: string, fields: Record<string, FieldDef>): string | n
  * Provide hash target context. Call once in FormRenderer.
  * Resolves URL hash to field path and manages clear-on-interaction.
  */
-export function provideHashTarget(fields: Record<string, FieldDef>) {
+export function provideHashTarget(
+  fields: Record<string, FieldDef>,
+  getFormValues?: () => Record<string, unknown>
+) {
   const isPassive = inject<boolean>(HASH_TARGET_PASSIVE_KEY, false)
   const route = useRoute()
   const targetPath = ref<string | null>(null)
@@ -126,7 +188,11 @@ export function provideHashTarget(fields: Record<string, FieldDef>) {
   provide<HashTargetContext>(HASH_TARGET_KEY, { targetPath, cleared, activateTarget })
 
   onMounted(() => {
-    if (!isPassive) activeHashTargetActivator = activateTarget
+    if (!isPassive) {
+      activeHashTargetActivator = activateTarget
+      activeHashTargetFields = fields
+      activeHashTargetGetValues = getFormValues || null
+    }
 
     watch(
       () => route.hash,
@@ -145,6 +211,8 @@ export function provideHashTarget(fields: Record<string, FieldDef>) {
     document.removeEventListener('keydown', clearHighlight)
     if (!isPassive && activeHashTargetActivator === activateTarget) {
       activeHashTargetActivator = null
+      activeHashTargetFields = null
+      activeHashTargetGetValues = null
     }
   })
 }

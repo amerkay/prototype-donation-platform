@@ -52,7 +52,12 @@ const charityStore = useCharitySettingsStore()
       </Empty>
 
       <div v-else class="grid gap-6 sm:grid-cols-2">
-        <CampaignCard v-for="f in currentUserFundraisers" :key="f.id" :campaign="f">
+        <CampaignCard
+          v-for="f in currentUserFundraisers"
+          :key="f.id"
+          :campaign="f"
+          :href="`/portal/fundraisers/${f.id}`"
+        >
           <template #actions>
             <div class="flex gap-2">
               <NuxtLink :to="`/portal/fundraisers/${f.id}/edit`" class="flex-1">

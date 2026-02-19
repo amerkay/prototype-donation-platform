@@ -79,7 +79,8 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
   const bodyText = richTextField('bodyText', {
     label: 'Body Text',
     description: 'Main supporting message.',
-    variables: CERTIFICATE_TEMPLATE_VARIABLES
+    variables: CERTIFICATE_TEMPLATE_VARIABLES,
+    maxLength: 400
   })
 
   const layout = radioGroupField('layout', {

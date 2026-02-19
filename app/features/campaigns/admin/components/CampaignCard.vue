@@ -17,6 +17,8 @@ import { Calendar, Heart, Users, TrendingUp, Target, Pencil } from 'lucide-vue-n
 const props = defineProps<{
   campaign: Campaign
   compact?: boolean
+  /** Override the default admin edit URL for all card links */
+  href?: string
 }>()
 
 defineEmits<{
@@ -53,7 +55,7 @@ const activeFundraisersCount = computed(
   () => props.campaign.fundraisers.filter((f) => f.status === 'active').length
 )
 
-const editUrl = computed(() => `/admin/campaigns/${props.campaign.id}`)
+const editUrl = computed(() => props.href ?? `/admin/campaigns/${props.campaign.id}`)
 
 const NuxtLinkComponent = resolveComponent('NuxtLink')
 </script>

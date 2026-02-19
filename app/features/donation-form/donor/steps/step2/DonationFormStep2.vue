@@ -79,7 +79,6 @@ const handleNext = () => {
 <template>
   <div ref="formContainerRef" class="space-y-4">
     <!-- Donor Information Form -->
-    <!-- <div class="rounded-lg border border-transparent px-4 py-6 bg-background/40"> -->
     <FormRenderer
       ref="donorFormRef"
       v-model="donorInfoSection"
@@ -87,10 +86,9 @@ const handleNext = () => {
       :section="useDonorInfoFormSection"
       @submit="handleNext"
     />
-    <!-- </div> -->
 
     <!-- Shipping Address Form (conditional) -->
-    <template v-if="needsShipping">
+    <div v-if="needsShipping" data-field="features.shippingNotice">
       <ShippingNotice :requires-shipping="true" :cart-count="shippingCounts.cartCount" />
       <FormRenderer
         ref="shippingFormRef"
@@ -99,7 +97,7 @@ const handleNext = () => {
         :section="useAddressForm"
         @submit="handleNext"
       />
-    </template>
+    </div>
 
     <!-- Custom Fields (dynamically generated from admin config) -->
     <DonationCustomFields ref="customFieldsRef" tab="step2" @submit="handleNext" />

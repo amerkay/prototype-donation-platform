@@ -1,5 +1,8 @@
 import { ref, computed, onMounted, onUnmounted, type Ref, type CSSProperties } from 'vue'
-import { activateHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
+import {
+  activateHashTarget,
+  canResolveHashTarget
+} from '~/features/_library/form-builder/composables/useHashTarget'
 
 /**
  * Makes preview elements with `data-field` attributes interactive.
@@ -9,6 +12,7 @@ import { activateHashTarget } from '~/features/_library/form-builder/composables
 export function usePreviewEditable(containerRef: { value: Element | null }, enabled: Ref<boolean>) {
   const hoveredField = ref<string | null>(null)
   const hoveredRect = ref<DOMRect | null>(null)
+  let hoveredEl: HTMLElement | null = null
 
   function getContainerElement(): Element | null {
     const container = containerRef.value
@@ -32,11 +36,18 @@ export function usePreviewEditable(containerRef: { value: Element | null }, enab
     return null
   }
 
+  function hashTargetExists(fieldPath: string): boolean {
+    return canResolveHashTarget(fieldPath)
+  }
+
   function onMouseOver(e: Event) {
     if (!enabled.value) return
     const mouseEvent = e as MouseEvent
     const el = findFieldElement(mouseEvent.target)
-    if (el) {
+    if (el && hashTargetExists(el.dataset.field!)) {
+      if (hoveredEl && hoveredEl !== el) hoveredEl.classList.remove('field-editable')
+      hoveredEl = el
+      hoveredEl.classList.add('field-editable')
       hoveredField.value = el.dataset.field!
       hoveredRect.value = el.getBoundingClientRect()
     }
@@ -47,6 +58,8 @@ export function usePreviewEditable(containerRef: { value: Element | null }, enab
     const mouseEvent = e as MouseEvent
     const el = findFieldElement(mouseEvent.relatedTarget)
     if (!el || el.dataset.field !== hoveredField.value) {
+      if (hoveredEl) hoveredEl.classList.remove('field-editable')
+      hoveredEl = null
       hoveredField.value = null
       hoveredRect.value = null
     }
@@ -56,12 +69,14 @@ export function usePreviewEditable(containerRef: { value: Element | null }, enab
     if (!enabled.value) return
     const target = e.target as HTMLElement
     if (target.closest('[data-preview-nav]')) return
-    e.stopPropagation()
-    e.preventDefault()
     // Navigate to specific field under cursor, or current hovered field (e.g. edit button click)
     const el = findFieldElement(e.target)
     const field = el?.dataset.field ?? hoveredField.value
-    if (field) navigateToField(field)
+    if (field && hashTargetExists(field)) {
+      e.stopPropagation()
+      e.preventDefault()
+      navigateToField(field)
+    }
   }
 
   function navigateToField(field?: string) {
