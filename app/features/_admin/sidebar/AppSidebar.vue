@@ -92,10 +92,6 @@ const navMain = computed(() => [
       {
         title: 'Emails',
         url: '/admin/templates/emails'
-      },
-      {
-        title: 'Pages',
-        url: '#'
       }
     ]
   },

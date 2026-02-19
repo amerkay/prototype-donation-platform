@@ -8,15 +8,13 @@
  * For behavior testing of the rendered form, see custom-fields-config-form.nuxt.spec.ts
  */
 import { describe, it, expect, vi } from 'vitest'
-import { buildConditionItemField } from '~/features/_library/custom-fields/forms/condition-field-builder'
-import { operatorRequiresValue } from '~/features/_library/form-builder/conditions'
+import {
+  buildConditionItemField,
+  operatorRequiresValue
+} from '~/features/_library/form-builder/conditions'
 import type { ContextSchema } from '~/features/_library/form-builder/conditions'
 import type { AvailableField } from '~/features/_library/form-builder/composables/useAvailableFields'
-import type {
-  FieldContext,
-  OnChangeContext,
-  FieldGroupDef
-} from '~/features/_library/form-builder/types'
+import type { FieldContext, FieldGroupDef } from '~/features/_library/form-builder/types'
 
 describe('condition-field-builder', () => {
   /**
@@ -97,7 +95,7 @@ describe('condition-field-builder', () => {
       expect(fieldOptions.some((opt) => opt.value === 'amount')).toBe(true)
     })
 
-    it('field selector onChange resets operator and value', () => {
+    it('field selector onChange auto-selects first operator and value', () => {
       const { precedingFields, contextSchema } = createMockFields()
       const builder = buildConditionItemField(precedingFields, contextSchema)
 
@@ -107,17 +105,29 @@ describe('condition-field-builder', () => {
       expect(fieldOnChange).toBeDefined()
 
       const mockSetValue = vi.fn()
-      const mockContext: OnChangeContext = {
+
+      // Number field: auto-selects first operator (greaterOrEqual), value ''
+      fieldOnChange?.({
         value: 'amount',
         values: {},
         root: {},
         setValue: mockSetValue
-      }
+      })
 
-      fieldOnChange?.(mockContext)
-
-      expect(mockSetValue).toHaveBeenCalledWith('operator', '')
+      expect(mockSetValue).toHaveBeenCalledWith('operator', 'greaterOrEqual')
       expect(mockSetValue).toHaveBeenCalledWith('value', '')
+
+      // Enum field: auto-selects 'in' operator, pre-fills first option
+      mockSetValue.mockClear()
+      fieldOnChange?.({
+        value: 'donationType',
+        values: {},
+        root: {},
+        setValue: mockSetValue
+      })
+
+      expect(mockSetValue).toHaveBeenCalledWith('operator', 'in')
+      expect(mockSetValue).toHaveBeenCalledWith('value', ['one-time'])
     })
 
     it('operator selector onChange resets value to empty string', () => {
@@ -130,19 +140,17 @@ describe('condition-field-builder', () => {
       expect(operatorOnChange).toBeDefined()
 
       const mockSetValue = vi.fn()
-      const mockContext: OnChangeContext = {
+      operatorOnChange?.({
         value: 'greaterThan',
-        values: {},
+        values: { field: 'amount' },
         root: {},
         setValue: mockSetValue
-      }
-
-      operatorOnChange?.(mockContext)
+      })
 
       expect(mockSetValue).toHaveBeenCalledWith('value', '')
     })
 
-    it('operator selector onChange initializes array for in/notIn operators', () => {
+    it('operator selector onChange pre-fills first option for in/notIn on enum fields', () => {
       const { precedingFields, contextSchema } = createMockFields()
       const builder = buildConditionItemField(precedingFields, contextSchema)
 
@@ -153,21 +161,32 @@ describe('condition-field-builder', () => {
 
       const mockSetValue = vi.fn()
 
-      // Test 'in' operator
+      // Test 'in' operator on enum field: pre-fills first option
       operatorOnChange?.({
         value: 'in',
-        values: {},
+        values: { field: 'donationType' },
         root: {},
         setValue: mockSetValue
       })
 
-      expect(mockSetValue).toHaveBeenCalledWith('value', [])
+      expect(mockSetValue).toHaveBeenCalledWith('value', ['one-time'])
 
-      // Test 'notIn' operator
+      // Test 'notIn' operator on enum field: pre-fills first option
       mockSetValue.mockClear()
       operatorOnChange?.({
         value: 'notIn',
-        values: {},
+        values: { field: 'donationType' },
+        root: {},
+        setValue: mockSetValue
+      })
+
+      expect(mockSetValue).toHaveBeenCalledWith('value', ['one-time'])
+
+      // Test 'in' on non-enum field: empty array
+      mockSetValue.mockClear()
+      operatorOnChange?.({
+        value: 'in',
+        values: { field: 'amount' },
         root: {},
         setValue: mockSetValue
       })

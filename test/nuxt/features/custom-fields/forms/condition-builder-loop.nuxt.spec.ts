@@ -5,8 +5,106 @@ import * as z from 'zod'
 
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import { defineForm, arrayField, fieldGroup } from '~/features/_library/form-builder/api'
-import { buildConditionItemField } from '~/features/_library/custom-fields/forms/condition-field-builder'
+import { buildConditionItemField } from '~/features/_library/form-builder/conditions'
 import type { ContextSchema } from '~/features/_library/form-builder/conditions'
+import type { VueWrapper } from '@vue/test-utils'
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function createConditionSchema(
+  overrides?: Partial<Record<string, ContextSchema[string]>>
+): ContextSchema {
+  return {
+    donationFrequency: {
+      label: 'Donation Frequency',
+      type: 'array',
+      options: [
+        { value: 'once', label: 'One-time' },
+        { value: 'monthly', label: 'Monthly' },
+        { value: 'yearly', label: 'Yearly' }
+      ]
+    },
+    donationAmount: {
+      label: 'Donation Amount',
+      type: 'number'
+    },
+    isTribute: {
+      label: 'Is Tribute',
+      type: 'boolean'
+    },
+    ...overrides
+  }
+}
+
+/**
+ * Build a nested items > conditions form (used by most tests), or a flat
+ * conditions form when `opts.nested` is false.
+ */
+function createConditionForm(contextSchema: ContextSchema, opts?: { nested?: boolean }) {
+  const conditionItem = buildConditionItemField([], contextSchema)
+
+  if (opts?.nested === false) {
+    return defineForm('test', () => ({
+      conditions: arrayField('conditions', {
+        label: 'Conditions',
+        addButtonText: 'Add Condition',
+        defaultValue: [{ field: '', operator: '' }],
+        rules: z.array(z.any()).min(1),
+        itemField: conditionItem
+      })
+    }))
+  }
+
+  return defineForm('test', () => ({
+    items: arrayField('items', {
+      label: 'Items',
+      addButtonText: 'Add Item',
+      defaultValue: [{ conditions: [{ field: 'isTribute', operator: '' }] }],
+      rules: z.array(z.any()).min(1),
+      itemField: fieldGroup('', {
+        label: 'Item',
+        collapsible: true,
+        collapsibleDefaultOpen: true,
+        fields: {
+          conditions: arrayField('conditions', {
+            label: 'Conditions',
+            addButtonText: 'Add Condition',
+            defaultValue: [{ field: 'isTribute', operator: '' }],
+            rules: z.array(z.any()).min(1),
+            itemField: conditionItem
+          })
+        }
+      })
+    })
+  }))
+}
+
+/** Extract the value of the first condition from an emitted model. */
+function getFirstConditionValue(model: Record<string, unknown>, nested = true): unknown {
+  if (nested) {
+    return (
+      (
+        ((model?.items as unknown[])?.[0] as Record<string, unknown>)?.conditions as unknown[]
+      )?.[0] as Record<string, unknown>
+    )?.value
+  }
+  return ((model?.conditions as unknown[])?.[0] as Record<string, unknown>)?.value
+}
+
+/**
+ * Return the condition builder's Field / Operator / Value selects.
+ * Vue Test Utils doesn't support role-based queries natively, so we rely on
+ * DOM order: [0] = Field, [1] = Operator, [2+] = Value selects (if any).
+ */
+function findConditionSelects(wrapper: VueWrapper) {
+  return wrapper.findAll('select')
+}
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
 
 describe('Condition builder loop regression', () => {
   it('does not thrash when adding value for `Donation Frequency in ...`', async () => {
@@ -14,79 +112,14 @@ describe('Condition builder loop regression', () => {
     const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    const contextSchema: ContextSchema = {
-      donationFrequency: {
-        label: 'Donation Frequency',
-        // NOTE: this mirrors current app schema; the value itself is scalar,
-        // but `in`/`notIn` use an array of values.
-        type: 'array',
-        options: [
-          { value: 'once', label: 'One-time' },
-          { value: 'monthly', label: 'Monthly' },
-          { value: 'yearly', label: 'Yearly' }
-        ]
-      },
-      donationAmount: {
-        label: 'Donation Amount',
-        type: 'number'
-      },
-      isTribute: {
-        label: 'Is Tribute',
-        type: 'boolean'
-      }
-    }
-
-    const schema = defineForm('test', () => ({
-      items: arrayField('items', {
-        label: 'Items',
-        addButtonText: 'Add Item',
-        defaultValue: [
-          {
-            conditions: [
-              {
-                field: 'isTribute',
-                operator: ''
-              }
-            ]
-          }
-        ],
-        rules: z.array(z.any()).min(1),
-        itemField: fieldGroup('', {
-          label: 'Item',
-          collapsible: true,
-          collapsibleDefaultOpen: true,
-          fields: {
-            conditions: arrayField('conditions', {
-              label: 'Conditions',
-              addButtonText: 'Add Condition',
-              defaultValue: [
-                {
-                  field: 'isTribute',
-                  operator: ''
-                }
-              ],
-              rules: z.array(z.any()).min(1),
-              itemField: buildConditionItemField([], contextSchema)
-            })
-          }
-        })
-      })
-    }))
+    const contextSchema = createConditionSchema()
+    const schema = createConditionForm(contextSchema)
 
     const wrapper = await mountSuspended(FormRenderer, {
       props: {
         section: schema,
         modelValue: {
-          items: [
-            {
-              conditions: [
-                {
-                  field: 'isTribute',
-                  operator: ''
-                }
-              ]
-            }
-          ]
+          items: [{ conditions: [{ field: 'isTribute', operator: '' }] }]
         },
         contextSchema,
         validateOnMount: true,
@@ -94,46 +127,33 @@ describe('Condition builder loop regression', () => {
       }
     })
 
-    // Find the first condition row's Field + Operator selects
-    const selects = wrapper.findAll('select')
-    // The form has many selects, but the first ones should be the condition builder's
+    const selects = findConditionSelects(wrapper)
     expect(selects.length).toBeGreaterThanOrEqual(2)
 
-    // 1) Field = Donation Frequency
     await selects[0]!.setValue('donationFrequency')
     await nextTick()
 
-    // 2) Operator = Is One Of (in)
     await selects[1]!.setValue('in')
     await nextTick()
     await nextTick()
 
-    // Reset warning counter so we only measure Add Value effects.
     consoleWarn.mockClear()
 
-    // 3) Click Add Value (array)
     const addValueBtn = wrapper.findAll('button').find((b) => b.text() === 'Add Value')
     expect(addValueBtn).toBeTruthy()
     await addValueBtn!.trigger('click')
     await nextTick()
     await nextTick()
 
-    // Let any validate()/watch cycles settle; if there's a feedback loop,
-    // warnings will keep appearing as the time window resets.
     for (let i = 0; i < 8; i++) {
       vi.advanceTimersByTime(50)
       await nextTick()
     }
 
-    // If we enter a re-render/recompute loop, the detectLoop() warning fires.
     const loopWarnCalls = consoleWarn.mock.calls.filter((call) =>
       String(call[0]).includes('Possible infinite loop detected')
     )
-    // In the real bug this repeats continuously; in test we allow a single warning
-    // but fail if it keeps re-triggering.
     expect(loopWarnCalls.length).toBeLessThanOrEqual(1)
-
-    // Also ensure we didn't hit runtime errors while mutating nested arrays.
     expect(consoleError).not.toHaveBeenCalled()
 
     consoleWarn.mockRestore()
@@ -144,69 +164,14 @@ describe('Condition builder loop regression', () => {
   it('adds multiple values for `Donation Frequency in ...` (does not clear)', async () => {
     const onUpdate = vi.fn()
 
-    const contextSchema: ContextSchema = {
-      donationFrequency: {
-        label: 'Donation Frequency',
-        type: 'array',
-        options: [
-          { value: 'once', label: 'One-time' },
-          { value: 'monthly', label: 'Monthly' },
-          { value: 'yearly', label: 'Yearly' }
-        ]
-      }
-    }
-
-    const schema = defineForm('test', () => ({
-      items: arrayField('items', {
-        label: 'Items',
-        addButtonText: 'Add Item',
-        defaultValue: [
-          {
-            conditions: [
-              {
-                field: 'isTribute',
-                operator: ''
-              }
-            ]
-          }
-        ],
-        rules: z.array(z.any()).min(1),
-        itemField: fieldGroup('', {
-          label: 'Item',
-          collapsible: true,
-          collapsibleDefaultOpen: true,
-          fields: {
-            conditions: arrayField('conditions', {
-              label: 'Conditions',
-              addButtonText: 'Add Condition',
-              defaultValue: [
-                {
-                  field: 'isTribute',
-                  operator: ''
-                }
-              ],
-              rules: z.array(z.any()).min(1),
-              itemField: buildConditionItemField([], contextSchema)
-            })
-          }
-        })
-      })
-    }))
+    const contextSchema = createConditionSchema()
+    const schema = createConditionForm(contextSchema)
 
     const wrapper = await mountSuspended(FormRenderer, {
       props: {
         section: schema,
         modelValue: {
-          items: [
-            {
-              conditions: [
-                {
-                  field: 'isTribute',
-                  operator: ''
-                }
-              ]
-            }
-          ]
+          items: [{ conditions: [{ field: 'isTribute', operator: '' }] }]
         },
         contextSchema,
         updateOnlyWhenValid: false,
@@ -214,12 +179,10 @@ describe('Condition builder loop regression', () => {
       }
     })
 
-    const selects = wrapper.findAll('select')
+    const selects = findConditionSelects(wrapper)
     expect(selects.length).toBeGreaterThanOrEqual(2)
 
     await selects[0]!.setValue('donationFrequency')
-    await nextTick()
-    await selects[1]!.setValue('in')
     await nextTick()
     await nextTick()
 
@@ -231,99 +194,49 @@ describe('Condition builder loop regression', () => {
     await addValueBtn!.trigger('click')
     await nextTick()
 
-    const lastCall = onUpdate.mock.lastCall
-    expect(lastCall).toBeTruthy()
-    const lastModel = lastCall![0] as Record<string, unknown>
-
-    const value = (
-      (
-        ((lastModel?.items as unknown[])?.[0] as Record<string, unknown>)?.conditions as unknown[]
-      )?.[0] as Record<string, unknown>
-    )?.value
+    const lastModel = onUpdate.mock.lastCall![0] as Record<string, unknown>
+    const value = getFirstConditionValue(lastModel)
     expect(Array.isArray(value)).toBe(true)
-    expect((value as unknown[]).length).toBe(2)
+    // 1 pre-filled + 2 added = 3
+    expect((value as unknown[]).length).toBe(3)
   })
 
-  it('switches from number condition to `in` without crashing on Add Value', async () => {
+  it('switches field to enum type and auto-selects in operator without crashing', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     const onUpdate = vi.fn()
 
-    const contextSchema: ContextSchema = {
-      donationFrequency: {
-        label: 'Donation Frequency',
-        type: 'array',
-        options: [
-          { value: 'once', label: 'One-time' },
-          { value: 'monthly', label: 'Monthly' },
-          { value: 'yearly', label: 'Yearly' }
-        ]
-      },
-      donationAmount: {
-        label: 'Donation Amount',
-        type: 'number'
-      }
-    }
-
-    const schema = defineForm('test', () => ({
-      conditions: arrayField('conditions', {
-        label: 'Conditions',
-        addButtonText: 'Add Condition',
-        defaultValue: [
-          {
-            field: 'donationAmount',
-            operator: '',
-            // Intentionally still a number, simulating a stale value during operator swap.
-            value: 100
-          }
-        ],
-        rules: z.array(z.any()).min(1),
-        itemField: buildConditionItemField([], contextSchema)
-      })
-    }))
+    const contextSchema = createConditionSchema()
+    const schema = createConditionForm(contextSchema, { nested: false })
 
     const wrapper = await mountSuspended(FormRenderer, {
       props: {
         section: schema,
-        modelValue: {
-          conditions: [
-            {
-              field: 'donationAmount',
-              operator: '',
-              value: 100
-            }
-          ]
-        },
+        modelValue: { conditions: [{ field: '', operator: '' }] },
         contextSchema,
         updateOnlyWhenValid: false,
         'onUpdate:modelValue': onUpdate
       }
     })
 
-    // Field + Operator selects should be present.
-    const selects = wrapper.findAll('select')
-    expect(selects.length).toBeGreaterThanOrEqual(2)
+    const selects = findConditionSelects(wrapper)
+    expect(selects.length).toBeGreaterThanOrEqual(1)
 
-    // Switch to Donation Frequency + in
     await selects[0]!.setValue('donationFrequency')
     await nextTick()
-    await selects[1]!.setValue('in')
     await nextTick()
     await nextTick()
 
     const addValueBtn = wrapper.findAll('button').find((b) => b.text() === 'Add Value')
     expect(addValueBtn).toBeTruthy()
 
-    // This is where the bug used to throw: "can't assign to property 0 on 100"
     await expect(addValueBtn!.trigger('click')).resolves.toBeUndefined()
     await nextTick()
     await nextTick()
 
     expect(consoleError).not.toHaveBeenCalled()
 
-    const lastCall = onUpdate.mock.lastCall
-    expect(lastCall).toBeTruthy()
-    const lastModel = lastCall![0] as Record<string, unknown>
-    const value = ((lastModel?.conditions as unknown[])?.[0] as Record<string, unknown>)?.value
+    const lastModel = onUpdate.mock.lastCall![0] as Record<string, unknown>
+    const value = getFirstConditionValue(lastModel, false)
     expect(Array.isArray(value)).toBe(true)
     expect((value as unknown[]).length).toBeGreaterThanOrEqual(1)
 

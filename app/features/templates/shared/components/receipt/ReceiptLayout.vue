@@ -105,12 +105,14 @@ const showGiftAidSection = computed(
       </div>
 
       <!-- Tax deductible statement -->
+      <!-- eslint-disable vue/no-v-html -- sanitized -->
       <div
         v-if="sanitizedTaxStatement"
         class="text-sm text-gray-600 mb-6 prose prose-sm max-w-none"
         :data-field="targets?.taxStatement"
         v-html="sanitizedTaxStatement"
       />
+      <!-- eslint-enable vue/no-v-html -->
 
       <!-- Gift Aid declaration -->
       <div

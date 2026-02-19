@@ -99,6 +99,8 @@ app/features/[feature-name]/
 3. `pnpm analyze` outputs chunk sizes mid-stream, not at end; grep for `.js` to find bundle info
 4. UX polish: previews show real data (linked products, not placeholders), toasts on every save
 5. Archived entities must disable destructive/additive actions (e.g., no adding products to archived templates)
+6. `form-builder/filters/` provides `useFilterState(id, schema, options?)` — condition-builder-based filters with auto form+predicate+URL sync via `_f` param
+7. `form-builder/conditions/ui/` houses condition builder UI (moved from custom-fields); condition barrel re-exports it
 
 <!-- end continuous learning notes -->
 

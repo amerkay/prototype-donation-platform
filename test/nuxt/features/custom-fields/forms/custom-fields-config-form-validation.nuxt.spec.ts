@@ -3,7 +3,7 @@ import type { ContextSchema } from '~/features/_library/form-builder/conditions'
 import {
   createFieldReferenceSchema,
   validateCustomFieldConditions
-} from '~/features/_library/custom-fields/forms/validation-helpers'
+} from '~/features/_library/form-builder/conditions'
 import type { AvailableField } from '~/features/_library/form-builder/composables/useAvailableFields'
 
 describe('custom-fields-config-form - Field Reference Validation', () => {
@@ -20,35 +20,30 @@ describe('custom-fields-config-form - Field Reference Validation', () => {
       expect(() => schema.parse('field_b')).not.toThrow()
     })
 
-    it('rejects references to non-existent fields with clear error message', () => {
+    it.each([
+      {
+        input: 'nonexistent_field',
+        error: /This field is no longer available/,
+        desc: 'non-existent field'
+      },
+      {
+        input: 'field_b',
+        error: /This field is no longer available/,
+        desc: 'removed field'
+      },
+      {
+        input: '',
+        error: /Field is required/,
+        desc: 'empty reference'
+      }
+    ])('rejects $desc', ({ input, error }) => {
       const availableFields: AvailableField[] = [
         { key: 'field_a', label: 'Field A', type: 'string', group: 'Form Fields' }
       ]
 
       const schema = createFieldReferenceSchema(availableFields, 'field')
 
-      expect(() => schema.parse('nonexistent_field')).toThrow(/This field is no longer available/)
-    })
-
-    it('rejects references when field is removed from available list', () => {
-      const availableFields: AvailableField[] = [
-        { key: 'field_a', label: 'Field A', type: 'string', group: 'Form Fields' }
-      ]
-
-      const schema = createFieldReferenceSchema(availableFields, 'field')
-
-      // field_b was previously valid but has been removed
-      expect(() => schema.parse('field_b')).toThrow(/This field is no longer available/)
-    })
-
-    it('rejects empty field reference with required error', () => {
-      const availableFields: AvailableField[] = [
-        { key: 'field_a', label: 'Field A', type: 'string', group: 'Form Fields' }
-      ]
-
-      const schema = createFieldReferenceSchema(availableFields, 'field')
-
-      expect(() => schema.parse('')).toThrow(/Field is required/)
+      expect(() => schema.parse(input)).toThrow(error)
     })
 
     it('accepts references to external context fields', () => {

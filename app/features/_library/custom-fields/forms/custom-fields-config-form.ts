@@ -22,8 +22,10 @@ import {
 } from '~/features/_library/custom-fields/fields'
 import type { ContextSchema } from '~/features/_library/form-builder/conditions'
 import type { AvailableField } from '~/features/_library/form-builder/composables/useAvailableFields'
-import { buildConditionItemField } from './condition-field-builder'
-import { validateCustomFieldConditions } from './validation-helpers'
+import {
+  buildConditionItemField,
+  validateCustomFieldConditions
+} from '~/features/_library/form-builder/conditions'
 import { extractAvailableFields } from './field-extraction'
 
 /** Static schema or function that resolves schema from live root form values */
@@ -233,7 +235,11 @@ export function useCustomFieldsConfigForm(
                       { value: 'all', label: 'All match' },
                       { value: 'any', label: 'Any match' },
                       { value: 'none', label: 'None match' }
-                    ]
+                    ],
+                    visibleWhen: (ctx: FieldContext) => {
+                      const conditions = (ctx.values as Record<string, unknown>).conditions
+                      return Array.isArray(conditions) && conditions.length > 1
+                    }
                   }),
 
                   conditions: arrayField('conditions', {

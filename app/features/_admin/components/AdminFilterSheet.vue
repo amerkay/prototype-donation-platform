@@ -18,7 +18,6 @@ defineProps<{
 
 const emit = defineEmits<{
   'update:open': [value: boolean]
-  apply: []
   reset: []
 }>()
 </script>
@@ -36,13 +35,12 @@ const emit = defineEmits<{
         <SheetDescription>Narrow down results using the filters below.</SheetDescription>
       </SheetHeader>
 
-      <div class="flex-1 overflow-y-auto px-1 py-4">
+      <div class="flex-1 overflow-y-auto px-4 py-4">
         <slot />
       </div>
 
-      <SheetFooter class="flex-row gap-2 border-t pt-4">
-        <Button variant="outline" class="flex-1" @click="emit('reset')">Reset</Button>
-        <Button class="flex-1" @click="emit('apply')">Apply</Button>
+      <SheetFooter class="border-t pt-4">
+        <Button variant="outline" class="w-full" @click="emit('reset')">Reset</Button>
       </SheetFooter>
     </SheetContent>
   </Sheet>

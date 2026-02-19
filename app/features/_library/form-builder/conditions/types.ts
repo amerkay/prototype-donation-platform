@@ -89,6 +89,9 @@ export interface ContextFieldSchema {
   /** Predefined options for enum fields (optional) */
   options?: ContextFieldOption[]
 
+  /** Group name for UI organization in dropdowns */
+  group?: string
+
   /** Optional help text */
   description?: string
 

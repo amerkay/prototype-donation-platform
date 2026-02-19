@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed, unref } from 'vue'
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
+import {
+  NativeSelect,
+  NativeSelectOptGroup,
+  NativeSelectOption
+} from '@/components/ui/native-select'
 import type { FieldProps, FieldEmits, SelectFieldDef } from '~/features/_library/form-builder/types'
 import { useFieldWrapper } from '~/features/_library/form-builder/composables/useFieldWrapper'
 import { useFormBuilderContext } from '~/features/_library/form-builder/composables/useFormBuilderContext'
@@ -33,6 +37,25 @@ const resolvedOptions = computed(() => {
     return opts(fieldContext.value)
   }
   return opts
+})
+
+// Group options by their group property (if any have groups)
+const hasGroups = computed(() => resolvedOptions.value.some((o) => o.group))
+
+const groupedOptions = computed(() => {
+  if (!hasGroups.value) return null
+  const groups = new Map<string, typeof resolvedOptions.value>()
+  const ungrouped: typeof resolvedOptions.value = []
+  for (const opt of resolvedOptions.value) {
+    if (opt.group) {
+      const existing = groups.get(opt.group)
+      if (existing) existing.push(opt)
+      else groups.set(opt.group, [opt])
+    } else {
+      ungrouped.push(opt)
+    }
+  }
+  return { ungrouped, groups }
 })
 
 const selectValue = computed({
@@ -68,13 +91,37 @@ const selectValue = computed({
       <NativeSelectOption v-if="resolvedPlaceholder" value="">
         {{ resolvedPlaceholder }}
       </NativeSelectOption>
-      <NativeSelectOption
-        v-for="option in resolvedOptions"
-        :key="option.value"
-        :value="String(option.value)"
-      >
-        {{ option.label }}
-      </NativeSelectOption>
+
+      <!-- Grouped options -->
+      <template v-if="groupedOptions">
+        <NativeSelectOption
+          v-for="opt in groupedOptions.ungrouped"
+          :key="opt.value"
+          :value="String(opt.value)"
+        >
+          {{ opt.label }}
+        </NativeSelectOption>
+        <NativeSelectOptGroup
+          v-for="[groupName, opts] in groupedOptions.groups"
+          :key="groupName"
+          :label="groupName"
+        >
+          <NativeSelectOption v-for="opt in opts" :key="opt.value" :value="String(opt.value)">
+            {{ opt.label }}
+          </NativeSelectOption>
+        </NativeSelectOptGroup>
+      </template>
+
+      <!-- Flat options -->
+      <template v-else>
+        <NativeSelectOption
+          v-for="option in resolvedOptions"
+          :key="option.value"
+          :value="String(option.value)"
+        >
+          {{ option.label }}
+        </NativeSelectOption>
+      </template>
     </NativeSelect>
   </FormFieldWrapper>
 </template>

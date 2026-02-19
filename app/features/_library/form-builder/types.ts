@@ -227,9 +227,9 @@ export interface CheckboxFieldConfig extends BaseFieldConfig {
 
 export interface SelectFieldConfig extends BaseFieldConfig {
   options:
-    | Array<{ value: string | number; label: string }>
-    | ComputedRef<Array<{ value: string | number; label: string }>>
-    | ((ctx: FieldContext) => Array<{ value: string | number; label: string }>)
+    | Array<{ value: string | number; label: string; group?: string }>
+    | ComputedRef<Array<{ value: string | number; label: string; group?: string }>>
+    | ((ctx: FieldContext) => Array<{ value: string | number; label: string; group?: string }>)
   searchPlaceholder?: string
   notFoundText?: string
 }

@@ -1,5 +1,5 @@
 /**
- * Validation helpers for custom fields configuration
+ * Validation helpers for condition field references
  * Centralizes validation logic for conditions and field references
  */
 import * as z from 'zod'
@@ -10,7 +10,7 @@ import type { ContextSchema } from '~/features/_library/form-builder/conditions'
  * Validates condition field references after array reorder
  * Directly checks references against available fields and injects errors
  *
- * @param items - The current list of custom fields in the array
+ * @param items - The current list of fields in the array
  * @param contextSchema - External context schema (optional)
  * @param arrayPath - The vee-validate path to the array field
  * @param setters - Object containing setFieldError and setFieldTouched functions
@@ -42,10 +42,10 @@ export function validateCustomFieldConditions(
     const conditions = visibleWhen.conditions as Array<Record<string, unknown>> | undefined
     if (!conditions || !Array.isArray(conditions)) return
 
-    // Build available field IDs: preceding custom fields + external context
+    // Build available field IDs: preceding fields + external context
     const availableFieldIds = new Set<string>()
 
-    // Add preceding custom fields (only those before current index)
+    // Add preceding fields (only those before current index)
     for (let i = 0; i < index; i++) {
       const precedingItem = items[i]
       const precedingId = precedingItem?.id as string | undefined
@@ -62,7 +62,6 @@ export function validateCustomFieldConditions(
       const fieldRef = condition.field as string | undefined
 
       // Construct path to the specific condition field
-      // Format: customFields.fields[index].visibilityConditions.visibleWhen.conditions[cIndex].field
       const fieldPath = `${arrayPath}[${index}].visibilityConditions.visibleWhen.conditions[${conditionIndex}].field`
 
       setFieldTouched(fieldPath, true)
@@ -89,13 +88,6 @@ export function validateCustomFieldConditions(
  * @param availableFields - List of fields that can be referenced
  * @param fieldName - Name of the field being validated (for error messages)
  * @returns Zod schema that validates field existence
- *
- * @example
- * ```ts
- * const schema = createFieldReferenceSchema(allAvailableFields, 'field')
- * schema.parse('field_a') // OK if field_a exists
- * schema.parse('invalid') // Error: "This field is no longer available..."
- * ```
  */
 export function createFieldReferenceSchema(
   availableFields: AvailableField[],

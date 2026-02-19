@@ -72,11 +72,7 @@ const activePreset = computed(() => {
   <div class="flex items-center gap-2">
     <Popover>
       <PopoverTrigger as-child>
-        <Button
-          variant="outline"
-          size="sm"
-          :class="cn('justify-start text-left font-normal')"
-        >
+        <Button variant="outline" size="sm" :class="cn('justify-start text-left font-normal')">
           <CalendarIcon class="mr-2 h-4 w-4" />
           {{ triggerLabel }}
         </Button>

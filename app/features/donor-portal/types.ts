@@ -75,6 +75,7 @@ export interface Transaction {
     honoreeName: string
   }
   giftAid: boolean
+  customFields?: Record<string, string>
 
   createdAt: string
   receiptUrl?: string

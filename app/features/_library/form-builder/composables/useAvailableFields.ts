@@ -5,7 +5,8 @@
 
 import { computed } from 'vue'
 import type { FieldDef, FieldContext } from '~/features/_library/form-builder/types'
-import type { ContextSchema, ContextFieldOption } from '~/features/_library/form-builder/conditions'
+import type { ContextFieldOption } from '~/features/_library/form-builder/conditions'
+import { contextSchemaToFields } from '~/features/_library/form-builder/conditions/ui/condition-utils'
 import { resolveText } from './useResolvedFieldMeta'
 import { useFormBuilderContext } from './useFormBuilderContext'
 /**
@@ -25,7 +26,7 @@ export interface AvailableField {
   options?: ContextFieldOption[]
 
   /** Group identifier for UI organization */
-  group: 'Form Fields' | 'External Context'
+  group: string
 }
 
 /**
@@ -108,25 +109,6 @@ function extractFormFields(
 }
 
 /**
- * Extract fields from external context schema
- */
-function extractContextFields(contextSchema: ContextSchema): AvailableField[] {
-  const result: AvailableField[] = []
-
-  for (const [key, schema] of Object.entries(contextSchema)) {
-    result.push({
-      key,
-      label: schema.label,
-      type: schema.type,
-      options: schema.options,
-      group: 'External Context'
-    })
-  }
-
-  return result
-}
-
-/**
  * Composable to get available fields for condition builder
  * Combines form fields and external context fields
  *
@@ -146,7 +128,7 @@ export function useAvailableFields(formFields?: Record<string, FieldDef>) {
     }
 
     // Extract external context fields
-    fields.push(...extractContextFields(contextSchema.value))
+    fields.push(...contextSchemaToFields(contextSchema.value, 'External Context'))
 
     return fields
   })
