@@ -16,7 +16,7 @@ These modules are **domain-agnostic and reusable**. They MUST NEVER contain dona
 Schema-driven form framework using Composition API + vee-validate + Zod.
 
 - Entry point: `defineForm()` in `api/defineForm.ts`
-- Field constructors: `textField()`, `numberField()`, `selectField()`, `arrayField()`, etc.
+- Field constructors: `textField()`, `numberField()`, `selectField()`, `comboboxField()`, `arrayField()`, etc.
 - All fields support: `label`, `rules`, `visibleWhen`, `disabled`, `onChange`, `onVisibilityChange`
 - Condition system in `conditions/` — declarative `ConditionGroup` for serializable visibility rules
 - Condition builder UI in `conditions/ui/` — shared field/operator/value builders for both custom-fields and filter UIs

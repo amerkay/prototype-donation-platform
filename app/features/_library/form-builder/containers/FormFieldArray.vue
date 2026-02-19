@@ -267,6 +267,52 @@ function onDrop(event: DragEvent) {
   event.stopPropagation()
 }
 
+// --- Touch event handlers (mobile drag & drop) ---
+function findItemVeeIndex(el: Element | null): number | null {
+  const item = el?.closest('[data-vee-index]') as HTMLElement | null
+  if (!item) return null
+  const idx = Number(item.dataset.veeIndex)
+  return Number.isFinite(idx) ? idx : null
+}
+
+function onTouchStart(event: TouchEvent, veeIndex: number) {
+  if (!isSortable.value) return
+  event.preventDefault()
+
+  draggedIndex.value = veeIndex
+  isDragging.value = true
+}
+
+function onTouchMove(event: TouchEvent) {
+  if (draggedIndex.value === null) return
+  event.preventDefault()
+
+  const touch = event.touches[0]
+  if (!touch) return
+
+  const targetEl = document.elementFromPoint(touch.clientX, touch.clientY)
+  const targetIdx = findItemVeeIndex(targetEl)
+  if (targetIdx === null || targetIdx === draggedIndex.value) return
+
+  // Reuse same visual reorder logic as onDragOver
+  const draggedKey = baseKeys.value[draggedIndex.value]
+  if (!draggedKey) return
+
+  const newOrder = baseKeys.value.filter((k) => k !== draggedKey)
+  const targetKey = baseKeys.value[targetIdx]
+  let insertIndex = newOrder.indexOf(targetKey!)
+  if (insertIndex !== -1) {
+    if (draggedIndex.value < targetIdx) insertIndex++
+    newOrder.splice(insertIndex, 0, draggedKey)
+    visualOrder.value = newOrder
+  }
+  dragOverIndex.value = targetIdx
+}
+
+function onTouchEnd() {
+  onDragEnd()
+}
+
 // Memoized item field metadata - prevents infinite re-render loop
 // Maps each item's index to its resolved field metadata
 const itemFieldMetaMap = computed(() => {
@@ -410,6 +456,7 @@ function removeItem(index: number) {
         <div
           v-for="item in orderedItems"
           :key="`${item.key}-${item.veeIndex}`"
+          :data-vee-index="item.veeIndex"
           :class="
             cn(
               'relative flex items-start rounded-lg border bg-card transition-colors',
@@ -433,6 +480,9 @@ function removeItem(index: number) {
             draggable="true"
             @dragstart="onDragStart($event, item.veeIndex)"
             @dragend="onDragEnd"
+            @touchstart="onTouchStart($event, item.veeIndex)"
+            @touchmove="onTouchMove"
+            @touchend="onTouchEnd"
           >
             <Icon name="lucide:grip-vertical" class="size-4!" />
           </span>
