@@ -293,6 +293,13 @@ const itemFieldMetaMap = computed(() => {
   return map
 })
 
+// Check if an item field is a field-group with visible heading (label, legend, or collapsible)
+function isLabeledFieldGroup(meta: FieldDef): boolean {
+  if (meta.type !== 'field-group') return false
+  const m = meta as { label?: string; legend?: string; collapsible?: boolean }
+  return !!(m.label || m.legend || m.collapsible)
+}
+
 // Helper function to get resolved itemField metadata for a specific item index
 function getItemFieldMeta(index: number) {
   return itemFieldMetaMap.value.get(index)!
@@ -406,7 +413,8 @@ function removeItem(index: number) {
           :class="
             cn(
               'relative flex items-start rounded-lg border bg-card transition-colors',
-              isSortable ? 'ff-array__item px-0 pr-9' : 'ff-array__item--simple px-3 pr-10',
+              isSortable ? 'ff-array__item px-0 pr-9' : 'ff-array__item--simple pr-10',
+              !isSortable && getItemFieldMeta(item.veeIndex).type === 'field-group' && 'px-3',
               draggedIndex === item.veeIndex && 'ff-array__item--dragged opacity-40 scale-95'
             )
           "
@@ -419,7 +427,7 @@ function removeItem(index: number) {
             :class="
               cn(
                 'drag-handle shrink-0 py-1.5 px-2 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none',
-                getItemFieldMeta(item.veeIndex).type === 'field-group' ? 'mt-3' : 'mt-1'
+                isLabeledFieldGroup(getItemFieldMeta(item.veeIndex)) ? 'mt-3' : 'mt-1'
               )
             "
             draggable="true"
@@ -439,7 +447,7 @@ function removeItem(index: number) {
               :class="
                 cn(
                   'border-0 bg-transparent rounded-none',
-                  getItemFieldMeta(item.veeIndex).type === 'field-group' ? 'my-4' : ''
+                  isLabeledFieldGroup(getItemFieldMeta(item.veeIndex)) && 'my-4'
                 )
               "
             />
@@ -452,7 +460,7 @@ function removeItem(index: number) {
             :class="
               cn(
                 'absolute right-0.5 h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10',
-                getItemFieldMeta(item.veeIndex).type === 'field-group' ? 'top-2.5' : 'top-0.5'
+                isLabeledFieldGroup(getItemFieldMeta(item.veeIndex)) ? 'top-2.5' : 'top-0.5'
               )
             "
             :aria-label="meta.removeButtonText || 'Remove item'"

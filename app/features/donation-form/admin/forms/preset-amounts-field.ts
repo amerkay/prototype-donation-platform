@@ -50,7 +50,7 @@ export function createPresetAmountsField() {
         label: enableDescriptions ? displayLabel : undefined,
         collapsible: enableDescriptions,
         collapsibleDefaultOpen: false,
-        wrapperClass: enableDescriptions ? '' : 'my-2.5!',
+        wrapperClass: enableDescriptions ? '' : 'gap-0 [&_.grid]:p-0!',
         fields: {
           amount: currencyField('amount', {
             label: enableDescriptions ? 'Amount' : undefined,
