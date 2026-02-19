@@ -19,6 +19,8 @@ Schema-driven form framework using Composition API + vee-validate + Zod.
 - Field constructors: `textField()`, `numberField()`, `selectField()`, `arrayField()`, etc.
 - All fields support: `label`, `rules`, `visibleWhen`, `disabled`, `onChange`, `onVisibilityChange`
 - Condition system in `conditions/` — declarative `ConditionGroup` for serializable visibility rules
+- Condition builder UI in `conditions/ui/` — shared field/operator/value builders for both custom-fields and filter UIs
+- Filter system in `filters/` — `useFilterState(id, schema, options?)` for condition-builder-based admin filters with URL sync
 - Containers: `FormFieldArray` (repeating), `FormFieldGroup` (collapsible), `FormFieldTabs`
 - Store auto-mapping via `$storePath` metadata + `useAdminConfigForm()`
 - No Pinia stores — state managed via vee-validate + Vue Composition API

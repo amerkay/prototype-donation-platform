@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { provide, watch } from 'vue'
 import DonationFlowWizard from '~/features/donation-form/donor/DonationFlowWizard.vue'
 import DevJsonPreview from '~/features/_admin/components/DevJsonPreview.vue'
 import PreviewEditable from '~/features/_admin/components/PreviewEditable.vue'

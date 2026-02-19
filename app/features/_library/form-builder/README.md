@@ -171,6 +171,10 @@ const plan = radioGroupField('plan', {
 
 ```typescript
 import {
+  dateField,
+  colorField,
+  richTextField,
+  imageUploadField,
   sliderField,
   emojiField,
   cardField,
@@ -178,6 +182,37 @@ import {
   hiddenField,
   componentField
 } from '~/features/form-builder/api'
+
+// Date picker with optional min/max constraints
+const startDate = dateField('startDate', {
+  label: 'Start Date',
+  minDate: '2026-01-01', // ISO string
+  maxDate: '2026-12-31',
+  rules: z.string().min(1)
+})
+
+// Color picker (swatch + hex input)
+const brandColor = colorField('brandColor', {
+  label: 'Brand Color',
+  defaultValue: '#3b82f6'
+})
+
+// Rich text editor (Tiptap WYSIWYG)
+const body = richTextField('body', {
+  label: 'Content',
+  variables: [
+    { value: '{{name}}', label: 'Donor Name' },
+    { value: '{{amount}}', label: 'Amount' }
+  ] // Optional insertable variables (also accepts ComputedRef)
+})
+
+// Image upload with constraints
+const logo = imageUploadField('logo', {
+  label: 'Logo',
+  accept: 'image/png,image/jpeg',
+  maxSizeMB: 5,
+  recommendedDimensions: '400×400px'
+})
 
 // Range slider with dynamic props
 const volume = sliderField('volume', {
@@ -699,6 +734,79 @@ Link directly to any field using URL hashes. Forms auto-expand collapsible group
 ```
 
 Target fields receive animated ring highlight (3x flash, then persistent until user interaction). Ideal for validation error links, documentation, and support workflows.
+
+## Filter System
+
+Build condition-based admin filters with automatic form generation, URL sync, and item evaluation.
+
+```typescript
+import { useFilterState } from '~/features/form-builder/filters'
+import type { ContextSchema } from '~/features/form-builder/conditions'
+
+const filterSchema: ContextSchema = {
+  donorName: { label: 'Donor', type: 'text' },
+  amount: { label: 'Amount', type: 'number' },
+  status: { label: 'Status', type: 'text', options: ['completed', 'pending', 'failed'] }
+}
+
+const {
+  form, // ComposableForm — render with FormRenderer
+  filterValues, // Ref<FilterConditionValues> — v-model binding
+  activeFilterCount, // Computed<number> — badge count
+  resetFilters, // () => void — clear all
+  filterItem // (item) => boolean — predicate for Array.filter()
+} = useFilterState('donations', filterSchema, {
+  // Optional: custom evaluators for complex field access
+  customEvaluators: {
+    'items.name': (conditionValue, item, operator) => {
+      const items = (item as any).items || []
+      return items.some((i: any) => OPERATORS[operator](i.name, conditionValue))
+    }
+  }
+})
+
+// Filter state auto-syncs to URL via base64 `_f` query param
+const displayed = computed(() => allItems.value.filter(filterItem))
+```
+
+```vue
+<template>
+  <FormRenderer :section="form" v-model="filterValues" />
+</template>
+```
+
+## Condition Builder UI
+
+Two pre-built condition builder variants for admin UIs. Both share core utilities from `conditions/ui/`.
+
+```typescript
+// For custom-fields: collapsible conditions with field reference validation
+import { buildConditionItemField } from '~/features/form-builder/conditions'
+const conditionField = buildConditionItemField(precedingFields, contextSchema)
+
+// For filters: flat condition rows (no accordion, no validation)
+import { buildFilterForm } from '~/features/form-builder/conditions/ui/build-filter-form'
+const filterForm = buildFilterForm('myFilter', contextSchema)
+```
+
+Shared utilities in `conditions/ui/condition-utils.ts`: `contextSchemaToFields`, `getFieldOperators`, `buildOperatorField`, `autoSelectDefaults`, `buildDisplayLabel`.
+
+## HTML Sanitization
+
+All `v-html` usage must sanitize content:
+
+```typescript
+import { sanitizeRichText, escapeHtml } from '~/features/form-builder/utils/sanitize-html'
+
+// Rich text (allows p, strong, em, u, a, span, br)
+const safe = sanitizeRichText(unsafeHtml)
+
+// Email profile (adds div, img, style)
+const safeEmail = sanitizeRichText(html, { profile: 'email' })
+
+// Escape for interpolation
+const escaped = escapeHtml(userInput)
+```
 
 ### defineForm
 

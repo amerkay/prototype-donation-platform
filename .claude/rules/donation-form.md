@@ -5,7 +5,7 @@ paths:
 
 # Donation Form Feature
 
-Multi-step donation wizard with 12 sub-features. Follows vertical slice architecture.
+Multi-step donation wizard with 13 sub-features. Follows vertical slice architecture.
 
 ## Key files
 
@@ -17,7 +17,7 @@ Multi-step donation wizard with 12 sub-features. Follows vertical slice architec
 
 ## Sub-features (in `features/`)
 
-contact-consent, cover-costs, custom-fields, donor-info, gift-aid, impact-boost, impact-cart, product, product-selector, shipping-notice, terms, tribute
+contact-consent, cover-costs, custom-fields, donor-info, entry-fields, gift-aid, impact-boost, impact-cart, product, product-selector, shipping-notice, terms, tribute
 
 Each sub-feature follows the same `admin/` + `donor/` split.
 

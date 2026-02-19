@@ -25,9 +25,9 @@ customFields: {
 
 ```vue
 <script setup>
-import { createCustomFieldsFormSection } from '~/features/custom-fields/utils'
+import { useCustomFieldsForm } from '~/features/custom-fields/utils'
 
-const section = createCustomFieldsFormSection(config.customFields.fields)
+const section = useCustomFieldsForm(config.customFields.fields)
 </script>
 
 <FormRenderer :section="section" v-model="donorData" />
@@ -38,21 +38,21 @@ const section = createCustomFieldsFormSection(config.customFields.fields)
 **1. Setup admin form:**
 
 ```typescript
-import { createCustomFieldsConfigSection } from '~/features/custom-fields/forms/custom-fields-config-form'
+import { useCustomFieldsConfigForm } from '~/features/custom-fields/forms/custom-fields-config-form'
 
-const adminForm = createCustomFieldsConfigSection(
-  contextSchema, // Optional: external fields for conditions
+const adminForm = useCustomFieldsConfigForm(
+  contextSchema, // Optional: external fields for conditions (static or dynamic)
   resolveExternalFields, // Optional: dynamic field resolver
-  allowedFieldTypes // Optional: restrict available types
+  allowedFieldTypes // Optional: restrict available types (e.g., ['text', 'number'])
 )
 ```
 
 **2. Render runtime form:**
 
 ```typescript
-import { createCustomFieldsFormSection } from '~/features/custom-fields/utils'
+import { useCustomFieldsForm } from '~/features/custom-fields/utils'
 
-const userForm = createCustomFieldsFormSection(config.customFields.fields)
+const userForm = useCustomFieldsForm(config.customFields.fields)
 ```
 
 **3. Extract defaults (optional):**
@@ -62,6 +62,19 @@ import { extractCustomFieldDefaults } from '~/features/custom-fields/utils'
 
 const defaults = extractCustomFieldDefaults(config.customFields.fields)
 // { company_name: '', team_size: 0, newsletter: false }
+// Note: fields with enableVisibilityConditions are skipped (FormField handles their defaults)
+```
+
+**4. Check visibility (optional):**
+
+```typescript
+import { hasAnyVisibleCustomFields } from '~/features/custom-fields/utils'
+
+// Check if any fields are visible given external context
+const show = hasAnyVisibleCustomFields(config.customFields.fields, {
+  donorLevel: 'gold', country: 'US'
+})
+// Evaluates conditions in order (supports field-to-field dependencies)
 ```
 
 ## Field Types
@@ -135,22 +148,29 @@ Control field visibility based on other field values:
 
 **Available operators:**
 
-`equals`, `notEquals`, `contains`, `notContains`, `startsWith`, `endsWith`, `greaterThan`, `lessThan`, `greaterThanOrEqual`, `lessThanOrEqual`, `in`, `notIn`, `empty`, `notEmpty`
+`contains`, `notContains`, `greaterOrEqual`, `lessOrEqual`, `empty`, `notEmpty`, `isTrue`, `isFalse`, `in`, `notIn`
 
 **Context Schema:**
 
-Pass external fields for cross-form conditions:
+Pass external fields for cross-form conditions. Can be static or a function that resolves from root form values:
 
 ```typescript
+// Static schema
 const contextSchema = {
   cart_total: { label: 'Cart Total', type: 'number' },
   product_type: { label: 'Product Type', type: 'string', options: [...] }
 }
 
-createCustomFieldsConfigSection(contextSchema)
+// Dynamic schema (resolves from parent form values)
+const contextSchema = (rootValues) => ({
+  cart_total: { label: 'Cart Total', type: 'number' },
+  ...buildDynamicSchema(rootValues)
+})
+
+useCustomFieldsConfigForm(contextSchema)
 ```
 
-Fields can reference both custom fields (preceding only) and context schema fields.
+Fields can reference both custom fields (**preceding only** — order matters) and context schema fields.
 
 **Dynamic external fields:**
 
@@ -165,7 +185,7 @@ const resolveExternalFields = (rootValues) => {
   }))
 }
 
-createCustomFieldsConfigSection(contextSchema, resolveExternalFields)
+useCustomFieldsConfigForm(contextSchema, resolveExternalFields)
 ```
 
 ## Extending: Add Field Type
@@ -238,25 +258,34 @@ const fieldTypeLabels: Record<string, string> = {
 
 See [text-field.ts](./fields/text-field.ts) for reference implementation.
 
+## Gotchas
+
+- **Field IDs auto-generated** from `{type}_{slugified_label}` (max 50 chars) via onChange on the label field
+- **Preceding-only references:** Visibility conditions can only reference fields above the current field in the array (enforced by `limitIndex`)
+- **Hidden field conditionals:** Visibility conditions on hidden fields control whether the value is *included* in form data, not UI visibility
+- **Auto-clear on hide:** Fields with visibility conditions auto-clear their value when hidden (via `onVisibilityChange`)
+
 ## API Reference
 
 **Functions:**
 
-- `createCustomFieldsFormSection(fields)` → `FormDef` — Convert config to runtime form
-- `extractCustomFieldDefaults(fields)` → `Record<string, unknown>` — Extract default values
-- `createCustomFieldsConfigSection(contextSchema?, resolveExternalFields?, allowedFieldTypes?)` → `FormDef` — Create admin form
+- `useCustomFieldsForm(fields)` → `ComposableForm` — Convert config to runtime form
+- `extractCustomFieldDefaults(fields)` → `Record<string, unknown>` — Extract default values (skips conditionally visible fields)
+- `hasAnyVisibleCustomFields(fields, externalContext?)` → `boolean` — Check if any fields visible given context
+- `useCustomFieldsConfigForm(contextSchema?, resolveExternalFields?, allowedFieldTypes?)` → `ComposableForm` — Create admin config form
 
 **Types:**
 
 - `CustomFieldDefinition` — Discriminated union of all field configs
-- `CustomFieldType` — Union of field type strings
+- `CustomFieldType` — Union of field type strings (`'text' | 'textarea' | 'number' | 'slider' | 'select' | 'radio-group' | 'checkbox' | 'hidden'`)
 - `CustomFieldsSettings` — Top-level settings object (`{enabled, fields}`)
+- `ContextSchemaInput` — Static `ContextSchema` or `(rootValues) => ContextSchema` for dynamic resolution
 
 **Utilities:**
 
 - `slugify(text, maxLength?)` — Convert to URL-friendly ID
-- `extractFieldValue(config, key, default?)` — Safe config value extraction
-- `validateCustomFieldConditions()` — Validate field references after reorder
+- `extractFieldValue(config, key, default?)` — Safe config value extraction with advancedSettings fallback
+- `validateCustomFieldConditions()` — Validate field references after reorder (from form-builder)
 
 ## Architecture
 
