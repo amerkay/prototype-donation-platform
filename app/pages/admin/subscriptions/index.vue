@@ -4,6 +4,8 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { useAdminSubscriptions } from '~/features/subscriptions/admin/composables/useAdminSubscriptions'
 import { useSubscriptionFilters } from '~/features/subscriptions/admin/composables/useSubscriptionFilters'
 import { useExport } from '~/features/_admin/composables/useExport'
+import { useQuickFind } from '~/features/_admin/composables/useQuickFind'
+import { useEntityDataService } from '~/features/_admin/composables/useEntityDataService'
 import { subscriptionColumns } from '~/features/subscriptions/admin/columns/subscriptionColumns'
 import { createViewActionColumn } from '~/features/_admin/columns/actionColumn'
 import { formatCurrency } from '~/lib/formatCurrency'
@@ -16,6 +18,7 @@ definePageMeta({
 
 type EnrichedSubscription = Subscription & { donorName: string; donorEmail: string }
 
+const { isLoading: entityLoading } = useEntityDataService()
 const { allSubscriptions, stats } = useAdminSubscriptions()
 const {
   form: filterForm,
@@ -26,7 +29,18 @@ const {
 } = useSubscriptionFilters()
 const { isExporting, exportData } = useExport()
 
-const displayedSubscriptions = computed(() => allSubscriptions.value.filter(filterItem))
+const conditionFiltered = computed(() => allSubscriptions.value.filter(filterItem))
+
+const {
+  query: searchQuery,
+  results: displayedSubscriptions,
+  isSearching
+} = useQuickFind(conditionFiltered, [
+  'donorName' as keyof EnrichedSubscription,
+  'donorEmail' as keyof EnrichedSubscription,
+  'campaignName',
+  (s: EnrichedSubscription) => s.lineItems.map((li) => li.productName).join(' ')
+])
 
 const breadcrumbs = [{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Subscriptions' }]
 
@@ -64,6 +78,7 @@ function handleExport(format: 'csv' | 'xlsx') {
 <template>
   <AdminListPage
     v-model:filter-values="filterValues"
+    v-model:search-query="searchQuery"
     title="Subscriptions"
     :breadcrumbs="breadcrumbs"
     :stats="stats"
@@ -72,8 +87,9 @@ function handleExport(format: 'csv' | 'xlsx') {
     :filter-form="filterForm"
     :active-filter-count="activeFilterCount"
     filter-title="Subscription Filters"
-    filter-column="donorName"
-    filter-placeholder="Search by donor..."
+    search-placeholder="Search donors, campaigns, products..."
+    :is-searching="isSearching"
+    :is-loading="entityLoading"
     :is-exporting="isExporting"
     row-base-path="/admin/subscriptions"
     @reset-filters="resetFilters()"

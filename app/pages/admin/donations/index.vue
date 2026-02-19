@@ -4,6 +4,8 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { useDonations } from '~/features/donations/admin/composables/useDonations'
 import { useDonationFilters } from '~/features/donations/admin/composables/useDonationFilters'
 import { useExport } from '~/features/_admin/composables/useExport'
+import { useQuickFind } from '~/features/_admin/composables/useQuickFind'
+import { useEntityDataService } from '~/features/_admin/composables/useEntityDataService'
 import { donationColumns } from '~/features/donations/admin/columns/donationColumns'
 import { createViewActionColumn } from '~/features/_admin/columns/actionColumn'
 import { formatCurrency } from '~/lib/formatCurrency'
@@ -15,6 +17,7 @@ definePageMeta({
   layout: 'admin'
 })
 
+const { isLoading: entityLoading } = useEntityDataService()
 const { filteredTransactions, stats } = useDonations()
 const {
   form: filterForm,
@@ -22,10 +25,21 @@ const {
   activeFilterCount,
   resetFilters,
   filterItem
-} = useDonationFilters(filteredTransactions)
+} = useDonationFilters()
 const { isExporting, exportData } = useExport()
 
-const displayedTransactions = computed(() => filteredTransactions.value.filter(filterItem))
+const conditionFiltered = computed(() => filteredTransactions.value.filter(filterItem))
+
+const {
+  query: searchQuery,
+  results: displayedTransactions,
+  isSearching
+} = useQuickFind(conditionFiltered, [
+  'donorName',
+  'donorEmail',
+  'campaignName',
+  (t: Transaction) => t.lineItems.map((li) => li.productName).join(' ')
+])
 
 const breadcrumbs = [{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Donations' }]
 
@@ -67,6 +81,7 @@ function handleExport(format: 'csv' | 'xlsx') {
 <template>
   <AdminListPage
     v-model:filter-values="filterValues"
+    v-model:search-query="searchQuery"
     title="Donations"
     :breadcrumbs="breadcrumbs"
     :stats="stats"
@@ -75,8 +90,9 @@ function handleExport(format: 'csv' | 'xlsx') {
     :filter-form="filterForm"
     :active-filter-count="activeFilterCount"
     filter-title="Donation Filters"
-    filter-column="donorName"
-    filter-placeholder="Search by donor..."
+    search-placeholder="Search donors, campaigns, products..."
+    :is-searching="isSearching"
+    :is-loading="entityLoading"
     :is-exporting="isExporting"
     row-base-path="/admin/donations"
     @reset-filters="resetFilters()"

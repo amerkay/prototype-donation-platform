@@ -17,6 +17,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Filter, Download } from 'lucide-vue-next'
 
+const searchQuery = defineModel<string>('searchQuery')
+
 const props = defineProps<{
   title: string
   breadcrumbs: Array<{ label: string; href?: string }>
@@ -28,8 +30,9 @@ const props = defineProps<{
   filterValues: Record<string, unknown>
   activeFilterCount: number
   filterTitle: string
-  filterColumn: string
-  filterPlaceholder: string
+  searchPlaceholder?: string
+  isSearching?: boolean
+  isLoading?: boolean
   isExporting: boolean
   rowBasePath: string
 }>()
@@ -86,10 +89,12 @@ function handleResetFilters() {
       </AdminPageHeader>
 
       <AdminDataTable
+        v-model:search-query="searchQuery"
         :columns="columns"
         :data="data"
-        :filter-column="filterColumn"
-        :filter-placeholder="filterPlaceholder"
+        :search-placeholder="searchPlaceholder"
+        :is-searching="isSearching"
+        :is-loading="isLoading"
         @row-click="handleRowClick"
       />
     </div>

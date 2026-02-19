@@ -4,6 +4,8 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { useDonors } from '~/features/donors/admin/composables/useDonors'
 import { useDonorFilters } from '~/features/donors/admin/composables/useDonorFilters'
 import { useExport } from '~/features/_admin/composables/useExport'
+import { useQuickFind } from '~/features/_admin/composables/useQuickFind'
+import { useEntityDataService } from '~/features/_admin/composables/useEntityDataService'
 import { donorColumns } from '~/features/donors/admin/columns/donorColumns'
 import { createViewActionColumn } from '~/features/_admin/columns/actionColumn'
 import { formatCurrency } from '~/lib/formatCurrency'
@@ -14,6 +16,7 @@ definePageMeta({
   layout: 'admin'
 })
 
+const { isLoading: entityLoading } = useEntityDataService()
 const { donors, stats } = useDonors()
 const {
   form: filterForm,
@@ -24,7 +27,13 @@ const {
 } = useDonorFilters()
 const { isExporting, exportData } = useExport()
 
-const displayedDonors = computed(() => donors.value.filter(filterItem))
+const conditionFiltered = computed(() => donors.value.filter(filterItem))
+
+const {
+  query: searchQuery,
+  results: displayedDonors,
+  isSearching
+} = useQuickFind(conditionFiltered, ['name', 'email'])
 
 const breadcrumbs = [{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Donors' }]
 
@@ -60,6 +69,7 @@ function handleExport(format: 'csv' | 'xlsx') {
 <template>
   <AdminListPage
     v-model:filter-values="filterValues"
+    v-model:search-query="searchQuery"
     title="Donors"
     :breadcrumbs="breadcrumbs"
     :stats="stats"
@@ -68,8 +78,9 @@ function handleExport(format: 'csv' | 'xlsx') {
     :filter-form="filterForm"
     :active-filter-count="activeFilterCount"
     filter-title="Donor Filters"
-    filter-column="name"
-    filter-placeholder="Search donors..."
+    search-placeholder="Search donors..."
+    :is-searching="isSearching"
+    :is-loading="entityLoading"
     :is-exporting="isExporting"
     row-base-path="/admin/donors"
     @reset-filters="resetFilters()"

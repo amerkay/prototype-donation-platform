@@ -72,7 +72,8 @@ import { hasAnyVisibleCustomFields } from '~/features/custom-fields/utils'
 
 // Check if any fields are visible given external context
 const show = hasAnyVisibleCustomFields(config.customFields.fields, {
-  donorLevel: 'gold', country: 'US'
+  donorLevel: 'gold',
+  country: 'US'
 })
 // Evaluates conditions in order (supports field-to-field dependencies)
 ```
@@ -262,7 +263,7 @@ See [text-field.ts](./fields/text-field.ts) for reference implementation.
 
 - **Field IDs auto-generated** from `{type}_{slugified_label}` (max 50 chars) via onChange on the label field
 - **Preceding-only references:** Visibility conditions can only reference fields above the current field in the array (enforced by `limitIndex`)
-- **Hidden field conditionals:** Visibility conditions on hidden fields control whether the value is *included* in form data, not UI visibility
+- **Hidden field conditionals:** Visibility conditions on hidden fields control whether the value is _included_ in form data, not UI visibility
 - **Auto-clear on hide:** Fields with visibility conditions auto-clear their value when hidden (via `onVisibilityChange`)
 
 ## API Reference

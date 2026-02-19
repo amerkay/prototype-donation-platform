@@ -6,15 +6,21 @@ import type {
 import { OPERATORS } from '~/features/_library/form-builder/conditions/operators'
 import { useFilterState } from '~/features/_library/form-builder/filters'
 import type { Transaction } from '~/features/donor-portal/types'
+import { useEntityDataService } from '~/features/_admin/composables/useEntityDataService'
+import { buildCustomFieldSchema } from '~/features/_admin/utils/buildCustomFieldSchema'
+import {
+  buildSingleEntityEvaluators,
+  buildCollectionEvaluators
+} from '~/features/_admin/utils/buildCrossEntityEvaluators'
 
 /**
- * Build donation filter schema with dynamic product options from transactions
+ * Build donation filter schema with dynamic product + custom field options.
+ * Uses all transactions (unfiltered) for stable schema options across date ranges.
  */
-function useDonationSchema(transactions: Ref<Transaction[]>) {
+function useDonationSchema(allTransactions: Ref<Transaction[]>) {
   return computed<ContextSchema>(() => {
-    // Extract unique product names from all line items
     const productNames = new Set<string>()
-    for (const t of transactions.value) {
+    for (const t of allTransactions.value) {
       for (const item of t.lineItems) {
         productNames.add(item.productName)
       }
@@ -68,33 +74,79 @@ function useDonationSchema(transactions: Ref<Transaction[]>) {
           { value: 'gift', label: 'Gift' },
           { value: 'memorial', label: 'Memorial' }
         ]
-      }
+      },
+      'donor.totalDonated': { label: 'Total Donated', type: 'number', group: 'Related Donor' },
+      'donor.donationCount': { label: 'Donation Count', type: 'number', group: 'Related Donor' },
+      'donor.giftAid': { label: 'Gift Aid Eligible', type: 'boolean', group: 'Related Donor' },
+      'subscription.status': {
+        label: 'Status',
+        type: 'string',
+        group: 'Related Subscription',
+        options: [
+          { value: 'active', label: 'Active' },
+          { value: 'paused', label: 'Paused' },
+          { value: 'cancelled', label: 'Cancelled' }
+        ]
+      },
+      'subscription.frequency': {
+        label: 'Frequency',
+        type: 'string',
+        group: 'Related Subscription',
+        options: [
+          { value: 'monthly', label: 'Monthly' },
+          { value: 'yearly', label: 'Yearly' }
+        ]
+      },
+      'subscription.amount': {
+        label: 'Amount',
+        type: 'number',
+        group: 'Related Subscription'
+      },
+      ...buildCustomFieldSchema(allTransactions.value)
     }
   })
 }
 
-/** Custom evaluators for fields with non-standard data access */
-const CUSTOM_EVALUATORS: Record<
-  string,
-  (conditionValue: unknown, item: unknown, operator: ComparisonOperator) => boolean
-> = {
-  product: (conditionValue, item, operator) => {
-    const t = item as Transaction
-    const productNames = t.lineItems.map((li) => li.productName)
-    return OPERATORS[operator](productNames, conditionValue)
-  },
-  tribute: (conditionValue, item, operator) => {
-    const t = item as Transaction
-    // isTrue → has tribute, isFalse → no tribute
-    return OPERATORS[operator](!!t.tribute, conditionValue)
-  },
-  'tribute.type': (conditionValue, item, operator) => {
-    const t = item as Transaction
-    return OPERATORS[operator](t.tribute?.type, conditionValue)
+function buildCustomEvaluators() {
+  const dataService = useEntityDataService()
+
+  return {
+    product: (conditionValue: unknown, item: unknown, operator: ComparisonOperator) => {
+      const t = item as Transaction
+      return OPERATORS[operator](
+        t.lineItems.map((li) => li.productName),
+        conditionValue
+      )
+    },
+    tribute: (conditionValue: unknown, item: unknown, operator: ComparisonOperator) => {
+      return OPERATORS[operator](!!(item as Transaction).tribute, conditionValue)
+    },
+    'tribute.type': (conditionValue: unknown, item: unknown, operator: ComparisonOperator) => {
+      return OPERATORS[operator]((item as Transaction).tribute?.type, conditionValue)
+    },
+    ...buildSingleEntityEvaluators(
+      (item: Transaction) => dataService.donorById.value.get(item.donorId),
+      {
+        'donor.totalDonated': (d) => d.totalDonated,
+        'donor.donationCount': (d) => d.donationCount,
+        'donor.giftAid': (d) => d.giftAid
+      }
+    ),
+    ...buildCollectionEvaluators(
+      (item: Transaction) => dataService.subscriptionsByDonorId.value.get(item.donorId) ?? [],
+      {
+        'subscription.status': (s) => s.status,
+        'subscription.frequency': (s) => s.frequency,
+        'subscription.amount': (s) => s.amount
+      }
+    )
   }
 }
 
-export function useDonationFilters(transactions: Ref<Transaction[]>) {
-  const schema = useDonationSchema(transactions)
-  return useFilterState('donationFilters', schema, { customEvaluators: CUSTOM_EVALUATORS })
+export function useDonationFilters() {
+  const dataService = useEntityDataService()
+  const schema = useDonationSchema(dataService.transactions)
+  const customEvaluators = buildCustomEvaluators()
+  // customFields.* paths resolve via getValueAtPath on Transaction objects
+  return useFilterState('donationFilters', schema, { customEvaluators })
 }

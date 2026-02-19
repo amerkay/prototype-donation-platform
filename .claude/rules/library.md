@@ -33,7 +33,7 @@ Admin-configurable dynamic fields. Each field type exports a factory with three 
 - `toComposable(config)` — converts admin config to runtime field
 - `getDefaultValue(config)` — extracts default value
 
-8 field types: text, textarea, number, slider, select, radio-group, checkbox, hidden.
+8 field type factories: text, textarea, number, slider, select, radio-group, checkbox, hidden.
 
 ## Rules
 
