@@ -246,14 +246,14 @@ describe('condition-field-builder', () => {
       ).toBe(false)
     })
 
-    it('value field is select type for fields with options', () => {
+    it('value field is combobox type for fields with options', () => {
       const { precedingFields, contextSchema } = createMockFields()
       const builder = buildConditionItemField(precedingFields, contextSchema)
 
       const config = builder({ field: 'donationType' }) as FieldGroupDef
       const valueField = config.fields?.value
 
-      expect(valueField?.type).toBe('select')
+      expect(valueField?.type).toBe('combobox')
       expect('options' in valueField!).toBe(true)
     })
 
@@ -267,7 +267,7 @@ describe('condition-field-builder', () => {
       expect(valueField?.type).toBe('number')
     })
 
-    it('value field is array type for in/notIn operators with array value', () => {
+    it('value field is combobox with multiple for in/notIn operators with array value', () => {
       const { precedingFields, contextSchema } = createMockFields()
       const builder = buildConditionItemField(precedingFields, contextSchema)
 
@@ -278,8 +278,8 @@ describe('condition-field-builder', () => {
       }) as FieldGroupDef
       const valueField = config.fields?.value
 
-      expect(valueField?.type).toBe('array')
-      expect('itemField' in valueField!).toBe(true)
+      expect(valueField?.type).toBe('combobox')
+      expect((valueField as unknown as Record<string, unknown>).multiple).toBe(true)
     })
 
     it('value field is hidden placeholder when in/notIn operator but value not array', () => {

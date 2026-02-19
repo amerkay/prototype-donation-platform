@@ -184,12 +184,12 @@ export function createDonationCustomFieldsConfigSection(
       tabs: [
         {
           value: 'step2',
-          label: 'Step 2 Custom Fields',
+          label: 'Step 2',
           fields: { enabled: step2Enabled, fields: step2FieldsArrayConfig }
         },
         {
           value: 'step3',
-          label: 'Step 3 Custom Fields',
+          label: 'Step 3',
           fields: { enabled: step3Enabled, fields: step3FieldsArrayConfig }
         },
         {

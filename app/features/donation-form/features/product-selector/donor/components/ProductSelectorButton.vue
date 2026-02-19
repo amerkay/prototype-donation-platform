@@ -85,7 +85,7 @@ defineExpose({
 </script>
 
 <template>
-  <template v-if="selectorConfig.enabled">
+  <div v-if="selectorConfig.enabled">
     <!-- Product Selector - Show selected product or button -->
     <CartProductLine
       v-if="selectedProduct"
@@ -118,5 +118,5 @@ defineExpose({
       :selected-product-ids="selectedProductIds"
       @select="handleProductSelect"
     />
-  </template>
+  </div>
 </template>

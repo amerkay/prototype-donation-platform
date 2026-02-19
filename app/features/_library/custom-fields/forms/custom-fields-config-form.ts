@@ -220,11 +220,12 @@ export function useCustomFieldsConfigForm(
             label: 'Condition Rules',
             visibleWhen: ({ values }: FieldContext) =>
               !!values.type && values.enableVisibilityConditions === true,
-            class: 'bg-muted rounded-md py-4 px-3 sm:px-4',
+            class: 'py-2',
             fields: {
               visibleWhen: fieldGroup('visibleWhen', {
                 label: ({ values }: FieldContext) =>
                   values.type === 'hidden' ? 'Include this field when' : 'Show this field when',
+                labelClass: 'mb-2',
                 optional: true,
                 fields: {
                   match: radioGroupField('match', {
@@ -243,7 +244,7 @@ export function useCustomFieldsConfigForm(
                   }),
 
                   conditions: arrayField('conditions', {
-                    label: 'Conditions',
+                    // label: 'Conditions',
                     defaultValue: [],
                     addButtonText: 'Add Condition',
                     rules: z.array(z.any()).min(1, 'At least one condition is required'),

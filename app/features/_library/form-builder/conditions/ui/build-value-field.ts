@@ -6,9 +6,9 @@ import * as z from 'zod'
 import type { FieldContext, FieldDef } from '~/features/_library/form-builder/types'
 import {
   textField,
-  selectField,
   numberField,
-  arrayField
+  arrayField,
+  comboboxField
 } from '~/features/_library/form-builder/api'
 import type { AvailableField } from '~/features/_library/form-builder/composables/useAvailableFields'
 import type { ComparisonOperator } from '~/features/_library/form-builder/conditions/types'
@@ -68,18 +68,12 @@ export function buildValueField(
     }
 
     if (validOptions) {
-      // Array of selects for enum fields
-      return arrayField('value', {
+      return comboboxField('value', {
         label: 'Values',
-        addButtonText: 'Add Value',
+        multiple: true,
+        options: validOptions,
+        searchPlaceholder: 'Search...',
         rules: z.array(z.union([z.string(), z.number()])).min(1, 'At least one value is required'),
-        itemField: selectField('', {
-          placeholder: 'Select a value',
-          options: validOptions,
-          rules: z.union([z.string(), z.number()]).refine((val) => val !== '', {
-            message: 'Value is required'
-          })
-        }),
         visibleWhen: makeValueVisibility(isOperatorValid, isInOrNotIn)
       })
     } else {
@@ -107,11 +101,10 @@ export function buildValueField(
 
   // For other operators, use single value field
   if (validOptions) {
-    // Select for enum fields
-    return selectField('value', {
+    return comboboxField('value', {
       label: 'Value',
-      placeholder: 'Select a value',
       options: validOptions,
+      searchPlaceholder: 'Search...',
       rules: z.union([z.string(), z.number()]).refine((val) => val !== '', {
         message: 'Value is required'
       }),

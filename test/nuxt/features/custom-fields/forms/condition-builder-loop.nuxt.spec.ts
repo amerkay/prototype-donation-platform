@@ -94,12 +94,18 @@ function getFirstConditionValue(model: Record<string, unknown>, nested = true): 
 }
 
 /**
- * Return the condition builder's Field / Operator / Value selects.
- * Vue Test Utils doesn't support role-based queries natively, so we rely on
- * DOM order: [0] = Field, [1] = Operator, [2+] = Value selects (if any).
+ * Return native <select> elements (Field and Operator pickers).
+ * Value field is now a combobox, not a native select.
  */
 function findConditionSelects(wrapper: VueWrapper) {
   return wrapper.findAll('select')
+}
+
+/** Flush multiple ticks to allow reactive updates to settle */
+async function flushTicks(n = 5) {
+  for (let i = 0; i < n; i++) {
+    await nextTick()
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -107,7 +113,7 @@ function findConditionSelects(wrapper: VueWrapper) {
 // ---------------------------------------------------------------------------
 
 describe('Condition builder loop regression', () => {
-  it('does not thrash when adding value for `Donation Frequency in ...`', async () => {
+  it('does not thrash when selecting enum field with in operator', async () => {
     vi.useFakeTimers()
     const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -130,21 +136,17 @@ describe('Condition builder loop regression', () => {
     const selects = findConditionSelects(wrapper)
     expect(selects.length).toBeGreaterThanOrEqual(2)
 
+    // Switch to enum field — triggers operator auto-select to 'in'
     await selects[0]!.setValue('donationFrequency')
-    await nextTick()
+    await flushTicks()
 
+    // Operator should auto-select, value field becomes combobox
     await selects[1]!.setValue('in')
-    await nextTick()
-    await nextTick()
+    await flushTicks()
 
     consoleWarn.mockClear()
 
-    const addValueBtn = wrapper.findAll('button').find((b) => b.text() === 'Add Value')
-    expect(addValueBtn).toBeTruthy()
-    await addValueBtn!.trigger('click')
-    await nextTick()
-    await nextTick()
-
+    // Let reactivity settle — no infinite loops should occur
     for (let i = 0; i < 8; i++) {
       vi.advanceTimersByTime(50)
       await nextTick()
@@ -161,7 +163,7 @@ describe('Condition builder loop regression', () => {
     vi.useRealTimers()
   })
 
-  it('adds multiple values for `Donation Frequency in ...` (does not clear)', async () => {
+  it('emits array value for enum field with in operator', async () => {
     const onUpdate = vi.fn()
 
     const contextSchema = createConditionSchema()
@@ -182,23 +184,13 @@ describe('Condition builder loop regression', () => {
     const selects = findConditionSelects(wrapper)
     expect(selects.length).toBeGreaterThanOrEqual(2)
 
+    // Select enum field — auto-selects 'in' operator with array value
     await selects[0]!.setValue('donationFrequency')
-    await nextTick()
-    await nextTick()
-
-    const addValueBtn = wrapper.findAll('button').find((b) => b.text() === 'Add Value')
-    expect(addValueBtn).toBeTruthy()
-
-    await addValueBtn!.trigger('click')
-    await nextTick()
-    await addValueBtn!.trigger('click')
-    await nextTick()
+    await flushTicks()
 
     const lastModel = onUpdate.mock.lastCall![0] as Record<string, unknown>
     const value = getFirstConditionValue(lastModel)
     expect(Array.isArray(value)).toBe(true)
-    // 1 pre-filled + 2 added = 3
-    expect((value as unknown[]).length).toBe(3)
   })
 
   it('switches field to enum type and auto-selects in operator without crashing', async () => {
@@ -221,24 +213,15 @@ describe('Condition builder loop regression', () => {
     const selects = findConditionSelects(wrapper)
     expect(selects.length).toBeGreaterThanOrEqual(1)
 
+    // Select enum field
     await selects[0]!.setValue('donationFrequency')
-    await nextTick()
-    await nextTick()
-    await nextTick()
-
-    const addValueBtn = wrapper.findAll('button').find((b) => b.text() === 'Add Value')
-    expect(addValueBtn).toBeTruthy()
-
-    await expect(addValueBtn!.trigger('click')).resolves.toBeUndefined()
-    await nextTick()
-    await nextTick()
+    await flushTicks()
 
     expect(consoleError).not.toHaveBeenCalled()
 
     const lastModel = onUpdate.mock.lastCall![0] as Record<string, unknown>
     const value = getFirstConditionValue(lastModel, false)
     expect(Array.isArray(value)).toBe(true)
-    expect((value as unknown[]).length).toBeGreaterThanOrEqual(1)
 
     consoleError.mockRestore()
   })

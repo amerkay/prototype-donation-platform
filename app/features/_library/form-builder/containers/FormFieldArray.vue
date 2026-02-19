@@ -414,7 +414,7 @@ function removeItem(index: number) {
             cn(
               'relative flex items-start rounded-lg border bg-card transition-colors',
               isSortable ? 'ff-array__item px-0 pr-9' : 'ff-array__item--simple pr-10',
-              !isSortable && getItemFieldMeta(item.veeIndex).type === 'field-group' && 'px-3',
+              !isSortable && getItemFieldMeta(item.veeIndex).type === 'field-group' && 'pl-3',
               draggedIndex === item.veeIndex && 'ff-array__item--dragged opacity-40 scale-95'
             )
           "
@@ -478,3 +478,24 @@ function removeItem(index: number) {
     </div>
   </FormFieldWrapper>
 </template>
+
+<style scoped>
+/* Collapsible field-group content bleeds edge-to-edge within array items.
+   CSS custom properties reset at each nesting level to prevent leaking
+   into nested arrays (e.g. condition builder inside a sortable array). */
+.ff-array__item {
+  --ff-accordion-ml: -1.1rem;
+  --ff-accordion-mr: -1.4rem;
+}
+
+.ff-array__item--simple {
+  --ff-accordion-ml: 0;
+  --ff-accordion-mr: -1.75rem;
+}
+
+.ff-array__item :deep([data-slot='accordion-content'] > div),
+.ff-array__item--simple :deep([data-slot='accordion-content'] > div) {
+  margin-left: var(--ff-accordion-ml, 0);
+  margin-right: var(--ff-accordion-mr, 0);
+}
+</style>
