@@ -15,6 +15,10 @@ export interface CharityCurrencyOverride {
   enabled: boolean
   name?: string
   registrationNumber?: string
+  phone?: string
+  replyToEmail?: string
+  website?: string
+  description?: string
   address?: CharityAddress
 }
 
@@ -37,11 +41,48 @@ export interface CharitySettings {
   slug: string
   name: string
   registrationNumber: string
+  phone: string
+  replyToEmail: string
   address: CharityAddress
   website: string
   description: string
+  emailSenderId: string
+  emailSenderName: string
+  emailSenderAddress: string
+  emailSignature: string
   currencyOverrides: Record<string, CharityCurrencyOverride>
 }
+
+/** Override-eligible fields (excludes address, handled separately) */
+export const CHARITY_OVERRIDE_FIELDS = [
+  'name',
+  'registrationNumber',
+  'phone',
+  'replyToEmail',
+  'website',
+  'description'
+] as const
+
+/** Address fields for override checking (top-level in form address group) */
+export const CHARITY_ADDRESS_FIELDS = ['address1', 'city', 'country'] as const
+
+/** Address fields nested inside group1 in the form */
+export const CHARITY_ADDRESS_GROUP_FIELDS = ['region', 'postcode'] as const
+
+/** All scalar string fields on CharitySettings (excludes address, currencyOverrides) */
+export const CHARITY_STORE_FIELDS = [
+  'slug',
+  'name',
+  'registrationNumber',
+  'phone',
+  'replyToEmail',
+  'website',
+  'description',
+  'emailSenderId',
+  'emailSenderName',
+  'emailSenderAddress',
+  'emailSignature'
+] as const
 
 /**
  * General organization settings
@@ -49,11 +90,6 @@ export interface CharitySettings {
 export interface GeneralSettings {
   timezone: string
   dateFormat: string
-  emailSenderId: string
-  emailSenderName: string
-  emailSenderAddress: string
-  supportEmail: string
-  emailSignature: string
 }
 
 /**

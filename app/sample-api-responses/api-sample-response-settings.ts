@@ -22,6 +22,8 @@ export const charitySettings: CharitySettings = {
   slug: 'bosf',
   name: 'Borneo Orangutan Survival Foundation',
   registrationNumber: 'RCN123456',
+  phone: '+44 20 7219 3000',
+  replyToEmail: 'info@borneoorangutansurvival.org',
   address: {
     address1: '4 Millbank',
     address2: '',
@@ -33,23 +35,39 @@ export const charitySettings: CharitySettings = {
   website: 'https://borneoorangutansurvival.org/',
   description:
     'We rescue, rehabilitate, and release orangutans while protecting their natural habitat through community engagement and sustainable forest management programs across Borneo and Sumatra.',
+  emailSenderId: 'member-001',
+  emailSenderName: 'Wild Amer',
+  emailSenderAddress: 'awesome@charity.co.uk',
+  emailSignature: 'With gratitude,\nThe Borneo Orangutan Survival Team',
   currencyOverrides: {
     GBP: {
       enabled: false,
       name: '',
       registrationNumber: '',
+      phone: '',
+      replyToEmail: '',
+      website: '',
+      description: '',
       address: { address1: '', address2: '', city: '', region: '', postcode: '', country: '' }
     },
     USD: {
       enabled: false,
       name: '',
       registrationNumber: '',
+      phone: '',
+      replyToEmail: '',
+      website: '',
+      description: '',
       address: { address1: '', address2: '', city: '', region: '', postcode: '', country: '' }
     },
     EUR: {
       enabled: false,
       name: '',
       registrationNumber: '',
+      phone: '',
+      replyToEmail: '',
+      website: '',
+      description: '',
       address: { address1: '', address2: '', city: '', region: '', postcode: '', country: '' }
     }
   }
@@ -57,12 +75,7 @@ export const charitySettings: CharitySettings = {
 
 export const generalSettings: GeneralSettings = {
   timezone: 'Europe/London',
-  dateFormat: 'DD/MM/YYYY',
-  emailSenderId: 'member-001',
-  emailSenderName: 'Wild Amer',
-  emailSenderAddress: 'awesome@charity.co.uk',
-  supportEmail: 'support@borneoorangutansurvival.org',
-  emailSignature: 'With gratitude,\nThe Borneo Orangutan Survival Team'
+  dateFormat: 'DD/MM/YYYY'
 }
 
 export const brandingSettings: BrandingSettings = {

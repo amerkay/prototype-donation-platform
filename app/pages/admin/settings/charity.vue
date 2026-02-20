@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
 import CharitySettingsConfig from '~/features/settings/admin/components/CharitySettingsConfig.vue'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
@@ -7,15 +7,7 @@ import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
 
 const store = useCharitySettingsStore()
 
-const originalData = computed(() => ({
-  slug: store.slug,
-  name: store.name,
-  registrationNumber: store.registrationNumber,
-  address: store.address,
-  website: store.website,
-  description: store.description,
-  currencyOverrides: { ...store.currencyOverrides }
-}))
+const originalData = computed(() => store.toSnapshot())
 
 const formConfigRef = ref()
 

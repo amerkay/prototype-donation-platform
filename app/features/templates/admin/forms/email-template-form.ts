@@ -36,16 +36,20 @@ export const useEmailTemplateForm = defineForm('emailTemplate', () => {
   const signatureNotice = alertField('signatureNotice', {
     variant: 'info',
     description:
-      'The email signature is configured in General Settings and shared across all emails.',
-    cta: { label: 'Edit signature', to: '/admin/settings/general#emailSignature', inline: true }
+      'The email signature is configured in Charity Settings and shared across all emails.',
+    cta: {
+      label: 'Edit signature',
+      to: '/admin/settings/charity#charitySettings.currencyTabs.emailSignature',
+      inline: true
+    }
   })
 
   const senderAddressNotice = alertField('senderAddressNotice', {
     variant: 'info',
-    description: 'The sender email address is configured in General Settings.',
+    description: 'The sender email address is configured in Charity Settings.',
     cta: {
       label: 'Edit sender email',
-      to: '/admin/settings/general#general.emailSender',
+      to: '/admin/settings/charity#charitySettings.currencyTabs.supportEmail',
       inline: true
     }
   })

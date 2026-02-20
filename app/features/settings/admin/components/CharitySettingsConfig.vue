@@ -22,13 +22,7 @@ defineExpose(expose)
 
 <template>
   <div class="w-full mx-auto space-y-6">
-    <FormRenderer
-      ref="formRef"
-      v-model="modelValue"
-      :section="form"
-      validate-on-mount
-      update-only-when-valid
-    />
+    <FormRenderer ref="formRef" v-model="modelValue" :section="form" validate-on-mount />
 
     <StickyButtonGroup
       :is-dirty="store.isDirty"

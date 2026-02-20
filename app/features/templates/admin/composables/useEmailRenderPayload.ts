@@ -1,5 +1,5 @@
 import { useEmailTemplateStore } from '~/features/templates/admin/stores/emailTemplate'
-import { useGeneralSettingsStore } from '~/features/settings/admin/stores/generalSettings'
+import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { EMAIL_TEMPLATE_META } from '~/features/templates/admin/email-templates'
 import { processTemplateRichText } from '~/features/templates/admin/utils/template-rich-text'
 import { EMAIL_CARD_TOKENS, type EmailCardsPayload } from '~/emails/components/cards/types'
@@ -45,7 +45,7 @@ export interface EmailRenderPayload {
 
 export function useEmailRenderPayload() {
   const store = useEmailTemplateStore()
-  const generalStore = useGeneralSettingsStore()
+  const charityStore = useCharitySettingsStore()
   const { sampleVariablesByCategory, cards } = useEmailPreviewContext(computed(() => store.type))
   const siteUrl = useRuntimeConfig().public.siteUrl as string
   const meta = computed(() => EMAIL_TEMPLATE_META[store.type])
@@ -60,11 +60,11 @@ export function useEmailRenderPayload() {
     return subject
   })
 
-  const fromName = computed(() => generalStore.emailSenderName)
-  const fromEmail = computed(() => generalStore.emailSenderAddress)
+  const fromName = computed(() => charityStore.emailSenderName)
+  const fromEmail = computed(() => charityStore.emailSenderAddress)
 
   const signatureText = computed(() => {
-    const text = generalStore.emailSignature?.trim()
+    const text = charityStore.emailSignature?.trim()
     return text || undefined
   })
 

@@ -9,11 +9,7 @@ const store = useGeneralSettingsStore()
 
 const originalData = computed(() => ({
   timezone: store.timezone,
-  dateFormat: store.dateFormat,
-  emailSenderId: store.emailSenderId,
-  emailSenderName: store.emailSenderName,
-  emailSenderAddress: store.emailSenderAddress,
-  supportEmail: store.supportEmail
+  dateFormat: store.dateFormat
 }))
 
 const formConfigRef = ref()

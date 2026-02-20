@@ -6,7 +6,6 @@ import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaig
 import { useDonations } from '~/features/donations/admin/composables/useDonations'
 import { useProducts } from '~/features/products/admin/composables/useProducts'
 import { useAdminSubscriptions } from '~/features/subscriptions/admin/composables/useAdminSubscriptions'
-import { useGeneralSettingsStore } from '~/features/settings/admin/stores/generalSettings'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
 import type { EmailCardsPayload } from '~/emails/components/cards/types'
@@ -78,7 +77,6 @@ export function useEmailPreviewContext(
   const { allTransactions } = useDonations()
   const { allSubscriptions } = useAdminSubscriptions()
   const { activeProducts } = useProducts()
-  const generalStore = useGeneralSettingsStore()
   const charityStore = useCharitySettingsStore()
   const brandingStore = useBrandingSettingsStore()
   const siteUrl = (useRuntimeConfig().public.siteUrl as string | undefined) || ''
@@ -246,7 +244,7 @@ export function useEmailPreviewContext(
         INVITEE_NAME: latestDonor.value?.fullName || 'Team Member',
         ROLE: 'Editor',
         ORG_NAME:
-          generalStore.emailSenderName || latestCampaign.value?.name || 'Community Organization',
+          charityStore.emailSenderName || latestCampaign.value?.name || 'Community Organization',
         INVITE_LINK: 'https://example.com/invite/latest'
       }
     })
@@ -309,7 +307,7 @@ export function useEmailPreviewContext(
       expiry: latestSubscription.value?.nextBillingDate
         ? `Next bill ${formatDate(latestSubscription.value.nextBillingDate)}`
         : undefined,
-      billingContact: latestDonor.value?.email || generalStore.emailSenderAddress,
+      billingContact: latestDonor.value?.email || charityStore.emailSenderAddress,
       actionText: 'Update payment details any time in your donor portal.',
       portalUrl: donorPortalUrl.value,
       portalLinkText: 'Open donor portal',

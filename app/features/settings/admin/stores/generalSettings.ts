@@ -9,32 +9,16 @@ export const useGeneralSettingsStore = defineStore('generalSettings', () => {
 
   const timezone = ref(defaults.timezone)
   const dateFormat = ref(defaults.dateFormat)
-  const emailSenderId = ref(defaults.emailSenderId)
-  const emailSenderName = ref(defaults.emailSenderName)
-  const emailSenderAddress = ref(defaults.emailSenderAddress)
-  const supportEmail = ref(defaults.supportEmail)
-  const emailSignature = ref(defaults.emailSignature)
 
   function initialize(settings: GeneralSettings) {
     timezone.value = settings.timezone
     dateFormat.value = settings.dateFormat
-    emailSenderId.value = settings.emailSenderId
-    emailSenderName.value = settings.emailSenderName
-    emailSenderAddress.value = settings.emailSenderAddress
-    supportEmail.value = settings.supportEmail
-    emailSignature.value = settings.emailSignature
     markClean()
   }
 
   function updateSettings(settings: Partial<GeneralSettings>) {
     if (settings.timezone !== undefined) timezone.value = settings.timezone
     if (settings.dateFormat !== undefined) dateFormat.value = settings.dateFormat
-    if (settings.emailSenderId !== undefined) emailSenderId.value = settings.emailSenderId
-    if (settings.emailSenderName !== undefined) emailSenderName.value = settings.emailSenderName
-    if (settings.emailSenderAddress !== undefined)
-      emailSenderAddress.value = settings.emailSenderAddress
-    if (settings.supportEmail !== undefined) supportEmail.value = settings.supportEmail
-    if (settings.emailSignature !== undefined) emailSignature.value = settings.emailSignature
     markDirty()
   }
 
@@ -56,12 +40,7 @@ export const useGeneralSettingsStore = defineStore('generalSettings', () => {
         'settings-general',
         JSON.stringify({
           timezone: timezone.value,
-          dateFormat: dateFormat.value,
-          emailSenderId: emailSenderId.value,
-          emailSenderName: emailSenderName.value,
-          emailSenderAddress: emailSenderAddress.value,
-          supportEmail: supportEmail.value,
-          emailSignature: emailSignature.value
+          dateFormat: dateFormat.value
         })
       )
     } catch {
@@ -74,11 +53,6 @@ export const useGeneralSettingsStore = defineStore('generalSettings', () => {
   return {
     timezone,
     dateFormat,
-    emailSenderId,
-    emailSenderName,
-    emailSenderAddress,
-    supportEmail,
-    emailSignature,
     isDirty,
     isSaving,
     initialize,
