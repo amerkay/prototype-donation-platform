@@ -161,7 +161,7 @@ const backToPresets = () => {
               <div class="flex items-center gap-2">
                 <p class="text-xl font-bold">
                   <span class="text-base font-normal opacity-60">{{ currencySymbol }}</span
-                  >{{ item.amount }}
+                  > {{ item.amount }}
                 </p>
                 <p v-if="item.shortText" class="text-sm text-muted-foreground truncate">
                   {{ item.shortText }}
@@ -198,7 +198,7 @@ const backToPresets = () => {
         <p class="text-sm text-muted-foreground">Your {{ frequencyLabel }}</p>
         <p v-if="localAmount > 0" class="text-3xl font-bold">
           <span class="text-xl font-normal opacity-60">{{ currencySymbol }}</span
-          >{{ localAmount }}
+          > {{ localAmount }}
         </p>
         <p v-else class="text-lg text-muted-foreground">Select amount below</p>
       </div>

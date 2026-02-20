@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { ArrowDown } from 'lucide-vue-next'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import AmountSelector from '~/features/donation-form/donor/components/AmountSelector.vue'
 import PreviewCurrencySelect from '~/features/_admin/components/PreviewCurrencySelect.vue'
 import {
@@ -18,7 +19,7 @@ const { campaigns } = useCampaigns()
 const formsStore = useFormsStore()
 
 const baseCurrency = computed(() => currencyStore.defaultCurrency)
-const { convertPrice } = useCurrency(() => baseCurrency.value)
+const { convertPrice, getMultiplier } = useCurrency(() => baseCurrency.value)
 
 /** Non-base supported currencies for the dropdown */
 const targetCurrencies = computed(() =>
@@ -96,6 +97,12 @@ const hasTargetCurrencies = computed(() => targetCurrencies.value.length > 0)
 const baseSymbol = computed(() => getCurrencySymbol(baseCurrency.value))
 const targetSymbol = computed(() => getCurrencySymbol(selectedCurrency.value))
 
+const multiplier = computed(() => getMultiplier(baseCurrency.value, selectedCurrency.value))
+const formulaTooltip = computed(
+  () =>
+    `1 ${baseCurrency.value} × ${multiplier.value} = ${multiplier.value} ${selectedCurrency.value}`
+)
+
 const dummyAmount = ref(0)
 </script>
 
@@ -126,7 +133,7 @@ const dummyAmount = ref(0)
         <p class="text-muted-foreground text-xs font-medium uppercase tracking-wide">
           {{ baseCurrency }} ({{ baseSymbol }}) - Base
         </p>
-        <div class="pointer-events-none">
+        <div class="pointer-events-none [&>div>button:last-child]:hidden">
           <AmountSelector v-model="dummyAmount" :amounts="baseAmounts" :currency="baseCurrency" />
         </div>
       </div>
@@ -144,10 +151,17 @@ const dummyAmount = ref(0)
 
         <!-- Target currency -->
         <div class="space-y-2">
-          <p class="text-muted-foreground text-xs font-medium uppercase tracking-wide">
-            {{ selectedCurrency }} ({{ targetSymbol }}) - Converted
-          </p>
-          <div class="pointer-events-none">
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <p
+                class="text-muted-foreground text-xs font-medium uppercase tracking-wide cursor-help w-fit"
+              >
+                {{ selectedCurrency }} ({{ targetSymbol }}) - Converted
+              </p>
+            </TooltipTrigger>
+            <TooltipContent>{{ formulaTooltip }}</TooltipContent>
+          </Tooltip>
+          <div class="pointer-events-none [&>div>button:last-child]:hidden">
             <AmountSelector
               v-model="dummyAmount"
               :amounts="convertedAmounts"
