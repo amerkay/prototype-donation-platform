@@ -174,7 +174,7 @@ function handleRowClick(row: { original: { id: string } }) {
               >
                 <span>
                   <span class="mr-2">{{ item.productIcon }}</span>
-                  {{ item.productName }}
+                  {{ item.productTitle }}
                   <span v-if="item.quantity > 1" class="text-muted-foreground"
                     >x{{ item.quantity }}</span
                   >

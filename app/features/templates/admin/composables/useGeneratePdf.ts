@@ -57,7 +57,7 @@ export function useGeneratePdf() {
         const sampleP = certOptions?.product || linkedProducts[0] || allProducts.value[0]
         const product = sampleP
           ? {
-              name: sampleP.certificateOverrideName || sampleP.name,
+              name: sampleP.certificateTitle || sampleP.title,
               image: sampleP.image || '',
               text: sampleP.certificateText
             }

@@ -51,7 +51,7 @@ const paymentMethodLabel = (pm: {
       <div class="space-y-3">
         <div class="flex flex-col gap-1">
           <span v-for="item in subscription.lineItems" :key="item.productId" class="text-sm">
-            {{ item.productIcon }} {{ item.productName }}
+            {{ item.productIcon }} {{ item.productTitle }}
             <span class="text-muted-foreground">
               ({{ formatAmount(item.unitPrice) }}/{{ item.frequency }})
             </span>

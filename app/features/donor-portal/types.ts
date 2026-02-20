@@ -28,7 +28,7 @@ export interface PaymentMethod {
  */
 export interface TransactionLineItem {
   productId: string
-  productName: string
+  productTitle: string
   productIcon: string
   quantity: number
   unitPrice: number

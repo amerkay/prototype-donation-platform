@@ -195,7 +195,7 @@ const breadcrumbs = computed(() => [
                 <TableRow v-for="item in txn.lineItems" :key="item.productId">
                   <TableCell>
                     <span class="mr-2">{{ item.productIcon }}</span>
-                    {{ item.productName }}
+                    {{ item.productTitle }}
                   </TableCell>
                   <TableCell class="text-right">{{ item.quantity }}</TableCell>
                   <TableCell class="text-right">{{

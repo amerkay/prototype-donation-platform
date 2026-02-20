@@ -185,7 +185,7 @@ export function useDonationFormContext() {
   /** Context schema for donor-side (reads entry fields from saved config) */
   const contextSchema = computed<ContextSchema>(() => {
     const currencies = effectiveCurrencies.value.supportedCurrencies
-    const products = formConfigStore.products.map((p) => ({ id: p.id, name: p.name }))
+    const products = formConfigStore.products.map((p) => ({ id: p.id, name: p.title }))
     const schema = buildBaseContextSchema(currencies, products)
 
     const entryFields = formConfigStore.entryFields?.fields ?? []

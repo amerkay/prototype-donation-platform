@@ -38,7 +38,7 @@ const {
   'donorName',
   'donorEmail',
   'campaignName',
-  (t: Transaction) => t.lineItems.map((li) => li.productName).join(' ')
+  (t: Transaction) => t.lineItems.map((li) => li.productTitle).join(' ')
 ])
 
 const breadcrumbs = [{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Donations' }]

@@ -39,7 +39,7 @@ const {
   'donorName' as keyof EnrichedSubscription,
   'donorEmail' as keyof EnrichedSubscription,
   'campaignName',
-  (s: EnrichedSubscription) => s.lineItems.map((li) => li.productName).join(' ')
+  (s: EnrichedSubscription) => s.lineItems.map((li) => li.productTitle).join(' ')
 ])
 
 const breadcrumbs = [{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Subscriptions' }]

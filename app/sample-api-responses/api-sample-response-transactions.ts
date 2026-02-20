@@ -35,7 +35,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'tree-planting',
-        productName: 'Plant 10 Trees',
+        productTitle: 'Plant 10 Trees',
         productIcon: '🌳',
         quantity: 2,
         unitPrice: 30,
@@ -72,7 +72,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Donation',
+        productTitle: 'Donation',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 100,
@@ -112,7 +112,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'adopt-bumi',
-        productName: 'Adopt Bumi the Orangutan',
+        productTitle: 'Adopt Bumi the Orangutan',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 15,
@@ -148,7 +148,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'tree-planting',
-        productName: 'Plant 10 Trees',
+        productTitle: 'Plant 10 Trees',
         productIcon: '🌳',
         quantity: 1,
         unitPrice: 30,
@@ -156,7 +156,7 @@ export const transactions: Transaction[] = [
       },
       {
         productId: 'custom-amount',
-        productName: 'Donation',
+        productTitle: 'Donation',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 50,
@@ -195,7 +195,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'education-program',
-        productName: 'Support Education Program',
+        productTitle: 'Support Education Program',
         productIcon: '📚',
         quantity: 1,
         unitPrice: 25,
@@ -231,7 +231,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Donation',
+        productTitle: 'Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 50,
@@ -266,7 +266,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Donation',
+        productTitle: 'Donation',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 200,
@@ -303,7 +303,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'adopt-bumi',
-        productName: 'Adopt Bumi the Orangutan',
+        productTitle: 'Adopt Bumi the Orangutan',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 15,
@@ -311,7 +311,7 @@ export const transactions: Transaction[] = [
       },
       {
         productId: 'adopt-maya',
-        productName: 'Adopt Maya the Orangutan',
+        productTitle: 'Adopt Maya the Orangutan',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 10,
@@ -347,7 +347,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Birthday Donation',
+        productTitle: 'Birthday Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 25,
@@ -386,7 +386,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'adopt-bumi',
-        productName: 'Adopt Bumi the Orangutan',
+        productTitle: 'Adopt Bumi the Orangutan',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 15,
@@ -423,7 +423,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'education-program',
-        productName: 'Support Education Program',
+        productTitle: 'Support Education Program',
         productIcon: '📚',
         quantity: 1,
         unitPrice: 25,
@@ -459,7 +459,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Donation',
+        productTitle: 'Donation',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 500,
@@ -500,7 +500,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Donation',
+        productTitle: 'Donation',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 317,
@@ -538,7 +538,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Donation',
+        productTitle: 'Donation',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 1000,
@@ -574,7 +574,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Donation',
+        productTitle: 'Donation',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 300,
@@ -620,7 +620,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Birthday Donation',
+        productTitle: 'Birthday Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 100,
@@ -657,7 +657,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Birthday Donation',
+        productTitle: 'Birthday Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 75,
@@ -698,7 +698,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Donation',
+        productTitle: 'Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 25,
@@ -735,7 +735,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Donation',
+        productTitle: 'Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 50,
@@ -772,7 +772,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Donation',
+        productTitle: 'Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 10,
@@ -812,7 +812,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Donation',
+        productTitle: 'Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 25,
@@ -849,7 +849,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Donation',
+        productTitle: 'Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 15,
@@ -889,7 +889,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Birthday Donation',
+        productTitle: 'Birthday Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 58,
@@ -927,7 +927,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Birthday Donation',
+        productTitle: 'Birthday Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 100,
@@ -965,7 +965,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Birthday Donation',
+        productTitle: 'Birthday Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 75,
@@ -1001,7 +1001,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Birthday Donation',
+        productTitle: 'Birthday Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 30,
@@ -1037,7 +1037,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Birthday Donation',
+        productTitle: 'Birthday Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 25,
@@ -1078,7 +1078,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Birthday Donation',
+        productTitle: 'Birthday Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 20,
@@ -1116,7 +1116,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Birthday Donation',
+        productTitle: 'Birthday Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 63,
@@ -1152,7 +1152,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Birthday Donation',
+        productTitle: 'Birthday Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 15,
@@ -1192,7 +1192,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Birthday Donation',
+        productTitle: 'Birthday Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 25,
@@ -1230,7 +1230,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Birthday Donation',
+        productTitle: 'Birthday Donation',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 50,
@@ -1273,7 +1273,7 @@ export const subscriptions: Subscription[] = [
     lineItems: [
       {
         productId: 'adopt-bumi',
-        productName: 'Adopt Bumi the Orangutan',
+        productTitle: 'Adopt Bumi the Orangutan',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 15,
@@ -1306,7 +1306,7 @@ export const subscriptions: Subscription[] = [
     lineItems: [
       {
         productId: 'adopt-bumi',
-        productName: 'Adopt Bumi the Orangutan',
+        productTitle: 'Adopt Bumi the Orangutan',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 15,
@@ -1314,7 +1314,7 @@ export const subscriptions: Subscription[] = [
       },
       {
         productId: 'adopt-maya',
-        productName: 'Adopt Maya the Orangutan',
+        productTitle: 'Adopt Maya the Orangutan',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 10,
@@ -1347,7 +1347,7 @@ export const subscriptions: Subscription[] = [
     lineItems: [
       {
         productId: 'education-program',
-        productName: 'Support Education Program',
+        productTitle: 'Support Education Program',
         productIcon: '📚',
         quantity: 1,
         unitPrice: 25,
@@ -1380,7 +1380,7 @@ export const subscriptions: Subscription[] = [
     lineItems: [
       {
         productId: 'adopt-maya',
-        productName: 'Adopt Maya the Orangutan',
+        productTitle: 'Adopt Maya the Orangutan',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 10,
@@ -1413,7 +1413,7 @@ export const subscriptions: Subscription[] = [
     lineItems: [
       {
         productId: 'custom-amount',
-        productName: 'Monthly Birthday Fund',
+        productTitle: 'Monthly Birthday Fund',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 10,
@@ -1450,7 +1450,7 @@ export const subscriptions: Subscription[] = [
     lineItems: [
       {
         productId: 'emergency-donation',
-        productName: 'Emergency Relief Fund',
+        productTitle: 'Emergency Relief Fund',
         productIcon: '🏥',
         quantity: 1,
         unitPrice: 25,
@@ -1483,7 +1483,7 @@ export const subscriptions: Subscription[] = [
     lineItems: [
       {
         productId: 'animal-rescue',
-        productName: 'Animal Rescue Support',
+        productTitle: 'Animal Rescue Support',
         productIcon: '🐾',
         quantity: 1,
         unitPrice: 120,
@@ -1516,7 +1516,7 @@ export const subscriptions: Subscription[] = [
     lineItems: [
       {
         productId: 'training-support',
-        productName: 'First Aid Training Fund',
+        productTitle: 'First Aid Training Fund',
         productIcon: '🩹',
         quantity: 1,
         unitPrice: 12,

@@ -19,10 +19,10 @@ import {
  */
 function useDonationSchema(allTransactions: Ref<Transaction[]>) {
   return computed<ContextSchema>(() => {
-    const productNames = new Set<string>()
+    const productTitles = new Set<string>()
     for (const t of allTransactions.value) {
       for (const item of t.lineItems) {
-        productNames.add(item.productName)
+        productTitles.add(item.productTitle)
       }
     }
 
@@ -63,7 +63,7 @@ function useDonationSchema(allTransactions: Ref<Transaction[]>) {
         label: 'Product',
         type: 'string',
         group: 'Line Items',
-        options: [...productNames].sort().map((name) => ({ value: name, label: name }))
+        options: [...productTitles].sort().map((name) => ({ value: name, label: name }))
       },
       tribute: { label: 'Has Tribute', type: 'boolean', group: 'Donor' },
       'tribute.type': {
@@ -114,7 +114,7 @@ function buildCustomEvaluators() {
     product: (conditionValue: unknown, item: unknown, operator: ComparisonOperator) => {
       const t = item as Transaction
       return OPERATORS[operator](
-        t.lineItems.map((li) => li.productName),
+        t.lineItems.map((li) => li.productTitle),
         conditionValue
       )
     },

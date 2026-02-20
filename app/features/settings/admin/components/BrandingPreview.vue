@@ -35,88 +35,86 @@ const TABS = [
 </script>
 
 <template>
-  <div class="space-y-3">
-    <Tabs v-model="activeTab">
-      <TabsList class="w-full">
-        <TabsTrigger v-for="tab in TABS" :key="tab.value" :value="tab.value" class="text-xs">
-          {{ tab.label }}
-        </TabsTrigger>
-      </TabsList>
+  <Tabs v-model="activeTab">
+    <TabsList class="w-full overflow-x-auto">
+      <TabsTrigger v-for="tab in TABS" :key="tab.value" :value="tab.value" class="text-xs">
+        {{ tab.label }}
+      </TabsTrigger>
+    </TabsList>
 
-      <!-- Donation Form — real DonationFlowWizard -->
-      <TabsContent value="donation">
-        <div class="bg-muted/50 rounded-xl border" :style="brandingStyle">
-          <DonationFlowWizard />
-        </div>
-        <div class="flex justify-between text-xs text-muted-foreground px-1 mt-3">
-          <span>Preview with current branding</span>
-          <NuxtLink
-            to="/admin/campaigns"
-            class="flex items-center gap-1 text-primary hover:underline"
-          >
-            Edit Forms
-            <ArrowRight class="size-3" />
-          </NuxtLink>
-        </div>
-      </TabsContent>
+    <!-- Donation Form — real DonationFlowWizard -->
+    <TabsContent value="donation">
+      <div class="bg-muted/50 rounded-xl border" :style="brandingStyle">
+        <DonationFlowWizard />
+      </div>
+      <div class="flex justify-between text-xs text-muted-foreground px-1 mt-3">
+        <span>Preview with current branding</span>
+        <NuxtLink
+          to="/admin/campaigns"
+          class="flex items-center gap-1 text-primary hover:underline"
+        >
+          Edit Forms
+          <ArrowRight class="size-3" />
+        </NuxtLink>
+      </div>
+    </TabsContent>
 
-      <!-- Campaign — real CrowdfundingPage -->
-      <TabsContent value="campaign">
+    <!-- Campaign — real CrowdfundingPage -->
+    <TabsContent value="campaign">
+      <div :style="brandingStyle">
+        <CrowdfundingPage v-if="previewCampaign" :campaign="previewCampaign" />
+        <p v-else class="text-sm text-muted-foreground text-center py-8">
+          No campaigns with crowdfunding pages yet.
+        </p>
+      </div>
+      <div class="flex justify-between text-xs text-muted-foreground px-1 mt-3">
+        <span>Preview with current branding</span>
+        <NuxtLink
+          to="/admin/campaigns"
+          class="flex items-center gap-1 text-primary hover:underline"
+        >
+          Edit Campaigns
+          <ArrowRight class="size-3" />
+        </NuxtLink>
+      </div>
+    </TabsContent>
+
+    <!-- Receipt — embedded existing component -->
+    <TabsContent value="receipt">
+      <div class="space-y-3">
         <div :style="brandingStyle">
-          <CrowdfundingPage v-if="previewCampaign" :campaign="previewCampaign" />
-          <p v-else class="text-sm text-muted-foreground text-center py-8">
-            No campaigns with crowdfunding pages yet.
-          </p>
+          <ReceiptPreview />
         </div>
-        <div class="flex justify-between text-xs text-muted-foreground px-1 mt-3">
+        <div class="flex justify-between text-xs text-muted-foreground px-1">
           <span>Preview with current branding</span>
           <NuxtLink
-            to="/admin/campaigns"
+            to="/admin/templates/receipts"
             class="flex items-center gap-1 text-primary hover:underline"
           >
-            Edit Campaigns
+            Edit Receipt
             <ArrowRight class="size-3" />
           </NuxtLink>
         </div>
-      </TabsContent>
+      </div>
+    </TabsContent>
 
-      <!-- Receipt — embedded existing component -->
-      <TabsContent value="receipt">
-        <div class="space-y-3">
-          <div :style="brandingStyle">
-            <ReceiptPreview />
-          </div>
-          <div class="flex justify-between text-xs text-muted-foreground px-1">
-            <span>Preview with current branding</span>
-            <NuxtLink
-              to="/admin/templates/receipts"
-              class="flex items-center gap-1 text-primary hover:underline"
-            >
-              Edit Receipt
-              <ArrowRight class="size-3" />
-            </NuxtLink>
-          </div>
+    <!-- Certificate — embedded existing component -->
+    <TabsContent value="certificate">
+      <div class="space-y-3">
+        <div :style="brandingStyle">
+          <CertificatePreview />
         </div>
-      </TabsContent>
-
-      <!-- Certificate — embedded existing component -->
-      <TabsContent value="certificate">
-        <div class="space-y-3">
-          <div :style="brandingStyle">
-            <CertificatePreview />
-          </div>
-          <div class="flex justify-between text-xs text-muted-foreground px-1">
-            <span>Preview with current branding</span>
-            <NuxtLink
-              to="/admin/templates/certificates"
-              class="flex items-center gap-1 text-primary hover:underline"
-            >
-              Edit Certificate
-              <ArrowRight class="size-3" />
-            </NuxtLink>
-          </div>
+        <div class="flex justify-between text-xs text-muted-foreground px-1">
+          <span>Preview with current branding</span>
+          <NuxtLink
+            to="/admin/templates/certificates"
+            class="flex items-center gap-1 text-primary hover:underline"
+          >
+            Edit Certificate
+            <ArrowRight class="size-3" />
+          </NuxtLink>
         </div>
-      </TabsContent>
-    </Tabs>
-  </div>
+      </div>
+    </TabsContent>
+  </Tabs>
 </template>

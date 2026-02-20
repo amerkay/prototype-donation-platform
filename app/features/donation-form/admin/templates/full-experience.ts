@@ -147,7 +147,8 @@ export function createFullExperienceTemplate(
     products: [
       {
         id: 'adopt-bumi',
-        name: 'Adopt Bumi the Orangutan',
+        name: 'Adopt Bumi',
+        title: 'Adopt Bumi the Orangutan',
         description: "Monthly sponsorship to support Bumi's care and rehabilitation",
         minPrice: 3,
         default: 10,
@@ -158,7 +159,8 @@ export function createFullExperienceTemplate(
       },
       {
         id: 'adopt-maya',
-        name: 'Adopt Maya the Orangutan',
+        name: 'Adopt Maya',
+        title: 'Adopt Maya the Orangutan',
         description: "Monthly sponsorship for Maya's ongoing medical care",
         minPrice: 3,
         default: 10,
@@ -169,7 +171,8 @@ export function createFullExperienceTemplate(
       },
       {
         id: 'tree-planting',
-        name: 'Plant 10 Trees',
+        name: 'Tree Planting',
+        title: 'Plant 10 Trees',
         description: 'Help restore orangutan habitat with native tree planting',
         price: 30,
         frequency: 'once',
@@ -179,7 +182,8 @@ export function createFullExperienceTemplate(
       },
       {
         id: 'education-program',
-        name: 'Support Education Program',
+        name: 'Education Program',
+        title: 'Support Education Program',
         description: 'Monthly contribution to local conservation education',
         minPrice: 5,
         default: 25,

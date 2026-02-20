@@ -111,6 +111,9 @@ const headerZoom = computed(() => (isLogoCentered.value ? 0.8 : undefined))
           :adaptive="true"
           :text="model.product.text"
           :data-field="model.targets?.product"
+          :data-field-image="model.targets?.productImage"
+          :data-field-name="model.targets?.productTitle"
+          :data-field-text="model.targets?.productText"
           class="mb-4"
         />
 

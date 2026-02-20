@@ -9,6 +9,7 @@ import { CERTIFICATE_TEMPLATE_TARGETS } from '~/features/templates/admin/forms/c
 import { getPageRenderGeometry } from '~/features/templates/admin/utils/page-geometry'
 import { useAdaptiveText } from '~/features/templates/shared/composables/useAdaptiveText'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
+import type { CertificateTemplateTargets } from '~/features/templates/shared/types'
 import CertificateLayout from '~/features/templates/shared/components/certificate/CertificateLayout.vue'
 import PreviewEditable from '~/features/_admin/components/PreviewEditable.vue'
 
@@ -18,6 +19,8 @@ const props = withDefaults(
     editable?: boolean
     /** Override the auto-selected product for preview */
     product?: Product
+    /** Override editable target paths (defaults to CERTIFICATE_TEMPLATE_TARGETS) */
+    targets?: CertificateTemplateTargets
   }>(),
   { editable: false }
 )
@@ -45,7 +48,7 @@ const sampleProduct = computed(() => {
   // Use override product if provided (explicit eye-icon selection)
   if (props.product) {
     return {
-      name: props.product.certificateOverrideName || props.product.name,
+      name: props.product.certificateTitle || props.product.title,
       image: props.product.image || '',
       text: props.product.certificateText
     }
@@ -54,7 +57,7 @@ const sampleProduct = computed(() => {
   const p = linkedProducts.value[0] || products.value[0]
   if (p) {
     return {
-      name: p.certificateOverrideName || p.name,
+      name: p.certificateTitle || p.title,
       image: p.image || '',
       text: p.certificateText
     }
@@ -66,7 +69,7 @@ const sampleProduct = computed(() => {
 const { certificateModel } = useCertificatePreviewModel(() => cert.flatSettings, {
   product: sampleProduct,
   amount: sampleAmount,
-  targets: CERTIFICATE_TEMPLATE_TARGETS
+  targets: props.targets ?? CERTIFICATE_TEMPLATE_TARGETS
 })
 
 const previewEditableRef = ref<InstanceType<typeof PreviewEditable> | null>(null)

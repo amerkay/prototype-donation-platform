@@ -21,7 +21,7 @@ const { contextSchema: donationContextSchema } = useDonationFormContext()
 // Admin-side resolver: reads entry fields from live form values for reactive conditions
 const adminContextSchemaResolver = (rootValues: Record<string, unknown>): ContextSchema => {
   const currencies = effectiveCurrencies.value.supportedCurrencies
-  const products = store.products.map((p) => ({ id: p.id, name: p.name }))
+  const products = store.products.map((p) => ({ id: p.id, name: p.title }))
   const schema = buildBaseContextSchema(currencies, products)
 
   const featuresData = rootValues.features as Record<string, unknown> | undefined

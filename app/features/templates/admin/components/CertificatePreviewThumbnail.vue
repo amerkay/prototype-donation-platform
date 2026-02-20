@@ -23,7 +23,7 @@ const linkedProduct = computed(() => {
   const p = products.value.find((p) => p.certificateTemplateId === props.template.id && p.image)
   if (!p?.image) return undefined
   return {
-    name: p.certificateOverrideName || p.name,
+    name: p.certificateTitle || p.title,
     image: p.image,
     text: p.certificateText
   }

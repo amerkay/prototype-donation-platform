@@ -1,6 +1,9 @@
 export interface Product {
   id: string
+  /** Internal admin label (breadcrumbs, admin cards, sidebar) */
   name: string
+  /** Donor-facing display title */
+  title: string
   description: string
   price?: number
   minPrice?: number
@@ -12,8 +15,8 @@ export interface Product {
   isShippingRequired?: boolean
   /** ID of the certificate template to use */
   certificateTemplateId?: string
-  /** Override name shown on certificates (e.g., "Maya" instead of full product name) */
-  certificateOverrideName?: string
+  /** Title shown on certificates (overrides product title, e.g., "Maya") */
+  certificateTitle?: string
   /** Text shown next to product image on certificates */
   certificateText?: string
 }

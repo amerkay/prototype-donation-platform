@@ -129,7 +129,8 @@ export function createRecurringAdoptionsTemplate(
     products: [
       {
         id: 'adopt-bumi',
-        name: 'Adopt Bumi the Orangutan',
+        name: 'Adopt Bumi',
+        title: 'Adopt Bumi the Orangutan',
         description: "Monthly sponsorship to support Bumi's care and rehabilitation",
         minPrice: 3,
         default: 10,
@@ -140,7 +141,8 @@ export function createRecurringAdoptionsTemplate(
       },
       {
         id: 'adopt-maya',
-        name: 'Adopt Maya the Orangutan',
+        name: 'Adopt Maya',
+        title: 'Adopt Maya the Orangutan',
         description: "Monthly sponsorship for Maya's ongoing medical care",
         minPrice: 3,
         default: 10,
@@ -151,7 +153,8 @@ export function createRecurringAdoptionsTemplate(
       },
       {
         id: 'adopt-kiko',
-        name: 'Adopt Kiko the Orangutan',
+        name: 'Adopt Kiko',
+        title: 'Adopt Kiko the Orangutan',
         description: 'Support Kiko as he prepares for release back to the wild',
         minPrice: 3,
         default: 10,

@@ -11,15 +11,22 @@ import {
 } from '~/features/_library/form-builder/api'
 import { useCertificateTemplates } from '~/features/templates/admin/composables/useCertificateTemplates'
 
+export const productOpenAccordionId = ref<string | undefined>(undefined)
+
 export const useProductForm = defineForm('product', () => {
   const { templateOptions } = useCertificateTemplates()
 
-  const description = textareaField('description', {
+  const title = textField('title', {
+    label: 'Title',
+    placeholder: 'e.g., Adopt Bumi the Rescued Baby',
+    description: 'Public-facing title shown to donors',
+    maxLength: 80
+  })
+
+  const description = textField('description', {
     label: 'Short Description',
     placeholder: 'Brief description...',
-    rows: 2,
-    maxLength: 85,
-    showMaxLengthIndicator: true
+    maxLength: 85
   })
 
   const image = imageUploadField('image', {
@@ -49,11 +56,11 @@ export const useProductForm = defineForm('product', () => {
     visibleWhen: (ctx) => !!ctx.values.certificateTemplateId
   })
 
-  const certificateOverrideName = textField('certificateOverrideName', {
-    label: 'Certificate Display Name',
+  const certificateTitle = textField('certificateTitle', {
+    label: 'Certificate Title',
     placeholder: 'e.g., Maya',
     optional: true,
-    description: 'Short name shown on certificates instead of full product name',
+    description: 'Short title shown on certificates instead of full product title',
     maxLength: 50,
     visibleWhen: (ctx) => !!ctx.values.certificateTemplateId
   })
@@ -77,12 +84,12 @@ export const useProductForm = defineForm('product', () => {
     fields: {
       certificateTemplateId,
       certificateTemplateAlert,
-      certificateOverrideName,
+      certificateTitle,
       certificateText
     },
     $storePath: {
       certificateTemplateId: 'certificateTemplateId',
-      certificateOverrideName: 'certificateOverrideName',
+      certificateTitle: 'certificateTitle',
       certificateText: 'certificateText'
     }
   })
@@ -99,19 +106,22 @@ export const useProductForm = defineForm('product', () => {
   const price = numberField('price', {
     label: 'Fixed Price',
     placeholder: '30',
-    optional: true
+    optional: true,
+    visibleWhen: (ctx) => ctx.values.frequency === 'once'
   })
 
   const minPrice = numberField('minPrice', {
     label: 'Min Price',
     placeholder: '5',
-    optional: true
+    optional: true,
+    visibleWhen: (ctx) => ctx.values.frequency !== 'once'
   })
 
   const defaultPrice = numberField('default', {
     label: 'Default Price',
     placeholder: '10',
-    optional: true
+    optional: true,
+    visibleWhen: (ctx) => ctx.values.frequency !== 'once'
   })
 
   const isShippingRequired = toggleField('isShippingRequired', {
@@ -125,8 +135,9 @@ export const useProductForm = defineForm('product', () => {
     collapsible: true,
     collapsibleDefaultOpen: false,
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: { description, image },
+    fields: { title, description, image },
     $storePath: {
+      title: 'title',
       description: 'description',
       image: 'image'
     }

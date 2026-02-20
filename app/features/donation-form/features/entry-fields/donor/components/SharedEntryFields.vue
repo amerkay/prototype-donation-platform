@@ -53,7 +53,7 @@ const entryContextSchema = computed<ContextSchema>(() => ({
     label: 'Cart Has Product',
     type: 'array',
     description: 'Products currently in donor cart (all frequencies)',
-    options: formConfigStore.products.map((p) => ({ value: p.id, label: p.name }))
+    options: formConfigStore.products.map((p) => ({ value: p.id, label: p.title }))
   },
   cartItemCount: { label: 'Cart Item Count', type: 'number' },
   cartTotal: { label: 'Cart Total', type: 'number' },

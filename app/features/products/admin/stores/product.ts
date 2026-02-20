@@ -13,7 +13,7 @@ interface ProductSettings {
   default: number | undefined
   isShippingRequired: boolean
   certificateTemplateId: string | undefined
-  certificateOverrideName: string | undefined
+  certificateTitle: string | undefined
   certificateText: string | undefined
 }
 
@@ -26,7 +26,7 @@ const DEFAULTS: ProductSettings = {
   default: undefined,
   isShippingRequired: false,
   certificateTemplateId: undefined,
-  certificateOverrideName: undefined,
+  certificateTitle: undefined,
   certificateText: undefined
 }
 
@@ -35,11 +35,13 @@ export const useProductStore = defineStore('product', () => {
   const settings = reactive<ProductSettings>({ ...DEFAULTS })
   const productId = ref<string | undefined>(undefined)
   const productName = ref('')
+  const productTitle = ref('')
   const productStatus = ref<'active' | 'archived'>('active')
 
   function initialize(product: ImpactProduct) {
     productId.value = product.id
     productName.value = product.name
+    productTitle.value = product.title
     productStatus.value = product.status ?? 'active'
 
     settings.description = product.description
@@ -50,7 +52,7 @@ export const useProductStore = defineStore('product', () => {
     settings.default = product.default
     settings.isShippingRequired = product.isShippingRequired ?? false
     settings.certificateTemplateId = product.certificateTemplateId
-    settings.certificateOverrideName = product.certificateOverrideName
+    settings.certificateTitle = product.certificateTitle
     settings.certificateText = product.certificateText
     markClean()
   }
@@ -58,6 +60,7 @@ export const useProductStore = defineStore('product', () => {
   function toSnapshot() {
     return {
       name: productName.value,
+      title: productTitle.value,
       status: productStatus.value,
       ...settings
     }
@@ -73,6 +76,7 @@ export const useProductStore = defineStore('product', () => {
     ...toRefs(settings),
     id: productId,
     name: productName,
+    title: productTitle,
     status: productStatus,
     isDirty,
     isSaving,

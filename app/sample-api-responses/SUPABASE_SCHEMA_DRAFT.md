@@ -388,7 +388,7 @@ CREATE TABLE subscription_line_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   subscription_id UUID NOT NULL REFERENCES subscriptions(id) ON DELETE CASCADE,
   product_id UUID REFERENCES products(id) ON DELETE SET NULL,
-  product_name TEXT NOT NULL,
+  product_title TEXT NOT NULL,
   product_icon TEXT,
   quantity INT NOT NULL DEFAULT 1,
   unit_price DECIMAL(10,2) NOT NULL,
@@ -458,7 +458,7 @@ CREATE TABLE transaction_line_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   transaction_id UUID NOT NULL REFERENCES transactions(id) ON DELETE CASCADE,
   product_id UUID REFERENCES products(id) ON DELETE SET NULL,
-  product_name TEXT NOT NULL,
+  product_title TEXT NOT NULL,
   product_icon TEXT,
   quantity INT NOT NULL DEFAULT 1,
   unit_price DECIMAL(10,2) NOT NULL,
@@ -490,6 +490,9 @@ CREATE TABLE products (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id),
   name TEXT NOT NULL,
+  -- name: internal admin label (breadcrumbs, sidebar, admin cards)
+  title TEXT NOT NULL,
+  -- title: donor-facing display title
   description TEXT,
   price DECIMAL(10,2),
   -- price: NULL if variable pricing, set if fixed
@@ -503,6 +506,10 @@ CREATE TABLE products (
   thumbnail TEXT,
   icon TEXT,
   is_shipping_required BOOLEAN NOT NULL DEFAULT false,
+  certificate_title TEXT,
+  -- certificate_title: short title shown on certificates (overrides product title)
+  certificate_text TEXT,
+  -- certificate_text: description shown next to product image on certificates
 
   -- Audit
   created_by UUID REFERENCES auth.users(id),

@@ -36,8 +36,17 @@ export function usePreviewEditable(containerRef: { value: Element | null }, enab
     return null
   }
 
+  /** For comma-separated data-field values, return the first resolvable target. */
+  function resolveFirstTarget(csv: string): string | null {
+    const candidates = csv.split(',')
+    for (const c of candidates) {
+      if (canResolveHashTarget(c)) return c
+    }
+    return null
+  }
+
   function hashTargetExists(fieldPath: string): boolean {
-    return canResolveHashTarget(fieldPath)
+    return resolveFirstTarget(fieldPath) !== null
   }
 
   function onMouseOver(e: Event) {
@@ -80,7 +89,9 @@ export function usePreviewEditable(containerRef: { value: Element | null }, enab
   }
 
   function navigateToField(field?: string) {
-    const target = field ?? hoveredField.value
+    const csv = field ?? hoveredField.value
+    if (!csv) return
+    const target = resolveFirstTarget(csv)
     if (target) activateHashTarget(target)
   }
 

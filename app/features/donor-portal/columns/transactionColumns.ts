@@ -64,7 +64,7 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
         { class: 'flex flex-col gap-0.5' },
         items.map((item) =>
           h('span', { class: 'text-sm whitespace-nowrap', key: item.productId }, [
-            `${item.productIcon} ${item.productName}`,
+            `${item.productIcon} ${item.productTitle}`,
             item.quantity > 1
               ? h('span', { class: 'text-muted-foreground' }, ` x${item.quantity}`)
               : null

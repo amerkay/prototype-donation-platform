@@ -62,7 +62,7 @@ const filteredProducts = computed(() => {
   if (!searchQuery.value.trim()) return availableProducts.value
   const query = searchQuery.value.toLowerCase()
   return availableProducts.value.filter(
-    (p) => p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query)
+    (p) => p.title.toLowerCase().includes(query) || p.description.toLowerCase().includes(query)
   )
 })
 

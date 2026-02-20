@@ -122,7 +122,8 @@ export function createMultipleProductsTemplate(
     products: [
       {
         id: 'tree-planting',
-        name: 'Plant 10 Trees',
+        name: 'Tree Planting',
+        title: 'Plant 10 Trees',
         description: 'Help restore orangutan habitat with native tree planting',
         price: 30,
         frequency: 'once',
@@ -132,7 +133,8 @@ export function createMultipleProductsTemplate(
       },
       {
         id: 'education-program',
-        name: 'Support Education Program',
+        name: 'Education Program',
+        title: 'Support Education Program',
         description: 'Monthly contribution to local conservation education',
         minPrice: 5,
         default: 25,
@@ -143,7 +145,8 @@ export function createMultipleProductsTemplate(
       },
       {
         id: 'rescue-kit',
-        name: 'Emergency Rescue Kit',
+        name: 'Rescue Kit',
+        title: 'Emergency Rescue Kit',
         description: 'Provide equipment for orangutan rescue operations',
         price: 75,
         frequency: 'once',
@@ -154,6 +157,7 @@ export function createMultipleProductsTemplate(
       {
         id: 'medical-supplies',
         name: 'Medical Supplies',
+        title: 'Medical Supplies',
         description: 'Monthly support for veterinary care and medical supplies',
         minPrice: 10,
         default: 40,

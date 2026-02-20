@@ -156,7 +156,7 @@ export function useEmailPreviewContext(
     return sourceItems.map((item: TransactionLineItem) => {
       const product = activeProducts.value.find((p) => p.id === item.productId)
       return {
-        name: item.productName,
+        name: item.productTitle,
         quantity: item.quantity,
         amount: formatMoney(
           item.unitPrice * item.quantity,

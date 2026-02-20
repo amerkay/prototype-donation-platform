@@ -36,7 +36,7 @@ watch(
   }
 )
 
-const originalData = computed(() => store.id ? store.toSnapshot() : undefined)
+const originalData = computed(() => (store.id ? store.toSnapshot() : undefined))
 
 const formConfigRef = ref()
 
@@ -49,6 +49,8 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdmi
     store.save()
   }
 })
+
+const editableMode = ref(true)
 
 const breadcrumbs = computed(() => [
   { label: 'Dashboard', href: '/admin/dashboard' },
@@ -78,10 +80,10 @@ function handleDeleted() {
 <template>
   <div v-if="product">
     <AdminEditLayout
+      v-model:editable="editableMode"
       :breadcrumbs="breadcrumbs"
       :is-dirty="store.isDirty"
       :show-discard-dialog="showDiscardDialog"
-      :show-preview="false"
       editable-last-item
       :max-length="35"
       @update:show-discard-dialog="showDiscardDialog = $event"
@@ -105,7 +107,7 @@ function handleDeleted() {
       <template #preview-label>Product Preview</template>
 
       <template #preview>
-        <ProductPreview />
+        <ProductPreview :editable="editableMode" />
       </template>
     </AdminEditLayout>
   </div>

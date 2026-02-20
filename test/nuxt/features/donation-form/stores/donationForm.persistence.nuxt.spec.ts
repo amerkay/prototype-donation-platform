@@ -229,6 +229,7 @@ describe('donationForm store persistence', () => {
         {
           id: '1',
           name: 'Monthly donation',
+          title: 'Monthly donation',
           description: 'Description 1',
           price: 25,
           frequency: 'monthly' as const,
@@ -242,6 +243,7 @@ describe('donationForm store persistence', () => {
         {
           id: '2',
           name: 'One-time donation',
+          title: 'One-time donation',
           description: 'Description 2',
           price: 100,
           frequency: 'once' as const,

@@ -107,7 +107,8 @@ export function createStallBookingTemplate(
     products: [
       {
         id: 'template-standard-stall',
-        name: 'Standard Stall (3m x 3m)',
+        name: 'Standard Stall',
+        title: 'Standard Stall (3m x 3m)',
         description: 'Indoor stall with table and two chairs.',
         price: 25,
         frequency: 'once',
@@ -115,7 +116,8 @@ export function createStallBookingTemplate(
       },
       {
         id: 'template-large-stall',
-        name: 'Large Stall (3m x 6m)',
+        name: 'Large Stall',
+        title: 'Large Stall (3m x 6m)',
         description: 'Double-width stall with extra display space.',
         price: 45,
         frequency: 'once',
@@ -123,7 +125,8 @@ export function createStallBookingTemplate(
       },
       {
         id: 'template-corner-stall',
-        name: 'Corner Stall (3m x 3m)',
+        name: 'Corner Stall',
+        title: 'Corner Stall (3m x 3m)',
         description: 'Prime corner position with two open sides.',
         price: 35,
         frequency: 'once',

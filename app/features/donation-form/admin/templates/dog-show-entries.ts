@@ -106,6 +106,7 @@ export function createDogShowEntriesTemplate(
       {
         id: 'template-best-in-show',
         name: 'Best in Show',
+        title: 'Best in Show',
         description: 'Overall champion judged on appearance and temperament.',
         price: 2.5,
         frequency: 'once',
@@ -114,6 +115,7 @@ export function createDogShowEntriesTemplate(
       {
         id: 'template-cutest-puppy',
         name: 'Cutest Puppy',
+        title: 'Cutest Puppy',
         description: 'Puppies under 12 months — cutest face wins!',
         price: 2.5,
         frequency: 'once',
@@ -122,6 +124,7 @@ export function createDogShowEntriesTemplate(
       {
         id: 'template-waggiest-tail',
         name: 'Waggiest Tail',
+        title: 'Waggiest Tail',
         description: 'The happiest tail wins the prize!',
         price: 2.5,
         frequency: 'once',

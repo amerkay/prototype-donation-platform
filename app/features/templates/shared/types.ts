@@ -106,6 +106,10 @@ export interface CertificateTemplateTargets {
   award: string
   body: string
   product: string
+  /** Fine-grained product sub-targets (optional — falls back to `product` when absent) */
+  productImage?: string
+  productTitle?: string
+  productText?: string
   footer: string
   page: string
 }

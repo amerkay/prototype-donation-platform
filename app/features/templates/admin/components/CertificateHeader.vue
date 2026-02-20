@@ -75,7 +75,7 @@ function confirmStatusChange() {
   linkedProducts.value.forEach((product) => {
     updateProduct(product.id, {
       certificateTemplateId: undefined,
-      certificateOverrideName: undefined,
+      certificateTitle: undefined,
       certificateText: undefined
     })
   })

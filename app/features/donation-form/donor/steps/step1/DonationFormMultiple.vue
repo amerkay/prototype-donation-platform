@@ -144,7 +144,7 @@ const handleProductSelect = (product: Product) => {
     const cartItem = cartStore.addToCart(product, price, 'multiple', 1)
     const newItemKey = getCartItemKey(cartItem.id, cartItem.addedAt)
     cartRef.value?.triggerPulse(newItemKey)
-    toast.success(`${product.name} added`)
+    toast.success(`${product.title} added`)
     return
   }
 
@@ -165,7 +165,7 @@ const handleProductModalConfirm = (
     const cartItem = cartStore.addToCart(product, price, 'multiple', quantity, tribute, entryData)
     const newItemKey = getCartItemKey(cartItem.id, cartItem.addedAt)
     cartRef.value?.triggerPulse(newItemKey)
-    toast.success(`${product.name} added`)
+    toast.success(`${product.title} added`)
   } else if (mode === 'edit' && itemKey) {
     const parsed = parseCartItemKey(itemKey)
     if (parsed) {
