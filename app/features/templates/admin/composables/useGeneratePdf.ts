@@ -7,7 +7,7 @@ import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brand
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { formatCurrency } from '~/lib/formatCurrency'
-import { products as sampleProducts } from '~/sample-api-responses/api-sample-response-products'
+import { useProducts } from '~/features/products/admin/composables/useProducts'
 
 interface CertificatePdfOptions {
   currency?: string
@@ -47,9 +47,14 @@ export function useGeneratePdf() {
         const charity = useCharitySettingsStore()
         const certificate = cert.certificate
         const certOptions = options as CertificatePdfOptions | undefined
-        const selectedProduct = certOptions?.product
-        const sampleP =
-          selectedProduct || sampleProducts.find((p) => p.image && p.certificateOverrideName)
+        const { products: allProducts } = useProducts()
+        // Use explicitly selected product, or resolve from linked/available products (same as preview)
+        const linkedProducts = allProducts.value.filter((p) => {
+          if (cert.pendingProductUnlinks.has(p.id)) return false
+          if (cert.pendingProductLinks.has(p.id)) return true
+          return p.certificateTemplateId === cert.id
+        })
+        const sampleP = certOptions?.product || linkedProducts[0] || allProducts.value[0]
         const product = sampleP
           ? {
               name: sampleP.certificateOverrideName || sampleP.name,

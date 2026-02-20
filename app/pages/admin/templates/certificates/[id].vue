@@ -68,7 +68,7 @@ const previewProduct = computed(() =>
     : undefined
 )
 
-const originalData = computed(() => template.value)
+const originalData = computed(() => store.id ? store.toSnapshot() : undefined)
 
 const formConfigRef = ref()
 

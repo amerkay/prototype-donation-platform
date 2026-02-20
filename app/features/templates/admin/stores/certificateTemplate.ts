@@ -94,6 +94,16 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
   /** Flat settings snapshot for composables (e.g., useCertificatePreviewModel) */
   const flatSettings = computed<CertificateTemplateSettings>(() => ({ ...settings }))
 
+  function toSnapshot() {
+    return {
+      name: templateName.value,
+      status: templateStatus.value,
+      ...settings,
+      pendingProductLinks: [...pendingProductLinks.value],
+      pendingProductUnlinks: [...pendingProductUnlinks.value]
+    }
+  }
+
   function initialize(template: CertificateTemplate) {
     templateId.value = template.id
     templateName.value = template.name
@@ -186,6 +196,7 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     updateSettings,
     markDirty,
     markClean,
+    toSnapshot,
     addPendingProductLink,
     addPendingProductUnlink,
     save

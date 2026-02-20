@@ -55,14 +55,18 @@ export const useProductStore = defineStore('product', () => {
     markClean()
   }
 
-  function save() {
-    if (!productId.value) return
-    const { updateProduct } = useProducts()
-    updateProduct(productId.value, {
+  function toSnapshot() {
+    return {
       name: productName.value,
       status: productStatus.value,
       ...settings
-    })
+    }
+  }
+
+  function save() {
+    if (!productId.value) return
+    const { updateProduct } = useProducts()
+    updateProduct(productId.value, toSnapshot())
   }
 
   return {
@@ -75,6 +79,7 @@ export const useProductStore = defineStore('product', () => {
     initialize,
     markDirty,
     markClean,
+    toSnapshot,
     save
   }
 })

@@ -25,47 +25,41 @@ const borderRadius = computed(() => BORDER_RADIUS[props.imageShape] ?? BORDER_RA
 const hasImage = computed(() => !!props.image)
 const hasText = computed(() => !!props.text)
 const isTwoColumn = computed(() => !props.forceOneColumn && hasImage.value && hasText.value)
+
+const imageStyle = computed(() => ({
+  aspectRatio: '1',
+  objectFit: 'cover' as const,
+  borderRadius: borderRadius.value,
+  border: `${props.borderWidth}px solid ${props.borderColor}`
+}))
+
+const containerClass = computed(() =>
+  cn('flex flex-col items-center flex-1 min-h-0', props.adaptive && 'max-h-full')
+)
 </script>
 
 <template>
-  <!-- Two-column layout: name on top, image left + text right below -->
+  <!-- Two-column: image left + name/text right -->
   <div
     v-if="isTwoColumn"
     :data-field="dataField"
-    :class="
-      cn(
-        'flex flex-col items-center gap-3 max-w-2xl mx-auto w-full',
-        adaptive ? 'flex-1 min-h-0 max-h-full' : 'flex-1 min-h-0'
-      )
-    "
+    :class="cn(containerClass, 'gap-3 max-w-2xl mx-auto w-full')"
   >
-    <!-- Image left, text right -->
     <div class="grid grid-cols-2 gap-4 w-full flex-1 min-h-0 items-center py-2">
       <div class="flex items-center justify-center h-full max-h-[95%] min-h-0">
-        <img
-          :src="image"
-          :alt="name"
-          class="h-full w-auto max-w-full"
-          :style="{
-            aspectRatio: '1',
-            objectFit: 'cover',
-            borderRadius,
-            border: `${borderWidth}px solid ${borderColor}`
-          }"
-        />
+        <img :src="image" :alt="name" class="h-full w-auto max-w-full" :style="imageStyle" />
       </div>
-      <div class="">
-        <!-- Product name centered above columns -->
+      <div>
         <p
           class="template-adaptive text-left font-bold leading-tight text-gray-900 text-2xl mb-2"
           data-max-lines="1"
-          data-min-font="14"
+          data-min-font="12"
         >
           {{ name }}
         </p>
         <p
           class="template-adaptive text-gray-700 text-sm leading-relaxed text-left"
-          data-max-lines="7"
+          data-max-lines="5"
           data-min-font="10"
         >
           {{ text }}
@@ -74,63 +68,24 @@ const isTwoColumn = computed(() => !props.forceOneColumn && hasImage.value && ha
     </div>
   </div>
 
-  <!-- Single column: image + name + optional text -->
-  <div
-    v-else-if="hasImage"
-    :data-field="dataField"
-    :class="
-      cn(
-        'flex flex-col items-center justify-center text-center',
-        adaptive ? 'flex-1 min-h-0 max-h-full' : 'flex-1 min-h-0'
-      )
-    "
-  >
-    <img
-      :src="image"
-      :alt="name"
-      :class="cn(adaptive ? 'flex-1 min-h-0 max-h-full' : 'w-48 max-w-full max-h-full')"
-      :style="{
-        aspectRatio: '1',
-        objectFit: 'cover',
-        borderRadius,
-        border: `${borderWidth}px solid ${borderColor}`
-      }"
-    />
-    <div class="w-full mt-4 shrink-0">
-      <p
-        class="template-adaptive font-bold leading-tight text-gray-900 w-full text-3xl"
-        data-max-lines="1"
-        data-min-font="16"
-      >
-        {{ name }}
-      </p>
-    </div>
-    <p
-      v-if="hasText"
-      class="template-adaptive text-gray-700 text-lg leading-relaxed mt-3 max-w-xl"
-      data-max-lines="3"
-      data-min-font="12"
-    >
-      {{ text }}
-    </p>
-  </div>
-
-  <!-- Single column: name + text only (no image) -->
+  <!-- Single column: optional image + name + optional text -->
   <div
     v-else
     :data-field="dataField"
-    :class="
-      cn(
-        'flex flex-col items-center justify-center text-center max-w-xl',
-        adaptive ? 'flex-1 min-h-0 max-h-full' : 'flex-1 min-h-0'
-      )
-    "
+    :class="cn(containerClass, 'justify-center text-center', !hasImage && 'max-w-xl')"
   >
-    <div class="w-full max-w-2xl">
+    <img
+      v-if="hasImage"
+      :src="image"
+      :alt="name"
+      :class="cn(adaptive ? 'flex-1 min-h-0 max-h-full' : 'w-48 max-w-full max-h-full')"
+      :style="imageStyle"
+    />
+    <div :class="cn('w-full', hasImage && 'mt-4 shrink-0')">
       <p
-        class="template-adaptive font-bold leading-tight text-gray-900 text-3xl"
+        class="template-adaptive font-bold leading-tight text-gray-900 w-full text-3xl max-w-xl"
         data-max-lines="1"
-        data-min-font="16"
+        data-min-font="14"
       >
         {{ name }}
       </p>
@@ -138,6 +93,7 @@ const isTwoColumn = computed(() => !props.forceOneColumn && hasImage.value && ha
     <p
       v-if="hasText"
       class="template-adaptive text-gray-700 text-lg leading-relaxed mt-3"
+      :class="cn(hasImage && 'max-w-xl')"
       data-max-lines="4"
       data-min-font="12"
     >

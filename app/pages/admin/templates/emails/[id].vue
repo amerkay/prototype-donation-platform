@@ -35,7 +35,7 @@ watch(
 )
 
 const editableMode = ref(true)
-const originalData = computed(() => template.value)
+const originalData = computed(() => store.id ? store.toSnapshot() : undefined)
 const formConfigRef = ref()
 
 const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdminEdit({

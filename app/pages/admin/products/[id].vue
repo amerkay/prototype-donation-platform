@@ -36,7 +36,7 @@ watch(
   }
 )
 
-const originalData = computed(() => product.value)
+const originalData = computed(() => store.id ? store.toSnapshot() : undefined)
 
 const formConfigRef = ref()
 

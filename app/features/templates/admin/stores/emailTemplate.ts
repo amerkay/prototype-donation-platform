@@ -24,6 +24,14 @@ export const useEmailTemplateStore = defineStore('emailTemplate', () => {
 
   const templateMeta = computed(() => EMAIL_TEMPLATE_META[templateType.value])
 
+  function toSnapshot() {
+    return {
+      name: templateName.value,
+      type: templateType.value,
+      ...settings
+    }
+  }
+
   function initialize(template: EmailTemplate) {
     templateId.value = template.id
     templateName.value = template.name
@@ -55,6 +63,7 @@ export const useEmailTemplateStore = defineStore('emailTemplate', () => {
     initialize,
     markDirty,
     markClean,
+    toSnapshot,
     save
   }
 })
