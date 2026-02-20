@@ -15,11 +15,13 @@ export const usePaymentSettingsStore = defineStore('paymentSettings', () => {
 
   // Stripe — all immediate actions
   function toggleStripeTestMode(testMode: boolean) {
+    // TODO-SUPABASE: Replace with supabase.from('org_financial').update({ payments: { ...payments, stripe: { ...stripe, testMode } } })
     stripe.value = { ...stripe.value, testMode }
     $persist()
   }
 
   function completeStripeConnect(accountId: string) {
+    // TODO-SUPABASE: Replace with supabase.from('org_financial').update({ payments: { ...payments, stripe: { connected, accountId, connectedAt } } })
     stripe.value = {
       ...stripe.value,
       connected: true,
@@ -31,6 +33,7 @@ export const usePaymentSettingsStore = defineStore('paymentSettings', () => {
   }
 
   function disconnectStripe() {
+    // TODO-SUPABASE: Replace with supabase.from('org_financial').update({ payments: { ...payments, stripe: { connected: false } } })
     stripe.value = {
       ...stripe.value,
       connected: false,
@@ -43,11 +46,13 @@ export const usePaymentSettingsStore = defineStore('paymentSettings', () => {
 
   // PayPal — all immediate actions
   function togglePaypalTestMode(testMode: boolean) {
+    // TODO-SUPABASE: Replace with supabase.from('org_financial').update({ payments: { ...payments, paypal: { ...paypal, testMode } } })
     paypal.value = { ...paypal.value, testMode }
     $persist()
   }
 
   function completePaypalConnect(merchantId: string) {
+    // TODO-SUPABASE: Replace with supabase.from('org_financial').update({ payments: { ...payments, paypal: { connected, merchantId, connectedAt } } })
     paypal.value = {
       ...paypal.value,
       connected: true,
@@ -59,6 +64,7 @@ export const usePaymentSettingsStore = defineStore('paymentSettings', () => {
   }
 
   function disconnectPaypal() {
+    // TODO-SUPABASE: Replace with supabase.from('org_financial').update({ payments: { ...payments, paypal: { connected: false } } })
     paypal.value = {
       ...paypal.value,
       connected: false,
@@ -73,6 +79,7 @@ export const usePaymentSettingsStore = defineStore('paymentSettings', () => {
   function $hydrate() {
     if (hydrated) return
     try {
+      // TODO-SUPABASE: Replace with supabase.from('org_financial').select('payments').eq('org_id', orgId).single()
       const saved = sessionStorage.getItem('settings-payments')
       if (saved) initialize(JSON.parse(saved))
     } catch {
@@ -84,6 +91,7 @@ export const usePaymentSettingsStore = defineStore('paymentSettings', () => {
   function $persist() {
     if (!import.meta.client) return
     try {
+      // TODO-SUPABASE: Replace with supabase.from('org_financial').upsert({ org_id: orgId, payments: { stripe, paypal } })
       sessionStorage.setItem(
         'settings-payments',
         JSON.stringify({ stripe: stripe.value, paypal: paypal.value })

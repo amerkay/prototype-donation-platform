@@ -177,6 +177,7 @@ export const useFormsStore = defineStore('forms', () => {
   const $persist = (campaignId: string): void => {
     if (!import.meta.client) return
     try {
+      // TODO-SUPABASE: Replace with supabase.from('campaign_forms').upsert(forms array with campaign_id)
       const forms = formsData.value[campaignId]
       if (forms) {
         sessionStorage.setItem(`forms-${campaignId}`, JSON.stringify(forms))
@@ -192,6 +193,7 @@ export const useFormsStore = defineStore('forms', () => {
     if (!import.meta.client) return
 
     try {
+      // TODO-SUPABASE: Replace with supabase.from('campaign_forms').select('*').eq('campaign_id', campaignId)
       const saved = sessionStorage.getItem(`forms-${campaignId}`)
       if (saved) {
         formsData.value[campaignId] = JSON.parse(saved)
@@ -205,6 +207,7 @@ export const useFormsStore = defineStore('forms', () => {
 
   // Delete all forms for a campaign (used when deleting a campaign)
   const deleteCampaignForms = (campaignId: string): void => {
+    // TODO-SUPABASE: Replace with supabase.from('campaign_forms').delete().eq('campaign_id', campaignId)
     const { [campaignId]: _, ...rest } = formsData.value
     formsData.value = rest
     hydratedCampaigns.value.delete(campaignId)

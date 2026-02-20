@@ -76,6 +76,7 @@ export const useCurrencySettingsStore = defineStore('currencySettings', () => {
   function $hydrate() {
     if (hydrated) return
     try {
+      // TODO-SUPABASE: Replace with supabase.from('org_identity').select('supported_currencies, default_currency, currency_multipliers').eq('org_id', orgId).single()
       const saved = sessionStorage.getItem('settings-currency')
       if (saved) initialize(JSON.parse(saved))
     } catch {
@@ -86,6 +87,7 @@ export const useCurrencySettingsStore = defineStore('currencySettings', () => {
 
   function save() {
     try {
+      // TODO-SUPABASE: Replace with supabase.from('org_identity').upsert({ org_id: orgId, supported_currencies, default_currency, currency_multipliers })
       sessionStorage.setItem(
         'settings-currency',
         JSON.stringify({

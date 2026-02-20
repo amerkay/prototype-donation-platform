@@ -8,6 +8,7 @@ import type { TributeData } from '~/features/donation-form/features/tribute/dono
 type Frequency = 'once' | 'monthly' | 'multiple'
 type RecurringFrequency = 'monthly' | 'yearly'
 
+// TODO-SUPABASE: Client-only transient state (cart). No server persistence needed.
 export const useImpactCartStore = defineStore(
   'impactCart',
   () => {

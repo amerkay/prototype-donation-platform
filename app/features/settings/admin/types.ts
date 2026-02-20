@@ -119,7 +119,7 @@ export interface TeamMember {
   id: string
   name: string
   email: string
-  role: 'owner' | 'admin' | 'editor' | 'viewer'
+  role: 'owner' | 'admin' | 'developer' | 'member'
   status: 'active' | 'invited' | 'disabled'
   joinedAt: string
   lastActiveAt: string

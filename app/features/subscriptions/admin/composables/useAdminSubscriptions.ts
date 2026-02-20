@@ -6,6 +6,9 @@ import {
 import { formatCurrency } from '~/lib/formatCurrency'
 import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
 
+// TODO-SUPABASE: Replace sample data import with:
+// const { data } = await supabase.from('subscriptions').select('*, subscription_line_items(*)').eq('org_id', orgId)
+
 /**
  * Composable for admin subscription management.
  * Provides all subscriptions with enriched donor info from transactions.

@@ -43,6 +43,7 @@ export const useEmailTemplateStore = defineStore('emailTemplate', () => {
     markClean()
   }
 
+  // TODO-SUPABASE: Persistence delegated to useEmailTemplates().updateTemplate() — no direct DB calls here
   function save() {
     if (!templateId.value) return
     const { updateTemplate } = useEmailTemplates()

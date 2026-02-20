@@ -20,6 +20,7 @@ export function useSessionStorageSingleton<T>(
     if (hydrated) return
     if (!import.meta.client) return
     try {
+      // TODO-SUPABASE: Replace sessionStorage.getItem with supabase.from(table).select('*').eq('org_id', orgId).single()
       const saved = sessionStorage.getItem(key)
       if (saved) {
         const parsed: T[] = JSON.parse(saved)
@@ -36,6 +37,7 @@ export function useSessionStorageSingleton<T>(
   function $persist(): void {
     if (!import.meta.client) return
     try {
+      // TODO-SUPABASE: Replace sessionStorage.setItem with supabase.from(table).upsert({ org_id: orgId, ...data })
       sessionStorage.setItem(key, JSON.stringify(items.value))
     } catch {
       /* ignore */

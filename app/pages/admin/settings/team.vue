@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Plus, MoreHorizontal, Shield, UserCog, Eye, Crown } from 'lucide-vue-next'
+import { Plus, MoreHorizontal, Shield, Code, User, Crown } from 'lucide-vue-next'
 
 import { formatDate } from '~/lib/formatDate'
 
@@ -34,23 +34,24 @@ const breadcrumbs = [
 const roleIcons: Record<string, typeof Crown> = {
   owner: Crown,
   admin: Shield,
-  editor: UserCog,
-  viewer: Eye
+  developer: Code,
+  member: User
 }
 
 const roleBadgeVariant = (role: string) => {
   if (role === 'owner') return 'default'
   if (role === 'admin') return 'secondary'
+  if (role === 'developer') return 'secondary'
   return 'outline'
 }
 
 // Invite dialog
 const showInviteDialog = ref(false)
 const inviteFormRef = ref()
-const inviteData = ref({ name: '', email: '', role: 'viewer' as TeamMember['role'] })
+const inviteData = ref({ name: '', email: '', role: 'member' as TeamMember['role'] })
 
 function openInvite() {
-  inviteData.value = { name: '', email: '', role: 'viewer' }
+  inviteData.value = { name: '', email: '', role: 'member' }
   showInviteDialog.value = true
 }
 
@@ -129,11 +130,11 @@ function confirmRemove() {
                 <DropdownMenuItem @click="store.updateMember(member.id, { role: 'admin' })">
                   Make Admin
                 </DropdownMenuItem>
-                <DropdownMenuItem @click="store.updateMember(member.id, { role: 'editor' })">
-                  Make Editor
+                <DropdownMenuItem @click="store.updateMember(member.id, { role: 'developer' })">
+                  Make Developer
                 </DropdownMenuItem>
-                <DropdownMenuItem @click="store.updateMember(member.id, { role: 'viewer' })">
-                  Make Viewer
+                <DropdownMenuItem @click="store.updateMember(member.id, { role: 'member' })">
+                  Make Member
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

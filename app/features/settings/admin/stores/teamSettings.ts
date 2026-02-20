@@ -11,6 +11,7 @@ export const useTeamSettingsStore = defineStore('teamSettings', () => {
   function $hydrate() {
     if (hydrated) return
     try {
+      // TODO-SUPABASE: Replace with supabase.from('profiles').select('*').eq('org_id', orgId)
       const saved = sessionStorage.getItem('settings-team')
       if (saved) {
         const data = JSON.parse(saved) as TeamSettings
@@ -25,6 +26,7 @@ export const useTeamSettingsStore = defineStore('teamSettings', () => {
   function $persist() {
     if (!import.meta.client) return
     try {
+      // TODO-SUPABASE: No direct equivalent - each CRUD method will call individual supabase operations
       sessionStorage.setItem('settings-team', JSON.stringify({ members: members.value }))
     } catch {
       /* ignore */
@@ -34,6 +36,7 @@ export const useTeamSettingsStore = defineStore('teamSettings', () => {
   const activeMembers = computed(() => members.value.filter((m) => m.status === 'active'))
 
   function addMember(data: { name: string; email: string; role: TeamMember['role'] }) {
+    // TODO-SUPABASE: Replace with supabase.from('profiles').insert({ org_id: orgId, name, email, role, status: 'invited' })
     const id = `member-${Date.now()}`
     const now = new Date().toISOString()
     members.value.push({
@@ -50,6 +53,7 @@ export const useTeamSettingsStore = defineStore('teamSettings', () => {
   }
 
   function updateMember(id: string, updates: Partial<TeamMember>) {
+    // TODO-SUPABASE: Replace with supabase.from('profiles').update(updates).eq('id', id)
     const index = members.value.findIndex((m) => m.id === id)
     if (index === -1) return
     members.value[index] = { ...members.value[index]!, ...updates }
@@ -57,6 +61,7 @@ export const useTeamSettingsStore = defineStore('teamSettings', () => {
   }
 
   function removeMember(id: string) {
+    // TODO-SUPABASE: Replace with supabase.from('profiles').delete().eq('id', id)
     members.value = members.value.filter((m) => m.id !== id)
     $persist()
     toast.success('Team member removed')

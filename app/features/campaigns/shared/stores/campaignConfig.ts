@@ -113,6 +113,7 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
   })
 
   // Actions
+  // TODO-SUPABASE: Persistence delegated to useCampaigns().updateCampaign() — no direct DB calls here
   function initialize(campaign: Campaign) {
     id.value = campaign.id
     type.value = campaign.type

@@ -12,6 +12,7 @@ export const useApiSettingsStore = defineStore('apiSettings', () => {
   function $hydrate() {
     if (hydrated) return
     try {
+      // TODO-SUPABASE: Replace with supabase.from('org_integrations').select('api_keys, webhooks').eq('org_id', orgId).single()
       const saved = sessionStorage.getItem('settings-api')
       if (saved) {
         const data = JSON.parse(saved) as ApiSettings
@@ -27,6 +28,7 @@ export const useApiSettingsStore = defineStore('apiSettings', () => {
   function $persist() {
     if (!import.meta.client) return
     try {
+      // TODO-SUPABASE: Replace with supabase.from('org_integrations').upsert({ org_id: orgId, api_keys, webhooks })
       sessionStorage.setItem(
         'settings-api',
         JSON.stringify({
@@ -40,6 +42,7 @@ export const useApiSettingsStore = defineStore('apiSettings', () => {
   }
 
   function createApiKey(name: string) {
+    // TODO-SUPABASE: Replace array mutation with supabase.from('org_integrations').update({ api_keys: [...existing, newKey] })
     const id = `key-${Date.now()}`
     const prefix = `dp_test_${Math.random().toString(36).slice(2, 8)}...`
     apiKeys.value.push({
@@ -54,12 +57,14 @@ export const useApiSettingsStore = defineStore('apiSettings', () => {
   }
 
   function deleteApiKey(id: string) {
+    // TODO-SUPABASE: Replace array filter with supabase.from('org_integrations').update({ api_keys: filtered })
     apiKeys.value = apiKeys.value.filter((k) => k.id !== id)
     $persist()
     toast.success('API key deleted')
   }
 
   function addWebhook(data: { url: string; events: string[] }) {
+    // TODO-SUPABASE: Replace array mutation with supabase.from('org_integrations').update({ webhooks: [...existing, newWebhook] })
     const id = `wh-${Date.now()}`
     webhooks.value.push({
       id,
@@ -73,6 +78,7 @@ export const useApiSettingsStore = defineStore('apiSettings', () => {
   }
 
   function toggleWebhook(id: string) {
+    // TODO-SUPABASE: Replace mutation with supabase.from('org_integrations').update({ webhooks: updated })
     const wh = webhooks.value.find((w) => w.id === id)
     if (wh) {
       wh.enabled = !wh.enabled
@@ -81,6 +87,7 @@ export const useApiSettingsStore = defineStore('apiSettings', () => {
   }
 
   function deleteWebhook(id: string) {
+    // TODO-SUPABASE: Replace array filter with supabase.from('org_integrations').update({ webhooks: filtered })
     webhooks.value = webhooks.value.filter((w) => w.id !== id)
     $persist()
     toast.success('Webhook deleted')

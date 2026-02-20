@@ -66,6 +66,7 @@ export const useProductStore = defineStore('product', () => {
     }
   }
 
+  // TODO-SUPABASE: Persistence delegated to useProducts().updateProduct() — no direct DB calls here
   function save() {
     if (!productId.value) return
     const { updateProduct } = useProducts()

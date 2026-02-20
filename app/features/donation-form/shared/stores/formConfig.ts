@@ -85,6 +85,7 @@ export const useFormConfigStore = defineStore('formConfig', () => {
   })
 
   // Actions
+  // TODO-SUPABASE: Persistence delegated to useForms().updateForm() — no direct DB calls here
   /**
    * Snapshot current state as a tuple for useAdminEdit comparison.
    * Returns deep cloned data to prevent mutation of lastSavedData.

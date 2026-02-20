@@ -115,11 +115,7 @@ export function useCampaigns() {
     isLoading.value = true
     error.value = null
     try {
-      // TODO: Replace with actual API call
-      // await $fetch(`/api/campaigns/${id}`, {
-      //   method: 'PATCH',
-      //   body: updates
-      // })
+      // TODO-SUPABASE: Replace with supabase.from('campaigns').update(updates).eq('id', id)
       await new Promise((resolve) => setTimeout(resolve, 300)) // Simulate API delay
     } catch (e) {
       // Rollback on error
@@ -153,6 +149,7 @@ export function useCampaigns() {
    * Create a new campaign
    */
   const createCampaign = (campaignData: Partial<Campaign>): string => {
+    // TODO-SUPABASE: Replace with supabase.from('campaigns').insert({ org_id: orgId, ...newCampaign }).select().single()
     // Generate unique ID
     const id = `campaign-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
@@ -216,6 +213,7 @@ export function useCampaigns() {
    * Delete a campaign and its associated forms
    */
   const deleteCampaign = (id: string): void => {
+    // TODO-SUPABASE: Replace with supabase.from('campaigns').delete().eq('id', id) (cascade deletes campaign_forms via FK)
     const index = campaigns.value.findIndex((c) => c.id === id)
     if (index === -1) return
 
@@ -233,6 +231,7 @@ export function useCampaigns() {
   function $persist(): void {
     if (!import.meta.client) return
     try {
+      // TODO-SUPABASE: No direct equivalent - each CRUD method will call individual supabase operations
       sessionStorage.setItem('campaigns', JSON.stringify(campaigns.value))
     } catch (error) {
       console.warn('Failed to persist campaigns:', error)
@@ -245,6 +244,7 @@ export function useCampaigns() {
     if (!import.meta.client) return
 
     try {
+      // TODO-SUPABASE: Replace with supabase.from('campaigns').select('*').eq('org_id', orgId)
       const saved = sessionStorage.getItem('campaigns')
       if (saved) {
         campaigns.value = JSON.parse(saved) as Campaign[]

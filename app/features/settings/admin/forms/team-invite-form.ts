@@ -18,8 +18,8 @@ export const useTeamInviteForm = defineForm('teamInvite', () => {
     label: 'Role',
     options: [
       { value: 'admin', label: 'Admin' },
-      { value: 'editor', label: 'Editor' },
-      { value: 'viewer', label: 'Viewer' }
+      { value: 'developer', label: 'Developer' },
+      { value: 'member', label: 'Member' }
     ]
   })
 

@@ -158,6 +158,7 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
     pendingProductUnlinks.value = new Set()
   }
 
+  // TODO-SUPABASE: Persistence delegated to useCertificateTemplates().updateTemplate() — no direct DB calls here
   function save() {
     if (!templateId.value) return
     const { updateTemplate } = useCertificateTemplates()

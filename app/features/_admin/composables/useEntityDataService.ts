@@ -7,6 +7,9 @@ import {
   subscriptions as rawSubscriptions
 } from '~/sample-api-responses/api-sample-response-transactions'
 
+// TODO-SUPABASE: Replace sample data imports with multiple Supabase queries (transactions + subscriptions).
+// This composable may be retired entirely — see SUPABASE_NOTES.md for details.
+
 /** Enriched subscription type with donor info */
 export type EnrichedSubscription = Subscription & {
   donorName: string

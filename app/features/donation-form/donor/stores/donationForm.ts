@@ -13,6 +13,7 @@ export interface CoverCostsData {
   value: number
 }
 
+// TODO-SUPABASE: Client-only transient state (in-progress wizard). No server persistence needed.
 export const useDonationFormStore = defineStore(
   'donationForm',
   () => {

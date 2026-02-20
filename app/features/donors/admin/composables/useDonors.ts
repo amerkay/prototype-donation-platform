@@ -4,6 +4,9 @@ import { transactions } from '~/sample-api-responses/api-sample-response-transac
 import { formatCurrency } from '~/lib/formatCurrency'
 import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
 
+// TODO-SUPABASE: Replace sample data import with:
+// const { data } = await supabase.from('donors_summary_view').select('*').eq('org_id', orgId)
+
 /**
  * Composable for admin donor management.
  * Aggregates unique donors from the master transactions table.

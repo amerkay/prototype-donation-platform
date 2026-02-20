@@ -134,7 +134,7 @@ export const teamSettings: TeamSettings = {
       id: 'member-003',
       name: 'David Chen',
       email: 'david@borneoorangutansurvival.org',
-      role: 'editor',
+      role: 'admin',
       status: 'active',
       joinedAt: '2025-01-10T00:00:00Z',
       lastActiveAt: '2026-02-04T09:15:00Z'
@@ -143,7 +143,16 @@ export const teamSettings: TeamSettings = {
       id: 'member-004',
       name: 'Lisa Park',
       email: 'lisa@borneoorangutansurvival.org',
-      role: 'viewer',
+      role: 'developer',
+      status: 'active',
+      joinedAt: '2025-08-20T00:00:00Z',
+      lastActiveAt: '2026-02-03T11:45:00Z'
+    },
+    {
+      id: 'member-005',
+      name: 'Alex Turner',
+      email: 'alex@borneoorangutansurvival.org',
+      role: 'member',
       status: 'invited',
       joinedAt: '2026-01-20T00:00:00Z',
       lastActiveAt: '2026-01-20T00:00:00Z'

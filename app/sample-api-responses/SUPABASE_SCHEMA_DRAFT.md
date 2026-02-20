@@ -1,6 +1,6 @@
-# Supabase PostgreSQL Schema (Fully Normalized)
+# Supabase PostgreSQL Schema (Consolidated)
 
-> **Design Principle:** Separate tables for all queryable/transactional data. JSONB only for complex configuration fields that vary by type. TEXT + CHECK constraints for status/type fields (not enums — easier to migrate). All tables use `gen_random_uuid()` (native PostgreSQL, no extension needed).
+> **Design Principle:** JSONB for configuration that varies by type or is admin-only; separate tables for queryable/transactional data. TEXT + CHECK constraints for status/type fields (not enums — easier to migrate). All tables use `gen_random_uuid()` (native PostgreSQL, no extension needed). 21 tables, down from 35 — achieved by merging campaign sub-tables and form config into JSONB columns, and consolidating org settings into 4 RLS-boundary-aligned tables.
 
 ---
 
@@ -37,7 +37,10 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Check if the authenticated user has at least the given role in an organization.
--- Role hierarchy: viewer < member < admin < owner
+-- Role hierarchy: member < admin < owner (linear chain)
+-- Developer branch: developer inherits member but NOT admin.
+--   developer-specific access (API/webhooks) is checked with has_role_in_org(org, 'developer').
+--   admin and owner also pass the 'developer' check (they can do everything).
 CREATE OR REPLACE FUNCTION has_role_in_org(org_id UUID, required_role TEXT)
 RETURNS BOOLEAN AS $$
 BEGIN
@@ -47,10 +50,10 @@ BEGIN
       AND organization_id = org_id
       AND (
         CASE required_role
-          WHEN 'viewer' THEN role IN ('viewer', 'member', 'admin', 'owner')
-          WHEN 'member' THEN role IN ('member', 'admin', 'owner')
-          WHEN 'admin'  THEN role IN ('admin', 'owner')
-          WHEN 'owner'  THEN role = 'owner'
+          WHEN 'member'    THEN role IN ('member', 'developer', 'admin', 'owner')
+          WHEN 'developer' THEN role IN ('developer', 'admin', 'owner')
+          WHEN 'admin'     THEN role IN ('admin', 'owner')
+          WHEN 'owner'     THEN role = 'owner'
         END
       )
   );
@@ -86,7 +89,7 @@ CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   role TEXT NOT NULL DEFAULT 'member'
-    CHECK (role IN ('owner', 'admin', 'member', 'viewer')),
+    CHECK (role IN ('owner', 'admin', 'developer', 'member')),
   full_name TEXT NOT NULL,
   avatar_url TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -120,41 +123,104 @@ CREATE TRIGGER on_auth_user_created
   EXECUTE FUNCTION handle_new_user();
 ```
 
-### Currency Settings
+### Organization Settings (4 Tables by RLS Boundary)
 
 ```sql
 -- ============================================
--- CURRENCY SETTINGS
+-- ORGANIZATION SETTINGS (4 tables by RLS boundary)
 -- ============================================
-CREATE TABLE currency_settings (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-  default_currency TEXT NOT NULL DEFAULT 'GBP',
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE(organization_id)
-);
 
-CREATE TABLE supported_currencies (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  currency_settings_id UUID NOT NULL REFERENCES currency_settings(id) ON DELETE CASCADE,
-  currency_code TEXT NOT NULL,
-  multiplier DECIMAL(10,4) NOT NULL DEFAULT 1.0,
-  sort_order INT NOT NULL DEFAULT 0,
-  UNIQUE(currency_settings_id, currency_code)
-);
-
-CREATE INDEX idx_supported_currencies_settings ON supported_currencies(currency_settings_id);
-
--- Organization charity settings (org-level identity)
-CREATE TABLE organization_charity (
+-- General config, branding, social sharing — admin+ can read/write
+CREATE TABLE org_config (
   organization_id UUID PRIMARY KEY REFERENCES organizations(id) ON DELETE CASCADE,
-  slug TEXT NOT NULL,
+
+  -- General settings
+  general JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- { siteName, siteUrl, timezone, dateFormat, defaultLanguage }
+
+  -- Branding settings
+  branding JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- { primaryColor, secondaryColor, logoUrl, faviconUrl, fontFamily, customCss }
+
+  -- Social sharing settings (org-level platform availability)
+  social_sharing JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- { enabled, facebook, twitter, linkedin, whatsapp, email, copyLink }
+
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TRIGGER organization_charity_updated_at
-  BEFORE UPDATE ON organization_charity FOR EACH ROW
+CREATE TRIGGER org_config_updated_at
+  BEFORE UPDATE ON org_config FOR EACH ROW
+  EXECUTE FUNCTION set_updated_at();
+
+-- Charity identity + currency config — admin+ can read/write
+CREATE TABLE org_identity (
+  organization_id UUID PRIMARY KEY REFERENCES organizations(id) ON DELETE CASCADE,
+
+  -- Charity slug (used in donor-facing URLs)
+  charity_slug TEXT NOT NULL,
+
+  -- Currency configuration
+  currency JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- {
+  --   defaultCurrency: "GBP",
+  --   supportedCurrencies: [
+  --     { code: "GBP", multiplier: 1.0, sortOrder: 0 },
+  --     { code: "USD", multiplier: 1.25, sortOrder: 1 }
+  --   ]
+  -- }
+
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TRIGGER org_identity_updated_at
+  BEFORE UPDATE ON org_identity FOR EACH ROW
+  EXECUTE FUNCTION set_updated_at();
+
+-- API keys, webhooks — developer+ can read/write
+CREATE TABLE org_integrations (
+  organization_id UUID PRIMARY KEY REFERENCES organizations(id) ON DELETE CASCADE,
+
+  -- API key management
+  api_keys JSONB NOT NULL DEFAULT '[]'::JSONB,
+  -- [{ id, name, key (hashed), prefix, scopes, createdAt, lastUsedAt, expiresAt }]
+
+  -- Webhook configuration
+  webhooks JSONB NOT NULL DEFAULT '[]'::JSONB,
+  -- [{ id, url, events, secret (hashed), enabled, createdAt }]
+
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TRIGGER org_integrations_updated_at
+  BEFORE UPDATE ON org_integrations FOR EACH ROW
+  EXECUTE FUNCTION set_updated_at();
+
+-- Payment processor config, billing — owner only
+CREATE TABLE org_financial (
+  organization_id UUID PRIMARY KEY REFERENCES organizations(id) ON DELETE CASCADE,
+
+  -- Payment processor settings (Stripe Connect, PayPal Connect)
+  payments JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- {
+  --   stripe: { accountId, connected, liveMode, capabilities },
+  --   paypal: { merchantId, connected, liveMode },
+  --   enabledMethods: ["card", "paypal", "bank_transfer"]
+  -- }
+
+  -- Billing / plan info
+  billing JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- { plan, status, currentPeriodEnd, seats, usage }
+
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TRIGGER org_financial_updated_at
+  BEFORE UPDATE ON org_financial FOR EACH ROW
   EXECUTE FUNCTION set_updated_at();
 
 -- Per-currency charity details (one row per org+currency, all equal status)
@@ -184,7 +250,7 @@ CREATE TABLE organization_charity_currencies (
 CREATE INDEX idx_org_charity_currencies_org ON organization_charity_currencies(organization_id);
 ```
 
-> **Exchange rates** are fetched at runtime from an external API (e.g., exchangerate-api.com). They are not stored in the database. The `supported_currencies.multiplier` field is an org-level display multiplier for preset amounts, not a live FX rate.
+> **Exchange rates** are fetched at runtime from an external API (e.g., exchangerate-api.com). They are not stored in the database. The `supportedCurrencies[].multiplier` field in `org_identity.currency` is an org-level display multiplier for preset amounts, not a live FX rate.
 
 ---
 
@@ -192,7 +258,7 @@ CREATE INDEX idx_org_charity_currencies_org ON organization_charity_currencies(o
 
 ```sql
 -- ============================================
--- CAMPAIGNS
+-- CAMPAIGNS (with merged sub-table JSONB columns)
 -- ============================================
 CREATE TABLE campaigns (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -207,6 +273,29 @@ CREATE TABLE campaigns (
     CHECK (p2p_preset IN ('birthday', 'tribute', 'challenge', 'wedding')),
   parent_campaign_id UUID REFERENCES campaigns(id) ON DELETE SET NULL,
   -- parent_campaign_id: set only for type='fundraiser', points to the P2P template
+
+  -- Crowdfunding page settings (was campaign_crowdfunding table)
+  crowdfunding JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- {
+  --   enabled, coverPhoto, title, shortDescription, story,
+  --   showProgressBar, showRecentDonations, defaultDonationsView,
+  --   numberOfDonationsToShow, goalAmount, endDate
+  -- }
+
+  -- Peer-to-peer fundraising settings (was campaign_peer_to_peer table)
+  peer_to_peer JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- {
+  --   enabled, allowIndividuals, allowTeams,
+  --   fundraiserGoalDefault, customMessage
+  -- }
+
+  -- Charity information override (was campaign_charity table)
+  charity JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- { name, registrationNumber, website, description }
+
+  -- Social sharing settings override (was campaign_social_sharing table)
+  social_sharing JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- { enabled, facebook, twitter, linkedin, whatsapp, email, copyLink }
 
   -- Audit
   created_by UUID REFERENCES auth.users(id),
@@ -245,55 +334,6 @@ CREATE TABLE campaign_stats (
   top_donation DECIMAL(10,2) NOT NULL DEFAULT 0,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
--- Crowdfunding page settings
-CREATE TABLE campaign_crowdfunding (
-  campaign_id UUID PRIMARY KEY REFERENCES campaigns(id) ON DELETE CASCADE,
-  enabled BOOLEAN NOT NULL DEFAULT false,
-  cover_photo TEXT,
-  -- cover_photo: path in Supabase Storage bucket 'campaign-assets'
-  title TEXT,
-  short_description TEXT,
-  story TEXT,
-  show_progress_bar BOOLEAN NOT NULL DEFAULT true,
-  show_recent_donations BOOLEAN NOT NULL DEFAULT true,
-  default_donations_view TEXT NOT NULL DEFAULT 'recent'
-    CHECK (default_donations_view IN ('recent', 'top')),
-  number_of_donations_to_show INT NOT NULL DEFAULT 5,
-  goal_amount DECIMAL(12,2),
-  end_date DATE
-);
-
--- Peer-to-peer fundraising settings
-CREATE TABLE campaign_peer_to_peer (
-  campaign_id UUID PRIMARY KEY REFERENCES campaigns(id) ON DELETE CASCADE,
-  enabled BOOLEAN NOT NULL DEFAULT false,
-  allow_individuals BOOLEAN NOT NULL DEFAULT true,
-  allow_teams BOOLEAN NOT NULL DEFAULT true,
-  fundraiser_goal_default DECIMAL(10,2),
-  custom_message TEXT
-);
-
--- Charity information
-CREATE TABLE campaign_charity (
-  campaign_id UUID PRIMARY KEY REFERENCES campaigns(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  registration_number TEXT,
-  website TEXT,
-  description TEXT
-);
-
--- Social sharing settings
-CREATE TABLE campaign_social_sharing (
-  campaign_id UUID PRIMARY KEY REFERENCES campaigns(id) ON DELETE CASCADE,
-  enabled BOOLEAN NOT NULL DEFAULT true,
-  facebook BOOLEAN NOT NULL DEFAULT true,
-  twitter BOOLEAN NOT NULL DEFAULT true,
-  linkedin BOOLEAN NOT NULL DEFAULT true,
-  whatsapp BOOLEAN NOT NULL DEFAULT true,
-  email BOOLEAN NOT NULL DEFAULT true,
-  copy_link BOOLEAN NOT NULL DEFAULT true
-);
 ```
 
 ### Campaign Transactional Data
@@ -331,22 +371,177 @@ CREATE INDEX idx_fundraisers_raised ON campaign_fundraisers(raised_amount DESC);
 CREATE INDEX idx_fundraisers_slug ON campaign_fundraisers(parent_campaign_id, slug);
 ```
 
-> **Note:** `campaign_donations` is replaced by a VIEW over `transactions` (see below). Campaign donation previews and leaderboards query `transactions` directly, filtered by `campaign_id`.
+---
+
+### Campaign Forms
 
 ```sql
--- Campaign donations view (lightweight CampaignDonation shape for crowdfunding pages)
-CREATE VIEW campaign_donations_view AS
-SELECT
-  t.id,
-  t.campaign_id,
-  CASE WHEN t.is_anonymous THEN 'Anonymous' ELSE t.donor_name END AS donor_name,
-  t.subtotal AS amount,
-  t.currency,
-  t.message,
-  t.is_anonymous,
-  t.created_at
-FROM transactions t
-WHERE t.status = 'succeeded';
+-- ============================================
+-- CAMPAIGN FORMS (with merged config JSONB columns)
+-- ============================================
+CREATE TABLE campaign_forms (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  campaign_id UUID NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  is_default BOOLEAN NOT NULL DEFAULT false,
+
+  -- Queryable columns (extracted from config for filtering/indexing)
+  form_type TEXT NOT NULL DEFAULT 'donation'
+    CHECK (form_type IN ('donation', 'registration', 'stall-booking', 'dog-show-entries')),
+  title TEXT NOT NULL DEFAULT '',
+  subtitle TEXT,
+  base_default_currency TEXT NOT NULL DEFAULT 'GBP',
+  enabled_currencies TEXT[] NOT NULL DEFAULT ARRAY['GBP'],
+
+  -- Donation amounts config (was form_frequencies + form_preset_amounts tables)
+  donation_amounts JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- {
+  --   frequencies: [
+  --     {
+  --       frequency: "once"|"monthly"|"yearly",
+  --       enabled: true, label: "One-time",
+  --       enableAmountDescriptions: false,
+  --       customAmountMin: null, customAmountMax: null,
+  --       sortOrder: 0,
+  --       presetAmounts: [
+  --         { amount: 25, shortText: "Feed a child", image: null, sortOrder: 0 }
+  --       ]
+  --     }
+  --   ]
+  -- }
+
+  -- Impact cart settings (was form_feature_impact_cart table)
+  impact_cart JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- { enabled, initialDisplay }
+
+  -- Product selector settings (was form_feature_product_selector table)
+  product_selector JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- { enabled, icon, entitySingular, entityPlural, actionVerb, actionNoun }
+
+  -- Impact boost settings (was form_feature_impact_boost table)
+  impact_boost JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- { enabled, enableRecurringBoost, recurringBoostMessage, enableIncreaseBoost, increaseBoostMessage }
+
+  -- Cover costs settings (was form_feature_cover_costs table)
+  cover_costs JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- { enabled, heading, description, defaultPercentage }
+
+  -- Gift aid settings (was form_feature_gift_aid table)
+  gift_aid JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- { enabled }
+
+  -- Tribute settings (was form_feature_tribute table)
+  tribute JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- {
+  --   enabled, showForOnceFrequency,
+  --   iconGift, iconMemorial, iconTribute,
+  --   noneLabel, giftEnabled, memorialEnabled,
+  --   modalTitle, modalSubtitle
+  -- }
+
+  -- Custom fields config (was form_custom_fields table)
+  custom_fields JSONB NOT NULL DEFAULT '[]'::JSONB,
+  -- [
+  --   {
+  --     id: "text_company_name", fieldType: "text"|"textarea"|"select"|"checkbox"|"hidden",
+  --     step: "step2"|"step3"|"hidden", fieldOrder: 0,
+  --     label: "Company Name", defaultValue: null,
+  --     advancedSettings: { optional, placeholder, maxLength, ... },
+  --     visibilityConditions: { conditions: [...], match: "all"|"any" }
+  --   }
+  -- ]
+
+  -- Entry fields config (for registration/stall-booking/dog-show forms)
+  entry_fields JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- Form-type-specific entry configuration
+
+  -- Audit
+  created_by UUID REFERENCES auth.users(id),
+  updated_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ
+);
+
+CREATE INDEX idx_campaign_forms_campaign ON campaign_forms(campaign_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_campaign_forms_default ON campaign_forms(campaign_id, is_default)
+  WHERE is_default = true AND deleted_at IS NULL;
+CREATE INDEX idx_campaign_forms_type ON campaign_forms(form_type) WHERE deleted_at IS NULL;
+CREATE INDEX idx_campaign_forms_currency ON campaign_forms(base_default_currency) WHERE deleted_at IS NULL;
+-- GIN index for enabled_currencies array containment queries
+CREATE INDEX idx_campaign_forms_currencies ON campaign_forms USING GIN (enabled_currencies)
+  WHERE deleted_at IS NULL;
+
+CREATE TRIGGER campaign_forms_updated_at
+  BEFORE UPDATE ON campaign_forms FOR EACH ROW
+  EXECUTE FUNCTION set_updated_at();
+
+CREATE TRIGGER campaign_forms_audit
+  BEFORE INSERT OR UPDATE ON campaign_forms FOR EACH ROW
+  EXECUTE FUNCTION set_audit_fields();
+
+-- Junction table: form <-> products (many-to-many)
+CREATE TABLE form_products (
+  form_id UUID NOT NULL REFERENCES campaign_forms(id) ON DELETE CASCADE,
+  product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  sort_order INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (form_id, product_id)
+);
+
+CREATE INDEX idx_form_products_product ON form_products(product_id);
+```
+
+---
+
+### Products
+
+```sql
+-- ============================================
+-- PRODUCTS
+-- ============================================
+CREATE TABLE products (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  name TEXT NOT NULL,
+  -- name: internal admin label (breadcrumbs, sidebar, admin cards)
+  title TEXT NOT NULL,
+  -- title: donor-facing display title
+  description TEXT,
+  price DECIMAL(10,2),
+  -- price: NULL if variable pricing, set if fixed
+  min_price DECIMAL(10,2),
+  -- min_price: minimum for variable pricing
+  default_amount DECIMAL(10,2),
+  -- default_amount: suggested default for variable pricing
+  frequency TEXT NOT NULL
+    CHECK (frequency IN ('once', 'monthly', 'yearly')),
+  image TEXT,
+  thumbnail TEXT,
+  icon TEXT,
+  is_shipping_required BOOLEAN NOT NULL DEFAULT false,
+  certificate_title TEXT,
+  -- certificate_title: short title shown on certificates (overrides product title)
+  certificate_text TEXT,
+  -- certificate_text: description shown next to product image on certificates
+
+  -- Audit
+  created_by UUID REFERENCES auth.users(id),
+  updated_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ
+);
+
+CREATE INDEX idx_products_org ON products(organization_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_products_frequency ON products(frequency) WHERE deleted_at IS NULL;
+
+CREATE TRIGGER products_updated_at
+  BEFORE UPDATE ON products FOR EACH ROW
+  EXECUTE FUNCTION set_updated_at();
+
+CREATE TRIGGER products_audit
+  BEFORE INSERT OR UPDATE ON products FOR EACH ROW
+  EXECUTE FUNCTION set_audit_fields();
 ```
 
 ---
@@ -359,6 +554,7 @@ WHERE t.status = 'succeeded';
 -- ============================================
 
 -- Donor user accounts (public-facing donors, not admin users)
+-- Global model: NO organization_id. RLS via subquery on transactions.
 -- Optionally linked to Supabase Auth for self-service portal access.
 CREATE TABLE donor_users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -442,7 +638,7 @@ CREATE INDEX idx_subscription_line_items_sub ON subscription_line_items(subscrip
 CREATE TABLE transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id),
-  -- denormalized from campaign for RLS; set on insert
+  -- denormalized from campaign for RLS; set by trigger on insert
   processor TEXT NOT NULL
     CHECK (processor IN ('stripe', 'paypal')),
   processor_transaction_id TEXT NOT NULL,
@@ -474,6 +670,10 @@ CREATE TABLE transactions (
   message TEXT,
   gift_aid BOOLEAN NOT NULL DEFAULT false,
 
+  -- Denormalized custom field values (set by application on insert)
+  custom_fields JSONB,
+  -- { "text_company_name": "Acme Inc", "select_category": "corporate" }
+
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   receipt_url TEXT
 );
@@ -490,6 +690,9 @@ CREATE INDEX idx_transactions_amount ON transactions(total_amount DESC);
 CREATE INDEX idx_transactions_campaign_donations
   ON transactions(campaign_id, status, created_at DESC)
   WHERE status = 'succeeded';
+-- GIN index for custom fields filtering
+CREATE INDEX idx_transactions_custom_fields ON transactions USING GIN (custom_fields)
+  WHERE custom_fields IS NOT NULL;
 
 -- Transaction line items (supports Impact Cart multi-item checkouts)
 CREATE TABLE transaction_line_items (
@@ -518,203 +721,6 @@ CREATE TABLE transaction_tributes (
 
 ---
 
-### Products
-
-```sql
--- ============================================
--- PRODUCTS
--- ============================================
-CREATE TABLE products (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id UUID NOT NULL REFERENCES organizations(id),
-  name TEXT NOT NULL,
-  -- name: internal admin label (breadcrumbs, sidebar, admin cards)
-  title TEXT NOT NULL,
-  -- title: donor-facing display title
-  description TEXT,
-  price DECIMAL(10,2),
-  -- price: NULL if variable pricing, set if fixed
-  min_price DECIMAL(10,2),
-  -- min_price: minimum for variable pricing
-  default_amount DECIMAL(10,2),
-  -- default_amount: suggested default for variable pricing
-  frequency TEXT NOT NULL
-    CHECK (frequency IN ('once', 'monthly', 'yearly')),
-  image TEXT,
-  thumbnail TEXT,
-  icon TEXT,
-  is_shipping_required BOOLEAN NOT NULL DEFAULT false,
-  certificate_title TEXT,
-  -- certificate_title: short title shown on certificates (overrides product title)
-  certificate_text TEXT,
-  -- certificate_text: description shown next to product image on certificates
-
-  -- Audit
-  created_by UUID REFERENCES auth.users(id),
-  updated_by UUID REFERENCES auth.users(id),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  deleted_at TIMESTAMPTZ
-);
-
-CREATE INDEX idx_products_org ON products(organization_id) WHERE deleted_at IS NULL;
-CREATE INDEX idx_products_frequency ON products(frequency) WHERE deleted_at IS NULL;
-
-CREATE TRIGGER products_updated_at
-  BEFORE UPDATE ON products FOR EACH ROW
-  EXECUTE FUNCTION set_updated_at();
-
-CREATE TRIGGER products_audit
-  BEFORE INSERT OR UPDATE ON products FOR EACH ROW
-  EXECUTE FUNCTION set_audit_fields();
-```
-
----
-
-### Campaign Forms
-
-```sql
--- ============================================
--- CAMPAIGN FORMS
--- ============================================
-CREATE TABLE campaign_forms (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  campaign_id UUID NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  is_default BOOLEAN NOT NULL DEFAULT false,
-
-  created_by UUID REFERENCES auth.users(id),
-  updated_by UUID REFERENCES auth.users(id),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  deleted_at TIMESTAMPTZ
-);
-
-CREATE INDEX idx_campaign_forms_campaign ON campaign_forms(campaign_id) WHERE deleted_at IS NULL;
-CREATE INDEX idx_campaign_forms_default ON campaign_forms(campaign_id, is_default)
-  WHERE is_default = true AND deleted_at IS NULL;
-
-CREATE TRIGGER campaign_forms_updated_at
-  BEFORE UPDATE ON campaign_forms FOR EACH ROW
-  EXECUTE FUNCTION set_updated_at();
-
-CREATE TRIGGER campaign_forms_audit
-  BEFORE INSERT OR UPDATE ON campaign_forms FOR EACH ROW
-  EXECUTE FUNCTION set_audit_fields();
-
--- Junction table: form <-> products (many-to-many)
-CREATE TABLE form_products (
-  form_id UUID NOT NULL REFERENCES campaign_forms(id) ON DELETE CASCADE,
-  product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-  sort_order INT NOT NULL DEFAULT 0,
-  PRIMARY KEY (form_id, product_id)
-);
-
-CREATE INDEX idx_form_products_product ON form_products(product_id);
-```
-
-### Form Settings
-
-```sql
--- ============================================
--- FORM SETTINGS
--- ============================================
-CREATE TABLE form_settings (
-  form_id UUID PRIMARY KEY REFERENCES campaign_forms(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  subtitle TEXT,
-  base_default_currency TEXT NOT NULL DEFAULT 'GBP'
-);
-
--- Donation frequency configurations (one-time, monthly, yearly)
-CREATE TABLE form_frequencies (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  form_id UUID NOT NULL REFERENCES campaign_forms(id) ON DELETE CASCADE,
-  frequency TEXT NOT NULL
-    CHECK (frequency IN ('once', 'monthly', 'yearly')),
-  enabled BOOLEAN NOT NULL DEFAULT true,
-  label TEXT NOT NULL,
-  enable_amount_descriptions BOOLEAN NOT NULL DEFAULT false,
-  custom_amount_min DECIMAL(10,2),
-  custom_amount_max DECIMAL(10,2),
-  sort_order INT NOT NULL DEFAULT 0,
-  UNIQUE(form_id, frequency)
-);
-
-CREATE INDEX idx_form_frequencies_form ON form_frequencies(form_id);
-
--- Preset donation amounts for each frequency
-CREATE TABLE form_preset_amounts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  form_frequency_id UUID NOT NULL REFERENCES form_frequencies(id) ON DELETE CASCADE,
-  amount DECIMAL(10,2) NOT NULL,
-  short_text TEXT,
-  image TEXT,
-  sort_order INT NOT NULL DEFAULT 0
-);
-
-CREATE INDEX idx_form_preset_amounts_frequency ON form_preset_amounts(form_frequency_id);
-```
-
-### Form Features
-
-```sql
--- ============================================
--- FORM FEATURES (one table per feature)
--- ============================================
-CREATE TABLE form_feature_impact_boost (
-  form_id UUID PRIMARY KEY REFERENCES campaign_forms(id) ON DELETE CASCADE,
-  enabled BOOLEAN NOT NULL DEFAULT false,
-  recurring_boost_message TEXT,
-  increase_boost_message TEXT,
-  enable_recurring_boost BOOLEAN NOT NULL DEFAULT false,
-  enable_increase_boost BOOLEAN NOT NULL DEFAULT false
-);
-
-CREATE TABLE form_feature_impact_cart (
-  form_id UUID PRIMARY KEY REFERENCES campaign_forms(id) ON DELETE CASCADE,
-  enabled BOOLEAN NOT NULL DEFAULT false,
-  initial_display INT NOT NULL DEFAULT 3
-);
-
-CREATE TABLE form_feature_product_selector (
-  form_id UUID PRIMARY KEY REFERENCES campaign_forms(id) ON DELETE CASCADE,
-  enabled BOOLEAN NOT NULL DEFAULT false,
-  icon TEXT,
-  entity_singular TEXT,
-  entity_plural TEXT,
-  action_verb TEXT,
-  action_noun TEXT
-);
-
-CREATE TABLE form_feature_cover_costs (
-  form_id UUID PRIMARY KEY REFERENCES campaign_forms(id) ON DELETE CASCADE,
-  enabled BOOLEAN NOT NULL DEFAULT false,
-  heading TEXT,
-  description TEXT,
-  default_percentage INT NOT NULL DEFAULT 0
-);
-
-CREATE TABLE form_feature_gift_aid (
-  form_id UUID PRIMARY KEY REFERENCES campaign_forms(id) ON DELETE CASCADE,
-  enabled BOOLEAN NOT NULL DEFAULT false
-);
-
-CREATE TABLE form_feature_tribute (
-  form_id UUID PRIMARY KEY REFERENCES campaign_forms(id) ON DELETE CASCADE,
-  enabled BOOLEAN NOT NULL DEFAULT false,
-  show_for_once_frequency BOOLEAN NOT NULL DEFAULT true,
-  icon_gift TEXT NOT NULL DEFAULT '🎁',
-  icon_memorial TEXT NOT NULL DEFAULT '🕊️',
-  icon_tribute TEXT NOT NULL DEFAULT '💝',
-  none_label TEXT NOT NULL DEFAULT 'No, thank you',
-  gift_enabled BOOLEAN NOT NULL DEFAULT true,
-  memorial_enabled BOOLEAN NOT NULL DEFAULT true,
-  modal_title TEXT,
-  modal_subtitle TEXT
-);
-```
-
 ### Lookups
 
 ```sql
@@ -734,39 +740,61 @@ CREATE TABLE tribute_relationships (
 CREATE INDEX idx_tribute_relationships_org ON tribute_relationships(organization_id);
 ```
 
-### Custom Fields
+---
+
+## Views
+
+### Campaign Donations View
 
 ```sql
 -- ============================================
--- CUSTOM FIELDS (with justified JSONB)
+-- VIEWS
 -- ============================================
-CREATE TABLE form_custom_fields (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  form_id UUID NOT NULL REFERENCES campaign_forms(id) ON DELETE CASCADE,
-  step TEXT NOT NULL
-    CHECK (step IN ('step2', 'step3', 'hidden')),
-  field_order INT NOT NULL DEFAULT 0,
-  field_type TEXT NOT NULL
-    CHECK (field_type IN ('text', 'textarea', 'select', 'checkbox', 'hidden')),
-  field_id TEXT NOT NULL,
-  -- internal identifier (e.g., "text_company_name")
-  label TEXT NOT NULL,
-  default_value TEXT,
-  -- Advanced settings vary by field_type — JSONB justified:
-  -- text: {optional, placeholder, maxLength}
-  -- textarea: {optional, placeholder, rows}
-  -- select: {optional, placeholder, options: [{value, label}]}
-  -- checkbox: {optional, label}
-  -- hidden: {defaultValue}
-  advanced_settings JSONB,
-  -- Visibility conditions — JSONB justified (recursive AND/OR logic):
-  -- {visibleWhen: {conditions: [{field, operator, value}], match: 'all'|'any'}}
-  visibility_conditions JSONB,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
 
-CREATE INDEX idx_form_custom_fields_form ON form_custom_fields(form_id);
-CREATE INDEX idx_form_custom_fields_step ON form_custom_fields(form_id, step);
+-- Campaign donations view (lightweight CampaignDonation shape for crowdfunding pages)
+CREATE VIEW campaign_donations_view AS
+SELECT
+  t.id,
+  t.campaign_id,
+  CASE WHEN t.is_anonymous THEN 'Anonymous' ELSE t.donor_name END AS donor_name,
+  t.subtotal AS amount,
+  t.currency,
+  t.message,
+  t.is_anonymous,
+  t.created_at
+FROM transactions t
+WHERE t.status = 'succeeded';
+```
+
+### Donors Summary View
+
+```sql
+-- Donors summary view (aggregated donor data for admin lists)
+-- Regular VIEW (not materialized) — acceptable for admin dashboard queries.
+-- Uses subquery on transactions for per-org scoping.
+CREATE VIEW donors_summary_view AS
+SELECT
+  du.id,
+  du.name,
+  du.email,
+  du.avatar_url,
+  du.auth_user_id,
+  du.created_at,
+  t.organization_id,
+  COUNT(t.id) AS total_donations,
+  COALESCE(SUM(t.total_amount), 0) AS total_amount,
+  MAX(t.created_at) AS last_donation_at,
+  MIN(t.created_at) AS first_donation_at,
+  COUNT(DISTINCT t.campaign_id) AS campaigns_supported,
+  COUNT(DISTINCT t.currency) AS currencies_used,
+  BOOL_OR(t.gift_aid) AS has_gift_aid,
+  (
+    SELECT COUNT(*) FROM subscriptions s
+    WHERE s.donor_user_id = du.id AND s.status = 'active'
+  ) AS active_subscriptions
+FROM donor_users du
+JOIN transactions t ON t.donor_user_id = du.id AND t.status = 'succeeded'
+GROUP BY du.id, du.name, du.email, du.avatar_url, du.auth_user_id, du.created_at, t.organization_id;
 ```
 
 ---
@@ -887,6 +915,76 @@ CREATE TRIGGER transactions_refresh_fundraiser
   EXECUTE FUNCTION refresh_fundraiser_stats();
 ```
 
+### Transaction Denormalization Trigger
+
+```sql
+-- ============================================
+-- TRANSACTION DENORMALIZATION TRIGGER
+-- ============================================
+-- Auto-sets organization_id from campaigns on transaction insert.
+-- Ensures RLS can scope transactions by org without a join.
+CREATE OR REPLACE FUNCTION denormalize_transaction_org()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.organization_id IS NULL THEN
+    SELECT organization_id INTO NEW.organization_id
+    FROM campaigns WHERE id = NEW.campaign_id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER transactions_denormalize_org
+  BEFORE INSERT ON transactions
+  FOR EACH ROW
+  EXECUTE FUNCTION denormalize_transaction_org();
+```
+
+### Currency Auto-Population Trigger
+
+```sql
+-- ============================================
+-- CURRENCY AUTO-POPULATION TRIGGER
+-- ============================================
+-- When org_identity.currency changes, auto-create/remove
+-- organization_charity_currencies rows to match supportedCurrencies.
+CREATE OR REPLACE FUNCTION sync_charity_currency_rows()
+RETURNS TRIGGER AS $$
+DECLARE
+  currency_item JSONB;
+  currency_code TEXT;
+  supported_codes TEXT[];
+BEGIN
+  -- Extract supported currency codes from JSONB
+  SELECT ARRAY(
+    SELECT item->>'code'
+    FROM jsonb_array_elements(NEW.currency->'supportedCurrencies') AS item
+  ) INTO supported_codes;
+
+  -- Insert missing currency rows
+  FOR currency_item IN SELECT * FROM jsonb_array_elements(NEW.currency->'supportedCurrencies')
+  LOOP
+    currency_code := currency_item->>'code';
+    INSERT INTO organization_charity_currencies (organization_id, currency_code)
+    VALUES (NEW.organization_id, currency_code)
+    ON CONFLICT (organization_id, currency_code) DO NOTHING;
+  END LOOP;
+
+  -- Remove currency rows no longer in supported list
+  DELETE FROM organization_charity_currencies
+  WHERE organization_id = NEW.organization_id
+    AND currency_code != ALL(supported_codes);
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER org_identity_sync_currencies
+  AFTER INSERT OR UPDATE OF currency ON org_identity
+  FOR EACH ROW
+  EXECUTE FUNCTION sync_charity_currency_rows();
+```
+
 ---
 
 ## Row-Level Security (RLS) Policies
@@ -901,17 +999,16 @@ CREATE TRIGGER transactions_refresh_fundraiser
 -- ============================================
 ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE currency_settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE supported_currencies ENABLE ROW LEVEL SECURITY;
-ALTER TABLE organization_charity ENABLE ROW LEVEL SECURITY;
+ALTER TABLE org_config ENABLE ROW LEVEL SECURITY;
+ALTER TABLE org_identity ENABLE ROW LEVEL SECURITY;
+ALTER TABLE org_integrations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE org_financial ENABLE ROW LEVEL SECURITY;
 ALTER TABLE organization_charity_currencies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE campaigns ENABLE ROW LEVEL SECURITY;
 ALTER TABLE campaign_stats ENABLE ROW LEVEL SECURITY;
-ALTER TABLE campaign_crowdfunding ENABLE ROW LEVEL SECURITY;
-ALTER TABLE campaign_peer_to_peer ENABLE ROW LEVEL SECURITY;
-ALTER TABLE campaign_charity ENABLE ROW LEVEL SECURITY;
-ALTER TABLE campaign_social_sharing ENABLE ROW LEVEL SECURITY;
 ALTER TABLE campaign_fundraisers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE campaign_forms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE form_products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE donor_users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subscription_line_items ENABLE ROW LEVEL SECURITY;
@@ -919,19 +1016,7 @@ ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transaction_line_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transaction_tributes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE campaign_forms ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_frequencies ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_preset_amounts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_feature_impact_boost ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_feature_impact_cart ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_feature_product_selector ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_feature_cover_costs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_feature_gift_aid ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_feature_tribute ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tribute_relationships ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_custom_fields ENABLE ROW LEVEL SECURITY;
 ```
 
 ### Policy Templates
@@ -959,10 +1044,45 @@ CREATE POLICY "profiles_select" ON profiles FOR SELECT
 CREATE POLICY "profiles_update_self" ON profiles FOR UPDATE
   USING (id = auth.uid());
 
+-- --- Org Config (admin+) ---
+CREATE POLICY "org_config_select" ON org_config FOR SELECT
+  USING (has_role_in_org(organization_id, 'member'));
+
+CREATE POLICY "org_config_upsert" ON org_config FOR ALL
+  USING (has_role_in_org(organization_id, 'admin'));
+
+-- --- Org Identity (admin+) ---
+CREATE POLICY "org_identity_select" ON org_identity FOR SELECT
+  USING (has_role_in_org(organization_id, 'member'));
+
+CREATE POLICY "org_identity_upsert" ON org_identity FOR ALL
+  USING (has_role_in_org(organization_id, 'admin'));
+
+-- --- Org Integrations (developer+) ---
+CREATE POLICY "org_integrations_select" ON org_integrations FOR SELECT
+  USING (has_role_in_org(organization_id, 'developer'));
+
+CREATE POLICY "org_integrations_upsert" ON org_integrations FOR ALL
+  USING (has_role_in_org(organization_id, 'developer'));
+
+-- --- Org Financial (owner only) ---
+CREATE POLICY "org_financial_select" ON org_financial FOR SELECT
+  USING (has_role_in_org(organization_id, 'owner'));
+
+CREATE POLICY "org_financial_upsert" ON org_financial FOR ALL
+  USING (has_role_in_org(organization_id, 'owner'));
+
+-- --- Organization Charity Currencies (admin+) ---
+CREATE POLICY "charity_currencies_select" ON organization_charity_currencies FOR SELECT
+  USING (has_role_in_org(organization_id, 'member'));
+
+CREATE POLICY "charity_currencies_modify" ON organization_charity_currencies FOR ALL
+  USING (has_role_in_org(organization_id, 'admin'));
+
 -- --- Campaigns (admin) ---
 -- Org members can view non-deleted campaigns
 CREATE POLICY "campaigns_select_admin" ON campaigns FOR SELECT
-  USING (has_role_in_org(organization_id, 'viewer') AND deleted_at IS NULL);
+  USING (has_role_in_org(organization_id, 'member') AND deleted_at IS NULL);
 
 -- Org admins can create/update campaigns
 CREATE POLICY "campaigns_insert" ON campaigns FOR INSERT
@@ -975,6 +1095,39 @@ CREATE POLICY "campaigns_update" ON campaigns FOR UPDATE
 -- Anyone can view active campaigns (for crowdfunding pages)
 CREATE POLICY "campaigns_select_public" ON campaigns FOR SELECT
   USING (status = 'active' AND deleted_at IS NULL);
+
+-- --- Campaign Stats (public for active, admin for all) ---
+CREATE POLICY "campaign_stats_select" ON campaign_stats FOR SELECT
+  USING (
+    campaign_id IN (
+      SELECT id FROM campaigns WHERE status = 'active' AND deleted_at IS NULL
+    )
+    OR campaign_id IN (
+      SELECT id FROM campaigns WHERE has_role_in_org(organization_id, 'member')
+    )
+  );
+
+-- --- Campaign Forms (admin + public read for active campaigns) ---
+CREATE POLICY "forms_select_admin" ON campaign_forms FOR SELECT
+  USING (
+    campaign_id IN (
+      SELECT id FROM campaigns WHERE has_role_in_org(organization_id, 'member')
+    ) AND deleted_at IS NULL
+  );
+
+CREATE POLICY "forms_select_public" ON campaign_forms FOR SELECT
+  USING (
+    campaign_id IN (
+      SELECT id FROM campaigns WHERE status = 'active' AND deleted_at IS NULL
+    ) AND deleted_at IS NULL
+  );
+
+CREATE POLICY "forms_modify" ON campaign_forms FOR ALL
+  USING (
+    campaign_id IN (
+      SELECT id FROM campaigns WHERE has_role_in_org(organization_id, 'admin')
+    )
+  );
 
 -- --- Transactions ---
 -- Org admins can view all transactions for their org
@@ -990,12 +1143,22 @@ CREATE POLICY "transactions_select_donor" ON transactions FOR SELECT
   );
 
 -- --- Donor Users ---
--- Donors can view/update their own profile
+-- Global model: donors can view/update their own profile
 CREATE POLICY "donor_users_select_self" ON donor_users FOR SELECT
   USING (auth_user_id = auth.uid());
 
 CREATE POLICY "donor_users_update_self" ON donor_users FOR UPDATE
   USING (auth_user_id = auth.uid());
+
+-- Admins can view donors who have transacted with their org
+CREATE POLICY "donor_users_select_admin" ON donor_users FOR SELECT
+  USING (
+    id IN (
+      SELECT DISTINCT donor_user_id FROM transactions
+      WHERE has_role_in_org(organization_id, 'admin')
+        AND donor_user_id IS NOT NULL
+    )
+  );
 
 -- --- Subscriptions ---
 -- Donors can view their own subscriptions
@@ -1006,12 +1169,11 @@ CREATE POLICY "subscriptions_select_donor" ON subscriptions FOR SELECT
     )
   );
 
--- --- Campaign Crowdfunding (public) ---
--- Anyone can view crowdfunding settings for active campaigns
-CREATE POLICY "crowdfunding_select_public" ON campaign_crowdfunding FOR SELECT
+-- Admins can view subscriptions for campaigns in their org
+CREATE POLICY "subscriptions_select_admin" ON subscriptions FOR SELECT
   USING (
     campaign_id IN (
-      SELECT id FROM campaigns WHERE status = 'active' AND deleted_at IS NULL
+      SELECT id FROM campaigns WHERE has_role_in_org(organization_id, 'admin')
     )
   );
 
@@ -1019,9 +1181,23 @@ CREATE POLICY "crowdfunding_select_public" ON campaign_crowdfunding FOR SELECT
 -- Anyone can view active fundraisers
 CREATE POLICY "fundraisers_select_public" ON campaign_fundraisers FOR SELECT
   USING (status = 'active');
+
+-- --- Products ---
+CREATE POLICY "products_select" ON products FOR SELECT
+  USING (has_role_in_org(organization_id, 'member') AND deleted_at IS NULL);
+
+CREATE POLICY "products_modify" ON products FOR ALL
+  USING (has_role_in_org(organization_id, 'admin'));
+
+-- --- Tribute Relationships ---
+CREATE POLICY "tribute_relationships_select" ON tribute_relationships FOR SELECT
+  USING (
+    organization_id IS NULL
+    OR has_role_in_org(organization_id, 'member')
+  );
 ```
 
-> **Note:** These are starter policies. Extend them per table as needed. Campaign sub-tables (crowdfunding, charity, forms, etc.) should follow the same org-scoped admin pattern and public-read pattern shown above.
+> **Note:** These are starter policies. Production deployment should add INSERT/UPDATE-specific policies for service_role webhook handlers (Stripe/PayPal) that create transactions and subscriptions.
 
 ---
 
@@ -1072,49 +1248,110 @@ CREATE POLICY "campaign_assets_select" ON storage.objects FOR SELECT
 
 ## JSONB Field Justification
 
-| Column                  | Location             | Why JSONB?                                                                                                                                   |
-| ----------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `advanced_settings`     | `form_custom_fields` | Schema varies by field type (text has maxLength, textarea has rows, select has options array). Normalizing would require 5+ junction tables. |
-| `visibility_conditions` | `form_custom_fields` | Recursive condition tree with AND/OR logic. Evaluated in application layer. Normalizing adds complexity without query benefit.               |
+| Column             | Location           | Why JSONB?                                                                                          |
+| ------------------ | ------------------ | --------------------------------------------------------------------------------------------------- |
+| `general`          | `org_config`       | Flat key-value settings that change together. No cross-table joins needed. Admin-only config.       |
+| `branding`         | `org_config`       | Theme/styling blob consumed as a unit. Never queried individually in SQL.                           |
+| `social_sharing`   | `org_config`       | Boolean flags consumed as a unit. Simple on/off toggles for social platforms.                       |
+| `currency`         | `org_identity`     | Nested structure with array of supported currencies + multipliers. Queried as a whole on page load. |
+| `api_keys`         | `org_integrations` | Variable-length array of key objects. Developer-only, never SQL-filtered.                           |
+| `webhooks`         | `org_integrations` | Variable-length array of webhook configs. Developer-only, never SQL-filtered.                       |
+| `payments`         | `org_financial`    | Nested processor configs (Stripe/PayPal) with varying shapes. Owner-only.                           |
+| `billing`          | `org_financial`    | Plan/usage blob consumed as a unit. Owner-only.                                                     |
+| `crowdfunding`     | `campaigns`        | Page layout config read as a unit. Never filtered in SQL (always loaded with campaign).             |
+| `peer_to_peer`     | `campaigns`        | P2P config blob. Only relevant for type='p2p'. Loaded with campaign, never queried individually.    |
+| `charity`          | `campaigns`        | Campaign-level charity override. Small flat object, always loaded with campaign.                    |
+| `social_sharing`   | `campaigns`        | Per-campaign social override. Boolean flags consumed as a unit.                                     |
+| `donation_amounts` | `campaign_forms`   | Nested frequencies → preset amounts hierarchy. Complex tree structure that would require 2+ tables. |
+| `impact_cart`      | `campaign_forms`   | Simple feature toggle + 1 setting. Not worth a separate table.                                      |
+| `product_selector` | `campaign_forms`   | Feature config with 5 text fields. Loaded with form, never queried individually.                    |
+| `impact_boost`     | `campaign_forms`   | Feature config with 4 fields. Loaded with form, never queried individually.                         |
+| `cover_costs`      | `campaign_forms`   | Feature config with 3 fields. Loaded with form, never queried individually.                         |
+| `gift_aid`         | `campaign_forms`   | Single boolean toggle. JSONB for consistency with other feature configs.                            |
+| `tribute`          | `campaign_forms`   | Feature config with 10+ fields including icons. Loaded with form, never queried individually.       |
+| `custom_fields`    | `campaign_forms`   | Variable-length array with recursive visibility conditions. Schema varies by field type.            |
+| `entry_fields`     | `campaign_forms`   | Form-type-specific config varying by form_type. Polymorphic structure.                              |
+| `custom_fields`    | `transactions`     | Denormalized snapshot of custom field values at transaction time. Filtered via GIN index.           |
 
-All other configuration uses separate columns for: direct SQL querying, Supabase RLS per table, real-time subscriptions, and DB-level type safety.
+**Queryable columns kept outside JSONB:** `form_type`, `title`, `subtitle`, `base_default_currency`, `enabled_currencies` on `campaign_forms`; `type`, `status`, `slug` on `campaigns`. These are used in WHERE clauses, indexes, and RLS policies.
 
 ---
 
 ## Table Statistics
 
-| Category             | Count  | Tables                                                                                                                  |
-| -------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------- |
-| Organizations & Auth | 6      | organizations, profiles, currency_settings, supported_currencies, organization_charity, organization_charity_currencies |
-| Campaigns            | 6      | campaigns, campaign_stats, campaign_crowdfunding, campaign_peer_to_peer, campaign_charity, campaign_social_sharing      |
-| Campaign Data        | 1      | campaign_fundraisers                                                                                                    |
-| Donor Portal         | 8      | donor_users, subscriptions, subscription_line_items, transactions, transaction_line_items, transaction_tributes         |
-| Products             | 1      | products                                                                                                                |
-| Forms                | 2      | campaign_forms, form_products (junction)                                                                                |
-| Form Settings        | 3      | form_settings, form_frequencies, form_preset_amounts                                                                    |
-| Form Features        | 6      | form*feature*\* (one per feature)                                                                                       |
-| Lookups              | 1      | tribute_relationships                                                                                                   |
-| Custom Fields        | 1      | form_custom_fields                                                                                                      |
-| **Total**            | **35** | + 1 view (`campaign_donations_view`) + 1 storage bucket                                                                 |
+| Category             | Count  | Tables                                                                                                          |
+| -------------------- | ------ | --------------------------------------------------------------------------------------------------------------- |
+| Organizations & Auth | 2      | organizations, profiles                                                                                         |
+| Org Settings         | 5      | org_config, org_identity, org_integrations, org_financial, organization_charity_currencies                      |
+| Campaigns            | 3      | campaigns, campaign_stats, campaign_fundraisers                                                                 |
+| Forms                | 2      | campaign_forms, form_products (junction)                                                                        |
+| Products             | 1      | products                                                                                                        |
+| Donor Portal         | 6      | donor_users, subscriptions, subscription_line_items, transactions, transaction_line_items, transaction_tributes |
+| Lookups              | 1      | tribute_relationships                                                                                           |
+| **Total**            | **20** | + 2 views (`campaign_donations_view`, `donors_summary_view`) + 1 storage bucket                                 |
 
 ---
 
 ## Key Design Decisions
+
+### Role Hierarchy: owner > admin > developer > member
+
+Four roles with a branching hierarchy:
+
+- **member**: Base read access to org data (campaigns, forms, products)
+- **developer**: Inherits all member permissions + API keys and webhook access. Does NOT inherit admin write permissions.
+- **admin**: Full read/write on campaigns, forms, products, settings (except financial)
+- **owner**: Everything including financial settings, org deletion, role management
+
+The `has_role_in_org()` function handles this: `'member'` check passes for all four roles; `'developer'` check passes for developer, admin, owner; `'admin'` check passes for admin, owner; `'owner'` check passes only for owner.
+
+### Consolidated Settings (4 Tables by RLS Boundary)
+
+Instead of 1 table per setting domain, settings are grouped by who can access them:
+
+1. **org_config** (admin+): General, branding, social sharing — safe for all team members to see
+2. **org_identity** (admin+): Charity identity + currency — used in donor-facing pages
+3. **org_integrations** (developer+): API keys, webhooks — sensitive but needed for integrations
+4. **org_financial** (owner only): Payment processors, billing — most sensitive
+
+This means a single RLS policy per table instead of per-setting-type.
 
 ### Supabase Auth Integration
 
 Two separate user types with different auth patterns:
 
 1. **Admin users** (`profiles`): `id` = `auth.users.id` (1:1). Auto-created via trigger on signup. Scoped to an organization with role-based access.
-2. **Donor users** (`donor_users`): Separate `id` with optional `auth_user_id` link. Donors can exist without auth (guest checkout) and optionally create a portal account later. Uses `ON DELETE SET NULL` so deleting the auth account preserves donation history.
+2. **Donor users** (`donor_users`): Separate `id` with optional `auth_user_id` link. **Global model** — no `organization_id`. A donor who gives to multiple charities has one `donor_users` row. RLS scopes admin visibility via subquery on `transactions.organization_id`. Donors can exist without auth (guest checkout) and optionally create a portal account later. Uses `ON DELETE SET NULL` so deleting the auth account preserves donation history.
 
-### Why `transactions` replaces `campaign_donations`
+### Campaign Sub-Tables Merged to JSONB
+
+The 4 campaign sub-tables (`campaign_crowdfunding`, `campaign_peer_to_peer`, `campaign_charity`, `campaign_social_sharing`) are now JSONB columns on `campaigns`. Rationale:
+
+- Always loaded together with the campaign (1:1 relationship)
+- Never independently queried in WHERE clauses
+- Reduces join count from 5 to 1 for campaign detail queries
+- Campaign type/status (the queryable fields) remain as indexed columns
+
+### Form Config Merged to JSONB
+
+The 10 form config tables (`form_settings`, `form_frequencies`, `form_preset_amounts`, 6x `form_feature_*`, `form_custom_fields`) are now JSONB columns on `campaign_forms`. Rationale:
+
+- Form config is always loaded as a complete unit (one API call)
+- Queryable columns (`form_type`, `title`, `base_default_currency`, `enabled_currencies`) are kept as real columns with indexes
+- Saves 10 JOINs per form load, 10 RLS policies, 10 trigger definitions
+- `enabled_currencies` uses `TEXT[]` with GIN index for array containment queries (currency guard checks)
+
+### Why `transactions` Replaces `campaign_donations`
 
 `transactions` is the single source of truth. The `campaign_donations_view` provides the lightweight shape needed for crowdfunding pages without data duplication.
 
 ### `campaign_stats` as Materialized Data
 
 `campaign_stats` is refreshed via the `refresh_campaign_stats()` trigger on every transaction INSERT/UPDATE/DELETE. Uses `INSERT ... ON CONFLICT DO UPDATE` (upsert) for atomic recomputation.
+
+### `donors_summary_view` as Regular View
+
+A regular VIEW (not materialized) that aggregates donor data per organization. Acceptable for admin dashboard queries where slight latency is fine. Avoids the complexity of refresh scheduling for materialized views.
 
 ### Soft Deletes
 
@@ -1131,18 +1368,11 @@ All status/type columns use `TEXT NOT NULL CHECK (value IN (...))` instead of Po
 
 ### `organization_id` on `transactions`
 
-Denormalized from `campaigns.organization_id` and set on insert. This allows RLS policies on `transactions` to scope by org without joining to `campaigns` on every row access — a significant performance optimization for the most queried table.
+Denormalized from `campaigns.organization_id` and auto-set by trigger on insert. This allows RLS policies on `transactions` to scope by org without joining to `campaigns` on every row access — a significant performance optimization for the most queried table.
 
 ### Table Ordering (FK Dependencies)
 
-`subscriptions` is defined before `transactions` because `transactions.subscription_id` references `subscriptions.id`. Similarly, `donor_users` is defined before both, and `products` before line item tables.
-
-### Why Separate Tables (Not JSONB)
-
-1. **Queryable data**: transactions, subscriptions, fundraisers, form frequencies, preset amounts — all need filtering, aggregation, sorting, pagination
-2. **Transactional integrity**: Foreign keys enforce referential integrity
-3. **Supabase benefits**: RLS per table, real-time subscriptions, auto-generated PostgREST endpoints
-4. **Performance**: Direct indexed queries vs JSONB extraction operators
+`products` is defined before `campaign_forms` (for `form_products`). `donor_users` is defined before `subscriptions` and `transactions`. `subscriptions` is defined before `transactions` (for `subscription_id` FK).
 
 ---
 
@@ -1151,23 +1381,20 @@ Denormalized from `campaigns.organization_id` and set on insert. This allows RLS
 ### Frontend Query Examples (PostgREST)
 
 ```typescript
-// Get full campaign with all related data
+// Get full campaign with stats (JSONB columns are auto-included)
 const campaign = await supabase
   .from('campaigns')
   .select(
     `
     *,
-    campaign_stats(*),
-    campaign_crowdfunding(*),
-    campaign_charity(*),
-    campaign_peer_to_peer(*),
-    campaign_social_sharing(*),
-    campaign_fundraisers(*)
+    campaign_stats(*)
   `
   )
   .eq('id', campaignId)
   .is('deleted_at', null)
   .single()
+
+// Access JSONB directly: campaign.crowdfunding.enabled, campaign.peer_to_peer.allowTeams, etc.
 
 // Get recent donations for a campaign (via the view)
 const donations = await supabase
@@ -1177,27 +1404,44 @@ const donations = await supabase
   .order('created_at', { ascending: false })
   .limit(10)
 
-// Get form with all settings and features
+// Get form with products (all config is JSONB on the form row)
 const form = await supabase
   .from('campaign_forms')
   .select(
     `
     *,
-    form_settings(*),
-    form_frequencies(*, form_preset_amounts(*)),
-    form_products(*, products:product_id(*)),
-    form_feature_impact_boost(*),
-    form_feature_impact_cart(*),
-    form_feature_product_selector(*),
-    form_feature_cover_costs(*),
-    form_feature_gift_aid(*),
-    form_feature_tribute(*),
-    form_custom_fields(*)
+    form_products(*, products:product_id(*))
   `
   )
   .eq('id', formId)
   .is('deleted_at', null)
   .single()
+
+// Access JSONB directly: form.donation_amounts.frequencies, form.impact_cart.enabled, etc.
+
+// Get all org settings in parallel (4 queries, each respects RLS)
+const [config, identity, integrations, financial] = await Promise.all([
+  supabase.from('org_config').select('*').eq('organization_id', orgId).single(),
+  supabase.from('org_identity').select('*').eq('organization_id', orgId).single(),
+  supabase.from('org_integrations').select('*').eq('organization_id', orgId).single(),
+  supabase.from('org_financial').select('*').eq('organization_id', orgId).single()
+])
+// developer role: integrations succeeds, financial returns empty (RLS blocks)
+// member role: config and identity succeed, integrations and financial return empty
+
+// Get charity currency overrides
+const currencies = await supabase
+  .from('organization_charity_currencies')
+  .select('*')
+  .eq('organization_id', orgId)
+  .order('currency_code')
+
+// Find forms using a specific currency (for currency removal guard)
+const formsUsingCurrency = await supabase
+  .from('campaign_forms')
+  .select('id, name, enabled_currencies, base_default_currency')
+  .contains('enabled_currencies', ['USD'])
+  .is('deleted_at', null)
 
 // Get donor's transaction history
 const history = await supabase
@@ -1231,6 +1475,13 @@ const topFundraisers = await supabase
   .eq('parent_campaign_id', campaignId)
   .order('raised_amount', { ascending: false })
   .limit(10)
+
+// Admin: get donors summary for their org
+const donors = await supabase
+  .from('donors_summary_view')
+  .select('*')
+  .eq('organization_id', orgId)
+  .order('total_amount', { ascending: false })
 ```
 
 ---
@@ -1250,7 +1501,9 @@ const topFundraisers = await supabase
 
 - **Full audit trail**: Enable `supa_audit` extension for change logging on key tables
 - **Full-text search**: Add `tsvector` columns + GIN indexes on campaign names/descriptions
-- **Materialized views**: Dashboard aggregations (donations by day/week/month)
+- **Materialized views**: Dashboard aggregations (donations by day/week/month) — consider materializing `donors_summary_view` if performance becomes an issue
 - **Edge Functions**: Stripe/PayPal webhook handlers for transaction creation
 - **Realtime**: Subscribe to `campaign_stats` changes for live crowdfunding page updates
 - **UUIDv7**: Consider `pg_uuidv7` extension for time-ordered PKs on high-volume tables (transactions) for better B-tree locality
+- **Team settings**: `profiles` table could gain `team_id` FK for team management within orgs
+- **Multi-org donors**: `donors_summary_view` already supports per-org aggregation; consider a donor portal that shows cross-org history

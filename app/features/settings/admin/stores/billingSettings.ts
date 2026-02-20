@@ -23,18 +23,21 @@ export const useBillingSettingsStore = defineStore('billingSettings', () => {
   }
 
   function updateBillingEmail(email: string) {
+    // TODO-SUPABASE: Replace with supabase.from('org_financial').update({ billing: { ...billing, billingEmail } })
     billingEmail.value = email
     $persist()
     toast.success('Billing email updated')
   }
 
   function updatePaymentCard(card: PaymentCard) {
+    // TODO-SUPABASE: Replace with supabase.from('org_financial').update({ billing: { ...billing, paymentCard } })
     paymentCard.value = { ...card }
     $persist()
     toast.success('Payment card updated')
   }
 
   function removePaymentCard() {
+    // TODO-SUPABASE: Replace with supabase.from('org_financial').update({ billing: { ...billing, paymentCard: null } })
     paymentCard.value = undefined
     $persist()
     toast.success('Payment card removed')
@@ -44,6 +47,7 @@ export const useBillingSettingsStore = defineStore('billingSettings', () => {
   function $hydrate() {
     if (hydrated) return
     try {
+      // TODO-SUPABASE: Replace with supabase.from('org_financial').select('billing').eq('org_id', orgId).single()
       const saved = sessionStorage.getItem('settings-billing')
       if (saved) initialize(JSON.parse(saved))
     } catch {
@@ -55,6 +59,7 @@ export const useBillingSettingsStore = defineStore('billingSettings', () => {
   function $persist() {
     if (!import.meta.client) return
     try {
+      // TODO-SUPABASE: Replace with supabase.from('org_financial').upsert({ org_id: orgId, billing: { billingEmail, paymentCard, taxRate, statements } })
       sessionStorage.setItem(
         'settings-billing',
         JSON.stringify({

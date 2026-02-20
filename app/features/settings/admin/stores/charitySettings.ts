@@ -71,6 +71,7 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
 
   /** Ensure all supported currencies have entries (required for $storePath writes) */
   function ensureCurrencyEntries() {
+    // TODO-SUPABASE: Replaced by DB trigger on org_identity.supported_currencies change (auto-populates organization_charity_currencies)
     const entries = currencyEntries.value
     let changed = false
     for (const currency of currencyStore.supportedCurrencies) {
@@ -162,6 +163,7 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
   function $hydrate() {
     if (hydrated) return
     try {
+      // TODO-SUPABASE: Replace with supabase.from('org_identity').select('slug').single() + from('organization_charity_currencies').select('*').eq('org_id', orgId)
       const saved = sessionStorage.getItem('settings-charity')
       if (saved) initialize(JSON.parse(saved))
     } catch {
@@ -172,6 +174,7 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
 
   function save() {
     try {
+      // TODO-SUPABASE: Replace with supabase.from('org_identity').upsert({ org_id: orgId, slug }) + from('organization_charity_currencies').upsert(currencyEntries rows)
       sessionStorage.setItem('settings-charity', JSON.stringify(toSnapshot()))
     } catch {
       /* ignore */
