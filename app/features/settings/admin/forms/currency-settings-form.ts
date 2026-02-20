@@ -5,7 +5,9 @@ import {
   fieldGroup,
   sliderField,
   cardField,
-  componentField
+  componentField,
+  tabsField,
+  alertField
 } from '~/features/_library/form-builder/api'
 import type { FieldContext } from '~/features/_library/form-builder/types'
 import CurrencyExampleTable from '~/features/settings/admin/components/CurrencyExampleTable.vue'
@@ -16,7 +18,7 @@ const CURRENCY_OPTIONS = getCurrencyOptionsForSelect()
 
 /**
  * Currency settings form configuration
- * Used in organization settings to configure default currencies
+ * Uses tabsField with "Currency Defaults" and "Multipliers" tabs
  */
 export const useCurrencySettingsForm = defineForm('currencySettings', () => {
   const supportedCurrencies = comboboxField('supportedCurrencies', {
@@ -34,14 +36,11 @@ export const useCurrencySettingsForm = defineForm('currencySettings', () => {
     description: "Your organization's base currency. Multipliers are not applied to this currency.",
     placeholder: 'Select default currency',
     searchPlaceholder: 'Search currencies...',
-    showSeparatorAfter: true,
     options: ({ values }: FieldContext) => {
-      // Access sibling field in same fieldGroup using 'values'
       const supported = (values.supportedCurrencies as string[]) || []
       return CURRENCY_OPTIONS.filter((opt) => supported.includes(opt.value))
     },
     rules: ({ values }: FieldContext) => {
-      // Access sibling field in same fieldGroup using 'values'
       const supported = (values.supportedCurrencies as string[]) || []
       return z
         .string()
@@ -55,43 +54,29 @@ export const useCurrencySettingsForm = defineForm('currencySettings', () => {
   const roundingExplanation = cardField('roundingExplanation', {
     label: 'How Smart Rounding Works',
     content: `
-      <div class="text-sm space-y-2">
-        <p class="text-muted-foreground">
-          To make things easier for donors, converted amounts are automatically rounded to friendly numbers:
-        </p>
-        <ul class="list-disc pl-6 space-y-1 text-muted-foreground">
-          <li><strong>Under £5:</strong> Rounded to nearest whole number (e.g., £2, £3)</li>
-          <li><strong>£5-£50:</strong> Rounded to nearest £5 (e.g., £10, £15, £20)</li>
-          <li><strong>£50-£200:</strong> Rounded to nearest £25 (e.g., £75, £100)</li>
-          <li><strong>£200-£500:</strong> Rounded to nearest £50 (e.g., £250, £300)</li>
-          <li><strong>Over £500:</strong> Rounded to nearest £100 (e.g., £600, £700)</li>
-        </ul>
-        <p class="text-xs text-muted-foreground mt-2">
-          This keeps donation amounts clean and easy to understand across all currencies.
-        </p>
-      </div>
+      <p>To make things easier for donors, converted amounts are automatically rounded to friendly numbers:</p>
+      <p><strong>Under £5:</strong> Rounded to nearest whole number (e.g., £2, £3)<br />
+      <strong>£5–£50:</strong> Rounded to nearest £5 (e.g., £10, £15, £20)<br />
+      <strong>£50–£200:</strong> Rounded to nearest £25 (e.g., £75, £100)<br />
+      <strong>£200–£500:</strong> Rounded to nearest £50 (e.g., £250, £300)<br />
+      <strong>Over £500:</strong> Rounded to nearest £100 (e.g., £600, £700)</p>
+      <p>This keeps donation amounts clean and easy to understand across all currencies.</p>
     `
   })
 
   // Create multiplier field groups for each possible currency
-  // These will be shown/hidden based on supportedCurrencies and defaultCurrency
   const currencyMultiplierFields: Record<string, ReturnType<typeof fieldGroup>> = {}
-
-  // Build $storePath mappings for all currency sliders
   const currencySliderMappings: Record<string, string> = {}
 
-  // Create fields for all possible currencies (not just supported ones)
-  // This ensures the form structure is stable and fields can be shown/hidden dynamically
   CURRENCY_OPTIONS.forEach(({ value: currency }) => {
-    // Add mapping: form.currencies.currencyMultipliers.USD.slider → store.currencyMultipliers.USD
-    currencySliderMappings[`currencyMultipliers.${currency}.slider`] =
+    currencySliderMappings[`currencyTabs.multipliers.${currency}.slider`] =
       `currencyMultipliers.${currency}`
 
     currencyMultiplierFields[currency] = fieldGroup('', {
       label: ({ root }: FieldContext) => {
-        // Access multiplier value from root.currencies.currencyMultipliers[currency].slider
         const currencies = root.currencies as Record<string, unknown> | undefined
-        const multipliers = currencies?.currencyMultipliers as Record<string, unknown> | undefined
+        const tabs = currencies?.currencyTabs as Record<string, unknown> | undefined
+        const multipliers = tabs?.multipliers as Record<string, unknown> | undefined
         const currencyGroup = multipliers?.[currency] as Record<string, unknown> | undefined
         const multiplier = (currencyGroup?.slider as number) ?? 1.0
         return `${currency} multiplier = ${multiplier.toFixed(2)}×${multiplier === 1.0 ? ' (default)' : ''}`
@@ -100,10 +85,11 @@ export const useCurrencySettingsForm = defineForm('currencySettings', () => {
       collapsibleDefaultOpen: false,
       wrapperClass: 'border rounded-lg p-4',
       visibleWhen: ({ root }: FieldContext) => {
-        // Access root.currencies values (2 levels up)
         const currencies = root.currencies as Record<string, unknown> | undefined
-        const supported = (currencies?.supportedCurrencies as string[]) || []
-        const defaultCurr = (currencies?.defaultCurrency as string) || ''
+        const tabs = currencies?.currencyTabs as Record<string, unknown> | undefined
+        const defaults = tabs?.defaults as Record<string, unknown> | undefined
+        const supported = (defaults?.supportedCurrencies as string[]) || []
+        const defaultCurr = (defaults?.defaultCurrency as string) || ''
         return supported.includes(currency) && currency !== defaultCurr
       },
       fields: {
@@ -124,44 +110,78 @@ export const useCurrencySettingsForm = defineForm('currencySettings', () => {
           props: { toCurrency: currency }
         })
       }
-      // No $storePath here - mapping handled by parent currencies fieldGroup
     })
   })
 
-  const currencyMultipliers = fieldGroup('currencyMultipliers', {
-    label: 'Currency Multipliers',
-    collapsible: true,
-    description:
-      'To make things easier for donors, currency conversion is enabled for all forms and uses smart rounding with multipliers you can adjust below.',
-    // wrapperClass: 'mt-4',
-    visibleWhen: ({ values }: FieldContext) => {
-      // Access sibling fields in same fieldGroup (currencies)
-      const supported = (values.supportedCurrencies as string[]) || []
-      const defaultCurr = (values.defaultCurrency as string) || ''
-      return supported.length > 1 && !!defaultCurr
-    },
-    fields: {
-      roundingExplanation,
-      ...currencyMultiplierFields
+  /** Check if multipliers tab should be enabled (>1 supported currency + default set) */
+  const hasMultipleCurrencies = ({ root }: FieldContext) => {
+    const currencies = root.currencies as Record<string, unknown> | undefined
+    const tabs = currencies?.currencyTabs as Record<string, unknown> | undefined
+    const defaults = tabs?.defaults as Record<string, unknown> | undefined
+    const supported = (defaults?.supportedCurrencies as string[]) || []
+    const defaultCurr = (defaults?.defaultCurrency as string) || ''
+    return supported.length > 1 && !!defaultCurr
+  }
+
+  /** Count non-default multipliers for badge (empty when tab disabled) */
+  const multipliersBadge = (ctx: FieldContext) => {
+    if (!hasMultipleCurrencies(ctx)) return ''
+    const currencies = ctx.root.currencies as Record<string, unknown> | undefined
+    const tabs = currencies?.currencyTabs as Record<string, unknown> | undefined
+    const multipliers = tabs?.multipliers as Record<string, unknown> | undefined
+    if (!multipliers) return ''
+    let count = 0
+    for (const key of Object.keys(multipliers)) {
+      const group = multipliers[key] as Record<string, unknown> | undefined
+      if (!group || typeof group !== 'object' || !('slider' in group)) continue
+      const val = group?.slider as number | undefined
+      if (val !== undefined && val !== 1.0) count++
     }
-    // No $storePath - mapping handled by parent currencies fieldGroup
+    return count > 0 ? `${count} custom` : ''
+  }
+
+  const multipliersNotice = alertField('multipliersNotice', {
+    variant: 'info',
+    description: 'Supported currencies and the default currency are configured on the other tab.',
+    cta: {
+      label: 'Go to Currency Defaults',
+      to: '#currencies.currencyTabs.defaults',
+      inline: true
+    }
+  })
+
+  const currencyTabs = tabsField('currencyTabs', {
+    label: 'Currency Configuration',
+    tabsListClass: 'w-full',
+    defaultValue: 'defaults',
+    tabs: [
+      {
+        value: 'defaults',
+        label: 'Currency Defaults',
+        fields: { supportedCurrencies, defaultCurrency }
+      },
+      {
+        value: 'multipliers',
+        label: 'Multipliers',
+        badgeLabel: multipliersBadge,
+        badgeVariant: 'secondary',
+        disabled: (ctx: FieldContext) => !hasMultipleCurrencies(ctx),
+        disabledTooltip: 'Add multiple currencies to enable setting currency multipliers',
+        fields: {
+          roundingExplanation,
+          ...currencyMultiplierFields,
+          multipliersNotice
+        }
+      }
+    ]
   })
 
   const currencies = fieldGroup('currencies', {
-    label: 'Currency Configuration',
-    description:
-      'Configure which currencies are available across your organization and fine-tune conversion rates.',
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: {
-      supportedCurrencies,
-      defaultCurrency,
-      currencyMultipliers
-    },
-    // Map nested fields to flat store
+    fields: { currencyTabs },
     $storePath: {
-      supportedCurrencies: 'supportedCurrencies',
-      defaultCurrency: 'defaultCurrency',
-      // Map all currency sliders: currencies.currencyMultipliers.USD.slider → currencyMultipliers.USD
+      'currencyTabs.defaults.supportedCurrencies': 'supportedCurrencies',
+      'currencyTabs.defaults.defaultCurrency': 'defaultCurrency',
       ...currencySliderMappings
     }
   })

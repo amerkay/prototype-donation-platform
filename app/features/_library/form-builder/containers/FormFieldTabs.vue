@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { cn } from '@/lib/utils'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Field, FieldLegend, FieldDescription } from '@/components/ui/field'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -98,6 +99,20 @@ const resolveTabLabel = (tab: (typeof props.meta.tabs)[number]) => {
 const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
   return resolveText(tab.badgeLabel, scopedFormValues.value)
 }
+
+// Resolve tab disabled state
+const isTabDisabled = (tab: (typeof props.meta.tabs)[number]) => {
+  const d = tab.disabled
+  if (d === undefined || d === false) return false
+  if (d === true) return true
+  if (typeof d === 'function') return d(scopedFormValues.value)
+  return d.value
+}
+
+// Resolve tab disabled tooltip
+const resolveTabTooltip = (tab: (typeof props.meta.tabs)[number]) => {
+  return resolveText(tab.disabledTooltip, scopedFormValues.value)
+}
 </script>
 
 <template>
@@ -112,26 +127,40 @@ const resolveTabBadge = (tab: (typeof props.meta.tabs)[number]) => {
 
       <Tabs v-model="activeTab" :unmount-on-hide="true">
         <TabsList :class="cn('w-full', meta.tabsListClass)">
-          <TabsTrigger v-for="tab in meta.tabs" :key="tab.value" :value="tab.value" class="gap-2">
-            {{ resolveTabLabel(tab) }}
-            <!-- Error badge takes priority -->
-            <Badge
-              v-if="tabHasErrors(tab.value)"
-              variant="destructive"
-              class="ml-1 size-5 p-0 text-xs gap-1"
-            >
-              <Icon name="lucide:alert-circle" />
-            </Badge>
+          <template v-for="tab in meta.tabs" :key="tab.value">
+            <TooltipProvider v-if="isTabDisabled(tab) && resolveTabTooltip(tab)">
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <span class="inline-flex flex-1">
+                    <TabsTrigger :value="tab.value" disabled class="gap-2 w-full">
+                      {{ resolveTabLabel(tab) }}
+                    </TabsTrigger>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>{{ resolveTabTooltip(tab) }}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TabsTrigger v-else :value="tab.value" :disabled="isTabDisabled(tab)" class="gap-2">
+              {{ resolveTabLabel(tab) }}
+              <!-- Error badge takes priority -->
+              <Badge
+                v-if="tabHasErrors(tab.value)"
+                variant="destructive"
+                class="ml-1 size-5 p-0 text-xs gap-1"
+              >
+                <Icon name="lucide:alert-circle" />
+              </Badge>
 
-            <!-- Custom badge shown when no errors -->
-            <Badge
-              v-else-if="resolveTabBadge(tab)"
-              :variant="tab.badgeVariant || 'secondary'"
-              class="ml-1 h-5 px-1.5 text-xs"
-            >
-              {{ resolveTabBadge(tab) }}
-            </Badge>
-          </TabsTrigger>
+              <!-- Custom badge shown when no errors -->
+              <Badge
+                v-else-if="resolveTabBadge(tab)"
+                :variant="tab.badgeVariant || 'secondary'"
+                class="ml-1 h-5 px-1.5 text-xs"
+              >
+                {{ resolveTabBadge(tab) }}
+              </Badge>
+            </TabsTrigger>
+          </template>
         </TabsList>
 
         <TabsContent v-for="tab in meta.tabs" :key="tab.value" :value="tab.value">

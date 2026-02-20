@@ -157,12 +157,7 @@ export function provideHashTarget(
     document.removeEventListener('keydown', clearHighlight)
   }
 
-  const setResolvedTarget = (nextTarget: string | null) => {
-    // Reset existing clear listeners so a stale listener from a previous activation
-    // can't immediately clear the new target during the same click event.
-    document.removeEventListener('click', clearHighlight)
-    document.removeEventListener('keydown', clearHighlight)
-
+  const applyTarget = (nextTarget: string | null) => {
     cleared.value = false
     targetPath.value = nextTarget
 
@@ -178,6 +173,23 @@ export function provideHashTarget(
           document.addEventListener('keydown', clearHighlight)
         }
       }, CLEAR_LISTENER_DELAY_MS)
+    }
+  }
+
+  const setResolvedTarget = (nextTarget: string | null) => {
+    // Reset existing clear listeners so a stale listener from a previous activation
+    // can't immediately clear the new target during the same click event.
+    document.removeEventListener('click', clearHighlight)
+    document.removeEventListener('keydown', clearHighlight)
+
+    // Force re-activation when targeting the same path (e.g. clicking a hash link
+    // while already on that hash). Null first so Vue detects the change on nextTick.
+    if (nextTarget && (targetPath.value === nextTarget || cleared.value)) {
+      targetPath.value = null
+      cleared.value = false
+      nextTick(() => applyTarget(nextTarget))
+    } else {
+      applyTarget(nextTarget)
     }
   }
 

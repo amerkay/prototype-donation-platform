@@ -11,7 +11,10 @@ import {
 } from '~/features/_library/form-builder/composables/useResolvedFieldMeta'
 import { useContainerFieldSetup } from '~/features/_library/form-builder/composables/useContainerFieldSetup'
 import { useFormBuilderContext } from '~/features/_library/form-builder/composables/useFormBuilderContext'
-import { useHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
+import {
+  useHashTarget,
+  activateHashTarget
+} from '~/features/_library/form-builder/composables/useHashTarget'
 
 interface Props {
   meta: AlertFieldDef
@@ -51,6 +54,15 @@ const isInlineCta = computed(() => {
   return !!props.meta.cta?.inline && !props.meta.content && !!resolvedDescription.value
 })
 
+/** For hash CTA links, activate directly to handle same-hash re-navigation */
+function handleCtaClick(e: MouseEvent) {
+  const to = resolvedCtaTo.value
+  if (to.startsWith('#')) {
+    e.preventDefault()
+    activateHashTarget(to.slice(1))
+  }
+}
+
 const fullPathComputed = computed(() => props.fullPath || '')
 const {
   elementRef: alertEl,
@@ -88,6 +100,7 @@ const {
               meta.cta.class
             )
           "
+          @click="handleCtaClick"
         >
           {{ meta.cta.label }}
           <Icon :name="meta.cta.icon || 'lucide:arrow-right'" class="size-3" />
@@ -103,6 +116,7 @@ const {
             meta.cta.class
           )
         "
+        @click="handleCtaClick"
       >
         {{ meta.cta.label }}
         <Icon :name="meta.cta.icon || 'lucide:arrow-right'" class="size-3" />

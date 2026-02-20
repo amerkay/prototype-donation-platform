@@ -387,6 +387,8 @@ export interface TabDefinitionConfig {
   fields: Record<string, FieldDef>
   badgeLabel?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   badgeVariant?: 'default' | 'outline' | 'secondary' | 'destructive'
+  disabled?: boolean | ComputedRef<boolean> | ((ctx: FieldContext) => boolean)
+  disabledTooltip?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
 }
 
 export interface TabsFieldConfig extends BaseFieldConfig {

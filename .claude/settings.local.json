@@ -29,7 +29,8 @@
       "WebFetch(domain:developer.paypal.com)",
       "WebFetch(domain:nuxtemail.com)",
       "Bash(echo:*)",
-      "Bash(git --no-pager log --oneline -5)"
+      "Bash(git --no-pager log --oneline -5)",
+      "Bash(done)"
     ]
   },
   "prefersReducedMotion": false
