@@ -9,14 +9,14 @@ import type { CampaignDonation, CampaignStats } from '~/features/campaigns/share
  * Helper functions below derive campaign-specific views (recent donations,
  * stats) so that campaigns.ts doesn't duplicate this data.
  *
- * Records 1–12: Wild Amer (awesome@charity.co.uk) — donor portal demo data
- * Records 13–15: Other donors → adopt-orangutan campaign
- * Records 16–17: Other donors → birthday-p2p-template campaign
- * Records 18–20: Other donors → wild-amer-birthday-fundraiser campaign
- * Records 21–22: Other donors → wild-amer-birthday-2-fundraiser campaign
- * Records 23–27: Other donors → michael-chen-birthday-fundraiser
- * Records 28–30: Other donors → david-martinez-birthday-fundraiser
- * Records 31–32: Other donors → lisa-anderson-birthday-fundraiser
+ * Records 1-12: Wild Amer (awesome@charity.co.uk) — donor portal demo data
+ * Records 13-15: Other donors → adopt-orangutan campaign
+ * Records 16-17: Other donors → birthday-p2p-template campaign
+ * Records 18-20: Other donors → wild-amer-birthday-fundraiser campaign
+ * Records 21-22: Other donors → wild-amer-birthday-2-fundraiser campaign
+ * Records 23-27: Other donors → michael-chen-birthday-fundraiser
+ * Records 28-30: Other donors → david-martinez-birthday-fundraiser
+ * Records 31-32: Other donors → lisa-anderson-birthday-fundraiser
  */
 export const transactions: Transaction[] = [
   // ============================================

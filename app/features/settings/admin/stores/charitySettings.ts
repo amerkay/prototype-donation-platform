@@ -3,100 +3,111 @@ import { ref, computed, watch } from 'vue'
 import type {
   CharitySettings,
   CharityAddress,
-  CharityCurrencyOverride
+  CharityCurrencyEntry,
+  CHARITY_ENTRY_FIELDS
 } from '~/features/settings/admin/types'
-import { CHARITY_STORE_FIELDS } from '~/features/settings/admin/types'
 import { charitySettings } from '~/sample-api-responses/api-sample-response-settings'
 import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
 import { formatCharityAddress } from '~/features/settings/admin/utils/formatCharityAddress'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 
-const EMPTY_OVERRIDE: CharityCurrencyOverride = {
-  enabled: false,
-  name: '',
-  registrationNumber: '',
-  phone: '',
-  replyToEmail: '',
-  website: '',
-  description: '',
-  address: { address1: '', address2: '', city: '', region: '', postcode: '', country: '' }
+const EMPTY_ADDRESS: CharityAddress = {
+  address1: '',
+  address2: '',
+  city: '',
+  region: '',
+  postcode: '',
+  country: ''
+}
+
+function createEmptyEntry(currency: string): CharityCurrencyEntry {
+  return {
+    currency,
+    name: '',
+    registrationNumber: '',
+    phone: '',
+    replyToEmail: '',
+    website: '',
+    description: '',
+    address: { ...EMPTY_ADDRESS },
+    emailSenderId: '',
+    emailSenderName: '',
+    emailSenderAddress: '',
+    emailSignature: ''
+  }
 }
 
 /**
  * Organization-level charity settings store
  *
- * Provides charity identity data used across donor-facing pages.
- * Per-currency overrides allow different registration details per jurisdiction.
+ * All per-currency charity details are stored as equal entries in `currencyEntries`.
+ * No "base vs override" distinction — every currency has a full entry.
  */
 export const useCharitySettingsStore = defineStore('charitySettings', () => {
   const { isDirty, isSaving, markDirty, markClean } = useEditableState()
   const currencyStore = useCurrencySettingsStore()
 
-  // State
+  // Org-level fields (not per-currency)
   const slug = ref(charitySettings.slug)
-  const name = ref(charitySettings.name)
-  const registrationNumber = ref(charitySettings.registrationNumber)
-  const phone = ref(charitySettings.phone)
-  const replyToEmail = ref(charitySettings.replyToEmail)
-  const website = ref(charitySettings.website)
-  const description = ref(charitySettings.description)
-  const emailSenderId = ref(charitySettings.emailSenderId)
-  const emailSenderName = ref(charitySettings.emailSenderName)
-  const emailSenderAddress = ref(charitySettings.emailSenderAddress)
-  const emailSignature = ref(charitySettings.emailSignature)
-  const address = ref<CharityAddress>({ ...charitySettings.address })
-  const currencyOverrides = ref<Record<string, CharityCurrencyOverride>>({
-    ...charitySettings.currencyOverrides
+
+  // Per-currency entries (all equal, keyed by currency code)
+  const currencyEntries = ref<Record<string, CharityCurrencyEntry>>({
+    ...charitySettings.currencyEntries
   })
 
-  // Ref lookup for iteration (avoids repeating field names in snapshot/load)
-  const fieldRefs = {
-    slug,
-    name,
-    registrationNumber,
-    phone,
-    replyToEmail,
-    website,
-    description,
-    emailSenderId,
-    emailSenderName,
-    emailSenderAddress,
-    emailSignature
-  } as const
-
-  /** Snapshot current state as a plain CharitySettings object */
+  /** Snapshot current state */
   function toSnapshot(): CharitySettings {
     return {
-      ...Object.fromEntries(CHARITY_STORE_FIELDS.map((k) => [k, fieldRefs[k].value])),
-      address: address.value,
-      currencyOverrides: currencyOverrides.value
-    } as CharitySettings
+      slug: slug.value,
+      currencyEntries: JSON.parse(JSON.stringify(currencyEntries.value))
+    }
   }
 
   /** Load all state from a CharitySettings object */
   function loadSnapshot(s: CharitySettings) {
-    for (const k of CHARITY_STORE_FIELDS) fieldRefs[k].value = s[k]
-    address.value = { ...s.address }
-    currencyOverrides.value = { ...s.currencyOverrides }
+    slug.value = s.slug
+    currencyEntries.value = JSON.parse(JSON.stringify(s.currencyEntries))
   }
 
-  /** Ensure all supported currencies have override entries (required for $storePath writes) */
-  function ensureOverrideEntries() {
-    const overrides = currencyOverrides.value
+  /** Ensure all supported currencies have entries (required for $storePath writes) */
+  function ensureCurrencyEntries() {
+    const entries = currencyEntries.value
     let changed = false
     for (const currency of currencyStore.supportedCurrencies) {
-      if (currency === currencyStore.defaultCurrency) continue
-      if (!overrides[currency]) {
-        overrides[currency] = { ...EMPTY_OVERRIDE, address: { ...EMPTY_OVERRIDE.address! } }
+      if (!entries[currency]) {
+        entries[currency] = createEmptyEntry(currency)
         changed = true
       }
     }
-    if (changed) currencyOverrides.value = { ...overrides }
+    if (changed) currencyEntries.value = { ...entries }
   }
 
-  // Getters
+  // Convenience getters — resolve from default currency entry (for backward compat)
+  const defaultEntry = computed(() => currencyEntries.value[currencyStore.defaultCurrency])
+  const name = computed(() => defaultEntry.value?.name ?? '')
+  const registrationNumber = computed(() => defaultEntry.value?.registrationNumber ?? '')
+  const phone = computed(() => defaultEntry.value?.phone ?? '')
+  const replyToEmail = computed(() => defaultEntry.value?.replyToEmail ?? '')
+  const website = computed(() => defaultEntry.value?.website ?? '')
+  const description = computed(() => defaultEntry.value?.description ?? '')
+  const address = computed(
+    () =>
+      defaultEntry.value?.address ?? {
+        address1: '',
+        address2: '',
+        city: '',
+        region: '',
+        postcode: '',
+        country: ''
+      }
+  )
   const formattedAddress = computed(() => formatCharityAddress(address.value))
+  const emailSenderId = computed(() => defaultEntry.value?.emailSenderId ?? '')
+  const emailSenderName = computed(() => defaultEntry.value?.emailSenderName ?? '')
+  const emailSenderAddress = computed(() => defaultEntry.value?.emailSenderAddress ?? '')
+  const emailSignature = computed(() => defaultEntry.value?.emailSignature ?? '')
 
+  // Getters
   const getCharityForCurrency = computed(
     () =>
       (
@@ -110,28 +121,24 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
         description: string
         address: string
       } => {
-        const formatted = formattedAddress.value
-        const override = currencyOverrides.value[currency]
-        if (override?.enabled) {
-          const overrideAddr = override.address ? formatCharityAddress(override.address) : ''
-          return {
-            name: override.name || name.value,
-            registrationNumber: override.registrationNumber || registrationNumber.value,
-            phone: override.phone || phone.value,
-            replyToEmail: override.replyToEmail || replyToEmail.value,
-            website: override.website || website.value,
-            description: override.description || description.value,
-            address: overrideAddr || formatted
-          }
-        }
+        const entry = currencyEntries.value[currency]
+        const defEntry = currencyEntries.value[currencyStore.defaultCurrency]
+
+        // Use entry's field if non-empty, otherwise fall back to default currency's field
+        const resolve = (field: (typeof CHARITY_ENTRY_FIELDS)[number]) =>
+          entry?.[field] || defEntry?.[field] || ''
+
+        const entryAddr = entry?.address ? formatCharityAddress(entry.address) : ''
+        const defaultAddr = defEntry?.address ? formatCharityAddress(defEntry.address) : ''
+
         return {
-          name: name.value,
-          registrationNumber: registrationNumber.value,
-          phone: phone.value,
-          replyToEmail: replyToEmail.value,
-          website: website.value,
-          description: description.value,
-          address: formatted
+          name: resolve('name'),
+          registrationNumber: resolve('registrationNumber'),
+          phone: resolve('phone'),
+          replyToEmail: resolve('replyToEmail'),
+          website: resolve('website'),
+          description: resolve('description'),
+          address: entryAddr || defaultAddr
         }
       }
   )
@@ -139,21 +146,18 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
   // Actions
   function initialize(settings: CharitySettings) {
     loadSnapshot(settings)
-    ensureOverrideEntries()
+    ensureCurrencyEntries()
     markClean()
   }
 
   function updateSettings(settings: Partial<CharitySettings>) {
-    for (const k of CHARITY_STORE_FIELDS) {
-      if (settings[k] !== undefined) fieldRefs[k].value = settings[k]!
-    }
-    if (settings.address !== undefined) address.value = { ...settings.address }
-    if (settings.currencyOverrides !== undefined)
-      currencyOverrides.value = { ...settings.currencyOverrides }
+    if (settings.slug !== undefined) slug.value = settings.slug
+    if (settings.currencyEntries !== undefined)
+      currencyEntries.value = { ...settings.currencyEntries }
     markDirty()
   }
 
-  // Persistence - hydrate on load, save only on explicit call
+  // Persistence
   let hydrated = false
   function $hydrate() {
     if (hydrated) return
@@ -177,28 +181,29 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
   // Hydrate immediately on client, then ensure entries exist
   if (import.meta.client) {
     $hydrate()
-    ensureOverrideEntries()
+    ensureCurrencyEntries()
   }
-  watch(() => currencyStore.supportedCurrencies, ensureOverrideEntries, { deep: true })
+  watch(() => currencyStore.supportedCurrencies, ensureCurrencyEntries, { deep: true })
 
   return {
     // State
     slug,
+    currencyEntries,
+    isDirty,
+    isSaving,
+    // Convenience getters (from default currency entry)
     name,
     registrationNumber,
     phone,
     replyToEmail,
     website,
     description,
+    address,
+    formattedAddress,
     emailSenderId,
     emailSenderName,
     emailSenderAddress,
     emailSignature,
-    address,
-    formattedAddress,
-    currencyOverrides,
-    isDirty,
-    isSaving,
     // Getters
     getCharityForCurrency,
     // Actions

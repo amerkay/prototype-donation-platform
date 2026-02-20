@@ -98,7 +98,31 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
       }
     })
 
-    // Donation Amounts - standalone section (donation type only)
+    // Currency Settings - always visible (registration forms need this too)
+    const {
+      baseDefaultCurrency: baseDefaultCurrencyField,
+      enabledCurrencies: enabledCurrenciesField,
+      ...frequencyFields
+    } = formDonationAmountsFields
+
+    const currencySettings = fieldGroup('currencySettings', {
+      label: 'Currency Settings',
+      description: 'Configure which currencies donors can use on this form.',
+      collapsible: true,
+      collapsibleDefaultOpen: false,
+      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+      fields: {
+        currencyInfo,
+        baseDefaultCurrency: baseDefaultCurrencyField!,
+        enabledCurrencies: enabledCurrenciesField!
+      },
+      $storePath: {
+        baseDefaultCurrency: 'donationAmounts.baseDefaultCurrency',
+        enabledCurrencies: 'donationAmounts.enabledCurrencies'
+      }
+    })
+
+    // Donation Amounts - frequency settings (donation type only)
     const donationAmounts = fieldGroup('donationAmounts', {
       label: 'Donation Amounts',
       description: 'Configure donation amounts and frequency options.',
@@ -106,14 +130,8 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
       collapsibleDefaultOpen: false,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
       visibleWhen: (ctx: FieldContext) => isDonationFormType(ctx),
-      fields: {
-        currencyInfo,
-        ...formDonationAmountsFields
-      },
-      // Flatten structure: form.donationAmounts.baseDefaultCurrency → store.donationAmounts.baseDefaultCurrency
+      fields: frequencyFields,
       $storePath: {
-        baseDefaultCurrency: 'donationAmounts.baseDefaultCurrency',
-        enabledCurrencies: 'donationAmounts.enabledCurrencies',
         frequencies: 'donationAmounts.frequencies'
       }
     })
@@ -192,6 +210,7 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
 
     return {
       formSettings,
+      currencySettings,
       donationAmounts,
       features,
       customFields

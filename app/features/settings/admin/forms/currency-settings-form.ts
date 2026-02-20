@@ -2,19 +2,30 @@ import * as z from 'zod'
 import {
   defineForm,
   comboboxField,
+  selectField,
   fieldGroup,
   sliderField,
-  cardField,
   componentField,
   tabsField,
   alertField
 } from '~/features/_library/form-builder/api'
+import { ref } from 'vue'
 import type { FieldContext } from '~/features/_library/form-builder/types'
 import CurrencyExampleTable from '~/features/settings/admin/components/CurrencyExampleTable.vue'
-import { getCurrencyOptionsForSelect } from '~/features/donation-form/shared/composables/useCurrency'
+import CurrencyConversionExplainer from '~/features/settings/admin/components/CurrencyConversionExplainer.vue'
+import {
+  getCurrencyOptionsForSelect,
+  CURRENCY_OPTIONS
+} from '~/features/donation-form/shared/composables/useCurrency'
 
 // Get all available currency options from centralized source
-const CURRENCY_OPTIONS = getCurrencyOptionsForSelect()
+const CURRENCY_SELECT_OPTIONS = getCurrencyOptionsForSelect()
+const CURRENCY_DESCRIPTION_MAP = new Map<string, string>(
+  CURRENCY_OPTIONS.map((c) => [c.value, c.description])
+)
+
+/** Tracks which multiplier accordion is open (currency code, e.g. 'USD') */
+export const currencyOpenAccordionId = ref<string | undefined>(undefined)
 
 /**
  * Currency settings form configuration
@@ -27,48 +38,35 @@ export const useCurrencySettingsForm = defineForm('currencySettings', () => {
     placeholder: 'Select currencies',
     searchPlaceholder: 'Search currencies...',
     multiple: true,
-    options: [...CURRENCY_OPTIONS],
-    rules: z.array(z.string()).min(1, 'At least one currency must be supported')
-  })
-
-  const defaultCurrency = comboboxField('defaultCurrency', {
-    label: 'Default Currency',
-    description: "Your organization's base currency. Multipliers are not applied to this currency.",
-    placeholder: 'Select default currency',
-    searchPlaceholder: 'Search currencies...',
-    options: ({ values }: FieldContext) => {
-      const supported = (values.supportedCurrencies as string[]) || []
-      return CURRENCY_OPTIONS.filter((opt) => supported.includes(opt.value))
-    },
+    options: [...CURRENCY_SELECT_OPTIONS],
     rules: ({ values }: FieldContext) => {
-      const supported = (values.supportedCurrencies as string[]) || []
+      const defaultCurr = (values.defaultCurrency as string) || ''
       return z
-        .string()
-        .min(1, 'Default currency is required')
-        .refine((val) => supported.includes(val), {
-          message: 'Default currency must be one of the supported currencies'
+        .array(z.string())
+        .min(1, 'At least one currency must be supported')
+        .refine((arr) => !defaultCurr || arr.includes(defaultCurr), {
+          message: `Default currency (${defaultCurr}) cannot be removed`
         })
     }
   })
 
-  const roundingExplanation = cardField('roundingExplanation', {
-    label: 'How Smart Rounding Works',
-    content: `
-      <p>To make things easier for donors, converted amounts are automatically rounded to friendly numbers:</p>
-      <p><strong>Under £5:</strong> Rounded to nearest whole number (e.g., £2, £3)<br />
-      <strong>£5–£50:</strong> Rounded to nearest £5 (e.g., £10, £15, £20)<br />
-      <strong>£50–£200:</strong> Rounded to nearest £25 (e.g., £75, £100)<br />
-      <strong>£200–£500:</strong> Rounded to nearest £50 (e.g., £250, £300)<br />
-      <strong>Over £500:</strong> Rounded to nearest £100 (e.g., £600, £700)</p>
-      <p>This keeps donation amounts clean and easy to understand across all currencies.</p>
-    `
+  const defaultCurrency = selectField('defaultCurrency', {
+    label: 'Default Currency',
+    description: 'Set during account setup. Cannot be changed.',
+    disabled: true,
+    options: CURRENCY_SELECT_OPTIONS,
+    rules: z.string().min(1, 'Default currency is required')
+  })
+
+  const conversionExplainer = componentField('conversionExplainer', {
+    component: CurrencyConversionExplainer
   })
 
   // Create multiplier field groups for each possible currency
   const currencyMultiplierFields: Record<string, ReturnType<typeof fieldGroup>> = {}
   const currencySliderMappings: Record<string, string> = {}
 
-  CURRENCY_OPTIONS.forEach(({ value: currency }) => {
+  CURRENCY_SELECT_OPTIONS.forEach(({ value: currency }) => {
     currencySliderMappings[`currencyTabs.multipliers.${currency}.slider`] =
       `currencyMultipliers.${currency}`
 
@@ -79,7 +77,9 @@ export const useCurrencySettingsForm = defineForm('currencySettings', () => {
         const multipliers = tabs?.multipliers as Record<string, unknown> | undefined
         const currencyGroup = multipliers?.[currency] as Record<string, unknown> | undefined
         const multiplier = (currencyGroup?.slider as number) ?? 1.0
-        return `${currency} multiplier = ${multiplier.toFixed(2)}×${multiplier === 1.0 ? ' (default)' : ''}`
+        const desc = CURRENCY_DESCRIPTION_MAP.get(currency) ?? currency
+        const suffix = multiplier === 1.0 ? ' (default)' : ''
+        return `${desc} (${currency}) — ${multiplier.toFixed(2)}×${suffix}`
       },
       collapsible: true,
       collapsibleDefaultOpen: false,
@@ -158,7 +158,7 @@ export const useCurrencySettingsForm = defineForm('currencySettings', () => {
       {
         value: 'defaults',
         label: 'Currency Defaults',
-        fields: { supportedCurrencies, defaultCurrency }
+        fields: { defaultCurrency, supportedCurrencies }
       },
       {
         value: 'multipliers',
@@ -168,7 +168,7 @@ export const useCurrencySettingsForm = defineForm('currencySettings', () => {
         disabled: (ctx: FieldContext) => !hasMultipleCurrencies(ctx),
         disabledTooltip: 'Add multiple currencies to enable setting currency multipliers',
         fields: {
-          roundingExplanation,
+          conversionExplainer,
           ...currencyMultiplierFields,
           multipliersNotice
         }

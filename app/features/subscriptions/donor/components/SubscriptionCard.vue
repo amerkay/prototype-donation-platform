@@ -75,7 +75,7 @@ const paymentMethodLabel = (pm: {
           >
             <span class="text-xs text-muted-foreground">Next billing</span>
             <p class="text-sm font-medium">
-              {{ subscription.nextBillingDate ? formatDate(subscription.nextBillingDate) : '–' }}
+              {{ subscription.nextBillingDate ? formatDate(subscription.nextBillingDate) : '-' }}
             </p>
           </div>
           <div class="space-y-0.5">

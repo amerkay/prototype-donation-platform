@@ -34,8 +34,7 @@ const hasMultiplierEffect = computed(() => props.breakdown.multiplier !== 1)
           {{ toCurrency }}
         </p>
         <p class="text-muted-foreground">
-          {{ fromSymbol }}{{ breakdown.original }} ×
-          {{ breakdown.exchangeRate.toFixed(4) }} =
+          {{ fromSymbol }}{{ breakdown.original }} × {{ breakdown.exchangeRate.toFixed(4) }} =
           {{ toSymbol }}{{ breakdown.afterExchange }}
         </p>
       </div>
@@ -49,13 +48,11 @@ const hasMultiplierEffect = computed(() => props.breakdown.multiplier !== 1)
       >
       <div>
         <p>
-          <span class="font-medium">Org multiplier</span>:
-          {{ breakdown.multiplier.toFixed(2) }}×
+          <span class="font-medium">Org multiplier</span>: {{ breakdown.multiplier.toFixed(2) }}×
         </p>
         <p class="text-muted-foreground">
-          {{ toSymbol }}{{ breakdown.afterExchange }} ×
-          {{ breakdown.multiplier.toFixed(2) }} = {{ toSymbol
-          }}{{ breakdown.afterMultiplier }}
+          {{ toSymbol }}{{ breakdown.afterExchange }} × {{ breakdown.multiplier.toFixed(2) }} =
+          {{ toSymbol }}{{ breakdown.afterMultiplier }}
         </p>
         <p class="text-muted-foreground text-xs">
           Adjusts converted values up or down (set in currency settings)
@@ -75,8 +72,9 @@ const hasMultiplierEffect = computed(() => props.breakdown.multiplier !== 1)
           {{ breakdown.roundingBucket }}
         </p>
         <p class="text-muted-foreground">
-          {{ toSymbol }}{{ hasMultiplierEffect ? breakdown.afterMultiplier : breakdown.afterExchange }}
-          → <span class="font-medium text-foreground">{{ toSymbol }}{{ breakdown.final }}</span>
+          {{ toSymbol
+          }}{{ hasMultiplierEffect ? breakdown.afterMultiplier : breakdown.afterExchange }} →
+          <span class="font-medium text-foreground">{{ toSymbol }}{{ breakdown.final }}</span>
         </p>
         <p class="text-muted-foreground text-xs">
           Rounds to clean donor-friendly values based on amount size

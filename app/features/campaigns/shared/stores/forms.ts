@@ -22,10 +22,11 @@ export const useFormsStore = defineStore('forms', () => {
 
       // If still no data, initialize from sample data
       if (!formsData.value[campaignId]) {
-        formsData.value[campaignId] = getFormsByCampaignId(campaignId)
+        // Deep clone to avoid shared references between campaigns' sample data
+        formsData.value[campaignId] = JSON.parse(JSON.stringify(getFormsByCampaignId(campaignId)))
       }
     }
-    return formsData.value[campaignId]
+    return formsData.value[campaignId]!
   }
 
   // Set a form as default for a campaign

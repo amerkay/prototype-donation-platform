@@ -83,6 +83,16 @@ const frequencySchema = z
     })
   })
 
+/** Resolve base default currency from root form values (may be in donationAmounts or currencySettings group) */
+function getBaseDefaultCurrencyFromRoot(root: unknown): string {
+  const r = root as Record<string, Record<string, unknown> | undefined>
+  return (
+    (r?.currencySettings?.baseDefaultCurrency as string) ||
+    (r?.donationAmounts?.baseDefaultCurrency as string) ||
+    'GBP'
+  )
+}
+
 // Helper to create frequency tab fields (DRY principle)
 function createFrequencyTabFields(
   placeholder: string,
@@ -120,26 +130,16 @@ function createFrequencyTabFields(
           label: 'Minimum',
           placeholder: '1',
           min: 1,
-          currencySymbol: ({ root }: FieldContext) => {
-            const donationAmounts = (root as Record<string, unknown>).donationAmounts as
-              | Record<string, unknown>
-              | undefined
-            const baseDefaultCurrency = (donationAmounts?.baseDefaultCurrency as string) || 'GBP'
-            return getCurrencySymbol(baseDefaultCurrency)
-          },
+          currencySymbol: ({ root }: FieldContext) =>
+            getCurrencySymbol(getBaseDefaultCurrencyFromRoot(root)),
           rules: z.number().min(1, 'Must be at least 1')
         }),
         max: currencyField('max', {
           label: 'Maximum',
           placeholder: maxPlaceholder,
           min: 1,
-          currencySymbol: ({ root }: FieldContext) => {
-            const donationAmounts = (root as Record<string, unknown>).donationAmounts as
-              | Record<string, unknown>
-              | undefined
-            const baseDefaultCurrency = (donationAmounts?.baseDefaultCurrency as string) || 'GBP'
-            return getCurrencySymbol(baseDefaultCurrency)
-          },
+          currencySymbol: ({ root }: FieldContext) =>
+            getCurrencySymbol(getBaseDefaultCurrencyFromRoot(root)),
           rules: z.number().min(1, 'Must be at least 1')
         })
       }
@@ -167,7 +167,10 @@ export const useDonationFormDonationAmountsForm = defineForm('formDonationAmount
       'The default currency shown to donors when they first load the form. This is also the base currency for the preset amounts.',
     placeholder: 'Select base default currency',
     searchPlaceholder: 'Search currencies...',
-    options: supportedOptions,
+    options: ({ values }: FieldContext) => {
+      const enabled = (values.enabledCurrencies as string[] | undefined) ?? []
+      return enabled.length > 0 ? getCurrencyOptionsForSelect(enabled) : supportedOptions.value
+    },
     rules: ({ values }: FieldContext) => {
       const supported = currencyStore.supportedCurrencies
       const enabled = (values.enabledCurrencies as string[] | undefined) ?? []

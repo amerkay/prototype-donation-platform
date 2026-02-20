@@ -24,7 +24,7 @@ const hasRange = computed(() => range.value.start && range.value.end)
 
 const triggerLabel = computed(() => {
   if (!range.value.start || !range.value.end) return 'Filter by date'
-  return `${formatTriggerDate(range.value.start)} – ${formatTriggerDate(range.value.end)}`
+  return `${formatTriggerDate(range.value.start)} - ${formatTriggerDate(range.value.end)}`
 })
 
 function clear() {

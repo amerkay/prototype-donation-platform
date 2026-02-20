@@ -120,7 +120,8 @@ const backToPresets = () => {
           class="h-14 text-lg font-semibold"
           @click="selectAmount(amount)"
         >
-          {{ currencySymbol }}{{ amount }}
+          <span class="text-sm font-normal opacity-60">{{ currencySymbol }}</span
+          >{{ amount }}
         </Button>
       </div>
     </div>
@@ -158,7 +159,10 @@ const backToPresets = () => {
             <!-- Content -->
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
-                <p class="text-xl font-bold">{{ currencySymbol }}{{ item.amount }}</p>
+                <p class="text-xl font-bold">
+                  <span class="text-base font-normal opacity-60">{{ currencySymbol }}</span
+                  >{{ item.amount }}
+                </p>
                 <p v-if="item.shortText" class="text-sm text-muted-foreground truncate">
                   {{ item.shortText }}
                 </p>
@@ -193,7 +197,8 @@ const backToPresets = () => {
       <div class="rounded-lg bg-muted p-4 text-center">
         <p class="text-sm text-muted-foreground">Your {{ frequencyLabel }}</p>
         <p v-if="localAmount > 0" class="text-3xl font-bold">
-          {{ currencySymbol }}{{ localAmount }}
+          <span class="text-xl font-normal opacity-60">{{ currencySymbol }}</span
+          >{{ localAmount }}
         </p>
         <p v-else class="text-lg text-muted-foreground">Select amount below</p>
       </div>

@@ -82,7 +82,7 @@ app/features/[feature-name]/
 
 **Key stores:** `donation-form/shared/stores/formConfig.ts` (admin config), `donation-form/donor/stores/donationForm.ts` (donor state, per-form-ID persistence), `donation-form/features/impact-cart/donor/stores/impactCart.ts` (cart by frequency, per-form-ID persistence), `campaigns/shared/stores/campaignConfig.ts` (campaign config), `campaigns/shared/stores/forms.ts` (campaign forms), `settings/admin/stores/charitySettings.ts` (charity identity, phone, reply-to email, structured address, tabbed per-currency overrides with auto-population), `settings/admin/stores/currencySettings.ts` (org currencies), `settings/admin/stores/generalSettings.ts`, `settings/admin/stores/brandingSettings.ts`, `settings/admin/stores/teamSettings.ts`, `settings/admin/stores/paymentSettings.ts`, `settings/admin/stores/apiSettings.ts`, `settings/admin/stores/billingSettings.ts`, `settings/admin/stores/socialSharingSettings.ts` (org-level social platform availability), `templates/admin/stores/certificateTemplate.ts`, `templates/admin/stores/emailTemplate.ts`, `templates/admin/stores/receiptTemplate.ts`, `products/admin/stores/product.ts`, `_admin/stores/adminDateRange.ts` (shared date range picker state).
 
-**Key composables:** `useCampaigns()`, `useForms()`, `useCampaignShare()`, `useCampaignTypes()`, `useCampaignFormatters()`, `useDonorPortal()`, `useSubscriptionActions()`, `useAdminSubscriptions()`, `useDonations()`, `useDonors()`, `useProducts()`, `useCertificateTemplates()`, `useEmailTemplates()`, `useCurrency()`, `useDonationCurrencies()`, `useFormTypeLabels()`, `useDonationFormContext()`, `useAdminConfigForm()`, `useAdminEdit()`, `useSessionStorageSingleton()`, `useGeneratePdf()`, `useBrandingCssVars()`, `usePreviewEditable()`, `useFilterState()`, `useEntityDataService()`, `useQuickFind()`, `useExport()`.
+**Key composables:** `useCampaigns()`, `useForms()`, `useCampaignShare()`, `useCampaignTypes()`, `useCampaignFormatters()`, `useDonorPortal()`, `useSubscriptionActions()`, `useAdminSubscriptions()`, `useDonations()`, `useDonors()`, `useProducts()`, `useCertificateTemplates()`, `useEmailTemplates()`, `useCurrency()`, `useDonationCurrencies()`, `useFormTypeLabels()`, `useDonationFormContext()`, `useAdminConfigForm()`, `useAdminEdit()`, `useSessionStorageSingleton()`, `useGeneratePdf()`, `useBrandingCssVars()`, `usePreviewEditable()`, `useFilterState()`, `useEntityDataService()`, `useQuickFind()`, `useExport()`, `findFormsUsingCurrencies()`/`stripCurrenciesFromForms()` (currency guard composable).
 
 **Layouts:** `admin.vue`, `admin-preview.vue`, `donor.vue`, `portal.vue`, `print.vue`, `default.vue`.
 
@@ -107,6 +107,7 @@ app/features/[feature-name]/
 9. For cross-field validation in tabs, use dynamic `rules(ctx)` on the field reading sibling `values` (like donation-amounts `label` field pattern)
 10. This is a prototype — don't overthink type/schema changes. Bias toward simple, direct solutions over future-proof abstractions.
 11. Accordion IDs in `productOpenAccordionId` are prefixed with form section ID (e.g., `product.basic`, not `basic`)
+12. Currency removal from supported list must check form usage (enabledCurrencies/baseDefaultCurrency) before saving
 
 <!-- end continuous learning notes -->
 

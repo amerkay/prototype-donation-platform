@@ -48,24 +48,23 @@ const emit = defineEmits<{
   submit: []
 }>()
 
-// Call ComposableForm setup() directly to get field definitions
-const resolvedSection = computed(() => {
-  const ctx = {
-    values: computed(() => props.modelValue),
-    form: computed(() => props.modelValue),
-    title: undefined as string | undefined,
-    description: undefined as string | undefined
-  }
+// Call ComposableForm setup() once during component setup (not in computed)
+// so that provide() calls inside setup functions work correctly.
+// The ctx.values/form computeds ensure field definitions stay reactive.
+const setupCtx = {
+  values: computed(() => props.modelValue),
+  form: computed(() => props.modelValue),
+  title: undefined as string | undefined,
+  description: undefined as string | undefined
+}
+const setupFields = props.section.setup(setupCtx)
 
-  const fields = props.section.setup(ctx)
-
-  return {
-    id: props.section.id,
-    title: ctx.title ?? props.section._meta?.title,
-    description: ctx.description ?? props.section._meta?.description,
-    fields
-  }
-})
+const resolvedSection = computed(() => ({
+  id: props.section.id,
+  title: setupCtx.title ?? props.section._meta?.title,
+  description: setupCtx.description ?? props.section._meta?.description,
+  fields: setupFields
+}))
 
 function safeCloneRecord(value: Record<string, unknown>): Record<string, unknown> {
   return JSON.parse(JSON.stringify(value)) as Record<string, unknown>

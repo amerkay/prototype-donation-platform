@@ -144,6 +144,44 @@ CREATE TABLE supported_currencies (
 );
 
 CREATE INDEX idx_supported_currencies_settings ON supported_currencies(currency_settings_id);
+
+-- Organization charity settings (org-level identity)
+CREATE TABLE organization_charity (
+  organization_id UUID PRIMARY KEY REFERENCES organizations(id) ON DELETE CASCADE,
+  slug TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TRIGGER organization_charity_updated_at
+  BEFORE UPDATE ON organization_charity FOR EACH ROW
+  EXECUTE FUNCTION set_updated_at();
+
+-- Per-currency charity details (one row per org+currency, all equal status)
+CREATE TABLE organization_charity_currencies (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  currency_code TEXT NOT NULL,
+  name TEXT NOT NULL DEFAULT '',
+  registration_number TEXT NOT NULL DEFAULT '',
+  phone TEXT NOT NULL DEFAULT '',
+  reply_to_email TEXT NOT NULL DEFAULT '',
+  website TEXT NOT NULL DEFAULT '',
+  description TEXT NOT NULL DEFAULT '',
+  address_line1 TEXT NOT NULL DEFAULT '',
+  address_line2 TEXT NOT NULL DEFAULT '',
+  city TEXT NOT NULL DEFAULT '',
+  region TEXT NOT NULL DEFAULT '',
+  postcode TEXT NOT NULL DEFAULT '',
+  country TEXT NOT NULL DEFAULT '',
+  email_sender_id UUID,
+  email_sender_name TEXT NOT NULL DEFAULT '',
+  email_sender_address TEXT NOT NULL DEFAULT '',
+  email_signature TEXT NOT NULL DEFAULT '',
+  UNIQUE(organization_id, currency_code)
+);
+
+CREATE INDEX idx_org_charity_currencies_org ON organization_charity_currencies(organization_id);
 ```
 
 > **Exchange rates** are fetched at runtime from an external API (e.g., exchangerate-api.com). They are not stored in the database. The `supported_currencies.multiplier` field is an org-level display multiplier for preset amounts, not a live FX rate.
@@ -865,6 +903,8 @@ ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE currency_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE supported_currencies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE organization_charity ENABLE ROW LEVEL SECURITY;
+ALTER TABLE organization_charity_currencies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE campaigns ENABLE ROW LEVEL SECURITY;
 ALTER TABLE campaign_stats ENABLE ROW LEVEL SECURITY;
 ALTER TABLE campaign_crowdfunding ENABLE ROW LEVEL SECURITY;
@@ -1043,19 +1083,19 @@ All other configuration uses separate columns for: direct SQL querying, Supabase
 
 ## Table Statistics
 
-| Category             | Count  | Tables                                                                                                             |
-| -------------------- | ------ | ------------------------------------------------------------------------------------------------------------------ |
-| Organizations & Auth | 4      | organizations, profiles, currency_settings, supported_currencies                                                   |
-| Campaigns            | 6      | campaigns, campaign_stats, campaign_crowdfunding, campaign_peer_to_peer, campaign_charity, campaign_social_sharing |
-| Campaign Data        | 1      | campaign_fundraisers                                                                                               |
-| Donor Portal         | 8      | donor_users, subscriptions, subscription_line_items, transactions, transaction_line_items, transaction_tributes    |
-| Products             | 1      | products                                                                                                           |
-| Forms                | 2      | campaign_forms, form_products (junction)                                                                           |
-| Form Settings        | 3      | form_settings, form_frequencies, form_preset_amounts                                                               |
-| Form Features        | 6      | form*feature*\* (one per feature)                                                                                  |
-| Lookups              | 1      | tribute_relationships                                                                                              |
-| Custom Fields        | 1      | form_custom_fields                                                                                                 |
-| **Total**            | **33** | + 1 view (`campaign_donations_view`) + 1 storage bucket                                                            |
+| Category             | Count  | Tables                                                                                                                  |
+| -------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------- |
+| Organizations & Auth | 6      | organizations, profiles, currency_settings, supported_currencies, organization_charity, organization_charity_currencies |
+| Campaigns            | 6      | campaigns, campaign_stats, campaign_crowdfunding, campaign_peer_to_peer, campaign_charity, campaign_social_sharing      |
+| Campaign Data        | 1      | campaign_fundraisers                                                                                                    |
+| Donor Portal         | 8      | donor_users, subscriptions, subscription_line_items, transactions, transaction_line_items, transaction_tributes         |
+| Products             | 1      | products                                                                                                                |
+| Forms                | 2      | campaign_forms, form_products (junction)                                                                                |
+| Form Settings        | 3      | form_settings, form_frequencies, form_preset_amounts                                                                    |
+| Form Features        | 6      | form*feature*\* (one per feature)                                                                                       |
+| Lookups              | 1      | tribute_relationships                                                                                                   |
+| Custom Fields        | 1      | form_custom_fields                                                                                                      |
+| **Total**            | **35** | + 1 view (`campaign_donations_view`) + 1 storage bucket                                                                 |
 
 ---
 

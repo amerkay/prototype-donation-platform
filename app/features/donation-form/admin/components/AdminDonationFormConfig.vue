@@ -1,17 +1,8 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
 import StickyButtonGroup from '~/features/_admin/components/StickyButtonGroup.vue'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
+import CurrencyChangeDialog from '~/features/settings/admin/components/CurrencyChangeDialog.vue'
 import { createAdminDonationFormMaster } from '~/features/donation-form/admin/forms/admin-donation-form-master'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import {
@@ -25,11 +16,12 @@ import type { ContextSchema } from '~/features/_library/form-builder/conditions'
 import type { FrequencySettings } from '~/features/donation-form/shared/types'
 import {
   useCurrency,
+  getCurrencySymbol,
   type ConversionBreakdown
 } from '~/features/donation-form/shared/composables/useCurrency'
 import { convertFrequencyAmounts } from '~/features/settings/admin/composables/useCurrencyConversion'
-import CurrencyConversionBreakdown from '~/features/settings/admin/components/CurrencyConversionBreakdown.vue'
 
+const router = useRouter()
 const store = useFormConfigStore()
 const { effectiveCurrencies } = useDonationCurrencies()
 const { convertPrice, getConversionBreakdown } = useCurrency()
@@ -76,14 +68,19 @@ const pendingOldCurrency = ref('')
 const pendingNewCurrency = ref('')
 const conversionBreakdown = ref<ConversionBreakdown | null>(null)
 
-// Track previous baseDefaultCurrency to detect changes
-let lastBaseDefaultCurrency = store.donationAmounts?.baseDefaultCurrency ?? ''
+// Tracks which currency the current amounts are denominated in.
+// Updated after convert/skip; reset on discard so reverting doesn't trigger the dialog.
+const savedBaseDefaultCurrency = store.donationAmounts?.baseDefaultCurrency ?? ''
+let amountsCurrency = savedBaseDefaultCurrency
 
 // Find a sample amount from preset amounts for the breakdown preview
 function findSampleAmount(): number {
   const da = modelValue.value?.donationAmounts as Record<string, unknown> | undefined
   if (!da?.frequencies) return 30
-  const freqs = da.frequencies as Record<string, { enabled?: boolean; presetAmounts?: { amount: number }[] }>
+  const freqs = da.frequencies as Record<
+    string,
+    { enabled?: boolean; presetAmounts?: { amount: number }[] }
+  >
   for (const freq of Object.values(freqs)) {
     if (freq.enabled && freq.presetAmounts?.length) {
       return freq.presetAmounts[0]!.amount
@@ -92,20 +89,46 @@ function findSampleAmount(): number {
   return 30
 }
 
+const presetExamples = computed(() => {
+  if (!pendingOldCurrency.value || !pendingNewCurrency.value) return []
+  const da = modelValue.value?.donationAmounts as Record<string, unknown> | undefined
+  if (!da?.frequencies) return []
+  const freqs = da.frequencies as Record<
+    string,
+    { enabled?: boolean; label?: string; presetAmounts?: { amount: number }[] }
+  >
+  const fromSym = getCurrencySymbol(pendingOldCurrency.value)
+  const toSym = getCurrencySymbol(pendingNewCurrency.value)
+  const examples: Array<{ label: string; from: string; to: string }> = []
+  for (const [, freq] of Object.entries(freqs)) {
+    if (!freq.enabled || !freq.presetAmounts?.length) continue
+    const amt = freq.presetAmounts[0]!.amount
+    const converted = convertPrice(amt, pendingNewCurrency.value, pendingOldCurrency.value)
+    examples.push({
+      label: `${freq.label ?? 'Preset'} preset`,
+      from: `${fromSym}${amt}`,
+      to: `${toSym}${converted}`
+    })
+    if (examples.length >= 3) break
+  }
+  return examples
+})
+
 watch(
   () => {
-    const da = modelValue.value?.donationAmounts as Record<string, unknown> | undefined
-    return da?.baseDefaultCurrency as string | undefined
+    const cs = modelValue.value?.currencySettings as Record<string, unknown> | undefined
+    return cs?.baseDefaultCurrency as string | undefined
   },
   (newVal, oldVal) => {
     if (!newVal || !oldVal || newVal === oldVal) return
-    if (oldVal === lastBaseDefaultCurrency && newVal !== oldVal) {
+    if (oldVal === amountsCurrency && newVal !== oldVal) {
       pendingOldCurrency.value = oldVal
       pendingNewCurrency.value = newVal
       conversionBreakdown.value = getConversionBreakdown(findSampleAmount(), newVal, oldVal)
       showCurrencyConvertDialog.value = true
     }
-  }
+  },
+  { flush: 'sync' }
 )
 
 function handleConvertAmounts() {
@@ -125,18 +148,26 @@ function handleConvertAmounts() {
 
   // Write converted frequencies back via setFieldValue
   formRef.value?.setFieldValue('donationAmounts.frequencies', frequencies)
-  lastBaseDefaultCurrency = toCurrency
+  amountsCurrency = toCurrency
+
+  // Navigate to preset amounts so the user can see the converted values
+  router.replace({ hash: '#presetAmounts' })
 }
 
 function handleSkipConvert() {
   showCurrencyConvertDialog.value = false
-  lastBaseDefaultCurrency = pendingNewCurrency.value
+  amountsCurrency = pendingNewCurrency.value
 }
 
-defineEmits<{
+const emit = defineEmits<{
   save: []
   discard: []
 }>()
+
+function handleDiscard() {
+  amountsCurrency = savedBaseDefaultCurrency
+  emit('discard')
+}
 defineExpose(expose)
 </script>
 
@@ -158,34 +189,22 @@ defineExpose(expose)
       :is-saving="store.isSaving"
       :is-valid="formRef?.isValid ?? false"
       @save="$emit('save')"
-      @discard="$emit('discard')"
+      @discard="handleDiscard"
     />
 
     <!-- Base currency change: convert preset amounts dialog -->
-    <AlertDialog v-model:open="showCurrencyConvertDialog">
-      <AlertDialogContent class="max-w-lg">
-        <AlertDialogHeader>
-          <AlertDialogTitle>Convert Preset Amounts?</AlertDialogTitle>
-          <AlertDialogDescription as="div" class="space-y-3">
-            <p>
-              Base currency changed from
-              <span class="font-medium">{{ pendingOldCurrency }}</span> to
-              <span class="font-medium">{{ pendingNewCurrency }}</span>. All preset amounts and
-              custom ranges can be automatically converted.
-            </p>
-            <CurrencyConversionBreakdown
-              v-if="conversionBreakdown"
-              :breakdown="conversionBreakdown"
-              :from-currency="pendingOldCurrency"
-              :to-currency="pendingNewCurrency"
-            />
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel @click="handleSkipConvert">Keep Current Values</AlertDialogCancel>
-          <AlertDialogAction @click="handleConvertAmounts">Convert Amounts</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <CurrencyChangeDialog
+      :open="showCurrencyConvertDialog"
+      title="Convert Preset Amounts?"
+      :description="`Base currency changed from **${pendingOldCurrency}** to **${pendingNewCurrency}**. All preset amounts and custom ranges can be automatically converted.`"
+      :from-currency="pendingOldCurrency"
+      :to-currency="pendingNewCurrency"
+      :breakdown="conversionBreakdown"
+      :examples="presetExamples"
+      confirm-label="Convert Amounts"
+      @update:open="showCurrencyConvertDialog = $event"
+      @confirm="handleConvertAmounts"
+      @skip="handleSkipConvert"
+    />
   </div>
 </template>

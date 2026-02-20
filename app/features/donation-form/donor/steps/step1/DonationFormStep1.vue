@@ -297,15 +297,17 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           {{ formConfig.form.subtitle }}
         </p>
       </div>
-      <select
-        id="currency"
-        v-model="selectedCurrency"
-        class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
-      >
-        <option v-for="currency in CURRENCIES" :key="currency.value" :value="currency.value">
-          {{ currency.label }}
-        </option>
-      </select>
+      <div data-field="enabledCurrencies">
+        <select
+          id="currency"
+          v-model="selectedCurrency"
+          class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+        >
+          <option v-for="currency in CURRENCIES" :key="currency.value" :value="currency.value">
+            {{ currency.label }}
+          </option>
+        </select>
+      </div>
     </div>
 
     <!-- Non-donation: Direct cart view (no frequency tabs) -->

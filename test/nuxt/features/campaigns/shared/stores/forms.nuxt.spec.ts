@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
 import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
+import type { Product } from '~/features/donation-form/features/product/shared/types'
 
 describe('useFormsStore', () => {
   beforeEach(() => {
@@ -84,5 +85,55 @@ describe('useFormsStore', () => {
 
     // Should return same reference (reactive state)
     expect(forms1).toBe(forms2)
+  })
+
+  describe('updateFormConfig', () => {
+    it('updates form config', () => {
+      const store = useFormsStore()
+      const campaignId = 'adopt-orangutan'
+      const forms = store.getForms(campaignId)
+      const formId = forms[0]!.id
+
+      const newConfig = { ...forms[0]!.config, testFlag: true } as FullFormConfig
+      store.updateFormConfig(campaignId, formId, newConfig)
+
+      expect(forms[0]!.config).toStrictEqual(newConfig)
+    })
+
+    it('sets updatedAt timestamp', () => {
+      const store = useFormsStore()
+      const campaignId = 'adopt-orangutan'
+      const forms = store.getForms(campaignId)
+      const formId = forms[0]!.id
+      const before = forms[0]!.updatedAt
+
+      store.updateFormConfig(campaignId, formId, forms[0]!.config)
+
+      expect(forms[0]!.updatedAt).not.toBe(before)
+      // Should be a valid ISO string
+      expect(new Date(forms[0]!.updatedAt).getTime()).toBeGreaterThan(0)
+    })
+
+    it('updates products when provided', () => {
+      const store = useFormsStore()
+      const campaignId = 'adopt-orangutan'
+      const forms = store.getForms(campaignId)
+      const formId = forms[0]!.id
+      const newProducts = [{ id: 'p1', name: 'Test' }] as Product[]
+
+      store.updateFormConfig(campaignId, formId, forms[0]!.config, newProducts)
+
+      expect(forms[0]!.products).toStrictEqual(newProducts)
+    })
+
+    it('logs error for non-existent form', () => {
+      const store = useFormsStore()
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      store.updateFormConfig('adopt-orangutan', 'nonexistent', {} as FullFormConfig)
+
+      expect(spy).toHaveBeenCalledWith('Form nonexistent not found')
+      spy.mockRestore()
+    })
   })
 })

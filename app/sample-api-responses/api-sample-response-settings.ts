@@ -18,57 +18,68 @@ export const currencySettings: CurrencySettings = {
   }
 }
 
+const EMPTY_EMAIL_FIELDS = {
+  emailSenderId: '',
+  emailSenderName: '',
+  emailSenderAddress: '',
+  emailSignature: ''
+}
+
+const EMPTY_ADDRESS = {
+  address1: '',
+  address2: '',
+  city: '',
+  region: '',
+  postcode: '',
+  country: ''
+}
+
 export const charitySettings: CharitySettings = {
   slug: 'bosf',
-  name: 'Borneo Orangutan Survival Foundation',
-  registrationNumber: 'RCN123456',
-  phone: '+44 20 7219 3000',
-  replyToEmail: 'info@borneoorangutansurvival.org',
-  address: {
-    address1: '4 Millbank',
-    address2: '',
-    city: 'London',
-    region: 'Greater London',
-    postcode: 'SW1P 3JA',
-    country: 'GB'
-  },
-  website: 'https://borneoorangutansurvival.org/',
-  description:
-    'We rescue, rehabilitate, and release orangutans while protecting their natural habitat through community engagement and sustainable forest management programs across Borneo and Sumatra.',
-  emailSenderId: 'member-001',
-  emailSenderName: 'Wild Amer',
-  emailSenderAddress: 'awesome@charity.co.uk',
-  emailSignature: 'With gratitude,\nThe Borneo Orangutan Survival Team',
-  currencyOverrides: {
+  currencyEntries: {
     GBP: {
-      enabled: false,
-      name: '',
-      registrationNumber: '',
-      phone: '',
-      replyToEmail: '',
-      website: '',
-      description: '',
-      address: { address1: '', address2: '', city: '', region: '', postcode: '', country: '' }
+      currency: 'GBP',
+      name: 'Borneo Orangutan Survival Foundation',
+      registrationNumber: 'RCN123456',
+      phone: '+44 20 7219 3000',
+      replyToEmail: 'info@borneoorangutansurvival.org',
+      website: 'https://borneoorangutansurvival.org/',
+      description:
+        'We rescue, rehabilitate, and release orangutans while protecting their natural habitat through community engagement and sustainable forest management programs across Borneo and Sumatra.',
+      address: {
+        address1: '4 Millbank',
+        address2: '',
+        city: 'London',
+        region: 'Greater London',
+        postcode: 'SW1P 3JA',
+        country: 'GB'
+      },
+      emailSenderId: 'member-001',
+      emailSenderName: 'Wild Amer',
+      emailSenderAddress: 'awesome@charity.co.uk',
+      emailSignature: 'With gratitude,\nThe Borneo Orangutan Survival Team'
     },
     USD: {
-      enabled: false,
+      currency: 'USD',
       name: '',
       registrationNumber: '',
       phone: '',
       replyToEmail: '',
       website: '',
       description: '',
-      address: { address1: '', address2: '', city: '', region: '', postcode: '', country: '' }
+      address: { ...EMPTY_ADDRESS },
+      ...EMPTY_EMAIL_FIELDS
     },
     EUR: {
-      enabled: false,
+      currency: 'EUR',
       name: '',
       registrationNumber: '',
       phone: '',
       replyToEmail: '',
       website: '',
       description: '',
-      address: { address1: '', address2: '', city: '', region: '', postcode: '', country: '' }
+      address: { ...EMPTY_ADDRESS },
+      ...EMPTY_EMAIL_FIELDS
     }
   }
 }

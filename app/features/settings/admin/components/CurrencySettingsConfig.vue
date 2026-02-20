@@ -4,11 +4,16 @@ import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import StickyButtonGroup from '~/features/_admin/components/StickyButtonGroup.vue'
 import CurrencyCharityNotice from '~/features/settings/admin/components/CurrencyCharityNotice.vue'
 import DevJsonPreview from '~/features/_admin/components/DevJsonPreview.vue'
-import { useCurrencySettingsForm } from '~/features/settings/admin/forms/currency-settings-form'
+import {
+  useCurrencySettingsForm,
+  currencyOpenAccordionId
+} from '~/features/settings/admin/forms/currency-settings-form'
+import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
 
 const store = useCurrencySettingsStore()
+provideAccordionGroup(currencyOpenAccordionId)
 
 // Track whether default currency was changed to show charity notice
 const initialDefaultCurrency = ref(store.defaultCurrency)

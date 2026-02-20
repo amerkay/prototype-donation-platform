@@ -9,17 +9,21 @@ export interface CurrencySettings {
 }
 
 /**
- * Per-currency charity override (e.g., different registration in another country)
+ * Per-currency charity entry (equal status — no enabled toggle, all fully populated)
  */
-export interface CharityCurrencyOverride {
-  enabled: boolean
-  name?: string
-  registrationNumber?: string
-  phone?: string
-  replyToEmail?: string
-  website?: string
-  description?: string
-  address?: CharityAddress
+export interface CharityCurrencyEntry {
+  currency: string
+  name: string
+  registrationNumber: string
+  phone: string
+  replyToEmail: string
+  website: string
+  description: string
+  address: CharityAddress
+  emailSenderId: string
+  emailSenderName: string
+  emailSenderAddress: string
+  emailSignature: string
 }
 
 /**
@@ -36,25 +40,15 @@ export interface CharityAddress {
 
 /**
  * Organization-level charity settings
+ * Per-currency details stored as equal entries in currencyEntries record.
  */
 export interface CharitySettings {
   slug: string
-  name: string
-  registrationNumber: string
-  phone: string
-  replyToEmail: string
-  address: CharityAddress
-  website: string
-  description: string
-  emailSenderId: string
-  emailSenderName: string
-  emailSenderAddress: string
-  emailSignature: string
-  currencyOverrides: Record<string, CharityCurrencyOverride>
+  currencyEntries: Record<string, CharityCurrencyEntry>
 }
 
-/** Override-eligible fields (excludes address, handled separately) */
-export const CHARITY_OVERRIDE_FIELDS = [
+/** Per-currency entry fields (excludes address, handled separately) */
+export const CHARITY_ENTRY_FIELDS = [
   'name',
   'registrationNumber',
   'phone',
@@ -63,26 +57,23 @@ export const CHARITY_OVERRIDE_FIELDS = [
   'description'
 ] as const
 
-/** Address fields for override checking (top-level in form address group) */
+/** Address fields for content checking (top-level in form address group) */
 export const CHARITY_ADDRESS_FIELDS = ['address1', 'city', 'country'] as const
 
 /** Address fields nested inside group1 in the form */
 export const CHARITY_ADDRESS_GROUP_FIELDS = ['region', 'postcode'] as const
 
-/** All scalar string fields on CharitySettings (excludes address, currencyOverrides) */
-export const CHARITY_STORE_FIELDS = [
-  'slug',
-  'name',
-  'registrationNumber',
-  'phone',
-  'replyToEmail',
-  'website',
-  'description',
+/** Per-currency entry fields including email sender (excludes address) */
+export const CHARITY_ENTRY_ALL_FIELDS = [
+  ...CHARITY_ENTRY_FIELDS,
   'emailSenderId',
   'emailSenderName',
   'emailSenderAddress',
   'emailSignature'
 ] as const
+
+/** Org-level scalar fields on CharitySettings (not per-currency) */
+export const CHARITY_ORG_FIELDS = ['slug'] as const
 
 /**
  * General organization settings

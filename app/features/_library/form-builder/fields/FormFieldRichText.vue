@@ -2,8 +2,6 @@
 import { watch, toValue, computed } from 'vue'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
-import Link from '@tiptap/extension-link'
 import CharacterCount from '@tiptap/extension-character-count'
 import { cn } from '@/lib/utils'
 import type {
@@ -39,10 +37,9 @@ const editor = useEditor({
       blockquote: false,
       codeBlock: false,
       code: false,
-      horizontalRule: false
+      horizontalRule: false,
+      link: { openOnClick: false }
     }),
-    Underline,
-    Link.configure({ openOnClick: false }),
     VariableNode,
     ...(props.meta.maxLength ? [CharacterCount.configure({ limit: props.meta.maxLength })] : [])
   ],

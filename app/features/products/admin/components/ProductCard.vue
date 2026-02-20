@@ -37,7 +37,7 @@ const formattedDate = computed(() =>
 const priceDisplay = computed(() => {
   const p = props.product
   if (p.price) return `$${p.price}`
-  if (p.minPrice && p.default) return `$${p.minPrice}–$${p.default}`
+  if (p.minPrice && p.default) return `$${p.minPrice}-$${p.default}`
   if (p.minPrice) return `From $${p.minPrice}`
   return 'Custom'
 })

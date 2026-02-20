@@ -120,6 +120,7 @@ AdminListPage (unchanged)
 
 ## TODOs / Notes not to forget
 
+- [ ] Currency removal guard: server-side check that no forms reference a currency (enabledCurrencies/baseDefaultCurrency) before allowing removal from supported list
 - [ ] Per-user `interfaceConfig` table: sorting, table/card mode, filter presets — persists across devices
 - [ ] `useFilterState` `mode: 'server'` option — emit `FilterConditionValues` JSON, skip client predicate
 - [ ] `useServerList` composable — generic fetch + pagination + refetch, accepts filters/date/search/cursor

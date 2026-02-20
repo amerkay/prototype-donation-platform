@@ -74,4 +74,59 @@ describe('Currency Settings Store', () => {
     store.markDirty()
     expect(store.isDirty).toBe(true)
   })
+
+  it('getMultiplier returns configured value', () => {
+    const store = useCurrencySettingsStore()
+    store.initialize({
+      supportedCurrencies: ['GBP', 'USD'],
+      defaultCurrency: 'GBP',
+      currencyMultipliers: { USD: 2.0 }
+    })
+
+    expect(store.getMultiplier('USD')).toBe(2.0)
+  })
+
+  it('getMultiplier returns 1.0 for unconfigured currency', () => {
+    const store = useCurrencySettingsStore()
+    expect(store.getMultiplier('JPY')).toBe(1.0)
+  })
+
+  it('toSnapshot returns plain object matching state', () => {
+    const store = useCurrencySettingsStore()
+    store.initialize({
+      supportedCurrencies: ['GBP', 'EUR'],
+      defaultCurrency: 'EUR',
+      currencyMultipliers: { GBP: 0.86 }
+    })
+
+    const snapshot = store.toSnapshot()
+    expect(snapshot).toEqual({
+      supportedCurrencies: ['GBP', 'EUR'],
+      defaultCurrency: 'EUR',
+      currencyMultipliers: { GBP: 0.86 }
+    })
+    // Should be a plain copy, not the same reference
+    expect(snapshot.supportedCurrencies).not.toBe(store.supportedCurrencies)
+  })
+
+  it('initialize resets multipliers', () => {
+    const store = useCurrencySettingsStore()
+    store.initialize({
+      supportedCurrencies: ['USD'],
+      defaultCurrency: 'USD',
+      currencyMultipliers: { EUR: 0.92, GBP: 0.79 }
+    })
+
+    expect(store.getMultiplier('EUR')).toBe(0.92)
+    expect(store.getMultiplier('GBP')).toBe(0.79)
+
+    store.initialize({
+      supportedCurrencies: ['GBP'],
+      defaultCurrency: 'GBP',
+      currencyMultipliers: {}
+    })
+
+    expect(store.getMultiplier('EUR')).toBe(1.0)
+    expect(store.getMultiplier('GBP')).toBe(1.0)
+  })
 })

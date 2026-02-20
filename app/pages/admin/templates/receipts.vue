@@ -9,13 +9,7 @@ import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
 import { useGeneratePdf } from '~/features/templates/admin/composables/useGeneratePdf'
 import { Button } from '@/components/ui/button'
 import { Download, Loader2 } from 'lucide-vue-next'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
+import PreviewCurrencySelect from '~/features/_admin/components/PreviewCurrencySelect.vue'
 
 definePageMeta({ layout: 'admin' })
 
@@ -75,21 +69,10 @@ const breadcrumbs = [
       </template>
 
       <template #preview-actions>
-        <Select v-if="currencyStore.supportedCurrencies.length > 1" v-model="previewCurrency">
-          <SelectTrigger class="h-8! w-20 text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem
-              v-for="c in currencyStore.supportedCurrencies"
-              :key="c"
-              :value="c"
-              class="text-xs"
-            >
-              {{ c }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        <PreviewCurrencySelect
+          v-model="previewCurrency"
+          :currencies="currencyStore.supportedCurrencies"
+        />
         <Button
           variant="outline"
           size="sm"

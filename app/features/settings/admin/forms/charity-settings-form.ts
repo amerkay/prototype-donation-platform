@@ -4,7 +4,6 @@ import {
   textField,
   textareaField,
   selectField,
-  toggleField,
   fieldGroup,
   alertField,
   tabsField,
@@ -28,7 +27,7 @@ import ClearAddressButton from '~/features/settings/admin/components/ClearAddres
 import { formatCharityAddress } from '~/features/settings/admin/utils/formatCharityAddress'
 import type { CharityAddress } from '~/features/settings/admin/types'
 import {
-  CHARITY_OVERRIDE_FIELDS,
+  CHARITY_ENTRY_FIELDS,
   CHARITY_ADDRESS_FIELDS,
   CHARITY_ADDRESS_GROUP_FIELDS
 } from '~/features/settings/admin/types'
@@ -40,32 +39,26 @@ function formatAddressSummary(a: Partial<CharityAddress> | undefined): string {
   return formatCharityAddress(a as CharityAddress)
 }
 
-/** Extract filled override field values from a tab's form data */
-function getOverrideValues(d: Record<string, unknown>): string[] {
+/** Count filled fields in a currency tab's form data */
+function countFilledFields(d: Record<string, unknown>): number {
   const a = (d.address as Record<string, unknown>) ?? {}
   const g = (a.group1 as Record<string, unknown>) ?? {}
   return [
-    ...CHARITY_OVERRIDE_FIELDS.map((f) => d[f]),
+    ...CHARITY_ENTRY_FIELDS.map((f) => d[f]),
     ...CHARITY_ADDRESS_FIELDS.map((f) => a[f]),
     ...CHARITY_ADDRESS_GROUP_FIELDS.map((f) => g[f])
-  ].filter((v): v is string => typeof v === 'string' && v.length > 0)
+  ].filter((v): v is string => typeof v === 'string' && v.length > 0).length
 }
 
-const hasOverrideContent = (d: Record<string, unknown>) => getOverrideValues(d).length > 0
-const countOverrideFields = (d: Record<string, unknown>) => getOverrideValues(d).length
-
 /**
- * Create the fields for a single currency tab (default or override).
- * Follows the donation-amounts pattern: flat fields, no wrapper group.
+ * Create the fields for a single currency tab.
+ * All tabs show the same per-currency fields. Default tab additionally shows org-level fields.
  */
 function createTabFields(
   currency: string,
   isDefault: boolean,
   charityStore: ReturnType<typeof useCharitySettingsStore>
 ): Record<string, FieldDef> {
-  const enabledVisibility = ({ values }: FieldContext) => (values.enabled as boolean) === true
-  const visibleWhen = isDefault ? undefined : enabledVisibility
-
   const optionalString = (max: number) => z.string().max(max).optional().or(z.literal(''))
   const optionalEmail = z.string().email('Must be a valid email').optional().or(z.literal(''))
   const optionalUrl = z.string().url('Must be a valid URL').optional().or(z.literal(''))
@@ -73,9 +66,10 @@ function createTabFields(
   const name = textField('name', {
     label: 'Charity Name',
     description: 'Official registered charity name',
-    placeholder: isDefault ? 'Borneo Orangutan Survival Foundation' : 'Override charity name',
+    placeholder: isDefault
+      ? 'Borneo Orangutan Survival Foundation'
+      : `Charity name for ${currency}`,
     maxLength: 120,
-    visibleWhen,
     rules: isDefault
       ? z.string().min(3, 'Charity name must be at least 3 characters').max(120)
       : optionalString(120)
@@ -84,9 +78,8 @@ function createTabFields(
   const registrationNumber = textField('registrationNumber', {
     label: 'Registration Number',
     description: isDefault ? 'Official charity registration number (e.g., RCN123456)' : undefined,
-    placeholder: isDefault ? 'RCN123456' : 'Override registration number',
+    placeholder: isDefault ? 'RCN123456' : `Registration number for ${currency}`,
     maxLength: 50,
-    visibleWhen,
     rules: isDefault
       ? z.string().min(3, 'Registration number is required').max(50)
       : optionalString(50)
@@ -95,27 +88,24 @@ function createTabFields(
   const phone = textField('phone', {
     label: 'Phone Number',
     description: isDefault ? 'Contact phone number shown on receipts' : undefined,
-    placeholder: isDefault ? '+44 20 7219 3000' : 'Override phone number',
+    placeholder: isDefault ? '+44 20 7219 3000' : `Phone for ${currency}`,
     maxLength: 30,
-    visibleWhen,
     rules: optionalString(30)
   })
 
   const replyToEmail = textField('replyToEmail', {
     label: 'Reply-to Email',
     description: isDefault ? 'Email address used as reply-to on donor communications' : undefined,
-    placeholder: isDefault ? 'info@example.org' : 'Override reply-to email',
+    placeholder: isDefault ? 'info@example.org' : `Reply-to email for ${currency}`,
     maxLength: 254,
-    visibleWhen,
     rules: optionalEmail
   })
 
   const website = textField('website', {
     label: 'Website URL',
     description: isDefault ? 'Charity website (must start with http:// or https://)' : undefined,
-    placeholder: isDefault ? 'https://example.org' : 'Override website URL',
+    placeholder: isDefault ? 'https://example.org' : `Website for ${currency}`,
     maxLength: 200,
-    visibleWhen,
     showSeparatorAfter: true,
     rules: isDefault ? z.string().url('Must be a valid URL').max(200) : optionalUrl
   })
@@ -125,10 +115,9 @@ function createTabFields(
     description: isDefault ? 'Brief description of the charity (max 275 chars)' : undefined,
     placeholder: isDefault
       ? 'We rescue, rehabilitate, and release orangutans...'
-      : 'Override description',
+      : `Description for ${currency}`,
     maxLength: 275,
     rows: 3,
-    visibleWhen,
     rules: isDefault
       ? z.string().min(20, 'Description must be at least 20 characters').max(275)
       : optionalString(275)
@@ -136,14 +125,11 @@ function createTabFields(
 
   // Address
   const addressSummary = computed(() => {
-    if (isDefault) {
-      return formatAddressSummary(charityStore.address) || 'Registered charity address'
-    }
-    const addr = charityStore.currencyOverrides[currency]?.address
-    if (!addr) return 'No override address'
+    const addr = charityStore.currencyEntries[currency]?.address
+    if (!addr) return 'No address set'
     const required = [addr.address1, addr.city, addr.region, addr.postcode, addr.country]
     const filled = required.filter(Boolean).length
-    if (filled === 0) return 'No override address'
+    if (filled === 0) return isDefault ? 'Registered charity address' : 'No address set'
     const summary = formatAddressSummary(addr)
     if (filled < required.length) return `Incomplete — ${summary}`
     return summary
@@ -185,94 +171,75 @@ function createTabFields(
     collapsibleStateRef: isDefault ? undefined : addressAccordionState,
     description: addressSummary,
     wrapperClass: 'border rounded-lg p-4',
-    visibleWhen,
     fields: addressFieldsWithClear,
     rules: isDefault ? undefined : ADDRESS_ALL_OR_NOTHING_RULES
-    // showSeparatorAfter: true
   })
 
-  // Single ordered assembly — field order defined once
+  // Assemble fields
   const result: Record<string, FieldDef> = {}
 
   if (!isDefault) {
-    result.enabled = toggleField('enabled', {
-      label: `Use different details for ${currency}`,
-      description: `Override charity details for ${currency} transactions`,
-      defaultValue: false,
-      rules: ({ values }: FieldContext) => {
-        const enabled = values.enabled as boolean | undefined
-        if (!enabled) return z.boolean()
-        return z
-          .boolean()
-          .refine(
-            () => hasOverrideContent(values as Record<string, unknown>),
-            'Override at least one value, or toggle this off'
-          )
-      }
+    result.overrideNotice = alertField('overrideNotice', {
+      variant: 'default',
+      description: `Any value filled here will override the default on receipts issued in ${currency}. Empty fields fall back to your default currency settings.`
     })
   }
 
-  // Shared field order (single source of truth)
   result.name = name
   result.registrationNumber = registrationNumber
   result.address = address
   result.phone = phone
-  if (!isDefault) result.replyToEmail = replyToEmail
-  result.website = isDefault ? { ...website, showSeparatorAfter: true } : website
-  result.description = isDefault ? { ...description, showSeparatorAfter: true } : description
+  result.replyToEmail = replyToEmail
+  result.website = { ...website, showSeparatorAfter: true }
+  result.description = { ...description, showSeparatorAfter: true }
 
-  if (isDefault) {
-    const teamStore = useTeamSettingsStore()
-    result.supportEmail = selectField('supportEmail', {
-      label: 'Support Email',
-      description:
-        'Team member whose name and email are used as the sender, reply-to, and support contact',
-      options: () =>
-        teamStore.activeMembers.map((m) => ({
-          value: m.id,
-          label: `${m.name} (${m.email})`
-        })),
-      rules: z.string().min(1, 'Support email is required'),
-      onChange: ({ value }) => {
-        const member = teamStore.activeMembers.find((m) => m.id === value)
-        if (member) {
-          charityStore.emailSenderName = member.name
-          charityStore.emailSenderAddress = member.email
-          charityStore.replyToEmail = member.email
+  // Email sender & signature — per currency
+  const teamStore = useTeamSettingsStore()
+  result.supportEmail = selectField('supportEmail', {
+    label: 'Support Email',
+    description:
+      'Team member whose name and email are used as the sender, reply-to, and support contact',
+    options: () =>
+      teamStore.activeMembers.map((m) => ({
+        value: m.id,
+        label: `${m.name} (${m.email})`
+      })),
+    rules: isDefault
+      ? z.string().min(1, 'Support email is required')
+      : z.string().optional().or(z.literal('')),
+    onChange: ({ value }) => {
+      const member = teamStore.activeMembers.find((m) => m.id === value)
+      if (member) {
+        const entry = charityStore.currencyEntries[currency]
+        if (entry) {
+          entry.emailSenderName = member.name
+          entry.emailSenderAddress = member.email
+          entry.replyToEmail = member.email
         }
       }
-    })
-    result.emailSignature = textareaField('emailSignature', {
-      label: 'Email Signature',
-      description: 'Appended to all outgoing emails as {{ SIGNATURE }}',
-      placeholder: 'With gratitude,\nYour Team',
-      showSeparatorAfter: true
-    })
-  }
+    }
+  })
+  result.emailSignature = textareaField('emailSignature', {
+    label: 'Email Signature',
+    description: 'Appended to all outgoing emails as {{ SIGNATURE }}',
+    placeholder: 'With gratitude,\nYour Team',
+    showSeparatorAfter: true
+  })
 
   return result
 }
 
 /** Build $storePath mappings for a currency tab */
-function buildStoreMappings(
-  currency: string,
-  isDefault: boolean,
-  tabPath: string
-): Record<string, string> {
+function buildStoreMappings(currency: string, tabPath: string): Record<string, string> {
   const m: Record<string, string> = {}
-  const sp = isDefault ? '' : `currencyOverrides.${currency}.`
+  const sp = `currencyEntries.${currency}.`
 
-  // Scalar fields
-  const fields = isDefault
-    ? (['name', 'registrationNumber', 'phone', 'website', 'description'] as const)
-    : (['enabled', ...CHARITY_OVERRIDE_FIELDS] as const)
-  for (const f of fields) m[`${tabPath}.${f}`] = `${sp}${f}`
+  // Per-currency fields — all tabs use the same pattern
+  for (const f of CHARITY_ENTRY_FIELDS) m[`${tabPath}.${f}`] = `${sp}${f}`
 
-  // Default-only fields
-  if (isDefault) {
-    m[`${tabPath}.supportEmail`] = 'emailSenderId'
-    m[`${tabPath}.emailSignature`] = 'emailSignature'
-  }
+  // Email sender & signature — per currency
+  m[`${tabPath}.supportEmail`] = `${sp}emailSenderId`
+  m[`${tabPath}.emailSignature`] = `${sp}emailSignature`
 
   // Address (flat in store, nested group1 in form)
   for (const f of ['address1', 'address2', 'city', 'country'] as const) {
@@ -286,7 +253,7 @@ function buildStoreMappings(
 
 /**
  * Charity settings form configuration
- * Uses tabsField with one tab per currency — default + overrides
+ * Uses tabsField with one tab per currency — all tabs show equal fields
  */
 export const useCharitySettingsForm = defineForm('charitySettings', () => {
   const currencyStore = useCurrencySettingsStore()
@@ -296,7 +263,7 @@ export const useCharitySettingsForm = defineForm('charitySettings', () => {
     variant: 'info',
     description: () => {
       if (currencyStore.supportedCurrencies.length > 1) {
-        return 'Configure charity details per currency. The default tab applies to your base currency; override tabs let you customise details for other currencies.'
+        return 'Configure charity details per currency. The default tab applies to your base currency; other tabs let you customise details for other currencies.'
       }
       return `Charity details shown to donors paying in ${currencyStore.defaultCurrency}.`
     },
@@ -310,7 +277,14 @@ export const useCharitySettingsForm = defineForm('charitySettings', () => {
   // Build tabs dynamically
   const tabs: TabDefinitionConfig[] = []
   const storeMappings: Record<string, string> = {}
-  CURRENCY_OPTIONS.forEach(({ value: currency }) => {
+  const sortedCurrencies = [...CURRENCY_OPTIONS].sort((a, b) =>
+    a.value === currencyStore.defaultCurrency
+      ? -1
+      : b.value === currencyStore.defaultCurrency
+        ? 1
+        : 0
+  )
+  sortedCurrencies.forEach(({ value: currency }) => {
     const isDefault = currency === currencyStore.defaultCurrency
     const isSupported = currencyStore.supportedCurrencies.includes(currency)
     if (!isSupported) return
@@ -322,18 +296,14 @@ export const useCharitySettingsForm = defineForm('charitySettings', () => {
         ? 'Default'
         : ({ values }: FieldContext) => {
             const tab = (values[currency] as Record<string, unknown>) ?? {}
-            if (!tab.enabled) return ''
-            const count = countOverrideFields(tab)
+            const count = countFilledFields(tab)
             return count > 0 ? String(count) : ''
           },
       badgeVariant: isDefault ? 'secondary' : 'default',
       fields: createTabFields(currency, isDefault, charityStore)
     })
 
-    Object.assign(
-      storeMappings,
-      buildStoreMappings(currency, isDefault, `currencyTabs.${currency}`)
-    )
+    Object.assign(storeMappings, buildStoreMappings(currency, `currencyTabs.${currency}`))
   })
 
   const currencyTabs = tabsField('currencyTabs', {

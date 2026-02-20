@@ -23,6 +23,7 @@ const fullFeaturedConfigOrangutan = {
 const fullFeaturedConfigBirthday = {
   ...fullFormConfig,
   form: {
+    ...fullFormConfig.form,
     title: 'Make a Birthday Donation',
     subtitle: 'Help make a difference this birthday'
   },
@@ -33,6 +34,7 @@ const fullFeaturedConfigBirthday = {
 const fullFeaturedConfigTribute = {
   ...fullFormConfig,
   form: {
+    ...fullFormConfig.form,
     title: 'Make a Tribute Donation',
     subtitle: 'Honour a loved one with a meaningful gift'
   },
@@ -43,6 +45,7 @@ const fullFeaturedConfigTribute = {
 const fullFeaturedConfigChallenge = {
   ...fullFormConfig,
   form: {
+    ...fullFormConfig.form,
     title: 'Sponsor a Challenge',
     subtitle: 'Support a fundraiser taking on a personal challenge'
   },
@@ -53,6 +56,7 @@ const fullFeaturedConfigChallenge = {
 const fullFeaturedConfigWedding = {
   ...fullFormConfig,
   form: {
+    ...fullFormConfig.form,
     title: 'Make a Wedding Donation',
     subtitle: 'Celebrate love by giving back'
   },
@@ -63,6 +67,7 @@ const fullFeaturedConfigWedding = {
 const fullFeaturedConfigWildAmer1 = {
   ...fullFormConfig,
   form: {
+    ...fullFormConfig.form,
     title: "Support Wild's Birthday Fundraiser",
     subtitle: 'Help Wild reach their goal'
   },
@@ -73,6 +78,7 @@ const fullFeaturedConfigWildAmer1 = {
 const fullFeaturedConfigWildAmer2 = {
   ...fullFormConfig,
   form: {
+    ...fullFormConfig.form,
     title: "Support Wild's Mini Campaign",
     subtitle: 'Every donation counts'
   },
