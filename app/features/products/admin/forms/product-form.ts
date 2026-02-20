@@ -4,7 +4,7 @@ import {
   textareaField,
   imageUploadField,
   selectField,
-  numberField,
+  currencyField,
   toggleField,
   alertField,
   fieldGroup
@@ -103,23 +103,26 @@ export const useProductForm = defineForm('product', () => {
     ]
   })
 
-  const price = numberField('price', {
+  const price = currencyField('price', {
     label: 'Fixed Price',
     placeholder: '30',
+    min: 0,
     optional: true,
     visibleWhen: (ctx) => ctx.values.frequency === 'once'
   })
 
-  const minPrice = numberField('minPrice', {
+  const minPrice = currencyField('minPrice', {
     label: 'Min Price',
     placeholder: '5',
+    min: 0,
     optional: true,
     visibleWhen: (ctx) => ctx.values.frequency !== 'once'
   })
 
-  const defaultPrice = numberField('default', {
+  const defaultPrice = currencyField('default', {
     label: 'Default Price',
     placeholder: '10',
+    min: 0,
     optional: true,
     visibleWhen: (ctx) => ctx.values.frequency !== 'once'
   })

@@ -98,6 +98,16 @@ function computeMultiplierConfig(
   return { accountDefault, formBase, multipliers }
 }
 
+export interface ConversionBreakdown {
+  original: number
+  exchangeRate: number
+  afterExchange: number
+  multiplier: number
+  afterMultiplier: number
+  final: number
+  roundingBucket: 'none' | 'nearest 1' | 'nearest 5' | 'nearest 25' | 'nearest 50' | 'nearest 100'
+}
+
 export function useCurrency(baseCurrency: MaybeRef<string> | (() => string) = 'GBP') {
   // Convert to computed for reactivity if it's a getter function
   const baseCurrencyComputed =
@@ -224,10 +234,62 @@ export function useCurrency(baseCurrency: MaybeRef<string> | (() => string) = 'G
     return smartRound(converted, target, source)
   }
 
+  /**
+   * Get step-by-step breakdown of a price conversion for UI display
+   */
+  const getConversionBreakdown = (
+    amount: number,
+    targetCurrency: string,
+    fromCurrency?: string
+  ): ConversionBreakdown => {
+    const source = (fromCurrency || toValue(baseCurrencyComputed)).toUpperCase()
+    const target = targetCurrency.toUpperCase()
+
+    if (source === target) {
+      return {
+        original: amount,
+        exchangeRate: 1,
+        afterExchange: amount,
+        multiplier: 1,
+        afterMultiplier: amount,
+        final: amount,
+        roundingBucket: 'none'
+      }
+    }
+
+    const rates = getExchangeRates(source)
+    const exchangeRate = rates[target] ?? 1
+    const afterExchange = amount * exchangeRate
+
+    const multiplier = getMultiplier(source, target)
+    const afterMultiplier = afterExchange * multiplier
+
+    // Determine rounding bucket
+    let roundingBucket: ConversionBreakdown['roundingBucket']
+    if (afterMultiplier < 5) roundingBucket = 'nearest 1'
+    else if (afterMultiplier < 50) roundingBucket = 'nearest 5'
+    else if (afterMultiplier < 200) roundingBucket = 'nearest 25'
+    else if (afterMultiplier < 500) roundingBucket = 'nearest 50'
+    else roundingBucket = 'nearest 100'
+
+    const final = smartRound(afterExchange, target, source)
+
+    return {
+      original: amount,
+      exchangeRate,
+      afterExchange: Math.round(afterExchange * 100) / 100,
+      multiplier,
+      afterMultiplier: Math.round(afterMultiplier * 100) / 100,
+      final,
+      roundingBucket
+    }
+  }
+
   return {
     getCurrencySymbol,
     convertPrice,
     smartRound,
-    getMultiplier // Expose for advanced use cases
+    getMultiplier,
+    getConversionBreakdown
   }
 }

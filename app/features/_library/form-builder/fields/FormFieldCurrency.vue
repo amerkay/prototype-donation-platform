@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, type HTMLAttributes } from 'vue'
+import { computed, inject, toValue, type HTMLAttributes, type ComputedRef } from 'vue'
 
 import {
   InputGroup,
@@ -30,6 +30,12 @@ const emit = defineEmits<FieldEmits<number | string>>()
 // Get form context for dynamic currencySymbol resolution
 const { fieldContext } = useFormBuilderContext()
 
+// Injected currency symbol (provided by parent, e.g. AdminConfigPanel)
+const injectedCurrencySymbol = inject<ComputedRef<string> | string | undefined>(
+  'currencySymbol',
+  undefined
+)
+
 const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
   props.meta,
   props.name,
@@ -38,12 +44,18 @@ const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
   () => props.fullPath
 )
 
-// Resolve currency symbol dynamically
+// Resolve currency symbol: field-level prop > injected > '£' fallback
 const currencySymbol = computed(() => {
-  if (typeof props.meta.currencySymbol === 'function') {
-    return props.meta.currencySymbol(fieldContext.value)
+  if (props.meta.currencySymbol != null) {
+    if (typeof props.meta.currencySymbol === 'function') {
+      return props.meta.currencySymbol(fieldContext.value)
+    }
+    return props.meta.currencySymbol
   }
-  return props.meta.currencySymbol
+  if (injectedCurrencySymbol != null) {
+    return toValue(injectedCurrencySymbol)
+  }
+  return '£'
 })
 
 const handleUpdate = (value: string | number) => {

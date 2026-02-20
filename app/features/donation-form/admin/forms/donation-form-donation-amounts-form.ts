@@ -1,3 +1,4 @@
+import { computed } from 'vue'
 import * as z from 'zod'
 import {
   defineForm,
@@ -154,9 +155,11 @@ function createFrequencyTabFields(
  * Forms inherit global currency settings by default
  */
 export const useDonationFormDonationAmountsForm = defineForm('formDonationAmounts', () => {
-  // Get currency options from store (reactive - updates when settings change)
+  // Get currency options from store — reactive computed so options update when org settings change
   const currencyStore = useCurrencySettingsStore()
-  const CURRENCY_OPTIONS = getCurrencyOptionsForSelect(currencyStore.supportedCurrencies)
+  const supportedOptions = computed(() =>
+    getCurrencyOptionsForSelect(currencyStore.supportedCurrencies)
+  )
 
   const baseDefaultCurrency = comboboxField('baseDefaultCurrency', {
     label: 'Default / Base Currency',
@@ -164,8 +167,39 @@ export const useDonationFormDonationAmountsForm = defineForm('formDonationAmount
       'The default currency shown to donors when they first load the form. This is also the base currency for the preset amounts.',
     placeholder: 'Select base default currency',
     searchPlaceholder: 'Search currencies...',
-    options: [...CURRENCY_OPTIONS],
-    rules: z.string().min(1, 'Base default currency is required')
+    options: supportedOptions,
+    rules: ({ values }: FieldContext) => {
+      const supported = currencyStore.supportedCurrencies
+      const enabled = (values.enabledCurrencies as string[] | undefined) ?? []
+      return z
+        .string()
+        .min(1, 'Base default currency is required')
+        .refine((v) => supported.includes(v), 'Currency not enabled in org settings')
+        .refine(
+          (v) => enabled.length === 0 || enabled.includes(v),
+          'Must be one of the enabled currencies'
+        )
+    }
+  })
+
+  const enabledCurrencies = comboboxField('enabledCurrencies', {
+    label: 'Enabled Currencies',
+    description: 'Currencies donors can choose from on this form. Defaults to all org currencies.',
+    placeholder: 'Select currencies...',
+    searchPlaceholder: 'Search currencies...',
+    multiple: true,
+    defaultValue: currencyStore.supportedCurrencies,
+    options: supportedOptions,
+    rules: () => {
+      const supported = currencyStore.supportedCurrencies
+      return z
+        .array(z.string())
+        .min(1, 'At least one currency is required')
+        .refine(
+          (vals) => vals.every((v) => supported.includes(v)),
+          'Contains currencies not enabled in org settings'
+        )
+    }
   })
 
   const frequencies = tabsField('frequencies', {
@@ -213,5 +247,5 @@ export const useDonationFormDonationAmountsForm = defineForm('formDonationAmount
       })
   })
 
-  return { baseDefaultCurrency, frequencies }
+  return { baseDefaultCurrency, enabledCurrencies, frequencies }
 })

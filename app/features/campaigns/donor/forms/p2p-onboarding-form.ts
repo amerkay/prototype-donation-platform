@@ -69,7 +69,6 @@ export function createP2PCustomiseForm(defaults: {
 
     const goal = currencyField('goal', {
       label: 'Fundraising goal',
-      currencySymbol: '£',
       min: 10,
       defaultValue: defaults.goal,
       rules: z.number().min(10, 'Goal must be at least £10')

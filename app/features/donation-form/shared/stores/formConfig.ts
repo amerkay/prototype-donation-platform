@@ -85,6 +85,15 @@ export const useFormConfigStore = defineStore('formConfig', () => {
   })
 
   // Actions
+  /**
+   * Snapshot current state as a tuple for useAdminEdit comparison.
+   * Returns deep cloned data to prevent mutation of lastSavedData.
+   */
+  function toSnapshot(): [FullFormConfig, Product[], string | null] | undefined {
+    if (!fullConfig.value || !formId.value) return undefined
+    return JSON.parse(JSON.stringify([fullConfig.value, products.value, formId.value]))
+  }
+
   function initialize(config: FullFormConfig, productList: Product[], id?: string) {
     formId.value = id ?? null
     version.value = config.version
@@ -128,6 +137,7 @@ export const useFormConfigStore = defineStore('formConfig', () => {
     // Getters
     fullConfig,
     // Actions
+    toSnapshot,
     initialize,
     markDirty,
     markClean

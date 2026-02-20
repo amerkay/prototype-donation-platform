@@ -42,6 +42,15 @@ export const useCurrencySettingsStore = defineStore('currencySettings', () => {
   })
 
   // Actions
+  /** Snapshot current state as a plain CurrencySettings object */
+  function toSnapshot(): CurrencySettings {
+    return {
+      supportedCurrencies: [...supportedCurrencies.value],
+      defaultCurrency: defaultCurrency.value,
+      currencyMultipliers: { ...currencyMultipliers.value }
+    }
+  }
+
   function initialize(settings: CurrencySettings) {
     supportedCurrencies.value = settings.supportedCurrencies
     defaultCurrency.value = settings.defaultCurrency
@@ -106,6 +115,7 @@ export const useCurrencySettingsStore = defineStore('currencySettings', () => {
     isCurrencySupported,
     getMultiplier,
     // Actions
+    toSnapshot,
     initialize,
     updateSettings,
     markDirty,

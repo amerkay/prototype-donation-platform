@@ -105,6 +105,8 @@ app/features/[feature-name]/
 7. `form-builder/conditions/ui/` houses condition builder UI (moved from custom-fields); condition barrel re-exports it
 8. `$storePath` deep writes silently fail if intermediates missing; stores must pre-populate (e.g., `ensureOverrideEntries` after hydrate)
 9. For cross-field validation in tabs, use dynamic `rules(ctx)` on the field reading sibling `values` (like donation-amounts `label` field pattern)
+10. This is a prototype — don't overthink type/schema changes. Bias toward simple, direct solutions over future-proof abstractions.
+11. Accordion IDs in `productOpenAccordionId` are prefixed with form section ID (e.g., `product.basic`, not `basic`)
 
 <!-- end continuous learning notes -->
 

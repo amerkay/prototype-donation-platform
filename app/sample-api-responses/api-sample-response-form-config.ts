@@ -8,6 +8,7 @@ export const formConfig = {
   },
   donationAmounts: {
     baseDefaultCurrency: 'GBP',
+    enabledCurrencies: ['GBP', 'USD', 'EUR'],
     frequencies: {
       once: {
         enabled: true,

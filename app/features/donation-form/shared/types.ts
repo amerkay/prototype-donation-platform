@@ -109,6 +109,7 @@ export interface FrequencySettings {
 
 export interface DonationAmountsSettings {
   baseDefaultCurrency: string
+  enabledCurrencies?: string[]
   frequencies: {
     once: FrequencySettings
     monthly: FrequencySettings

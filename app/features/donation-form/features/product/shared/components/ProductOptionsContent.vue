@@ -159,7 +159,11 @@ defineExpose({
       </div>
       <div class="flex-1 min-w-0 text-left">
         <h2 class="text-lg font-semibold -mt-1" data-field="basic.title">{{ product.title }}</h2>
-        <p v-if="product.description" class="text-sm text-muted-foreground line-clamp-3" data-field="basic.description">
+        <p
+          v-if="product.description"
+          class="text-sm text-muted-foreground line-clamp-3"
+          data-field="basic.description"
+        >
           {{ product.description }}
         </p>
       </div>

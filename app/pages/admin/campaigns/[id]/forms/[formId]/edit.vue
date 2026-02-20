@@ -47,11 +47,8 @@ watch(
   }
 )
 
-// originalData must read from STORE (current state), not API data
-const formForStore = computed(() => {
-  if (!store.fullConfig || !store.formId) return undefined
-  return [store.fullConfig, store.products, store.formId] as const
-})
+// originalData must return a deep-cloned snapshot to prevent mutation
+const originalData = computed(() => store.toSnapshot())
 
 // Form config ref for validation
 const formConfigRef = ref()
@@ -60,7 +57,7 @@ const formConfigRef = ref()
 const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdminEdit({
   store,
   formRef: formConfigRef,
-  originalData: formForStore,
+  originalData,
   onSave: async () => {
     if (!store.formId || !store.fullConfig) return
     await updateForm(store.formId, store.fullConfig, store.products)

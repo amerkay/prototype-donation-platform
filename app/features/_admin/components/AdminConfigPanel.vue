@@ -1,9 +1,18 @@
 <script setup lang="ts">
+import { computed, provide } from 'vue'
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import StickyButtonGroup from '~/features/_admin/components/StickyButtonGroup.vue'
 import type { EditableStore } from '~/features/_admin/composables/useAdminEdit'
 import type { ComposableForm } from '~/features/_library/form-builder/types'
 import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
+import { getCurrencySymbol } from '~/features/donation-form/shared/composables/useCurrency'
+
+const currencySettingsStore = useCurrencySettingsStore()
+provide(
+  'currencySymbol',
+  computed(() => getCurrencySymbol(currencySettingsStore.defaultCurrency))
+)
 
 const props = defineProps<{
   store: EditableStore

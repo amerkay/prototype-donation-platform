@@ -106,6 +106,7 @@ const disabledDonationFeatures = {
 /** Minimal donationAmounts for non-donation forms (unused but structurally required) */
 const minimalDonationAmounts = {
   baseDefaultCurrency: 'GBP',
+  enabledCurrencies: ['GBP', 'USD', 'EUR'],
   frequencies: {
     once: {
       enabled: true,

@@ -55,8 +55,12 @@ const isSoldOut = computed(() => props.remaining === 0)
         data-field="basic.image"
       />
       <div class="flex-1 min-w-0">
-        <h3 class="font-semibold text-sm leading-tight truncate" data-field="basic.title">{{ product.title }}</h3>
-        <p class="text-xs text-muted-foreground line-clamp-2" data-field="basic.description">{{ product.description }}</p>
+        <h3 class="font-semibold text-sm leading-tight truncate" data-field="basic.title">
+          {{ product.title }}
+        </h3>
+        <p class="text-xs text-muted-foreground line-clamp-2" data-field="basic.description">
+          {{ product.description }}
+        </p>
         <div class="flex items-center gap-2 mt-0.5" data-field="pricing">
           <p class="text-xs font-semibold text-foreground">
             <span v-if="product.frequency === 'once'">

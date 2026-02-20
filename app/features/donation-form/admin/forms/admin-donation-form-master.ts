@@ -113,6 +113,7 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
       // Flatten structure: form.donationAmounts.baseDefaultCurrency → store.donationAmounts.baseDefaultCurrency
       $storePath: {
         baseDefaultCurrency: 'donationAmounts.baseDefaultCurrency',
+        enabledCurrencies: 'donationAmounts.enabledCurrencies',
         frequencies: 'donationAmounts.frequencies'
       }
     })

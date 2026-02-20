@@ -1,28 +1,22 @@
-import { computed } from 'vue'
+import { computed, type MaybeRef, toValue } from 'vue'
 import type { LocalizationSettings } from '~/features/donation-form/shared/types'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 
 /**
  * Composable to get effective currency settings for donation forms
- * Returns organization's supported currencies
+ * Uses per-form enabledCurrencies when available, falls back to org settings
  *
- * @example
- * ```vue
- * <script setup>
- * const { effectiveCurrencies } = useDonationCurrencies()
- * // Use effectiveCurrencies.supportedCurrencies
- * </script>
- * ```
+ * @param formEnabledCurrencies - Optional per-form currency list override
  */
-export function useDonationCurrencies() {
+export function useDonationCurrencies(formEnabledCurrencies?: MaybeRef<string[] | undefined>) {
   const currencySettings = useCurrencySettingsStore()
 
-  /**
-   * Get effective currency settings from global organization settings
-   */
-  const effectiveCurrencies = computed<LocalizationSettings>(() => ({
-    supportedCurrencies: currencySettings.supportedCurrencies
-  }))
+  const effectiveCurrencies = computed<LocalizationSettings>(() => {
+    const perForm = toValue(formEnabledCurrencies)
+    return {
+      supportedCurrencies: perForm?.length ? perForm : currencySettings.supportedCurrencies
+    }
+  })
 
   return {
     effectiveCurrencies

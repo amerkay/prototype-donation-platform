@@ -42,7 +42,6 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     placeholder: '500',
     optional: true,
     min: 0,
-    currencySymbol: '£',
     visibleWhen: isEnabled,
     rules: z.number().min(1, 'Goal must be at least 1').optional()
   })

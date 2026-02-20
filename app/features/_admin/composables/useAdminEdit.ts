@@ -160,16 +160,19 @@ export function useAdminEdit<TStore extends EditableStore, TOriginalData>({
 
   /**
    * Restore store to last saved state (shared by confirmDiscard and leave guard)
+   * Deep clones before passing to prevent mutation of lastSavedData
    */
   const restoreLastSaved = () => {
     if (!lastSavedData.value) return
+    // Must clone to prevent initialize() from storing references that mutate lastSavedData
+    const dataToRestore = deepClone(lastSavedData.value)
     if (onDiscard) {
-      onDiscard(lastSavedData.value)
+      onDiscard(dataToRestore)
     } else {
-      if (Array.isArray(lastSavedData.value)) {
-        store.initialize(...lastSavedData.value)
+      if (Array.isArray(dataToRestore)) {
+        store.initialize(...dataToRestore)
       } else {
-        store.initialize(lastSavedData.value)
+        store.initialize(dataToRestore)
       }
     }
     store.markClean()

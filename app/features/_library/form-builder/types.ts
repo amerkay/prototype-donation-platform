@@ -215,7 +215,7 @@ export interface CurrencyFieldConfig extends BaseFieldConfig {
   min?: number
   max?: number
   step?: number
-  currencySymbol: string | ComputedRef<string> | ((ctx: FieldContext) => string)
+  currencySymbol?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
