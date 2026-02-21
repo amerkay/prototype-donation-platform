@@ -43,13 +43,14 @@ watch(currencyOpenAccordionId, (id) => {
   }
 })
 
-watch(selectedCurrency, (currency) => {
+function handlePreviewCurrencyChange(currency: string) {
+  selectedCurrency.value = currency
   currencyOpenAccordionId.value = currency
   // Switch to multipliers tab and open the currency's accordion
   nextTick(() => {
     activateHashTarget(`currencies.currencyTabs.multipliers.${currency}`)
   })
-})
+}
 
 /** Find the most recently updated donation form whose baseDefaultCurrency matches org default */
 const sourceForm = computed(() => {
@@ -136,7 +137,11 @@ const dummyAmount = ref(0)
           <div class="bg-border h-px flex-1" />
           <div class="flex items-center gap-1.5">
             <ArrowDown class="text-muted-foreground h-3 w-3" />
-            <PreviewCurrencySelect v-model="selectedCurrency" :currencies="targetCurrencies" />
+            <PreviewCurrencySelect
+              :model-value="selectedCurrency"
+              :currencies="targetCurrencies"
+              @update:model-value="handlePreviewCurrencyChange"
+            />
           </div>
           <div class="bg-border h-px flex-1" />
         </div>
