@@ -487,7 +487,7 @@ function removeItem(index: number) {
             <Icon name="lucide:grip-vertical" class="size-4!" />
           </span>
 
-          <div class="min-w-0 flex-1">
+          <div class="min-w-0 flex-1" data-has-remove>
             <!-- Bind to veeIndex for stable value binding.
                  key includes veeIndex to force re-creation on reorder for fresh scoped values. -->
             <FormField
@@ -549,9 +549,13 @@ function removeItem(index: number) {
   margin-right: var(--ff-accordion-mr, 0);
 }
 
-/* Non-collapsible field-group content also bleeds edge-to-edge */
-.ff-array__item :deep([data-slot='field-set'] > .grid),
-.ff-array__item--simple :deep([data-slot='field-set'] > .grid) {
+/* Non-collapsible field-group content bleeds edge-to-edge only when the
+   fieldset is a direct array-item field (marked by data-has-remove wrapper) */
+.ff-array__item :deep([data-has-remove] > [data-slot='field-set']:has(> legend) > .grid),
+.ff-array__item :deep([data-has-remove] > * > [data-slot='field-set']:has(> legend) > .grid),
+.ff-array__item--simple :deep([data-has-remove] > [data-slot='field-set']:has(> legend) > .grid),
+.ff-array__item--simple
+  :deep([data-has-remove] > * > [data-slot='field-set']:has(> legend) > .grid) {
   margin-right: var(--ff-accordion-mr, 0);
 }
 </style>
