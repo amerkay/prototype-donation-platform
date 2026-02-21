@@ -47,6 +47,8 @@ import type {
   CardFieldDef,
   AlertFieldConfig,
   AlertFieldDef,
+  ReadonlyFieldConfig,
+  ReadonlyFieldDef,
   ComponentFieldConfig,
   ComponentFieldDef,
   FieldDef
@@ -363,6 +365,17 @@ export function alertField(name: string, config: AlertFieldConfig = {}): AlertFi
  * })
  * ```
  */
+/**
+ * Create a read-only display field (badge or text)
+ */
+export function readonlyField(name: string, config: ReadonlyFieldConfig = {}): ReadonlyFieldDef {
+  return {
+    type: 'readonly',
+    name,
+    ...config
+  }
+}
+
 export function componentField<TProps = Record<string, unknown>>(
   name: string,
   config: Omit<ComponentFieldConfig<TProps>, 'component'> & { component: Component }

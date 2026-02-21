@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { getStatusColor } from '~/lib/statusColors'
 import { cn } from '@/lib/utils'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import FieldHelpText from '~/features/_library/form-builder/internal/FieldHelpText.vue'
 import {
   Select,
   SelectContent,
@@ -48,23 +48,15 @@ function handleChange(value: string | number | bigint | Record<string, unknown> 
     </SelectTrigger>
     <SelectContent>
       <template v-for="opt in options" :key="opt.value">
-        <Tooltip v-if="getDisabledReason(opt.value)" :delay-duration="100">
-          <TooltipTrigger as-child>
-            <div>
-              <SelectItem :value="opt.value" disabled class="text-xs">
-                <span class="flex items-center gap-2">
-                  <span
-                    :class="cn('size-1.5 shrink-0 rounded-full', getStatusColor(opt.value).dot)"
-                  />
-                  {{ opt.label }}
-                </span>
-              </SelectItem>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent side="right" class="text-xs">
+        <div v-if="getDisabledReason(opt.value)" class="flex items-center gap-2 px-2 py-1.5">
+          <span :class="cn('size-1.5 shrink-0 rounded-full', getStatusColor(opt.value).dot)" />
+          <FieldHelpText side="bottom" icon-class="size-3">
+            <template #trigger>
+              <span class="text-xs text-muted-foreground">{{ opt.label }}</span>
+            </template>
             {{ getDisabledReason(opt.value) }}
-          </TooltipContent>
-        </Tooltip>
+          </FieldHelpText>
+        </div>
         <SelectItem v-else :value="opt.value" class="text-xs">
           <span class="flex items-center gap-2">
             <span :class="cn('size-1.5 shrink-0 rounded-full', getStatusColor(opt.value).dot)" />

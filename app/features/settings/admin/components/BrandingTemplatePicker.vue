@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
-import { Check, ChevronDown, Info, Palette } from 'lucide-vue-next'
+import { Check, ChevronDown, Palette } from 'lucide-vue-next'
+import FieldHelpText from '~/features/_library/form-builder/internal/FieldHelpText.vue'
 import { useFormBuilderContext } from '~/features/_library/form-builder/composables/useFormBuilderContext'
 import {
   BRANDING_TEMPLATES,
@@ -111,17 +111,12 @@ function selectTemplate(template: BrandingTemplate) {
         </div>
         <Palette class="size-3.5 text-muted-foreground" />
         <span class="text-muted-foreground">Custom</span>
-        <span class="text-xs text-muted-foreground/60 ml-auto flex items-center gap-1">
-          Pick your own
-          <Tooltip :delay-duration="200">
-            <TooltipTrigger as-child>
-              <Info class="size-3 cursor-help" />
-            </TooltipTrigger>
-            <TooltipContent side="top" class="max-w-52 text-xs">
-              Use the color pickers below to set each color manually. Any change to a color switches
-              to Custom automatically.
-            </TooltipContent>
-          </Tooltip>
+        <span class="ml-auto text-xs text-muted-foreground/60">
+          <FieldHelpText side="top" icon-class="size-3">
+            <template #trigger>Pick your own</template>
+            Use the color pickers below to set each color manually. Any change to a color switches
+            to Custom automatically.
+          </FieldHelpText>
         </span>
       </div>
     </PopoverContent>

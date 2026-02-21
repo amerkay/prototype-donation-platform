@@ -10,12 +10,14 @@ import {
   FieldDescription,
   FieldError
 } from '@/components/ui/field'
+import FieldHelpText from './FieldHelpText.vue'
 import { useHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
 
 interface Props {
   name?: string
   label?: string
   description?: string
+  helpText?: string
   optional?: boolean
   errors?: string[]
   invalid?: boolean
@@ -43,11 +45,7 @@ const {
   animate: true
 })
 
-// Use fieldId from composable (full relativePath ensures uniqueness)
-// Convert null to undefined for HTML id attribute
 const fieldId = computed(() => fieldIdFromHash.value || undefined)
-
-// Determine if we should show any errors
 const showErrors = computed(() => props.errors && props.errors.length > 0)
 </script>
 
@@ -63,6 +61,7 @@ const showErrors = computed(() => props.errors && props.errors.length > 0)
     <FieldLegend v-if="props.label" :class="props.labelClass">
       {{ props.label }}
       <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
+      <FieldHelpText v-if="props.helpText">{{ props.helpText }}</FieldHelpText>
     </FieldLegend>
 
     <FieldDescription v-if="props.description" :class="props.descriptionClass">
@@ -90,6 +89,7 @@ const showErrors = computed(() => props.errors && props.errors.length > 0)
         >
           {{ props.label }}
           <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
+          <FieldHelpText v-if="props.helpText">{{ props.helpText }}</FieldHelpText>
         </FieldLabel>
 
         <FieldDescription v-if="props.description" :class="props.descriptionClass">
@@ -119,6 +119,7 @@ const showErrors = computed(() => props.errors && props.errors.length > 0)
     >
       {{ props.label }}
       <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
+      <FieldHelpText v-if="props.helpText">{{ props.helpText }}</FieldHelpText>
     </FieldLabel>
 
     <FieldDescription v-if="props.description" :class="props.descriptionClass">

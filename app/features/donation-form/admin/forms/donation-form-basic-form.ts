@@ -2,11 +2,10 @@ import * as z from 'zod'
 import {
   defineForm,
   textField,
-  componentField,
+  readonlyField,
   fieldGroup,
   alertField
 } from '~/features/_library/form-builder/api'
-import FormTypeBadge from '~/features/donation-form/admin/components/FormTypeBadge.vue'
 
 /**
  * Basic donation form settings (title, subtitle, form type, branding info)
@@ -24,8 +23,12 @@ export const useDonationFormBasicForm = defineForm('formBasic', () => {
     optional: true
   })
 
-  const formType = componentField('formType', {
-    component: FormTypeBadge,
+  const formType = readonlyField('formType', {
+    label: 'Form Type',
+    helpText:
+      'Form type is set at creation and cannot be changed. Donation forms include Gift Aid, Cover Costs, Tribute, Impact Boost, and Donation Amounts. Registration forms hide these donation-specific features.',
+    variant: 'badge',
+    formatValue: (v) => (v === 'registration' ? 'Registration' : 'Donation'),
     defaultValue: 'donation'
   })
 

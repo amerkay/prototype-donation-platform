@@ -17,7 +17,8 @@ Schema-driven form framework using Composition API + vee-validate + Zod.
 
 - Entry point: `defineForm()` in `api/defineForm.ts`
 - Field constructors: `textField()`, `numberField()`, `selectField()`, `comboboxField()`, `arrayField()`, etc.
-- All fields support: `label`, `rules`, `visibleWhen`, `disabled`, `onChange`, `onVisibilityChange`
+- All fields support: `label`, `helpText`, `rules`, `visibleWhen`, `disabled`, `onChange`, `onVisibilityChange`
+- `FieldHelpText` component (`internal/FieldHelpText.vue`) — reusable info icon + popover, supports `#trigger` slot for wrapping text
 - Condition system in `conditions/` — declarative `ConditionGroup` for serializable visibility rules
 - Condition builder UI in `conditions/ui/` — shared field/operator/value builders for both custom-fields and filter UIs
 - Filter system in `filters/` — `useFilterState(id, schema, options?)` for condition-builder-based admin filters with URL sync

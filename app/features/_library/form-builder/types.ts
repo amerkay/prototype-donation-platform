@@ -82,6 +82,7 @@ export type FieldType =
   | 'color'
   | 'date'
   | 'rich-text'
+  | 'readonly'
   | 'component'
 
 /**
@@ -157,6 +158,7 @@ export interface BaseFieldConfig {
   showSeparatorAfter?: boolean | ((ctx: FieldContext) => boolean)
   class?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   labelClass?: string
+  helpText?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   descriptionClass?: string
   autocomplete?: string
   rules?: z.ZodTypeAny | ComputedRef<z.ZodTypeAny> | ((ctx: FieldContext) => z.ZodTypeAny)
@@ -418,6 +420,13 @@ export interface AlertFieldConfig extends BaseFieldConfig {
   }
 }
 
+export interface ReadonlyFieldConfig extends BaseFieldConfig {
+  /** Display variant: 'badge' renders as Badge, 'text' renders as plain text (default: 'text') */
+  variant?: 'badge' | 'text'
+  /** Format the raw value for display */
+  formatValue?: (value: unknown) => string
+}
+
 export interface ComponentFieldConfig<TProps = Record<string, unknown>> extends BaseFieldConfig {
   /** Vue component to render */
   component: Component
@@ -465,6 +474,7 @@ export interface FieldRegistry {
   tabs: TabsFieldConfig
   card: CardFieldConfig
   alert: AlertFieldConfig
+  readonly: ReadonlyFieldConfig
   component: ComponentFieldConfig<Record<string, unknown>>
 }
 
@@ -493,6 +503,7 @@ export type FieldGroupDef = Field<'field-group', FieldGroupConfig>
 export type TabsFieldDef = Field<'tabs', TabsFieldConfig>
 export type CardFieldDef = Field<'card', CardFieldConfig>
 export type AlertFieldDef = Field<'alert', AlertFieldConfig>
+export type ReadonlyFieldDef = Field<'readonly', ReadonlyFieldConfig>
 export type ComponentFieldDef<TProps = Record<string, unknown>> = Field<
   'component',
   ComponentFieldConfig<TProps>
@@ -540,6 +551,8 @@ export const isFieldGroup = (field: FieldDef): field is FieldGroupDef =>
 export const isTabsField = (field: FieldDef): field is TabsFieldDef => field.type === 'tabs'
 export const isCardField = (field: FieldDef): field is CardFieldDef => field.type === 'card'
 export const isAlertField = (field: FieldDef): field is AlertFieldDef => field.type === 'alert'
+export const isReadonlyField = (field: FieldDef): field is ReadonlyFieldDef =>
+  field.type === 'readonly'
 export const isComponentField = (field: FieldDef): field is ComponentFieldDef =>
   field.type === 'component'
 

@@ -159,7 +159,7 @@ const backToPresets = () => {
             <!-- Content -->
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
-                <p class="text-xl font-bold">
+                <p class="text-xl font-bold whitespace-nowrap">
                   <span class="text-base font-normal opacity-60">{{ currencySymbol }}</span>
                   {{ item.amount }}
                 </p>

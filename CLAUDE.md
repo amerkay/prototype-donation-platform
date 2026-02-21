@@ -72,7 +72,7 @@ app/features/[feature-name]/
 | settings      | `app/features/settings/`               | Org config: general, branding, charity (tabbed per-currency overrides: name, reg#, phone, email, website, desc, address), currency, team, API, billing, payments, social-sharing |
 | templates     | `app/features/templates/`              | Certificates, receipts, emails: card grid listing, edit pages, tokenized card system, model-driven Vue SFC rendering                               |
 | emails        | `app/emails/`                          | nuxt-email-renderer templates: DonationEmail + 7 tokenized card components                                                                         |
-| form-builder  | `app/features/_library/form-builder/`  | Schema-driven form framework: defineForm API, 18 field types, conditions, containers, filters                                                      |
+| form-builder  | `app/features/_library/form-builder/`  | Schema-driven form framework: defineForm API, 19 field types, conditions, containers, filters                                                      |
 | custom-fields | `app/features/_library/custom-fields/` | Admin-configurable dynamic fields with 8 field type factories                                                                                      |
 | \_admin       | `app/features/_admin/`                 | Shared admin UI: sidebar, breadcrumbs, data table, edit layouts, AdminListPage, AdminConfigPanel, PreviewEditable, entity data service, quick find, custom field schema builder |
 

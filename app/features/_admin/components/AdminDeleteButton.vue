@@ -9,7 +9,7 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Trash2 } from 'lucide-vue-next'
 
 defineProps<{
@@ -33,16 +33,16 @@ function handleConfirm() {
 </script>
 
 <template>
-  <Tooltip v-if="disabled" :delay-duration="100">
-    <TooltipTrigger as-child>
+  <Popover v-if="disabled">
+    <PopoverTrigger as-child>
       <span class="inline-flex">
         <Button variant="ghost" size="icon" class="pointer-events-none text-destructive opacity-30">
           <Trash2 class="size-4" />
         </Button>
       </span>
-    </TooltipTrigger>
-    <TooltipContent>{{ disabledReason }}</TooltipContent>
-  </Tooltip>
+    </PopoverTrigger>
+    <PopoverContent class="text-xs w-auto">{{ disabledReason }}</PopoverContent>
+  </Popover>
   <Button
     v-else
     variant="ghost"

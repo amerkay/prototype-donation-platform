@@ -28,6 +28,7 @@ import FormFieldAutocomplete from './fields/FormFieldAutocomplete.vue'
 import FormFieldDate from './fields/FormFieldDate.vue'
 import FormFieldEmoji from './fields/FormFieldEmoji.vue'
 import FormFieldImageUpload from './fields/FormFieldImageUpload.vue'
+import FormFieldReadonly from './fields/FormFieldReadonly.vue'
 import FormFieldComponent from './fields/FormFieldComponent.vue'
 import FormFieldArray from './containers/FormFieldArray.vue'
 import FormFieldGroup from './containers/FormFieldGroup.vue'
@@ -62,6 +63,7 @@ const FIELD_COMPONENTS: Record<string, Component> = {
   'rich-text': defineAsyncComponent(() => import('./fields/FormFieldRichText.vue')),
   slider: FormFieldSlider,
   'image-upload': FormFieldImageUpload,
+  readonly: FormFieldReadonly,
   component: FormFieldComponent,
   card: FormFieldCard,
   alert: FormFieldAlert,

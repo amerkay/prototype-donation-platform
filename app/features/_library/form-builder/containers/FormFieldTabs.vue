@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { cn } from '@/lib/utils'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import FieldHelpText from '~/features/_library/form-builder/internal/FieldHelpText.vue'
 import { Field, FieldLegend, FieldDescription } from '@/components/ui/field'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -128,20 +128,16 @@ const resolveTabTooltip = (tab: (typeof props.meta.tabs)[number]) => {
       <Tabs v-model="activeTab" :unmount-on-hide="true">
         <TabsList :class="cn('w-full', meta.tabsListClass)">
           <template v-for="tab in meta.tabs" :key="tab.value">
-            <TooltipProvider v-if="isTabDisabled(tab) && resolveTabTooltip(tab)">
-              <Tooltip>
-                <TooltipTrigger as-child>
-                  <span class="inline-flex flex-1">
-                    <TabsTrigger :value="tab.value" disabled class="gap-2 w-full">
-                      {{ resolveTabLabel(tab) }}
-                    </TabsTrigger>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>{{ resolveTabTooltip(tab) }}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TabsTrigger v-else :value="tab.value" :disabled="isTabDisabled(tab)" class="gap-2">
-              {{ resolveTabLabel(tab) }}
+            <TabsTrigger :value="tab.value" :disabled="isTabDisabled(tab)" class="gap-2">
+              <FieldHelpText
+                v-if="isTabDisabled(tab) && resolveTabTooltip(tab)"
+                icon-class="size-3"
+              >
+                <template #trigger>{{ resolveTabLabel(tab) }}</template>
+                {{ resolveTabTooltip(tab) }}
+              </FieldHelpText>
+              <template v-else>{{ resolveTabLabel(tab) }}</template>
+
               <!-- Error badge takes priority -->
               <Badge
                 v-if="tabHasErrors(tab.value)"

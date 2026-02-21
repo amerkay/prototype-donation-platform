@@ -30,6 +30,7 @@ export {
   tabsField,
   cardField,
   alertField,
+  readonlyField,
   componentField
 } from './defineForm'
 
@@ -57,5 +58,6 @@ export {
   isTabsField,
   isCardField,
   isAlertField,
+  isReadonlyField,
   isComponentField
 } from '../types'

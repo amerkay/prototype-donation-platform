@@ -16,6 +16,7 @@ type FieldMetaLike = {
   label?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   description?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   placeholder?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
+  helpText?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   optional?: boolean
   disabled?: boolean | ComputedRef<boolean> | ((ctx: FieldContext) => boolean)
   labelClass?: string
@@ -51,8 +52,13 @@ export function useFieldWrapper(
   fullPath?: MaybeRefOrGetter<string | undefined>
 ) {
   const { fieldContext, parentGroupDisabled } = useFormBuilderContext()
-  const { resolvedLabel, resolvedDescription, resolvedPlaceholder, resolvedClass } =
-    useResolvedFieldMeta(meta)
+  const {
+    resolvedLabel,
+    resolvedDescription,
+    resolvedPlaceholder,
+    resolvedHelpText,
+    resolvedClass
+  } = useResolvedFieldMeta(meta)
   const isFieldset = options.variant === 'fieldset'
 
   const resolvedDisabled = computed(() => {
@@ -73,6 +79,7 @@ export function useFieldWrapper(
     const baseProps = {
       label: resolvedLabel.value,
       description: resolvedDescription.value,
+      helpText: resolvedHelpText.value,
       optional: meta.optional,
       errors: errorsArray,
       invalid: errorsArray.length > 0,

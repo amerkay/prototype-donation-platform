@@ -9,6 +9,7 @@ export type WithResolvableText = {
   label?: ResolvableText
   description?: ResolvableText
   placeholder?: ResolvableText
+  helpText?: ResolvableText
   class?: ResolvableText
 }
 
@@ -38,12 +39,14 @@ export function useResolvedFieldMeta(meta: WithResolvableText) {
   const resolvedLabel = computed(() => resolveText(meta.label, fieldContext.value))
   const resolvedDescription = computed(() => resolveText(meta.description, fieldContext.value))
   const resolvedPlaceholder = computed(() => resolveText(meta.placeholder, fieldContext.value))
+  const resolvedHelpText = computed(() => resolveText(meta.helpText, fieldContext.value))
   const resolvedClass = computed(() => resolveText(meta.class, fieldContext.value))
 
   return {
     resolvedLabel,
     resolvedDescription,
     resolvedPlaceholder,
+    resolvedHelpText,
     resolvedClass
   }
 }

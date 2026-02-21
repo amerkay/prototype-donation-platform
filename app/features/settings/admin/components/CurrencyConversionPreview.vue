@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
 import { ArrowDown } from 'lucide-vue-next'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import FieldHelpText from '~/features/_library/form-builder/internal/FieldHelpText.vue'
 import AmountSelector from '~/features/donation-form/donor/components/AmountSelector.vue'
 import PreviewCurrencySelect from '~/features/_admin/components/PreviewCurrencySelect.vue'
 import {
@@ -148,16 +148,14 @@ const dummyAmount = ref(0)
 
         <!-- Target currency -->
         <div class="space-y-2">
-          <Tooltip>
-            <TooltipTrigger as-child>
-              <p
-                class="text-muted-foreground text-xs font-medium uppercase tracking-wide cursor-help w-fit"
-              >
+          <FieldHelpText icon-class="size-3">
+            <template #trigger>
+              <span class="text-xs font-medium uppercase tracking-wide">
                 {{ selectedCurrency }} ({{ targetSymbol }}) - Converted
-              </p>
-            </TooltipTrigger>
-            <TooltipContent>{{ formulaTooltip }}</TooltipContent>
-          </Tooltip>
+              </span>
+            </template>
+            {{ formulaTooltip }}
+          </FieldHelpText>
           <div class="pointer-events-none [&>div>button:last-child]:hidden">
             <AmountSelector
               v-model="dummyAmount"
