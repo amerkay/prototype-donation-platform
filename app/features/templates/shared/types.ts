@@ -129,6 +129,9 @@ export interface ReceiptCharity {
   name: string
   registrationNumber: string
   address: string
+  phone?: string
+  email?: string
+  website?: string
 }
 
 /** Donation details for receipt rendering */
@@ -156,6 +159,9 @@ export interface ReceiptModel {
   showLogo: boolean
   taxDeductibleStatement: string
   showDonorAddress: boolean
+  showPhone: boolean
+  showEmail: boolean
+  showWebsite: boolean
   branding: ReceiptBranding
   charity: ReceiptCharity
   donation: ReceiptDonation

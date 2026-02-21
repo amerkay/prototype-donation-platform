@@ -21,7 +21,7 @@ const showGiftAidSection = computed(
 <template>
   <div class="relative w-full h-full bg-white overflow-hidden flex">
     <!-- Left vertical accent stripe -->
-    <div class="w-1.5 flex-shrink-0" :style="{ backgroundColor: model.branding.primaryColor }" />
+    <div class="w-1.5 shrink-0" :style="{ backgroundColor: model.branding.primaryColor }" />
 
     <!-- Content -->
     <div class="flex-1 flex flex-col p-12 text-black">
@@ -31,7 +31,7 @@ const showGiftAidSection = computed(
           v-if="model.showLogo && model.branding.logoUrl"
           :src="model.branding.logoUrl"
           alt="Logo"
-          class="h-14 w-auto object-contain flex-shrink-0"
+          class="h-14 w-auto object-contain shrink-0 mt-1.5"
           :data-field="targets?.logo"
         />
         <div class="min-w-0" :data-field="targets?.charity">
@@ -40,6 +40,15 @@ const showGiftAidSection = computed(
             Reg. No. {{ model.charity.registrationNumber }}
           </div>
           <div class="text-sm text-gray-400">{{ model.charity.address }}</div>
+          <div v-if="model.showPhone && model.charity.phone" class="text-sm text-gray-400">
+            {{ model.charity.phone }}
+          </div>
+          <div v-if="model.showEmail && model.charity.email" class="text-sm text-gray-400">
+            {{ model.charity.email }}
+          </div>
+          <div v-if="model.showWebsite && model.charity.website" class="text-sm text-gray-400">
+            {{ model.charity.website }}
+          </div>
         </div>
       </div>
 

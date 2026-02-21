@@ -46,6 +46,9 @@ const receiptModel = computed<ReceiptModel>(() => ({
   showLogo: receipt.showLogo,
   taxDeductibleStatement: receipt.taxDeductibleStatement,
   showDonorAddress: receipt.showDonorAddress,
+  showPhone: receipt.showPhone,
+  showEmail: receipt.showEmail,
+  showWebsite: receipt.showWebsite,
   branding: {
     logoUrl: branding.logoUrl,
     primaryColor: branding.primaryColor
@@ -53,7 +56,10 @@ const receiptModel = computed<ReceiptModel>(() => ({
   charity: {
     name: charityInfo.value.name,
     registrationNumber: charityInfo.value.registrationNumber,
-    address: charityInfo.value.address
+    address: charityInfo.value.address,
+    phone: charityInfo.value.phone,
+    email: charityInfo.value.replyToEmail,
+    website: charityInfo.value.website
   },
   donation: {
     receiptNumber: 'RCP-2025-001234',

@@ -28,6 +28,9 @@ export interface ReceiptTemplate {
   showLogo: boolean
   taxDeductibleStatement: string
   showDonorAddress: boolean
+  showPhone: boolean
+  showEmail: boolean
+  showWebsite: boolean
 }
 
 /** Certificate template status */
@@ -178,9 +181,15 @@ export interface ReceiptPdfData {
     name: string
     registrationNumber: string
     address: string
+    phone?: string
+    email?: string
+    website?: string
   }
   taxDeductibleStatement: string
   showDonorAddress: boolean
+  showPhone: boolean
+  showEmail: boolean
+  showWebsite: boolean
   donation: {
     receiptNumber: string
     date: string

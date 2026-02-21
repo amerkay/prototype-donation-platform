@@ -117,6 +117,9 @@ export function useGeneratePdf() {
             showLogo: receipt.showLogo,
             taxDeductibleStatement: receipt.taxDeductibleStatement,
             showDonorAddress: receipt.showDonorAddress,
+            showPhone: receipt.showPhone,
+            showEmail: receipt.showEmail,
+            showWebsite: receipt.showWebsite,
             branding: {
               logoUrl: branding.logoUrl,
               primaryColor: branding.primaryColor
@@ -124,7 +127,10 @@ export function useGeneratePdf() {
             charity: {
               name: charityInfo.name,
               registrationNumber: charityInfo.registrationNumber,
-              address: charityInfo.address
+              address: charityInfo.address,
+              phone: charityInfo.phone,
+              email: charityInfo.replyToEmail,
+              website: charityInfo.website
             },
             donation: {
               receiptNumber: 'RCP-2025-001234',

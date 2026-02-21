@@ -19,7 +19,10 @@ export const RECEIPT_TEMPLATE_TARGETS = {
   taxStatement: 'settings.taxDeductibleStatement',
   giftAid: 'settings.showGiftAid',
   footer: 'settings.footerText',
-  charity: 'settings.charityNotice'
+  charity: 'settings.charityNotice',
+  phone: 'settings.showPhone',
+  email: 'settings.showEmail',
+  website: 'settings.showWebsite'
 } as const
 
 export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
@@ -41,12 +44,13 @@ export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
   const charityNotice = alertField('charityNotice', {
     variant: 'info',
     description:
-      'Charity name, registration number, and address come from charity settings, with per-currency overrides when configured.',
+      'Charity name, registration number, address, phone, email, and website come from charity settings, with per-currency overrides when configured.',
     cta: {
       label: 'Edit charity settings',
       to: '/admin/settings/charity',
       inline: true
-    }
+    },
+    showSeparatorAfter: true
   })
 
   const noLogoAlert = alertField('noLogoAlert', {
@@ -80,7 +84,22 @@ export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
 
   const showDonorAddress = toggleField('showDonorAddress', {
     label: 'Show Donor Address',
-    description: 'Display donor address on receipt'
+    description: 'Display donor address on receipt (if available)'
+  })
+
+  const showPhone = toggleField('showPhone', {
+    label: 'Show Charity Phone',
+    description: 'Display charity phone number on receipt'
+  })
+
+  const showEmail = toggleField('showEmail', {
+    label: 'Show Charity Email',
+    description: 'Display charity reply-to email on receipt'
+  })
+
+  const showWebsite = toggleField('showWebsite', {
+    label: 'Show Charity Website',
+    description: 'Display charity website on receipt'
   })
 
   const showCampaignName = toggleField('showCampaignName', {
@@ -117,6 +136,10 @@ export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
     fields: {
       showLogo,
       noLogoAlert,
+      showPhone,
+      showEmail,
+      showWebsite,
+      charityNotice,
       headerText,
       showDonorAddress,
       showCampaignName,
@@ -124,8 +147,7 @@ export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
       taxDeductibleStatement,
       showGiftAid,
       footerText,
-      brandingNotice,
-      charityNotice
+      brandingNotice
     },
     $storePath: {
       showLogo: 'showLogo',
@@ -135,7 +157,10 @@ export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
       showPaymentMethod: 'showPaymentMethod',
       taxDeductibleStatement: 'taxDeductibleStatement',
       showGiftAid: 'showGiftAid',
-      footerText: 'footerText'
+      footerText: 'footerText',
+      showPhone: 'showPhone',
+      showEmail: 'showEmail',
+      showWebsite: 'showWebsite'
     }
   })
 

@@ -13,7 +13,10 @@ export const receiptTemplate: ReceiptTemplate = {
   showLogo: true,
   taxDeductibleStatement:
     '<p>No goods or services were provided in exchange for this contribution.</p>',
-  showDonorAddress: false
+  showDonorAddress: false,
+  showPhone: true,
+  showEmail: true,
+  showWebsite: true
 }
 
 export const certificateTemplates: CertificateTemplate[] = [

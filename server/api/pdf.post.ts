@@ -85,6 +85,9 @@ function buildReceiptModel(data: ReceiptPdfData): ReceiptModel {
     showLogo: data.showLogo,
     taxDeductibleStatement: data.taxDeductibleStatement,
     showDonorAddress: data.showDonorAddress,
+    showPhone: data.showPhone,
+    showEmail: data.showEmail,
+    showWebsite: data.showWebsite,
     branding: data.branding,
     charity: data.charity,
     donation: data.donation
