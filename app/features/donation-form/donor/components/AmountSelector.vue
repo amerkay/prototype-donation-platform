@@ -117,7 +117,7 @@ const backToPresets = () => {
           v-for="amount in normalizedAmounts"
           :key="amount"
           :variant="selectedAmount === amount ? 'default' : 'outline'"
-          class="h-14 text-lg font-semibold"
+          class="h-14 text-lg font-semibold gap-1"
           @click="selectAmount(amount)"
         >
           <span class="text-sm font-normal opacity-60">{{ currencySymbol }}</span
@@ -159,7 +159,7 @@ const backToPresets = () => {
             <!-- Content -->
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
-                <p class="text-xl font-bold whitespace-nowrap">
+                <p class="flex items-center gap-1 text-xl font-bold whitespace-nowrap">
                   <span class="text-base font-normal opacity-60">{{ currencySymbol }}</span>
                   {{ item.amount }}
                 </p>
@@ -196,8 +196,9 @@ const backToPresets = () => {
       <!-- Selected Amount Display -->
       <div class="rounded-lg bg-muted p-4 text-center">
         <p class="text-sm text-muted-foreground">Your {{ frequencyLabel }}</p>
-        <p v-if="localAmount > 0" class="text-3xl font-bold">
-          <span class="text-xl font-normal opacity-60">{{ currencySymbol }}</span> {{ localAmount }}
+        <p v-if="localAmount > 0" class="flex items-center justify-center gap-1 text-3xl font-bold">
+          <span class="text-xl font-normal opacity-60">{{ currencySymbol }}</span
+          >{{ localAmount }}
         </p>
         <p v-else class="text-lg text-muted-foreground">Select amount below</p>
       </div>

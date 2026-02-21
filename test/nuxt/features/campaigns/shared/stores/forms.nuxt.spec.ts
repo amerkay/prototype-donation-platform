@@ -101,17 +101,22 @@ describe('useFormsStore', () => {
     })
 
     it('sets updatedAt timestamp', () => {
+      vi.useFakeTimers()
       const store = useFormsStore()
       const campaignId = 'adopt-orangutan'
       const forms = store.getForms(campaignId)
       const formId = forms[0]!.id
       const before = forms[0]!.updatedAt
 
+      // Advance time to ensure timestamp changes
+      vi.advanceTimersByTime(1)
       store.updateFormConfig(campaignId, formId, forms[0]!.config)
 
       expect(forms[0]!.updatedAt).not.toBe(before)
       // Should be a valid ISO string
       expect(new Date(forms[0]!.updatedAt).getTime()).toBeGreaterThan(0)
+
+      vi.useRealTimers()
     })
 
     it('updates products when provided', () => {

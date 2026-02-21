@@ -42,7 +42,9 @@ const { convertPrice } = useCurrency(
 const store = useDonationFormStore()
 
 // Get effective currencies (form override or global settings)
-const { effectiveCurrencies } = useDonationCurrencies()
+const { effectiveCurrencies } = useDonationCurrencies(
+  computed(() => formConfig.value.donationAmounts.enabledCurrencies)
+)
 const currentFormId = computed(() => configStore.formId || 'default')
 store.initialize(currentFormId.value, formConfig.value.donationAmounts.baseDefaultCurrency)
 
@@ -60,15 +62,25 @@ const selectedCurrency = computed({
 })
 
 // Extract config values - now reactive to config changes
-const CURRENCIES = computed(() =>
-  effectiveCurrencies.value.supportedCurrencies.map((code) => {
+const CURRENCIES = computed(() => {
+  const currencies = effectiveCurrencies.value.supportedCurrencies.map((code) => {
     const option = CURRENCY_OPTIONS.find((o) => o.value === code)
     return {
       value: code,
       label: option?.label ?? code
     }
   })
-)
+
+  // Sort to show default currency first
+  const defaultCurrency = formConfig.value.donationAmounts.baseDefaultCurrency
+  return currencies.sort((a, b) => {
+    if (a.value === defaultCurrency) return -1
+    if (b.value === defaultCurrency) return 1
+    return 0
+  })
+})
+
+const showCurrencySelector = computed(() => CURRENCIES.value.length > 1)
 
 const BASE_FREQUENCY_ORDER = ['once', 'monthly', 'yearly'] as const
 
@@ -297,7 +309,7 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           {{ formConfig.form.subtitle }}
         </p>
       </div>
-      <div data-field="enabledCurrencies">
+      <div v-if="showCurrencySelector" data-field="enabledCurrencies">
         <select
           id="currency"
           v-model="selectedCurrency"

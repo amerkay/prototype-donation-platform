@@ -46,4 +46,37 @@ describe('useDonationCurrencies', () => {
     // Should reflect updated global settings
     expect(effectiveCurrencies.value.supportedCurrencies).toEqual(['EUR', 'USD'])
   })
+
+  it('uses per-form enabled currencies when provided', () => {
+    const currencySettings = useCurrencySettingsStore()
+
+    // Initialize global settings with multiple currencies
+    currencySettings.initialize({
+      supportedCurrencies: ['USD', 'EUR', 'GBP', 'NZD'],
+      defaultCurrency: 'USD',
+      currencyMultipliers: {}
+    })
+
+    // Pass form-specific enabled currencies (only GBP)
+    const { effectiveCurrencies } = useDonationCurrencies(['GBP'])
+
+    // Should use form-specific currencies, not global
+    expect(effectiveCurrencies.value.supportedCurrencies).toEqual(['GBP'])
+  })
+
+  it('falls back to global when per-form currencies is empty', () => {
+    const currencySettings = useCurrencySettingsStore()
+
+    currencySettings.initialize({
+      supportedCurrencies: ['USD', 'EUR'],
+      defaultCurrency: 'USD',
+      currencyMultipliers: {}
+    })
+
+    // Pass empty array for form-specific currencies
+    const { effectiveCurrencies } = useDonationCurrencies([])
+
+    // Should fall back to global settings
+    expect(effectiveCurrencies.value.supportedCurrencies).toEqual(['USD', 'EUR'])
+  })
 })
