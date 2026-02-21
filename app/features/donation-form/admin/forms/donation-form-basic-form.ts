@@ -2,10 +2,11 @@ import * as z from 'zod'
 import {
   defineForm,
   textField,
-  selectField,
+  componentField,
   fieldGroup,
   alertField
 } from '~/features/_library/form-builder/api'
+import FormTypeBadge from '~/features/donation-form/admin/components/FormTypeBadge.vue'
 
 /**
  * Basic donation form settings (title, subtitle, form type, branding info)
@@ -23,20 +24,14 @@ export const useDonationFormBasicForm = defineForm('formBasic', () => {
     optional: true
   })
 
-  const formType = selectField('formType', {
-    label: 'Form Type',
-    description:
-      'Non-donation types hide donation-specific features (Gift Aid, Cover Costs, Tribute, Impact Boost, Donation Amounts).',
-    defaultValue: 'donation',
-    options: [
-      { value: 'donation', label: 'Donation' },
-      { value: 'registration', label: 'Registration' }
-    ]
+  const formType = componentField('formType', {
+    component: FormTypeBadge,
+    defaultValue: 'donation'
   })
 
   const form = fieldGroup('form', {
     showSeparatorAfter: true,
-    fields: { title: formTitle, subtitle: formSubtitle, formType }
+    fields: { formType, title: formTitle, subtitle: formSubtitle }
   })
 
   const brandingNotice = alertField('branding', {

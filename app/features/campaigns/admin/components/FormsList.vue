@@ -48,7 +48,7 @@ import {
   EmptyMedia,
   EmptyTitle
 } from '@/components/ui/empty'
-import { Edit, Check, FileText, Plus, Eye, Copy, MoreHorizontal, Trash2 } from 'lucide-vue-next'
+import { Edit, Check, FileText, Plus, Copy, MoreHorizontal, Trash2 } from 'lucide-vue-next'
 
 const props = defineProps<{
   disabled?: boolean
@@ -99,10 +99,6 @@ const handleSetDefault = async (formId: string) => {
 
 const handleEditForm = (formId: string) => {
   router.push(`/admin/campaigns/${store.id}/forms/${formId}/edit`)
-}
-
-const handlePreviewForm = (formId: string) => {
-  window.open(`/admin/campaigns/${store.id}/forms/${formId}/preview`, '_blank')
 }
 
 const handleAddForm = () => {
@@ -242,30 +238,29 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
         <TableBody>
           <TableRow v-for="form in visibleForms" :key="form.id">
             <TableCell>
-              <div class="flex items-center gap-2">
-                <InlineEditableText
-                  v-if="canModifyForms"
-                  :model-value="form.name"
-                  :max-length="75"
-                  @update:model-value="renameForm(form.id, $event)"
-                />
-                <span v-else class="font-medium">{{ form.name }}</span>
-                <Badge v-if="form.isDefault" variant="default" class="gap-1">
-                  <Check class="w-3 h-3" />
-                  Default
-                </Badge>
+              <div>
+                <div class="flex items-center gap-2">
+                  <InlineEditableText
+                    v-if="canModifyForms"
+                    :model-value="form.name"
+                    :max-length="75"
+                    @update:model-value="renameForm(form.id, $event)"
+                  />
+                  <span v-else class="font-medium">{{ form.name }}</span>
+                </div>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <Badge variant="outline" class="text-xs capitalize">
+                    {{ form.config.form.formType ?? 'donation' }}
+                  </Badge>
+                  <Badge v-if="form.isDefault" variant="default" class="gap-1">
+                    <Check class="w-3 h-3" />
+                    Default
+                  </Badge>
+                </div>
               </div>
             </TableCell>
             <TableCell class="text-right">
               <div class="flex items-center justify-end gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  title="Preview form"
-                  @click="handlePreviewForm(form.id)"
-                >
-                  <Eye class="w-4 h-4" />
-                </Button>
                 <template v-if="!props.disabled">
                   <Button size="sm" @click="handleEditForm(form.id)">
                     <Edit class="w-4 h-4 mr-1.5" />
