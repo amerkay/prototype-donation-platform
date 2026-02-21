@@ -122,7 +122,7 @@ describe('FormFieldArray - Nested Array Reordering Bug', () => {
     await nextTick()
 
     // Find the nested array's Add button (it's inside the first array item)
-    const firstArrayItem = wrapper.find('.ff-array__item')
+    const firstArrayItem = wrapper.find('[data-array-item]')
     const nestedAddButtons = firstArrayItem.findAll('button[type="button"]').filter((btn) => {
       const text = btn.text()
       return text.includes('Add') || text.match(/\+/)
@@ -152,7 +152,7 @@ describe('FormFieldArray - Nested Array Reordering Bug', () => {
       })
       .find((btn) => {
         // The parent array's button should be at the root level, not inside an array item
-        const parent = btn.element.closest('.ff-array__item, .ff-array__item--simple')
+        const parent = btn.element.closest('[data-array-item]')
         return !parent
       })
     expect(parentAddButton).toBeDefined()
@@ -277,7 +277,7 @@ describe('FormFieldArray - Advanced Field Interactions (Continued)', () => {
     await waitForArrayUpdate()
 
     // Verify items were added
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(2)
 
     // Verify field paths include prefix

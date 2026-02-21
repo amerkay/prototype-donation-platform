@@ -47,7 +47,7 @@ describe('FormFieldArray - Dynamic itemField Function', () => {
     )
 
     // Verify both items are rendered
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(2)
 
     // Items have collapsibleDefaultOpen: !type, so they start collapsed
@@ -92,7 +92,7 @@ describe('FormFieldArray - Dynamic itemField Function', () => {
     expect(text).not.toContain('Minimum')
 
     // Find the type select field and change it to 'text'
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     const firstItem = items[0]!
 
     // Find the select element for type field - it MUST exist
@@ -177,7 +177,7 @@ describe('FormFieldArray - Tabs Support', () => {
     await waitForArrayUpdate()
 
     // Verify item was added
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(1)
 
     // CRITICAL: Verify form state has default values from ALL tabs
@@ -287,7 +287,7 @@ describe('FormFieldArray - Advanced Field Interactions', () => {
     expect(advancedInput.exists()).toBe(false)
 
     // Find and toggle the switch
-    const toggleSwitch = wrapper.find('.ff-array__item--simple').find('[role="switch"]')
+    const toggleSwitch = wrapper.find('[data-array-item]').find('[role="switch"]')
     expect(toggleSwitch.exists()).toBe(true)
     await toggleSwitch.trigger('click')
     await waitForArrayUpdate()
@@ -508,7 +508,7 @@ describe('FormFieldArray - Advanced Field Interactions', () => {
     await waitForArrayUpdate()
 
     // Verify item was added
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(1)
 
     // Verify form state has all nested defaults

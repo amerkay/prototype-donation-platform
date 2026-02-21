@@ -31,7 +31,7 @@ describe('FormFieldArray - Validation and Errors', () => {
     await waitForArrayUpdate()
 
     // Verify item was added with field
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(1)
 
     // Verify the field was rendered with validation rules
@@ -151,7 +151,7 @@ describe('FormFieldArray - Duplicate ID Detection', () => {
 
     // Remove middle items
     for (let i = 0; i < 3; i++) {
-      const items = wrapper.findAll('.ff-array__item--simple')
+      const items = wrapper.findAll('[data-array-item]')
       const removeButton = items[1]!
         .findAll('button')
         .find((btn) => btn.attributes('aria-label')?.includes('Remove'))
@@ -392,7 +392,7 @@ describe('FormFieldArray - Non-Sortable Behavior', () => {
     await waitForArrayUpdate()
 
     // Verify items use simple styling (no drag handles)
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(2)
 
     // Verify no drag handles present
@@ -416,7 +416,7 @@ describe('FormFieldArray - Non-Sortable Behavior', () => {
     await waitForArrayUpdate()
 
     // Should use simple item styling
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(1)
     expect(wrapper.findAll('.drag-handle')).toHaveLength(0)
   })

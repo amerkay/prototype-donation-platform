@@ -25,7 +25,7 @@ describe('FormFieldArray - Adding Items', () => {
     })
 
     // Initially no items
-    let items = wrapper.findAll('.ff-array__item--simple')
+    let items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(0)
 
     // Verify initial form state is empty array
@@ -38,7 +38,7 @@ describe('FormFieldArray - Adding Items', () => {
     await waitForArrayUpdate()
 
     // Verify one item is now rendered
-    items = wrapper.findAll('.ff-array__item--simple')
+    items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(1)
 
     // Verify the item contains the expected label and input
@@ -94,7 +94,7 @@ describe('FormFieldArray - Adding Items', () => {
     await waitForArrayUpdate()
 
     // Verify item was added
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(1)
 
     // Verify both fields are rendered (non-collapsible)
@@ -104,7 +104,7 @@ describe('FormFieldArray - Adding Items', () => {
 
     // Verify actual inputs exist with default values
     // Get the first (and only) array item
-    const addedItems = wrapper.findAll('.ff-array__item--simple')
+    const addedItems = wrapper.findAll('[data-array-item]')
     const firstItem = addedItems[0]!
 
     // Within that item, find the text input for 'name' field
@@ -148,7 +148,7 @@ describe('FormFieldArray - Adding Items', () => {
     }
 
     // Verify 3 items rendered
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(3)
 
     // CRITICAL: Verify form state has 3 items
@@ -197,7 +197,7 @@ describe('FormFieldArray - Removing Items', () => {
     )
 
     // Verify 3 items are rendered
-    let items = wrapper.findAll('.ff-array__item--simple')
+    let items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(3)
 
     // Verify initial form state
@@ -221,7 +221,7 @@ describe('FormFieldArray - Removing Items', () => {
     await waitForArrayUpdate()
 
     // Verify only 2 items remain
-    items = wrapper.findAll('.ff-array__item--simple')
+    items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(2)
 
     // CRITICAL: Verify form state integrity
@@ -273,7 +273,7 @@ describe('FormFieldArray - Removing Items', () => {
     )
 
     // Remove middle item (index 1)
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     const middleItem = items[1]
     const removeButton = middleItem!
       .findAll('button')
@@ -315,7 +315,7 @@ describe('FormFieldArray - Removing Items', () => {
     )
 
     // Remove last item
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     const lastItem = items[2]
     const removeButton = lastItem!
       .findAll('button')
@@ -350,7 +350,7 @@ describe('FormFieldArray - Removing Items', () => {
 
     // Remove all items
     for (let i = 0; i < initialData.length; i++) {
-      const items = wrapper.findAll('.ff-array__item--simple')
+      const items = wrapper.findAll('[data-array-item]')
       const removeButton = items[0]!
         .findAll('button')
         .find((btn: DOMWrapper<Element>) => btn.attributes('aria-label')?.includes('Remove'))
@@ -359,7 +359,7 @@ describe('FormFieldArray - Removing Items', () => {
     }
 
     // Verify array is empty
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(0)
 
     // CRITICAL: Verify form state is empty array (not undefined or null)
@@ -399,7 +399,7 @@ describe('FormFieldArray - Custom Button Text', () => {
       ['Item 1']
     )
 
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     const removeButton = items[0]!
       .findAll('button')
       .find((btn: DOMWrapper<Element>) => btn.attributes('aria-label')?.includes('Delete'))
@@ -426,7 +426,7 @@ describe('FormFieldArray - Edge Cases', () => {
     await addButton.trigger('click')
     await waitForArrayUpdate()
 
-    let items = wrapper.findAll('.ff-array__item--simple')
+    let items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(2)
 
     // Rapid remove
@@ -436,21 +436,21 @@ describe('FormFieldArray - Edge Cases', () => {
     await removeButton!.trigger('click')
     await waitForArrayUpdate()
 
-    items = wrapper.findAll('.ff-array__item--simple')
+    items = wrapper.findAll('[data-array-item]')
     removeButton = items[0]!
       .findAll('button')
       .find((btn: DOMWrapper<Element>) => btn.attributes('aria-label')?.includes('Remove'))
     await removeButton!.trigger('click')
     await waitForArrayUpdate()
 
-    items = wrapper.findAll('.ff-array__item--simple')
+    items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(0)
 
     // Add again after empty
     await addButton.trigger('click')
     await waitForArrayUpdate()
 
-    items = wrapper.findAll('.ff-array__item--simple')
+    items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(1)
 
     // Verify form state is consistent
@@ -479,7 +479,7 @@ describe('FormFieldArray - Edge Cases', () => {
     }
     await waitForArrayUpdate()
 
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(15)
 
     // Verify form state
@@ -506,7 +506,7 @@ describe('FormFieldArray - Edge Cases', () => {
     )
 
     // Should render all items without crashing
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(4)
 
     // Form state should preserve the data structure

@@ -38,7 +38,7 @@ export async function simulateDragAndDrop(
 
   // Find the array container - it's the grid container that holds the array items
   // Use a more robust selector that doesn't rely on directives
-  const allItems = wrapper.findAll('.ff-array__item, .ff-array__item--simple')
+  const allItems = wrapper.findAll('[data-array-item]')
   if (allItems.length === 0) {
     throw new Error('No array items found')
   }
@@ -48,9 +48,7 @@ export async function simulateDragAndDrop(
   const arrayContainer = firstItemElement.parentElement!
 
   // Get only direct children of the array container to avoid nested arrays
-  const directItemSelectors = arrayContainer.querySelectorAll(
-    ':scope > .ff-array__item, :scope > .ff-array__item--simple'
-  )
+  const directItemSelectors = arrayContainer.querySelectorAll(':scope > [data-array-item]')
 
   // Map DOM elements back to DOMWrappers
   const items = Array.from(directItemSelectors).map((el) => {

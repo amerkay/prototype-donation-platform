@@ -21,7 +21,7 @@ describe('FormFieldArray - Basic Rendering', () => {
     expect(addButton.text()).toContain('Add Item')
 
     // Verify no items are rendered initially
-    const items = wrapper.findAll('.ff-array__item, .ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(0)
   })
 })

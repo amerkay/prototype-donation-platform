@@ -185,7 +185,7 @@ function onDragStart(event: DragEvent, veeIndex: number) {
       event.dataTransfer.setData('text/plain', draggedKey)
       // Make drag image semi-transparent (optional, not supported in test environments)
       if (typeof event.dataTransfer.setDragImage === 'function') {
-        const target = (event.target as HTMLElement).closest('.ff-array__item')
+        const target = (event.target as HTMLElement).closest('[data-array-item]')
         if (target) {
           event.dataTransfer.setDragImage(target as HTMLElement, 20, 20)
         }
@@ -457,12 +457,16 @@ function removeItem(index: number) {
           v-for="item in orderedItems"
           :key="`${item.key}-${item.veeIndex}`"
           :data-vee-index="item.veeIndex"
+          data-array-item
+          :data-sortable="isSortable || undefined"
+          :data-dragging="draggedIndex === item.veeIndex || undefined"
+          :data-single-field="!isLabeledFieldGroup(getItemFieldMeta(item.veeIndex)) || undefined"
           :class="
             cn(
               'relative flex items-start rounded-lg border bg-card transition-colors',
-              isSortable ? 'ff-array__item px-0 pr-9' : 'ff-array__item--simple pr-10',
+              isSortable ? 'px-0 pr-9' : 'pr-10',
               !isSortable && getItemFieldMeta(item.veeIndex).type === 'field-group' && 'pl-3',
-              draggedIndex === item.veeIndex && 'ff-array__item--dragged opacity-40 scale-95'
+              draggedIndex === item.veeIndex && 'opacity-40 scale-95'
             )
           "
           @dragover="onDragOver($event, item.veeIndex)"
@@ -473,21 +477,24 @@ function removeItem(index: number) {
             v-if="isSortable"
             :class="
               cn(
-                'drag-handle shrink-0 py-1.5 px-2 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none',
+                'drag-handle shrink-0 py-1.5 px-2 touch-none',
+                fields.length <= 1
+                  ? 'text-muted-foreground/40 cursor-default'
+                  : 'text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing',
                 isLabeledFieldGroup(getItemFieldMeta(item.veeIndex)) ? 'mt-3' : 'mt-1'
               )
             "
-            draggable="true"
-            @dragstart="onDragStart($event, item.veeIndex)"
+            :draggable="fields.length > 1"
+            @dragstart="fields.length > 1 && onDragStart($event, item.veeIndex)"
             @dragend="onDragEnd"
-            @touchstart="onTouchStart($event, item.veeIndex)"
+            @touchstart="fields.length > 1 && onTouchStart($event, item.veeIndex)"
             @touchmove="onTouchMove"
             @touchend="onTouchEnd"
           >
             <Icon name="lucide:grip-vertical" class="size-4!" />
           </span>
 
-          <div class="min-w-0 flex-1" data-has-remove>
+          <div class="min-w-0 flex-1" data-array-field>
             <!-- Bind to veeIndex for stable value binding.
                  key includes veeIndex to force re-creation on reorder for fresh scoped values. -->
             <FormField
@@ -530,32 +537,55 @@ function removeItem(index: number) {
 </template>
 
 <style scoped>
-/* Collapsible field-group content bleeds edge-to-edge within array items.
-   CSS custom properties reset at each nesting level to prevent leaking
-   into nested arrays (e.g. condition builder inside a sortable array). */
-.ff-array__item {
-  --ff-accordion-ml: -1.1rem;
-  --ff-accordion-mr: -1.4rem;
+@reference '~/assets/css/main.css';
+
+/*
+ * Edge-to-edge bleed for field-group content inside array items.
+ *
+ * DOM structure:
+ *
+ *   [data-array-item]                    ← item container (border + padding)
+ *   ├─ <span.drag-handle>               ← optional, only when [data-sortable]
+ *   ├─ [data-array-field]               ← content wrapper (flex-1)
+ *   │   └─ <FormField>                  ← renders one of:
+ *   │       ├─ <Accordion>              ← collapsible field-group
+ *   │       │   └─ [data-slot='accordion-content'] > div   ← bleed target
+ *   │       └─ <fieldset data-slot='field-set'>             ← non-collapsible
+ *   │           └─ <legend>             ← present when group has heading
+ *   │           └─ .grid               ← bleed target
+ *   └─ <Button>                         ← remove (×) button
+ *
+ * Sortable items: drag-handle (left) + remove-btn (right) → bleed both sides
+ * Simple items:   remove-btn only (right)                 → bleed right only
+ */
+
+/* Single-field items: item container provides the border, so remove inner input border */
+[data-array-item][data-single-field] :deep([data-slot='input-group']) {
+  @apply border-0 shadow-none;
 }
 
-.ff-array__item--simple {
-  --ff-accordion-ml: 0;
-  --ff-accordion-mr: -1.75rem;
+/* --- Sortable: drag-handle (left) + remove-btn (right) → bleed both sides --- */
+[data-array-item][data-sortable] {
+  & :deep([data-slot='accordion-content'] > div) {
+    @apply -ml-5 -mr-6;
+  }
+
+  & :deep([data-array-field] > [data-slot='field-set']:has(> legend) > .grid),
+  & :deep([data-array-field] > * > [data-slot='field-set']:has(> legend) > .grid) {
+    @apply -mr-6;
+  }
 }
 
-.ff-array__item :deep([data-slot='accordion-content'] > div),
-.ff-array__item--simple :deep([data-slot='accordion-content'] > div) {
-  margin-left: var(--ff-accordion-ml, 0);
-  margin-right: var(--ff-accordion-mr, 0);
-}
+/* --- Simple: remove-btn only (right) → bleed right only --- */
+/* ml-0/mr-0 resets prevent sortable bleed from leaking into nested non-sortable arrays */
+[data-array-item]:not([data-sortable]) {
+  & :deep([data-slot='accordion-content'] > div) {
+    @apply ml-0 -mr-7;
+  }
 
-/* Non-collapsible field-group content bleeds edge-to-edge only when the
-   fieldset is a direct array-item field (marked by data-has-remove wrapper) */
-.ff-array__item :deep([data-has-remove] > [data-slot='field-set']:has(> legend) > .grid),
-.ff-array__item :deep([data-has-remove] > * > [data-slot='field-set']:has(> legend) > .grid),
-.ff-array__item--simple :deep([data-has-remove] > [data-slot='field-set']:has(> legend) > .grid),
-.ff-array__item--simple
-  :deep([data-has-remove] > * > [data-slot='field-set']:has(> legend) > .grid) {
-  margin-right: var(--ff-accordion-mr, 0);
+  & :deep([data-array-field] > [data-slot='field-set']:has(> legend) > .grid),
+  & :deep([data-array-field] > * > [data-slot='field-set']:has(> legend) > .grid) {
+    @apply -mr-7;
+  }
 }
 </style>

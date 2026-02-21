@@ -109,9 +109,9 @@ const descriptionText = computed(() => {
         <Icon name="lucide:chevron-left" class="size-4!" />
       </Button>
 
-      <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+      <div class="flex min-w-0 flex-1 flex-col">
         <!-- First Row: Total, Ship Badge, Edit Button -->
-        <div class="flex items-center justify-between gap-3 -mt-1">
+        <div class="flex items-center justify-between gap-3 -mt-0.5">
           <p class="text-lg font-bold leading-tight">
             {{ formattedAmount }}
             <!-- <small v-if="itemCount > 1" class="text-muted-foreground text-xs font-normal"

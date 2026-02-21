@@ -34,7 +34,7 @@ describe('FormFieldArray - Drag and Drop', () => {
     )
 
     // Verify items use sortable class
-    const items = wrapper.findAll('.ff-array__item')
+    const items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(3)
 
     // Verify drag handles are present
@@ -65,15 +65,15 @@ describe('FormFieldArray - Drag and Drop', () => {
     )
 
     // Verify items use non-sortable class
-    const items = wrapper.findAll('.ff-array__item--simple')
+    const items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(3)
 
     // Verify no drag handles are present
     const dragHandles = wrapper.findAll('.drag-handle')
     expect(dragHandles).toHaveLength(0)
 
-    // Verify sortable items don't exist
-    const sortableItems = wrapper.findAll('.ff-array__item')
+    // Verify no items have sortable attribute
+    const sortableItems = wrapper.findAll('[data-array-item][data-sortable]')
     expect(sortableItems).toHaveLength(0)
   })
 
@@ -107,7 +107,7 @@ describe('FormFieldArray - Drag and Drop', () => {
     expect(arrayValues).toEqual(initialData)
 
     // Verify initial DOM order
-    let items = wrapper.findAll('.ff-array__item')
+    let items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(3)
     let firstInput = items[0]!.find('input[id="test-section_testArray_0_name"]')
     expect((firstInput.element as HTMLInputElement).value).toBe('Alpha')
@@ -126,7 +126,7 @@ describe('FormFieldArray - Drag and Drop', () => {
     ])
 
     // Verify DOM reflects the new order
-    items = wrapper.findAll('.ff-array__item')
+    items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(3)
     firstInput = items[0]!.find('input[id="test-section_testArray_0_name"]')
     expect((firstInput.element as HTMLInputElement).value).toBe('Beta')
@@ -167,7 +167,7 @@ describe('FormFieldArray - Drag and Drop', () => {
     expect(values?.testArray).toEqual(['Third', 'First', 'Second'])
 
     // Verify DOM reflects new order
-    const items = wrapper.findAll('.ff-array__item')
+    const items = wrapper.findAll('[data-array-item]')
     const inputs = [
       items[0]!.find('input[id="test-section_testArray_0"]'),
       items[1]!.find('input[id="test-section_testArray_1"]'),
@@ -216,7 +216,7 @@ describe('FormFieldArray - Drag and Drop', () => {
     expect(values?.testArray).toEqual(['C', 'B', 'D', 'A'])
 
     // Verify final DOM order matches vee-validate state
-    const items = wrapper.findAll('.ff-array__item')
+    const items = wrapper.findAll('[data-array-item]')
     const expectedOrder = ['C', 'B', 'D', 'A']
     items.forEach((item, index) => {
       const input = item.find(`input[id="test-section_testArray_${index}"]`)
@@ -261,7 +261,7 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
     expect(arrayValues.map((v) => v.name)).toEqual(['Item A', 'Item B', 'Item C', 'Item D'])
 
     // Verify sortable UI is present
-    let items = wrapper.findAll('.ff-array__item')
+    let items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(4)
     const dragHandles = wrapper.findAll('.drag-handle')
     expect(dragHandles).toHaveLength(4)
@@ -276,7 +276,7 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
     expect(arrayValues.map((v) => v.order)).toEqual([1, 4, 2, 3])
 
     // Remove middle item (Item D at new position 1)
-    items = wrapper.findAll('.ff-array__item')
+    items = wrapper.findAll('[data-array-item]')
     const secondItem = items[1]
     const removeButton = secondItem!
       .findAll('button')
@@ -290,7 +290,7 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
     expect(arrayValues.map((v) => v.order)).toEqual([1, 2, 3])
 
     // Verify 3 items remain after removal
-    expect(wrapper.findAll('.ff-array__item')).toHaveLength(3)
+    expect(wrapper.findAll('[data-array-item]')).toHaveLength(3)
 
     // SIMULATE DRAG: Reorder remaining items
     // Move 'Item C' (index 2) to position 0 → ['Item C', 'Item A', 'Item B']
@@ -344,7 +344,7 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
     )
 
     // Verify all items rendered with drag handles
-    let items = wrapper.findAll('.ff-array__item')
+    let items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(10)
     const dragHandles = wrapper.findAll('.drag-handle')
     expect(dragHandles).toHaveLength(10)
@@ -360,7 +360,7 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
     expect(arrayValues[2]?.value).toBe(10)
 
     // Remove several items from different positions
-    items = wrapper.findAll('.ff-array__item')
+    items = wrapper.findAll('[data-array-item]')
 
     // Remove last item (Item 8 at position 9)
     let removeButton = items[9]!
@@ -370,7 +370,7 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
     await waitForArrayUpdate()
 
     // Remove first item
-    items = wrapper.findAll('.ff-array__item')
+    items = wrapper.findAll('[data-array-item]')
     removeButton = items[0]!
       .findAll('button')
       .find((btn: DOMWrapper<Element>) => btn.attributes('aria-label')?.includes('Remove'))
@@ -382,7 +382,7 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
     await simulateDragAndDrop(wrapper, 3, 1)
 
     // Remove middle item
-    items = wrapper.findAll('.ff-array__item')
+    items = wrapper.findAll('[data-array-item]')
     removeButton = items[4]!
       .findAll('button')
       .find((btn: DOMWrapper<Element>) => btn.attributes('aria-label')?.includes('Remove'))
@@ -418,7 +418,7 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
     })
 
     // Verify empty state
-    let items = wrapper.findAll('.ff-array__item')
+    let items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(0)
 
     // Add items to sortable array
@@ -429,7 +429,7 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
     await waitForArrayUpdate()
 
     // Verify items have drag handles
-    items = wrapper.findAll('.ff-array__item')
+    items = wrapper.findAll('[data-array-item]')
     expect(items).toHaveLength(3)
     const dragHandles = wrapper.findAll('.drag-handle')
     expect(dragHandles).toHaveLength(3)
