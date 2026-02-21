@@ -129,6 +129,7 @@ definePageMeta({
     <AdminEditLayout
       :breadcrumbs="breadcrumbs"
       :is-dirty="store.isDirty"
+      :show-preview="false"
       :show-discard-dialog="showDiscardDialog"
       @update:show-discard-dialog="showDiscardDialog = $event"
       @confirm-discard="confirmDiscard"

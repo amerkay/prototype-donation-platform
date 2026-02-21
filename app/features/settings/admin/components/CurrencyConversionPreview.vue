@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { ArrowDown } from 'lucide-vue-next'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import AmountSelector from '~/features/donation-form/donor/components/AmountSelector.vue'
@@ -10,6 +10,7 @@ import {
 } from '~/features/donation-form/shared/composables/useCurrency'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { currencyOpenAccordionId } from '~/features/settings/admin/forms/currency-settings-form'
+import { activateHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
 import type { PresetAmount } from '~/features/donation-form/shared/types'
@@ -44,6 +45,10 @@ watch(currencyOpenAccordionId, (id) => {
 
 watch(selectedCurrency, (currency) => {
   currencyOpenAccordionId.value = currency
+  // Switch to multipliers tab and open the currency's accordion
+  nextTick(() => {
+    activateHashTarget(`currencies.currencyTabs.multipliers.${currency}`)
+  })
 })
 
 /** Find the most recently updated donation form whose baseDefaultCurrency matches org default */
@@ -108,19 +113,6 @@ const dummyAmount = ref(0)
 
 <template>
   <div class="space-y-4">
-    <!-- Source context -->
-    <div v-if="sourceForm" class="text-muted-foreground text-xs leading-relaxed">
-      Showing presets from
-      <span class="text-foreground font-medium">{{ sourceForm.campaignName }}</span>
-      <span class="mx-0.5">&rsaquo;</span>
-      <NuxtLink
-        :to="sourceForm.formLink"
-        class="text-foreground font-medium underline underline-offset-2 hover:text-primary"
-      >
-        {{ sourceForm.formName }}
-      </NuxtLink>
-    </div>
-
     <template v-if="!sourceForm">
       <div class="text-muted-foreground py-8 text-center text-sm">
         No donation forms with preset amounts found.
@@ -174,6 +166,19 @@ const dummyAmount = ref(0)
       <p v-else class="text-muted-foreground py-2 text-center text-xs italic">
         Add more currencies to see conversion preview
       </p>
+
+      <!-- Source context -->
+      <div class="text-muted-foreground text-xs leading-relaxed">
+        Showing presets from
+        <span class="text-foreground font-medium">{{ sourceForm.campaignName }}</span>
+        <span class="mx-0.5">&rsaquo;</span>
+        <NuxtLink
+          :to="sourceForm.formLink"
+          class="text-foreground font-medium underline underline-offset-2 hover:text-primary"
+        >
+          {{ sourceForm.formName }}
+        </NuxtLink>
+      </div>
     </template>
   </div>
 </template>
