@@ -96,7 +96,7 @@ const TABS = [
 
       <TabsContent value="campaign">
         <div :style="brandingStyle">
-          <CrowdfundingPage v-if="previewCampaign" :campaign="previewCampaign" />
+          <CrowdfundingPage v-if="previewCampaign" :campaign="previewCampaign" :currency="selectedCurrency" />
           <p v-else class="text-sm text-muted-foreground text-center py-8">
             No campaigns with crowdfunding pages yet.
           </p>

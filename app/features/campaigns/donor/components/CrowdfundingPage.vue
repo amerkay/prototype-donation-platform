@@ -6,6 +6,7 @@ import {
   BRANDING_STYLE_KEY
 } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useSocialSharingSettingsStore } from '~/features/settings/admin/stores/socialSharingSettings'
 import { useCampaignShare } from '~/features/campaigns/shared/composables/useCampaignShare'
 import ShareDialog from './ShareDialog.vue'
@@ -21,6 +22,7 @@ import { Heart, ChevronDown, ChevronUp, ExternalLink } from 'lucide-vue-next'
 
 const props = defineProps<{
   campaign: Campaign
+  currency?: string
 }>()
 
 // Provide branding to teleported modals (ShareDialog, DonateDialog)
@@ -28,6 +30,10 @@ const { brandingStyle } = useBrandingCssVars()
 provide(BRANDING_STYLE_KEY, brandingStyle)
 
 const charityStore = useCharitySettingsStore()
+const currencyStore = useCurrencySettingsStore()
+const charityInfo = computed(() =>
+  charityStore.getCharityForCurrency(props.currency ?? currencyStore.defaultCurrency)
+)
 const orgSharing = useSocialSharingSettingsStore()
 const { campaignUrl } = useCampaignShare(computed(() => props.campaign.id))
 
@@ -192,25 +198,25 @@ const hasSocialSharing = computed(() => {
               </CardHeader>
               <CardContent class="px-5 space-y-2">
                 <div>
-                  <h4 class="font-semibold text-sm">{{ charityStore.name }}</h4>
+                  <h4 class="font-semibold text-sm">{{ charityInfo.name }}</h4>
                   <p class="text-xs text-muted-foreground">
-                    Registered Charity: {{ charityStore.registrationNumber }}
+                    Registered Charity: {{ charityInfo.registrationNumber }}
                   </p>
                 </div>
-                <p v-if="charityStore.formattedAddress" class="text-xs text-muted-foreground">
-                  {{ charityStore.formattedAddress }}
+                <p v-if="charityInfo.address" class="text-xs text-muted-foreground">
+                  {{ charityInfo.address }}
                 </p>
                 <p class="text-sm text-muted-foreground line-clamp-3">
-                  {{ charityStore.description }}
+                  {{ charityInfo.description }}
                 </p>
                 <a
-                  v-if="charityStore.website"
-                  :href="charityStore.website"
+                  v-if="charityInfo.website"
+                  :href="charityInfo.website"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="inline-flex items-center gap-1 text-sm text-primary hover:underline"
                 >
-                  {{ charityStore.website.replace(/^https?:\/\//, '') }}
+                  {{ charityInfo.website.replace(/^https?:\/\//, '') }}
                   <ExternalLink class="w-3 h-3" />
                 </a>
               </CardContent>

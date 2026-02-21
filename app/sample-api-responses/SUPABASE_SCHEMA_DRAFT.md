@@ -231,7 +231,6 @@ CREATE TABLE organization_charity_currencies (
   name TEXT NOT NULL DEFAULT '',
   registration_number TEXT NOT NULL DEFAULT '',
   phone TEXT NOT NULL DEFAULT '',
-  reply_to_email TEXT NOT NULL DEFAULT '',
   website TEXT NOT NULL DEFAULT '',
   description TEXT NOT NULL DEFAULT '',
   address_line1 TEXT NOT NULL DEFAULT '',

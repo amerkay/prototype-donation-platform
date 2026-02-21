@@ -33,7 +33,6 @@ export const charitySettings: CharitySettings = {
       name: 'Borneo Orangutan Survival Foundation',
       registrationNumber: 'RCN123456',
       phone: '+44 20 7219 3000',
-      replyToEmail: 'info@borneoorangutansurvival.org',
       website: 'https://borneoorangutansurvival.org/',
       description:
         'We rescue, rehabilitate, and release orangutans while protecting their natural habitat through community engagement and sustainable forest management programs across Borneo and Sumatra.',
@@ -55,7 +54,6 @@ export const charitySettings: CharitySettings = {
       name: 'Borneo Orangutan Survival Foundation USA',
       registrationNumber: 'EIN 84-1234567',
       phone: '+1 202 555 0180',
-      replyToEmail: '',
       website: '',
       description: '',
       address: {
@@ -73,7 +71,6 @@ export const charitySettings: CharitySettings = {
       name: 'BOS Foundation Europe',
       registrationNumber: 'RSIN 8234.56.789',
       phone: '',
-      replyToEmail: '',
       website: '',
       description: '',
       address: {

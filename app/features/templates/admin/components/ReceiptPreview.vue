@@ -58,7 +58,7 @@ const receiptModel = computed<ReceiptModel>(() => ({
     registrationNumber: charityInfo.value.registrationNumber,
     address: charityInfo.value.address,
     phone: charityInfo.value.phone,
-    email: charityInfo.value.replyToEmail,
+    email: charityInfo.value.email,
     website: charityInfo.value.website
   },
   donation: {

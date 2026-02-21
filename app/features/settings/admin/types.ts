@@ -16,7 +16,6 @@ export interface CharityCurrencyEntry {
   name: string
   registrationNumber: string
   phone: string
-  replyToEmail: string
   website: string
   description: string
   address: CharityAddress
@@ -52,7 +51,6 @@ export const CHARITY_ENTRY_FIELDS = [
   'name',
   'registrationNumber',
   'phone',
-  'replyToEmail',
   'website',
   'description'
 ] as const

@@ -26,7 +26,6 @@ function createEmptyEntry(currency: string): CharityCurrencyEntry {
     name: '',
     registrationNumber: '',
     phone: '',
-    replyToEmail: '',
     website: '',
     description: '',
     address: { ...EMPTY_ADDRESS },
@@ -88,7 +87,6 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
   const name = computed(() => defaultEntry.value?.name ?? '')
   const registrationNumber = computed(() => defaultEntry.value?.registrationNumber ?? '')
   const phone = computed(() => defaultEntry.value?.phone ?? '')
-  const replyToEmail = computed(() => defaultEntry.value?.replyToEmail ?? '')
   const website = computed(() => defaultEntry.value?.website ?? '')
   const description = computed(() => defaultEntry.value?.description ?? '')
   const address = computed(
@@ -117,7 +115,7 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
         name: string
         registrationNumber: string
         phone: string
-        replyToEmail: string
+        email: string
         website: string
         description: string
         address: string
@@ -136,7 +134,7 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
           name: resolve('name'),
           registrationNumber: resolve('registrationNumber'),
           phone: resolve('phone'),
-          replyToEmail: resolve('replyToEmail'),
+          email: entry?.emailSenderAddress || defEntry?.emailSenderAddress || '',
           website: resolve('website'),
           description: resolve('description'),
           address: entryAddr || defaultAddr
@@ -198,7 +196,6 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
     name,
     registrationNumber,
     phone,
-    replyToEmail,
     website,
     description,
     address,

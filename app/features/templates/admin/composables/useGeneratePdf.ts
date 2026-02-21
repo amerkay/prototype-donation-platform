@@ -129,7 +129,7 @@ export function useGeneratePdf() {
               registrationNumber: charityInfo.registrationNumber,
               address: charityInfo.address,
               phone: charityInfo.phone,
-              email: charityInfo.replyToEmail,
+              email: charityInfo.email,
               website: charityInfo.website
             },
             donation: {

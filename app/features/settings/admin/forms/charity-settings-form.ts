@@ -63,7 +63,6 @@ function createTabFields(
   charityStore: ReturnType<typeof useCharitySettingsStore>
 ): Record<string, FieldDef> {
   const optionalString = (max: number) => z.string().max(max).optional().or(z.literal(''))
-  const optionalEmail = z.string().email('Must be a valid email').optional().or(z.literal(''))
   const optionalUrl = z.string().url('Must be a valid URL').optional().or(z.literal(''))
 
   const name = textField('name', {
@@ -94,14 +93,6 @@ function createTabFields(
     placeholder: isDefault ? '+44 20 7219 3000' : `Phone for ${currency}`,
     maxLength: 30,
     rules: optionalString(30)
-  })
-
-  const replyToEmail = textField('replyToEmail', {
-    label: 'Reply-to Email',
-    description: isDefault ? 'Email address used as reply-to on donor communications' : undefined,
-    placeholder: isDefault ? 'info@example.org' : `Reply-to email for ${currency}`,
-    maxLength: 254,
-    rules: optionalEmail
   })
 
   const website = textField('website', {
@@ -192,7 +183,6 @@ function createTabFields(
   result.registrationNumber = registrationNumber
   result.address = address
   result.phone = phone
-  result.replyToEmail = replyToEmail
   result.website = { ...website, showSeparatorAfter: true }
   result.description = { ...description, showSeparatorAfter: true }
 
@@ -217,7 +207,6 @@ function createTabFields(
         if (entry) {
           entry.emailSenderName = member.name
           entry.emailSenderAddress = member.email
-          entry.replyToEmail = member.email
         }
       }
     }
