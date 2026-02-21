@@ -5,10 +5,10 @@
 import * as z from 'zod'
 import type { CheckboxFieldConfig } from '../types'
 import { slugify, extractFieldValue } from './field-base'
+import { createOptionalField } from '../utils/common-config-fields'
 import {
   fieldGroup,
   textField,
-  toggleField,
   checkboxField as checkboxFieldConstructor,
   arrayField
 } from '~/features/_library/form-builder/api'
@@ -37,12 +37,7 @@ export function createCheckboxFieldAdminConfig(): Record<string, FieldDef> {
           }),
           rules: z.array(z.string().min(1)).optional()
         }),
-        optional: toggleField('optional', {
-          label: 'Optional',
-          description: 'Allow users to skip this field',
-          defaultValue: true,
-          rules: z.boolean().optional()
-        })
+        optional: createOptionalField()
       }
     })
   }

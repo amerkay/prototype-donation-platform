@@ -5,11 +5,11 @@
 import * as z from 'zod'
 import type { SliderFieldConfig } from '../types'
 import { extractFieldValue } from './field-base'
+import { createOptionalField } from '../utils/common-config-fields'
 import {
   fieldGroup,
   numberField,
   textField,
-  toggleField,
   sliderField as sliderFieldConstructor
 } from '~/features/_library/form-builder/api'
 import type { FieldDef, FieldContext } from '~/features/_library/form-builder/types'
@@ -57,12 +57,7 @@ export function createSliderFieldAdminConfig(): Record<string, FieldDef> {
           optional: true,
           rules: z.string().max(10).optional()
         }),
-        optional: toggleField('optional', {
-          label: 'Optional',
-          description: 'Allow users to skip this field',
-          defaultValue: true,
-          rules: z.boolean().optional()
-        }),
+        optional: createOptionalField(),
         defaultValue: sliderFieldConstructor('defaultValue', {
           label: 'Default Value',
           description: 'Preview your slider configuration',

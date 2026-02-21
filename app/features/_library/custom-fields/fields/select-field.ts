@@ -5,10 +5,10 @@
 import * as z from 'zod'
 import type { SelectFieldConfig } from '../types'
 import { slugify, extractFieldValue } from './field-base'
+import { createOptionalField, createPlaceholderField } from '../utils/common-config-fields'
 import {
   fieldGroup,
   textField,
-  toggleField,
   selectField as selectFieldConstructor,
   arrayField
 } from '~/features/_library/form-builder/api'
@@ -36,18 +36,8 @@ export function createSelectFieldAdminConfig(): Record<string, FieldDef> {
       collapsibleDefaultOpen: false,
       showSeparatorAfter: true,
       fields: {
-        placeholder: textField('placeholder', {
-          label: 'Placeholder',
-          placeholder: 'Select an option...',
-          optional: true,
-          rules: z.string().optional()
-        }),
-        optional: toggleField('optional', {
-          label: 'Optional',
-          description: 'Allow users to skip this field',
-          defaultValue: true,
-          rules: z.boolean().optional()
-        }),
+        placeholder: createPlaceholderField('Select an option...'),
+        optional: createOptionalField(),
         defaultValue: selectFieldConstructor('defaultValue', {
           label: 'Default Value',
           placeholder: 'Select default option...',

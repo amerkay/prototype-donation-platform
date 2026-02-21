@@ -12,6 +12,12 @@ import {
   buildSingleEntityEvaluators,
   buildCollectionEvaluators
 } from '~/features/_admin/utils/buildCrossEntityEvaluators'
+import {
+  SUBSCRIPTION_FILTER_SCHEMA,
+  PAYMENT_METHOD_FILTER_OPTIONS,
+  DONATION_STATUS_FILTER_OPTIONS,
+  DONATION_TYPE_FILTER_OPTIONS
+} from '~/features/_admin/utils/shared-filter-schemas'
 
 /**
  * Build donation filter schema with dynamic product + custom field options.
@@ -31,32 +37,20 @@ function useDonationSchema(allTransactions: Ref<Transaction[]>) {
         label: 'Status',
         type: 'string',
         group: 'Transaction',
-        options: [
-          { value: 'succeeded', label: 'Succeeded' },
-          { value: 'pending', label: 'Pending' },
-          { value: 'failed', label: 'Failed' },
-          { value: 'refunded', label: 'Refunded' }
-        ]
+        options: DONATION_STATUS_FILTER_OPTIONS
       },
       totalAmount: { label: 'Amount', type: 'number', group: 'Transaction' },
       'paymentMethod.type': {
         label: 'Payment Method',
         type: 'string',
         group: 'Transaction',
-        options: [
-          { value: 'card', label: 'Card' },
-          { value: 'paypal', label: 'PayPal' },
-          { value: 'bank_transfer', label: 'Bank Transfer' }
-        ]
+        options: PAYMENT_METHOD_FILTER_OPTIONS
       },
       type: {
         label: 'Type',
         type: 'string',
         group: 'Transaction',
-        options: [
-          { value: 'one_time', label: 'One-time' },
-          { value: 'subscription_payment', label: 'Subscription' }
-        ]
+        options: DONATION_TYPE_FILTER_OPTIONS
       },
       giftAid: { label: 'Gift Aid', type: 'boolean', group: 'Donor' },
       product: {
@@ -78,30 +72,7 @@ function useDonationSchema(allTransactions: Ref<Transaction[]>) {
       'donor.totalDonated': { label: 'Total Donated', type: 'number', group: 'Related Donor' },
       'donor.donationCount': { label: 'Donation Count', type: 'number', group: 'Related Donor' },
       'donor.giftAid': { label: 'Gift Aid Eligible', type: 'boolean', group: 'Related Donor' },
-      'subscription.status': {
-        label: 'Status',
-        type: 'string',
-        group: 'Related Subscription',
-        options: [
-          { value: 'active', label: 'Active' },
-          { value: 'paused', label: 'Paused' },
-          { value: 'cancelled', label: 'Cancelled' }
-        ]
-      },
-      'subscription.frequency': {
-        label: 'Frequency',
-        type: 'string',
-        group: 'Related Subscription',
-        options: [
-          { value: 'monthly', label: 'Monthly' },
-          { value: 'yearly', label: 'Yearly' }
-        ]
-      },
-      'subscription.amount': {
-        label: 'Amount',
-        type: 'number',
-        group: 'Related Subscription'
-      },
+      ...SUBSCRIPTION_FILTER_SCHEMA,
       ...buildCustomFieldSchema(allTransactions.value)
     }
   })

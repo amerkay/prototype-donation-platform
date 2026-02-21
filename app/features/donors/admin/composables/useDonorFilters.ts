@@ -8,6 +8,12 @@ import {
   withCustomFieldEvaluators
 } from '~/features/_admin/utils/buildCustomFieldSchema'
 import { buildCollectionEvaluators } from '~/features/_admin/utils/buildCrossEntityEvaluators'
+import {
+  SUBSCRIPTION_FILTER_SCHEMA,
+  PAYMENT_METHOD_FILTER_OPTIONS,
+  DONATION_STATUS_FILTER_OPTIONS,
+  DONATION_TYPE_FILTER_OPTIONS
+} from '~/features/_admin/utils/shared-filter-schemas'
 
 const BASE_SCHEMA: ContextSchema = {
   totalDonated: { label: 'Total Donated', type: 'number', group: 'Donor' },
@@ -17,53 +23,22 @@ const BASE_SCHEMA: ContextSchema = {
     label: 'Status',
     type: 'string',
     group: 'Related Donation',
-    options: [
-      { value: 'succeeded', label: 'Succeeded' },
-      { value: 'pending', label: 'Pending' },
-      { value: 'failed', label: 'Failed' },
-      { value: 'refunded', label: 'Refunded' }
-    ]
+    options: DONATION_STATUS_FILTER_OPTIONS
   },
   'donation.totalAmount': { label: 'Amount', type: 'number', group: 'Related Donation' },
   'donation.paymentMethod.type': {
     label: 'Payment Method',
     type: 'string',
     group: 'Related Donation',
-    options: [
-      { value: 'card', label: 'Card' },
-      { value: 'paypal', label: 'PayPal' },
-      { value: 'bank_transfer', label: 'Bank Transfer' }
-    ]
+    options: PAYMENT_METHOD_FILTER_OPTIONS
   },
   'donation.type': {
     label: 'Type',
     type: 'string',
     group: 'Related Donation',
-    options: [
-      { value: 'one_time', label: 'One-time' },
-      { value: 'subscription_payment', label: 'Subscription' }
-    ]
+    options: DONATION_TYPE_FILTER_OPTIONS
   },
-  'subscription.status': {
-    label: 'Status',
-    type: 'string',
-    group: 'Related Subscription',
-    options: [
-      { value: 'active', label: 'Active' },
-      { value: 'paused', label: 'Paused' },
-      { value: 'cancelled', label: 'Cancelled' }
-    ]
-  },
-  'subscription.frequency': {
-    label: 'Frequency',
-    type: 'string',
-    group: 'Related Subscription',
-    options: [
-      { value: 'monthly', label: 'Monthly' },
-      { value: 'yearly', label: 'Yearly' }
-    ]
-  },
-  'subscription.amount': { label: 'Amount', type: 'number', group: 'Related Subscription' }
+  ...SUBSCRIPTION_FILTER_SCHEMA
 }
 
 function useDonorSchema() {

@@ -2,25 +2,7 @@
  * Base utilities for field factories
  * Shared helpers to keep field factories DRY
  */
-import type { ConditionGroup } from '~/features/_library/form-builder/conditions'
-
-/**
- * Base configuration shared by all custom fields
- */
-export interface BaseFieldConfig {
-  id: string
-  label: string
-  optional?: boolean
-  defaultValue?: unknown
-  /** Nested advanced settings from admin form (contains field-specific config) */
-  advancedSettings?: Record<string, unknown>
-  /** Whether visibility conditions are enabled for this field */
-  enableVisibilityConditions?: boolean
-  /** Visibility condition configuration */
-  visibilityConditions?: {
-    visibleWhen?: ConditionGroup
-  }
-}
+export type { BaseFieldConfig } from '../types'
 
 /**
  * Slugify a string to URL-friendly format

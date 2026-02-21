@@ -5,10 +5,10 @@
 import * as z from 'zod'
 import type { NumberFieldConfig } from '../types'
 import { extractFieldValue } from './field-base'
+import { createOptionalField } from '../utils/common-config-fields'
 import {
   fieldGroup,
-  numberField as numberFieldConstructor,
-  toggleField
+  numberField as numberFieldConstructor
 } from '~/features/_library/form-builder/api'
 import type { FieldDef } from '~/features/_library/form-builder/types'
 
@@ -42,12 +42,7 @@ export function createNumberFieldAdminConfig(): Record<string, FieldDef> {
           min: 0,
           rules: z.number().min(1).optional()
         }),
-        optional: toggleField('optional', {
-          label: 'Optional',
-          description: 'Allow users to skip this field',
-          defaultValue: true,
-          rules: z.boolean().optional()
-        }),
+        optional: createOptionalField(),
         defaultValue: numberFieldConstructor('defaultValue', {
           label: 'Default Value',
           placeholder: 'Optional default number',

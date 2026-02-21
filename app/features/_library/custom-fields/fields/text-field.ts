@@ -6,11 +6,11 @@ import * as z from 'zod'
 import type { TextFieldConfig } from '../types'
 import { extractFieldValue } from './field-base'
 import {
-  fieldGroup,
-  textField as textFieldConstructor,
-  numberField,
-  toggleField
-} from '~/features/_library/form-builder/api'
+  createOptionalField,
+  createPlaceholderField,
+  createMaxLengthField
+} from '../utils/common-config-fields'
+import { fieldGroup, textField as textFieldConstructor } from '~/features/_library/form-builder/api'
 import type { FieldDef } from '~/features/_library/form-builder/types'
 
 /**
@@ -25,26 +25,9 @@ export function createTextFieldAdminConfig(): Record<string, FieldDef> {
       collapsibleDefaultOpen: false,
       showSeparatorAfter: true,
       fields: {
-        placeholder: textFieldConstructor('placeholder', {
-          label: 'Placeholder',
-          placeholder: 'Enter placeholder text...',
-          optional: true,
-          rules: z.string().optional()
-        }),
-        maxLength: numberField('maxLength', {
-          label: 'Maximum Length',
-          placeholder: '100',
-          optional: true,
-          min: 1,
-          max: 10000,
-          rules: z.number().min(1).max(10000).optional()
-        }),
-        optional: toggleField('optional', {
-          label: 'Optional',
-          description: 'Allow users to skip this field',
-          defaultValue: true,
-          rules: z.boolean().optional()
-        }),
+        placeholder: createPlaceholderField(),
+        maxLength: createMaxLengthField(),
+        optional: createOptionalField(),
         defaultValue: textFieldConstructor('defaultValue', {
           label: 'Default Value',
           placeholder: 'Optional default text',

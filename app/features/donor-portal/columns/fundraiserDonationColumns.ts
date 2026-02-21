@@ -4,7 +4,7 @@ import type { CampaignDonation } from '~/features/campaigns/shared/types'
 import { Button } from '@/components/ui/button'
 import { ArrowUpDown } from 'lucide-vue-next'
 import { formatCurrency } from '~/lib/formatCurrency'
-import { formatDate } from '~/lib/formatDate'
+import { createDateColumn } from '~/features/_admin/utils/column-builders'
 
 /**
  * Privacy-respecting donor name: "FirstName L." or "Anonymous"
@@ -17,21 +17,7 @@ const initializedName = (donation: CampaignDonation): string => {
 }
 
 export const fundraiserDonationColumns: ColumnDef<CampaignDonation>[] = [
-  {
-    accessorKey: 'createdAt',
-    header: ({ column }) =>
-      h(
-        Button,
-        {
-          variant: 'ghost',
-          class: '-ml-2.5',
-          onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
-        },
-        () => ['Date', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
-      ),
-    cell: ({ row }) =>
-      h('span', { class: 'text-sm whitespace-nowrap' }, formatDate(row.getValue('createdAt')))
-  },
+  createDateColumn<CampaignDonation>(),
   {
     id: 'donor',
     header: 'Donor',
@@ -62,12 +48,7 @@ export const fundraiserDonationColumns: ColumnDef<CampaignDonation>[] = [
 
 /** Compact version for dashboard preview (no sorting) */
 export const fundraiserDonationColumnsCompact: ColumnDef<CampaignDonation>[] = [
-  {
-    accessorKey: 'createdAt',
-    header: 'Date',
-    cell: ({ row }) =>
-      h('span', { class: 'text-sm whitespace-nowrap' }, formatDate(row.getValue('createdAt')))
-  },
+  createDateColumn<CampaignDonation>({ sortable: false }),
   {
     id: 'donor',
     header: 'Donor',

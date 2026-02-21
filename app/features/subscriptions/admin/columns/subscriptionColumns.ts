@@ -4,10 +4,11 @@ import type { Subscription } from '~/features/subscriptions/shared/types'
 import { Button } from '@/components/ui/button'
 import { ArrowUpDown } from 'lucide-vue-next'
 import { formatCurrency } from '~/lib/formatCurrency'
-
 import { formatDate } from '~/lib/formatDate'
-import { paymentMethodLabel } from '~/lib/formatPaymentMethod'
-import StatusBadge from '~/components/StatusBadge.vue'
+import {
+  createPaymentMethodColumn,
+  createStatusColumn
+} from '~/features/_admin/utils/column-builders'
 
 type EnrichedSubscription = Subscription & { donorName: string; donorEmail: string }
 
@@ -64,16 +65,7 @@ export const subscriptionColumns: ColumnDef<EnrichedSubscription>[] = [
         )
       ])
   },
-  {
-    id: 'paymentMethod',
-    header: 'Payment',
-    cell: ({ row }) =>
-      h(
-        'span',
-        { class: 'text-sm whitespace-nowrap capitalize' },
-        paymentMethodLabel(row.original.paymentMethod)
-      )
-  },
+  createPaymentMethodColumn<EnrichedSubscription>(),
   {
     accessorKey: 'nextBillingDate',
     header: 'Next Billing',
@@ -109,9 +101,5 @@ export const subscriptionColumns: ColumnDef<EnrichedSubscription>[] = [
         )
       ])
   },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    cell: ({ row }) => h(StatusBadge, { status: row.getValue('status') as string })
-  }
+  createStatusColumn<EnrichedSubscription>()
 ]

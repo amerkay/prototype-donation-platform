@@ -5,10 +5,10 @@
 import * as z from 'zod'
 import type { RadioGroupFieldConfig } from '../types'
 import { slugify, extractFieldValue } from './field-base'
+import { createOptionalField } from '../utils/common-config-fields'
 import {
   fieldGroup,
   textField,
-  toggleField,
   selectField,
   radioGroupField as radioGroupFieldConstructor,
   arrayField
@@ -46,12 +46,7 @@ export function createRadioGroupFieldAdminConfig(): Record<string, FieldDef> {
           defaultValue: 'vertical',
           rules: z.enum(['vertical', 'horizontal']).optional()
         }),
-        optional: toggleField('optional', {
-          label: 'Optional',
-          description: 'Allow users to skip this field',
-          defaultValue: true,
-          rules: z.boolean().optional()
-        }),
+        optional: createOptionalField(),
         defaultValue: selectField('defaultValue', {
           label: 'Default Value',
           description: 'Select which option should be pre-selected',

@@ -6,26 +6,10 @@ import { ref, computed, watch, type MaybeRefOrGetter } from 'vue'
 import type { ContextSchema } from '../conditions/types'
 import { OPERATORS } from '../conditions/operators'
 import { buildFilterForm } from '../conditions/ui/build-filter-form'
+import { getValueAtPath } from '../utils/getValueAtPath'
 import type { FilterConditionValues, FilterStateOptions } from './types'
 
 const DEFAULT_VALUES: FilterConditionValues = { match: 'all', conditions: [] }
-
-/**
- * Get value at dot-notation path from an object
- */
-function getValueAtPath(obj: unknown, path: string): unknown {
-  if (!path || obj == null) return undefined
-  const record = obj as Record<string, unknown>
-  if (path in record) return record[path]
-
-  const keys = path.split('.')
-  let current: unknown = obj
-  for (const key of keys) {
-    if (current == null) return undefined
-    current = (current as Record<string, unknown>)[key]
-  }
-  return current
-}
 
 /**
  * Encode filter values to base64 for URL param
