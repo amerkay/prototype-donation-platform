@@ -25,15 +25,6 @@ const EMPTY_EMAIL_FIELDS = {
   emailSignature: ''
 }
 
-const EMPTY_ADDRESS = {
-  address1: '',
-  address2: '',
-  city: '',
-  region: '',
-  postcode: '',
-  country: ''
-}
-
 export const charitySettings: CharitySettings = {
   slug: 'bosf',
   currencyEntries: {
@@ -61,24 +52,38 @@ export const charitySettings: CharitySettings = {
     },
     USD: {
       currency: 'USD',
-      name: '',
-      registrationNumber: '',
-      phone: '',
+      name: 'Borneo Orangutan Survival Foundation USA',
+      registrationNumber: 'EIN 84-1234567',
+      phone: '+1 202 555 0180',
       replyToEmail: '',
       website: '',
       description: '',
-      address: { ...EMPTY_ADDRESS },
+      address: {
+        address1: '1250 Connecticut Ave NW',
+        address2: 'Suite 700',
+        city: 'Washington',
+        region: 'DC',
+        postcode: '20036',
+        country: 'US'
+      },
       ...EMPTY_EMAIL_FIELDS
     },
     EUR: {
       currency: 'EUR',
-      name: '',
-      registrationNumber: '',
+      name: 'BOS Foundation Europe',
+      registrationNumber: 'RSIN 8234.56.789',
       phone: '',
       replyToEmail: '',
       website: '',
       description: '',
-      address: { ...EMPTY_ADDRESS },
+      address: {
+        address1: 'Keizersgracht 520',
+        address2: '',
+        city: 'Amsterdam',
+        region: 'North Holland',
+        postcode: '1017 EK',
+        country: 'NL'
+      },
       ...EMPTY_EMAIL_FIELDS
     }
   }

@@ -34,6 +34,9 @@ import {
 
 const CURRENCY_OPTIONS = getCurrencyOptionsForSelect()
 
+/** Module-level ref for bi-directional preview ↔ form tab sync */
+export const charityActiveTab = ref<string>('')
+
 function formatAddressSummary(a: Partial<CharityAddress> | undefined): string {
   if (!a) return ''
   return formatCharityAddress(a as CharityAddress)
@@ -306,10 +309,16 @@ export const useCharitySettingsForm = defineForm('charitySettings', () => {
     Object.assign(storeMappings, buildStoreMappings(currency, `currencyTabs.${currency}`))
   })
 
+  // Initialize charityActiveTab to default currency
+  charityActiveTab.value = currencyStore.defaultCurrency
+
   const currencyTabs = tabsField('currencyTabs', {
     label: 'Currency-Specific Settings',
     tabsListClass: 'w-full',
     defaultValue: currencyStore.defaultCurrency,
+    onTabChange: (tab) => {
+      charityActiveTab.value = tab
+    },
     tabs
   })
 

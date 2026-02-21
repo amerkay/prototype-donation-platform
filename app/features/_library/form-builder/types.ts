@@ -397,6 +397,7 @@ export interface TabsFieldConfig extends BaseFieldConfig {
   tabs: TabDefinitionConfig[]
   defaultValue?: string
   tabsListClass?: string
+  onTabChange?: (tabValue: string) => void
 }
 
 export interface CardFieldConfig extends BaseFieldConfig {

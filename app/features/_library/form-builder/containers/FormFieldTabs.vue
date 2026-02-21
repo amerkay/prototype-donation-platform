@@ -50,6 +50,11 @@ watch(
   { immediate: true }
 )
 
+// Notify consumer of tab changes
+watch(activeTab, (value) => {
+  props.meta.onTabChange?.(value)
+})
+
 // Compute combined errors for each tab using lightweight composable
 const tabErrorTrackers = Object.fromEntries(
   props.meta.tabs.map((tab: TabDefinitionConfig) => {
