@@ -93,14 +93,20 @@ const termsPreviewKey = computed(
 // Suppress reverse sync when programmatically setting values
 let suppressAccordionToTab = false
 let suppressTabToAccordion = false
+let suppressHashActivation = false
 
 // Form currency tab → preview currency + switch to receipt tab
 watch(charityActiveTab, (tab) => {
   if (tab && currencyStore.supportedCurrencies.includes(tab)) {
-    selectedCurrency.value = tab
+    suppressHashActivation = true
     suppressTabToAccordion = true
+    selectedCurrency.value = tab
     activeTab.value = 'receipt'
-    suppressTabToAccordion = false
+    // Clear after queued watchers have fired
+    nextTick(() => {
+      suppressTabToAccordion = false
+      suppressHashActivation = false
+    })
   }
 })
 
@@ -119,16 +125,21 @@ watch(activeTab, (tab) => {
   if (tab === 'receipt') charityOpenAccordionId.value = ACCORDION_IDS.charityDetails
   else if (tab === 'costs') charityOpenAccordionId.value = ACCORDION_IDS.costs
   else if (tab === 'terms') charityOpenAccordionId.value = ACCORDION_IDS.terms
-  suppressAccordionToTab = false
+  nextTick(() => {
+    suppressAccordionToTab = false
+  })
 })
 
-// Sync currency changes to form tab
+// Sync currency changes to form tab (only activate hash from preview-side changes)
 watch(selectedCurrency, (currency) => {
   charityActiveTab.value = currency
+  if (suppressHashActivation) return
   nextTick(() => {
     activateHashTarget(`charitySettings.currencyTabs.${currency}`)
   })
 })
+
+defineExpose({ activeTab })
 </script>
 
 <template>

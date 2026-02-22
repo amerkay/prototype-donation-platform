@@ -15,6 +15,7 @@ const originalData = computed(() => store.toSnapshot())
 const editableMode = ref(true)
 
 const formConfigRef = ref()
+const previewRef = ref<InstanceType<typeof CharitySettingsPreview>>()
 
 const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdminEdit({
   store,
@@ -65,6 +66,7 @@ definePageMeta({
 
       <template #preview-actions>
         <PreviewCurrencySelect
+          v-if="previewRef?.activeTab === 'receipt'"
           :model-value="selectedCurrency"
           :currencies="currencyStore.supportedCurrencies"
           @update:model-value="selectedCurrency = $event"
@@ -73,6 +75,7 @@ definePageMeta({
 
       <template #preview>
         <CharitySettingsPreview
+          ref="previewRef"
           v-model:selected-currency="selectedCurrency"
           :editable="editableMode"
         />

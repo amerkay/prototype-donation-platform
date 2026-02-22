@@ -85,7 +85,13 @@ const selectValue = computed({
       :autocomplete="meta.autocomplete"
       :aria-invalid="!!errors.length"
       :disabled="resolvedDisabled"
-      :class="cn('bg-background', resolvedClass)"
+      :class="
+        cn(
+          'bg-background',
+          !modelValue && resolvedPlaceholder && 'text-muted-foreground',
+          resolvedClass
+        )
+      "
       @blur="onBlur"
     >
       <NativeSelectOption v-if="resolvedPlaceholder" value="">

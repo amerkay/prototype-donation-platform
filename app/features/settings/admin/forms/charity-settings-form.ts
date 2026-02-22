@@ -27,7 +27,7 @@ import ClearAddressButton from '~/features/settings/admin/components/ClearAddres
 import { useCharityCostsForm } from '~/features/settings/admin/forms/charity-costs-form'
 import { useTermsConfigSection } from '~/features/donation-form/features/terms/admin/forms/terms-config-form'
 import { formatCharityAddress } from '~/features/settings/admin/utils/formatCharityAddress'
-import type { CharityAddress } from '~/features/settings/admin/types'
+import type { CharityAddress, CharityCurrencyEntry } from '~/features/settings/admin/types'
 import {
   CHARITY_ENTRY_FIELDS,
   CHARITY_ADDRESS_FIELDS,
@@ -65,17 +65,25 @@ function countFilledFields(d: Record<string, unknown>): number {
 function createTabFields(
   currency: string,
   isDefault: boolean,
-  charityStore: ReturnType<typeof useCharitySettingsStore>
+  charityStore: ReturnType<typeof useCharitySettingsStore>,
+  defaultCurrency: string
 ): Record<string, FieldDef> {
   const optionalString = (max: number) => z.string().max(max).optional().or(z.literal(''))
   const optionalUrl = z.string().url('Must be a valid URL').optional().or(z.literal(''))
 
+  /** For non-default tabs, show the default currency's value as placeholder */
+  const overridePlaceholder = (field: keyof CharityCurrencyEntry, fallback: string) =>
+    isDefault
+      ? fallback
+      : () => {
+          const val = charityStore.currencyEntries[defaultCurrency]?.[field]
+          return val ? `${val} (fill to override)` : fallback
+        }
+
   const name = textField('name', {
     label: 'Charity Name',
     description: 'Official registered charity name',
-    placeholder: isDefault
-      ? 'Borneo Orangutan Survival Foundation'
-      : `Charity name for ${currency}`,
+    placeholder: overridePlaceholder('name', 'Borneo Orangutan Survival Foundation'),
     maxLength: 120,
     rules: isDefault
       ? z.string().min(3, 'Charity name must be at least 3 characters').max(120)
@@ -85,7 +93,7 @@ function createTabFields(
   const registrationNumber = textField('registrationNumber', {
     label: 'Registration Number',
     description: isDefault ? 'Official charity registration number (e.g., RCN123456)' : undefined,
-    placeholder: isDefault ? 'RCN123456' : `Registration number for ${currency}`,
+    placeholder: overridePlaceholder('registrationNumber', 'RCN123456'),
     maxLength: 50,
     rules: isDefault
       ? z.string().min(3, 'Registration number is required').max(50)
@@ -95,7 +103,7 @@ function createTabFields(
   const phone = textField('phone', {
     label: 'Phone Number',
     description: isDefault ? 'Contact phone number shown on receipts' : undefined,
-    placeholder: isDefault ? '+44 20 7219 3000' : `Phone for ${currency}`,
+    placeholder: overridePlaceholder('phone', '+44 20 7219 3000'),
     maxLength: 30,
     rules: optionalString(30)
   })
@@ -103,7 +111,7 @@ function createTabFields(
   const website = textField('website', {
     label: 'Website URL',
     description: isDefault ? 'Charity website (must start with http:// or https://)' : undefined,
-    placeholder: isDefault ? 'https://example.org' : `Website for ${currency}`,
+    placeholder: overridePlaceholder('website', 'https://example.org'),
     maxLength: 200,
     showSeparatorAfter: true,
     rules: isDefault ? z.string().url('Must be a valid URL').max(200) : optionalUrl
@@ -112,9 +120,10 @@ function createTabFields(
   const description = textareaField('description', {
     label: 'Description',
     description: isDefault ? 'Brief description of the charity (max 275 chars)' : undefined,
-    placeholder: isDefault
-      ? 'We rescue, rehabilitate, and release orangutans...'
-      : `Description for ${currency}`,
+    placeholder: overridePlaceholder(
+      'description',
+      'We rescue, rehabilitate, and release orangutans...'
+    ),
     maxLength: 275,
     rows: 3,
     rules: isDefault
@@ -125,10 +134,10 @@ function createTabFields(
   // Address
   const addressSummary = computed(() => {
     const addr = charityStore.currencyEntries[currency]?.address
-    if (!addr) return 'No address set'
+    if (!addr) return isDefault ? 'No address set' : 'Fill to override default'
     const required = [addr.address1, addr.city, addr.region, addr.postcode, addr.country]
     const filled = required.filter(Boolean).length
-    if (filled === 0) return isDefault ? 'Registered charity address' : 'No address set'
+    if (filled === 0) return isDefault ? 'Registered charity address' : 'Fill to override default'
     const summary = formatAddressSummary(addr)
     if (filled < required.length) return `Incomplete — ${summary}`
     return summary
@@ -197,6 +206,14 @@ function createTabFields(
     label: 'Support Email',
     description:
       'Team member whose name and email are used as the sender, reply-to, and support contact',
+    placeholder: isDefault
+      ? 'Select team member...'
+      : () => {
+          const defaultId = charityStore.currencyEntries[defaultCurrency]?.emailSenderId
+          if (!defaultId) return 'Select team member...'
+          const member = teamStore.activeMembers.find((m) => m.id === defaultId)
+          return member ? `${member.name} (fill to override)` : 'Select team member...'
+        },
     options: () =>
       teamStore.activeMembers.map((m) => ({
         value: m.id,
@@ -219,7 +236,7 @@ function createTabFields(
   result.emailSignature = textareaField('emailSignature', {
     label: 'Email Signature',
     description: 'Appended to all outgoing emails as {{ SIGNATURE }}',
-    placeholder: 'With gratitude,\nYour Team',
+    placeholder: overridePlaceholder('emailSignature', 'With gratitude,\nYour Team'),
     showSeparatorAfter: true
   })
 
@@ -297,7 +314,7 @@ export const useCharitySettingsForm = defineForm('charitySettings', (ctx) => {
             return count > 0 ? String(count) : ''
           },
       badgeVariant: isDefault ? 'secondary' : 'default',
-      fields: createTabFields(currency, isDefault, charityStore)
+      fields: createTabFields(currency, isDefault, charityStore, currencyStore.defaultCurrency)
     })
 
     Object.assign(storeMappings, buildStoreMappings(currency, `currencyTabs.${currency}`))
