@@ -328,26 +328,22 @@ watch(
 </script>
 
 <template>
-  <!-- Single root element for data-field-key fallthrough attr (used by scroll-on-visible).
-       v-show keeps hidden fields out of grid layout. -->
-  <div v-show="isVisible">
-    <Transition
-      enter-active-class="transition-all duration-300 ease-out"
-      leave-active-class="transition-all duration-200 ease-in"
-      enter-from-class="opacity-0 -translate-y-2"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 -translate-y-2"
-    >
-      <component
-        :is="fieldComponent"
-        v-if="fieldComponent && isVisible"
-        v-bind="fieldProps"
-        @update:model-value="fieldValue = $event"
-      />
-      <div v-else-if="isVisible" class="text-destructive text-sm">
-        Unknown field type: {{ resolvedFieldType }}
-      </div>
-    </Transition>
-  </div>
+  <Transition
+    enter-active-class="transition-all duration-300 ease-out"
+    leave-active-class="transition-all duration-200 ease-in"
+    enter-from-class="opacity-0 -translate-y-2"
+    enter-to-class="opacity-100 translate-y-0"
+    leave-from-class="opacity-100 translate-y-0"
+    leave-to-class="opacity-0 -translate-y-2"
+  >
+    <component
+      :is="fieldComponent"
+      v-if="fieldComponent && isVisible"
+      v-bind="fieldProps"
+      @update:model-value="fieldValue = $event"
+    />
+    <div v-else-if="isVisible" class="text-destructive text-sm">
+      Unknown field type: {{ resolvedFieldType }}
+    </div>
+  </Transition>
 </template>

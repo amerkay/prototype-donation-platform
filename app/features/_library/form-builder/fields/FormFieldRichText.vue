@@ -110,6 +110,8 @@ const maxLengthDisplay = computed(() => {
 .rich-text-editor :deep(.tiptap) {
   padding: 0.5rem 0.75rem;
   min-height: 5rem;
+  max-height: 50vh;
+  overflow-y: auto;
   outline: none;
   font-size: 0.875rem;
 }

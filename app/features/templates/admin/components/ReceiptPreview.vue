@@ -15,6 +15,8 @@ const props = withDefaults(
   defineProps<{
     currency?: string
     editable?: boolean
+    /** When provided, overrides RECEIPT_TEMPLATE_TARGETS and enables editable mode */
+    externalTargets?: Record<string, string>
   }>(),
   { editable: false }
 )
@@ -109,7 +111,7 @@ onBeforeUnmount(() => {
 <template>
   <PreviewEditable
     ref="previewEditableRef"
-    :enabled="editable"
+    :enabled="editable || !!externalTargets"
     class="overflow-hidden rounded-lg border shadow-sm mx-auto max-w-95 w-full"
     :style="{
       aspectRatio: `${geometry.canvasWidthPx} / ${geometry.canvasHeightPx}`
@@ -125,7 +127,7 @@ onBeforeUnmount(() => {
     >
       <ReceiptLayout
         :model="receiptModel"
-        :targets="editable ? RECEIPT_TEMPLATE_TARGETS : undefined"
+        :targets="externalTargets ?? (editable ? RECEIPT_TEMPLATE_TARGETS : undefined)"
       />
     </div>
   </PreviewEditable>

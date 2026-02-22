@@ -2,7 +2,10 @@
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import StickyButtonGroup from '~/features/_admin/components/StickyButtonGroup.vue'
 import DevJsonPreview from '~/features/_admin/components/DevJsonPreview.vue'
-import { useCharitySettingsForm } from '~/features/settings/admin/forms/charity-settings-form'
+import {
+  useCharitySettingsForm,
+  charityOpenAccordionId
+} from '~/features/settings/admin/forms/charity-settings-form'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
 import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
@@ -10,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Eye } from 'lucide-vue-next'
 
 const store = useCharitySettingsStore()
-provideAccordionGroup()
+provideAccordionGroup(charityOpenAccordionId)
 
 const { formRef, modelValue, form, expose } = useAdminConfigForm({
   store,

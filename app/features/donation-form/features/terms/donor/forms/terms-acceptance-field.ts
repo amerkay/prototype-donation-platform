@@ -1,35 +1,33 @@
 import * as z from 'zod'
 import type { FieldDef } from '~/features/_library/form-builder/types'
-import { toggleField } from '~/features/_library/form-builder/api'
+import { componentField } from '~/features/_library/form-builder/api'
+import TermsAcceptanceField from '~/features/donation-form/features/terms/donor/components/TermsAcceptanceField.vue'
 
 /**
- * Create reusable terms acceptance toggle field
+ * Create reusable terms acceptance component field
  *
- * Provides a consistent required terms acceptance pattern with Zod validation.
- *
- * @param visibleWhen - Function that determines when field should be visible
- * @returns Record with acceptTerms field
- *
- * @example
- * ```typescript
- * const fields = {
- *   ...otherFields,
- *   ...createTermsAcceptanceField()
- * }
- * ```
+ * Renders a switch with label, description, and "View terms" link.
+ * Link opens a modal (mode='content') or external URL (mode='link').
  */
 export function createTermsAcceptanceField(
   visibleWhen?: (ctx: { values: Record<string, unknown> }) => boolean,
-  config?: { label?: string; description?: string; mode?: string; externalUrl?: string }
+  config?: {
+    label?: string
+    description?: string
+    mode?: string
+    externalUrl?: string
+    richContent?: string
+  }
 ): Record<string, FieldDef> {
-  const acceptTerms = toggleField('acceptTerms', {
-    label: config?.label || 'I accept the terms and conditions',
-    description: config?.description || 'I agree to the Terms of Service and Privacy Policy.',
+  const acceptTerms = componentField('acceptTerms', {
+    component: TermsAcceptanceField,
+    props: { config: config ?? {} },
     visibleWhen,
     defaultValue: false,
     rules: z.boolean().refine((val) => val === true, {
       message: 'You must accept the terms and conditions to continue'
-    })
+    }),
+    class: '-mt-2'
   })
 
   return { acceptTerms }

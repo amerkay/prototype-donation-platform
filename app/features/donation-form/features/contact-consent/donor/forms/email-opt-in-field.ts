@@ -1,5 +1,5 @@
 import type { FieldDef } from '~/features/_library/form-builder/types'
-import { toggleField } from '~/features/_library/form-builder/api'
+import { checkboxField } from '~/features/_library/form-builder/api'
 
 /**
  * Create reusable email opt-in toggle field
@@ -21,7 +21,7 @@ export function createEmailOptInField(
   visibleWhen?: (ctx: { values: Record<string, unknown> }) => boolean,
   config?: { label?: string; description?: string }
 ): Record<string, FieldDef> {
-  const joinEmailList = toggleField('joinEmailList', {
+  const joinEmailList = checkboxField('joinEmailList', {
     label: config?.label || 'Join our email list',
     description:
       config?.description || 'Get updates on our impact and latest news. Unsubscribe anytime.',

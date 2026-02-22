@@ -48,11 +48,16 @@ export function sanitizeRichText(
 ): string {
   if (!html) return ''
   const profile = options?.profile ?? 'rich-text'
-  return DOMPurify.sanitize(html, {
+  let result = DOMPurify.sanitize(html, {
     ALLOWED_TAGS: profile === 'email' ? EMAIL_ALLOWED_TAGS : RICH_TEXT_ALLOWED_TAGS,
     ALLOWED_ATTR: profile === 'email' ? EMAIL_ALLOWED_ATTR : RICH_TEXT_ALLOWED_ATTR,
     ALLOW_DATA_ATTR: false
   })
+
+  // Convert empty paragraphs (from Tiptap double-enters) to visible line breaks
+  result = result.replace(/<p>(\s|&nbsp;)*<\/p>/g, '<p><br></p>')
+
+  return result
 }
 
 /**

@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel
+} from '@/components/ui/field'
 import type {
   FieldProps,
   FieldEmits,
@@ -18,16 +24,23 @@ const emit = defineEmits<FieldEmits<boolean | string[]>>()
 // Single checkbox mode vs array mode
 const isSingleMode = computed(() => !props.meta.options || props.meta.options.length === 0)
 
-const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
-  props.meta,
-  props.name,
-  () => props.errors,
-  {
-    variant: isSingleMode.value ? 'field' : 'fieldset',
-    disableLabelFor: true // We build Field manually for both modes
-  },
-  () => props.fullPath
-)
+const { wrapperProps, resolvedLabel, resolvedDescription, resolvedDisabled, resolvedClass } =
+  useFieldWrapper(
+    props.meta,
+    props.name,
+    () => props.errors,
+    {
+      variant: isSingleMode.value ? 'field' : 'fieldset',
+      disableLabelFor: true // We build Field manually for both modes
+    },
+    () => props.fullPath
+  )
+
+// For single mode, suppress label/description from wrapper (we render them inside FieldContent)
+const singleWrapperProps = computed(() => {
+  const { label, description, labelClass, descriptionClass, ...rest } = wrapperProps.value
+  return rest
+})
 
 // Single checkbox handlers
 const handleSingleUpdate = (checked: boolean | 'indeterminate') => {
@@ -52,7 +65,7 @@ const isChecked = (optionValue: string): boolean => {
 
 <template>
   <!-- Single checkbox mode -->
-  <FormFieldWrapper v-if="isSingleMode" v-bind="wrapperProps">
+  <FormFieldWrapper v-if="isSingleMode" v-bind="singleWrapperProps">
     <Field orientation="horizontal" :data-invalid="!!errors.length">
       <Checkbox
         :id="id || name"
@@ -62,9 +75,14 @@ const isChecked = (optionValue: string): boolean => {
         :class="resolvedClass"
         @update:model-value="handleSingleUpdate"
       />
-      <FieldLabel :for="id || name" class="font-normal">
-        {{ wrapperProps.label }}
-      </FieldLabel>
+      <FieldContent>
+        <FieldLabel :for="id || name" class="font-normal">
+          {{ resolvedLabel }}
+        </FieldLabel>
+        <FieldDescription v-if="resolvedDescription">
+          {{ resolvedDescription }}
+        </FieldDescription>
+      </FieldContent>
     </Field>
   </FormFieldWrapper>
 

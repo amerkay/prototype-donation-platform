@@ -23,6 +23,8 @@ import { Heart, ChevronDown, ChevronUp, ExternalLink } from 'lucide-vue-next'
 const props = defineProps<{
   campaign: Campaign
   currency?: string
+  /** Charity field targets for click-to-edit in admin preview context */
+  targets?: Record<string, string>
 }>()
 
 // Provide branding to teleported modals (ShareDialog, DonateDialog)
@@ -197,16 +199,29 @@ const hasSocialSharing = computed(() => {
                 </h3>
               </CardHeader>
               <CardContent class="px-5 space-y-2">
-                <div>
+                <div
+                  :data-field="
+                    [targets?.charityName, targets?.phone, targets?.email]
+                      .filter(Boolean)
+                      .join(',') || undefined
+                  "
+                >
                   <h4 class="font-semibold text-sm">{{ charityInfo.name }}</h4>
                   <p class="text-xs text-muted-foreground">
                     Registered Charity: {{ charityInfo.registrationNumber }}
                   </p>
                 </div>
-                <p v-if="charityInfo.address" class="text-xs text-muted-foreground">
+                <p
+                  v-if="charityInfo.address"
+                  class="text-xs text-muted-foreground"
+                  :data-field="targets?.charityAddress"
+                >
                   {{ charityInfo.address }}
                 </p>
-                <p class="text-sm text-muted-foreground line-clamp-3">
+                <p
+                  class="text-sm text-muted-foreground line-clamp-3"
+                  :data-field="targets?.description"
+                >
                   {{ charityInfo.description }}
                 </p>
                 <a
@@ -215,6 +230,7 @@ const hasSocialSharing = computed(() => {
                   target="_blank"
                   rel="noopener noreferrer"
                   class="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                  :data-field="targets?.website"
                 >
                   {{ charityInfo.website.replace(/^https?:\/\//, '') }}
                   <ExternalLink class="w-3 h-3" />

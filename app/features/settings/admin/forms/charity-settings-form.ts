@@ -39,6 +39,9 @@ const CURRENCY_OPTIONS = getCurrencyOptionsForSelect()
 /** Module-level ref for bi-directional preview ↔ form tab sync */
 export const charityActiveTab = ref<string>('')
 
+/** Single shared accordion state — passed to provideAccordionGroup() for single-open behavior */
+export const charityOpenAccordionId = ref<string | undefined>(undefined)
+
 function formatAddressSummary(a: Partial<CharityAddress> | undefined): string {
   if (!a) return ''
   return formatCharityAddress(a as CharityAddress)
@@ -347,7 +350,7 @@ export const useCharitySettingsForm = defineForm('charitySettings', (ctx) => {
   })
 
   const charitySettings = fieldGroup('charitySettings', {
-    label: 'Currency-Specific Settings',
+    label: 'Charity Details',
     description: currencySettingsDescription,
     collapsible: true,
     collapsibleDefaultOpen: false,

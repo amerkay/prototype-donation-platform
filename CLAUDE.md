@@ -109,6 +109,7 @@ app/features/[feature-name]/
 11. Accordion IDs in `productOpenAccordionId` are prefixed with form section ID (e.g., `product.basic`, not `basic`)
 12. Currency removal from supported list must check form usage (enabledCurrencies/baseDefaultCurrency) before saving
 13. **Supabase migration**: `app/sample-api-responses/SUPABASE_SCHEMA_DRAFT.md` (20 tables, 35→20 consolidation) and `SUPABASE_NOTES.md` (migration TODOs) are the blueprint. All 21 stores/composables marked with `TODO-SUPABASE` comments showing exact query replacements. Search `TODO-SUPABASE` to find all migration points.
+14. **Previews must use exact donor-facing components/mechanisms** — never mock or duplicate. Admins see the real layout donors see; DRY is automatic.
 
 <!-- end continuous learning notes -->
 

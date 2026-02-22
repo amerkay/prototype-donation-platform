@@ -15,9 +15,9 @@ interface ScrollOnVisibleOptions<T> {
 
 /**
  * Scroll element into view with minimal movement
- * Only scrolls if not fully visible, maintains 50px margin
+ * Only scrolls if not fully visible, maintains 80px margin
  */
-function scrollToElement(element: HTMLElement, offset: number = 50) {
+export function scrollToElement(element: HTMLElement, offset: number = 80) {
   const rect = element.getBoundingClientRect()
   const scrollContainer = element.closest('.overflow-y-auto, .overflow-auto') as HTMLElement | null
 

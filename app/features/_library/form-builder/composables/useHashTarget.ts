@@ -13,6 +13,7 @@ import {
 import { useRoute } from '#app'
 import type { FieldDef, FieldContext } from '../types'
 import { checkFieldVisibility } from './useFieldPath'
+import { scrollToElement } from './useScrollOnVisible'
 
 // --- Constants ---
 const HASH_TARGET_KEY = Symbol('hashTarget')
@@ -310,7 +311,7 @@ export function useHashTarget(fullPath: ComputedRef<string>, options: { animate?
         setTimeout(() => {
           const el = elementRef.value
           const htmlEl = el && ('$el' in el ? (el.$el as HTMLElement) : el)
-          htmlEl?.scrollIntoView?.({ behavior: 'smooth', block: 'center' })
+          if (htmlEl) scrollToElement(htmlEl)
         }, SCROLL_DELAY_MS)
       })
     },
