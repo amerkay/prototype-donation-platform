@@ -35,7 +35,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'tree-planting',
-        productTitle: 'Plant 10 Trees',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🌳',
         quantity: 2,
         unitPrice: 30,
@@ -71,8 +71,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 100,
@@ -112,7 +112,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Orangutan',
+        productTitle: 'Adopt Bumi the Rescued Baby',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 15,
@@ -155,8 +155,8 @@ export const transactions: Transaction[] = [
         frequency: 'once'
       },
       {
-        productId: 'custom-amount',
-        productTitle: 'Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 50,
@@ -195,7 +195,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'education-program',
-        productTitle: 'Support Education Program',
+        productTitle: 'Support Local Conservation Education Program',
         productIcon: '📚',
         quantity: 1,
         unitPrice: 25,
@@ -230,8 +230,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 50,
@@ -265,8 +265,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 200,
@@ -303,7 +303,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Orangutan',
+        productTitle: 'Adopt Bumi the Rescued Baby',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 15,
@@ -311,7 +311,7 @@ export const transactions: Transaction[] = [
       },
       {
         productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Orangutan',
+        productTitle: 'Adopt Maya the Survivor',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 10,
@@ -346,8 +346,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Birthday Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 25,
@@ -386,7 +386,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Orangutan',
+        productTitle: 'Adopt Bumi the Rescued Baby',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 15,
@@ -423,7 +423,7 @@ export const transactions: Transaction[] = [
     lineItems: [
       {
         productId: 'education-program',
-        productTitle: 'Support Education Program',
+        productTitle: 'Support Local Conservation Education Program',
         productIcon: '📚',
         quantity: 1,
         unitPrice: 25,
@@ -458,8 +458,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 500,
@@ -499,8 +499,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 317,
@@ -537,8 +537,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 1000,
@@ -573,8 +573,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 300,
@@ -619,8 +619,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Birthday Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 100,
@@ -656,8 +656,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Birthday Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 75,
@@ -697,8 +697,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 25,
@@ -734,8 +734,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 50,
@@ -771,8 +771,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 10,
@@ -811,8 +811,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 25,
@@ -848,8 +848,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 15,
@@ -888,8 +888,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Birthday Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 58,
@@ -926,8 +926,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Birthday Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 100,
@@ -964,8 +964,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Birthday Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 75,
@@ -1000,8 +1000,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Birthday Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 30,
@@ -1036,8 +1036,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Birthday Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 25,
@@ -1077,8 +1077,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Birthday Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 20,
@@ -1115,8 +1115,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Birthday Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 63,
@@ -1151,8 +1151,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Birthday Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 15,
@@ -1191,8 +1191,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Birthday Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 25,
@@ -1229,8 +1229,8 @@ export const transactions: Transaction[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
-        productTitle: 'Birthday Donation',
+        productId: 'tree-planting',
+        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
         productIcon: '🎂',
         quantity: 1,
         unitPrice: 50,
@@ -1273,7 +1273,7 @@ export const subscriptions: Subscription[] = [
     lineItems: [
       {
         productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Orangutan',
+        productTitle: 'Adopt Bumi the Rescued Baby',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 15,
@@ -1306,7 +1306,7 @@ export const subscriptions: Subscription[] = [
     lineItems: [
       {
         productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Orangutan',
+        productTitle: 'Adopt Bumi the Rescued Baby',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 15,
@@ -1314,7 +1314,7 @@ export const subscriptions: Subscription[] = [
       },
       {
         productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Orangutan',
+        productTitle: 'Adopt Maya the Survivor',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 10,
@@ -1347,7 +1347,7 @@ export const subscriptions: Subscription[] = [
     lineItems: [
       {
         productId: 'education-program',
-        productTitle: 'Support Education Program',
+        productTitle: 'Support Local Conservation Education Program',
         productIcon: '📚',
         quantity: 1,
         unitPrice: 25,
@@ -1380,7 +1380,7 @@ export const subscriptions: Subscription[] = [
     lineItems: [
       {
         productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Orangutan',
+        productTitle: 'Adopt Maya the Survivor',
         productIcon: '🦧',
         quantity: 1,
         unitPrice: 10,
@@ -1412,7 +1412,7 @@ export const subscriptions: Subscription[] = [
     charityName: 'Borneo Orangutan Survival',
     lineItems: [
       {
-        productId: 'custom-amount',
+        productId: 'tree-planting',
         productTitle: 'Monthly Birthday Fund',
         productIcon: '🎂',
         quantity: 1,
