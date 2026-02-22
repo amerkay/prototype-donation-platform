@@ -2,6 +2,7 @@ import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import type { Transaction } from '~/features/donor-portal/types'
 import { RefreshCw } from 'lucide-vue-next'
+import { Badge } from '@/components/ui/badge'
 import {
   createDateColumn,
   createAmountColumn,
@@ -25,7 +26,10 @@ export const donationColumns: ColumnDef<Transaction>[] = [
           'span',
           { class: 'text-xs text-muted-foreground truncate block' },
           row.original.donorEmail
-        )
+        ),
+        row.original.giftAid
+          ? h(Badge, { variant: 'outline', class: 'text-xs mt-0.5 w-fit' }, () => 'Gift Aid')
+          : null
       ])
   },
   {

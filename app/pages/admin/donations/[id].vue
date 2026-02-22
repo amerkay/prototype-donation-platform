@@ -168,8 +168,31 @@ const breadcrumbs = computed(() => [
                 Gift Aid
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p class="text-sm text-muted-foreground">
+            <CardContent class="space-y-2 text-sm">
+              <AdminDetailRow v-if="txn.giftAidAmount" label="Gift Aid Amount">
+                <span class="font-medium text-green-600">
+                  +{{ formatCurrency(txn.giftAidAmount, txn.currency) }}
+                </span>
+                <span class="ml-1 text-muted-foreground">(25% top-up)</span>
+              </AdminDetailRow>
+              <AdminDetailRow v-if="txn.giftAidDeclarationId" label="Declaration">
+                <span class="font-mono text-xs">{{ txn.giftAidDeclarationId }}</span>
+              </AdminDetailRow>
+              <AdminDetailRow v-if="txn.donorAddress" label="Home Address">
+                {{ txn.donorAddress.line1
+                }}<template v-if="txn.donorAddress.line2">, {{ txn.donorAddress.line2 }}</template
+                >, {{ txn.donorAddress.city }}, {{ txn.donorAddress.postcode }}
+              </AdminDetailRow>
+              <div
+                v-if="txn.giftAidReversed"
+                class="flex items-center gap-2 rounded bg-destructive/10 px-3 py-2 text-destructive"
+              >
+                <span class="font-medium">Gift Aid Reversed</span>
+                <span v-if="txn.giftAidAmountReversed">
+                  — {{ formatCurrency(txn.giftAidAmountReversed, txn.currency) }}
+                </span>
+              </div>
+              <p v-if="!txn.giftAidAmount" class="text-muted-foreground">
                 Donor declared Gift Aid eligibility for this donation.
               </p>
             </CardContent>
@@ -194,7 +217,6 @@ const breadcrumbs = computed(() => [
               <TableBody>
                 <TableRow v-for="item in txn.lineItems" :key="item.productId">
                   <TableCell>
-                    <span class="mr-2">{{ item.productIcon }}</span>
                     {{ item.productTitle }}
                   </TableCell>
                   <TableCell class="text-right">{{ item.quantity }}</TableCell>

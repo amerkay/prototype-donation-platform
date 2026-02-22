@@ -1,6 +1,6 @@
 # Supabase PostgreSQL Schema (Consolidated)
 
-> **Design Principle:** JSONB for configuration that varies by type or is admin-only; separate tables for queryable/transactional data. TEXT + CHECK constraints for status/type fields (not enums — easier to migrate). All tables use `gen_random_uuid()` (native PostgreSQL, no extension needed). 21 tables, down from 35 — achieved by merging campaign sub-tables and form config into JSONB columns, and consolidating org settings into 4 RLS-boundary-aligned tables.
+> **Design Principle:** JSONB for configuration that varies by type or is admin-only; separate tables for queryable/transactional data. TEXT + CHECK constraints for status/type fields (not enums — easier to migrate). All tables use `gen_random_uuid()` (native PostgreSQL, no extension needed). 22 tables (20 core + 2 compliance), down from 35 — achieved by merging campaign sub-tables and form config into JSONB columns, and consolidating org settings into 4 RLS-boundary-aligned tables. See `COMPLIANCE_DECISIONS.md` for immutable records strategy, GDPR, and HMRC decisions.
 
 ---
 
@@ -59,6 +59,25 @@ BEGIN
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+-- Check if a donor has an active, non-expired Gift Aid declaration for an org.
+-- Used by subscription renewal webhook handlers to check Gift Aid at payment time.
+-- MUST be called fresh on every renewal — never inherit from the subscription record.
+-- Returns TRUE only if the donor has an active, non-expired declaration for this org.
+CREATE OR REPLACE FUNCTION get_active_gift_aid_declaration(
+  p_donor_user_id UUID,
+  p_org_id UUID
+) RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM gift_aid_declarations
+    WHERE donor_user_id = p_donor_user_id
+      AND organization_id = p_org_id
+      AND is_active = true
+      AND (covers_to IS NULL OR covers_to > now())
+  );
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 ```
 
 ---
@@ -562,6 +581,8 @@ CREATE TABLE donor_users (
   name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
   avatar_url TEXT,
+  anonymized_at TIMESTAMPTZ,
+  -- set when GDPR erasure anonymizes this donor (name/email redacted to '[Redacted]')
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -622,7 +643,6 @@ CREATE TABLE subscription_line_items (
   subscription_id UUID NOT NULL REFERENCES subscriptions(id) ON DELETE CASCADE,
   product_id UUID REFERENCES products(id) ON DELETE SET NULL,
   product_title TEXT NOT NULL,
-  product_icon TEXT,
   quantity INT NOT NULL DEFAULT 1,
   unit_price DECIMAL(10,2) NOT NULL,
   frequency TEXT NOT NULL
@@ -632,8 +652,9 @@ CREATE TABLE subscription_line_items (
 
 CREATE INDEX idx_subscription_line_items_sub ON subscription_line_items(subscription_id);
 
--- All payment transactions (one-time and subscription billing)
+-- All payment transactions (one-time, subscription billing, and refunds)
 -- Single source of truth for all donations across all campaigns.
+-- See COMPLIANCE_DECISIONS.md for immutable records strategy.
 CREATE TABLE transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id),
@@ -642,7 +663,7 @@ CREATE TABLE transactions (
     CHECK (processor IN ('stripe', 'paypal')),
   processor_transaction_id TEXT NOT NULL,
   type TEXT NOT NULL
-    CHECK (type IN ('one_time', 'subscription_payment')),
+    CHECK (type IN ('one_time', 'subscription_payment', 'refund')),
   subscription_id UUID REFERENCES subscriptions(id) ON DELETE SET NULL,
   campaign_id UUID NOT NULL REFERENCES campaigns(id),
   campaign_name TEXT NOT NULL,
@@ -652,6 +673,10 @@ CREATE TABLE transactions (
   cover_costs_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
   total_amount DECIMAL(10,2) NOT NULL,
   currency TEXT NOT NULL DEFAULT 'GBP',
+  base_currency TEXT,
+  -- org base currency at transaction time (for multi-currency aggregation)
+  exchange_rate DECIMAL(10,6),
+  -- 1 original currency = X base currency
 
   payment_method_type TEXT NOT NULL
     CHECK (payment_method_type IN ('card', 'paypal', 'bank_transfer')),
@@ -667,7 +692,28 @@ CREATE TABLE transactions (
   donor_email TEXT NOT NULL,
   is_anonymous BOOLEAN NOT NULL DEFAULT false,
   message TEXT,
+
+  -- Gift Aid (HMRC compliance — see COMPLIANCE_DECISIONS.md)
   gift_aid BOOLEAN NOT NULL DEFAULT false,
+  gift_aid_amount DECIMAL(12,2),
+  -- calculated Gift Aid value (e.g., 25% of subtotal)
+  gift_aid_declaration_id UUID REFERENCES gift_aid_declarations(id),
+  donor_address JSONB,
+  -- snapshot of donor home address at donation time (HMRC Gift Aid requirement)
+
+  -- Refund tracking (type='refund' only)
+  refund_of_transaction_id UUID REFERENCES transactions(id),
+  -- points to original transaction being refunded (full or partial)
+  gift_aid_reversed BOOLEAN NOT NULL DEFAULT false,
+  gift_aid_amount_reversed DECIMAL(12,2),
+
+  -- Compliance
+  legal_basis TEXT NOT NULL DEFAULT 'contractual_necessity',
+  -- 'contractual_necessity' | 'legal_obligation' | 'consent' | 'legitimate_interest'
+  anonymized_at TIMESTAMPTZ,
+  -- set when GDPR erasure redacts donor PII on this record
+  receipt_pdf_url TEXT,
+  -- Supabase Storage path to immutable receipt PDF generated at donation time
 
   -- Denormalized custom field values (set by application on insert)
   custom_fields JSONB,
@@ -699,15 +745,26 @@ CREATE TABLE transaction_line_items (
   transaction_id UUID NOT NULL REFERENCES transactions(id) ON DELETE CASCADE,
   product_id UUID REFERENCES products(id) ON DELETE SET NULL,
   product_title TEXT NOT NULL,
-  product_icon TEXT,
   quantity INT NOT NULL DEFAULT 1,
   unit_price DECIMAL(10,2) NOT NULL,
   frequency TEXT NOT NULL
     CHECK (frequency IN ('once', 'monthly', 'yearly')),
-  sort_order INT NOT NULL DEFAULT 0
+  sort_order INT NOT NULL DEFAULT 0,
+  certificate_pdf_url TEXT
+  -- Supabase Storage path to immutable certificate PDF generated at donation time
 );
 
 CREATE INDEX idx_transaction_line_items_txn ON transaction_line_items(transaction_id);
+
+-- Index for finding refunds of a given transaction
+CREATE INDEX idx_transactions_refund_of ON transactions(refund_of_transaction_id)
+  WHERE refund_of_transaction_id IS NOT NULL;
+-- Index for finding transactions by Gift Aid declaration
+CREATE INDEX idx_transactions_gift_aid_decl ON transactions(gift_aid_declaration_id)
+  WHERE gift_aid_declaration_id IS NOT NULL;
+-- Index for finding anonymized transactions
+CREATE INDEX idx_transactions_anonymized ON transactions(anonymized_at)
+  WHERE anonymized_at IS NOT NULL;
 
 -- Transaction tributes (memorial / gift dedications)
 CREATE TABLE transaction_tributes (
@@ -716,6 +773,83 @@ CREATE TABLE transaction_tributes (
     CHECK (type IN ('gift', 'memorial')),
   honoree_name TEXT NOT NULL
 );
+```
+
+### Gift Aid Declarations (HMRC Compliance)
+
+```sql
+-- ============================================
+-- GIFT AID DECLARATIONS (HMRC Compliance)
+-- ============================================
+-- Records each donor's Gift Aid declaration for HMRC reporting.
+-- One declaration can cover all future donations (covers_to = NULL).
+-- Must be retained 6 years after the last donation covered.
+-- See COMPLIANCE_DECISIONS.md for full HMRC requirements.
+CREATE TABLE gift_aid_declarations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  donor_user_id UUID REFERENCES donor_users(id) ON DELETE SET NULL,
+  donor_name TEXT NOT NULL,
+  donor_email TEXT NOT NULL,
+  donor_address JSONB NOT NULL,
+  -- home address at declaration time (HMRC requires full name + home address)
+  -- { line1, line2, city, region, postcode, country }
+  declared_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  covers_from TIMESTAMPTZ,
+  -- optional: covers past donations from this date (up to 4 years back)
+  covers_to TIMESTAMPTZ,
+  -- NULL = covers all future donations until cancelled
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  cancelled_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_gift_aid_declarations_org ON gift_aid_declarations(organization_id);
+CREATE INDEX idx_gift_aid_declarations_donor ON gift_aid_declarations(donor_user_id)
+  WHERE donor_user_id IS NOT NULL;
+CREATE INDEX idx_gift_aid_declarations_active ON gift_aid_declarations(organization_id, is_active)
+  WHERE is_active = true;
+-- Composite index for renewal-time eligibility checks by donor
+CREATE INDEX idx_gift_aid_declarations_donor_active
+  ON gift_aid_declarations(donor_user_id, is_active)
+  WHERE is_active = true;
+```
+
+### Consent Records (GDPR Compliance)
+
+```sql
+-- ============================================
+-- CONSENT RECORDS (GDPR Compliance)
+-- ============================================
+-- Audit log of all consent events (opt-in AND opt-out).
+-- Every change is a new row — never update existing records.
+-- See COMPLIANCE_DECISIONS.md for GDPR requirements.
+CREATE TABLE consent_records (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  donor_user_id UUID REFERENCES donor_users(id) ON DELETE SET NULL,
+  donor_email TEXT NOT NULL,
+  -- snapshot: survives donor deletion for audit trail
+  purpose TEXT NOT NULL,
+  -- 'marketing_email' | extensible for future purposes
+  granted BOOLEAN NOT NULL,
+  -- true = opted in, false = opted out
+  legal_basis TEXT NOT NULL DEFAULT 'consent',
+  -- 'consent' for marketing, 'contractual_necessity' for transactional
+  source_form_id UUID,
+  -- which donation form captured this consent (nullable)
+  wording_shown TEXT,
+  -- exact label/description text shown to donor at time of consent
+  recorded_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  ip_address TEXT
+  -- optional: for audit trail
+);
+
+CREATE INDEX idx_consent_records_org ON consent_records(organization_id);
+CREATE INDEX idx_consent_records_donor ON consent_records(donor_user_id)
+  WHERE donor_user_id IS NOT NULL;
+CREATE INDEX idx_consent_records_email ON consent_records(donor_email);
+CREATE INDEX idx_consent_records_purpose ON consent_records(organization_id, purpose, recorded_at DESC);
 ```
 
 ---
@@ -1016,6 +1150,8 @@ ALTER TABLE transaction_line_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transaction_tributes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tribute_relationships ENABLE ROW LEVEL SECURITY;
+ALTER TABLE gift_aid_declarations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE consent_records ENABLE ROW LEVEL SECURITY;
 ```
 
 ### Policy Templates
@@ -1194,6 +1330,32 @@ CREATE POLICY "tribute_relationships_select" ON tribute_relationships FOR SELECT
     organization_id IS NULL
     OR has_role_in_org(organization_id, 'member')
   );
+
+-- --- Gift Aid Declarations ---
+-- Admins can view declarations for their org
+CREATE POLICY "gift_aid_declarations_select_admin" ON gift_aid_declarations FOR SELECT
+  USING (has_role_in_org(organization_id, 'admin'));
+
+-- Donors can view their own declarations
+CREATE POLICY "gift_aid_declarations_select_donor" ON gift_aid_declarations FOR SELECT
+  USING (
+    donor_user_id IN (
+      SELECT id FROM donor_users WHERE auth_user_id = auth.uid()
+    )
+  );
+
+-- --- Consent Records ---
+-- Admins can view consent records for their org
+CREATE POLICY "consent_records_select_admin" ON consent_records FOR SELECT
+  USING (has_role_in_org(organization_id, 'admin'));
+
+-- Donors can view their own consent records
+CREATE POLICY "consent_records_select_donor" ON consent_records FOR SELECT
+  USING (
+    donor_user_id IN (
+      SELECT id FROM donor_users WHERE auth_user_id = auth.uid()
+    )
+  );
 ```
 
 > **Note:** These are starter policies. Production deployment should add INSERT/UPDATE-specific policies for service_role webhook handlers (Stripe/PayPal) that create transactions and subscriptions.
@@ -1243,6 +1405,41 @@ CREATE POLICY "campaign_assets_select" ON storage.objects FOR SELECT
 
 > **File path convention:** `{organization_id}/{campaign_id}/{filename}` — e.g., `a1b2c3/d4e5f6/cover.webp`
 
+```sql
+-- Private bucket for immutable donation documents (receipts, certificates)
+-- Generated at donation time and stored permanently. See COMPLIANCE_DECISIONS.md.
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'donor-documents',
+  'donor-documents',
+  false,
+  10485760, -- 10 MB
+  ARRAY['application/pdf']
+);
+
+-- Donors can read their own documents (path: {org_id}/donors/{donor_user_id}/*)
+CREATE POLICY "donor_documents_select_donor" ON storage.objects FOR SELECT
+  USING (
+    bucket_id = 'donor-documents'
+    AND (storage.foldername(name))[2] = 'donors'
+    AND (storage.foldername(name))[3] IN (
+      SELECT id::TEXT FROM donor_users WHERE auth_user_id = auth.uid()
+    )
+  );
+
+-- Org admins can read all documents in their org folder
+CREATE POLICY "donor_documents_select_admin" ON storage.objects FOR SELECT
+  USING (
+    bucket_id = 'donor-documents'
+    AND has_role_in_org((storage.foldername(name))[1]::UUID, 'admin')
+  );
+
+-- Only service_role (webhook handlers) can insert/delete donor documents
+-- (no user-facing upload/delete policies — documents are created server-side)
+```
+
+> **File path convention:** `{organization_id}/donors/{donor_user_id}/{type}-{transaction_id}.pdf` — e.g., `a1b2c3/donors/d4e5f6/receipt-tx123.pdf`
+
 ---
 
 ## JSONB Field Justification
@@ -1286,8 +1483,9 @@ CREATE POLICY "campaign_assets_select" ON storage.objects FOR SELECT
 | Forms                | 2      | campaign_forms, form_products (junction)                                                                        |
 | Products             | 1      | products                                                                                                        |
 | Donor Portal         | 6      | donor_users, subscriptions, subscription_line_items, transactions, transaction_line_items, transaction_tributes |
+| Compliance           | 2      | gift_aid_declarations, consent_records                                                                          |
 | Lookups              | 1      | tribute_relationships                                                                                           |
-| **Total**            | **20** | + 2 views (`campaign_donations_view`, `donors_summary_view`) + 1 storage bucket                                 |
+| **Total**            | **22** | + 2 views (`campaign_donations_view`, `donors_summary_view`) + 2 storage buckets                                |
 
 ---
 
@@ -1481,6 +1679,38 @@ const donors = await supabase
   .select('*')
   .eq('organization_id', orgId)
   .order('total_amount', { ascending: false })
+
+// Get refunds for a transaction
+const refunds = await supabase
+  .from('transactions')
+  .select('*')
+  .eq('refund_of_transaction_id', originalTransactionId)
+  .eq('type', 'refund')
+
+// Get donor's Gift Aid declarations
+const declarations = await supabase
+  .from('gift_aid_declarations')
+  .select('*')
+  .eq('donor_user_id', userId)
+  .order('declared_at', { ascending: false })
+
+// Get donor's consent history
+const consent = await supabase
+  .from('consent_records')
+  .select('*')
+  .eq('donor_user_id', userId)
+  .order('recorded_at', { ascending: false })
+
+// GDPR data export: get all donor data (for Download My Data)
+const [txns, subs, declarations, consent] = await Promise.all([
+  supabase.from('transactions').select('*, transaction_line_items(*)').eq('donor_user_id', userId),
+  supabase
+    .from('subscriptions')
+    .select('*, subscription_line_items(*)')
+    .eq('donor_user_id', userId),
+  supabase.from('gift_aid_declarations').select('*').eq('donor_user_id', userId),
+  supabase.from('consent_records').select('*').eq('donor_user_id', userId)
+])
 ```
 
 ---
@@ -1506,3 +1736,5 @@ const donors = await supabase
 - **UUIDv7**: Consider `pg_uuidv7` extension for time-ordered PKs on high-volume tables (transactions) for better B-tree locality
 - **Team settings**: `profiles` table could gain `team_id` FK for team management within orgs
 - **Multi-org donors**: `donors_summary_view` already supports per-org aggregation; consider a donor portal that shows cross-org history
+- **Gift Aid HMRC claims**: `gift_aid_claims` + `gift_aid_claim_items` tables for batch HMRC submission tracking and double-claim prevention
+- **GDPR automation**: Scheduled job to process anonymization requests, with data retention policy enforcement (6-year Gift Aid rule)

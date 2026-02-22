@@ -173,7 +173,6 @@ function handleRowClick(row: { original: { id: string } }) {
                 class="flex items-center justify-between py-1.5 text-sm"
               >
                 <span>
-                  <span class="mr-2">{{ item.productIcon }}</span>
                   {{ item.productTitle }}
                   <span v-if="item.quantity > 1" class="text-muted-foreground"
                     >x{{ item.quantity }}</span

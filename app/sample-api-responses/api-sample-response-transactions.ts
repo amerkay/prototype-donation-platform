@@ -1,4 +1,4 @@
-import type { Transaction } from '~/features/donor-portal/types'
+import type { Transaction, GiftAidDeclaration, ConsentRecord } from '~/features/donor-portal/types'
 import type { Subscription } from '~/features/subscriptions/shared/types'
 import type { CampaignDonation, CampaignStats } from '~/features/campaigns/shared/types'
 
@@ -36,7 +36,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🌳',
+
         quantity: 2,
         unitPrice: 30,
         frequency: 'once'
@@ -55,8 +55,18 @@ export const transactions: Transaction[] = [
     donorEmail: 'awesome@charity.co.uk',
     isAnonymous: false,
     giftAid: true,
+    giftAidDeclarationId: 'gad-001',
+    giftAidAmount: 15,
+    donorAddress: {
+      line1: '42 Oakwood Drive',
+      city: 'London',
+      region: 'Greater London',
+      postcode: 'SW1A 2AA',
+      country: 'GB'
+    },
     customFields: { source: 'website', company_name: 'Amer Holdings' },
     createdAt: '2026-01-28T14:30:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -73,7 +83,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🦧',
+
         quantity: 1,
         unitPrice: 100,
         frequency: 'once'
@@ -96,6 +106,7 @@ export const transactions: Transaction[] = [
     giftAid: false,
     customFields: { source: 'social_media', referral_code: 'MEMORIAL2026' },
     createdAt: '2026-01-20T10:15:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -113,7 +124,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'adopt-bumi',
         productTitle: 'Adopt Bumi the Rescued Baby',
-        productIcon: '🦧',
+
         quantity: 1,
         unitPrice: 15,
         frequency: 'monthly'
@@ -132,7 +143,17 @@ export const transactions: Transaction[] = [
     donorEmail: 'awesome@charity.co.uk',
     isAnonymous: false,
     giftAid: true,
+    giftAidDeclarationId: 'gad-001',
+    giftAidAmount: 3.75,
+    donorAddress: {
+      line1: '42 Oakwood Drive',
+      city: 'London',
+      region: 'Greater London',
+      postcode: 'SW1A 2AA',
+      country: 'GB'
+    },
     createdAt: '2026-01-15T00:00:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -149,7 +170,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Trees',
-        productIcon: '🌳',
+
         quantity: 1,
         unitPrice: 30,
         frequency: 'once'
@@ -157,7 +178,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🦧',
+
         quantity: 1,
         unitPrice: 50,
         frequency: 'once'
@@ -177,8 +198,18 @@ export const transactions: Transaction[] = [
     isAnonymous: false,
     message: 'Keep up the great work!',
     giftAid: true,
+    giftAidDeclarationId: 'gad-001',
+    giftAidAmount: 20,
+    donorAddress: {
+      line1: '42 Oakwood Drive',
+      city: 'London',
+      region: 'Greater London',
+      postcode: 'SW1A 2AA',
+      country: 'GB'
+    },
     customFields: { source: 'email_campaign', department: 'Marketing' },
     createdAt: '2026-01-10T16:45:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -196,7 +227,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'education-program',
         productTitle: 'Support Local Conservation Education Program',
-        productIcon: '📚',
+
         quantity: 1,
         unitPrice: 25,
         frequency: 'monthly'
@@ -216,6 +247,7 @@ export const transactions: Transaction[] = [
     isAnonymous: false,
     giftAid: false,
     createdAt: '2026-01-01T00:00:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -232,7 +264,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 50,
         frequency: 'once'
@@ -251,6 +283,7 @@ export const transactions: Transaction[] = [
     donorEmail: 'awesome@charity.co.uk',
     isAnonymous: false,
     giftAid: false,
+    legalBasis: 'contractual_necessity',
     createdAt: '2025-12-28T09:20:00Z'
   },
 
@@ -267,7 +300,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🦧',
+
         quantity: 1,
         unitPrice: 200,
         frequency: 'once'
@@ -286,7 +319,19 @@ export const transactions: Transaction[] = [
     donorEmail: 'awesome@charity.co.uk',
     isAnonymous: false,
     giftAid: true,
+    giftAidDeclarationId: 'gad-001',
+    giftAidAmount: 50,
+    donorAddress: {
+      line1: '42 Oakwood Drive',
+      city: 'London',
+      region: 'Greater London',
+      postcode: 'SW1A 2AA',
+      country: 'GB'
+    },
+    giftAidReversed: true,
+    giftAidAmountReversed: 50,
     createdAt: '2025-12-15T11:00:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -304,7 +349,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'adopt-bumi',
         productTitle: 'Adopt Bumi the Rescued Baby',
-        productIcon: '🦧',
+
         quantity: 1,
         unitPrice: 15,
         frequency: 'monthly'
@@ -312,7 +357,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'adopt-maya',
         productTitle: 'Adopt Maya the Survivor',
-        productIcon: '🦧',
+
         quantity: 1,
         unitPrice: 10,
         frequency: 'monthly'
@@ -331,7 +376,17 @@ export const transactions: Transaction[] = [
     donorEmail: 'awesome@charity.co.uk',
     isAnonymous: false,
     giftAid: true,
+    giftAidDeclarationId: 'gad-001',
+    giftAidAmount: 6.25,
+    donorAddress: {
+      line1: '42 Oakwood Drive',
+      city: 'London',
+      region: 'Greater London',
+      postcode: 'SW1A 2AA',
+      country: 'GB'
+    },
     createdAt: '2025-12-15T00:00:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -348,7 +403,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 25,
         frequency: 'once'
@@ -369,7 +424,17 @@ export const transactions: Transaction[] = [
     message: 'Happy Birthday Michael!',
     tribute: { type: 'gift', honoreeName: 'Michael Chen' },
     giftAid: true,
+    giftAidDeclarationId: 'gad-001',
+    giftAidAmount: 6.25,
+    donorAddress: {
+      line1: '42 Oakwood Drive',
+      city: 'London',
+      region: 'Greater London',
+      postcode: 'SW1A 2AA',
+      country: 'GB'
+    },
     createdAt: '2025-12-01T18:30:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -387,7 +452,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'adopt-bumi',
         productTitle: 'Adopt Bumi the Rescued Baby',
-        productIcon: '🦧',
+
         quantity: 1,
         unitPrice: 15,
         frequency: 'monthly'
@@ -406,7 +471,17 @@ export const transactions: Transaction[] = [
     donorEmail: 'awesome@charity.co.uk',
     isAnonymous: false,
     giftAid: true,
+    giftAidDeclarationId: 'gad-001',
+    giftAidAmount: 3.75,
+    donorAddress: {
+      line1: '42 Oakwood Drive',
+      city: 'London',
+      region: 'Greater London',
+      postcode: 'SW1A 2AA',
+      country: 'GB'
+    },
     createdAt: '2025-12-15T00:00:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -424,7 +499,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'education-program',
         productTitle: 'Support Local Conservation Education Program',
-        productIcon: '📚',
+
         quantity: 1,
         unitPrice: 25,
         frequency: 'monthly'
@@ -444,6 +519,7 @@ export const transactions: Transaction[] = [
     isAnonymous: false,
     giftAid: false,
     createdAt: '2025-12-01T00:00:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -460,7 +536,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🦧',
+
         quantity: 1,
         unitPrice: 500,
         frequency: 'once'
@@ -479,8 +555,18 @@ export const transactions: Transaction[] = [
     donorEmail: 'awesome@charity.co.uk',
     isAnonymous: true,
     giftAid: true,
+    giftAidDeclarationId: 'gad-001',
+    giftAidAmount: 125,
+    donorAddress: {
+      line1: '42 Oakwood Drive',
+      city: 'London',
+      region: 'Greater London',
+      postcode: 'SW1A 2AA',
+      country: 'GB'
+    },
     customFields: { source: 'direct_mail', designation: 'General Fund' },
     createdAt: '2025-11-10T14:00:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -501,7 +587,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🦧',
+
         quantity: 1,
         unitPrice: 317,
         frequency: 'once'
@@ -523,6 +609,7 @@ export const transactions: Transaction[] = [
     giftAid: false,
     customFields: { source: 'google_ads', referral_code: 'GADS2026' },
     createdAt: '2026-01-14T09:30:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -539,7 +626,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🦧',
+
         quantity: 1,
         unitPrice: 1000,
         frequency: 'once'
@@ -558,7 +645,11 @@ export const transactions: Transaction[] = [
     donorEmail: 'anon2@example.com',
     isAnonymous: true,
     giftAid: true,
+    giftAidDeclarationId: 'gad-003',
+    giftAidAmount: 250,
+    donorAddress: { line1: '15 Elm Street', city: 'Birmingham', postcode: 'B1 1AA', country: 'GB' },
     createdAt: '2026-01-13T14:20:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -575,7 +666,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🦧',
+
         quantity: 1,
         unitPrice: 300,
         frequency: 'once'
@@ -601,6 +692,7 @@ export const transactions: Transaction[] = [
       designation: 'Habitat Restoration'
     },
     createdAt: '2026-01-11T09:00:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -621,7 +713,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 100,
         frequency: 'once'
@@ -642,6 +734,7 @@ export const transactions: Transaction[] = [
     message: 'Happy Birthday Sarah!',
     giftAid: false,
     createdAt: '2026-01-10T12:30:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -658,7 +751,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 75,
         frequency: 'once'
@@ -678,7 +771,11 @@ export const transactions: Transaction[] = [
     isAnonymous: false,
     message: 'Great cause!',
     giftAid: true,
+    giftAidDeclarationId: 'gad-004',
+    giftAidAmount: 18.75,
+    donorAddress: { line1: '28 Maple Road', city: 'Bristol', postcode: 'BS1 4DJ', country: 'GB' },
     createdAt: '2026-01-09T18:20:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -699,7 +796,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 25,
         frequency: 'once'
@@ -720,6 +817,7 @@ export const transactions: Transaction[] = [
     message: 'Happy Birthday Wild! Great cause!',
     giftAid: false,
     createdAt: '2026-01-15T09:30:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -736,7 +834,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 50,
         frequency: 'once'
@@ -756,7 +854,11 @@ export const transactions: Transaction[] = [
     isAnonymous: false,
     message: 'Amazing initiative! Keep up the good work.',
     giftAid: true,
+    giftAidDeclarationId: 'gad-005',
+    giftAidAmount: 12.5,
+    donorAddress: { line1: '9 Cherry Close', city: 'Leeds', postcode: 'LS1 5AA', country: 'GB' },
     createdAt: '2026-01-14T18:20:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -773,7 +875,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 10,
         frequency: 'once'
@@ -793,6 +895,7 @@ export const transactions: Transaction[] = [
     isAnonymous: true,
     giftAid: false,
     createdAt: '2026-01-14T14:10:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -813,7 +916,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 25,
         frequency: 'once'
@@ -834,6 +937,7 @@ export const transactions: Transaction[] = [
     message: 'Great work!',
     giftAid: false,
     createdAt: '2026-01-10T15:00:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -850,7 +954,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 15,
         frequency: 'once'
@@ -869,7 +973,11 @@ export const transactions: Transaction[] = [
     donorEmail: 'john.smith@example.com',
     isAnonymous: false,
     giftAid: true,
+    giftAidDeclarationId: 'gad-006',
+    giftAidAmount: 3.75,
+    donorAddress: { line1: '55 Pine Avenue', city: 'Oxford', postcode: 'OX1 2AA', country: 'GB' },
     createdAt: '2026-01-09T12:30:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -890,7 +998,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 58,
         frequency: 'once'
@@ -912,6 +1020,7 @@ export const transactions: Transaction[] = [
     giftAid: false,
     customFields: { event_name: "Michael's 25th Birthday", source: 'social_media' },
     createdAt: '2026-01-12T10:00:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -928,7 +1037,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 100,
         frequency: 'once'
@@ -950,6 +1059,7 @@ export const transactions: Transaction[] = [
     giftAid: false,
     customFields: { event_name: "Michael's 25th Birthday", referral_code: 'BDAY25' },
     createdAt: '2026-01-10T14:30:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -966,7 +1076,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 75,
         frequency: 'once'
@@ -985,7 +1095,16 @@ export const transactions: Transaction[] = [
     donorEmail: 'claire.wang@example.com',
     isAnonymous: false,
     giftAid: true,
+    giftAidDeclarationId: 'gad-007',
+    giftAidAmount: 18.75,
+    donorAddress: {
+      line1: '12 Willow Court',
+      city: 'Cambridge',
+      postcode: 'CB2 1TN',
+      country: 'GB'
+    },
     createdAt: '2026-01-08T16:15:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -1002,7 +1121,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 30,
         frequency: 'once'
@@ -1022,6 +1141,7 @@ export const transactions: Transaction[] = [
     isAnonymous: true,
     giftAid: false,
     createdAt: '2026-01-06T11:00:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -1038,7 +1158,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 25,
         frequency: 'once'
@@ -1059,6 +1179,7 @@ export const transactions: Transaction[] = [
     message: 'Happy 25th!',
     giftAid: false,
     createdAt: '2026-01-04T09:45:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -1079,7 +1200,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 20,
         frequency: 'once'
@@ -1101,6 +1222,7 @@ export const transactions: Transaction[] = [
     giftAid: false,
     customFields: { event_name: "David's 40th Birthday", department: 'HR' },
     createdAt: '2026-01-20T10:00:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -1117,7 +1239,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 63,
         frequency: 'once'
@@ -1137,6 +1259,7 @@ export const transactions: Transaction[] = [
     isAnonymous: false,
     giftAid: false,
     createdAt: '2026-01-18T15:30:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -1153,7 +1276,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 15,
         frequency: 'once'
@@ -1173,6 +1296,7 @@ export const transactions: Transaction[] = [
     isAnonymous: true,
     giftAid: false,
     createdAt: '2026-01-15T08:00:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -1193,7 +1317,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 25,
         frequency: 'once'
@@ -1213,8 +1337,12 @@ export const transactions: Transaction[] = [
     isAnonymous: false,
     message: 'Happy Birthday Lisa!',
     giftAid: true,
+    giftAidDeclarationId: 'gad-008',
+    giftAidAmount: 6.25,
+    donorAddress: { line1: '34 Birch Lane', city: 'Bath', postcode: 'BA1 1AA', country: 'GB' },
     customFields: { event_name: "Lisa's Birthday", source: 'email_campaign' },
     createdAt: '2025-12-05T12:00:00Z',
+    legalBasis: 'contractual_necessity',
     receiptUrl: '#'
   },
 
@@ -1231,7 +1359,7 @@ export const transactions: Transaction[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 50,
         frequency: 'once'
@@ -1250,6 +1378,7 @@ export const transactions: Transaction[] = [
     donorEmail: 'james.brown@example.com',
     isAnonymous: false,
     giftAid: false,
+    legalBasis: 'contractual_necessity',
     createdAt: '2025-12-02T16:45:00Z',
     receiptUrl: '#'
   }
@@ -1274,7 +1403,7 @@ export const subscriptions: Subscription[] = [
       {
         productId: 'adopt-bumi',
         productTitle: 'Adopt Bumi the Rescued Baby',
-        productIcon: '🦧',
+
         quantity: 1,
         unitPrice: 15,
         frequency: 'monthly'
@@ -1307,7 +1436,7 @@ export const subscriptions: Subscription[] = [
       {
         productId: 'adopt-bumi',
         productTitle: 'Adopt Bumi the Rescued Baby',
-        productIcon: '🦧',
+
         quantity: 1,
         unitPrice: 15,
         frequency: 'monthly'
@@ -1315,7 +1444,7 @@ export const subscriptions: Subscription[] = [
       {
         productId: 'adopt-maya',
         productTitle: 'Adopt Maya the Survivor',
-        productIcon: '🦧',
+
         quantity: 1,
         unitPrice: 10,
         frequency: 'monthly'
@@ -1348,7 +1477,7 @@ export const subscriptions: Subscription[] = [
       {
         productId: 'education-program',
         productTitle: 'Support Local Conservation Education Program',
-        productIcon: '📚',
+
         quantity: 1,
         unitPrice: 25,
         frequency: 'monthly'
@@ -1381,7 +1510,7 @@ export const subscriptions: Subscription[] = [
       {
         productId: 'adopt-maya',
         productTitle: 'Adopt Maya the Survivor',
-        productIcon: '🦧',
+
         quantity: 1,
         unitPrice: 10,
         frequency: 'monthly'
@@ -1414,7 +1543,7 @@ export const subscriptions: Subscription[] = [
       {
         productId: 'tree-planting',
         productTitle: 'Monthly Birthday Fund',
-        productIcon: '🎂',
+
         quantity: 1,
         unitPrice: 10,
         frequency: 'monthly'
@@ -1451,7 +1580,7 @@ export const subscriptions: Subscription[] = [
       {
         productId: 'emergency-donation',
         productTitle: 'Emergency Relief Fund',
-        productIcon: '🏥',
+
         quantity: 1,
         unitPrice: 25,
         frequency: 'monthly'
@@ -1484,7 +1613,7 @@ export const subscriptions: Subscription[] = [
       {
         productId: 'animal-rescue',
         productTitle: 'Animal Rescue Support',
-        productIcon: '🐾',
+
         quantity: 1,
         unitPrice: 120,
         frequency: 'yearly'
@@ -1517,7 +1646,7 @@ export const subscriptions: Subscription[] = [
       {
         productId: 'training-support',
         productTitle: 'First Aid Training Fund',
-        productIcon: '🩹',
+
         quantity: 1,
         unitPrice: 12,
         frequency: 'monthly'
@@ -1629,4 +1758,105 @@ export function getUserSubscriptions(email: string): Subscription[] {
           transactions.some((t) => t.subscriptionId === s.id && t.donorEmail === email)
       )
   )
+}
+
+// ============================================
+// COMPLIANCE SAMPLE DATA
+// ============================================
+
+/**
+ * Sample Gift Aid declarations (HMRC compliance)
+ * One declaration can cover all future donations from a donor.
+ */
+export const giftAidDeclarations: GiftAidDeclaration[] = [
+  {
+    id: 'gad-001',
+    organizationId: 'org-001',
+    donorUserId: 'donor-001',
+    donorName: 'Wild Amer',
+    donorEmail: 'awesome@charity.co.uk',
+    donorAddress: {
+      line1: '42 Oakwood Drive',
+      city: 'London',
+      region: 'Greater London',
+      postcode: 'SW1A 2AA',
+      country: 'GB'
+    },
+    declaredAt: '2025-01-15T10:00:00Z',
+    coversFrom: '2021-01-15T00:00:00Z',
+    isActive: true,
+    createdAt: '2025-01-15T10:00:00Z'
+  },
+  {
+    id: 'gad-002',
+    organizationId: 'org-001',
+    donorUserId: 'donor-013',
+    donorName: 'Sarah Thompson',
+    donorEmail: 'sarah@example.com',
+    donorAddress: {
+      line1: '7 Willow Lane',
+      city: 'Manchester',
+      region: 'Greater Manchester',
+      postcode: 'M1 4BT',
+      country: 'GB'
+    },
+    declaredAt: '2025-06-01T14:30:00Z',
+    isActive: true,
+    createdAt: '2025-06-01T14:30:00Z'
+  }
+]
+
+/**
+ * Sample consent records (GDPR compliance)
+ * Logs every opt-in/out event with timestamp and wording shown.
+ */
+export const consentRecords: ConsentRecord[] = [
+  {
+    id: 'cr-001',
+    organizationId: 'org-001',
+    donorUserId: 'donor-001',
+    donorEmail: 'awesome@charity.co.uk',
+    purpose: 'marketing_email',
+    granted: true,
+    legalBasis: 'consent',
+    sourceFormId: 'form-001',
+    wordingShown:
+      'Join our email list. Get updates on our impact and latest news. Unsubscribe anytime.',
+    recordedAt: '2026-01-28T14:30:00Z',
+    ipAddress: '203.0.113.42'
+  },
+  {
+    id: 'cr-002',
+    organizationId: 'org-001',
+    donorUserId: 'donor-013',
+    donorEmail: 'sarah@example.com',
+    purpose: 'marketing_email',
+    granted: true,
+    legalBasis: 'consent',
+    sourceFormId: 'form-001',
+    wordingShown:
+      'Join our email list. Get updates on our impact and latest news. Unsubscribe anytime.',
+    recordedAt: '2025-12-15T10:20:00Z'
+  },
+  {
+    id: 'cr-003',
+    organizationId: 'org-001',
+    donorUserId: 'donor-013',
+    donorEmail: 'sarah@example.com',
+    purpose: 'marketing_email',
+    granted: false,
+    legalBasis: 'consent',
+    wordingShown: 'Unsubscribed via email preferences',
+    recordedAt: '2026-01-10T08:45:00Z'
+  }
+]
+
+/** Get Gift Aid declarations for a donor */
+export function getUserGiftAidDeclarations(email: string): GiftAidDeclaration[] {
+  return giftAidDeclarations.filter((d) => d.donorEmail === email)
+}
+
+/** Get consent records for a donor */
+export function getUserConsentRecords(email: string): ConsentRecord[] {
+  return consentRecords.filter((r) => r.donorEmail === email)
 }

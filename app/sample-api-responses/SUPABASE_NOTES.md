@@ -1,6 +1,6 @@
 # Supabase Implementation Notes
 
-Pending schema changes and triggers needed before migrating to Supabase. Schema is now **20 tables** (down from 35) after consolidating settings into 4 org tables, campaign sub-data into JSONB on `campaigns`, and form config into JSONB columns on `campaign_forms`.
+Pending schema changes and triggers needed before migrating to Supabase. Schema is now **22 tables** (20 core + 2 compliance: `gift_aid_declarations`, `consent_records`) after consolidating settings into 4 org tables, campaign sub-data into JSONB on `campaigns`, and form config into JSONB columns on `campaign_forms`. See `COMPLIANCE_DECISIONS.md` for immutable records strategy, GDPR, and HMRC decisions.
 
 ---
 
@@ -37,7 +37,7 @@ Pending schema changes and triggers needed before migrating to Supabase. Schema 
 | `form_feature_gift_aid`                    | `campaign_forms.gift_aid`         | JSONB       |
 | `form_feature_tribute`                     | `campaign_forms.tribute`          | JSONB       |
 
-### Final table count: 20
+### Final table count: 22
 
 | Category             | Count  | Tables                                                                                                                      |
 | -------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------- |
@@ -47,8 +47,9 @@ Pending schema changes and triggers needed before migrating to Supabase. Schema 
 | Donor Portal         | 6      | `donor_users`, `subscriptions`, `subscription_line_items`, `transactions`, `transaction_line_items`, `transaction_tributes` |
 | Products             | 1      | `products`                                                                                                                  |
 | Forms                | 2      | `campaign_forms` (with JSONB config incl. custom fields), `form_products`                                                   |
+| Compliance           | 2      | `gift_aid_declarations`, `consent_records`                                                                                  |
 | Lookups              | 1      | `tribute_relationships`                                                                                                     |
-| **Total**            | **20** | + 2 views (`campaign_donations_view`, `donors_summary_view`) + 1 storage bucket                                             |
+| **Total**            | **22** | + 2 views (`campaign_donations_view`, `donors_summary_view`) + 2 storage buckets                                            |
 
 ---
 
@@ -93,7 +94,7 @@ BEGIN
       AND (
         CASE required_role
           WHEN 'member'    THEN role IN ('member', 'developer', 'admin', 'owner')
-          WHEN 'developer' THEN role IN ('developer', 'owner')
+          WHEN 'developer' THEN role IN ('developer', 'admin', 'owner')
           WHEN 'admin'     THEN role IN ('admin', 'owner')
           WHEN 'owner'     THEN role = 'owner'
         END
@@ -310,6 +311,89 @@ AdminListPage (unchanged)
 
 ---
 
+## Compliance & Immutable Records
+
+See `COMPLIANCE_DECISIONS.md` for full rationale. Key implementation notes:
+
+### Immutable PDFs
+
+- Generate receipt + certificate PDFs at donation success, store in `donor-documents` Supabase Storage bucket
+- `transactions.receipt_pdf_url` and `transaction_line_items.certificate_pdf_url` store Storage paths
+- Charity identity, product details, branding all baked into PDF at generation time — no DB snapshot needed
+- Storage path: `{org_id}/donors/{donor_user_id}/{type}-{transaction_id}.pdf`
+
+### Data Retention
+
+- Transactions must **NEVER be hard-deleted** — financial records are immutable
+- Gift Aid records: **6-year retention** after last donation covered by a declaration (HMRC requirement)
+- `product_icon` removed from `transaction_line_items` and `subscription_line_items` — not needed with PDF strategy
+
+### Refunds
+
+- Refunds are transactions with `type = 'refund'` and `refund_of_transaction_id` FK to original
+- Support full + partial refunds (partial = lower amount referencing same original)
+- Cover costs: no special treatment — just part of the refund amount
+- Gift Aid reversal tracked via `gift_aid_reversed` + `gift_aid_amount_reversed`
+- Original transaction is never modified (status may update to `'refunded'`)
+
+### GDPR Anonymization
+
+On donor erasure request (production implementation):
+
+1. Set `donor_users.anonymized_at`
+2. Update `transactions.donor_name` → `'[Redacted]'`, `donor_email` → `'[Redacted]'`, set `anonymized_at`
+3. **Delete** stored PDFs (receipt + certificate) from Storage
+4. Keep all financial data intact (amounts, dates, Gift Aid) — permitted under GDPR Article 17(3)(b)
+
+### Data Portability
+
+- Production: `/api/donor-data-export` endpoint queries all donor-related tables by `donor_user_id`
+- Returns JSON with transactions, subscriptions, Gift Aid declarations, consent records
+- Rate-limited to prevent abuse
+
+### Consent Records
+
+- `consent_records` table logs every opt-in/out with timestamp + wording shown
+- Admin-configurable whether email opt-in is pre-checked for returning donors
+- `source_form_id` links consent to the form that captured it
+
+### Legal Basis
+
+- `transactions.legal_basis`: `contractual_necessity` (donations), `legal_obligation` (Gift Aid), `consent` (marketing)
+- `consent_records.legal_basis`: `consent` for marketing
+
+### Gift Aid Drift — Critical Webhook Pattern
+
+Subscription renewals MUST call `get_active_gift_aid_declaration(donor_user_id, org_id)` at payment time. **NEVER** inherit `gift_aid` status from the subscription record or the original signup transaction.
+
+**The drift scenario:**
+
+```
+Jan 2024  Donor starts £15/month subscription, declares Gift Aid
+Feb 2024  Renewal → gift_aid = true ✓ (webhook checks active declaration)
+Mar 2024  Donor cancels declaration (is_active = false, cancelled_at set)
+Apr 2024  Renewal comes in
+          WRONG: webhook copies gift_aid from subscription context → gift_aid = true ✗
+          RIGHT: webhook calls get_active_gift_aid_declaration() → returns false → gift_aid = false ✓
+```
+
+**Webhook handler rules:**
+
+- If function returns `false`: set `gift_aid = false`, leave `gift_aid_declaration_id = NULL`, no `gift_aid_amount`
+- If function returns `true`: look up the active declaration, set `gift_aid_declaration_id`, compute `gift_aid_amount = subtotal * 0.25`, snapshot `donor_address` from the declaration
+
+**Donor-facing cancellation:** Donors contact the charity to cancel Gift Aid. Admin sets `is_active = false` + `cancelled_at` on the declaration. No self-service portal action (My Data page shows declarations as display-only).
+
+<!-- TODO-SUPABASE: Stripe webhook must call get_active_gift_aid_declaration() on every subscription.invoice.payment_succeeded event -->
+
+### Exchange Rate Schema Fix
+
+- Added `base_currency TEXT` + `exchange_rate DECIMAL(10,6)` to `transactions` table
+- Matches prototype TS type (`Transaction.baseCurrency`, `Transaction.exchangeRate`)
+- Enables accurate multi-currency aggregation in donor portal and admin views
+
+---
+
 ## TODOs / Notes not to forget
 
 - [ ] Currency auto-population trigger replaces client-side `ensureCurrencyEntries` (see trigger above)
@@ -322,3 +406,10 @@ AdminListPage (unchanged)
 - [ ] `defineSettingsStore` helper — eliminates ~250 LOC across 4 org settings stores
 - [ ] Update `has_role_in_org()` for new 4-role hierarchy (owner > admin > developer > member; developer does NOT inherit admin)
 - [ ] RLS policies need updating for consolidated tables (4 org tables replace 6, JSONB columns replace sub-tables)
+- [ ] PDF generation on donation success (receipt + certificate) — store in `donor-documents` bucket, save URLs on transaction/line items
+- [ ] GDPR anonymization endpoint — redact PII, delete PDFs, keep financial data
+- [ ] Gift Aid declaration creation in donation form submission flow
+- [ ] Consent record creation on email opt-in/out during donation
+- [ ] Data export endpoint (`/api/donor-data-export`) for GDPR data portability
+- [ ] Gift Aid HMRC claims tracking (future consideration): `gift_aid_claims` + `gift_aid_claim_items` tables
+- [ ] Stripe webhook (`subscription.invoice.payment_succeeded`) must call `get_active_gift_aid_declaration()` — never inherit Gift Aid from subscription record (see "Gift Aid Drift" section above)

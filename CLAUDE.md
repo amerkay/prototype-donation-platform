@@ -108,8 +108,12 @@ app/features/[feature-name]/
 10. This is a prototype — don't overthink type/schema changes. Bias toward simple, direct solutions over future-proof abstractions.
 11. Accordion IDs in `productOpenAccordionId` are prefixed with form section ID (e.g., `product.basic`, not `basic`)
 12. Currency removal from supported list must check form usage (enabledCurrencies/baseDefaultCurrency) before saving
-13. **Supabase migration**: `app/sample-api-responses/SUPABASE_SCHEMA_DRAFT.md` (20 tables, 35→20 consolidation) and `SUPABASE_NOTES.md` (migration TODOs) are the blueprint. All 21 stores/composables marked with `TODO-SUPABASE` comments showing exact query replacements. Search `TODO-SUPABASE` to find all migration points.
+13. **Supabase migration**: `app/sample-api-responses/SUPABASE_SCHEMA_DRAFT.md` (22 tables) and `SUPABASE_NOTES.md` (migration TODOs) are the blueprint. Search `TODO-SUPABASE` to find all migration points.
 14. **Previews must use exact donor-facing components/mechanisms** — never mock or duplicate. Admins see the real layout donors see; DRY is automatic.
+15. **Immutable records**: generate receipt/certificate PDFs at donation time, store on S3. PDF = snapshot. See `COMPLIANCE_DECISIONS.md`.
+16. **Refunds** are negative transactions (`type: 'refund'`) with `refund_of_transaction_id` FK. Cover costs = no special treatment.
+17. **GDPR**: anonymize PII on transactions (don't delete), delete PDFs, keep financial data (Article 17(3)(b)). `consent_records` table.
+18. **HMRC Gift Aid**: `gift_aid_declarations` table — name, address, date. 6-year retention after last covered donation.
 
 <!-- end continuous learning notes -->
 

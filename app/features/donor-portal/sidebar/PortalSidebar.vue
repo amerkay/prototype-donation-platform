@@ -7,7 +7,8 @@ import {
   Megaphone,
   Heart,
   LifeBuoy,
-  Send
+  Send,
+  Download
 } from 'lucide-vue-next'
 import NavUser from '~/features/_admin/sidebar/NavUser.vue'
 import {
@@ -37,7 +38,8 @@ const navItems = [
   { title: 'Dashboard', url: '/portal', icon: LayoutDashboard },
   { title: 'Donation History', url: '/portal/donations', icon: Receipt },
   { title: 'Subscriptions', url: '/portal/subscriptions', icon: CreditCard },
-  { title: 'My Fundraisers', url: '/portal/fundraisers', icon: Megaphone }
+  { title: 'My Fundraisers', url: '/portal/fundraisers', icon: Megaphone },
+  { title: 'My Data', url: '/portal/my-data', icon: Download }
 ]
 
 const navSecondary = [

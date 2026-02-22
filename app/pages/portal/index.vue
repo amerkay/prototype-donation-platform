@@ -87,7 +87,6 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
             >
               <div class="space-y-0.5">
                 <p class="text-sm font-medium leading-none">
-                  {{ sub.lineItems.map((i) => i.productIcon).join(' ') }}
                   {{ sub.lineItems.map((i) => i.productTitle).join(', ') }}
                 </p>
                 <p class="text-xs text-muted-foreground">

@@ -12,6 +12,12 @@ export type PaymentMethodType = 'card' | 'paypal' | 'bank_transfer'
 
 export type TransactionStatus = 'succeeded' | 'pending' | 'failed' | 'refunded'
 
+export type LegalBasis =
+  | 'contractual_necessity'
+  | 'legal_obligation'
+  | 'consent'
+  | 'legitimate_interest'
+
 export interface PaymentMethod {
   type: PaymentMethodType
   /** Card last 4 digits (card only) */
@@ -29,10 +35,10 @@ export interface PaymentMethod {
 export interface TransactionLineItem {
   productId: string
   productTitle: string
-  productIcon: string
   quantity: number
   unitPrice: number
   frequency: 'once' | 'monthly' | 'yearly'
+  certificatePdfUrl?: string
 }
 
 /**
@@ -44,7 +50,7 @@ export interface Transaction {
   processor: PaymentProcessor
   /** Stripe: pi_xxx, PayPal: PAYID-xxx */
   processorTransactionId: string
-  type: 'one_time' | 'subscription_payment'
+  type: 'one_time' | 'subscription_payment' | 'refund'
   /** Links to Subscription.id if type is subscription_payment */
   subscriptionId?: string
   campaignId: string
@@ -74,9 +80,75 @@ export interface Transaction {
     type: 'gift' | 'memorial'
     honoreeName: string
   }
+  /** Gift Aid (HMRC compliance) */
   giftAid: boolean
+  giftAidAmount?: number
+  giftAidDeclarationId?: string
+  donorAddress?: {
+    line1: string
+    line2?: string
+    city: string
+    region?: string
+    postcode: string
+    country: string
+  }
+
+  /** Refund tracking (type='refund' only) */
+  refundOfTransactionId?: string
+  giftAidReversed?: boolean
+  giftAidAmountReversed?: number
+
+  /** Compliance */
+  legalBasis: LegalBasis
+  anonymizedAt?: string
+  receiptPdfUrl?: string
+
   customFields?: Record<string, string>
 
   createdAt: string
   receiptUrl?: string
+}
+
+/**
+ * HMRC Gift Aid declaration record.
+ * One declaration can cover all past and future donations from a donor.
+ */
+export interface GiftAidDeclaration {
+  id: string
+  organizationId: string
+  donorUserId: string
+  donorName: string
+  donorEmail: string
+  donorAddress: {
+    line1: string
+    line2?: string
+    city: string
+    region?: string
+    postcode: string
+    country: string
+  }
+  declaredAt: string
+  coversFrom?: string
+  /** Omitted or undefined = covers all future donations */
+  coversTo?: string
+  isActive: boolean
+  cancelledAt?: string
+  createdAt: string
+}
+
+/**
+ * GDPR consent record — audit log for every opt-in/out event.
+ */
+export interface ConsentRecord {
+  id: string
+  organizationId: string
+  donorUserId: string
+  donorEmail: string
+  purpose: 'marketing_email'
+  granted: boolean
+  legalBasis: LegalBasis
+  sourceFormId?: string
+  wordingShown: string
+  recordedAt: string
+  ipAddress?: string
 }

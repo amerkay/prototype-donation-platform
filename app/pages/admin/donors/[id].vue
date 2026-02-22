@@ -3,12 +3,13 @@ import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.
 import AdminDataTable from '~/features/_admin/components/AdminDataTable.vue'
 import { useDonors } from '~/features/donors/admin/composables/useDonors'
 import { donationColumns } from '~/features/donations/admin/columns/donationColumns'
+import { getUserConsentRecords } from '~/sample-api-responses/api-sample-response-transactions'
 import { formatCurrency } from '~/lib/formatCurrency'
-import { formatDate } from '~/lib/formatDate'
+import { formatDate, formatDateTime } from '~/lib/formatDate'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-vue-next'
+import { ArrowLeft, ShieldCheck } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'admin' })
 
@@ -30,6 +31,12 @@ const avgDonation = computed(() => {
   if (!donor.value || donor.value.donationCount === 0) return 0
   return donor.value.totalDonated / donor.value.donationCount
 })
+
+const consentRecords = computed(() => getUserConsentRecords(donor.value?.email ?? ''))
+
+const PURPOSE_LABELS: Record<string, string> = {
+  marketing_email: 'Marketing Emails'
+}
 
 function handleRowClick(row: { original: { id: string } }) {
   navigateTo(`/admin/donations/${row.original.id}`)
@@ -119,6 +126,47 @@ function handleRowClick(row: { original: { id: string } }) {
               :page-size="10"
               @row-click="handleRowClick"
             />
+          </CardContent>
+        </Card>
+
+        <!-- Consent Records -->
+        <Card class="mt-6">
+          <CardHeader>
+            <CardTitle class="text-base flex items-center gap-2">
+              <ShieldCheck class="h-4 w-4" />
+              Consent Records
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div v-if="consentRecords.length === 0" class="text-sm text-muted-foreground">
+              No consent records on file.
+            </div>
+            <div v-else class="space-y-3">
+              <div
+                v-for="record in consentRecords"
+                :key="record.id"
+                class="flex flex-col gap-1 rounded border p-3 text-sm"
+              >
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">{{
+                    PURPOSE_LABELS[record.purpose] ?? record.purpose
+                  }}</span>
+                  <Badge :variant="record.granted ? 'default' : 'secondary'">
+                    {{ record.granted ? 'Opted In' : 'Opted Out' }}
+                  </Badge>
+                  <span class="ml-auto text-xs text-muted-foreground">
+                    {{ formatDateTime(record.recordedAt) }}
+                  </span>
+                </div>
+                <p class="text-xs text-muted-foreground">
+                  {{
+                    record.wordingShown.length > 80
+                      ? record.wordingShown.slice(0, 80) + '...'
+                      : record.wordingShown
+                  }}
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </template>
