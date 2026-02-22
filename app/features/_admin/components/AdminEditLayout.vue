@@ -82,7 +82,7 @@ const leaveGuard = inject<LeaveGuard | null>(LEAVE_GUARD_KEY, null)
         <!-- Right: Preview Panel -->
         <div
           v-if="$slots.preview"
-          class="w-full sm:mx-auto lg:min-w-95 lg:max-w-95 lg:w-95 lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto pb-4"
+          class="w-full sm:mx-auto lg:min-w-95 lg:max-w-95 lg:w-95 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100vh-4.75rem)] lg:flex lg:flex-col"
         >
           <div class="flex items-center justify-between gap-2 mb-3">
             <p class="text-muted-foreground text-sm font-semibold">
@@ -106,7 +106,11 @@ const leaveGuard = inject<LeaveGuard | null>(LEAVE_GUARD_KEY, null)
               </Button>
             </div>
           </div>
-          <slot name="preview" />
+          <div
+            class="lg:overflow-y-auto lg:flex-1 pb-4 **:data-preview-nav:sticky **:data-preview-nav:top-0 **:data-preview-nav:z-10"
+          >
+            <slot name="preview" />
+          </div>
         </div>
       </div>
     </div>
