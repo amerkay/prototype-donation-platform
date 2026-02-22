@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, watch, nextTick, ref, provide } from 'vue'
+import { useHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
 import { useFieldArray, useFormValues, useValidateField } from 'vee-validate'
 import { vAutoAnimate } from '@formkit/auto-animate'
 import { Button } from '@/components/ui/button'
@@ -85,6 +86,32 @@ const resolvedVeeName = computed(() => {
     name: props.name,
     sectionId,
     fieldPrefix
+  })
+})
+
+// Hash path: strip sectionId prefix from vee-validate path for hash target matching
+const hashFullPath = computed(() => {
+  const veeName = resolvedVeeName.value
+  return sectionId && veeName.startsWith(`${sectionId}.`)
+    ? veeName.slice(sectionId.length + 1)
+    : veeName
+})
+
+// Scroll to a specific array item when it's targeted via deep link (e.g. costs.0)
+const { hashTargetChildSegment } = useHashTarget(hashFullPath)
+watch(hashTargetChildSegment, (segment) => {
+  if (!segment || !/^\d+$/.test(segment)) return
+  const index = parseInt(segment, 10)
+  nextTick(() => {
+    const el = arrayContainer.value?.querySelector(
+      `[data-vee-index="${index}"]`
+    ) as HTMLElement | null
+    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    el?.classList.add('ring-2', 'ring-primary', 'ring-offset-2', 'rounded-lg')
+    setTimeout(
+      () => el?.classList.remove('ring-2', 'ring-primary', 'ring-offset-2', 'rounded-lg'),
+      1500
+    )
   })
 })
 

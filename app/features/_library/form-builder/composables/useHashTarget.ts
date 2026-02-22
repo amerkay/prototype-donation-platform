@@ -124,6 +124,14 @@ function resolveHashToFieldPath(
         if (found) return found
       }
     }
+
+    // Support dot-notation array index paths: e.g., costs.0, costs.1
+    if (field.type === 'array') {
+      if (hash.startsWith(`${fullPath}.`)) {
+        const indexSegment = hash.slice(fullPath.length + 1).split('.')[0]
+        if (indexSegment && /^\d+$/.test(indexSegment)) return hash
+      }
+    }
   }
   return null
 }

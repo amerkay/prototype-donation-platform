@@ -3,13 +3,16 @@ import { computed, ref } from 'vue'
 import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
 import CharitySettingsConfig from '~/features/settings/admin/components/CharitySettingsConfig.vue'
 import CharitySettingsPreview from '~/features/settings/admin/components/CharitySettingsPreview.vue'
+import PreviewCurrencySelect from '~/features/_admin/components/PreviewCurrencySelect.vue'
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
 
 const store = useCharitySettingsStore()
 
 const originalData = computed(() => store.toSnapshot())
+const editableMode = ref(true)
 
 const formConfigRef = ref()
 
@@ -23,6 +26,8 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdmi
   }
 })
 
+const currencyStore = useCurrencySettingsStore()
+const selectedCurrency = ref(currencyStore.defaultCurrency)
 const showPreviewDialog = ref(false)
 
 const breadcrumbs = [
@@ -39,6 +44,7 @@ definePageMeta({
 <template>
   <div>
     <AdminEditLayout
+      v-model:editable="editableMode"
       :breadcrumbs="breadcrumbs"
       :is-dirty="store.isDirty"
       :show-discard-dialog="showDiscardDialog"
@@ -57,8 +63,19 @@ definePageMeta({
         </div>
       </template>
 
+      <template #preview-actions>
+        <PreviewCurrencySelect
+          :model-value="selectedCurrency"
+          :currencies="currencyStore.supportedCurrencies"
+          @update:model-value="selectedCurrency = $event"
+        />
+      </template>
+
       <template #preview>
-        <CharitySettingsPreview />
+        <CharitySettingsPreview
+          v-model:selected-currency="selectedCurrency"
+          :editable="editableMode"
+        />
       </template>
     </AdminEditLayout>
 
@@ -70,7 +87,10 @@ definePageMeta({
     >
       <template #header>Charity Preview</template>
       <template #content>
-        <CharitySettingsPreview />
+        <CharitySettingsPreview
+          v-model:selected-currency="selectedCurrency"
+          :editable="editableMode"
+        />
       </template>
     </BaseDialogOrDrawer>
   </div>

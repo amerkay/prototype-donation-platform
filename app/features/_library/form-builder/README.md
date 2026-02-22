@@ -722,6 +722,7 @@ Link directly to any field using URL hashes. Forms auto-expand collapsible group
 
 - Short: `#fieldName` → Resolves to first match (e.g., `#supportedCurrencies`)
 - Full path: `#group.field` → Exact location (e.g., `#currencies.currencyMultipliers.USD`)
+- Array item: `#arrayField.0` → Scrolls to + highlights item at index 0
 
 **Examples:**
 
@@ -731,9 +732,22 @@ Link directly to any field using URL hashes. Forms auto-expand collapsible group
 /admin/settings/currency#currencies.currencyMultipliers
 /admin/settings/currency#currencies.currencyMultipliers.USD
 /admin/campaigns/form-id/edit#donationAmounts.frequencies.monthly
+/admin/settings/charity#charityCosts.costs.0       ← first cost row
+/admin/settings/charity#charityCosts.costs.2       ← third cost row
 ```
 
 Target fields receive animated ring highlight (3x flash, then persistent until user interaction). Ideal for validation error links, documentation, and support workflows.
+
+**Array item targeting:** Use dot-notation index (`arrayField.0`, `arrayField.1`) to target a specific item inside an `arrayField`. The array container scrolls to and briefly highlights the item. Use this in `data-field` attributes on preview elements that correspond to repeating items (e.g., table rows mapping to array entries):
+
+```vue
+<!-- In preview component — each row maps to its array item -->
+<TableRow
+  v-for="(item, index) in items"
+  :key="item.id"
+  :data-field="targets?.items ? `${targets.items}.${index}` : undefined"
+/>
+```
 
 ## Filter System
 

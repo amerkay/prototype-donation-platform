@@ -12,6 +12,14 @@
   pointer-events: auto;
 }
 
+/* <tr> has no visual area independent of its <td> cells, so pointer-events: none
+   on <td> makes the entire row unreachable. Restore on direct <td> children so
+   events fire on the cell and bubble up to findFieldElement → <tr data-field>. */
+.editable tr[data-field] > td {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.15s ease;

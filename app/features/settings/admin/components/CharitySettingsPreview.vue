@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, provide } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ArrowRight } from 'lucide-vue-next'
 import ReceiptPreview from '~/features/templates/admin/components/ReceiptPreview.vue'
 import PreviewEditable from '~/features/_admin/components/PreviewEditable.vue'
-import PreviewCurrencySelect from '~/features/_admin/components/PreviewCurrencySelect.vue'
 import CoverCostsInfoCard from '~/features/donation-form/features/cover-costs/donor/components/CoverCostsInfoCard.vue'
 import CoverCostsModalContent from '~/features/donation-form/features/cover-costs/donor/components/CoverCostsModalContent.vue'
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
@@ -17,14 +16,35 @@ import {
   charityActiveTab,
   charityOpenAccordionId
 } from '~/features/settings/admin/forms/charity-settings-form'
-import { activateHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
+import {
+  activateHashTarget,
+  HASH_TARGET_PASSIVE_KEY
+} from '~/features/_library/form-builder/composables/useHashTarget'
+
+const props = withDefaults(
+  defineProps<{
+    editable?: boolean
+    selectedCurrency?: string
+  }>(),
+  { editable: false }
+)
+
+const emit = defineEmits<{
+  'update:selectedCurrency': [value: string]
+}>()
+
+// Prevent preview FormRenderers from stealing the global hash target activator
+provide(HASH_TARGET_PASSIVE_KEY, true)
 
 const currencyStore = useCurrencySettingsStore()
 const { brandingStyle } = useBrandingCssVars()
 const charityStore = useCharitySettingsStore()
 
 const activeTab = ref('receipt')
-const selectedCurrency = ref(currencyStore.defaultCurrency)
+const selectedCurrency = computed({
+  get: () => props.selectedCurrency ?? currencyStore.defaultCurrency,
+  set: (v) => emit('update:selectedCurrency', v)
+})
 
 // Accordion IDs match form section prefix + field name
 const ACCORDION_IDS = {
@@ -49,7 +69,8 @@ const charityReceiptTargets = computed(() => ({
 const costsTargets = {
   heading: 'charityCosts.heading',
   introText: 'charityCosts.introText',
-  outroText: 'charityCosts.outroText'
+  outroText: 'charityCosts.outroText',
+  costs: 'charityCosts.costs'
 }
 
 // --- Terms preview ---
@@ -101,29 +122,19 @@ watch(activeTab, (tab) => {
   suppressAccordionToTab = false
 })
 
-// Preview currency → form tab
-function handleCurrencyChange(currency: string) {
-  selectedCurrency.value = currency
+// Sync currency changes to form tab
+watch(selectedCurrency, (currency) => {
   charityActiveTab.value = currency
   nextTick(() => {
     activateHashTarget(`charitySettings.currencyTabs.${currency}`)
   })
-}
+})
 </script>
 
 <template>
-  <div class="space-y-3">
-    <div class="flex items-center justify-between">
-      <span class="text-sm font-medium text-muted-foreground">Preview</span>
-      <PreviewCurrencySelect
-        :model-value="selectedCurrency"
-        :currencies="currencyStore.supportedCurrencies"
-        @update:model-value="handleCurrencyChange"
-      />
-    </div>
-
+  <PreviewEditable :enabled="editable">
     <Tabs v-model="activeTab">
-      <TabsList class="w-full overflow-x-auto">
+      <TabsList class="w-full overflow-x-auto" data-preview-nav>
         <TabsTrigger value="receipt" class="text-xs">Receipt</TabsTrigger>
         <TabsTrigger value="costs" class="text-xs">Costs</TabsTrigger>
         <TabsTrigger value="terms" class="text-xs">Terms</TabsTrigger>
@@ -152,36 +163,32 @@ function handleCurrencyChange(currency: string) {
       </TabsContent>
 
       <!-- Costs tab -->
-      <TabsContent value="costs">
-        <PreviewEditable :enabled="true" :style="brandingStyle">
-          <div class="space-y-4">
-            <p class="text-xs text-muted-foreground">Card shown on donation form</p>
-            <CoverCostsInfoCard :targets="costsTargets" />
+      <TabsContent value="costs" :style="brandingStyle">
+        <div class="space-y-4">
+          <p class="text-xs text-muted-foreground">Card shown on donation form</p>
+          <CoverCostsInfoCard :targets="costsTargets" />
 
-            <p class="text-xs text-muted-foreground mt-4">Modal content</p>
-            <div class="border rounded-lg p-6">
-              <CoverCostsModalContent :targets="costsTargets" :show-heading="true" />
-            </div>
+          <p class="text-xs text-muted-foreground mt-4">Modal content</p>
+          <div class="border rounded-lg p-6">
+            <CoverCostsModalContent :targets="costsTargets" :show-heading="true" />
           </div>
-        </PreviewEditable>
+        </div>
       </TabsContent>
 
       <!-- Terms tab -->
-      <TabsContent value="terms">
-        <PreviewEditable :enabled="true" :style="brandingStyle">
-          <div class="space-y-4">
-            <p class="text-xs text-muted-foreground">Checkbox shown on donation form</p>
-            <div class="border rounded-lg p-6">
-              <FormRenderer
-                :key="termsPreviewKey"
-                v-model="termsPreviewData"
-                :section="termsPreviewSection"
-                :validate-on-mount="false"
-              />
-            </div>
+      <TabsContent value="terms" :style="brandingStyle">
+        <div class="space-y-4">
+          <p class="text-xs text-muted-foreground">Checkbox shown on donation form</p>
+          <div class="border rounded-lg p-6" data-field="terms">
+            <FormRenderer
+              :key="termsPreviewKey"
+              v-model="termsPreviewData"
+              :section="termsPreviewSection"
+              :validate-on-mount="false"
+            />
           </div>
-        </PreviewEditable>
+        </div>
       </TabsContent>
     </Tabs>
-  </div>
+  </PreviewEditable>
 </template>

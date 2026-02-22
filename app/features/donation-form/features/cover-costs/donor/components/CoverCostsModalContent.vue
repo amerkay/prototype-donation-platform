@@ -49,7 +49,11 @@ const formatCost = (cost: string, currency?: string) => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        <TableRow v-for="cost in charityCosts.costs" :key="cost.service">
+        <TableRow
+          v-for="(cost, index) in charityCosts.costs"
+          :key="cost.service"
+          :data-field="targets?.costs ? `${targets.costs}.${index}` : undefined"
+        >
           <TableCell>
             <div class="font-medium">{{ cost.service }}</div>
             <div class="text-xs text-muted-foreground">{{ cost.purpose }}</div>
