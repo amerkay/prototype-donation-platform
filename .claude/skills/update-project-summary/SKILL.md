@@ -2,6 +2,13 @@
 description: Regenerate the Project Summary section in CLAUDE.md and audit .claude/rules/ files
 ---
 
+## Part 0: Review Recent Changes
+
+Before updating anything, run `git log -5` to read the last 5 commits with full messages. Use this context to:
+
+1. **Update Continuous Learning** — if any commit introduced a durable, reusable insight (non-obvious pattern, gotcha, architectural decision), add or merge it into the `<!-- continuous learning notes -->` section of `CLAUDE.md`. Follow existing bullet style (1 line, ~100 chars). Never duplicate — merge with existing bullets when related.
+2. **Inform Parts 1 & 2** — use commit history to spot new features, removed features, renamed files, or shifted patterns that the project summary and rules files should reflect.
+
 ## Part 1: Update Project Summary
 
 Update ONLY the `## Project Summary` section in `CLAUDE.md` — the content between the `<!-- regenerate with /update-project-summary -->` and `<!-- end project summary -->` markers. Do NOT modify any other section.
@@ -51,6 +58,7 @@ After updating the project summary, audit each `.claude/rules/*.md` file against
 ### When to create a new rules file
 
 Create a new `.claude/rules/<feature>.md` if ALL of these are true:
+
 - A feature directory under `app/features/` has no corresponding rules file
 - The feature has meaningful complexity (3+ key files, non-obvious patterns, or gotchas)
 - The rules would save a future session real investigation time
@@ -62,8 +70,8 @@ Do NOT create rules files for simple features where the code is self-documenting
 ```markdown
 ---
 paths:
-  - "app/features/<feature>/**"
-  - "app/pages/<related-pages>/**"  # if applicable
+  - 'app/features/<feature>/**'
+  - 'app/pages/<related-pages>/**' # if applicable
 ---
 
 # Feature Name

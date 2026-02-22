@@ -1,7 +1,7 @@
 ---
 paths:
-  - "app/features/donor-portal/**"
-  - "app/pages/portal/**"
+  - 'app/features/donor-portal/**'
+  - 'app/pages/portal/**'
 ---
 
 # Donor Portal Feature
@@ -24,6 +24,7 @@ Donor-facing dashboard for viewing donation history, managing subscriptions, and
 - `fundraisers/index.vue` — User's fundraiser list
 - `fundraisers/[id].vue` — Fundraiser detail with donation table
 - `fundraisers/[id]/edit.vue` — Fundraiser editor
+- `my-data.vue` — GDPR: donor data export, Gift Aid declarations, consent records
 
 ## Current state
 

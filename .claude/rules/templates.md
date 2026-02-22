@@ -1,7 +1,7 @@
 ---
 paths:
-  - "app/features/templates/**"
-  - "app/pages/admin/templates/**"
+  - 'app/features/templates/**'
+  - 'app/pages/admin/templates/**'
 ---
 
 # Templates Feature
@@ -11,7 +11,7 @@ Certificate, receipt, and email templates with tokenized card system and model-d
 ## Key files
 
 - **Stores:** `admin/stores/certificateTemplate.ts`, `emailTemplate.ts`, `receiptTemplate.ts` (receiptTemplate uses `defineSettingsStore`)
-- **Composables:** `admin/composables/useCertificateTemplates.ts`, `useEmailTemplates.ts` (12 fixed system templates, no create/delete)
+- **Composables:** `admin/composables/useCertificateTemplates.ts`, `useEmailTemplates.ts` (8 editable donor + eCard templates; system emails in `app/emails/system/templates.ts`)
 - **Preview:** `admin/composables/useCertificatePreviewModel.ts` (template → model converter), `useEmailPreviewContext.ts` (sample data aggregator), `useEmailRenderPayload.ts` (email assembler)
 - **Types:** `admin/types.ts` — CertificateTemplate, EmailTemplate, ReceiptTemplate, template metadata
 - **Card system:** `admin/components/cards/` — tokenized card components for email templates
