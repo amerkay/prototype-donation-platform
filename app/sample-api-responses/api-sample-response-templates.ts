@@ -177,49 +177,5 @@ export const emailTemplates: EmailTemplate[] = [
     imageUrl: '',
     createdAt: '2025-04-10T10:00:00Z',
     updatedAt: '2026-01-01T09:00:00Z'
-  },
-  {
-    id: 'email-admin-new-donation',
-    name: 'New Donation',
-    type: 'admin-new-donation',
-    subject: 'New {{ FREQUENCY }} donation: {{ AMOUNT }}',
-    bodyHtml:
-      '<p>A new donation has been received.</p><p>{{ DONATION_SUMMARY_CARD }}</p><p><strong>Donor:</strong> {{ DONOR_NAME }}</p>',
-    imageUrl: '',
-    createdAt: '2025-05-01T10:00:00Z',
-    updatedAt: '2025-12-28T09:00:00Z'
-  },
-  {
-    id: 'email-admin-new-p2p-fundraiser',
-    name: 'New P2P Fundraiser',
-    type: 'admin-new-p2p-fundraiser',
-    subject: 'New P2P fundraiser created: {{ FUNDRAISER_NAME }}',
-    bodyHtml:
-      '<p>A new P2P fundraiser has been created.</p><p><strong>Fundraiser:</strong> {{ FUNDRAISER_NAME }}<br/><strong>Campaign:</strong> {{ CAMPAIGN_NAME }}<br/><strong>Goal:</strong> {{ GOAL_AMOUNT }}</p>',
-    imageUrl: '',
-    createdAt: '2025-05-10T10:00:00Z',
-    updatedAt: '2025-12-25T09:00:00Z'
-  },
-  {
-    id: 'email-p2p-new-donation',
-    name: 'New Donation',
-    type: 'p2p-new-donation',
-    subject: '{{ DONOR_NAME }} just supported your fundraiser',
-    bodyHtml:
-      '<p>Great news, {{ FUNDRAISER_NAME }}.</p><p>{{ DONOR_NAME }} donated {{ AMOUNT }} to your fundraiser.</p><p>Your total raised is now {{ TOTAL_RAISED }}.</p>',
-    imageUrl: '',
-    createdAt: '2025-06-01T10:00:00Z',
-    updatedAt: '2025-12-20T09:00:00Z'
-  },
-  {
-    id: 'email-team-invitation',
-    name: 'Team Invitation',
-    type: 'team-invitation',
-    subject: "You're invited to join {{ ORG_NAME }}",
-    bodyHtml:
-      '<p>Hi {{ INVITEE_NAME }},</p><p>You have been invited to join {{ ORG_NAME }} as a {{ ROLE }}.</p><p><a href="{{ INVITE_LINK }}">Accept your invitation</a></p>',
-    imageUrl: '',
-    createdAt: '2025-06-10T10:00:00Z',
-    updatedAt: '2025-12-15T09:00:00Z'
   }
 ]

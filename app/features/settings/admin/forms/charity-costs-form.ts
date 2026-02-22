@@ -3,15 +3,19 @@ import {
   defineForm,
   textField,
   textareaField,
+  selectField,
   fieldGroup,
   arrayField
 } from '~/features/_library/form-builder/api'
+import { getCurrencyOptionsForSelect } from '~/features/donation-form/shared/composables/useCurrency'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 
 /**
  * Charity costs form section — org-level operational cost breakdown
  * Used in cover costs upsell modal on donation forms
  */
-export const useCharityCostsForm = defineForm('charityCosts', (_ctx) => {
+export const useCharityCostsForm = defineForm('charityCosts', () => {
+  const currencyStore = useCurrencySettingsStore()
   const heading = textField('heading', {
     label: 'Modal Heading',
     description: 'Title shown at the top of the cost breakdown modal',
@@ -61,10 +65,11 @@ export const useCharityCostsForm = defineForm('charityCosts', (_ctx) => {
             description: 'Number or text (e.g., "2500" or "2.9% + 20p")',
             placeholder: '2500'
           }),
-          currency: textField('currency', {
-            label: 'Currency Code',
+          currency: selectField('currency', {
+            label: 'Currency',
             description: 'Leave empty for non-monetary costs (e.g., percentage-based)',
-            placeholder: 'GBP'
+            placeholder: 'None (percentage-based)',
+            options: () => getCurrencyOptionsForSelect(currencyStore.supportedCurrencies)
           })
         }
       })

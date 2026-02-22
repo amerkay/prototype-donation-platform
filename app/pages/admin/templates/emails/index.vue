@@ -2,6 +2,7 @@
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
 import AdminPageHeader from '~/features/_admin/components/AdminPageHeader.vue'
 import EmailTemplateCard from '~/features/templates/admin/components/EmailTemplateCard.vue'
+import AdminCardGrid from '~/features/_admin/components/AdminCardGrid.vue'
 import FilterTabs from '~/components/FilterTabs.vue'
 import { useEmailTemplates } from '~/features/templates/admin/composables/useEmailTemplates'
 import type { EmailTemplateCategory } from '~/features/templates/admin/types'
@@ -18,20 +19,14 @@ const breadcrumbs = [
 ]
 
 const filters = [
-  { value: 'all', label: 'All' },
   { value: 'ecard', label: 'eCards' },
-  { value: 'donor', label: 'Donor' },
-  { value: 'admin', label: 'Admin' },
-  { value: 'p2p', label: 'P2P' },
-  { value: 'team', label: 'Team' }
+  { value: 'donor', label: 'Donor' }
 ]
 
-const activeFilter = ref<'all' | EmailTemplateCategory>('all')
+const activeFilter = ref<EmailTemplateCategory>('donor')
 
 const filteredTemplates = computed(() =>
-  activeFilter.value === 'all'
-    ? templates.value
-    : templates.value.filter((t) => EMAIL_TEMPLATE_META[t.type]?.category === activeFilter.value)
+  templates.value.filter((t) => EMAIL_TEMPLATE_META[t.type]?.category === activeFilter.value)
 )
 </script>
 
@@ -46,13 +41,13 @@ const filteredTemplates = computed(() =>
         <FilterTabs v-model="activeFilter" :filters="filters" :counts="categoryCounts" />
       </div>
 
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <AdminCardGrid>
         <EmailTemplateCard
           v-for="template in filteredTemplates"
           :key="template.id"
           :template="template"
         />
-      </div>
+      </AdminCardGrid>
     </div>
   </div>
 </template>

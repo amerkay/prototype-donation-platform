@@ -2,6 +2,7 @@
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
 import AdminPageHeader from '~/features/_admin/components/AdminPageHeader.vue'
 import CertificateTemplateCard from '~/features/templates/admin/components/CertificateTemplateCard.vue'
+import AdminCardGrid from '~/features/_admin/components/AdminCardGrid.vue'
 import { useCertificateTemplates } from '~/features/templates/admin/composables/useCertificateTemplates'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-vue-next'
@@ -42,7 +43,7 @@ function handleDuplicate(id: string) {
         </template>
       </AdminPageHeader>
 
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <AdminCardGrid>
         <CertificateTemplateCard
           v-for="template in templates"
           :key="template.id"
@@ -50,7 +51,7 @@ function handleDuplicate(id: string) {
           @duplicate="handleDuplicate(template.id)"
           @delete="deleteTemplate(template.id)"
         />
-      </div>
+      </AdminCardGrid>
 
       <div v-if="!templates.length" class="text-center py-12 text-muted-foreground">
         <p class="text-lg font-medium">No certificate templates yet</p>

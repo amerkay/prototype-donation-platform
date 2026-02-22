@@ -78,7 +78,7 @@ export type CertificateTemplateSettings = Omit<
 // EMAIL TEMPLATES
 // ============================================================================
 
-/** All 12 system email template type keys */
+/** Customisable email template type keys (donor-facing + eCards) */
 export type EmailTemplateType =
   | 'ecard-gift'
   | 'ecard-in-memory'
@@ -88,13 +88,9 @@ export type EmailTemplateType =
   | 'donor-subscription-resumed'
   | 'donor-subscription-cancelled'
   | 'donor-payment-failed'
-  | 'admin-new-donation'
-  | 'admin-new-p2p-fundraiser'
-  | 'p2p-new-donation'
-  | 'team-invitation'
 
 /** Email template categories for filtering */
-export type EmailTemplateCategory = 'ecard' | 'donor' | 'admin' | 'p2p' | 'team'
+export type EmailTemplateCategory = 'ecard' | 'donor'
 
 /** Metadata for each email template type */
 export interface EmailTemplateMeta {

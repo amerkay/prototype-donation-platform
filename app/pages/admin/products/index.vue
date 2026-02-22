@@ -2,6 +2,7 @@
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
 import AdminPageHeader from '~/features/_admin/components/AdminPageHeader.vue'
 import ProductCard from '~/features/products/admin/components/ProductCard.vue'
+import AdminCardGrid from '~/features/_admin/components/AdminCardGrid.vue'
 import { useProducts } from '~/features/products/admin/composables/useProducts'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-vue-next'
@@ -37,7 +38,7 @@ function handleDuplicate(id: string) {
         </template>
       </AdminPageHeader>
 
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <AdminCardGrid>
         <ProductCard
           v-for="product in products"
           :key="product.id"
@@ -45,7 +46,7 @@ function handleDuplicate(id: string) {
           @duplicate="handleDuplicate(product.id)"
           @delete="deleteProduct(product.id)"
         />
-      </div>
+      </AdminCardGrid>
 
       <div v-if="!products.length" class="text-center py-12 text-muted-foreground">
         <p class="text-lg font-medium">No products yet</p>

@@ -2,6 +2,7 @@
 import type { Campaign } from '~/features/campaigns/shared/types'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import CampaignCard from './CampaignCard.vue'
+import AdminCardGrid from '~/features/_admin/components/AdminCardGrid.vue'
 
 defineProps<{
   campaigns: Campaign[]
@@ -20,11 +21,7 @@ function handleDelete(id: string) {
     <p class="text-muted-foreground">No campaigns found.</p>
   </div>
 
-  <div
-    v-else
-    class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-    :class="{ 'lg:grid-cols-2': compact }"
-  >
+  <AdminCardGrid v-else :compact="compact">
     <CampaignCard
       v-for="campaign in campaigns"
       :key="campaign.id"
@@ -32,5 +29,5 @@ function handleDelete(id: string) {
       :compact="compact"
       @delete="handleDelete(campaign.id)"
     />
-  </div>
+  </AdminCardGrid>
 </template>

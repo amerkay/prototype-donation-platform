@@ -18,13 +18,6 @@ const VARS = {
   CAMPAIGN_NAME: v('CAMPAIGN_NAME', 'Campaign Name'),
   FREQUENCY: v('FREQUENCY', 'Frequency'),
   NEXT_BILLING_DATE: v('NEXT_BILLING_DATE', 'Next Billing Date'),
-  FUNDRAISER_NAME: v('FUNDRAISER_NAME', 'Fundraiser Name'),
-  GOAL_AMOUNT: v('GOAL_AMOUNT', 'Goal Amount'),
-  TOTAL_RAISED: v('TOTAL_RAISED', 'Total Raised'),
-  INVITEE_NAME: v('INVITEE_NAME', 'Invitee Name'),
-  ROLE: v('ROLE', 'Role'),
-  ORG_NAME: v('ORG_NAME', 'Organisation Name'),
-  INVITE_LINK: v('INVITE_LINK', 'Invite Link'),
   IMPACT_PRODUCT_CARD: v('IMPACT_PRODUCT_CARD', 'Impact Product Card'),
   DONATION_SUMMARY_CARD: v('DONATION_SUMMARY_CARD', 'Donation Summary Card'),
   SUBSCRIPTION_STATUS_CARD: v('SUBSCRIPTION_STATUS_CARD', 'Subscription Status Card'),
@@ -156,30 +149,6 @@ export const EMAIL_TEMPLATE_META: Record<EmailTemplateType, EmailTemplateMeta> =
       SUBSCRIPTION_STATUS_CARD,
       IMPACT_PRODUCT_CARD
     ]
-  },
-  'admin-new-donation': {
-    displayName: 'New Donation',
-    category: 'admin',
-    hasImage: false,
-    variables: [DONOR_NAME, AMOUNT, DATE, CAMPAIGN_NAME, FREQUENCY, DONATION_SUMMARY_CARD]
-  },
-  'admin-new-p2p-fundraiser': {
-    displayName: 'New P2P Fundraiser',
-    category: 'admin',
-    hasImage: false,
-    variables: [VARS.FUNDRAISER_NAME, CAMPAIGN_NAME, VARS.GOAL_AMOUNT]
-  },
-  'p2p-new-donation': {
-    displayName: 'New Donation',
-    category: 'p2p',
-    hasImage: false,
-    variables: [DONOR_NAME, AMOUNT, VARS.FUNDRAISER_NAME, VARS.TOTAL_RAISED]
-  },
-  'team-invitation': {
-    displayName: 'Team Invitation',
-    category: 'team',
-    hasImage: false,
-    variables: [VARS.INVITEE_NAME, VARS.ROLE, VARS.ORG_NAME, VARS.INVITE_LINK]
   }
 } as const
 
@@ -191,8 +160,5 @@ export function getCategoryForType(type: EmailTemplateType): EmailTemplateCatego
 /** Category display labels */
 export const EMAIL_CATEGORY_LABELS: Record<EmailTemplateCategory, string> = {
   ecard: 'eCards',
-  donor: 'Donor',
-  admin: 'Admin',
-  p2p: 'P2P',
-  team: 'Team'
+  donor: 'Donor'
 }

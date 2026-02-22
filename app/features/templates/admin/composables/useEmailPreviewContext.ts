@@ -1,6 +1,5 @@
-import { toValue, type MaybeRefOrGetter } from 'vue'
+import type { MaybeRefOrGetter } from 'vue'
 import type { EmailTemplateCategory, EmailTemplateType } from '~/features/templates/admin/types'
-import { EMAIL_TEMPLATE_META } from '~/features/templates/admin/email-templates'
 import type { TransactionLineItem, PaymentMethod } from '~/features/donor-portal/types'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useDonations } from '~/features/donations/admin/composables/useDonations'
@@ -71,7 +70,7 @@ function fallbackImageUrl(
 }
 
 export function useEmailPreviewContext(
-  templateType?: MaybeRefOrGetter<EmailTemplateType | undefined>
+  _templateType?: MaybeRefOrGetter<EmailTemplateType | undefined>
 ) {
   const { campaigns } = useCampaigns()
   const { allTransactions } = useDonations()
@@ -80,13 +79,6 @@ export function useEmailPreviewContext(
   const charityStore = useCharitySettingsStore()
   const brandingStore = useBrandingSettingsStore()
   const siteUrl = (useRuntimeConfig().public.siteUrl as string | undefined) || ''
-  const templateCategory = computed<EmailTemplateCategory>(() => {
-    const type = toValue(templateType)
-    return type ? EMAIL_TEMPLATE_META[type].category : 'donor'
-  })
-  const isAdminFacingTemplate = computed(
-    () => templateCategory.value === 'admin' || templateCategory.value === 'team'
-  )
 
   const latestCampaign = computed(() => {
     const standardCampaigns = campaigns.value.filter((campaign) => campaign.type === 'standard')
@@ -142,9 +134,6 @@ export function useEmailPreviewContext(
   const campaignCardUrl = computed(() => {
     const campaign = latestCampaign.value
     if (!campaign?.id) return undefined
-    if (isAdminFacingTemplate.value) {
-      return toAbsoluteUrl(`/admin/campaigns/${campaign.id}`, siteUrl)
-    }
     const orgSlug = charityStore.slug?.trim()
     const donorPath = orgSlug ? `/${orgSlug}/${campaign.id}` : `/admin/campaigns/${campaign.id}`
     return toAbsoluteUrl(donorPath, siteUrl)
@@ -207,45 +196,6 @@ export function useEmailPreviewContext(
               latestSucceededDonation.value?.lineItems[0]?.frequency
           ) || 'monthly',
         NEXT_BILLING_DATE: formatDate(latestSubscription.value?.nextBillingDate) || ''
-      },
-      admin: {
-        DONOR_NAME: latestDonor.value?.fullName || 'Unknown donor',
-        AMOUNT: donationAmount.value || '$0.00',
-        DATE:
-          formatDate(latestSucceededDonation.value?.createdAt) ||
-          formatDate(new Date().toISOString()),
-        CAMPAIGN_NAME:
-          latestCampaign.value?.name ||
-          latestSucceededDonation.value?.campaignName ||
-          'Our Mission Fund',
-        FREQUENCY:
-          formatFrequency(
-            latestSubscription.value?.frequency ||
-              latestSucceededDonation.value?.lineItems[0]?.frequency
-          ) || 'one-time',
-        FUNDRAISER_NAME: 'Community Champion',
-        GOAL_AMOUNT:
-          formatMoney(
-            latestCampaign.value?.crowdfunding?.goalAmount,
-            latestCampaign.value?.stats?.currency || 'USD'
-          ) || '$0.00'
-      },
-      p2p: {
-        DONOR_NAME: latestDonor.value?.fullName || 'A supporter',
-        AMOUNT: donationAmount.value || '$0.00',
-        FUNDRAISER_NAME: latestCampaign.value?.name || 'Fundraiser',
-        TOTAL_RAISED:
-          formatMoney(
-            latestCampaign.value?.stats?.totalRaised,
-            latestCampaign.value?.stats?.currency || 'USD'
-          ) || '$0.00'
-      },
-      team: {
-        INVITEE_NAME: latestDonor.value?.fullName || 'Team Member',
-        ROLE: 'Editor',
-        ORG_NAME:
-          charityStore.emailSenderName || latestCampaign.value?.name || 'Community Organization',
-        INVITE_LINK: 'https://example.com/invite/latest'
       }
     })
   )
