@@ -19,11 +19,12 @@ import { toggleField } from '~/features/_library/form-builder/api'
  * ```
  */
 export function createTermsAcceptanceField(
-  visibleWhen?: (ctx: { values: Record<string, unknown> }) => boolean
+  visibleWhen?: (ctx: { values: Record<string, unknown> }) => boolean,
+  config?: { label?: string; description?: string; mode?: string; externalUrl?: string }
 ): Record<string, FieldDef> {
   const acceptTerms = toggleField('acceptTerms', {
-    label: 'I accept the terms and conditions',
-    description: 'I agree to the Terms of Service and Privacy Policy.',
+    label: config?.label || 'I accept the terms and conditions',
+    description: config?.description || 'I agree to the Terms of Service and Privacy Policy.',
     visibleWhen,
     defaultValue: false,
     rules: z.boolean().refine((val) => val === true, {

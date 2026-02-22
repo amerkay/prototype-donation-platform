@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, provide, toRaw } from 'vue'
+import { ref, computed, watch, provide, toRaw } from 'vue'
 import { useForm } from 'vee-validate'
 import FormFieldList from './internal/FormFieldList.vue'
 import type { ComposableForm } from '~/features/_library/form-builder/types'
@@ -163,11 +163,15 @@ const sectionFieldContext = computed(() => ({
   root: sectionValues.value
 }))
 
+// Form element ref for DOM-query-based scroll fallback
+const formRef = ref<HTMLFormElement | null>(null)
+
 // Auto-scroll to newly visible fields (scroll to top of element)
 const { setElementRef } = useScrollOnVisible(allFields, {
   isVisible: ([, fieldMeta]) =>
     checkFieldVisibility(fieldMeta, sectionFieldContext.value, { skipContainerValidation: true }),
-  getKey: ([key]) => key
+  getKey: ([key]) => key,
+  containerEl: formRef
 })
 
 // Emit changes when form values update
@@ -268,7 +272,7 @@ defineExpose({
 </script>
 
 <template>
-  <form :class="props.class" @submit.prevent="onSubmit">
+  <form ref="formRef" :class="props.class" @submit.prevent="onSubmit">
     <div v-if="resolvedSection.title || resolvedSection.description" class="mb-6">
       <h2 v-if="resolvedSection.title" class="text-sm font-semibold">
         {{ resolvedSection.title }}

@@ -36,17 +36,20 @@ watch(targetCurrencies, (currencies) => {
   }
 })
 
-// Bi-directional sync: accordion ↔ preview dropdown
+// Sync accordion open → preview dropdown.
+// The accordion ID is a full path (e.g. 'currencies.currencyTabs.multipliers.USD'),
+// so extract the currency code from the last segment.
 watch(currencyOpenAccordionId, (id) => {
-  if (id && targetCurrencies.value.includes(id)) {
-    selectedCurrency.value = id
+  const currency = id?.split('.').pop()
+  if (currency && targetCurrencies.value.includes(currency)) {
+    selectedCurrency.value = currency
   }
 })
 
 function handlePreviewCurrencyChange(currency: string) {
   selectedCurrency.value = currency
-  currencyOpenAccordionId.value = currency
-  // Switch to multipliers tab and open the currency's accordion
+  // Switch to multipliers tab and open the currency's accordion via hash navigation.
+  // Opening the accordion will update currencyOpenAccordionId via the group state.
   nextTick(() => {
     activateHashTarget(`currencies.currencyTabs.multipliers.${currency}`)
   })

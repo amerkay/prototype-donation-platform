@@ -83,6 +83,58 @@ export const charitySettings: CharitySettings = {
       },
       ...EMPTY_EMAIL_FIELDS
     }
+  },
+  charityCosts: {
+    heading: 'Help Us Keep More for the Orangutans',
+    introText:
+      'Running a modern charity requires essential technology and services. By covering these operational costs, you ensure 100% of your donation goes directly to protecting orangutans and their habitat.',
+    outroText:
+      'Your optional contribution helps offset these necessary costs, meaning every penny of your main donation can directly fund orangutan conservation work.',
+    costs: [
+      { service: 'Stripe', purpose: 'Payment processing', annualCost: '2.9% + 20p', currency: '' },
+      { service: 'BeaconCRM', purpose: 'Donor management', annualCost: '2500', currency: 'GBP' },
+      { service: 'Mailchimp', purpose: 'Email updates', annualCost: '600', currency: 'GBP' },
+      {
+        service: 'WordPress Hosting',
+        purpose: 'Website infrastructure',
+        annualCost: '480',
+        currency: 'GBP'
+      },
+      {
+        service: 'n8n Automation',
+        purpose: 'Workflow automation',
+        annualCost: '360',
+        currency: 'GBP'
+      },
+      {
+        service: 'CloudFlare',
+        purpose: 'Security & performance',
+        annualCost: '240',
+        currency: 'GBP'
+      },
+      {
+        service: 'Communications Manager',
+        purpose: 'Full-time (Portugal)',
+        annualCost: '38000',
+        currency: 'GBP'
+      },
+      {
+        service: 'Corporate Outreach',
+        purpose: 'Part-time fundraising',
+        annualCost: '26000',
+        currency: 'GBP'
+      }
+    ]
+  },
+  terms: {
+    enabled: true,
+    settings: {
+      mode: 'link' as const,
+      externalUrl: 'https://borneoorangutansurvival.org/terms',
+      richContent: '',
+      label: 'I accept the terms and conditions',
+      description: 'I agree to the Terms of Service and Privacy Policy.'
+    }
   }
 }
 

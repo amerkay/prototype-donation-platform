@@ -1,7 +1,8 @@
 import * as z from 'zod'
 import type { FieldDef, FieldContext } from '~/features/_library/form-builder/types'
-import { cardField, sliderField } from '~/features/_library/form-builder/api'
+import { componentField, sliderField } from '~/features/_library/form-builder/api'
 import { getCurrencySymbol } from '~/features/donation-form/shared/composables/useCurrency'
+import CoverCostsInfoCard from '~/features/donation-form/features/cover-costs/donor/components/CoverCostsInfoCard.vue'
 
 /**
  * Universal cover costs field that adapts between percentage and fixed amount modes
@@ -13,27 +14,15 @@ import { getCurrencySymbol } from '~/features/donation-form/shared/composables/u
  * @param options Configuration options
  * @returns Record with adaptive coverCostsValue field
  */
-export function createCoverCostsField(options: {
-  heading: string
-  description: string
-  thresholdAmount?: number
-}): Record<string, FieldDef> {
-  const { heading, description, thresholdAmount = 10 } = options
+export function createCoverCostsField(
+  options: {
+    thresholdAmount?: number
+  } = {}
+): Record<string, FieldDef> {
+  const { thresholdAmount = 10 } = options
 
-  const coverFeesInfo = cardField('coverFeesInfo', {
-    label: heading,
-    content: `
-        <p class="text-sm text-muted-foreground mb-2">
-          ${description}
-          <button 
-            type="button" 
-            class="text-primary underline-offset-4 hover:underline"
-            data-cover-costs-terms-trigger
-          >
-            See cost breakdown
-          </button>
-        </p>
-      `
+  const coverFeesInfo = componentField('coverFeesInfo', {
+    component: CoverCostsInfoCard
   })
 
   const coverCostsValue = sliderField('coverCostsValue', {
@@ -89,6 +78,7 @@ export function createCoverCostsField(options: {
       }
     },
 
+    descriptionClass: 'whitespace-nowrap',
     showMinMax: true,
     minMaxFormatter: (value: number, ctx?: FieldContext) => {
       const donationAmount = (ctx?.values?.donationAmount as number) || 0

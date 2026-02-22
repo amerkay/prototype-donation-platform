@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import { useInjectedBrandingStyle } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { Button } from '@/components/ui/button'
@@ -11,6 +12,7 @@ import {
   TableRow
 } from '@/components/ui/table'
 import { getCurrencySymbol } from '~/features/donation-form/shared/composables/useCurrency'
+import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 
 interface Props {
   open?: boolean
@@ -20,73 +22,19 @@ interface Emits {
   (e: 'update:open', value: boolean): void
 }
 
-interface OperationalCost {
-  service: string
-  purpose: string
-  annualCost: string | number
-  currency?: string | null
-}
-
 defineProps<Props>()
 const emit = defineEmits<Emits>()
 const brandingStyle = useInjectedBrandingStyle()
+const charityStore = useCharitySettingsStore()
 
-const operationalCosts: OperationalCost[] = [
-  {
-    service: 'Stripe',
-    purpose: 'Payment processing',
-    annualCost: '2.9% + 20p',
-    currency: null
-  },
-  {
-    service: 'BeaconCRM',
-    purpose: 'Donor management',
-    annualCost: 2500,
-    currency: 'GBP'
-  },
-  {
-    service: 'Mailchimp',
-    purpose: 'Email updates',
-    annualCost: 600,
-    currency: 'GBP'
-  },
-  {
-    service: 'WordPress Hosting',
-    purpose: 'Website infrastructure',
-    annualCost: 480,
-    currency: 'GBP'
-  },
-  {
-    service: 'n8n Automation',
-    purpose: 'Workflow automation',
-    annualCost: 360,
-    currency: 'GBP'
-  },
-  {
-    service: 'CloudFlare',
-    purpose: 'Security & performance',
-    annualCost: 240,
-    currency: 'GBP'
-  },
-  {
-    service: 'Communications Manager',
-    purpose: 'Full-time (Portugal)',
-    annualCost: 38000,
-    currency: 'GBP'
-  },
-  {
-    service: 'Corporate Outreach',
-    purpose: 'Part-time fundraising',
-    annualCost: 26000,
-    currency: 'GBP'
-  }
-]
+const charityCosts = computed(() => charityStore.charityCosts)
 
-const formatCost = (cost: string | number, currency?: string | null) => {
-  if (!currency) return String(cost)
+const formatCost = (cost: string, currency?: string) => {
+  if (!currency) return cost
 
   const symbol = getCurrencySymbol(currency)
-  return typeof cost === 'number' ? `${symbol}${cost.toLocaleString()}` : `${cost} ${symbol}`
+  const numericValue = Number(cost)
+  return !isNaN(numericValue) ? `${symbol}${numericValue.toLocaleString()}` : `${cost} ${symbol}`
 }
 
 const handleClose = () => {
@@ -100,17 +48,15 @@ const handleClose = () => {
     :content-style="brandingStyle"
     @update:open="emit('update:open', $event)"
   >
-    <template #header>Help Us Keep More for the Orangutans</template>
+    <template #header>{{ charityCosts.heading }}</template>
 
     <template #content>
       <div class="space-y-4 py-4">
-        <p class="text-sm text-muted-foreground">
-          Running a modern charity requires essential technology and services. By covering these
-          operational costs, you ensure 100% of your donation goes directly to protecting orangutans
-          and their habitat.
+        <p v-if="charityCosts.introText" class="text-sm text-muted-foreground">
+          {{ charityCosts.introText }}
         </p>
 
-        <Table>
+        <Table v-if="charityCosts.costs.length > 0">
           <TableHeader>
             <TableRow>
               <TableHead>Service</TableHead>
@@ -118,7 +64,7 @@ const handleClose = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow v-for="cost in operationalCosts" :key="cost.service">
+            <TableRow v-for="cost in charityCosts.costs" :key="cost.service">
               <TableCell>
                 <div class="font-medium">{{ cost.service }}</div>
                 <div class="text-xs text-muted-foreground">{{ cost.purpose }}</div>
@@ -130,9 +76,8 @@ const handleClose = () => {
           </TableBody>
         </Table>
 
-        <p class="text-sm text-muted-foreground">
-          Your optional contribution helps offset these necessary costs, meaning every penny of your
-          main donation can directly fund orangutan conservation work.
+        <p v-if="charityCosts.outroText" class="text-sm text-muted-foreground">
+          {{ charityCosts.outroText }}
         </p>
       </div>
     </template>

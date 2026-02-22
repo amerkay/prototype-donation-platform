@@ -24,14 +24,7 @@ const {
 } = useCoverCostsManager()
 
 // Single form section - no switching needed
-const formSection = computed(() =>
-  defineForm('coverCosts', () =>
-    createCoverCostsField({
-      heading: props.config.settings.heading,
-      description: props.config.settings.description
-    })
-  )
-)
+const formSection = computed(() => defineForm('coverCosts', () => createCoverCostsField()))
 
 // Form data with context
 const formData = computed({

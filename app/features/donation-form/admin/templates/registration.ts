@@ -82,7 +82,15 @@ export function createRegistrationTemplate(
           modal: { title: 'Gift or In Memory', subtitle: '' }
         },
         customFields: { customFieldsTabs: {} },
-        entryFields: { enabled: true, mode: 'per-item' as const, fields: [] }
+        entryFields: { enabled: true, mode: 'per-item' as const, fields: [] },
+        terms: { enabled: true },
+        contactConsent: {
+          enabled: true,
+          settings: {
+            label: 'Join our email list',
+            description: 'Get updates on our impact and latest news. Unsubscribe anytime.'
+          }
+        }
       }
     },
     products: []

@@ -99,7 +99,15 @@ export function createDogShowEntriesTemplate(
           relationships: [],
           modal: { title: '', subtitle: '' }
         },
-        customFields: { customFieldsTabs: {} }
+        customFields: { customFieldsTabs: {} },
+        terms: { enabled: true },
+        contactConsent: {
+          enabled: true,
+          settings: {
+            label: 'Join our email list',
+            description: 'Get updates on our impact and latest news. Unsubscribe anytime.'
+          }
+        }
       }
     },
     products: [

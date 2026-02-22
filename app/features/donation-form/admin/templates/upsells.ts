@@ -130,7 +130,15 @@ export function createUpsellsTemplate(
         customFields: {
           customFieldsTabs: {}
         },
-        entryFields: { enabled: false, mode: 'shared' as const, fields: [] }
+        entryFields: { enabled: false, mode: 'shared' as const, fields: [] },
+        terms: { enabled: true },
+        contactConsent: {
+          enabled: true,
+          settings: {
+            label: 'Join our email list',
+            description: 'Get updates on our impact and latest news. Unsubscribe anytime.'
+          }
+        }
       }
     },
     products: []

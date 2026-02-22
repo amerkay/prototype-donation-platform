@@ -44,6 +44,42 @@ export interface CharityAddress {
 export interface CharitySettings {
   slug: string
   currencyEntries: Record<string, CharityCurrencyEntry>
+  charityCosts: CharityCostsSettings
+  terms: TermsSettings
+}
+
+/**
+ * Charity operational cost item (for cover costs upsell modal)
+ */
+export interface CharityCostItem {
+  service: string
+  purpose: string
+  annualCost: string
+  currency: string
+}
+
+/**
+ * Org-level charity costs settings
+ */
+export interface CharityCostsSettings {
+  heading: string
+  introText: string
+  outroText: string
+  costs: CharityCostItem[]
+}
+
+/**
+ * Org-level terms & conditions settings
+ */
+export interface TermsSettings {
+  enabled: boolean
+  settings: {
+    mode: 'link' | 'content'
+    externalUrl: string
+    richContent: string
+    label: string
+    description: string
+  }
 }
 
 /** Per-currency entry fields (excludes address, handled separately) */

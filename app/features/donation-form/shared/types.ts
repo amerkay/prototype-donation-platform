@@ -67,7 +67,9 @@ export const FEATURE_FORM_TYPE_SUPPORT: Record<string, FormType[]> = {
   productSelector: ['donation'],
   tribute: ['donation'],
   impactBoost: ['donation'],
-  entryFields: ['registration']
+  entryFields: ['registration'],
+  contactConsent: ['donation', 'registration'],
+  terms: ['donation', 'registration']
 }
 
 export interface EntryFieldsSettings {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, provide, type Ref, type ComputedRef } from 'vue'
+import { ref, watch, computed, provide, inject, type Ref, type ComputedRef } from 'vue'
 import { cn } from '@/lib/utils'
 import { FieldSet, FieldLegend, FieldDescription } from '@/components/ui/field'
 import {
@@ -17,7 +17,10 @@ import { useFieldWrapper } from '~/features/_library/form-builder/composables/us
 import { useContainerValidation } from '~/features/_library/form-builder/composables/useContainerValidation'
 import FormFieldList from '../internal/FormFieldList.vue'
 import { useScrollOnVisible } from '../composables/useScrollOnVisible'
-import { useAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
+import {
+  useAccordionGroup,
+  provideAccordionGroup
+} from '~/features/_library/form-builder/composables/useAccordionGroup'
 import { useHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
 
 interface Props {
@@ -27,6 +30,12 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Build a unique accordion ID scoped by parent path.
+// Using the full path (e.g. 'features.coverCosts.settings') prevents name collisions
+// when sibling sections each contain a sub-group with the same field name (e.g. 'settings').
+const parentFieldPrefix = inject<string>('fieldPrefix', '')
+const accordionId = parentFieldPrefix ? `${parentFieldPrefix}.${props.name}` : props.name
 
 // Only set up accordion state if this field-group is collapsible
 let accordionValue: Ref<string | undefined>
@@ -46,28 +55,25 @@ if (props.meta.collapsible) {
     return defaultOpenValue ?? false
   })
 
-  const { registerAccordion, hasAccordionGroup, provideAccordionGroup } = useAccordionGroup()
+  const { registerAccordion, hasAccordionGroup } = useAccordionGroup()
 
-  // For dynamic defaultOpen, we need to resolve it with scopedFormValues
-  // Register with parent accordion group if available, otherwise use local state
+  // Register with parent accordion group if available, otherwise use local state.
+  // Use accordionId (full path) as the key to prevent collisions between same-named
+  // sub-groups in different sibling sections (e.g. two 'settings' in 'coverCosts' and 'contactConsent').
   accordionValue = hasAccordionGroup()
     ? registerAccordion(
-        props.name,
+        accordionId,
         typeof defaultOpen.value === 'function' ? false : Boolean(defaultOpen.value)
       )
     : ref<string | undefined>(
         typeof defaultOpen.value === 'function'
           ? undefined
           : defaultOpen.value
-            ? props.name
+            ? accordionId
             : undefined
       )
 
-  // Always provide accordion group context for children to prevent cross-level interference
-  // This creates an isolated accordion context for any nested collapsible field groups
-  provideAccordionGroup()
-
-  isOpen = computed(() => accordionValue.value === props.name)
+  isOpen = computed(() => accordionValue.value === accordionId)
 
   // Bidirectional sync with external collapsibleStateRef if provided
   if (props.meta.collapsibleStateRef) {
@@ -83,6 +89,9 @@ if (props.meta.collapsible) {
       externalRef.value = val
     })
   }
+
+  // Provide isolated accordion group context for children to prevent cross-level interference
+  provideAccordionGroup()
 } else {
   // Non-collapsible: no accordion state needed
   accordionValue = ref(undefined)
@@ -106,7 +115,7 @@ if (props.meta.collapsible) {
   watch(
     isAncestorOfHashTarget,
     (isAncestor) => {
-      if (isAncestor) accordionValue.value = props.name
+      if (isAncestor) accordionValue.value = accordionId
     },
     { immediate: true }
   )
@@ -143,7 +152,7 @@ if (props.meta.collapsible && typeof props.meta.collapsibleDefaultOpen === 'func
             ? props.meta.collapsibleDefaultOpen(ctx)
             : props.meta.collapsibleDefaultOpen
         if (shouldOpen) {
-          accordionValue.value = props.name
+          accordionValue.value = accordionId
         }
       }
     },
@@ -189,7 +198,7 @@ if (props.meta.collapsible) {
           groupEl = el?.$el || el
         }
       "
-      :value="name"
+      :value="accordionId"
       :unmount-on-hide="true"
     >
       <AccordionTrigger

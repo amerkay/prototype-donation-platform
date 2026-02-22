@@ -101,7 +101,7 @@ const handleSliderChange = (value: number[] | undefined) => {
         :step="resolvedStep"
         :disabled="resolvedDisabled"
         :class="resolvedClass"
-        class="**:data-[slot=slider-track]:h-2.5 **:data-[slot=slider-thumb]:size-6"
+        class="**:data-[slot=slider-track]:h-2.5 **:data-[slot=slider-thumb]:size-6 mb-2"
         @update:model-value="handleSliderChange"
       />
       <!-- </div> -->

@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 import NextButton from '~/features/donation-form/donor/components/NextButton.vue'
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import CoverCostsField from '~/features/donation-form/features/cover-costs/donor/components/CoverCostsField.vue'
-import CoverCostsUpsellModal from '~/features/donation-form/features/cover-costs/donor/components/CoverCostsUpsellModal.vue'
 import { defineForm } from '~/features/_library/form-builder/api'
 import { createGiftAidFields } from '~/features/donation-form/features/gift-aid/donor/forms/gift-aid-declaration-form'
 import { createEmailOptInField } from '~/features/donation-form/features/contact-consent/donor/forms/email-opt-in-field'
@@ -11,6 +10,7 @@ import { createTermsAcceptanceField } from '~/features/donation-form/features/te
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import Separator from '~/components/ui/separator/Separator.vue'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
+import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
 import DonationCustomFields from '~/features/donation-form/features/custom-fields/donor/components/DonationCustomFields.vue'
 import type { FieldDef } from '~/features/_library/form-builder/types'
@@ -18,6 +18,7 @@ import type { FieldDef } from '~/features/_library/form-builder/types'
 // Get shared form config from store
 const configStore = useFormConfigStore()
 const formConfig = computed(() => configStore.fullConfig)
+const charityStore = useCharitySettingsStore()
 const { isFeatureSupported } = useFormTypeLabels()
 
 // Gift Aid form section (dynamically enabled from config)
@@ -32,11 +33,17 @@ const giftAidFormSection = computed(() =>
   )
 )
 
-// Email opt-in form section
-const emailOptInFormSection = defineForm('email-opt-in', () => createEmailOptInField())
+// Email opt-in form section (uses admin config for label/description)
+const emailOptInFormSection = computed(() => {
+  const config = formConfig.value?.features.contactConsent?.settings
+  return defineForm('email-opt-in', () => createEmailOptInField(undefined, config))
+})
 
-// Terms acceptance form section (should be last)
-const termsFormSection = defineForm('terms', () => createTermsAcceptanceField())
+// Terms acceptance form section (uses org-level charity settings for label/description)
+const termsFormSection = computed(() => {
+  const config = charityStore.terms?.settings
+  return defineForm('terms', () => createTermsAcceptanceField(undefined, config))
+})
 
 const emit = defineEmits<{
   complete: []
@@ -72,17 +79,6 @@ const emailOptInFormRef = ref<InstanceType<typeof FormRenderer> | null>(null)
 const termsFormRef = ref<InstanceType<typeof FormRenderer> | null>(null)
 const customFieldsRef = ref<InstanceType<typeof DonationCustomFields> | null>(null)
 const formContainerRef = ref<HTMLElement | null>(null)
-
-// Cover costs upsell modal state
-const showUpsellModal = ref(false)
-
-// Handle clicks on card buttons to open upsell modal
-const handleFormClick = (event: MouseEvent) => {
-  const target = event.target as HTMLElement
-  if (target.hasAttribute('data-cover-costs-terms-trigger')) {
-    showUpsellModal.value = true
-  }
-}
 
 /**
  * Gift Aid form data with context from previous steps
@@ -179,7 +175,6 @@ const handleNext = () => {
     <div
       v-if="formConfig?.features.coverCosts.enabled && isFeatureSupported('coverCosts')"
       data-field="features.coverCosts"
-      @click="handleFormClick"
     >
       <CoverCostsField :config="formConfig.features.coverCosts" />
     </div>
@@ -194,7 +189,6 @@ const handleNext = () => {
         store.selectedCurrency === 'GBP'
       "
       data-field="features.giftAid"
-      @click="handleFormClick"
     >
       <FormRenderer
         ref="giftAidFormRef"
@@ -221,7 +215,10 @@ const handleNext = () => {
     />
 
     <!-- Email Opt-in -->
-    <div>
+    <div
+      v-if="formConfig?.features.contactConsent?.enabled !== false"
+      data-field="features.contactConsent"
+    >
       <FormRenderer
         ref="emailOptInFormRef"
         v-model="emailOptInDataWithContext"
@@ -231,7 +228,7 @@ const handleNext = () => {
     </div>
 
     <!-- Terms Acceptance (last item before navigation) -->
-    <div>
+    <div v-if="formConfig?.features.terms?.enabled !== false" data-field="features.terms">
       <FormRenderer
         ref="termsFormRef"
         v-model="termsDataWithContext"
@@ -252,8 +249,5 @@ const handleNext = () => {
       Continue to Payment
       <Icon name="lucide:arrow-right" class="ml-2 h-4 w-4" />
     </NextButton>
-
-    <!-- Cover Fees Upsell Modal -->
-    <CoverCostsUpsellModal v-model:open="showUpsellModal" />
   </div>
 </template>

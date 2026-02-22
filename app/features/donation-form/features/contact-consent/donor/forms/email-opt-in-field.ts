@@ -18,11 +18,13 @@ import { toggleField } from '~/features/_library/form-builder/api'
  * ```
  */
 export function createEmailOptInField(
-  visibleWhen?: (ctx: { values: Record<string, unknown> }) => boolean
+  visibleWhen?: (ctx: { values: Record<string, unknown> }) => boolean,
+  config?: { label?: string; description?: string }
 ): Record<string, FieldDef> {
   const joinEmailList = toggleField('joinEmailList', {
-    label: 'Join our email list',
-    description: 'Get updates on our impact and latest news. Unsubscribe anytime.',
+    label: config?.label || 'Join our email list',
+    description:
+      config?.description || 'Get updates on our impact and latest news. Unsubscribe anytime.',
     defaultValue: false,
     optional: true,
     visibleWhen

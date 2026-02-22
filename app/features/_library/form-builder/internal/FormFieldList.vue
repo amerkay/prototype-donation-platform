@@ -58,6 +58,7 @@ const getFieldName = (fieldKey: string) => {
         :ref="(el) => setElementRef?.(String(fieldKey), el as HTMLElement | null)"
         :name="getFieldName(fieldKey)"
         :meta="fieldDef"
+        :data-field-key="fieldKey"
       />
       <FieldSeparator v-if="shouldShowSeparatorAfter(index, fieldDef)" />
     </template>

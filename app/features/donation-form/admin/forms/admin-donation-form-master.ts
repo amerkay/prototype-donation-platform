@@ -1,4 +1,9 @@
-import { defineForm, fieldGroup, alertField } from '~/features/_library/form-builder/api'
+import {
+  defineForm,
+  fieldGroup,
+  alertField,
+  toggleField
+} from '~/features/_library/form-builder/api'
 import type { FieldContext, FormContext } from '~/features/_library/form-builder/types'
 import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 import { useDonationFormBasicForm } from '~/features/donation-form/admin/forms/donation-form-basic-form'
@@ -9,6 +14,7 @@ import { useImpactBoostConfigSection } from '~/features/donation-form/features/i
 import { useCoverCostsConfigSection } from '~/features/donation-form/features/cover-costs/admin/forms/cover-costs-config-form'
 import { useGiftAidConfigSection } from '~/features/donation-form/features/gift-aid/admin/forms/gift-aid-config-form'
 import { useTributeConfigSection } from '~/features/donation-form/features/tribute/admin/forms/tribute-config-form'
+import { useContactConsentConfigSection } from '~/features/donation-form/features/contact-consent/admin/forms/contact-consent-config-form'
 import { createDonationCustomFieldsConfigSection } from '~/features/donation-form/features/custom-fields/admin/forms/donation-custom-fields-config-form'
 import { createEntryFieldsConfigSection } from '~/features/donation-form/features/entry-fields/admin/forms/entry-fields-config-form'
 import type { ContextSchemaInput } from '~/features/_library/custom-fields/forms/custom-fields-config-form'
@@ -54,6 +60,7 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
     const coverCostsFields = useCoverCostsConfigSection.setup(ctx)
     const giftAidFields = useGiftAidConfigSection.setup(ctx)
     const tributeFields = useTributeConfigSection.setup(ctx)
+    const contactConsentFields = useContactConsentConfigSection.setup(ctx)
     const entryFieldsFields = createEntryFieldsConfigSection(
       formConfigStore.products,
       currencyStore.supportedCurrencies
@@ -166,7 +173,19 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
           // label: 'Cover Costs',
           wrapperClass: 'p-4 bg-background rounded-lg border',
           visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('coverCosts', ctx),
-          fields: coverCostsFields
+          fields: {
+            ...coverCostsFields,
+            charityCostsInfo: alertField('charityCostsInfo', {
+              variant: 'info',
+              description:
+                'The cost breakdown shown in the cover costs modal is configured at the organization level.',
+              cta: {
+                label: 'Edit charity costs',
+                to: '/admin/settings/charity#charityCosts',
+                inline: true
+              }
+            })
+          }
         }),
         giftAid: fieldGroup('giftAid', {
           // label: 'Gift Aid',
@@ -184,6 +203,33 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
           wrapperClass: 'p-4 bg-background rounded-lg border',
           visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('entryFields', ctx),
           fields: entryFieldsFields
+        }),
+        contactConsent: fieldGroup('contactConsent', {
+          wrapperClass: 'p-4 bg-background rounded-lg border',
+          visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('contactConsent', ctx),
+          fields: contactConsentFields
+        }),
+        terms: fieldGroup('terms', {
+          wrapperClass: 'p-4 bg-background rounded-lg border',
+          visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('terms', ctx),
+          fields: {
+            enabled: toggleField('enabled', {
+              label: 'Enable Terms & Conditions',
+              description: 'Require donors to accept terms before completing',
+              labelClass: 'font-bold',
+              showSeparatorAfter: true
+            }),
+            termsSettingsInfo: alertField('termsSettingsInfo', {
+              variant: 'info',
+              description:
+                'Terms content, mode, and label are configured at the organization level.',
+              cta: {
+                label: 'Edit terms settings',
+                to: '/admin/settings/charity#terms',
+                inline: true
+              }
+            })
+          }
         })
       },
       // Flatten nested structure: form.features.impactBoost → store.impactBoost
@@ -194,7 +240,9 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
         coverCosts: 'coverCosts',
         giftAid: 'giftAid',
         tribute: 'tribute',
-        entryFields: 'entryFields'
+        entryFields: 'entryFields',
+        contactConsent: 'contactConsent',
+        terms: 'terms'
       }
     })
 

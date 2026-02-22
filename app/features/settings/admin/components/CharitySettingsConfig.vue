@@ -5,10 +5,12 @@ import DevJsonPreview from '~/features/_admin/components/DevJsonPreview.vue'
 import { useCharitySettingsForm } from '~/features/settings/admin/forms/charity-settings-form'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
+import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 import { Button } from '@/components/ui/button'
 import { Eye } from 'lucide-vue-next'
 
 const store = useCharitySettingsStore()
+provideAccordionGroup()
 
 const { formRef, modelValue, form, expose } = useAdminConfigForm({
   store,

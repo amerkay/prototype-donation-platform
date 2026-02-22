@@ -12,6 +12,7 @@ import type { ImpactBoostSettings } from '~/features/donation-form/features/impa
 import type { CoverCostsSettings } from '~/features/donation-form/features/cover-costs/admin/types'
 import type { GiftAidSettings } from '~/features/donation-form/features/gift-aid/admin/types'
 import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
+import type { ContactConsentSettings } from '~/features/donation-form/features/contact-consent/admin/types'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
 
@@ -49,6 +50,8 @@ export const useFormConfigStore = defineStore('formConfig', () => {
   const tribute = ref<TributeSettings | null>(null)
   const customFields = ref<DonationCustomFieldsSettings | null>(null)
   const entryFields = ref<EntryFieldsSettings | null>(null)
+  const contactConsent = ref<ContactConsentSettings | null>(null)
+  const terms = ref<{ enabled: boolean } | null>(null)
   const products = ref<Product[]>([])
 
   // Product quantity limits — stored separately so auto-mapping for impactCart doesn't overwrite them
@@ -79,7 +82,9 @@ export const useFormConfigStore = defineStore('formConfig', () => {
         giftAid: giftAid.value!,
         tribute: tribute.value!,
         customFields: customFields.value!,
-        entryFields: entryFields.value!
+        entryFields: entryFields.value!,
+        contactConsent: contactConsent.value!,
+        terms: terms.value!
       }
     }
   })
@@ -107,12 +112,29 @@ export const useFormConfigStore = defineStore('formConfig', () => {
     coverCosts.value = config.features.coverCosts
     giftAid.value = config.features.giftAid
     tribute.value = config.features.tribute
-    customFields.value = config.features.customFields
+    // Pre-populate all tab slots so useFieldArray doesn't write [] on mount and false-trigger dirty
+    const cf = config.features.customFields ?? { customFieldsTabs: {} }
+    const tabs = cf.customFieldsTabs ?? {}
+    customFields.value = {
+      customFieldsTabs: {
+        step2: { enabled: false, fields: [], ...tabs.step2 },
+        step3: { enabled: false, fields: [], ...tabs.step3 },
+        hidden: { enabled: false, fields: [], ...tabs.hidden }
+      }
+    }
     entryFields.value = config.features.entryFields ?? {
       enabled: false,
       mode: 'shared',
       fields: []
     }
+    contactConsent.value = config.features.contactConsent ?? {
+      enabled: true,
+      settings: {
+        label: 'Join our email list',
+        description: 'Get updates on our impact and latest news. Unsubscribe anytime.'
+      }
+    }
+    terms.value = config.features.terms ?? { enabled: true }
     products.value = productList
     markClean()
   }
@@ -131,6 +153,8 @@ export const useFormConfigStore = defineStore('formConfig', () => {
     tribute,
     customFields,
     entryFields,
+    contactConsent,
+    terms,
     products,
     quantityRemaining,
     isDirty,
@@ -162,5 +186,7 @@ export interface FullFormConfig {
     tribute: TributeSettings
     customFields: DonationCustomFieldsSettings
     entryFields: EntryFieldsSettings
+    contactConsent: ContactConsentSettings
+    terms: { enabled: boolean }
   }
 }

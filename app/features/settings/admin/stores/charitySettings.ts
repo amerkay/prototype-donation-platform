@@ -4,6 +4,8 @@ import type {
   CharitySettings,
   CharityAddress,
   CharityCurrencyEntry,
+  CharityCostsSettings,
+  TermsSettings,
   CHARITY_ENTRY_FIELDS
 } from '~/features/settings/admin/types'
 import { charitySettings } from '~/sample-api-responses/api-sample-response-settings'
@@ -54,11 +56,39 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
     ...charitySettings.currencyEntries
   })
 
+  // Org-level charity costs (for cover costs upsell modal)
+  const charityCosts = ref<CharityCostsSettings>(
+    charitySettings.charityCosts ?? {
+      heading: 'Help Us Keep More for the Orangutans',
+      introText:
+        'Running a modern charity requires essential technology and services. By covering these operational costs, you ensure 100% of your donation goes directly to protecting orangutans and their habitat.',
+      outroText:
+        'Your optional contribution helps offset these necessary costs, meaning every penny of your main donation can directly fund orangutan conservation work.',
+      costs: []
+    }
+  )
+
+  // Org-level terms & conditions settings
+  const terms = ref<TermsSettings>(
+    charitySettings.terms ?? {
+      enabled: true,
+      settings: {
+        mode: 'link',
+        externalUrl: '',
+        richContent: '',
+        label: 'I accept the terms and conditions',
+        description: 'I agree to the Terms of Service and Privacy Policy.'
+      }
+    }
+  )
+
   /** Snapshot current state */
   function toSnapshot(): CharitySettings {
     return {
       slug: slug.value,
-      currencyEntries: JSON.parse(JSON.stringify(currencyEntries.value))
+      currencyEntries: JSON.parse(JSON.stringify(currencyEntries.value)),
+      charityCosts: JSON.parse(JSON.stringify(charityCosts.value)),
+      terms: JSON.parse(JSON.stringify(terms.value))
     }
   }
 
@@ -66,6 +96,8 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
   function loadSnapshot(s: CharitySettings) {
     slug.value = s.slug
     currencyEntries.value = JSON.parse(JSON.stringify(s.currencyEntries))
+    if (s.charityCosts) charityCosts.value = JSON.parse(JSON.stringify(s.charityCosts))
+    if (s.terms) terms.value = JSON.parse(JSON.stringify(s.terms))
   }
 
   /** Ensure all supported currencies have entries (required for $storePath writes) */
@@ -190,6 +222,8 @@ export const useCharitySettingsStore = defineStore('charitySettings', () => {
     // State
     slug,
     currencyEntries,
+    charityCosts,
+    terms,
     isDirty,
     isSaving,
     // Convenience getters (from default currency entry)

@@ -24,6 +24,8 @@ import {
   ADDRESS_ALL_OR_NOTHING_RULES
 } from '~/features/donation-form/shared/forms/address-form'
 import ClearAddressButton from '~/features/settings/admin/components/ClearAddressButton.vue'
+import { useCharityCostsForm } from '~/features/settings/admin/forms/charity-costs-form'
+import { useTermsConfigSection } from '~/features/donation-form/features/terms/admin/forms/terms-config-form'
 import { formatCharityAddress } from '~/features/settings/admin/utils/formatCharityAddress'
 import type { CharityAddress } from '~/features/settings/admin/types'
 import {
@@ -247,7 +249,7 @@ function buildStoreMappings(currency: string, tabPath: string): Record<string, s
  * Charity settings form configuration
  * Uses tabsField with one tab per currency — all tabs show equal fields
  */
-export const useCharitySettingsForm = defineForm('charitySettings', () => {
+export const useCharitySettingsForm = defineForm('charitySettings', (ctx) => {
   const currencyStore = useCurrencySettingsStore()
   const charityStore = useCharitySettingsStore()
 
@@ -302,7 +304,6 @@ export const useCharitySettingsForm = defineForm('charitySettings', () => {
   charityActiveTab.value = currencyStore.defaultCurrency
 
   const currencyTabs = tabsField('currencyTabs', {
-    label: 'Currency-Specific Settings',
     tabsListClass: 'w-full',
     defaultValue: currencyStore.defaultCurrency,
     onTabChange: (tab) => {
@@ -311,11 +312,86 @@ export const useCharitySettingsForm = defineForm('charitySettings', () => {
     tabs
   })
 
+  // Dynamic description: "GBP default · 2 EUR overrides, 1 USD override"
+  const currencySettingsDescription = computed(() => {
+    const def = currencyStore.defaultCurrency
+    const nonDefault = currencyStore.supportedCurrencies.filter((c) => c !== def)
+    if (nonDefault.length === 0) return `${def} · single currency`
+
+    const withOverrides = nonDefault.flatMap((currency) => {
+      const entry = charityStore.currencyEntries[currency]
+      if (!entry) return []
+      const values = [
+        entry.name,
+        entry.registrationNumber,
+        entry.phone,
+        entry.website,
+        entry.description,
+        entry.emailSenderId,
+        entry.emailSignature,
+        entry.address?.address1,
+        entry.address?.city,
+        entry.address?.country,
+        entry.address?.region,
+        entry.address?.postcode
+      ]
+      const count = values.filter((v) => typeof v === 'string' && v.length > 0).length
+      return count > 0 ? [{ currency, count }] : []
+    })
+
+    if (withOverrides.length === 0) return `${def} default · no overrides for other currencies`
+    const parts = withOverrides.map(
+      ({ currency, count }) => `${count} ${currency} ${count === 1 ? 'override' : 'overrides'}`
+    )
+    return `${def} default · ${parts.join(', ')}`
+  })
+
   const charitySettings = fieldGroup('charitySettings', {
+    label: 'Currency-Specific Settings',
+    description: currencySettingsDescription,
+    collapsible: true,
+    collapsibleDefaultOpen: false,
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
     fields: { currencyTabs, charityInfoAlert },
     $storePath: storeMappings
   })
 
-  return { charitySettings }
+  // Charity Costs — org-level cost breakdown for cover costs modal
+  const charityCostsFields = useCharityCostsForm.setup(ctx)
+  const charityCostsSection = fieldGroup('charityCosts', {
+    label: 'Charity Costs',
+    description:
+      'Configure the operational cost breakdown shown to donors in the cover costs modal.',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+    fields: charityCostsFields,
+    $storePath: {
+      heading: 'charityCosts.heading',
+      introText: 'charityCosts.introText',
+      outroText: 'charityCosts.outroText',
+      costs: 'charityCosts.costs'
+    }
+  })
+
+  // Terms & Conditions — org-level terms settings (enabled toggle is per-form, not here)
+  // Exclude enabled (per-form) and settings (grouped wrapper) — use raw fields directly
+  const { enabled: _te, settings: _ts, ...termsFields } = useTermsConfigSection.setup(ctx)
+  const termsSection = fieldGroup('terms', {
+    label: 'Terms & Conditions',
+    description: 'Configure the terms content shown to donors on all forms.',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+    fields: termsFields,
+    $storePath: {
+      mode: 'terms.settings.mode',
+      externalUrl: 'terms.settings.externalUrl',
+      richContent: 'terms.settings.richContent',
+      label: 'terms.settings.label',
+      description: 'terms.settings.description'
+    }
+  })
+
+  return { charitySettings, charityCosts: charityCostsSection, terms: termsSection }
 })

@@ -5,6 +5,12 @@ interface ScrollOnVisibleOptions<T> {
   getKey: (item: T) => string
   scrollDelay?: number
   scrollOffset?: number
+  /**
+   * Optional container element for DOM-query fallback.
+   * When elementRefs lookup fails (e.g. $el is a text/comment node),
+   * falls back to querying `[data-field-key="KEY"]` within this container.
+   */
+  containerEl?: Ref<HTMLElement | null>
 }
 
 /**
@@ -62,10 +68,22 @@ function scrollToElement(element: HTMLElement, offset: number = 50) {
  * Auto-scroll to newly visible items with ref tracking
  */
 export function useScrollOnVisible<T>(items: Ref<T[]>, options: ScrollOnVisibleOptions<T>) {
-  const { isVisible, getKey, scrollDelay = 250, scrollOffset = 50 } = options
+  const { isVisible, getKey, scrollDelay = 250, scrollOffset = 80, containerEl } = options
   const elementRefs = ref<Record<string, HTMLElement | null>>({})
 
   const visibleKeys = computed(() => items.value.filter(isVisible).map(getKey))
+
+  // Resolve an element by key: try stored refs first, then DOM query fallback
+  const findElement = (key: string): HTMLElement | null => {
+    const stored = elementRefs.value[key]
+    if (stored) return stored
+
+    // Fallback: query DOM by data-field-key attribute within container
+    if (containerEl?.value) {
+      return containerEl.value.querySelector<HTMLElement>(`[data-field-key="${key}"]`)
+    }
+    return null
+  }
 
   watch(
     visibleKeys,
@@ -77,7 +95,7 @@ export function useScrollOnVisible<T>(items: Ref<T[]>, options: ScrollOnVisibleO
       if (lastKey) {
         setTimeout(() => {
           nextTick(() => {
-            const element = elementRefs.value[lastKey]
+            const element = findElement(lastKey)
             if (element) scrollToElement(element, scrollOffset)
           })
         }, scrollDelay)
@@ -97,8 +115,8 @@ export function useScrollOnVisible<T>(items: Ref<T[]>, options: ScrollOnVisibleO
       })
     },
     scrollToElement: (key: string, customOffset?: number) => {
-      const element = elementRefs.value[key]
-      if (element instanceof HTMLElement) {
+      const element = findElement(key)
+      if (element) {
         scrollToElement(element, customOffset ?? scrollOffset)
       }
     }
