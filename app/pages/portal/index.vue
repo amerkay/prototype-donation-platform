@@ -40,7 +40,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
         <StatsCard :icon="Megaphone" label="Fundraisers" :value="activeFundraisers.length" />
       </div>
 
-      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div class="grid gap-4 md:grid-cols-2">
         <!-- Recent Transactions -->
         <Card class="md:col-span-2 lg:col-span-3 overflow-hidden">
           <CardHeader>

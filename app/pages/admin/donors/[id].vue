@@ -4,16 +4,19 @@ import AdminDataTable from '~/features/_admin/components/AdminDataTable.vue'
 import DonorInfoCard from '~/features/_admin/components/DonorInfoCard.vue'
 import TransactionHistoryCard from '~/features/_admin/components/TransactionHistoryCard.vue'
 import CustomFieldsCard from '~/features/_admin/components/CustomFieldsCard.vue'
+import ConsentRecordsCard from '~/features/_admin/components/ConsentRecordsCard.vue'
+import GiftAidCard from '~/features/_admin/components/GiftAidCard.vue'
 import { useDonors } from '~/features/donors/admin/composables/useDonors'
 import { useAdminSubscriptions } from '~/features/subscriptions/admin/composables/useAdminSubscriptions'
 import { subscriptionColumns } from '~/features/subscriptions/admin/columns/subscriptionColumns'
 import { createViewActionColumn } from '~/features/_admin/columns/actionColumn'
 import type { EnrichedSubscription } from '~/features/_shared/composables/useEntityDataService'
-import { getUserConsentRecords } from '~/sample-api-responses/api-sample-response-transactions'
-import { formatDateTime } from '~/lib/formatDate'
+import {
+  getUserConsentRecords,
+  getUserGiftAidDeclarations
+} from '~/sample-api-responses/api-sample-response-transactions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ShieldCheck } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'admin' })
 
@@ -47,10 +50,7 @@ const breadcrumbs = computed(() => [
 ])
 
 const consentRecords = computed(() => getUserConsentRecords(donor.value?.email ?? ''))
-
-const PURPOSE_LABELS: Record<string, string> = {
-  marketing_email: 'Marketing Emails'
-}
+const giftAidDeclarations = computed(() => getUserGiftAidDeclarations(donor.value?.email ?? ''))
 </script>
 
 <template>
@@ -76,7 +76,7 @@ const PURPOSE_LABELS: Record<string, string> = {
         </div>
 
         <!-- Info Cards Grid -->
-        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-6">
+        <div class="grid gap-6 md:grid-cols-2 mb-6">
           <DonorInfoCard
             :donor-id="donor.id"
             :donor-name="donor.name"
@@ -90,46 +90,8 @@ const PURPOSE_LABELS: Record<string, string> = {
             :custom-fields="aggregatedCustomFields"
           />
 
-          <!-- Consent Records -->
-          <Card>
-            <CardHeader>
-              <CardTitle class="text-base flex items-center gap-2">
-                <ShieldCheck class="h-4 w-4" />
-                Consent Records
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div v-if="consentRecords.length === 0" class="text-sm text-muted-foreground">
-                No consent records on file.
-              </div>
-              <div v-else class="space-y-3">
-                <div
-                  v-for="record in consentRecords"
-                  :key="record.id"
-                  class="flex flex-col gap-1 rounded border p-3 text-sm"
-                >
-                  <div class="flex items-center gap-2">
-                    <span class="font-medium">{{
-                      PURPOSE_LABELS[record.purpose] ?? record.purpose
-                    }}</span>
-                    <Badge :variant="record.granted ? 'default' : 'secondary'">
-                      {{ record.granted ? 'Opted In' : 'Opted Out' }}
-                    </Badge>
-                    <span class="ml-auto text-xs text-muted-foreground">
-                      {{ formatDateTime(record.recordedAt) }}
-                    </span>
-                  </div>
-                  <p class="text-xs text-muted-foreground">
-                    {{
-                      record.wordingShown.length > 80
-                        ? record.wordingShown.slice(0, 80) + '...'
-                        : record.wordingShown
-                    }}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <ConsentRecordsCard :records="consentRecords" />
+          <GiftAidCard :declarations="giftAidDeclarations" />
         </div>
 
         <!-- Subscriptions -->
