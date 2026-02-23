@@ -1,5 +1,6 @@
 import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
+import { NuxtLink } from '#components'
 import { Button } from '@/components/ui/button'
 import { ArrowUpDown } from 'lucide-vue-next'
 import { formatCurrency } from '~/lib/formatCurrency'
@@ -8,17 +9,19 @@ import { paymentMethodLabel } from '~/lib/formatPaymentMethod'
 import StatusBadge from '~/components/StatusBadge.vue'
 import type { PaymentMethod } from '~/features/donor-portal/types'
 
-interface DateColumnOptions {
+interface DateColumnOptions<T = unknown> {
   /** Accessor key for the date field (default: 'createdAt') */
   accessorKey?: string
   /** Column header label (default: 'Date') */
   label?: string
   /** Enable sorting (default: true) */
   sortable?: boolean
-  /** CSS class for the button (default: '-ml-2.5') */
+  /** CSS class for the button */
   buttonClass?: string
   /** CSS class for the cell (default: 'text-sm whitespace-nowrap') */
   cellClass?: string
+  /** If provided, date renders as a NuxtLink to this URL */
+  getUrl?: (row: T) => string
 }
 
 interface AmountColumnOptions<T> {
@@ -66,13 +69,14 @@ interface PaymentMethodColumnOptions {
  * createDateColumn({ label: 'Created', cellClass: 'text-xs' }) // Custom label and styling
  * ```
  */
-export function createDateColumn<T>(options: DateColumnOptions = {}): ColumnDef<T> {
+export function createDateColumn<T>(options: DateColumnOptions<T> = {}): ColumnDef<T> {
   const {
     accessorKey = 'createdAt',
     label = 'Date',
     sortable = true,
-    buttonClass = '-ml-2.5',
-    cellClass = 'text-sm whitespace-nowrap'
+    buttonClass = '',
+    cellClass = 'text-sm whitespace-nowrap',
+    getUrl
   } = options
 
   return {
@@ -89,7 +93,17 @@ export function createDateColumn<T>(options: DateColumnOptions = {}): ColumnDef<
             () => [label, h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
           )
       : label,
-    cell: ({ row }) => h('span', { class: cellClass }, formatDate(row.getValue(accessorKey)))
+    cell: ({ row }) => {
+      const formatted = formatDate(row.getValue(accessorKey))
+      if (getUrl) {
+        return h(
+          NuxtLink,
+          { to: getUrl(row.original), class: `${cellClass} font-medium text-primary hover:underline` },
+          () => formatted
+        )
+      }
+      return h('span', { class: cellClass }, formatted)
+    }
   }
 }
 

@@ -1,5 +1,6 @@
 import type { Ref } from 'vue'
 import type { Transaction } from '~/features/donor-portal/types'
+import type { Subscription } from '~/features/subscriptions/shared/types'
 import { generateEntityId } from '~/lib/generateEntityId'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import { toast } from 'vue-sonner'
@@ -8,6 +9,7 @@ interface UseRefundActionOptions {
   transaction: Ref<Transaction | undefined>
   allTransactions: Ref<Transaction[]>
   addTransaction: (t: Transaction) => void
+  subscriptions?: Ref<Subscription[]>
   onSuccess?: () => void
 }
 
@@ -16,7 +18,7 @@ interface UseRefundActionOptions {
  * Caller is responsible for eligibility gating (portal) or not (admin).
  */
 export function useRefundAction(options: UseRefundActionOptions) {
-  const { transaction, allTransactions, addTransaction, onSuccess } = options
+  const { transaction, allTransactions, addTransaction, subscriptions, onSuccess } = options
   const { formatAmount } = useCampaignFormatters()
 
   const isRefunded = computed(() => {
@@ -33,6 +35,12 @@ export function useRefundAction(options: UseRefundActionOptions) {
       transaction.value?.type !== 'refund' &&
       transaction.value?.status === 'succeeded'
   )
+
+  const isSubscriptionPayment = computed(
+    () => transaction.value?.type === 'subscription_payment' && !!transaction.value?.subscriptionId
+  )
+
+  const alsoCancel = ref(false)
 
   function handleRefund() {
     if (!transaction.value) return
@@ -68,12 +76,28 @@ export function useRefundAction(options: UseRefundActionOptions) {
 
     txn.status = 'refunded'
 
-    toast.success('Refund processed', {
-      description: `${formatAmount(txn.totalAmount, txn.currency)} has been refunded.`
+    // Cancel related subscription if requested
+    let cancelled = false
+    if (alsoCancel.value && subscriptions?.value && txn.subscriptionId) {
+      const sub = subscriptions.value.find((s) => s.id === txn.subscriptionId)
+      if (sub) {
+        sub.status = 'cancelled'
+        sub.nextBillingDate = undefined as unknown as string
+        cancelled = true
+      }
+    }
+
+    const desc = cancelled
+      ? `${formatAmount(txn.totalAmount, txn.currency)} refunded and subscription cancelled.`
+      : `${formatAmount(txn.totalAmount, txn.currency)} has been refunded.`
+
+    toast.success(cancelled ? 'Refund processed & subscription cancelled' : 'Refund processed', {
+      description: desc
     })
 
+    alsoCancel.value = false
     onSuccess?.()
   }
 
-  return { isRefunded, canRefund, handleRefund }
+  return { isRefunded, canRefund, isSubscriptionPayment, alsoCancel, handleRefund }
 }

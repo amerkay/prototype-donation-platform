@@ -118,6 +118,8 @@ app/features/[feature-name]/
 20. **System emails** (admin/P2P/team) are hard-coded in `app/emails/system/templates.ts`, not admin-editable. Only donor + eCard emails are customizable.
 21. **fieldGroup nests data**: `fieldGroup('name', { fields: { firstName } })` produces `{ name: { firstName } }` in emitted form data, NOT flat `{ firstName }`. Always account for nesting when reading formSections.
 22. **Admin preview data pattern**: Populate real Pinia stores with sample data, render real donor components. Never inject/prop preview context into donor components — they must stay preview-unaware.
+23. **Currency totals**: Always `totalAmount × exchangeRate`
+24. **Internal links**: NEVER use `<a>` tags for internal navigation. Always use `NuxtLink`. In `.ts` files (e.g. column defs), import via `import { NuxtLink } from '#components'`. — cover costs go to the charity (not platform), so `totalAmount` is the true donation. `exchangeRate` converts to base currency (1 if already base). Donor value for eligibility is per-org (`charityName`), not global.
 
 <!-- end continuous learning notes -->
 

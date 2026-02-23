@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
 import AdminDetailRow from '~/features/_admin/components/AdminDetailRow.vue'
+import DonorInfoCard from '~/features/_admin/components/DonorInfoCard.vue'
+import LineItemsCard from '~/features/_admin/components/LineItemsCard.vue'
+import CustomFieldsCard from '~/features/_admin/components/CustomFieldsCard.vue'
 import { useDonations } from '~/features/donations/admin/composables/useDonations'
 import { useRefundAction } from '~/features/donations/shared/composables/useRefundAction'
 import { formatCurrency } from '~/lib/formatCurrency'
@@ -22,34 +25,34 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table'
-import { RefreshCw, Heart, Gift, Undo2 } from 'lucide-vue-next'
+import { Checkbox } from '@/components/ui/checkbox'
+import { RefreshCw, Heart, Undo2, CreditCard } from 'lucide-vue-next'
+import { useAdminSubscriptions } from '~/features/subscriptions/admin/composables/useAdminSubscriptions'
 
 definePageMeta({ layout: 'admin' })
 
 const route = useRoute()
 const { getTransactionById, rawTransactions, addTransaction } = useDonations()
+const { subscriptions } = useAdminSubscriptions()
 
 const txn = computed(() => getTransactionById(route.params.id as string))
 
-const { isRefunded, canRefund, handleRefund } = useRefundAction({
+const { isRefunded, canRefund, isSubscriptionPayment, alsoCancel, handleRefund } = useRefundAction({
   transaction: txn,
   allTransactions: rawTransactions,
   addTransaction,
+  subscriptions,
   onSuccess: () => navigateTo('/admin/donations')
 })
 
 const breadcrumbs = computed(() => [
   { label: 'Dashboard', href: '/admin/dashboard' },
   { label: 'Donations', href: '/admin/donations' },
-  { label: txn.value ? formatCurrency(txn.value.totalAmount, txn.value.currency) : 'Not Found' }
+  {
+    label: txn.value
+      ? `${txn.value.donorName} — ${formatCurrency(txn.value.totalAmount, txn.value.currency)} ${txn.value.subscriptionId ? '(Recurring)' : '(One-time)'}`
+      : 'Not Found'
+  }
 ])
 </script>
 
@@ -68,8 +71,10 @@ const breadcrumbs = computed(() => [
           <div>
             <div class="flex items-center gap-3">
               <h1 class="text-2xl font-bold">
-                {{ formatCurrency(txn.totalAmount, txn.currency) }}
+                {{ txn.donorName }} — {{ formatCurrency(txn.totalAmount, txn.currency) }}
               </h1>
+              <Badge v-if="txn.subscriptionId" variant="outline" class="text-xs">Recurring</Badge>
+              <Badge v-else variant="outline" class="text-xs">One-time</Badge>
               <StatusBadge :status="txn.status" />
               <Badge v-if="isRefunded" variant="secondary">Refunded</Badge>
             </div>
@@ -90,6 +95,10 @@ const breadcrumbs = computed(() => [
                   {{ formatCurrency(txn.totalAmount, txn.currency) }}. This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
+              <div v-if="isSubscriptionPayment" class="flex items-center gap-2 pt-2">
+                <Checkbox id="also-cancel" v-model:checked="alsoCancel" />
+                <label for="also-cancel" class="text-sm">Also cancel the subscription</label>
+              </div>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction @click="handleRefund">Confirm Refund</AlertDialogAction>
@@ -100,39 +109,24 @@ const breadcrumbs = computed(() => [
 
         <div class="grid gap-6 md:grid-cols-2">
           <!-- Donor -->
-          <Card>
-            <CardHeader>
-              <CardTitle class="text-base">Donor</CardTitle>
-            </CardHeader>
-            <CardContent class="space-y-2 text-sm">
-              <AdminDetailRow label="Name">
-                <span class="font-medium flex items-center gap-1">
-                  {{ txn.isAnonymous ? 'Anonymous' : txn.donorName }}
-                  <Badge v-if="txn.isAnonymous" variant="secondary" class="text-xs">Anon</Badge>
-                </span>
-              </AdminDetailRow>
-              <AdminDetailRow label="Email">
-                <NuxtLink :to="`/admin/donors/${txn.donorId}`" class="text-primary hover:underline">
-                  {{ txn.donorEmail }}
-                </NuxtLink>
-              </AdminDetailRow>
-              <div v-if="txn.message" class="pt-2">
-                <p class="text-muted-foreground mb-1">Message</p>
-                <p class="bg-muted rounded p-2 text-sm italic">"{{ txn.message }}"</p>
-              </div>
-              <div v-if="txn.tribute" class="flex items-center gap-2 pt-1">
-                <Gift class="h-4 w-4 text-muted-foreground" />
-                <span class="capitalize">{{ txn.tribute.type }}</span>
-                <span class="text-muted-foreground">for</span>
-                <span class="font-medium">{{ txn.tribute.honoreeName }}</span>
-              </div>
-            </CardContent>
-          </Card>
+          <DonorInfoCard
+            :donor-id="txn.donorId"
+            :donor-name="txn.donorName"
+            :donor-email="txn.donorEmail"
+            :is-anonymous="txn.isAnonymous"
+            :message="txn.message"
+            :tribute="txn.tribute"
+            :address="txn.donorAddress"
+            :linkable="true"
+          />
 
           <!-- Payment -->
           <Card>
             <CardHeader>
-              <CardTitle class="text-base">Payment</CardTitle>
+              <CardTitle class="text-base flex items-center gap-2">
+                <CreditCard class="h-4 w-4" />
+                Payment
+              </CardTitle>
             </CardHeader>
             <CardContent class="space-y-2 text-sm">
               <AdminDetailRow label="Method">
@@ -165,21 +159,6 @@ const breadcrumbs = computed(() => [
                 <span>Exchange Rate</span>
                 <span>1 {{ txn.currency }} = {{ txn.exchangeRate }} {{ txn.baseCurrency }}</span>
               </div>
-            </CardContent>
-          </Card>
-
-          <!-- Campaign -->
-          <Card>
-            <CardHeader>
-              <CardTitle class="text-base">Campaign</CardTitle>
-            </CardHeader>
-            <CardContent class="space-y-2 text-sm">
-              <AdminDetailRow
-                label="Campaign"
-                :value="txn.campaignName"
-                value-class="font-medium"
-              />
-              <AdminDetailRow label="Charity" :value="txn.charityName" />
               <div v-if="txn.subscriptionId" class="flex items-center gap-2 pt-1">
                 <RefreshCw class="h-4 w-4 text-muted-foreground" />
                 <span class="text-muted-foreground">Recurring —</span>
@@ -192,6 +171,9 @@ const breadcrumbs = computed(() => [
               </div>
             </CardContent>
           </Card>
+
+          <!-- Custom Fields -->
+          <CustomFieldsCard v-if="txn.customFields" :custom-fields="txn.customFields" />
 
           <!-- Gift Aid -->
           <Card v-if="txn.giftAid">
@@ -230,40 +212,17 @@ const breadcrumbs = computed(() => [
               </p>
             </CardContent>
           </Card>
-        </div>
 
-        <!-- Line Items -->
-        <Card v-if="txn.lineItems.length" class="mt-6">
-          <CardHeader>
-            <CardTitle class="text-base">Line Items</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead class="text-right">Qty</TableHead>
-                  <TableHead class="text-right">Unit Price</TableHead>
-                  <TableHead class="text-right">Total</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow v-for="item in txn.lineItems" :key="item.productId">
-                  <TableCell>
-                    {{ item.productTitle }}
-                  </TableCell>
-                  <TableCell class="text-right">{{ item.quantity }}</TableCell>
-                  <TableCell class="text-right">{{
-                    formatCurrency(item.unitPrice, txn.currency)
-                  }}</TableCell>
-                  <TableCell class="text-right font-medium">{{
-                    formatCurrency(item.unitPrice * item.quantity, txn.currency)
-                  }}</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+          <!-- Order Details (full width) -->
+          <LineItemsCard
+            :line-items="txn.lineItems"
+            :currency="txn.currency"
+            title="Order Details"
+            :campaign-name="txn.campaignName"
+            :campaign-link="`/admin/campaigns/standard/${txn.campaignId}`"
+            class="md:col-span-2"
+          />
+        </div>
       </template>
     </div>
   </div>

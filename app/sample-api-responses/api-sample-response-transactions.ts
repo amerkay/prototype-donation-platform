@@ -1696,7 +1696,7 @@ export function getRecentDonations(campaignId: string, limit?: number): Campaign
 
 /**
  * Compute aggregate stats for a campaign from its transactions.
- * Uses subtotal * exchangeRate for consistent org-currency totals.
+ * Uses totalAmount * exchangeRate for consistent org-currency totals (cover costs go to charity).
  * Accepts optional overrides for fields where we want to show larger "realistic"
  * numbers (since mock data only has ~40 records but production would have thousands).
  */
@@ -1708,12 +1708,12 @@ export function computeCampaignStats(
     (t) => t.campaignId === campaignId && t.status === 'succeeded'
   )
 
-  const totalRaised = succeeded.reduce((sum, t) => sum + t.subtotal * t.exchangeRate, 0)
+  const totalRaised = succeeded.reduce((sum, t) => sum + t.totalAmount * t.exchangeRate, 0)
   const totalDonations = succeeded.length
   const uniqueEmails = new Set(succeeded.map((t) => t.donorEmail))
   const totalDonors = uniqueEmails.size
   const averageDonation = totalDonations > 0 ? totalRaised / totalDonations : 0
-  const topDonation = succeeded.reduce((max, t) => Math.max(max, t.subtotal * t.exchangeRate), 0)
+  const topDonation = succeeded.reduce((max, t) => Math.max(max, t.totalAmount * t.exchangeRate), 0)
 
   return {
     totalRaised,
@@ -1736,7 +1736,7 @@ export function computeFundraiserStats(campaignId: string): {
     (t) => t.campaignId === campaignId && t.status === 'succeeded'
   )
   return {
-    raisedAmount: succeeded.reduce((sum, t) => sum + t.subtotal * t.exchangeRate, 0),
+    raisedAmount: succeeded.reduce((sum, t) => sum + t.totalAmount * t.exchangeRate, 0),
     donationCount: succeeded.length,
     currency: 'GBP'
   }

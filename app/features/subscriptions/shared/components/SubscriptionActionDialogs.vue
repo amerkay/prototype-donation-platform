@@ -26,7 +26,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:showPauseDialog': [value: boolean]
   'update:showCancelDialog': [value: boolean]
-  'update:changeAmountState': [value: { open: boolean; newAmount: string }]
   pause: []
   cancel: []
   changeAmount: []
@@ -46,7 +45,14 @@ const cancelOpen = computed({
 
 const changeOpen = computed({
   get: () => props.changeAmountState.open,
-  set: (v) => emit('update:changeAmountState', { ...props.changeAmountState, open: v })
+  set: (v) => {
+    props.changeAmountState.open = v
+  }
+})
+
+const isAmountUnchanged = computed(() => {
+  if (!props.currentSubscription) return true
+  return parseFloat(props.changeAmountState.newAmount) === props.currentSubscription.amount
 })
 </script>
 
@@ -98,19 +104,13 @@ const changeOpen = computed({
             }}</span>
             <Input
               id="new-amount"
-              :model-value="changeAmountState.newAmount"
+              v-model="changeAmountState.newAmount"
               type="number"
               step="0.01"
               min="0.01"
               placeholder="0.00"
-              @update:model-value="
-                $emit('update:changeAmountState', {
-                  ...changeAmountState,
-                  newAmount: $event as string
-                })
-              "
             />
-            <span class="text-sm text-muted-foreground">/{{ currentSubscription?.frequency }}</span>
+            <span class="text-sm text-muted-foreground whitespace-nowrap">/{{ currentSubscription?.frequency }}</span>
           </div>
         </div>
         <p class="text-sm text-muted-foreground">
@@ -125,7 +125,7 @@ const changeOpen = computed({
     </template>
     <template #footer>
       <Button variant="outline" @click="changeOpen = false">Cancel</Button>
-      <Button @click="$emit('changeAmount')">Update Amount</Button>
+      <Button :disabled="isAmountUnchanged" @click="$emit('changeAmount')">Update Amount</Button>
     </template>
   </BaseDialogOrDrawer>
 </template>

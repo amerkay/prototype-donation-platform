@@ -1,6 +1,7 @@
 import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import type { Transaction } from '~/features/donor-portal/types'
+import { NuxtLink } from '#components'
 import { RefreshCw } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -11,7 +12,9 @@ import {
 } from '~/features/_admin/utils/column-builders'
 
 export const donationColumns: ColumnDef<Transaction>[] = [
-  createDateColumn<Transaction>(),
+  createDateColumn<Transaction>({
+    getUrl: (r) => `/admin/donations/${r.id}`
+  }),
   {
     accessorKey: 'donorName',
     header: 'Donor',
@@ -40,9 +43,12 @@ export const donationColumns: ColumnDef<Transaction>[] = [
         h('span', { class: 'text-sm truncate block' }, row.getValue('campaignName') as string),
         row.original.subscriptionId
           ? h(
-              'span',
-              { class: 'inline-flex items-center gap-1 text-xs text-muted-foreground mt-0.5' },
-              [h(RefreshCw, { class: 'size-3' }), 'Recurring']
+              NuxtLink,
+              {
+                to: `/admin/subscriptions/${row.original.subscriptionId}`,
+                class: 'inline-flex items-center gap-1 text-xs text-primary hover:underline mt-0.5'
+              },
+              () => [h(RefreshCw, { class: 'size-3' }), 'Recurring']
             )
           : null
       ])

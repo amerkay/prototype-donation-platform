@@ -167,7 +167,7 @@ CREATE TABLE org_config (
 
   -- Donor portal action eligibility settings
   donor_portal JSONB NOT NULL DEFAULT '{}'::JSONB,
-  -- { pauseSubscription: { enabled, minDurationMonths, minDonorValueLastYear }, cancelSubscription: {...}, requestRefund: {...} }
+  -- { pauseSubscription: { enabled, minDurationMonths, minDonorValueLastYear }, cancelSubscription: {...}, refundOneTime: {...}, refundSubscription: {...} }
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()

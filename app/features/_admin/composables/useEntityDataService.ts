@@ -42,7 +42,7 @@ function createDataService() {
     for (const txn of rawTransactions) {
       if (txn.status !== 'succeeded') continue
       const existing = donorMap.get(txn.donorId)
-      const baseAmount = txn.subtotal * txn.exchangeRate
+      const baseAmount = txn.totalAmount * txn.exchangeRate
       if (existing) {
         existing.totalDonated += baseAmount
         existing.donationCount++

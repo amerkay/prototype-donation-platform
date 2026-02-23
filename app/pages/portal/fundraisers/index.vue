@@ -51,7 +51,7 @@ const charityStore = useCharitySettingsStore()
         </EmptyContent>
       </Empty>
 
-      <div v-else class="grid gap-6 sm:grid-cols-2">
+      <div v-else class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <CampaignCard
           v-for="f in currentUserFundraisers"
           :key="f.id"

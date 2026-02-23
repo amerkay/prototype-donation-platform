@@ -163,3 +163,11 @@ const SKELETON_ROWS = 5
     </div>
   </div>
 </template>
+
+<style scoped>
+@reference '~/assets/css/main.css';
+
+:deep(th button[data-slot='button']) {
+  @apply -ml-2 px-2;
+}
+</style>

@@ -41,8 +41,8 @@ function evaluateGate(
 
   if (conditions.length === 0) return true
 
-  // OR logic: eligible if ANY condition is met
-  return conditions.some(Boolean)
+  // AND logic: eligible only if ALL conditions are met
+  return conditions.every(Boolean)
 }
 
 export function useActionEligibility() {
@@ -50,6 +50,14 @@ export function useActionEligibility() {
 
   function checkEligibility(input: EligibilityInput): EligibilityResult {
     const { subscription, transaction, donorValueLastYear } = input
+
+    // Debug: verify store config reaches portal (remove after testing)
+    console.log('[eligibility] store config:', {
+      pause: { ...store.pauseSubscription },
+      cancel: { ...store.cancelSubscription },
+      refundOneTime: { ...store.refundOneTime },
+      refundSubscription: { ...store.refundSubscription }
+    })
 
     const canPause = subscription
       ? evaluateGate(store.pauseSubscription, subscription.createdAt, donorValueLastYear, false)
@@ -60,12 +68,15 @@ export function useActionEligibility() {
       : false
 
     const isOneTime = transaction?.type === 'one_time'
+    const refundConfig = isOneTime ? store.refundOneTime : store.refundSubscription
     const canRefund = evaluateGate(
-      store.requestRefund,
+      refundConfig,
       transaction?.createdAt ?? subscription?.createdAt,
       donorValueLastYear,
       isOneTime
     )
+
+    console.log('[eligibility] results:', { canPause, canCancel, canRefund, donorValueLastYear })
 
     return { canPause, canCancel, canRefund }
   }

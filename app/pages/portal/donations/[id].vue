@@ -4,6 +4,8 @@ import { useActionEligibility } from '~/features/donor-portal/composables/useAct
 import { useRefundAction } from '~/features/donations/shared/composables/useRefundAction'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import LineItemsCard from '~/features/_admin/components/LineItemsCard.vue'
+import DonorInfoCard from '~/features/_admin/components/DonorInfoCard.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -19,13 +21,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Undo2, ExternalLink } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'portal' })
 
 const route = useRoute()
 const router = useRouter()
-const { transactions, addTransaction } = useDonorPortal()
+const { transactions, subscriptions, addTransaction } = useDonorPortal()
 const { formatAmount, formatDate } = useCampaignFormatters()
 const { checkEligibility } = useActionEligibility()
 
@@ -34,18 +37,28 @@ const transaction = computed(() => transactions.value.find((t) => t.id === route
 const {
   isRefunded,
   canRefund: canRefundBase,
+  isSubscriptionPayment,
+  alsoCancel,
   handleRefund
 } = useRefundAction({
   transaction,
   allTransactions: transactions,
   addTransaction,
+  subscriptions,
   onSuccess: () => router.push('/portal/donations')
 })
 
 const donorValueLastYear = computed(() => {
+  if (!transaction.value) return 0
   const oneYearAgo = Date.now() - 365.25 * 24 * 60 * 60 * 1000
+  const orgName = transaction.value.charityName
   return transactions.value
-    .filter((t) => t.status === 'succeeded' && new Date(t.createdAt).getTime() >= oneYearAgo)
+    .filter(
+      (t) =>
+        t.status === 'succeeded' &&
+        t.charityName === orgName &&
+        new Date(t.createdAt).getTime() >= oneYearAgo
+    )
     .reduce((sum, t) => sum + t.totalAmount * t.exchangeRate, 0)
 })
 
@@ -103,78 +116,58 @@ const breadcrumbs = computed(() => [
           </StatusBadge>
         </div>
 
-        <!-- Summary -->
-        <Card>
-          <CardHeader>
-            <CardTitle class="text-base">Summary</CardTitle>
-          </CardHeader>
-          <CardContent class="space-y-3">
-            <div class="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span class="text-muted-foreground">Campaign</span>
-                <p class="font-medium">{{ transaction.campaignName }}</p>
+        <!-- Detail Cards Grid -->
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <!-- Summary -->
+          <Card>
+            <CardHeader>
+              <CardTitle class="text-base">Summary</CardTitle>
+            </CardHeader>
+            <CardContent class="space-y-3">
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span class="text-muted-foreground">Campaign</span>
+                  <p class="font-medium">{{ transaction.campaignName }}</p>
+                </div>
+                <div>
+                  <span class="text-muted-foreground">Charity</span>
+                  <p class="font-medium">{{ transaction.charityName }}</p>
+                </div>
+                <div>
+                  <span class="text-muted-foreground">Type</span>
+                  <p class="font-medium">{{ typeLabel }}</p>
+                </div>
+                <div>
+                  <span class="text-muted-foreground">Currency</span>
+                  <p class="font-medium">{{ transaction.currency }}</p>
+                </div>
               </div>
-              <div>
-                <span class="text-muted-foreground">Charity</span>
-                <p class="font-medium">{{ transaction.charityName }}</p>
-              </div>
-              <div>
-                <span class="text-muted-foreground">Type</span>
-                <p class="font-medium">{{ typeLabel }}</p>
-              </div>
-              <div>
-                <span class="text-muted-foreground">Currency</span>
-                <p class="font-medium">{{ transaction.currency }}</p>
-              </div>
-            </div>
 
-            <Separator />
+              <Separator />
 
-            <div class="space-y-1 text-sm">
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Subtotal</span>
-                <span>{{ formatAmount(transaction.subtotal, transaction.currency) }}</span>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-muted-foreground">Subtotal</span>
+                  <span>{{ formatAmount(transaction.subtotal, transaction.currency) }}</span>
+                </div>
+                <div v-if="transaction.coverCostsAmount" class="flex justify-between">
+                  <span class="text-muted-foreground">Cover costs</span>
+                  <span>{{
+                    formatAmount(transaction.coverCostsAmount, transaction.currency)
+                  }}</span>
+                </div>
+                <div class="flex justify-between font-medium">
+                  <span>Total</span>
+                  <span>{{ formatAmount(transaction.totalAmount, transaction.currency) }}</span>
+                </div>
               </div>
-              <div v-if="transaction.coverCostsAmount" class="flex justify-between">
-                <span class="text-muted-foreground">Cover costs</span>
-                <span>{{ formatAmount(transaction.coverCostsAmount, transaction.currency) }}</span>
-              </div>
-              <div class="flex justify-between font-medium">
-                <span>Total</span>
-                <span>{{ formatAmount(transaction.totalAmount, transaction.currency) }}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <!-- Line Items -->
-        <Card v-if="transaction.lineItems.length">
-          <CardHeader>
-            <CardTitle class="text-base">Items</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div class="space-y-2">
-              <div
-                v-for="item in transaction.lineItems"
-                :key="item.productId"
-                class="flex justify-between text-sm"
-              >
-                <span>
-                  {{ item.productTitle }}
-                  <span v-if="item.quantity > 1" class="text-muted-foreground">
-                    x{{ item.quantity }}
-                  </span>
-                </span>
-                <span class="font-medium">
-                  {{ formatAmount(item.unitPrice * item.quantity, transaction.currency) }}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          <!-- Line Items -->
+          <LineItemsCard :line-items="transaction.lineItems" :currency="transaction.currency" />
 
-        <!-- Payment & Donor Info -->
-        <div class="grid gap-4 sm:grid-cols-2">
+          <!-- Payment -->
           <Card>
             <CardHeader>
               <CardTitle class="text-base">Payment</CardTitle>
@@ -195,52 +188,46 @@ const breadcrumbs = computed(() => [
             </CardContent>
           </Card>
 
-          <Card>
+          <!-- Donor -->
+          <DonorInfoCard
+            :donor-id="transaction.donorId"
+            :donor-name="transaction.donorName"
+            :donor-email="transaction.donorEmail"
+            :is-anonymous="transaction.isAnonymous"
+            :message="transaction.message"
+            :tribute="transaction.tribute"
+            :linkable="false"
+          />
+
+          <!-- Gift Aid -->
+          <Card v-if="transaction.giftAid">
             <CardHeader>
-              <CardTitle class="text-base">Donor</CardTitle>
+              <CardTitle class="text-base">Gift Aid</CardTitle>
             </CardHeader>
-            <CardContent class="space-y-2 text-sm">
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Name</span>
-                <span>{{ transaction.donorName }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Email</span>
-                <span>{{ transaction.donorEmail }}</span>
-              </div>
-              <div v-if="transaction.isAnonymous" class="flex justify-between">
-                <span class="text-muted-foreground">Anonymous</span>
-                <Badge variant="secondary">Yes</Badge>
-              </div>
+            <CardContent class="flex items-center gap-3 text-sm">
+              <Badge variant="default">Gift Aid Declared</Badge>
+              <span v-if="transaction.giftAidAmount" class="font-medium">
+                +{{ formatAmount(transaction.giftAidAmount, transaction.currency) }}
+              </span>
+            </CardContent>
+          </Card>
+
+          <!-- Related Subscription -->
+          <Card v-if="transaction.subscriptionId">
+            <CardContent class="flex items-center justify-between py-4">
+              <span class="text-sm text-muted-foreground">Part of a recurring subscription</span>
+              <Button variant="outline" size="sm" as-child>
+                <NuxtLink
+                  :to="`/portal/subscriptions/${transaction.subscriptionId}`"
+                  class="inline-flex items-center gap-1.5"
+                >
+                  View Subscription
+                  <ExternalLink class="size-3.5" />
+                </NuxtLink>
+              </Button>
             </CardContent>
           </Card>
         </div>
-
-        <!-- Gift Aid -->
-        <Card v-if="transaction.giftAid">
-          <CardHeader>
-            <CardTitle class="text-base">Gift Aid</CardTitle>
-          </CardHeader>
-          <CardContent class="flex items-center gap-3 text-sm">
-            <Badge variant="default">Gift Aid Declared</Badge>
-            <span v-if="transaction.giftAidAmount" class="font-medium">
-              +{{ formatAmount(transaction.giftAidAmount, transaction.currency) }}
-            </span>
-          </CardContent>
-        </Card>
-
-        <!-- Related Subscription -->
-        <Card v-if="transaction.subscriptionId">
-          <CardContent class="flex items-center justify-between py-4">
-            <span class="text-sm text-muted-foreground">Part of a recurring subscription</span>
-            <Button variant="outline" size="sm" as-child>
-              <a href="/portal/subscriptions" class="inline-flex items-center gap-1.5">
-                View Subscription
-                <ExternalLink class="size-3.5" />
-              </a>
-            </Button>
-          </CardContent>
-        </Card>
 
         <!-- Refund Action -->
         <div v-if="canRefund" class="flex justify-end">
@@ -260,6 +247,13 @@ const breadcrumbs = computed(() => [
                   cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
+              <div
+                v-if="isSubscriptionPayment && eligibility.canCancel"
+                class="flex items-center gap-2 pt-2"
+              >
+                <Checkbox id="also-cancel-portal" v-model:checked="alsoCancel" />
+                <label for="also-cancel-portal" class="text-sm">Also cancel the subscription</label>
+              </div>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction @click="handleRefund">Confirm Refund</AlertDialogAction>

@@ -29,7 +29,7 @@ export function useDonations() {
   )
 
   const totalRevenue = computed(() =>
-    succeededTransactions.value.reduce((sum, t) => sum + t.subtotal * t.exchangeRate, 0)
+    succeededTransactions.value.reduce((sum, t) => sum + t.totalAmount * t.exchangeRate, 0)
   )
 
   const totalDonations = computed(() => succeededTransactions.value.length)

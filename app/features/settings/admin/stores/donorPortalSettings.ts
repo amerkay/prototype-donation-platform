@@ -9,7 +9,8 @@ export interface ActionGateConfig {
 export interface DonorPortalSettings {
   pauseSubscription: ActionGateConfig
   cancelSubscription: ActionGateConfig
-  requestRefund: ActionGateConfig
+  refundOneTime: ActionGateConfig
+  refundSubscription: ActionGateConfig
 }
 
 const DEFAULT_ACTION: ActionGateConfig = {
@@ -21,7 +22,8 @@ const DEFAULT_ACTION: ActionGateConfig = {
 const DEFAULTS: DonorPortalSettings = {
   pauseSubscription: { ...DEFAULT_ACTION },
   cancelSubscription: { ...DEFAULT_ACTION },
-  requestRefund: { ...DEFAULT_ACTION }
+  refundOneTime: { ...DEFAULT_ACTION },
+  refundSubscription: { ...DEFAULT_ACTION }
 }
 
 export const useDonorPortalSettingsStore = defineSettingsStore<DonorPortalSettings>(

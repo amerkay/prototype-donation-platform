@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
-import AdminDataTable from '~/features/_admin/components/AdminDataTable.vue'
 import AdminDetailRow from '~/features/_admin/components/AdminDetailRow.vue'
+import DonorInfoCard from '~/features/_admin/components/DonorInfoCard.vue'
+import LineItemsCard from '~/features/_admin/components/LineItemsCard.vue'
+import CustomFieldsCard from '~/features/_admin/components/CustomFieldsCard.vue'
+import TransactionHistoryCard from '~/features/_admin/components/TransactionHistoryCard.vue'
 import { useAdminSubscriptions } from '~/features/subscriptions/admin/composables/useAdminSubscriptions'
 import { useSubscriptionActions } from '~/features/subscriptions/shared/composables/useSubscriptionActions'
 import SubscriptionActionDialogs from '~/features/subscriptions/shared/components/SubscriptionActionDialogs.vue'
-import { donationColumns } from '~/features/donations/admin/columns/donationColumns'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { formatDate } from '~/lib/formatDate'
 import StatusBadge from '~/components/StatusBadge.vue'
@@ -13,7 +15,7 @@ import { paymentMethodLabel } from '~/lib/formatPaymentMethod'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Pause, Play, X, DollarSign } from 'lucide-vue-next'
+import { Pause, Play, X, DollarSign, RefreshCw, Wallet } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'admin' })
 
@@ -28,7 +30,7 @@ const breadcrumbs = computed(() => [
   { label: 'Subscriptions', href: '/admin/subscriptions' },
   {
     label: sub.value
-      ? `${formatCurrency(sub.value.amount, sub.value.currency)}/${sub.value.frequency}`
+      ? `${sub.value.donorName ?? 'Unknown'} — ${formatCurrency(sub.value.amount, sub.value.currency)}/${sub.value.frequency}`
       : 'Not Found'
   }
 ])
@@ -36,6 +38,22 @@ const breadcrumbs = computed(() => [
 const avgPayment = computed(() => {
   if (!sub.value || sub.value.paymentCount === 0) return 0
   return sub.value.totalPaid / sub.value.paymentCount
+})
+
+const totalCoverCosts = computed(() =>
+  payments.value.reduce((sum, p) => sum + (p.coverCostsAmount ?? 0), 0)
+)
+
+const totalSubtotal = computed(() => payments.value.reduce((sum, p) => sum + p.subtotal, 0))
+
+const aggregatedCustomFields = computed(() => {
+  const fields: Record<string, string> = {}
+  for (const payment of payments.value) {
+    if (payment.customFields) {
+      Object.assign(fields, payment.customFields)
+    }
+  }
+  return fields
 })
 
 const {
@@ -51,10 +69,6 @@ const {
   handleChangeAmount,
   currentSubscription
 } = useSubscriptionActions(subscriptions)
-
-function handleRowClick(row: { original: { id: string } }) {
-  navigateTo(`/admin/donations/${row.original.id}`)
-}
 </script>
 
 <template>
@@ -72,15 +86,12 @@ function handleRowClick(row: { original: { id: string } }) {
           <div>
             <div class="flex items-center gap-3">
               <h1 class="text-2xl font-bold">
-                {{ formatCurrency(sub.amount, sub.currency) }}/{{ sub.frequency }}
+                {{ sub.donorName ?? 'Unknown' }} — {{ formatCurrency(sub.amount, sub.currency) }}/{{ sub.frequency }}
               </h1>
               <StatusBadge :status="sub.status" />
             </div>
-            <p class="text-sm text-muted-foreground">
-              {{ sub.donorName }} &middot; {{ sub.donorEmail }}
-            </p>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2">
             <Button
               v-if="sub.status === 'paused'"
               variant="outline"
@@ -121,18 +132,24 @@ function handleRowClick(row: { original: { id: string } }) {
           </div>
         </div>
 
-        <div class="grid gap-6 md:grid-cols-2">
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <!-- Donor -->
+          <DonorInfoCard
+            :donor-id="sub.donorId ?? ''"
+            :donor-name="sub.donorName ?? 'Unknown'"
+            :donor-email="sub.donorEmail ?? ''"
+            :linkable="true"
+          />
+
           <!-- Subscription Details -->
           <Card>
             <CardHeader>
-              <CardTitle class="text-base">Subscription</CardTitle>
+              <CardTitle class="text-base flex items-center gap-2">
+                <RefreshCw class="h-4 w-4" />
+                Subscription
+              </CardTitle>
             </CardHeader>
             <CardContent class="space-y-2 text-sm">
-              <AdminDetailRow
-                label="Campaign"
-                :value="sub.campaignName"
-                value-class="font-medium"
-              />
               <AdminDetailRow label="Charity" :value="sub.charityName" />
               <AdminDetailRow label="Frequency">
                 <span class="capitalize">{{ sub.frequency }}</span>
@@ -152,22 +169,8 @@ function handleRowClick(row: { original: { id: string } }) {
               <AdminDetailRow label="Subscription ID">
                 <span class="font-mono text-xs">{{ sub.processorSubscriptionId }}</span>
               </AdminDetailRow>
-            </CardContent>
-          </Card>
-
-          <!-- Timeline -->
-          <Card>
-            <CardHeader>
-              <CardTitle class="text-base">Timeline</CardTitle>
-            </CardHeader>
-            <CardContent class="space-y-2 text-sm">
+              <Separator />
               <AdminDetailRow label="Created" :value="formatDate(sub.createdAt)" />
-              <AdminDetailRow label="Current Period">
-                <span
-                  >{{ formatDate(sub.currentPeriodStart) }} —
-                  {{ formatDate(sub.currentPeriodEnd) }}</span
-                >
-              </AdminDetailRow>
               <AdminDetailRow
                 v-if="sub.nextBillingDate"
                 label="Next Billing"
@@ -185,14 +188,27 @@ function handleRowClick(row: { original: { id: string } }) {
           <!-- Financials -->
           <Card>
             <CardHeader>
-              <CardTitle class="text-base">Financials</CardTitle>
+              <CardTitle class="text-base flex items-center gap-2">
+                <Wallet class="h-4 w-4" />
+                Financials
+              </CardTitle>
             </CardHeader>
             <CardContent class="space-y-2 text-sm">
               <AdminDetailRow
-                label="Lifetime Value"
+                label="Lifetime Subtotal"
+                :value="formatCurrency(totalSubtotal, sub.currency)"
+              />
+              <AdminDetailRow
+                v-if="totalCoverCosts > 0"
+                label="Lifetime Cover Costs"
+                :value="formatCurrency(totalCoverCosts, sub.currency)"
+              />
+              <AdminDetailRow
+                label="Lifetime Total"
                 :value="formatCurrency(sub.totalPaid, sub.currency)"
                 value-class="font-medium"
               />
+              <Separator />
               <AdminDetailRow label="Payment Count" :value="String(sub.paymentCount)" />
               <AdminDetailRow
                 label="Average Payment"
@@ -208,53 +224,32 @@ function handleRowClick(row: { original: { id: string } }) {
             </CardContent>
           </Card>
 
-          <!-- Line Items -->
-          <Card v-if="sub.lineItems.length">
-            <CardHeader>
-              <CardTitle class="text-base">Items</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div
-                v-for="item in sub.lineItems"
-                :key="item.productId"
-                class="flex items-center justify-between py-1.5 text-sm"
-              >
-                <span>
-                  {{ item.productTitle }}
-                  <span v-if="item.quantity > 1" class="text-muted-foreground"
-                    >x{{ item.quantity }}</span
-                  >
-                </span>
-                <span class="font-medium">{{
-                  formatCurrency(item.unitPrice * item.quantity, sub.currency)
-                }}</span>
-              </div>
-            </CardContent>
-          </Card>
+          <!-- Custom Fields -->
+          <CustomFieldsCard
+            v-if="Object.keys(aggregatedCustomFields).length"
+            :custom-fields="aggregatedCustomFields"
+          />
+
+          <!-- Order Details (full width) -->
+          <LineItemsCard
+            :line-items="sub.lineItems"
+            :currency="sub.currency"
+            title="Order Details"
+            :campaign-name="sub.campaignName"
+            :campaign-link="`/admin/campaigns/standard/${sub.campaignId}`"
+            class="md:col-span-2 lg:col-span-3"
+          />
         </div>
 
         <!-- Payment History -->
-        <Card v-if="payments.length" class="mt-6">
-          <CardHeader>
-            <CardTitle class="text-base">Payment History</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AdminDataTable
-              :columns="donationColumns"
-              :data="payments"
-              :show-pagination="payments.length > 10"
-              :page-size="10"
-              @row-click="handleRowClick"
-            />
-          </CardContent>
-        </Card>
+        <TransactionHistoryCard :data="payments" title="Payment History" class="mt-6" />
       </template>
     </div>
 
     <SubscriptionActionDialogs
       v-model:show-pause-dialog="showPauseDialog"
       v-model:show-cancel-dialog="showCancelDialog"
-      v-model:change-amount-state="changeAmountState"
+      :change-amount-state="changeAmountState"
       :current-subscription="currentSubscription"
       @pause="handlePause"
       @cancel="handleCancel"

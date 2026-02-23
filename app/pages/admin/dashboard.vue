@@ -96,7 +96,7 @@ const monthlyRevenue = computed(() => {
     const d = new Date(t.createdAt)
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
     if (!buckets[key]) buckets[key] = { revenue: 0, count: 0 }
-    buckets[key].revenue += t.subtotal * t.exchangeRate
+    buckets[key].revenue += t.totalAmount * t.exchangeRate
     buckets[key].count++
   }
 
@@ -123,7 +123,7 @@ const campaignRevenue = computed(() => {
     if (!buckets[t.campaignId])
       buckets[t.campaignId] = { name: t.campaignName, revenue: 0, count: 0 }
     const bucket = buckets[t.campaignId]!
-    bucket.revenue += t.subtotal * t.exchangeRate
+    bucket.revenue += t.totalAmount * t.exchangeRate
     bucket.count++
   }
 

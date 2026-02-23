@@ -34,9 +34,7 @@ export function defineSettingsStore<T extends object>(
       return JSON.parse(JSON.stringify(state))
     }
 
-    let hydrated = false
     function $hydrate() {
-      if (hydrated) return
       try {
         // TODO-SUPABASE: Replace with supabase.from(table).select(column).eq('organization_id', orgId).single()
         const saved = sessionStorage.getItem(options.storageKey)
@@ -44,7 +42,6 @@ export function defineSettingsStore<T extends object>(
       } catch {
         /* ignore */
       }
-      hydrated = true
     }
 
     function save() {

@@ -1,6 +1,7 @@
 import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import type { Donor } from '~/features/donors/admin/types'
+import { NuxtLink } from '#components'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowUpDown } from 'lucide-vue-next'
@@ -15,14 +16,20 @@ export const donorColumns: ColumnDef<Donor>[] = [
         Button,
         {
           variant: 'ghost',
-          class: '-ml-2.5',
           onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
         },
         () => ['Name', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
       ),
     cell: ({ row }) =>
       h('div', {}, [
-        h('span', { class: 'text-sm font-medium' }, row.getValue('name') as string),
+        h(
+          NuxtLink,
+          {
+            to: `/admin/donors/${row.original.id}`,
+            class: 'text-sm font-medium text-primary hover:underline'
+          },
+          () => row.getValue('name') as string
+        ),
         h('span', { class: 'text-xs text-muted-foreground block' }, row.original.email)
       ])
   },

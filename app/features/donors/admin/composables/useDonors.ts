@@ -23,7 +23,7 @@ export function useDonors() {
       if (!dateStore.isWithinRange(txn.createdAt)) continue
 
       const existing = map.get(txn.donorId)
-      const baseAmount = txn.subtotal * txn.exchangeRate
+      const baseAmount = txn.totalAmount * txn.exchangeRate
 
       if (existing) {
         existing.totalDonated += baseAmount

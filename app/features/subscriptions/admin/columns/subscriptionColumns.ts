@@ -1,6 +1,7 @@
 import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import type { Subscription } from '~/features/subscriptions/shared/types'
+import { NuxtLink } from '#components'
 import { Button } from '@/components/ui/button'
 import { ArrowUpDown } from 'lucide-vue-next'
 import { formatCurrency } from '~/lib/formatCurrency'
@@ -10,25 +11,36 @@ import {
   createStatusColumn
 } from '~/features/_admin/utils/column-builders'
 
-type EnrichedSubscription = Subscription & { donorName: string; donorEmail: string }
+type EnrichedSubscription = Subscription & {
+  donorId: string
+  donorName: string
+  donorEmail: string
+}
 
 export const subscriptionColumns: ColumnDef<EnrichedSubscription>[] = [
   {
-    accessorKey: 'donorName',
+    accessorKey: 'createdAt',
     header: ({ column }) =>
       h(
         Button,
         {
           variant: 'ghost',
-          class: '-ml-2.5',
           onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
         },
-        () => ['Donor', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
+        () => ['Started', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
       ),
     cell: ({ row }) =>
       h('div', {}, [
-        h('span', { class: 'text-sm font-medium' }, row.getValue('donorName') as string),
-        h('span', { class: 'text-xs text-muted-foreground block' }, row.original.donorEmail)
+        h(
+          NuxtLink,
+          {
+            to: `/admin/subscriptions/${row.original.id}`,
+            class: 'text-sm font-medium text-primary hover:underline whitespace-nowrap'
+          },
+          () => formatDate(row.getValue('createdAt') as string)
+        ),
+        h('span', { class: 'text-sm truncate block' }, row.original.donorName),
+        h('span', { class: 'text-xs text-muted-foreground truncate block' }, row.original.donorEmail)
       ])
   },
   {

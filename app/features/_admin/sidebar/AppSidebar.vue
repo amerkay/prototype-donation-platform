@@ -158,7 +158,7 @@ const navMain = computed(() => [
         url: '/admin/settings/social-sharing'
       },
       {
-        title: 'After Sale',
+        title: 'After Sale Step',
         url: '/admin/settings/after-sale'
       },
       {
