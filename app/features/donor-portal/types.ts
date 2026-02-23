@@ -47,6 +47,7 @@ export interface TransactionLineItem {
  */
 export interface Transaction {
   id: string
+  organizationId: string
   processor: PaymentProcessor
   /** Stripe: pi_xxx, PayPal: PAYID-xxx */
   processorTransactionId: string

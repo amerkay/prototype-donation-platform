@@ -14,16 +14,26 @@ const PURPOSE_LABELS: Record<string, string> = {
   marketing_email: 'Marketing Emails'
 }
 
+interface PurposeGroup {
+  purpose: string
+  latest: ConsentRecord
+  older: ConsentRecord[]
+}
+
 /** Group by purpose, latest first within each group */
-const byPurpose = computed(() => {
-  const grouped: Record<string, ConsentRecord[]> = {}
+const groups = computed<PurposeGroup[]>(() => {
+  const map = new Map<string, ConsentRecord[]>()
   for (const r of props.records) {
-    ;(grouped[r.purpose] ??= []).push(r)
+    const list = map.get(r.purpose)
+    if (list) list.push(r)
+    else map.set(r.purpose, [r])
   }
-  for (const key in grouped) {
-    grouped[key].sort((a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime())
+  const result: PurposeGroup[] = []
+  for (const [purpose, list] of map) {
+    list.sort((a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime())
+    result.push({ purpose, latest: list[0]!, older: list.slice(1) })
   }
-  return grouped
+  return result
 })
 </script>
 
@@ -40,35 +50,37 @@ const byPurpose = computed(() => {
         No consent records on file.
       </div>
       <div v-else class="space-y-4">
-        <div v-for="(group, purpose) in byPurpose" :key="purpose" class="text-sm">
+        <div v-for="{ purpose, latest, older } in groups" :key="purpose" class="text-sm">
           <div class="flex items-center justify-between gap-2">
             <span class="font-medium">{{ PURPOSE_LABELS[purpose] ?? purpose }}</span>
-            <Badge :variant="group[0].granted ? 'default' : 'secondary'">
-              {{ group[0].granted ? 'Opted In' : 'Opted Out' }}
+            <Badge :variant="latest.granted ? 'default' : 'secondary'">
+              {{ latest.granted ? 'Opted In' : 'Opted Out' }}
             </Badge>
           </div>
           <p class="text-xs text-muted-foreground mt-0.5">
-            {{ formatDate(group[0].recordedAt) }}
+            {{ formatDate(latest.recordedAt) }}
           </p>
           <p class="text-xs text-muted-foreground mt-1 border-t border-dashed pt-1">
             {{
-              group[0].wordingShown.length > 80
-                ? group[0].wordingShown.slice(0, 80) + '...'
-                : group[0].wordingShown
+              latest.wordingShown.length > 80
+                ? latest.wordingShown.slice(0, 80) + '...'
+                : latest.wordingShown
             }}
           </p>
 
-          <Collapsible v-if="group.length > 1" class="mt-2">
+          <Collapsible v-if="older.length > 0" class="mt-2">
             <CollapsibleTrigger
               class="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors group"
             >
-              <ChevronRight class="h-3 w-3 transition-transform group-data-[state=open]:rotate-90" />
-              {{ group.length - 1 }} earlier {{ group.length - 1 === 1 ? 'record' : 'records' }}
+              <ChevronRight
+                class="h-3 w-3 transition-transform group-data-[state=open]:rotate-90"
+              />
+              {{ older.length }} earlier {{ older.length === 1 ? 'record' : 'records' }}
             </CollapsibleTrigger>
             <CollapsibleContent>
               <div class="mt-1.5 ml-4 border-l pl-3 space-y-1.5">
                 <div
-                  v-for="record in group.slice(1)"
+                  v-for="record in older"
                   :key="record.id"
                   class="flex items-center gap-2 text-xs text-muted-foreground"
                 >

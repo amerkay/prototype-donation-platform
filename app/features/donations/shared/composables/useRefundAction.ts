@@ -48,6 +48,7 @@ export function useRefundAction(options: UseRefundActionOptions) {
 
     addTransaction({
       id: generateEntityId('txn'),
+      organizationId: txn.organizationId,
       type: 'refund',
       refundOfTransactionId: txn.id,
       processor: txn.processor,

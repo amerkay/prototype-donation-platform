@@ -7,6 +7,8 @@ import { computeFundraiserStats } from './api-sample-response-transactions'
  * Each fundraiser links to a parent P2P campaign and represents an individual's
  * fundraising page. In production this would be the `campaign_fundraisers` table.
  * Stats (raisedAmount, donationCount) are computed from the transactions table.
+ *
+ * Only Wild Amer's two fundraisers — all campaign IDs map to real entries in campaigns.ts.
  */
 export const fundraisers: CampaignFundraiser[] = [
   {
@@ -25,19 +27,6 @@ export const fundraisers: CampaignFundraiser[] = [
     parentCampaignId: 'birthday-p2p-template'
   },
   {
-    id: 'f2',
-    campaignId: 'michael-chen-birthday-fundraiser',
-    name: 'Michael Chen',
-    email: 'michael@example.com',
-    joinedAt: '2025-12-01T00:00:00Z',
-    ...computeFundraiserStats('michael-chen-birthday-fundraiser'),
-    goal: 500,
-    slug: 'michael-chen-birthday',
-    story: 'Turning 25 and want to make it count! Please help me reach my goal.',
-    status: 'active',
-    parentCampaignId: 'birthday-p2p-template'
-  },
-  {
     id: 'f3',
     campaignId: 'wild-amer-birthday-2-fundraiser',
     name: 'Wild Amer',
@@ -48,32 +37,6 @@ export const fundraisers: CampaignFundraiser[] = [
     slug: 'wild-amer-birthday-2',
     story: 'Another fundraiser I created to support orangutans! Help me reach my goal.',
     status: 'active',
-    parentCampaignId: 'birthday-p2p-template'
-  },
-  {
-    id: 'f4',
-    campaignId: 'david-martinez-birthday-fundraiser',
-    name: 'David Martinez',
-    email: 'david@example.com',
-    joinedAt: '2026-01-05T00:00:00Z',
-    ...computeFundraiserStats('david-martinez-birthday-fundraiser'),
-    goal: 500,
-    slug: 'david-martinez-birthday',
-    story: 'My 40th is coming up - donate to save orangutans!',
-    status: 'active',
-    parentCampaignId: 'birthday-p2p-template'
-  },
-  {
-    id: 'f5',
-    campaignId: 'lisa-anderson-birthday-fundraiser',
-    name: 'Lisa Anderson',
-    email: 'lisa@example.com',
-    joinedAt: '2025-11-28T00:00:00Z',
-    ...computeFundraiserStats('lisa-anderson-birthday-fundraiser'),
-    goal: 500,
-    slug: 'lisa-anderson-birthday',
-    story: 'Small goal, big impact! Help me celebrate sustainably.',
-    status: 'paused',
     parentCampaignId: 'birthday-p2p-template'
   }
 ]

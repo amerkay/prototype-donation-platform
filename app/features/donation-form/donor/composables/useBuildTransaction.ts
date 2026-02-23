@@ -53,6 +53,7 @@ export function useBuildTransaction() {
 
     return {
       id: generateEntityId('txn'),
+      organizationId: 'org-001',
       processor: 'stripe',
       processorTransactionId: `pi_demo_${Math.random().toString(36).slice(2, 10)}`,
       type:
