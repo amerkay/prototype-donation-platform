@@ -5,23 +5,23 @@ import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campa
 import { useSocialSharingSettingsStore } from '~/features/settings/admin/stores/socialSharingSettings'
 import { useCampaignShare } from '~/features/campaigns/shared/composables/useCampaignShare'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
+import { useAfterSaleSettingsStore } from '~/features/settings/admin/stores/afterSaleSettings'
 import { formatCurrency } from '~/lib/formatCurrency'
 
 const campaignStore = useCampaignConfigStore()
 const orgSharing = useSocialSharingSettingsStore()
 const donationStore = useDonationFormStore()
+const afterSale = useAfterSaleSettingsStore()
 
 const campaignSlug = computed(() => campaignStore.id)
 const { campaignUrl, copy, copied } = useCampaignShare(campaignSlug)
 
 const shareDescription = computed(() => {
-  const amount = formatCurrency(
-    donationStore.totalDonationAmount,
-    donationStore.selectedCurrency,
-    0
-  )
+  const amount = formatCurrency(donationStore.totalAmount, donationStore.selectedCurrency)
   const name = campaignStore.name || 'this campaign'
-  return `I just donated ${amount} to ${name}! Join me in making a difference.`
+  return afterSale.socialSharingMessage
+    .replace(/\{\{amount\}\}/g, amount)
+    .replace(/\{\{campaign\}\}/g, name)
 })
 
 const handleShare = (platform: string) => {

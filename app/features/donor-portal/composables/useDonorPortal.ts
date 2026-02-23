@@ -1,10 +1,5 @@
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
-import {
-  transactions as sampleTransactions,
-  subscriptions as sampleSubscriptions
-} from '~/sample-api-responses/api-sample-response-transactions'
-import type { Transaction } from '~/features/donor-portal/types'
-import type { Subscription } from '~/features/subscriptions/shared/types'
+import { useReactiveTransactions } from '~/sample-api-responses/useReactiveTransactions'
 import type { Campaign } from '~/features/campaigns/shared/types'
 
 // TODO-SUPABASE: Replace with auth.uid() from supabase.auth.getUser()
@@ -18,9 +13,7 @@ export function useDonorPortal() {
   const { campaigns } = useCampaigns()
 
   // TODO-SUPABASE: Replace with supabase.from('transactions').select('*').eq('donor_id', auth.uid()) (RLS auto-filters)
-  const transactions = ref<Transaction[]>(sampleTransactions)
-  // TODO-SUPABASE: Replace with supabase.from('subscriptions').select('*').eq('donor_id', auth.uid()) (RLS auto-filters)
-  const subscriptions = ref<Subscription[]>(sampleSubscriptions)
+  const { transactions, subscriptions } = useReactiveTransactions()
 
   // Current user's fundraiser campaigns
   const currentUserFundraisers = computed(() => {

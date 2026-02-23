@@ -13,7 +13,7 @@ const configStore = useFormConfigStore()
 const receiptStore = useReceiptTemplateStore()
 const brandingStore = useBrandingSettingsStore()
 
-const donorInfo = computed(() => store.formSections.donorInfo as Record<string, string>)
+const donorInfo = computed(() => store.formSections.donorInfo as Record<string, unknown>)
 const giftAid = computed(() => store.formSections.giftAid as Record<string, unknown>)
 
 const frequencyLabel = computed(() => {
@@ -37,14 +37,17 @@ const formattedCoverCosts = computed(() =>
 )
 
 const donorFullName = computed(() => {
-  const first = donorInfo.value.firstName || ''
-  const last = donorInfo.value.lastName || ''
+  const name = donorInfo.value.name as Record<string, string> | undefined
+  const first = name?.firstName || ''
+  const last = name?.lastName || ''
   return `${first} ${last}`.trim() || 'Donor'
 })
 
-const hasGiftAid = computed(() => {
-  return giftAid.value?.claimGiftAid === true
-})
+const donorEmail = computed(() => donorInfo.value.email as string | undefined)
+
+const hasGiftAid = computed(() => giftAid.value?.claimGiftAid === true)
+
+const receiptId = computed(() => store.receiptId)
 
 const formTitle = computed(() => configStore.form?.title ?? 'Donation')
 </script>
@@ -61,7 +64,7 @@ const formTitle = computed(() => configStore.form?.title ?? 'Donation')
       <div class="flex items-center justify-between">
         <h3 class="font-semibold">Donation Receipt</h3>
         <Badge variant="outline" class="text-xs font-mono">
-          {{ store.receiptId }}
+          {{ receiptId }}
         </Badge>
       </div>
 
@@ -103,9 +106,9 @@ const formTitle = computed(() => configStore.form?.title ?? 'Donation')
           <span class="text-muted-foreground">Donor</span>
           <span>{{ donorFullName }}</span>
         </div>
-        <div v-if="donorInfo.email" class="flex justify-between">
+        <div v-if="donorEmail" class="flex justify-between">
           <span class="text-muted-foreground">Email</span>
-          <span>{{ donorInfo.email }}</span>
+          <span>{{ donorEmail }}</span>
         </div>
         <div class="flex justify-between">
           <span class="text-muted-foreground">Payment</span>
@@ -117,7 +120,7 @@ const formTitle = computed(() => configStore.form?.title ?? 'Donation')
       <div v-if="hasGiftAid" class="flex items-center gap-2">
         <Badge variant="secondary">
           <Icon name="lucide:heart-handshake" class="mr-1 h-3 w-3" />
-          Gift Aid claimed
+          Gift Aid declared
         </Badge>
       </div>
 

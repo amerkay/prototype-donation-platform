@@ -17,7 +17,7 @@ import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaig
 import { useDonors } from '~/features/donors/admin/composables/useDonors'
 import { useDonations } from '~/features/donations/admin/composables/useDonations'
 import { useAdminSubscriptions } from '~/features/subscriptions/admin/composables/useAdminSubscriptions'
-import { transactions } from '~/sample-api-responses/api-sample-response-transactions'
+import { useReactiveTransactions } from '~/sample-api-responses/useReactiveTransactions'
 import { formatCurrency } from '~/lib/formatCurrency'
 
 import { formatDateCompact } from '~/lib/formatDate'
@@ -25,6 +25,7 @@ import StatusBadge from '~/components/StatusBadge.vue'
 
 definePageMeta({ layout: 'admin' })
 
+const { transactions } = useReactiveTransactions()
 const { campaigns, activeCampaigns } = useCampaigns()
 const { totalDonors } = useDonors()
 const { totalRevenue, totalDonations } = useDonations()
@@ -68,7 +69,7 @@ const statCards = computed(() => [
 
 // Filter transactions by shared date range
 const dashboardTransactions = computed(() =>
-  [...transactions]
+  [...transactions.value]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .filter((t) => dateStore.isWithinRange(t.createdAt))
 )

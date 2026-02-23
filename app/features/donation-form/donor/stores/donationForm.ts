@@ -45,6 +45,7 @@ export const useDonationFormStore = defineStore(
     })
     const isSubmitted = ref(false)
     const receiptId = ref<string | null>(null)
+    const transactionId = ref<string | null>(null)
 
     // ==================== GETTERS ====================
     const currentFrequency = computed(() => activeTab.value)
@@ -227,8 +228,9 @@ export const useDonationFormStore = defineStore(
       multipleCart.value = cartItems
     }
 
-    function submitDonation() {
+    function submitDonation(txnId?: string) {
       receiptId.value = `RCT-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`
+      transactionId.value = txnId ?? null
       isSubmitted.value = true
     }
 
@@ -251,6 +253,7 @@ export const useDonationFormStore = defineStore(
       }
       isSubmitted.value = false
       receiptId.value = null
+      transactionId.value = null
     }
 
     function reset() {
@@ -274,7 +277,8 @@ export const useDonationFormStore = defineStore(
             multipleCart: multipleCart.value,
             formSections: formSections.value,
             isSubmitted: isSubmitted.value,
-            receiptId: receiptId.value
+            receiptId: receiptId.value,
+            transactionId: transactionId.value
           })
         )
       } catch (error) {
@@ -300,6 +304,7 @@ export const useDonationFormStore = defineStore(
         if (data.formSections !== undefined) formSections.value = data.formSections
         if (data.isSubmitted !== undefined) isSubmitted.value = data.isSubmitted
         if (data.receiptId !== undefined) receiptId.value = data.receiptId
+        if (data.transactionId !== undefined) transactionId.value = data.transactionId
       } catch (error) {
         console.warn('Failed to hydrate donation form:', error)
       }
@@ -319,6 +324,7 @@ export const useDonationFormStore = defineStore(
       formSections,
       isSubmitted,
       receiptId,
+      transactionId,
 
       // Getters
       currentFrequency,

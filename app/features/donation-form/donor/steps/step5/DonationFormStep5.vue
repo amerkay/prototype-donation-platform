@@ -7,6 +7,8 @@ import RecurringUpsell from '~/features/donation-form/donor/components/Recurring
 import DonationSharePrompt from '~/features/donation-form/donor/components/DonationSharePrompt.vue'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
+import { useDownloadDonationReceipt } from '~/features/donation-form/donor/composables/useDownloadDonationReceipt'
+import { useAfterSaleSettingsStore } from '~/features/settings/admin/stores/afterSaleSettings'
 import { formatCurrency } from '~/lib/formatCurrency'
 
 const emit = defineEmits<{
@@ -14,29 +16,31 @@ const emit = defineEmits<{
 }>()
 
 const store = useDonationFormStore()
+const afterSale = useAfterSaleSettingsStore()
 const { labels, isDonation } = useFormTypeLabels()
+const { downloadReceipt, isGenerating } = useDownloadDonationReceipt()
 const showContent = ref(false)
 
 const donorFirstName = computed(() => {
-  const info = store.formSections.donorInfo as Record<string, string>
-  return info.firstName || 'Friend'
+  const info = store.formSections.donorInfo as Record<string, unknown>
+  const name = info.name as Record<string, string> | undefined
+  return name?.firstName || 'Friend'
 })
 
-const formattedTotal = computed(() => formatCurrency(store.totalAmount, store.selectedCurrency, 0))
+const formattedTotal = computed(() => formatCurrency(store.totalAmount, store.selectedCurrency))
 
 const isOneTime = computed(() => store.activeTab === 'once')
 
-const handlePrint = () => {
-  window.print()
-}
+const route = useRoute()
+const isEmbedded = computed(() => !route.params.campaign_slug)
 
 const handleRestart = () => {
+  if (isEmbedded.value) return
   store.clearSession()
   emit('restart')
 }
 
 onMounted(() => {
-  // Trigger entrance animation after mount
   requestAnimationFrame(() => {
     showContent.value = true
   })
@@ -90,7 +94,7 @@ onMounted(() => {
 
     <!-- Recurring Upsell (one-time donation donors only) -->
     <div
-      v-if="isOneTime && isDonation"
+      v-if="isOneTime && isDonation && afterSale.recurringUpsellEnabled"
       :class="[
         'transition-all duration-500 delay-300',
         showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
@@ -101,6 +105,7 @@ onMounted(() => {
 
     <!-- Social Sharing -->
     <div
+      v-if="afterSale.socialSharingEnabled"
       :class="[
         'transition-all duration-500 delay-400',
         showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
@@ -118,20 +123,23 @@ onMounted(() => {
         showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       ]"
     >
-      <Button variant="outline" class="w-full" @click="handlePrint">
-        <Icon name="lucide:printer" class="mr-2 h-4 w-4" />
-        Download Receipt
+      <Button variant="outline" class="w-full" :disabled="isGenerating" @click="downloadReceipt">
+        <Icon
+          :name="isGenerating ? 'lucide:loader-2' : 'lucide:download'"
+          :class="['mr-2 h-4 w-4', isGenerating && 'animate-spin']"
+        />
+        {{ isGenerating ? 'Generating...' : 'Download Receipt' }}
       </Button>
-      <Button variant="outline" class="w-full" @click="handleRestart">
+      <Button variant="outline" class="w-full" :disabled="isEmbedded" @click="handleRestart">
         <Icon name="lucide:plus" class="mr-2 h-4 w-4" />
         {{ labels.restartLabel }}
       </Button>
-      <NuxtLink to="/portal/donations" class="block">
-        <Button variant="ghost" class="w-full">
+      <component :is="isEmbedded ? 'div' : 'NuxtLink'" to="/portal/donations" class="block">
+        <Button variant="ghost" class="w-full" :disabled="isEmbedded">
           View My Donations
           <Icon name="lucide:arrow-right" class="ml-2 h-4 w-4" />
         </Button>
-      </NuxtLink>
+      </component>
     </div>
   </div>
 </template>

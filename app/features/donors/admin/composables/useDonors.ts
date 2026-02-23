@@ -1,6 +1,6 @@
 import type { Donor } from '~/features/donors/admin/types'
 import type { Transaction } from '~/features/donor-portal/types'
-import { transactions } from '~/sample-api-responses/api-sample-response-transactions'
+import { useReactiveTransactions } from '~/sample-api-responses/useReactiveTransactions'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
 
@@ -13,11 +13,12 @@ import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
  */
 export function useDonors() {
   const dateStore = useAdminDateRangeStore()
+  const { transactions } = useReactiveTransactions()
 
   const donors = computed<Donor[]>(() => {
     const map = new Map<string, Donor>()
 
-    for (const txn of transactions) {
+    for (const txn of transactions.value) {
       if (txn.status !== 'succeeded') continue
       if (!dateStore.isWithinRange(txn.createdAt)) continue
 
@@ -75,7 +76,7 @@ export function useDonors() {
   }
 
   function getDonorTransactionsById(id: string): Transaction[] {
-    return [...transactions]
+    return [...transactions.value]
       .filter((t) => t.donorId === id)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   }

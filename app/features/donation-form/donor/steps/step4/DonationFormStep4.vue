@@ -8,6 +8,8 @@ import { useDonationFormStore } from '~/features/donation-form/donor/stores/dona
 import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
+import { useBuildTransaction } from '~/features/donation-form/donor/composables/useBuildTransaction'
+import { useReactiveTransactions } from '~/sample-api-responses/useReactiveTransactions'
 import { formatCurrency } from '~/lib/formatCurrency'
 
 const emit = defineEmits<{
@@ -18,6 +20,8 @@ const store = useDonationFormStore()
 const cartStore = useImpactCartStore()
 const formConfigStore = useFormConfigStore()
 const { labels, isFeatureSupported } = useFormTypeLabels()
+const { buildTransaction } = useBuildTransaction()
+const { addTransaction } = useReactiveTransactions()
 
 const entryFieldsConfig = computed(() => formConfigStore.fullConfig?.features.entryFields)
 const entryFieldDefinitions = computed(() => entryFieldsConfig.value?.fields ?? [])
@@ -32,8 +36,9 @@ const donorInfo = computed(() => store.formSections.donorInfo as Record<string, 
 const giftAid = computed(() => store.formSections.giftAid as Record<string, unknown>)
 
 const donorFullName = computed(() => {
-  const first = donorInfo.value.firstName || ''
-  const last = donorInfo.value.lastName || ''
+  const name = donorInfo.value.name as Record<string, string> | undefined
+  const first = name?.firstName || ''
+  const last = name?.lastName || ''
   return `${first} ${last}`.trim() || 'Donor'
 })
 
@@ -77,7 +82,9 @@ const handlePay = async () => {
   isProcessing.value = true
   // Simulate payment processing delay
   await new Promise((resolve) => setTimeout(resolve, 1500))
-  store.submitDonation()
+  const txn = buildTransaction()
+  addTransaction(txn)
+  store.submitDonation(txn.id)
   isProcessing.value = false
   emit('complete')
 }

@@ -26,6 +26,10 @@ export interface Subscription {
   campaignName: string
   charityName: string
 
+  donorId?: string
+  donorName?: string
+  donorEmail?: string
+
   lineItems: TransactionLineItem[]
 
   amount: number

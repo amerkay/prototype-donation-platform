@@ -1,5 +1,5 @@
 import type { Transaction } from '~/features/donor-portal/types'
-import { transactions } from '~/sample-api-responses/api-sample-response-transactions'
+import { useReactiveTransactions } from '~/sample-api-responses/useReactiveTransactions'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
 
@@ -12,9 +12,10 @@ import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
  */
 export function useDonations() {
   const dateStore = useAdminDateRangeStore()
+  const { transactions } = useReactiveTransactions()
 
   const allTransactions = computed<Transaction[]>(() =>
-    [...transactions].sort(
+    [...transactions.value].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
   )

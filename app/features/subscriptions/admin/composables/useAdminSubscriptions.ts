@@ -1,8 +1,5 @@
 import type { Subscription } from '~/features/subscriptions/shared/types'
-import {
-  subscriptions,
-  transactions
-} from '~/sample-api-responses/api-sample-response-transactions'
+import { useReactiveTransactions } from '~/sample-api-responses/useReactiveTransactions'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
 
@@ -15,10 +12,12 @@ import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
  */
 export function useAdminSubscriptions() {
   const dateStore = useAdminDateRangeStore()
+  const { transactions, subscriptions } = useReactiveTransactions()
+
   /** Map subscription IDs to donor info from their first transaction */
   const donorMap = computed(() => {
     const map = new Map<string, { name: string; email: string }>()
-    for (const txn of transactions) {
+    for (const txn of transactions.value) {
       if (txn.subscriptionId && !map.has(txn.subscriptionId)) {
         map.set(txn.subscriptionId, { name: txn.donorName, email: txn.donorEmail })
       }
@@ -28,14 +27,14 @@ export function useAdminSubscriptions() {
 
   const allSubscriptions = computed<(Subscription & { donorName: string; donorEmail: string })[]>(
     () =>
-      [...subscriptions]
+      [...subscriptions.value]
         .filter((sub) => dateStore.isWithinRange(sub.createdAt))
         .map((sub) => {
           const donor = donorMap.value.get(sub.id)
           return {
             ...sub,
-            donorName: donor?.name ?? 'Unknown',
-            donorEmail: donor?.email ?? ''
+            donorName: donor?.name ?? sub.donorName ?? 'Unknown',
+            donorEmail: donor?.email ?? sub.donorEmail ?? ''
           }
         })
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -67,7 +66,7 @@ export function useAdminSubscriptions() {
   }
 
   function getSubscriptionPayments(subscriptionId: string) {
-    return [...transactions]
+    return [...transactions.value]
       .filter((t) => t.subscriptionId === subscriptionId)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   }

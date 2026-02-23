@@ -158,6 +158,10 @@ const navMain = computed(() => [
         url: '/admin/settings/social-sharing'
       },
       {
+        title: 'After Sale',
+        url: '/admin/settings/after-sale'
+      },
+      {
         title: 'Payment Processors',
         url: '/admin/settings/payments'
       },

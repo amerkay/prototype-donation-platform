@@ -116,6 +116,8 @@ app/features/[feature-name]/
 18. **HMRC Gift Aid**: `gift_aid_declarations` table — name, address, date. 6-year retention after last covered donation.
 19. **AdminEntityCard**: All CRUD listing cards use slot-based `AdminEntityCard` wrapper (#image/#badges/#stats/#actions). Image area = `aspect-3/1`. Use `AdminEntityCardPlaceholder` for missing images.
 20. **System emails** (admin/P2P/team) are hard-coded in `app/emails/system/templates.ts`, not admin-editable. Only donor + eCard emails are customizable.
+21. **fieldGroup nests data**: `fieldGroup('name', { fields: { firstName } })` produces `{ name: { firstName } }` in emitted form data, NOT flat `{ firstName }`. Always account for nesting when reading formSections.
+22. **Admin preview data pattern**: Populate real Pinia stores with sample data, render real donor components. Never inject/prop preview context into donor components — they must stay preview-unaware.
 
 <!-- end continuous learning notes -->
 
