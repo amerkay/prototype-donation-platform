@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
+import EditLayout from '~/features/_shared/components/EditLayout.vue'
 import ReceiptTemplateConfig from '~/features/templates/admin/components/ReceiptTemplateConfig.vue'
 import ReceiptPreview from '~/features/templates/admin/components/ReceiptPreview.vue'
 import { useReceiptTemplateStore } from '~/features/templates/admin/stores/receiptTemplate'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
-import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
+import { useEditState } from '~/features/_shared/composables/useEditState'
 import { useGeneratePdf } from '~/features/templates/admin/composables/useGeneratePdf'
 import { Button } from '@/components/ui/button'
 import { Download, Loader2 } from 'lucide-vue-next'
@@ -32,7 +32,7 @@ const originalData = computed(() => ({
 
 const formConfigRef = ref()
 
-const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdminEdit({
+const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useEditState({
   store,
   formRef: formConfigRef,
   originalData,
@@ -53,7 +53,7 @@ const breadcrumbs = [
 
 <template>
   <div>
-    <AdminEditLayout
+    <EditLayout
       v-model:editable="editableMode"
       :breadcrumbs="breadcrumbs"
       :is-dirty="store.isDirty"
@@ -88,6 +88,6 @@ const breadcrumbs = [
       <template #preview>
         <ReceiptPreview :currency="previewCurrency" :editable="editableMode" />
       </template>
-    </AdminEditLayout>
+    </EditLayout>
   </div>
 </template>

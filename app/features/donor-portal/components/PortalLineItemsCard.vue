@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { TransactionLineItem } from '~/features/donor-portal/types'
-import { NuxtLink } from '#components'
 import { ReceiptText } from 'lucide-vue-next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -16,9 +15,6 @@ import { formatCurrency } from '~/lib/formatCurrency'
 defineProps<{
   lineItems: TransactionLineItem[]
   currency: string
-  title?: string
-  campaignName?: string
-  campaignLink?: string
 }>()
 </script>
 
@@ -27,21 +23,10 @@ defineProps<{
     <CardHeader>
       <CardTitle class="text-base flex items-center gap-2">
         <ReceiptText class="h-4 w-4" />
-        {{ title ?? 'Line Items' }}
+        Line Items
       </CardTitle>
     </CardHeader>
-    <CardContent class="space-y-3">
-      <div v-if="campaignName" class="text-sm">
-        <span class="text-muted-foreground">Campaign: </span>
-        <NuxtLink
-          v-if="campaignLink"
-          :to="campaignLink"
-          class="font-medium text-primary hover:underline"
-        >
-          {{ campaignName }}
-        </NuxtLink>
-        <span v-else class="font-medium">{{ campaignName }}</span>
-      </div>
+    <CardContent>
       <div class="overflow-x-auto">
         <Table>
           <TableHeader>

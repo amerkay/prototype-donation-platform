@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import AdminPageHeader from '~/features/_admin/components/AdminPageHeader.vue'
 import EmailTemplateCard from '~/features/templates/admin/components/EmailTemplateCard.vue'
 import AdminCardGrid from '~/features/_admin/components/AdminCardGrid.vue'
@@ -32,7 +32,7 @@ const filteredTemplates = computed(() =>
 
 <template>
   <div>
-    <AdminBreadcrumbBar :items="breadcrumbs" />
+    <BreadcrumbBar :items="breadcrumbs" />
 
     <div class="flex flex-1 flex-col px-4 pt-0 pb-4">
       <AdminPageHeader title="Email Templates" :stats="stats" />

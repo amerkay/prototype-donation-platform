@@ -9,7 +9,7 @@ import { formatDate } from '~/lib/formatDate'
 import {
   createPaymentMethodColumn,
   createStatusColumn
-} from '~/features/_admin/utils/column-builders'
+} from '~/features/_shared/utils/column-builders'
 
 type EnrichedSubscription = Subscription & {
   donorId: string
@@ -40,7 +40,11 @@ export const subscriptionColumns: ColumnDef<EnrichedSubscription>[] = [
           () => formatDate(row.getValue('createdAt') as string)
         ),
         h('span', { class: 'text-sm truncate block' }, row.original.donorName),
-        h('span', { class: 'text-xs text-muted-foreground truncate block' }, row.original.donorEmail)
+        h(
+          'span',
+          { class: 'text-xs text-muted-foreground truncate block' },
+          row.original.donorEmail
+        )
       ])
   },
   {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import { useTeamSettingsStore } from '~/features/settings/admin/stores/teamSettings'
@@ -73,7 +73,7 @@ function confirmRemove() {
 
 <template>
   <div>
-    <AdminBreadcrumbBar :items="breadcrumbs" />
+    <BreadcrumbBar :items="breadcrumbs" />
 
     <div class="flex flex-1 flex-col px-4 pt-0 pb-4 space-y-6">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

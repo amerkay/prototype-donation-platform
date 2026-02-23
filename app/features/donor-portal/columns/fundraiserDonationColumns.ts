@@ -4,7 +4,7 @@ import type { CampaignDonation } from '~/features/campaigns/shared/types'
 import { Button } from '@/components/ui/button'
 import { ArrowUpDown } from 'lucide-vue-next'
 import { formatCurrency } from '~/lib/formatCurrency'
-import { createDateColumn } from '~/features/_admin/utils/column-builders'
+import { createDateColumn } from '~/features/_shared/utils/column-builders'
 
 /**
  * Privacy-respecting donor name: "FirstName L." or "Anonymous"

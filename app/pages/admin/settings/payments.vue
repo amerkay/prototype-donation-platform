@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import StripeConnectionCard from '~/features/settings/admin/components/StripeConnectionCard.vue'
 import PayPalConnectionCard from '~/features/settings/admin/components/PayPalConnectionCard.vue'
 
@@ -14,7 +14,7 @@ const breadcrumbs = [
 
 <template>
   <div>
-    <AdminBreadcrumbBar :items="breadcrumbs" />
+    <BreadcrumbBar :items="breadcrumbs" />
 
     <div class="flex flex-1 flex-col gap-6 px-4 pt-0 pb-4">
       <StripeConnectionCard />

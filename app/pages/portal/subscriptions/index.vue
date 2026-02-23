@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubscriptionStatus } from '~/features/subscriptions/shared/types'
 import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
-import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import FilterTabs from '~/components/FilterTabs.vue'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { CreditCard } from 'lucide-vue-next'
@@ -63,9 +63,7 @@ const filterCounts = computed(() => {
 
 <template>
   <div>
-    <AdminBreadcrumbBar
-      :items="[{ label: 'Dashboard', href: '/portal' }, { label: 'Subscriptions' }]"
-    />
+    <BreadcrumbBar :items="[{ label: 'Dashboard', href: '/portal' }, { label: 'Subscriptions' }]" />
     <div class="flex flex-1 flex-col gap-6 px-4 py-2 pb-8 sm:px-6">
       <div class="space-y-1.5">
         <h1 class="text-2xl font-semibold tracking-tight">Subscriptions</h1>

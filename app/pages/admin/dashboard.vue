@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import AdminDateRangePicker from '~/features/_admin/components/AdminDateRangePicker.vue'
 import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -147,7 +147,7 @@ const topCampaigns = computed(() =>
 
 <template>
   <div>
-    <AdminBreadcrumbBar :items="breadcrumbs" />
+    <BreadcrumbBar :items="breadcrumbs" />
 
     <div class="flex flex-1 flex-col px-4 pt-0 pb-4 space-y-6">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

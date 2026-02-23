@@ -3,9 +3,9 @@ import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPort
 import { useActionEligibility } from '~/features/donor-portal/composables/useActionEligibility'
 import { useSubscriptionActions } from '~/features/subscriptions/shared/composables/useSubscriptionActions'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
-import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
-import LineItemsCard from '~/features/_admin/components/LineItemsCard.vue'
-import DonorInfoCard from '~/features/_admin/components/DonorInfoCard.vue'
+import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
+import PortalLineItemsCard from '~/features/donor-portal/components/PortalLineItemsCard.vue'
+import PortalDonorCard from '~/features/donor-portal/components/PortalDonorCard.vue'
 import SubscriptionActionDialogs from '~/features/subscriptions/shared/components/SubscriptionActionDialogs.vue'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -90,7 +90,7 @@ const {
 
 <template>
   <div>
-    <AdminBreadcrumbBar :items="breadcrumbs" />
+    <BreadcrumbBar :items="breadcrumbs" />
     <div class="flex flex-1 flex-col gap-6 px-4 py-2 pb-8 sm:px-6">
       <div v-if="!sub" class="text-center py-12 text-muted-foreground">Subscription not found.</div>
 
@@ -196,14 +196,12 @@ const {
           </Card>
 
           <!-- Line Items -->
-          <LineItemsCard :line-items="sub.lineItems" :currency="sub.currency" />
+          <PortalLineItemsCard :line-items="sub.lineItems" :currency="sub.currency" />
 
           <!-- Donor Info -->
-          <DonorInfoCard
-            :donor-id="sub.donorId ?? ''"
+          <PortalDonorCard
             :donor-name="sub.donorName ?? 'Unknown'"
             :donor-email="sub.donorEmail ?? ''"
-            :linkable="false"
           />
         </div>
 
@@ -276,6 +274,7 @@ const {
       v-model:show-cancel-dialog="showCancelDialog"
       :change-amount-state="changeAmountState"
       :current-subscription="currentSubscription"
+      @update:change-amount-state="Object.assign(changeAmountState, $event)"
       @pause="handlePause"
       @cancel="handleCancel"
       @change-amount="handleChangeAmount"

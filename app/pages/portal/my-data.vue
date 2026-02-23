@@ -3,7 +3,7 @@ import { Download, FileText, Heart, Shield, ShieldCheck } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
 import { formatDate, formatDateTime } from '~/lib/formatDate'
 import {
@@ -49,7 +49,7 @@ function downloadMyData() {
 
 <template>
   <div>
-    <AdminBreadcrumbBar :items="[{ label: 'Dashboard', href: '/portal' }, { label: 'My Data' }]" />
+    <BreadcrumbBar :items="[{ label: 'Dashboard', href: '/portal' }, { label: 'My Data' }]" />
     <div class="flex flex-1 flex-col gap-6 px-4 py-2 pb-8 sm:px-6">
       <div class="space-y-1.5">
         <h1 class="text-2xl font-semibold tracking-tight">My Data</h1>

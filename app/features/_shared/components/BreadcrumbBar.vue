@@ -10,7 +10,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
-import InlineEditableText from './InlineEditableText.vue'
+import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
 
 export interface BreadcrumbItem {
   label: string

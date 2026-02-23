@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { inject } from 'vue'
-import AdminBreadcrumbBar, { type BreadcrumbItem } from './AdminBreadcrumbBar.vue'
+import BreadcrumbBar, { type BreadcrumbItem } from './BreadcrumbBar.vue'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { ExternalLink, Pencil } from 'lucide-vue-next'
-import { LEAVE_GUARD_KEY, type LeaveGuard } from '~/features/_admin/composables/useAdminEdit'
+import { LEAVE_GUARD_KEY, type LeaveGuard } from '~/features/_shared/composables/useEditState'
 
 interface Props {
   /** Breadcrumb items for navigation */
@@ -51,13 +51,13 @@ withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
-// Inject leave guard from useAdminEdit (provided in parent page)
+// Inject leave guard from useEditState (provided in parent page)
 const leaveGuard = inject<LeaveGuard | null>(LEAVE_GUARD_KEY, null)
 </script>
 
 <template>
   <!-- Breadcrumb Bar -->
-  <AdminBreadcrumbBar
+  <BreadcrumbBar
     :items="breadcrumbs"
     :is-dirty="isDirty"
     :editable-last-item="editableLastItem"

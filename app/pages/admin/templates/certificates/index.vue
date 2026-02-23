@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import AdminPageHeader from '~/features/_admin/components/AdminPageHeader.vue'
 import CertificateTemplateCard from '~/features/templates/admin/components/CertificateTemplateCard.vue'
 import AdminCardGrid from '~/features/_admin/components/AdminCardGrid.vue'
@@ -31,7 +31,7 @@ function handleDuplicate(id: string) {
 
 <template>
   <div>
-    <AdminBreadcrumbBar :items="breadcrumbs" />
+    <BreadcrumbBar :items="breadcrumbs" />
 
     <div class="flex flex-1 flex-col px-4 pt-0 pb-4">
       <AdminPageHeader title="Certificate Templates" :stats="stats">

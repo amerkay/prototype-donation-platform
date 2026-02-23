@@ -3,7 +3,7 @@ import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPort
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import DataTable from '~/features/donor-portal/components/DataTable.vue'
 import { transactionColumnsCompact } from '~/features/donor-portal/columns/transactionColumns'
-import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import StatsCard from '@/components/StatsCard.vue'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -24,7 +24,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
 
 <template>
   <div>
-    <AdminBreadcrumbBar :items="[{ label: 'Dashboard' }]" />
+    <BreadcrumbBar :items="[{ label: 'Dashboard' }]" />
     <div class="flex flex-1 flex-col gap-6 px-4 py-2 pb-8 sm:px-6">
       <!-- Page header -->
       <div class="space-y-1.5">

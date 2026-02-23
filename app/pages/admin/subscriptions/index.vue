@@ -5,7 +5,7 @@ import { useAdminSubscriptions } from '~/features/subscriptions/admin/composable
 import { useSubscriptionFilters } from '~/features/subscriptions/admin/composables/useSubscriptionFilters'
 import { useExport } from '~/features/_admin/composables/useExport'
 import { useQuickFind } from '~/features/_admin/composables/useQuickFind'
-import { useEntityDataService } from '~/features/_admin/composables/useEntityDataService'
+import { useEntityDataService } from '~/features/_shared/composables/useEntityDataService'
 import { subscriptionColumns } from '~/features/subscriptions/admin/columns/subscriptionColumns'
 import { createViewActionColumn } from '~/features/_admin/columns/actionColumn'
 import { formatCurrency } from '~/lib/formatCurrency'

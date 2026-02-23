@@ -19,7 +19,7 @@ import {
 import NavMain from '~/features/_admin/sidebar/NavMain.vue'
 import NavCampaigns from '~/features/_admin/sidebar/NavCampaigns.vue'
 import NavSecondary from '~/features/_admin/sidebar/NavSecondary.vue'
-import NavUser from '~/features/_admin/sidebar/NavUser.vue'
+import NavUser from '~/features/_shared/sidebar/NavUser.vue'
 import {
   Sidebar,
   SidebarContent,

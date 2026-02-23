@@ -2,7 +2,7 @@
 import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
 import DataTable from '~/features/donor-portal/components/DataTable.vue'
 import { transactionColumns } from '~/features/donor-portal/columns/transactionColumns'
-import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 
 definePageMeta({
   layout: 'portal'
@@ -13,7 +13,7 @@ const { transactions } = useDonorPortal()
 
 <template>
   <div>
-    <AdminBreadcrumbBar
+    <BreadcrumbBar
       :items="[{ label: 'Dashboard', href: '/portal' }, { label: 'Donation History' }]"
     />
     <div class="flex flex-1 flex-col gap-6 px-4 py-2 pb-8 sm:px-6">

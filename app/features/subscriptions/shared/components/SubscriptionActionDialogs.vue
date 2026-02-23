@@ -26,6 +26,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:showPauseDialog': [value: boolean]
   'update:showCancelDialog': [value: boolean]
+  'update:changeAmountState': [value: { open: boolean; newAmount: string }]
   pause: []
   cancel: []
   changeAmount: []
@@ -45,9 +46,7 @@ const cancelOpen = computed({
 
 const changeOpen = computed({
   get: () => props.changeAmountState.open,
-  set: (v) => {
-    props.changeAmountState.open = v
-  }
+  set: (v) => emit('update:changeAmountState', { ...props.changeAmountState, open: v })
 })
 
 const isAmountUnchanged = computed(() => {
@@ -104,13 +103,21 @@ const isAmountUnchanged = computed(() => {
             }}</span>
             <Input
               id="new-amount"
-              v-model="changeAmountState.newAmount"
+              :model-value="changeAmountState.newAmount"
               type="number"
               step="0.01"
               min="0.01"
               placeholder="0.00"
+              @update:model-value="
+                emit('update:changeAmountState', {
+                  ...changeAmountState,
+                  newAmount: String($event)
+                })
+              "
             />
-            <span class="text-sm text-muted-foreground whitespace-nowrap">/{{ currentSubscription?.frequency }}</span>
+            <span class="text-sm text-muted-foreground whitespace-nowrap"
+              >/{{ currentSubscription?.frequency }}</span
+            >
           </div>
         </div>
         <p class="text-sm text-muted-foreground">

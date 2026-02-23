@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
+import EditLayout from '~/features/_shared/components/EditLayout.vue'
 import CampaignHeader from '~/features/campaigns/admin/components/CampaignHeader.vue'
 import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/CampaignMasterConfigPanel.vue'
 import CrowdfundingPagePreview from '~/features/campaigns/admin/components/CrowdfundingPagePreview.vue'
@@ -11,7 +11,7 @@ import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campa
 import type { CampaignStatus } from '~/features/campaigns/shared/types'
 import { getCampaignTypeBreadcrumb } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import { openAccordionId } from '~/features/campaigns/admin/forms/campaign-config-master'
-import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
+import { useEditState } from '~/features/_shared/composables/useEditState'
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { toast } from 'vue-sonner'
 
@@ -77,7 +77,7 @@ const editableMode = ref(true)
 
 // Use admin edit composable for save/discard logic
 const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBaseline } =
-  useAdminEdit({
+  useEditState({
     store,
     formRef,
     originalData: campaignForStore,
@@ -189,7 +189,7 @@ const handleDeleted = () => {
 </script>
 
 <template>
-  <AdminEditLayout
+  <EditLayout
     v-if="campaign"
     v-model:editable="editableMode"
     :breadcrumbs="breadcrumbs"
@@ -233,5 +233,5 @@ const handleDeleted = () => {
         </Empty>
       </div>
     </template>
-  </AdminEditLayout>
+  </EditLayout>
 </template>

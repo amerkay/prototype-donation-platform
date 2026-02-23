@@ -8,7 +8,7 @@ import {
   createAmountColumn,
   createPaymentMethodColumn,
   createStatusColumn
-} from '~/features/_admin/utils/column-builders'
+} from '~/features/_shared/utils/column-builders'
 
 export const transactionColumns: ColumnDef<Transaction>[] = [
   {

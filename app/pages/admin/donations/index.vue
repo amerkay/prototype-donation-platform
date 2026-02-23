@@ -5,7 +5,7 @@ import { useDonations } from '~/features/donations/admin/composables/useDonation
 import { useDonationFilters } from '~/features/donations/admin/composables/useDonationFilters'
 import { useExport } from '~/features/_admin/composables/useExport'
 import { useQuickFind } from '~/features/_admin/composables/useQuickFind'
-import { useEntityDataService } from '~/features/_admin/composables/useEntityDataService'
+import { useEntityDataService } from '~/features/_shared/composables/useEntityDataService'
 import { donationColumns } from '~/features/donations/admin/columns/donationColumns'
 import { createViewActionColumn } from '~/features/_admin/columns/actionColumn'
 import { formatCurrency } from '~/lib/formatCurrency'

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
+import EditLayout from '~/features/_shared/components/EditLayout.vue'
 import DonorPortalSettingsConfig from '~/features/settings/admin/components/DonorPortalSettingsConfig.vue'
 import { useDonorPortalSettingsStore } from '~/features/settings/admin/stores/donorPortalSettings'
-import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
+import { useEditState } from '~/features/_shared/composables/useEditState'
 
 const store = useDonorPortalSettingsStore()
 
@@ -16,7 +16,7 @@ const originalData = computed(() => ({
 
 const formConfigRef = ref()
 
-const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdminEdit({
+const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useEditState({
   store,
   formRef: formConfigRef,
   originalData,
@@ -36,7 +36,7 @@ definePageMeta({ layout: 'admin' })
 </script>
 
 <template>
-  <AdminEditLayout
+  <EditLayout
     :breadcrumbs="breadcrumbs"
     :is-dirty="store.isDirty"
     :show-discard-dialog="showDiscardDialog"
@@ -47,5 +47,5 @@ definePageMeta({ layout: 'admin' })
     <template #content>
       <DonorPortalSettingsConfig ref="formConfigRef" @save="handleSave" @discard="handleDiscard" />
     </template>
-  </AdminEditLayout>
+  </EditLayout>
 </template>

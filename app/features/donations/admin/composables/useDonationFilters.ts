@@ -6,18 +6,18 @@ import type {
 import { OPERATORS } from '~/features/_library/form-builder/conditions/operators'
 import { useFilterState } from '~/features/_library/form-builder/filters'
 import type { Transaction } from '~/features/donor-portal/types'
-import { useEntityDataService } from '~/features/_admin/composables/useEntityDataService'
-import { buildCustomFieldSchema } from '~/features/_admin/utils/buildCustomFieldSchema'
+import { useEntityDataService } from '~/features/_shared/composables/useEntityDataService'
+import { buildCustomFieldSchema } from '~/features/_shared/utils/buildCustomFieldSchema'
 import {
   buildSingleEntityEvaluators,
   buildCollectionEvaluators
-} from '~/features/_admin/utils/buildCrossEntityEvaluators'
+} from '~/features/_shared/utils/buildCrossEntityEvaluators'
 import {
   SUBSCRIPTION_FILTER_SCHEMA,
   PAYMENT_METHOD_FILTER_OPTIONS,
   DONATION_STATUS_FILTER_OPTIONS,
   DONATION_TYPE_FILTER_OPTIONS
-} from '~/features/_admin/utils/shared-filter-schemas'
+} from '~/features/_shared/utils/shared-filter-schemas'
 
 /**
  * Build donation filter schema with dynamic product + custom field options.

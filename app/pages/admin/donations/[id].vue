@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import AdminDetailRow from '~/features/_admin/components/AdminDetailRow.vue'
 import DonorInfoCard from '~/features/_admin/components/DonorInfoCard.vue'
 import LineItemsCard from '~/features/_admin/components/LineItemsCard.vue'
@@ -58,7 +58,7 @@ const breadcrumbs = computed(() => [
 
 <template>
   <div>
-    <AdminBreadcrumbBar :items="breadcrumbs" />
+    <BreadcrumbBar :items="breadcrumbs" />
 
     <div class="flex flex-1 flex-col px-4 pt-0 pb-4">
       <div v-if="!txn" class="py-12 text-center">

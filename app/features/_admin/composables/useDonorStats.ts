@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import { useEntityDataService } from '~/features/_admin/composables/useEntityDataService'
+import { useEntityDataService } from '~/features/_shared/composables/useEntityDataService'
 
 /**
  * Composable providing computed donor statistics from centralized entity data.
@@ -32,9 +32,8 @@ export function useDonorStats(donorId: Ref<string> | string) {
 
   const lastDonationDate = computed(() => {
     if (succeededTxns.value.length === 0) return null
-    return succeededTxns.value.reduce((latest, t) =>
-      t.createdAt > latest.createdAt ? t : latest
-    ).createdAt
+    return succeededTxns.value.reduce((latest, t) => (t.createdAt > latest.createdAt ? t : latest))
+      .createdAt
   })
 
   const activeSubscriptions = computed(() =>
@@ -43,7 +42,7 @@ export function useDonorStats(donorId: Ref<string> | string) {
 
   const monthlyRecurring = computed(() =>
     activeSubscriptions.value.reduce((sum, s) => {
-      const multiplier = s.frequency === 'weekly' ? 4.33 : s.frequency === 'yearly' ? 1 / 12 : 1
+      const multiplier = s.frequency === 'yearly' ? 1 / 12 : 1
       return sum + s.amount * s.exchangeRate * multiplier
     }, 0)
   )

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
+import EditLayout from '~/features/_shared/components/EditLayout.vue'
 import BrandingSettingsConfig from '~/features/settings/admin/components/BrandingSettingsConfig.vue'
 import BrandingPreview from '~/features/settings/admin/components/BrandingPreview.vue'
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
-import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
+import { useEditState } from '~/features/_shared/composables/useEditState'
 
 const store = useBrandingSettingsStore()
 
@@ -19,7 +19,7 @@ const originalData = computed(() => ({
 
 const formConfigRef = ref()
 
-const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdminEdit({
+const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useEditState({
   store,
   formRef: formConfigRef,
   originalData,
@@ -42,7 +42,7 @@ definePageMeta({ layout: 'admin' })
 
 <template>
   <div>
-    <AdminEditLayout
+    <EditLayout
       :breadcrumbs="breadcrumbs"
       :is-dirty="store.isDirty"
       :show-discard-dialog="showDiscardDialog"
@@ -64,7 +64,7 @@ definePageMeta({ layout: 'admin' })
       <template #preview>
         <BrandingPreview />
       </template>
-    </AdminEditLayout>
+    </EditLayout>
 
     <BaseDialogOrDrawer
       :open="showPreviewDialog"

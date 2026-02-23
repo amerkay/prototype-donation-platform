@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
+import EditLayout from '~/features/_shared/components/EditLayout.vue'
 import CertificateTemplateConfig from '~/features/templates/admin/components/CertificateTemplateConfig.vue'
 import CertificatePreview from '~/features/templates/admin/components/CertificatePreview.vue'
 import CertificateHeader from '~/features/templates/admin/components/CertificateHeader.vue'
@@ -8,7 +8,7 @@ import { useCertificateTemplateStore } from '~/features/templates/admin/stores/c
 import { useCertificateTemplates } from '~/features/templates/admin/composables/useCertificateTemplates'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useProducts } from '~/features/products/admin/composables/useProducts'
-import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
+import { useEditState } from '~/features/_shared/composables/useEditState'
 import { useGeneratePdf } from '~/features/templates/admin/composables/useGeneratePdf'
 import {
   certificateOpenAccordionId,
@@ -72,7 +72,7 @@ const originalData = computed(() => (store.id ? store.toSnapshot() : undefined))
 
 const formConfigRef = ref()
 
-const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdminEdit({
+const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useEditState({
   store,
   formRef: formConfigRef,
   originalData,
@@ -112,7 +112,7 @@ function handleDeleted() {
 
 <template>
   <div v-if="template">
-    <AdminEditLayout
+    <EditLayout
       v-model:editable="editableMode"
       :breadcrumbs="breadcrumbs"
       :is-dirty="store.isDirty"
@@ -164,6 +164,6 @@ function handleDeleted() {
           :editable="editableMode"
         />
       </template>
-    </AdminEditLayout>
+    </EditLayout>
   </div>
 </template>

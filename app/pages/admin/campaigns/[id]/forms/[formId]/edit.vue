@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
+import EditLayout from '~/features/_shared/components/EditLayout.vue'
 import AdminDonationFormConfig from '~/features/donation-form/admin/components/AdminDonationFormConfig.vue'
 import DonationFormPreview from '~/features/donation-form/admin/components/DonationFormPreview.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
-import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
+import { useEditState } from '~/features/_shared/composables/useEditState'
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 
 definePageMeta({
@@ -54,7 +54,7 @@ const originalData = computed(() => store.toSnapshot())
 const formConfigRef = ref()
 
 // Use admin edit composable for save/discard logic
-const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdminEdit({
+const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useEditState({
   store,
   formRef: formConfigRef,
   originalData,
@@ -79,7 +79,7 @@ const handlePreview = () => {
 </script>
 
 <template>
-  <AdminEditLayout
+  <EditLayout
     v-if="campaign && form"
     v-model:editable="editableMode"
     :breadcrumbs="breadcrumbs"
@@ -103,5 +103,5 @@ const handlePreview = () => {
         <DonationFormPreview :editable="editableMode" />
       </div>
     </template>
-  </AdminEditLayout>
+  </EditLayout>
 </template>

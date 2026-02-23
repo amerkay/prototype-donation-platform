@@ -11,7 +11,7 @@ function deepClone<T>(value: T): T {
 
 /**
  * Generic store interface for admin edit operations
- * Any store used with useAdminEdit must implement these properties/methods
+ * Any store used with useEditState must implement these properties/methods
  */
 export interface EditableStore {
   isDirty: boolean
@@ -23,9 +23,9 @@ export interface EditableStore {
 }
 
 /**
- * Options for useAdminEdit composable
+ * Options for useEditState composable
  */
-export interface UseAdminEditOptions<TStore extends EditableStore, TOriginalData> {
+export interface UseEditStateOptions<TStore extends EditableStore, TOriginalData> {
   /** Store instance with isDirty, isSaving, markClean, initialize */
   store: TStore
   /** Ref to form component with isValid property and resetToSaved method */
@@ -75,7 +75,7 @@ export interface DeleteProtection {
  *   handleDiscard,
  *   confirmDiscard,
  *   showDiscardDialog,
- * } = useAdminEdit({
+ * } = useEditState({
  *   store,
  *   formRef,
  *   originalData: campaign,
@@ -87,13 +87,13 @@ export interface DeleteProtection {
  * </script>
  * ```
  */
-export function useAdminEdit<TStore extends EditableStore, TOriginalData>({
+export function useEditState<TStore extends EditableStore, TOriginalData>({
   store,
   formRef,
   originalData,
   onSave,
   onDiscard
-}: UseAdminEditOptions<TStore, TOriginalData>) {
+}: UseEditStateOptions<TStore, TOriginalData>) {
   // Track last saved state - single source of truth for discard baseline
   const lastSavedData = ref<TOriginalData>()
 

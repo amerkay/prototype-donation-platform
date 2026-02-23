@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import type { ComposableForm } from '~/features/_library/form-builder/types'
-import type { EditableStore } from './useAdminEdit'
+import type { EditableStore } from '~/features/_shared/composables/useEditState'
 import {
   generateStoreMapping,
   generateGetData,

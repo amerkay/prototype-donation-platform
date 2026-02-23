@@ -3,9 +3,9 @@ import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPort
 import { useActionEligibility } from '~/features/donor-portal/composables/useActionEligibility'
 import { useRefundAction } from '~/features/donations/shared/composables/useRefundAction'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
-import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
-import LineItemsCard from '~/features/_admin/components/LineItemsCard.vue'
-import DonorInfoCard from '~/features/_admin/components/DonorInfoCard.vue'
+import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
+import PortalLineItemsCard from '~/features/donor-portal/components/PortalLineItemsCard.vue'
+import PortalDonorCard from '~/features/donor-portal/components/PortalDonorCard.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -96,7 +96,7 @@ const breadcrumbs = computed(() => [
 
 <template>
   <div>
-    <AdminBreadcrumbBar :items="breadcrumbs" />
+    <BreadcrumbBar :items="breadcrumbs" />
     <div class="flex flex-1 flex-col gap-6 px-4 py-2 pb-8 sm:px-6">
       <div v-if="!transaction" class="text-center py-12 text-muted-foreground">
         Transaction not found.
@@ -165,7 +165,10 @@ const breadcrumbs = computed(() => [
           </Card>
 
           <!-- Line Items -->
-          <LineItemsCard :line-items="transaction.lineItems" :currency="transaction.currency" />
+          <PortalLineItemsCard
+            :line-items="transaction.lineItems"
+            :currency="transaction.currency"
+          />
 
           <!-- Payment -->
           <Card>
@@ -189,14 +192,12 @@ const breadcrumbs = computed(() => [
           </Card>
 
           <!-- Donor -->
-          <DonorInfoCard
-            :donor-id="transaction.donorId"
+          <PortalDonorCard
             :donor-name="transaction.donorName"
             :donor-email="transaction.donorEmail"
             :is-anonymous="transaction.isAnonymous"
             :message="transaction.message"
             :tribute="transaction.tribute"
-            :linkable="false"
           />
 
           <!-- Gift Aid -->

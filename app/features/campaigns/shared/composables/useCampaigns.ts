@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { toast } from 'vue-sonner'
 import type { Campaign, CampaignType } from '~/features/campaigns/shared/types'
-import type { DeleteProtection } from '~/features/_admin/composables/useAdminEdit'
+import type { DeleteProtection } from '~/features/_shared/composables/useEditState'
 import { campaigns as mockCampaigns } from '~/sample-api-responses/api-sample-response-campaigns'
 import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
 

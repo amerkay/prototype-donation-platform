@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { toast } from 'vue-sonner'
 import type { CertificateTemplate } from '~/features/templates/admin/types'
-import type { DeleteProtection } from '~/features/_admin/composables/useAdminEdit'
+import type { DeleteProtection } from '~/features/_shared/composables/useEditState'
 import { certificateTemplates as mockTemplates } from '~/sample-api-responses/api-sample-response-templates'
 import { useSessionStorageSingleton } from '~/features/_admin/composables/useSessionStorageSingleton'
 import { generateEntityId } from '~/lib/generateEntityId'

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ColumnDef } from '@tanstack/vue-table'
 import type { ComposableForm } from '~/features/_library/form-builder/types'
-import AdminBreadcrumbBar from './AdminBreadcrumbBar.vue'
+import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import AdminPageHeader from './AdminPageHeader.vue'
 import AdminDataTable from './AdminDataTable.vue'
 import AdminDateRangePicker from './AdminDateRangePicker.vue'
@@ -57,7 +57,7 @@ function handleResetFilters() {
 
 <template>
   <div>
-    <AdminBreadcrumbBar :items="breadcrumbs" />
+    <BreadcrumbBar :items="breadcrumbs" />
 
     <div class="flex flex-1 flex-col px-4 pt-0 pb-4">
       <AdminPageHeader :title="title" :stats="stats">

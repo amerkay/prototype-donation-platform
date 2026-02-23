@@ -2,7 +2,7 @@ import { computed } from 'vue'
 import { toast } from 'vue-sonner'
 import type { ImpactProduct } from '~/features/products/admin/types'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
-import type { DeleteProtection } from '~/features/_admin/composables/useAdminEdit'
+import type { DeleteProtection } from '~/features/_shared/composables/useEditState'
 import {
   products as donationProducts,
   stallBookingProducts,

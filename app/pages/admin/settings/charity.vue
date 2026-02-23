@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
+import EditLayout from '~/features/_shared/components/EditLayout.vue'
 import CharitySettingsConfig from '~/features/settings/admin/components/CharitySettingsConfig.vue'
 import CharitySettingsPreview from '~/features/settings/admin/components/CharitySettingsPreview.vue'
 import PreviewCurrencySelect from '~/features/_admin/components/PreviewCurrencySelect.vue'
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
-import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
+import { useEditState } from '~/features/_shared/composables/useEditState'
 
 const store = useCharitySettingsStore()
 
@@ -17,7 +17,7 @@ const editableMode = ref(true)
 const formConfigRef = ref()
 const previewRef = ref<InstanceType<typeof CharitySettingsPreview>>()
 
-const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdminEdit({
+const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useEditState({
   store,
   formRef: formConfigRef,
   originalData,
@@ -44,7 +44,7 @@ definePageMeta({
 
 <template>
   <div>
-    <AdminEditLayout
+    <EditLayout
       v-model:editable="editableMode"
       :breadcrumbs="breadcrumbs"
       :is-dirty="store.isDirty"
@@ -80,7 +80,7 @@ definePageMeta({
           :editable="editableMode"
         />
       </template>
-    </AdminEditLayout>
+    </EditLayout>
 
     <BaseDialogOrDrawer
       :open="showPreviewDialog"

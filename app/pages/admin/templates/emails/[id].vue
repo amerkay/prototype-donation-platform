@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
+import EditLayout from '~/features/_shared/components/EditLayout.vue'
 import EmailTemplateConfig from '~/features/templates/admin/components/EmailTemplateConfig.vue'
 import EmailPreview from '~/features/templates/admin/components/EmailPreview.vue'
 import EmailTemplateHeader from '~/features/templates/admin/components/EmailTemplateHeader.vue'
 import { useEmailTemplateStore } from '~/features/templates/admin/stores/emailTemplate'
 import { useEmailTemplates } from '~/features/templates/admin/composables/useEmailTemplates'
-import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
+import { useEditState } from '~/features/_shared/composables/useEditState'
 
 definePageMeta({ layout: 'admin' })
 
@@ -38,7 +38,7 @@ const editableMode = ref(true)
 const originalData = computed(() => (store.id ? store.toSnapshot() : undefined))
 const formConfigRef = ref()
 
-const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdminEdit({
+const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useEditState({
   store,
   formRef: formConfigRef,
   originalData,
@@ -64,7 +64,7 @@ function handleNameUpdate(newName: string) {
 
 <template>
   <div v-if="template">
-    <AdminEditLayout
+    <EditLayout
       v-model:editable="editableMode"
       :breadcrumbs="breadcrumbs"
       :is-dirty="store.isDirty"
@@ -91,6 +91,6 @@ function handleNameUpdate(newName: string) {
       <template #preview>
         <EmailPreview :editable="editableMode" />
       </template>
-    </AdminEditLayout>
+    </EditLayout>
   </div>
 </template>

@@ -2,7 +2,7 @@
 import { computed, provide } from 'vue'
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import StickyButtonGroup from '~/features/_admin/components/StickyButtonGroup.vue'
-import type { EditableStore } from '~/features/_admin/composables/useAdminEdit'
+import type { EditableStore } from '~/features/_shared/composables/useEditState'
 import type { ComposableForm } from '~/features/_library/form-builder/types'
 import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'

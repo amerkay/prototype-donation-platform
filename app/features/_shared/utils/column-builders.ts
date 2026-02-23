@@ -98,7 +98,10 @@ export function createDateColumn<T>(options: DateColumnOptions<T> = {}): ColumnD
       if (getUrl) {
         return h(
           NuxtLink,
-          { to: getUrl(row.original), class: `${cellClass} font-medium text-primary hover:underline` },
+          {
+            to: getUrl(row.original),
+            class: `${cellClass} font-medium text-primary hover:underline`
+          },
           () => formatted
         )
       }

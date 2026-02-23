@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
+import EditLayout from '~/features/_shared/components/EditLayout.vue'
 import CurrencySettingsConfig from '~/features/settings/admin/components/CurrencySettingsConfig.vue'
 import CurrencyConversionPreview from '~/features/settings/admin/components/CurrencyConversionPreview.vue'
 import CurrencyInUseDialog from '~/features/settings/admin/components/CurrencyInUseDialog.vue'
 import CurrencyBatchRemoveDialog from '~/features/settings/admin/components/CurrencyBatchRemoveDialog.vue'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
-import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
+import { useEditState } from '~/features/_shared/composables/useEditState'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
 import {
@@ -41,7 +41,7 @@ const {
   handleDiscard,
   confirmDiscard,
   showDiscardDialog
-} = useAdminEdit({
+} = useEditState({
   store,
   formRef: formConfigRef,
   originalData,
@@ -126,7 +126,7 @@ definePageMeta({
 
 <template>
   <div>
-    <AdminEditLayout
+    <EditLayout
       :breadcrumbs="breadcrumbs"
       :is-dirty="store.isDirty"
       :show-preview="false"
@@ -143,7 +143,7 @@ definePageMeta({
       <template #preview>
         <CurrencyConversionPreview />
       </template>
-    </AdminEditLayout>
+    </EditLayout>
 
     <CurrencyInUseDialog
       :open="showCurrencyInUseDialog"

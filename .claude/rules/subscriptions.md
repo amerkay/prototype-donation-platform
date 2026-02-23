@@ -20,4 +20,4 @@ Recurring donation management across admin and donor portal.
 - **Shared actions**: `useSubscriptionActions` + `SubscriptionActionDialogs` are reused by both admin `subscriptions/[id].vue` and portal `subscriptions/[id].vue`
 - **Portal gating**: Portal pages wrap actions with `useActionEligibility` from donor-portal feature; admin pages skip eligibility
 - **SubscriptionCard is read-only**: Actions were moved to portal detail page (`portal/subscriptions/[id].vue`); card just links there
-- **Detail cards**: Both admin and portal detail pages reuse `DonorInfoCard`, `LineItemsCard` from `_admin/components/`
+- **Detail cards**: Admin uses `DonorInfoCard`/`LineItemsCard` from `_admin/`; portal uses `PortalDonorCard`/`PortalLineItemsCard` from `donor-portal/`

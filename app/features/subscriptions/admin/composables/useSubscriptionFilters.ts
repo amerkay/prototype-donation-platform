@@ -4,12 +4,12 @@ import { useFilterState } from '~/features/_library/form-builder/filters'
 import {
   useEntityDataService,
   type EnrichedSubscription
-} from '~/features/_admin/composables/useEntityDataService'
+} from '~/features/_shared/composables/useEntityDataService'
 import {
   buildCustomFieldSchema,
   withCustomFieldEvaluators
-} from '~/features/_admin/utils/buildCustomFieldSchema'
-import { buildSingleEntityEvaluators } from '~/features/_admin/utils/buildCrossEntityEvaluators'
+} from '~/features/_shared/utils/buildCustomFieldSchema'
+import { buildSingleEntityEvaluators } from '~/features/_shared/utils/buildCrossEntityEvaluators'
 
 const BASE_SCHEMA: ContextSchema = {
   status: {

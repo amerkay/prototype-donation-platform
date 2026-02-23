@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import AdminDetailRow from '~/features/_admin/components/AdminDetailRow.vue'
 import DonorInfoCard from '~/features/_admin/components/DonorInfoCard.vue'
 import LineItemsCard from '~/features/_admin/components/LineItemsCard.vue'
@@ -73,7 +73,7 @@ const {
 
 <template>
   <div>
-    <AdminBreadcrumbBar :items="breadcrumbs" />
+    <BreadcrumbBar :items="breadcrumbs" />
 
     <div class="flex flex-1 flex-col px-4 pt-0 pb-4">
       <div v-if="!sub" class="py-12 text-center">
@@ -86,7 +86,9 @@ const {
           <div>
             <div class="flex items-center gap-3">
               <h1 class="text-2xl font-bold">
-                {{ sub.donorName ?? 'Unknown' }} — {{ formatCurrency(sub.amount, sub.currency) }}/{{ sub.frequency }}
+                {{ sub.donorName ?? 'Unknown' }} — {{ formatCurrency(sub.amount, sub.currency) }}/{{
+                  sub.frequency
+                }}
               </h1>
               <StatusBadge :status="sub.status" />
             </div>
@@ -251,6 +253,7 @@ const {
       v-model:show-cancel-dialog="showCancelDialog"
       :change-amount-state="changeAmountState"
       :current-subscription="currentSubscription"
+      @update:change-amount-state="Object.assign(changeAmountState, $event)"
       @pause="handlePause"
       @cancel="handleCancel"
       @change-amount="handleChangeAmount"

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import AdminEditLayout from '~/features/_admin/components/AdminEditLayout.vue'
+import EditLayout from '~/features/_shared/components/EditLayout.vue'
 import AfterSaleSettingsConfig from '~/features/settings/admin/components/AfterSaleSettingsConfig.vue'
 import AfterSalePreview from '~/features/settings/admin/components/AfterSalePreview.vue'
 import { useAfterSaleSettingsStore } from '~/features/settings/admin/stores/afterSaleSettings'
-import { useAdminEdit } from '~/features/_admin/composables/useAdminEdit'
+import { useEditState } from '~/features/_shared/composables/useEditState'
 
 const store = useAfterSaleSettingsStore()
 
@@ -19,7 +19,7 @@ const originalData = computed(() => ({
 
 const formConfigRef = ref()
 
-const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useAdminEdit({
+const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useEditState({
   store,
   formRef: formConfigRef,
   originalData,
@@ -39,7 +39,7 @@ definePageMeta({ layout: 'admin' })
 </script>
 
 <template>
-  <AdminEditLayout
+  <EditLayout
     :breadcrumbs="breadcrumbs"
     :is-dirty="store.isDirty"
     :show-discard-dialog="showDiscardDialog"
@@ -54,5 +54,5 @@ definePageMeta({ layout: 'admin' })
     <template #preview>
       <AfterSalePreview />
     </template>
-  </AdminEditLayout>
+  </EditLayout>
 </template>

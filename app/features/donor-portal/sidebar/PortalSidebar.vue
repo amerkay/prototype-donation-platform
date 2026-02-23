@@ -10,7 +10,7 @@ import {
   Send,
   Download
 } from 'lucide-vue-next'
-import NavUser from '~/features/_admin/sidebar/NavUser.vue'
+import NavUser from '~/features/_shared/sidebar/NavUser.vue'
 import {
   Sidebar,
   SidebarContent,

@@ -4,7 +4,7 @@ import { useCharitySettingsStore } from '~/features/settings/admin/stores/charit
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import DataTable from '~/features/donor-portal/components/DataTable.vue'
 import { fundraiserDonationColumns } from '~/features/donor-portal/columns/fundraiserDonationColumns'
-import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import StatsCard from '@/components/StatsCard.vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -50,7 +50,7 @@ const breadcrumbItems = computed(() => {
 
 <template>
   <div>
-    <AdminBreadcrumbBar :items="breadcrumbItems" />
+    <BreadcrumbBar :items="breadcrumbItems" />
     <div class="flex flex-1 flex-col gap-6 px-4 py-2 pb-8 sm:px-6">
       <!-- Not found -->
       <Empty v-if="!fundraiser">

@@ -2,7 +2,7 @@
 import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import CampaignCard from '~/features/campaigns/admin/components/CampaignCard.vue'
-import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
+import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import { Button } from '@/components/ui/button'
 import {
   Empty,
@@ -24,7 +24,7 @@ const charityStore = useCharitySettingsStore()
 
 <template>
   <div>
-    <AdminBreadcrumbBar
+    <BreadcrumbBar
       :items="[{ label: 'Dashboard', href: '/portal' }, { label: 'My Fundraisers' }]"
     />
     <div class="flex flex-1 flex-col gap-6 px-4 py-2 pb-8 sm:px-6">

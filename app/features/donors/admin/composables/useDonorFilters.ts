@@ -2,18 +2,18 @@ import { computed } from 'vue'
 import type { ContextSchema } from '~/features/_library/form-builder/conditions/types'
 import { useFilterState } from '~/features/_library/form-builder/filters'
 import type { Donor } from '~/features/donors/admin/types'
-import { useEntityDataService } from '~/features/_admin/composables/useEntityDataService'
+import { useEntityDataService } from '~/features/_shared/composables/useEntityDataService'
 import {
   buildCustomFieldSchema,
   withCustomFieldEvaluators
-} from '~/features/_admin/utils/buildCustomFieldSchema'
-import { buildCollectionEvaluators } from '~/features/_admin/utils/buildCrossEntityEvaluators'
+} from '~/features/_shared/utils/buildCustomFieldSchema'
+import { buildCollectionEvaluators } from '~/features/_shared/utils/buildCrossEntityEvaluators'
 import {
   SUBSCRIPTION_FILTER_SCHEMA,
   PAYMENT_METHOD_FILTER_OPTIONS,
   DONATION_STATUS_FILTER_OPTIONS,
   DONATION_TYPE_FILTER_OPTIONS
-} from '~/features/_admin/utils/shared-filter-schemas'
+} from '~/features/_shared/utils/shared-filter-schemas'
 
 const BASE_SCHEMA: ContextSchema = {
   totalDonated: { label: 'Total Donated', type: 'number', group: 'Donor' },
