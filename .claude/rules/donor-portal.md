@@ -22,7 +22,8 @@ Donor-facing dashboard for viewing donation history, managing subscriptions, and
 - `index.vue` — Dashboard with stat cards, recent transactions, subscriptions, fundraisers
 - `donations/index.vue` — Full transaction history table
 - `donations/[id].vue` — Transaction detail with eligibility-gated refund
-- `subscriptions.vue` — Card-based subscription management with eligibility-gated actions
+- `subscriptions/index.vue` — Card-based subscription list (read-only cards link to detail)
+- `subscriptions/[id].vue` — Subscription detail with eligibility-gated actions (pause/resume/cancel/change amount)
 - `fundraisers/index.vue` — User's fundraiser list
 - `fundraisers/[id].vue` — Fundraiser detail with donation table
 - `fundraisers/[id]/edit.vue` — Fundraiser editor

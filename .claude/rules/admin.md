@@ -14,6 +14,8 @@ Shared admin UI components, composables, and patterns used across all admin page
 - **Data service:** `composables/useEntityDataService.ts` — singleton lookup maps (donorById, transactionsByDonorId, etc.) for cross-entity filtering
 - **Layouts:** `components/AdminEditLayout.vue` (header + preview), `components/AdminListPage.vue` (breadcrumbs + header + table + filters)
 - **Card components:** `components/AdminEntityCard.vue` (slot-based: #image/#badges/#stats/#actions), `AdminEntityCardPlaceholder.vue`, `AdminCardGrid.vue`
+- **Detail cards:** `DonorInfoCard.vue` (donor info + stats via `useDonorStats`), `LineItemsCard.vue` (order details + campaign link), `CustomFieldsCard.vue`, `TransactionHistoryCard.vue` — reused across admin + portal detail pages
+- **Donor stats:** `composables/useDonorStats.ts` — shared donor metrics (totalDonated, donationCount, avgDonation, activeSubscriptions, monthlyRecurring) from `useEntityDataService`
 - **Sidebar:** `components/AdminSidebar.vue` + `composables/useActiveLink.ts`
 - **Sticky actions:** `components/StickyButtonGroup.vue` — all save/discard buttons MUST use this (never custom button bars)
 
