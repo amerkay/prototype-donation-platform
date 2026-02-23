@@ -162,6 +162,10 @@ const navMain = computed(() => [
         url: '/admin/settings/after-sale'
       },
       {
+        title: 'Donor Portal',
+        url: '/admin/settings/donor-portal'
+      },
+      {
         title: 'Payment Processors',
         url: '/admin/settings/payments'
       },

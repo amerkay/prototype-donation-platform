@@ -308,6 +308,7 @@ AdminListPage (unchanged)
 | `settings/admin/stores/apiSettings.ts`                      | Replaced by `defineSettingsStore('org_integrations', ...)`                                                |
 | `settings/admin/stores/teamSettings.ts`                     | Kept — team is profiles table, not a settings row                                                         |
 | `settings/admin/stores/socialSharingSettings.ts`            | Merged into `defineSettingsStore('org_config', ...)`                                                      |
+| `settings/admin/stores/donorPortalSettings.ts`              | Merged into `defineSettingsStore('org_config', ...)` — `donor_portal` JSONB column                        |
 
 ---
 

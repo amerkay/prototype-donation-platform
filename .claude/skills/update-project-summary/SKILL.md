@@ -57,6 +57,8 @@ After updating the project summary, audit each `.claude/rules/*.md` file against
 
 ### When to create a new rules file
 
+**You MUST check** whether every feature directory under `app/features/` has a corresponding `.claude/rules/<feature>.md` file. If a feature directory exists without a rules file, evaluate whether one should be created.
+
 Create a new `.claude/rules/<feature>.md` if ALL of these are true:
 
 - A feature directory under `app/features/` has no corresponding rules file
@@ -64,6 +66,8 @@ Create a new `.claude/rules/<feature>.md` if ALL of these are true:
 - The rules would save a future session real investigation time
 
 Do NOT create rules files for simple features where the code is self-documenting.
+
+**Always create rules files in `.claude/rules/`** — never in `.claude/skills/` or elsewhere.
 
 ### Rules file format
 

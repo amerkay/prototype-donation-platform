@@ -165,6 +165,10 @@ CREATE TABLE org_config (
   social_sharing JSONB NOT NULL DEFAULT '{}'::JSONB,
   -- { enabled, facebook, twitter, linkedin, whatsapp, email, copyLink }
 
+  -- Donor portal action eligibility settings
+  donor_portal JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- { pauseSubscription: { enabled, minDurationMonths, minDonorValueLastYear }, cancelSubscription: {...}, requestRefund: {...} }
+
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -1449,6 +1453,7 @@ CREATE POLICY "donor_documents_select_admin" ON storage.objects FOR SELECT
 | `general`          | `org_config`       | Flat key-value settings that change together. No cross-table joins needed. Admin-only config.       |
 | `branding`         | `org_config`       | Theme/styling blob consumed as a unit. Never queried individually in SQL.                           |
 | `social_sharing`   | `org_config`       | Boolean flags consumed as a unit. Simple on/off toggles for social platforms.                       |
+| `donor_portal`     | `org_config`       | Nested eligibility rules consumed as a unit. Never queried individually. Admin-only config.         |
 | `currency`         | `org_identity`     | Nested structure with array of supported currencies + multipliers. Queried as a whole on page load. |
 | `api_keys`         | `org_integrations` | Variable-length array of key objects. Developer-only, never SQL-filtered.                           |
 | `webhooks`         | `org_integrations` | Variable-length array of webhook configs. Developer-only, never SQL-filtered.                       |

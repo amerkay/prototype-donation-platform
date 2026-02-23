@@ -1,7 +1,6 @@
 import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import type { Transaction } from '~/features/donor-portal/types'
-import { Button } from '@/components/ui/button'
 import { RefreshCw } from 'lucide-vue-next'
 import { formatDate } from '~/lib/formatDate'
 import {
@@ -14,14 +13,17 @@ import {
 export const transactionColumns: ColumnDef<Transaction>[] = [
   {
     ...createDateColumn<Transaction>(),
-    // Override cell to add View button
+    // Override cell to add View link
     cell: ({ row }) =>
       h('div', { class: 'flex items-center gap-2' }, [
         h('span', { class: 'text-sm whitespace-nowrap' }, formatDate(row.getValue('createdAt'))),
         h(
-          Button,
-          { variant: 'link', size: 'sm', disabled: true, class: 'text-xs px-0 h-auto' },
-          () => 'View'
+          'a',
+          {
+            href: `/portal/donations/${row.original.id}`,
+            class: 'text-xs text-primary hover:underline'
+          },
+          'View'
         )
       ])
   },
@@ -76,14 +78,17 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
 export const transactionColumnsCompact: ColumnDef<Transaction>[] = [
   {
     ...createDateColumn<Transaction>({ sortable: false }),
-    // Override cell to add View button
+    // Override cell to add View link
     cell: ({ row }) =>
       h('div', { class: 'flex items-center gap-2' }, [
         h('span', { class: 'text-sm whitespace-nowrap' }, formatDate(row.getValue('createdAt'))),
         h(
-          Button,
-          { variant: 'link', size: 'sm', disabled: true, class: 'text-xs px-0 h-auto' },
-          () => 'View'
+          'a',
+          {
+            href: `/portal/donations/${row.original.id}`,
+            class: 'text-xs text-primary hover:underline'
+          },
+          'View'
         )
       ])
   },

@@ -1,34 +1,40 @@
 <script setup lang="ts">
 import type { SubscriptionStatus } from '~/features/subscriptions/shared/types'
 import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
-import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
+import { useActionEligibility } from '~/features/donor-portal/composables/useActionEligibility'
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
-import { Button } from '@/components/ui/button'
 import FilterTabs from '~/components/FilterTabs.vue'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { CreditCard } from 'lucide-vue-next'
 import SubscriptionCard from '~/features/subscriptions/donor/components/SubscriptionCard.vue'
 import { useSubscriptionActions } from '~/features/subscriptions/shared/composables/useSubscriptionActions'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
-import BaseDialogOrDrawer from '@/components/BaseDialogOrDrawer.vue'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import SubscriptionActionDialogs from '~/features/subscriptions/shared/components/SubscriptionActionDialogs.vue'
 
 definePageMeta({
   layout: 'portal'
 })
 
-const { formatDate } = useCampaignFormatters()
-const { subscriptions } = useDonorPortal()
+const { subscriptions, succeededTransactions } = useDonorPortal()
+const { checkEligibility } = useActionEligibility()
+
+const donorValueLastYear = computed(() => {
+  const oneYearAgo = Date.now() - 365.25 * 24 * 60 * 60 * 1000
+  return succeededTransactions.value
+    .filter((t) => new Date(t.createdAt).getTime() >= oneYearAgo)
+    .reduce((sum, t) => sum + t.totalAmount * t.exchangeRate, 0)
+})
+
+const subscriptionEligibility = computed(() => {
+  const map = new Map<string, { canPause: boolean; canCancel: boolean }>()
+  for (const sub of subscriptions.value) {
+    const result = checkEligibility({
+      subscription: sub,
+      donorValueLastYear: donorValueLastYear.value
+    })
+    map.set(sub.id, { canPause: result.canPause, canCancel: result.canCancel })
+  }
+  return map
+})
 
 const statusFilters = [
   { value: 'active', label: 'Active' },
@@ -115,6 +121,8 @@ const {
               v-for="sub in subs"
               :key="sub.id"
               :subscription="sub"
+              :can-pause="subscriptionEligibility.get(sub.id)?.canPause"
+              :can-cancel="subscriptionEligibility.get(sub.id)?.canCancel"
               @pause="confirmPause"
               @resume="handleResume"
               @cancel="confirmCancel"
@@ -125,78 +133,14 @@ const {
       </div>
     </div>
 
-    <!-- Pause Confirmation -->
-    <AlertDialog v-model:open="showPauseDialog">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Pause subscription?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Your subscription will be paused and you won't be charged until you resume it. You can
-            resume at any time.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction @click="handlePause">Pause Subscription</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-
-    <!-- Cancel Confirmation -->
-    <AlertDialog v-model:open="showCancelDialog">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Cancel subscription?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. Your subscription will be cancelled and you won't be
-            charged again. You can always start a new subscription later.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Go Back</AlertDialogCancel>
-          <AlertDialogAction @click="handleCancel">Cancel Subscription</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-
-    <!-- Change Amount Dialog -->
-    <BaseDialogOrDrawer v-model:open="changeAmountState.open" size="sm">
-      <template #header>Change Subscription Amount</template>
-      <template #content>
-        <div class="space-y-4 py-4">
-          <div class="space-y-2">
-            <Label for="new-amount">New Amount</Label>
-            <div class="flex gap-2 items-center">
-              <span class="text-sm text-muted-foreground">{{
-                currentSubscription?.currency || '£'
-              }}</span>
-              <Input
-                id="new-amount"
-                v-model="changeAmountState.newAmount"
-                type="number"
-                step="0.01"
-                min="0.01"
-                placeholder="0.00"
-              />
-              <span class="text-sm text-muted-foreground"
-                >/{{ currentSubscription?.frequency }}</span
-              >
-            </div>
-          </div>
-          <p class="text-sm text-muted-foreground">
-            The new amount will take effect on your next billing date:
-            {{
-              currentSubscription?.nextBillingDate
-                ? formatDate(currentSubscription.nextBillingDate)
-                : 'N/A'
-            }}
-          </p>
-        </div>
-      </template>
-      <template #footer>
-        <Button variant="outline" @click="changeAmountState.open = false">Cancel</Button>
-        <Button @click="handleChangeAmount">Update Amount</Button>
-      </template>
-    </BaseDialogOrDrawer>
+    <SubscriptionActionDialogs
+      v-model:show-pause-dialog="showPauseDialog"
+      v-model:show-cancel-dialog="showCancelDialog"
+      v-model:change-amount-state="changeAmountState"
+      :current-subscription="currentSubscription"
+      @pause="handlePause"
+      @cancel="handleCancel"
+      @change-amount="handleChangeAmount"
+    />
   </div>
 </template>

@@ -3,6 +3,8 @@ import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.
 import AdminDataTable from '~/features/_admin/components/AdminDataTable.vue'
 import AdminDetailRow from '~/features/_admin/components/AdminDetailRow.vue'
 import { useAdminSubscriptions } from '~/features/subscriptions/admin/composables/useAdminSubscriptions'
+import { useSubscriptionActions } from '~/features/subscriptions/shared/composables/useSubscriptionActions'
+import SubscriptionActionDialogs from '~/features/subscriptions/shared/components/SubscriptionActionDialogs.vue'
 import { donationColumns } from '~/features/donations/admin/columns/donationColumns'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { formatDate } from '~/lib/formatDate'
@@ -11,12 +13,12 @@ import { paymentMethodLabel } from '~/lib/formatPaymentMethod'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { ArrowLeft } from 'lucide-vue-next'
+import { Pause, Play, X, DollarSign } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'admin' })
 
 const route = useRoute()
-const { getSubscriptionById, getSubscriptionPayments } = useAdminSubscriptions()
+const { subscriptions, getSubscriptionById, getSubscriptionPayments } = useAdminSubscriptions()
 
 const sub = computed(() => getSubscriptionById(route.params.id as string))
 const payments = computed(() => getSubscriptionPayments(route.params.id as string))
@@ -36,6 +38,20 @@ const avgPayment = computed(() => {
   return sub.value.totalPaid / sub.value.paymentCount
 })
 
+const {
+  showPauseDialog,
+  confirmPause,
+  handlePause,
+  showCancelDialog,
+  confirmCancel,
+  handleCancel,
+  handleResume,
+  changeAmountState,
+  openChangeAmount,
+  handleChangeAmount,
+  currentSubscription
+} = useSubscriptionActions(subscriptions)
+
 function handleRowClick(row: { original: { id: string } }) {
   navigateTo(`/admin/donations/${row.original.id}`)
 }
@@ -48,10 +64,6 @@ function handleRowClick(row: { original: { id: string } }) {
     <div class="flex flex-1 flex-col px-4 pt-0 pb-4">
       <div v-if="!sub" class="py-12 text-center">
         <p class="text-muted-foreground">Subscription not found.</p>
-        <Button variant="outline" class="mt-4" @click="navigateTo('/admin/subscriptions')">
-          <ArrowLeft class="w-4 h-4 mr-2" />
-          Back to Subscriptions
-        </Button>
       </div>
 
       <template v-else>
@@ -68,10 +80,45 @@ function handleRowClick(row: { original: { id: string } }) {
               {{ sub.donorName }} &middot; {{ sub.donorEmail }}
             </p>
           </div>
-          <Button variant="outline" size="sm" @click="navigateTo('/admin/subscriptions')">
-            <ArrowLeft class="w-4 h-4 mr-2" />
-            Back
-          </Button>
+          <div class="flex items-center gap-2">
+            <Button
+              v-if="sub.status === 'paused'"
+              variant="outline"
+              size="sm"
+              @click="handleResume(sub.id)"
+            >
+              <Play class="size-4 mr-1.5" />
+              Resume
+            </Button>
+            <Button
+              v-if="sub.status === 'active'"
+              variant="outline"
+              size="sm"
+              @click="confirmPause(sub.id)"
+            >
+              <Pause class="size-4 mr-1.5" />
+              Pause
+            </Button>
+            <Button
+              v-if="sub.status === 'active'"
+              variant="outline"
+              size="sm"
+              @click="openChangeAmount(sub.id)"
+            >
+              <DollarSign class="size-4 mr-1.5" />
+              Change Amount
+            </Button>
+            <Button
+              v-if="sub.status === 'active' || sub.status === 'paused'"
+              variant="outline"
+              size="sm"
+              class="text-destructive hover:text-destructive"
+              @click="confirmCancel(sub.id)"
+            >
+              <X class="size-4 mr-1.5" />
+              Cancel
+            </Button>
+          </div>
         </div>
 
         <div class="grid gap-6 md:grid-cols-2">
@@ -203,5 +250,15 @@ function handleRowClick(row: { original: { id: string } }) {
         </Card>
       </template>
     </div>
+
+    <SubscriptionActionDialogs
+      v-model:show-pause-dialog="showPauseDialog"
+      v-model:show-cancel-dialog="showCancelDialog"
+      v-model:change-amount-state="changeAmountState"
+      :current-subscription="currentSubscription"
+      @pause="handlePause"
+      @cancel="handleCancel"
+      @change-amount="handleChangeAmount"
+    />
   </div>
 </template>

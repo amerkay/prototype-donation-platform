@@ -73,6 +73,7 @@ export function useAdminSubscriptions() {
 
   return {
     allSubscriptions,
+    subscriptions,
     activeSubscriptions,
     monthlyRecurringRevenue,
     stats,

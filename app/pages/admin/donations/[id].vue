@@ -2,6 +2,7 @@
 import AdminBreadcrumbBar from '~/features/_admin/components/AdminBreadcrumbBar.vue'
 import AdminDetailRow from '~/features/_admin/components/AdminDetailRow.vue'
 import { useDonations } from '~/features/donations/admin/composables/useDonations'
+import { useRefundAction } from '~/features/donations/shared/composables/useRefundAction'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { formatDateTime } from '~/lib/formatDate'
 import StatusBadge from '~/components/StatusBadge.vue'
@@ -11,6 +12,17 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog'
+import {
   Table,
   TableBody,
   TableCell,
@@ -18,14 +30,21 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
-import { ArrowLeft, RefreshCw, Heart, Gift } from 'lucide-vue-next'
+import { RefreshCw, Heart, Gift, Undo2 } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'admin' })
 
 const route = useRoute()
-const { getTransactionById } = useDonations()
+const { getTransactionById, rawTransactions, addTransaction } = useDonations()
 
 const txn = computed(() => getTransactionById(route.params.id as string))
+
+const { isRefunded, canRefund, handleRefund } = useRefundAction({
+  transaction: txn,
+  allTransactions: rawTransactions,
+  addTransaction,
+  onSuccess: () => navigateTo('/admin/donations')
+})
 
 const breadcrumbs = computed(() => [
   { label: 'Dashboard', href: '/admin/dashboard' },
@@ -41,10 +60,6 @@ const breadcrumbs = computed(() => [
     <div class="flex flex-1 flex-col px-4 pt-0 pb-4">
       <div v-if="!txn" class="py-12 text-center">
         <p class="text-muted-foreground">Transaction not found.</p>
-        <Button variant="outline" class="mt-4" @click="navigateTo('/admin/donations')">
-          <ArrowLeft class="w-4 h-4 mr-2" />
-          Back to Donations
-        </Button>
       </div>
 
       <template v-else>
@@ -56,13 +71,31 @@ const breadcrumbs = computed(() => [
                 {{ formatCurrency(txn.totalAmount, txn.currency) }}
               </h1>
               <StatusBadge :status="txn.status" />
+              <Badge v-if="isRefunded" variant="secondary">Refunded</Badge>
             </div>
             <p class="text-sm text-muted-foreground">{{ formatDateTime(txn.createdAt) }}</p>
           </div>
-          <Button variant="outline" size="sm" @click="navigateTo('/admin/donations')">
-            <ArrowLeft class="w-4 h-4 mr-2" />
-            Back
-          </Button>
+          <AlertDialog v-if="canRefund">
+            <AlertDialogTrigger as-child>
+              <Button variant="destructive" size="sm">
+                <Undo2 class="size-4 mr-1.5" />
+                Refund {{ formatCurrency(txn.totalAmount, txn.currency) }}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Refund this donation?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will reverse the transaction of
+                  {{ formatCurrency(txn.totalAmount, txn.currency) }}. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction @click="handleRefund">Confirm Refund</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
 
         <div class="grid gap-6 md:grid-cols-2">

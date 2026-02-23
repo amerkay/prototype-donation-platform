@@ -12,7 +12,7 @@ import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
  */
 export function useDonations() {
   const dateStore = useAdminDateRangeStore()
-  const { transactions } = useReactiveTransactions()
+  const { transactions, addTransaction } = useReactiveTransactions()
 
   const allTransactions = computed<Transaction[]>(() =>
     [...transactions.value].sort(
@@ -56,6 +56,8 @@ export function useDonations() {
   return {
     allTransactions,
     filteredTransactions,
+    rawTransactions: transactions,
+    addTransaction,
     totalRevenue,
     totalDonations,
     averageDonation,

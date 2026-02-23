@@ -11,7 +11,8 @@ Donor-facing dashboard for viewing donation history, managing subscriptions, and
 ## Key files
 
 - **Main composable:** `composables/useDonorPortal.ts` — provides transactions, subscriptions, fundraisers, computed stats
-- **Types:** `types.ts` — Transaction, Subscription, PaymentMethod, TransactionLineItem, status enums
+- **Eligibility:** `composables/useActionEligibility.ts` — gates pause/cancel/refund based on org settings (duration, donor value)
+- **Types:** `types.ts` — Transaction, PaymentMethod, TransactionLineItem, GiftAidDeclaration, ConsentRecord
 - **DataTable:** `components/DataTable.vue` — TanStack Vue Table wrapper with sorting + pagination
 - **Columns:** `columns/transactionColumns.ts`, `columns/fundraiserDonationColumns.ts`
 - **Sidebar:** `sidebar/PortalSidebar.vue`
@@ -19,16 +20,17 @@ Donor-facing dashboard for viewing donation history, managing subscriptions, and
 ## Pages (in `app/pages/portal/`)
 
 - `index.vue` — Dashboard with stat cards, recent transactions, subscriptions, fundraisers
-- `donations.vue` — Full transaction history table
-- `subscriptions.vue` — Card-based subscription management
+- `donations/index.vue` — Full transaction history table
+- `donations/[id].vue` — Transaction detail with eligibility-gated refund
+- `subscriptions.vue` — Card-based subscription management with eligibility-gated actions
 - `fundraisers/index.vue` — User's fundraiser list
 - `fundraisers/[id].vue` — Fundraiser detail with donation table
 - `fundraisers/[id]/edit.vue` — Fundraiser editor
 - `my-data.vue` — GDPR: donor data export, Gift Aid declarations, consent records
 
-## Current state
+## Patterns
 
-- Uses sample data from `app/sample-api-responses/`
-- Subscription actions (pause, resume, cancel) are disabled/placeholder
-- No real auth — hardcoded demo user email
+- **Shared action composables**: `useRefundAction` (in `donations/shared/`) and `useSubscriptionActions` + `SubscriptionActionDialogs` (in `subscriptions/shared/`) are reused by both portal and admin pages
+- **Portal wraps with eligibility**: Portal pages gate actions via `useActionEligibility`; admin pages use the same composables without eligibility checks
+- Uses sample data from `app/sample-api-responses/`, no real auth
 - Layout: `portal.vue`

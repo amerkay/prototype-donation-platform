@@ -13,7 +13,7 @@ export function useDonorPortal() {
   const { campaigns } = useCampaigns()
 
   // TODO-SUPABASE: Replace with supabase.from('transactions').select('*').eq('donor_id', auth.uid()) (RLS auto-filters)
-  const { transactions, subscriptions } = useReactiveTransactions()
+  const { transactions, subscriptions, addTransaction } = useReactiveTransactions()
 
   // Current user's fundraiser campaigns
   const currentUserFundraisers = computed(() => {
@@ -56,6 +56,7 @@ export function useDonorPortal() {
     activeSubscriptions,
     activeFundraisers,
     totalDonated,
-    totalTransactions
+    totalTransactions,
+    addTransaction
   }
 }

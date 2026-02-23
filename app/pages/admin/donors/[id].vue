@@ -8,8 +8,7 @@ import { formatCurrency } from '~/lib/formatCurrency'
 import { formatDate, formatDateTime } from '~/lib/formatDate'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { ArrowLeft, ShieldCheck } from 'lucide-vue-next'
+import { ShieldCheck } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'admin' })
 
@@ -50,10 +49,6 @@ function handleRowClick(row: { original: { id: string } }) {
     <div class="flex flex-1 flex-col px-4 pt-0 pb-4">
       <div v-if="!donor" class="py-12 text-center">
         <p class="text-muted-foreground">Donor not found.</p>
-        <Button variant="outline" class="mt-4" @click="navigateTo('/admin/donors')">
-          <ArrowLeft class="w-4 h-4 mr-2" />
-          Back to Donors
-        </Button>
       </div>
 
       <template v-else>
@@ -67,10 +62,6 @@ function handleRowClick(row: { original: { id: string } }) {
             </div>
             <p class="text-sm text-muted-foreground">{{ donor.email }}</p>
           </div>
-          <Button variant="outline" size="sm" @click="navigateTo('/admin/donors')">
-            <ArrowLeft class="w-4 h-4 mr-2" />
-            Back
-          </Button>
         </div>
 
         <!-- Stats Cards -->

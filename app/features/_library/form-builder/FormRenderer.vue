@@ -272,7 +272,7 @@ defineExpose({
 </script>
 
 <template>
-  <form ref="formRef" :class="props.class" @submit.prevent="onSubmit">
+  <form ref="formRef" @submit.prevent="onSubmit">
     <div v-if="resolvedSection.title || resolvedSection.description" class="mb-6">
       <h2 v-if="resolvedSection.title" class="text-sm font-semibold">
         {{ resolvedSection.title }}
@@ -287,6 +287,7 @@ defineExpose({
       :field-context="sectionFieldContext"
       :name-prefix="resolvedSection.id"
       :set-element-ref="setElementRef"
+      :class="props.class"
     />
   </form>
 </template>

@@ -8,6 +8,8 @@ import { Pause, Play, RefreshCw, X } from 'lucide-vue-next'
 
 interface Props {
   subscription: Subscription
+  canPause?: boolean
+  canCancel?: boolean
 }
 
 interface Emits {
@@ -89,7 +91,7 @@ const paymentMethodLabel = (pm: {
         <Separator />
         <div class="flex flex-wrap gap-2">
           <Button
-            v-if="subscription.status === 'active'"
+            v-if="subscription.status === 'active' && canPause !== false"
             variant="outline"
             size="sm"
             @click="emit('pause', subscription.id)"
@@ -107,7 +109,10 @@ const paymentMethodLabel = (pm: {
             Resume
           </Button>
           <Button
-            v-if="subscription.status === 'active' || subscription.status === 'paused'"
+            v-if="
+              (subscription.status === 'active' || subscription.status === 'paused') &&
+              canCancel !== false
+            "
             variant="outline"
             size="sm"
             @click="emit('cancel', subscription.id)"
