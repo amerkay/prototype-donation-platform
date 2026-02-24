@@ -9,18 +9,20 @@ export function createViewActionColumn<T>(getUrl: (row: T) => string): ColumnDef
     id: 'actions',
     header: '',
     cell: ({ row }: { row: { original: T } }) =>
-      h(
-        Button,
-        {
-          variant: 'ghost',
-          size: 'icon',
-          class: 'h-8 w-8',
-          onClick: (e: Event) => {
-            e.stopPropagation()
-            navigateTo(getUrl(row.original))
-          }
-        },
-        () => h(Eye, { class: 'h-4 w-4' })
-      )
+      h('div', { class: 'flex justify-end' }, [
+        h(
+          Button,
+          {
+            variant: 'ghost',
+            size: 'icon',
+            class: 'h-8 w-8',
+            onClick: (e: Event) => {
+              e.stopPropagation()
+              navigateTo(getUrl(row.original))
+            }
+          },
+          () => h(Eye, { class: 'h-4 w-4' })
+        )
+      ])
   }
 }

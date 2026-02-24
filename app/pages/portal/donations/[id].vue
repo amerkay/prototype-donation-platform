@@ -5,7 +5,7 @@ import { useRefundAction } from '~/features/donations/shared/composables/useRefu
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import PortalLineItemsCard from '~/features/donor-portal/components/PortalLineItemsCard.vue'
-import PortalDonorCard from '~/features/donor-portal/components/PortalDonorCard.vue'
+import PortalDetailRow from '~/features/donor-portal/components/PortalDetailRow.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -22,7 +22,7 @@ import {
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Undo2, ExternalLink } from 'lucide-vue-next'
+import { ClipboardList, CreditCard, Undo2 } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'portal' })
 
@@ -90,7 +90,7 @@ const paymentMethodLabel = computed(() => {
 const breadcrumbs = computed(() => [
   { label: 'Dashboard', href: '/portal' },
   { label: 'Donation History', href: '/portal/donations' },
-  { label: transaction.value ? `#${transaction.value.id.slice(0, 8)}` : 'Transaction' }
+  { label: transaction.value?.campaignName ?? 'Transaction' }
 ])
 </script>
 
@@ -104,137 +104,24 @@ const breadcrumbs = computed(() => [
 
       <template v-else>
         <!-- Header -->
-        <div class="flex items-center justify-between">
-          <div class="space-y-1">
-            <h1 class="text-2xl font-semibold tracking-tight">
-              Transaction #{{ transaction.id.slice(0, 8) }}
-            </h1>
-            <p class="text-sm text-muted-foreground">{{ formatDate(transaction.createdAt) }}</p>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <div class="flex items-center gap-3">
+              <h1 class="text-2xl font-semibold tracking-tight">
+                {{ transaction.campaignName }} —
+                {{ formatAmount(transaction.totalAmount, transaction.currency) }}
+                ({{ typeLabel }})
+              </h1>
+              <StatusBadge :status="transaction.status" />
+              <Badge v-if="isRefunded" variant="secondary">Refunded</Badge>
+            </div>
+            <p class="text-sm text-muted-foreground">
+              {{ transaction.charityName }} · {{ formatDate(transaction.createdAt) }}
+            </p>
           </div>
-          <StatusBadge :status="transaction.status">
-            {{ transaction.status }}
-          </StatusBadge>
-        </div>
-
-        <!-- Detail Cards Grid -->
-        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <!-- Summary -->
-          <Card>
-            <CardHeader>
-              <CardTitle class="text-base">Summary</CardTitle>
-            </CardHeader>
-            <CardContent class="space-y-3">
-              <div class="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span class="text-muted-foreground">Campaign</span>
-                  <p class="font-medium">{{ transaction.campaignName }}</p>
-                </div>
-                <div>
-                  <span class="text-muted-foreground">Charity</span>
-                  <p class="font-medium">{{ transaction.charityName }}</p>
-                </div>
-                <div>
-                  <span class="text-muted-foreground">Type</span>
-                  <p class="font-medium">{{ typeLabel }}</p>
-                </div>
-                <div>
-                  <span class="text-muted-foreground">Currency</span>
-                  <p class="font-medium">{{ transaction.currency }}</p>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div class="space-y-1 text-sm">
-                <div class="flex justify-between">
-                  <span class="text-muted-foreground">Subtotal</span>
-                  <span>{{ formatAmount(transaction.subtotal, transaction.currency) }}</span>
-                </div>
-                <div v-if="transaction.coverCostsAmount" class="flex justify-between">
-                  <span class="text-muted-foreground">Cover costs</span>
-                  <span>{{
-                    formatAmount(transaction.coverCostsAmount, transaction.currency)
-                  }}</span>
-                </div>
-                <div class="flex justify-between font-medium">
-                  <span>Total</span>
-                  <span>{{ formatAmount(transaction.totalAmount, transaction.currency) }}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <!-- Line Items -->
-          <PortalLineItemsCard
-            :line-items="transaction.lineItems"
-            :currency="transaction.currency"
-          />
-
-          <!-- Payment -->
-          <Card>
-            <CardHeader>
-              <CardTitle class="text-base">Payment</CardTitle>
-            </CardHeader>
-            <CardContent class="space-y-2 text-sm">
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Method</span>
-                <span>{{ paymentMethodLabel }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Processor</span>
-                <span class="capitalize">{{ transaction.processor }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Transaction ID</span>
-                <span class="font-mono text-xs">{{ transaction.processorTransactionId }}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <!-- Donor -->
-          <PortalDonorCard
-            :donor-name="transaction.donorName"
-            :donor-email="transaction.donorEmail"
-            :is-anonymous="transaction.isAnonymous"
-            :message="transaction.message"
-            :tribute="transaction.tribute"
-          />
-
-          <!-- Gift Aid -->
-          <Card v-if="transaction.giftAid">
-            <CardHeader>
-              <CardTitle class="text-base">Gift Aid</CardTitle>
-            </CardHeader>
-            <CardContent class="flex items-center gap-3 text-sm">
-              <Badge variant="default">Gift Aid Declared</Badge>
-              <span v-if="transaction.giftAidAmount" class="font-medium">
-                +{{ formatAmount(transaction.giftAidAmount, transaction.currency) }}
-              </span>
-            </CardContent>
-          </Card>
-
-          <!-- Related Subscription -->
-          <Card v-if="transaction.subscriptionId">
-            <CardContent class="flex items-center justify-between py-4">
-              <span class="text-sm text-muted-foreground">Part of a recurring subscription</span>
-              <Button variant="outline" size="sm" as-child>
-                <NuxtLink
-                  :to="`/portal/subscriptions/${transaction.subscriptionId}`"
-                  class="inline-flex items-center gap-1.5"
-                >
-                  View Subscription
-                  <ExternalLink class="size-3.5" />
-                </NuxtLink>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        <!-- Refund Action -->
-        <div v-if="canRefund" class="flex justify-end">
-          <AlertDialog>
+          <AlertDialog v-if="canRefund">
             <AlertDialogTrigger as-child>
-              <Button variant="destructive">
+              <Button variant="destructive" size="sm">
                 <Undo2 class="size-4 mr-1.5" />
                 Refund {{ formatAmount(transaction.totalAmount, transaction.currency) }}
               </Button>
@@ -263,9 +150,93 @@ const breadcrumbs = computed(() => [
           </AlertDialog>
         </div>
 
-        <!-- Already refunded -->
-        <div v-else-if="isRefunded" class="flex justify-end">
-          <Badge variant="secondary">Refunded</Badge>
+        <!-- Detail Cards Grid -->
+        <div class="grid gap-6 md:grid-cols-2">
+          <!-- Donation Info -->
+          <Card>
+            <CardHeader>
+              <CardTitle class="text-base flex items-center gap-2">
+                <ClipboardList class="h-4 w-4" />
+                Donation Info
+              </CardTitle>
+            </CardHeader>
+            <CardContent class="space-y-2 text-sm">
+              <PortalDetailRow label="Campaign" :value="transaction.campaignName" />
+              <PortalDetailRow label="Charity" :value="transaction.charityName" />
+              <PortalDetailRow label="Date" :value="formatDate(transaction.createdAt)" />
+
+              <PortalDetailRow v-if="transaction.giftAid" label="Gift Aid">
+                <Badge variant="default">Declared</Badge>
+              </PortalDetailRow>
+
+              <div v-if="transaction.subscriptionId" class="text-sm text-muted-foreground">
+                Part of a recurring subscription.
+                <NuxtLink
+                  :to="`/portal/subscriptions/${transaction.subscriptionId}`"
+                  class="text-primary hover:underline"
+                >
+                  View Subscription
+                </NuxtLink>
+              </div>
+
+              <template v-if="transaction.message || transaction.tribute">
+                <Separator />
+                <div v-if="transaction.message" class="rounded-md bg-muted/50 p-3">
+                  <p class="text-sm italic text-muted-foreground">"{{ transaction.message }}"</p>
+                </div>
+                <PortalDetailRow
+                  v-if="transaction.tribute"
+                  :label="transaction.tribute.type === 'memorial' ? 'In Memory Of' : 'In Honour Of'"
+                  :value="transaction.tribute.honoreeName"
+                />
+              </template>
+            </CardContent>
+          </Card>
+
+          <!-- Payment & Totals -->
+          <Card>
+            <CardHeader>
+              <CardTitle class="text-base flex items-center gap-2">
+                <CreditCard class="h-4 w-4" />
+                Payment & Totals
+              </CardTitle>
+            </CardHeader>
+            <CardContent class="space-y-2 text-sm">
+              <div class="space-y-1">
+                <PortalDetailRow
+                  label="Subtotal"
+                  :value="formatAmount(transaction.subtotal, transaction.currency)"
+                />
+                <PortalDetailRow
+                  v-if="transaction.coverCostsAmount"
+                  label="Cover costs"
+                  :value="formatAmount(transaction.coverCostsAmount, transaction.currency)"
+                />
+                <div class="flex justify-between font-medium">
+                  <span>Total</span>
+                  <span>{{ formatAmount(transaction.totalAmount, transaction.currency) }}</span>
+                </div>
+              </div>
+
+              <Separator />
+
+              <PortalDetailRow label="Method" :value="paymentMethodLabel" />
+              <PortalDetailRow label="Processor">
+                <span class="capitalize">{{ transaction.processor }}</span>
+              </PortalDetailRow>
+              <PortalDetailRow label="Transaction ID">
+                <span class="font-mono text-xs">{{ transaction.processorTransactionId }}</span>
+              </PortalDetailRow>
+            </CardContent>
+          </Card>
+
+          <!-- Line Items (full width) -->
+          <PortalLineItemsCard
+            :line-items="transaction.lineItems"
+            :currency="transaction.currency"
+            :campaign-name="transaction.campaignName"
+            class="md:col-span-2"
+          />
         </div>
       </template>
     </div>

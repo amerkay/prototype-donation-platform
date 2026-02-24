@@ -2,7 +2,6 @@
 import type { Subscription } from '~/features/subscriptions/shared/types'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
 
 interface Props {
   subscription: Subscription
@@ -45,17 +44,6 @@ const paymentMethodLabel = (pm: {
       </CardHeader>
       <CardContent class="flex-1 flex flex-col">
         <div class="space-y-3">
-          <div class="flex flex-col gap-1">
-            <span v-for="item in subscription.lineItems" :key="item.productId" class="text-sm">
-              {{ item.productTitle }}
-              <span class="text-muted-foreground">
-                ({{ formatAmount(item.unitPrice) }}/{{ item.frequency }})
-              </span>
-            </span>
-          </div>
-
-          <Separator />
-
           <div class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
             <div class="space-y-0.5">
               <span class="text-xs text-muted-foreground">Total paid</span>

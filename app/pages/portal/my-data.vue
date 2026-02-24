@@ -58,11 +58,11 @@ function downloadMyData() {
         </p>
       </div>
 
-      <div class="grid gap-4 md:grid-cols-2">
+      <div class="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle class="flex items-center gap-2">
-              <Download class="size-5" />
+            <CardTitle class="text-base flex items-center gap-2">
+              <Download class="h-4 w-4" />
               Download My Data
             </CardTitle>
             <CardDescription>
@@ -80,8 +80,8 @@ function downloadMyData() {
 
         <Card>
           <CardHeader>
-            <CardTitle class="flex items-center gap-2">
-              <Shield class="size-5" />
+            <CardTitle class="text-base flex items-center gap-2">
+              <Shield class="h-4 w-4" />
               Your Privacy Rights
             </CardTitle>
             <CardDescription>
@@ -109,8 +109,8 @@ function downloadMyData() {
 
       <Card>
         <CardHeader>
-          <CardTitle class="flex items-center gap-2">
-            <FileText class="size-5" />
+          <CardTitle class="text-base flex items-center gap-2">
+            <FileText class="h-4 w-4" />
             Data We Hold
           </CardTitle>
           <CardDescription>
@@ -142,8 +142,8 @@ function downloadMyData() {
       <!-- Gift Aid Declarations -->
       <Card v-if="declarations.length">
         <CardHeader>
-          <CardTitle class="flex items-center gap-2">
-            <Heart class="size-5" />
+          <CardTitle class="text-base flex items-center gap-2">
+            <Heart class="h-4 w-4" />
             Gift Aid Declarations
           </CardTitle>
           <CardDescription>
@@ -182,8 +182,8 @@ function downloadMyData() {
       <!-- Consent History -->
       <Card>
         <CardHeader>
-          <CardTitle class="flex items-center gap-2">
-            <ShieldCheck class="size-5" />
+          <CardTitle class="text-base flex items-center gap-2">
+            <ShieldCheck class="h-4 w-4" />
             Consent History
           </CardTitle>
           <CardDescription>

@@ -2,11 +2,11 @@
 import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
-import DataTable from '~/features/donor-portal/components/DataTable.vue'
+import DataTable from '~/features/_shared/components/DataTable.vue'
 import { fundraiserDonationColumns } from '~/features/donor-portal/columns/fundraiserDonationColumns'
 import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import StatsCard from '@/components/StatsCard.vue'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import {
@@ -17,7 +17,7 @@ import {
   EmptyMedia,
   EmptyTitle
 } from '@/components/ui/empty'
-import { ExternalLink, Heart, Megaphone, Pencil, Users } from 'lucide-vue-next'
+import { ExternalLink, Heart, Megaphone, Pencil, Receipt, Users } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'portal'
@@ -104,7 +104,7 @@ const breadcrumbItems = computed(() => {
         </div>
 
         <!-- Stats -->
-        <div class="grid gap-4 grid-cols-2 sm:grid-cols-4 my-2">
+        <div class="grid gap-6 grid-cols-2 sm:grid-cols-4 my-2">
           <!-- Progress -->
           <Card v-if="fundraiser.crowdfunding.goalAmount" class="col-span-2">
             <CardContent>
@@ -149,14 +149,21 @@ const breadcrumbItems = computed(() => {
         </div>
 
         <!-- Donations table -->
-        <div class="space-y-4">
-          <h2 class="text-lg font-semibold tracking-tight">Donations Received</h2>
-          <DataTable
-            :columns="fundraiserDonationColumns"
-            :data="fundraiser.recentDonations"
-            :page-size="10"
-          />
-        </div>
+        <Card class="overflow-hidden">
+          <CardHeader>
+            <CardTitle class="text-base flex items-center gap-2">
+              <Receipt class="h-4 w-4" />
+              Donations Received
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DataTable
+              :columns="fundraiserDonationColumns"
+              :data="fundraiser.recentDonations"
+              :page-size="10"
+            />
+          </CardContent>
+        </Card>
       </template>
     </div>
   </div>

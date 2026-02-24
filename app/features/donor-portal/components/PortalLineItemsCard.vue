@@ -15,6 +15,7 @@ import { formatCurrency } from '~/lib/formatCurrency'
 defineProps<{
   lineItems: TransactionLineItem[]
   currency: string
+  campaignName?: string
 }>()
 </script>
 
@@ -23,10 +24,13 @@ defineProps<{
     <CardHeader>
       <CardTitle class="text-base flex items-center gap-2">
         <ReceiptText class="h-4 w-4" />
-        Line Items
+        Order Details
       </CardTitle>
     </CardHeader>
     <CardContent>
+      <p v-if="campaignName" class="text-sm text-muted-foreground mb-3">
+        {{ campaignName }}
+      </p>
       <div class="overflow-x-auto">
         <Table>
           <TableHeader>

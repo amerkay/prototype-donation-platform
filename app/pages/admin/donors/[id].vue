@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
-import AdminDataTable from '~/features/_admin/components/AdminDataTable.vue'
+import AdminDataTable from '~/features/_shared/components/DataTable.vue'
 import DonorInfoCard from '~/features/_admin/components/DonorInfoCard.vue'
 import TransactionHistoryCard from '~/features/_admin/components/TransactionHistoryCard.vue'
 import CustomFieldsCard from '~/features/_admin/components/CustomFieldsCard.vue'
@@ -9,7 +9,7 @@ import GiftAidCard from '~/features/_admin/components/GiftAidCard.vue'
 import { useDonors } from '~/features/donors/admin/composables/useDonors'
 import { useAdminSubscriptions } from '~/features/subscriptions/admin/composables/useAdminSubscriptions'
 import { subscriptionColumns } from '~/features/subscriptions/admin/columns/subscriptionColumns'
-import { createViewActionColumn } from '~/features/_admin/columns/actionColumn'
+import { createViewActionColumn } from '~/features/_shared/utils/actionColumn'
 import type { EnrichedSubscription } from '~/features/_shared/composables/useEntityDataService'
 import {
   getUserConsentRecords,

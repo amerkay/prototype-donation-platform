@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
-import DataTable from '~/features/donor-portal/components/DataTable.vue'
+import DataTable from '~/features/_shared/components/DataTable.vue'
 import { transactionColumns } from '~/features/donor-portal/columns/transactionColumns'
 import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 

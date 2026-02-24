@@ -2,6 +2,7 @@
 import { User, Gift } from 'lucide-vue-next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import PortalDetailRow from '~/features/donor-portal/components/PortalDetailRow.vue'
 
 defineProps<{
   donorName: string
@@ -21,17 +22,13 @@ defineProps<{
       </CardTitle>
     </CardHeader>
     <CardContent class="space-y-2 text-sm">
-      <div class="flex justify-between">
-        <span class="text-muted-foreground">Name</span>
+      <PortalDetailRow label="Name">
         <span class="font-medium flex items-center gap-1">
           {{ isAnonymous ? 'Anonymous' : donorName }}
           <Badge v-if="isAnonymous" variant="secondary" class="text-xs">Anon</Badge>
         </span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-muted-foreground">Email</span>
-        <span>{{ donorEmail }}</span>
-      </div>
+      </PortalDetailRow>
+      <PortalDetailRow label="Email" :value="donorEmail" />
       <div v-if="message" class="pt-2">
         <p class="text-muted-foreground mb-1">Message</p>
         <p class="bg-muted rounded p-2 text-sm italic">"{{ message }}"</p>

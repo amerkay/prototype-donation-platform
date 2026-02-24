@@ -99,7 +99,7 @@ const filterCounts = computed(() => {
                 {{ formatAmount(donorValueByOrg.get(charityName) ?? 0) }} donated this year
               </span>
             </div>
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               <SubscriptionCard v-for="sub in subs" :key="sub.id" :subscription="sub" />
             </div>
           </section>

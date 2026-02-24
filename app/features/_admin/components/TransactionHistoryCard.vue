@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { Transaction } from '~/features/donor-portal/types'
 import { donationColumns } from '~/features/donations/admin/columns/donationColumns'
-import { createViewActionColumn } from '~/features/_admin/columns/actionColumn'
+import { createViewActionColumn } from '~/features/_shared/utils/actionColumn'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import AdminDataTable from '~/features/_admin/components/AdminDataTable.vue'
+import AdminDataTable from '~/features/_shared/components/DataTable.vue'
 
 const props = withDefaults(
   defineProps<{

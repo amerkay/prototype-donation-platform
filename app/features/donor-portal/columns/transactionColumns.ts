@@ -1,32 +1,20 @@
 import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import type { Transaction } from '~/features/donor-portal/types'
+import { NuxtLink } from '#components'
 import { RefreshCw } from 'lucide-vue-next'
-import { formatDate } from '~/lib/formatDate'
 import {
   createDateColumn,
   createAmountColumn,
   createPaymentMethodColumn,
   createStatusColumn
 } from '~/features/_shared/utils/column-builders'
+import { createViewActionColumn } from '~/features/_shared/utils/actionColumn'
 
 export const transactionColumns: ColumnDef<Transaction>[] = [
-  {
-    ...createDateColumn<Transaction>(),
-    // Override cell to add View link
-    cell: ({ row }) =>
-      h('div', { class: 'flex items-center gap-2' }, [
-        h('span', { class: 'text-sm whitespace-nowrap' }, formatDate(row.getValue('createdAt'))),
-        h(
-          'a',
-          {
-            href: `/portal/donations/${row.original.id}`,
-            class: 'text-xs text-primary hover:underline'
-          },
-          'View'
-        )
-      ])
-  },
+  createDateColumn<Transaction>({
+    getUrl: (r) => `/portal/donations/${r.id}`
+  }),
   {
     accessorKey: 'campaignName',
     header: 'Campaign',
@@ -40,58 +28,28 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
         ),
         row.original.subscriptionId
           ? h(
-              'a',
+              NuxtLink,
               {
-                href: '/portal/subscriptions',
+                to: `/portal/subscriptions/${row.original.subscriptionId}`,
                 class: 'inline-flex items-center gap-1 text-xs text-primary hover:underline mt-0.5'
               },
-              [h(RefreshCw, { class: 'size-3' }), 'Subscription']
+              () => [h(RefreshCw, { class: 'size-3' }), 'Subscription']
             )
           : null
       ])
   },
-  {
-    id: 'items',
-    header: 'Items',
-    cell: ({ row }) => {
-      const items = row.original.lineItems
-      return h(
-        'div',
-        { class: 'flex flex-col gap-0.5' },
-        items.map((item) =>
-          h('span', { class: 'text-sm whitespace-nowrap', key: item.productId }, [
-            item.productTitle,
-            item.quantity > 1
-              ? h('span', { class: 'text-muted-foreground' }, ` x${item.quantity}`)
-              : null
-          ])
-        )
-      )
-    }
-  },
   createPaymentMethodColumn<Transaction>(),
   createAmountColumn<Transaction>({ buttonClass: '-mr-4' }),
-  createStatusColumn<Transaction>()
+  createStatusColumn<Transaction>(),
+  createViewActionColumn<Transaction>((r) => `/portal/donations/${r.id}`)
 ]
 
 /** Compact columns for dashboard preview (no sorting, fewer columns) */
 export const transactionColumnsCompact: ColumnDef<Transaction>[] = [
-  {
-    ...createDateColumn<Transaction>({ sortable: false }),
-    // Override cell to add View link
-    cell: ({ row }) =>
-      h('div', { class: 'flex items-center gap-2' }, [
-        h('span', { class: 'text-sm whitespace-nowrap' }, formatDate(row.getValue('createdAt'))),
-        h(
-          'a',
-          {
-            href: `/portal/donations/${row.original.id}`,
-            class: 'text-xs text-primary hover:underline'
-          },
-          'View'
-        )
-      ])
-  },
+  createDateColumn<Transaction>({
+    sortable: false,
+    getUrl: (r) => `/portal/donations/${r.id}`
+  }),
   {
     accessorKey: 'campaignName',
     header: 'Campaign',
@@ -105,16 +63,17 @@ export const transactionColumnsCompact: ColumnDef<Transaction>[] = [
         ),
         row.original.subscriptionId
           ? h(
-              'a',
+              NuxtLink,
               {
-                href: '/portal/subscriptions',
+                to: `/portal/subscriptions/${row.original.subscriptionId}`,
                 class: 'inline-flex items-center gap-1 text-xs text-primary hover:underline mt-0.5'
               },
-              [h(RefreshCw, { class: 'size-3' }), 'Subscription']
+              () => [h(RefreshCw, { class: 'size-3' }), 'Subscription']
             )
           : null
       ])
   },
   createAmountColumn<Transaction>({ sortable: false, cellClass: 'text-right font-medium text-sm' }),
-  createStatusColumn<Transaction>()
+  createStatusColumn<Transaction>(),
+  createViewActionColumn<Transaction>((r) => `/portal/donations/${r.id}`)
 ]

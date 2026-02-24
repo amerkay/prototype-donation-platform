@@ -35,7 +35,7 @@ const props = withDefaults(
     isLoading?: boolean
   }>(),
   {
-    pageSize: 15,
+    pageSize: 10,
     showPagination: true,
     searchPlaceholder: 'Search...',
     isSearching: false,

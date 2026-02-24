@@ -44,7 +44,7 @@ function handleChange(value: string | number | bigint | Record<string, unknown> 
       "
     >
       <span :class="cn('size-1.5 shrink-0 rounded-full', statusColor.dot)" />
-      <SelectValue />
+      <SelectValue :placeholder="modelValue" />
     </SelectTrigger>
     <SelectContent>
       <template v-for="opt in options" :key="opt.value">

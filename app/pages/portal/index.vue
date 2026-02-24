@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
-import DataTable from '~/features/donor-portal/components/DataTable.vue'
+import DataTable from '~/features/_shared/components/DataTable.vue'
 import { transactionColumnsCompact } from '~/features/donor-portal/columns/transactionColumns'
 import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import StatsCard from '@/components/StatsCard.vue'
@@ -33,14 +33,14 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
       </div>
 
       <!-- Stats row -->
-      <div class="grid gap-4 grid-cols-2 md:grid-cols-4">
+      <div class="grid gap-6 grid-cols-2 md:grid-cols-4">
         <StatsCard :icon="DollarSign" label="Total Donated" :value="formatAmount(totalDonated)" />
         <StatsCard :icon="Receipt" label="Transactions" :value="totalTransactions" />
         <StatsCard :icon="CreditCard" label="Subscriptions" :value="activeSubscriptions.length" />
         <StatsCard :icon="Megaphone" label="Fundraisers" :value="activeFundraisers.length" />
       </div>
 
-      <div class="grid gap-4 md:grid-cols-2">
+      <div class="grid gap-6 md:grid-cols-2">
         <!-- Recent Transactions -->
         <Card class="md:col-span-2 lg:col-span-3 overflow-hidden">
           <CardHeader>
@@ -80,21 +80,26 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
             </div>
           </CardHeader>
           <CardContent class="pt-0 space-y-2">
-            <div
+            <NuxtLink
               v-for="sub in activeSubscriptions.slice(0, 3)"
               :key="sub.id"
-              class="flex items-center justify-between rounded-md border p-3 hover:bg-muted/50 transition-colors"
+              :to="`/portal/subscriptions/${sub.id}`"
+              class="block"
             >
-              <div class="space-y-0.5">
-                <p class="text-sm font-medium leading-none">
-                  {{ sub.lineItems.map((i) => i.productTitle).join(', ') }}
-                </p>
-                <p class="text-xs text-muted-foreground">
-                  {{ formatAmount(sub.amount, sub.currency) }}/{{ sub.frequency }}
-                </p>
+              <div
+                class="flex items-center justify-between rounded-md border p-3 hover:border-primary/40 transition-colors"
+              >
+                <div class="space-y-0.5">
+                  <p class="text-sm font-medium leading-none">
+                    {{ sub.lineItems.map((i) => i.productTitle).join(', ') }}
+                  </p>
+                  <p class="text-xs text-muted-foreground">
+                    {{ formatAmount(sub.amount, sub.currency) }}/{{ sub.frequency }}
+                  </p>
+                </div>
+                <StatusBadge :status="sub.status" />
               </div>
-              <StatusBadge :status="sub.status" />
-            </div>
+            </NuxtLink>
             <p
               v-if="activeSubscriptions.length === 0"
               class="py-4 text-center text-sm text-muted-foreground"

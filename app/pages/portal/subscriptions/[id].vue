@@ -5,13 +5,12 @@ import { useSubscriptionActions } from '~/features/subscriptions/shared/composab
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import PortalLineItemsCard from '~/features/donor-portal/components/PortalLineItemsCard.vue'
-import PortalDonorCard from '~/features/donor-portal/components/PortalDonorCard.vue'
+import PortalDetailRow from '~/features/donor-portal/components/PortalDetailRow.vue'
 import SubscriptionActionDialogs from '~/features/subscriptions/shared/components/SubscriptionActionDialogs.vue'
-import { formatCurrency } from '~/lib/formatCurrency'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Pause, Play, X, DollarSign } from 'lucide-vue-next'
+import { RefreshCw, Wallet, History, Pause, Play, X, DollarSign } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'portal' })
 
@@ -31,11 +30,7 @@ const payments = computed(() =>
 const breadcrumbs = computed(() => [
   { label: 'Dashboard', href: '/portal' },
   { label: 'Subscriptions', href: '/portal/subscriptions' },
-  {
-    label: sub.value
-      ? `${formatCurrency(sub.value.amount, sub.value.currency)}/${sub.value.frequency}`
-      : 'Not Found'
-  }
+  { label: sub.value?.campaignName ?? 'Not Found' }
 ])
 
 const avgPayment = computed(() => {
@@ -96,156 +91,138 @@ const {
 
       <template v-else>
         <!-- Header -->
-        <div class="flex items-center justify-between">
-          <div class="space-y-1">
-            <h1 class="text-2xl font-semibold tracking-tight">
-              {{ formatAmount(sub.amount, sub.currency) }}/{{ sub.frequency }}
-            </h1>
-            <p class="text-sm text-muted-foreground">Created {{ formatDate(sub.createdAt) }}</p>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <div class="flex items-center gap-3">
+              <h1 class="text-2xl font-semibold tracking-tight">
+                {{ sub.campaignName }} — {{ formatAmount(sub.amount, sub.currency) }}/{{
+                  sub.frequency
+                }}
+              </h1>
+              <StatusBadge :status="sub.status" />
+            </div>
+            <p class="text-sm text-muted-foreground">
+              {{ sub.charityName }} · Created {{ formatDate(sub.createdAt) }}
+            </p>
           </div>
-          <StatusBadge :status="sub.status" />
+          <div
+            v-if="sub.status === 'active' || sub.status === 'paused'"
+            class="flex flex-wrap items-center gap-2"
+          >
+            <Button
+              v-if="sub.status === 'paused'"
+              variant="outline"
+              size="sm"
+              @click="handleResume(sub.id)"
+            >
+              <Play class="size-4 mr-1.5" /> Resume
+            </Button>
+            <Button
+              v-if="sub.status === 'active' && eligibility.canPause"
+              variant="outline"
+              size="sm"
+              @click="confirmPause(sub.id)"
+            >
+              <Pause class="size-4 mr-1.5" /> Pause
+            </Button>
+            <Button
+              v-if="sub.status === 'active'"
+              variant="outline"
+              size="sm"
+              @click="openChangeAmount(sub.id)"
+            >
+              <DollarSign class="size-4 mr-1.5" /> Change Amount
+            </Button>
+            <Button
+              v-if="(sub.status === 'active' || sub.status === 'paused') && eligibility.canCancel"
+              variant="outline"
+              size="sm"
+              class="text-destructive hover:text-destructive"
+              @click="confirmCancel(sub.id)"
+            >
+              <X class="size-4 mr-1.5" /> Cancel
+            </Button>
+          </div>
         </div>
 
         <!-- Detail Cards Grid -->
-        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div class="grid gap-6 md:grid-cols-2">
           <!-- Subscription -->
           <Card>
             <CardHeader>
-              <CardTitle class="text-base">Subscription</CardTitle>
+              <CardTitle class="text-base flex items-center gap-2">
+                <RefreshCw class="h-4 w-4" />
+                Subscription
+              </CardTitle>
             </CardHeader>
             <CardContent class="space-y-2 text-sm">
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Campaign</span>
+              <PortalDetailRow label="Campaign">
                 <span class="font-medium">{{ sub.campaignName }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Charity</span>
-                <span>{{ sub.charityName }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Frequency</span>
+              </PortalDetailRow>
+              <PortalDetailRow label="Charity" :value="sub.charityName" />
+              <PortalDetailRow label="Frequency">
                 <span class="capitalize">{{ sub.frequency }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Amount</span>
+              </PortalDetailRow>
+              <PortalDetailRow label="Amount">
                 <span class="font-medium">{{ formatAmount(sub.amount, sub.currency) }}</span>
-              </div>
+              </PortalDetailRow>
               <Separator />
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Payment</span>
-                <span>{{ paymentMethodLabel }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Processor</span>
+              <PortalDetailRow label="Payment" :value="paymentMethodLabel" />
+              <PortalDetailRow label="Processor">
                 <span class="capitalize">{{ sub.processor }}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <!-- Timeline -->
-          <Card>
-            <CardHeader>
-              <CardTitle class="text-base">Timeline</CardTitle>
-            </CardHeader>
-            <CardContent class="space-y-2 text-sm">
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Created</span>
-                <span>{{ formatDate(sub.createdAt) }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Current Period</span>
-                <span
-                  >{{ formatDate(sub.currentPeriodStart) }} —
-                  {{ formatDate(sub.currentPeriodEnd) }}</span
-                >
-              </div>
-              <div v-if="sub.nextBillingDate" class="flex justify-between">
-                <span class="text-muted-foreground">Next Billing</span>
-                <span>{{ formatDate(sub.nextBillingDate) }}</span>
-              </div>
-              <div v-if="sub.cancelledAt" class="flex justify-between">
-                <span class="text-muted-foreground">Cancelled</span>
+              </PortalDetailRow>
+              <Separator />
+              <PortalDetailRow label="Created" :value="formatDate(sub.createdAt)" />
+              <PortalDetailRow
+                v-if="sub.nextBillingDate"
+                label="Next Billing"
+                :value="formatDate(sub.nextBillingDate)"
+              />
+              <PortalDetailRow v-if="sub.cancelledAt" label="Cancelled">
                 <span class="text-destructive">{{ formatDate(sub.cancelledAt) }}</span>
-              </div>
-              <div v-if="sub.pausedAt" class="flex justify-between">
-                <span class="text-muted-foreground">Paused</span>
+              </PortalDetailRow>
+              <PortalDetailRow v-if="sub.pausedAt" label="Paused">
                 <span class="text-amber-600">{{ formatDate(sub.pausedAt) }}</span>
-              </div>
+              </PortalDetailRow>
             </CardContent>
           </Card>
 
           <!-- Financials -->
           <Card>
             <CardHeader>
-              <CardTitle class="text-base">Financials</CardTitle>
+              <CardTitle class="text-base flex items-center gap-2">
+                <Wallet class="h-4 w-4" />
+                Financials
+              </CardTitle>
             </CardHeader>
             <CardContent class="space-y-2 text-sm">
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Total Paid</span>
+              <PortalDetailRow label="Total Paid">
                 <span class="font-medium">{{ formatAmount(sub.totalPaid, sub.currency) }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Payment Count</span>
-                <span>{{ sub.paymentCount }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Average Payment</span>
-                <span>{{ formatAmount(avgPayment, sub.currency) }}</span>
-              </div>
+              </PortalDetailRow>
+              <PortalDetailRow label="Payment Count" :value="String(sub.paymentCount)" />
+              <PortalDetailRow
+                label="Average Payment"
+                :value="formatAmount(avgPayment, sub.currency)"
+              />
             </CardContent>
           </Card>
 
-          <!-- Line Items -->
-          <PortalLineItemsCard :line-items="sub.lineItems" :currency="sub.currency" />
-
-          <!-- Donor Info -->
-          <PortalDonorCard
-            :donor-name="sub.donorName ?? 'Unknown'"
-            :donor-email="sub.donorEmail ?? ''"
+          <!-- Order Details -->
+          <PortalLineItemsCard
+            :line-items="sub.lineItems"
+            :currency="sub.currency"
+            :campaign-name="sub.campaignName"
+            class="md:col-span-2"
           />
-        </div>
-
-        <!-- Action Buttons -->
-        <div v-if="sub.status === 'active' || sub.status === 'paused'" class="flex flex-wrap gap-2">
-          <Button
-            v-if="sub.status === 'paused'"
-            variant="outline"
-            size="sm"
-            @click="handleResume(sub.id)"
-          >
-            <Play class="size-4 mr-1.5" /> Resume
-          </Button>
-          <Button
-            v-if="sub.status === 'active' && eligibility.canPause"
-            variant="outline"
-            size="sm"
-            @click="confirmPause(sub.id)"
-          >
-            <Pause class="size-4 mr-1.5" /> Pause
-          </Button>
-          <Button
-            v-if="sub.status === 'active'"
-            variant="outline"
-            size="sm"
-            @click="openChangeAmount(sub.id)"
-          >
-            <DollarSign class="size-4 mr-1.5" /> Change Amount
-          </Button>
-          <Button
-            v-if="(sub.status === 'active' || sub.status === 'paused') && eligibility.canCancel"
-            variant="outline"
-            size="sm"
-            class="text-destructive hover:text-destructive"
-            @click="confirmCancel(sub.id)"
-          >
-            <X class="size-4 mr-1.5" /> Cancel
-          </Button>
         </div>
 
         <!-- Payment History -->
         <Card v-if="payments.length">
           <CardHeader>
-            <CardTitle class="text-base">Payment History</CardTitle>
+            <CardTitle class="text-base flex items-center gap-2">
+              <History class="h-4 w-4" />
+              Payment History
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div class="space-y-2">
