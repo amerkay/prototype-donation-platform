@@ -9,10 +9,10 @@ Cross-boundary code used by **both** admin and portal pages. Only move files her
 
 ## Key files
 
-- **Components:** `BreadcrumbBar.vue` (breadcrumb + sidebar trigger), `EditLayout.vue` (breadcrumb + content/preview two-column + discard/leave dialogs)
+- **Components:** `BreadcrumbBar.vue` (breadcrumb + sidebar trigger), `DataTable.vue` (unified TanStack Vue Table with search/sort/pagination/row-click), `EditLayout.vue` (breadcrumb + content/preview two-column + discard/leave dialogs)
 - **Composables:** `useEditState.ts` (save/discard/dirty detection/navigation guard — exports `EditableStore`, `DeleteProtection`, `LEAVE_GUARD_KEY`), `useEntityDataService.ts` (singleton cross-entity lookup maps)
 - **Sidebar:** `NavUser.vue` (user dropdown with theme toggle)
-- **Utils:** `column-builders.ts` (TanStack table column factories), `buildCustomFieldSchema.ts` + `buildCrossEntityEvaluators.ts` (dynamic filter infrastructure), `shared-filter-schemas.ts` (reusable filter field definitions)
+- **Utils:** `column-builders.ts` (TanStack column factories, supports `meta.thClass` for `<th>` styling), `actionColumn.ts` (Eye icon view column), `buildCustomFieldSchema.ts` + `buildCrossEntityEvaluators.ts` (dynamic filter infrastructure), `shared-filter-schemas.ts` (reusable filter field definitions)
 
 ## Rules
 

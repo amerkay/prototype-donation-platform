@@ -141,17 +141,20 @@ export function createAmountColumn<T>(options: AmountColumnOptions<T> = {}): Col
 
   return {
     accessorKey,
+    meta: { thClass: 'w-full text-right' },
     header: sortable
       ? ({ column }) =>
-          h(
-            Button,
-            {
-              variant: 'ghost',
-              class: buttonClass,
-              onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
-            },
-            () => [label, h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
-          )
+          h('div', { class: 'flex justify-end' }, [
+            h(
+              Button,
+              {
+                variant: 'ghost',
+                class: buttonClass,
+                onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+              },
+              () => [label, h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
+            )
+          ])
       : () => h('div', { class: 'text-right' }, label),
     cell: ({ row }) => {
       const original = row.original as Record<string, unknown>

@@ -13,9 +13,8 @@ Donor-facing dashboard for viewing donation history, managing subscriptions, and
 - **Main composable:** `composables/useDonorPortal.ts` — provides transactions, subscriptions, fundraisers, computed stats
 - **Eligibility:** `composables/useActionEligibility.ts` — gates pause/cancel/refund based on org settings (duration, donor value)
 - **Types:** `types.ts` — Transaction, PaymentMethod, TransactionLineItem, GiftAidDeclaration, ConsentRecord
-- **DataTable:** `components/DataTable.vue` — TanStack Vue Table wrapper with sorting + pagination
-- **Columns:** `columns/transactionColumns.ts`, `columns/fundraiserDonationColumns.ts`
-- **Detail cards:** `components/PortalDonorCard.vue` (simple donor display, no stats/link), `components/PortalLineItemsCard.vue` (portal-owned line items table)
+- **Columns:** `columns/transactionColumns.ts` (full + compact), `columns/subscriptionPaymentColumns.ts`, `columns/fundraiserDonationColumns.ts`
+- **Detail components:** `components/PortalDetailRow.vue` (label-value row), `components/PortalDonorCard.vue` (simple donor display, no stats/link), `components/PortalLineItemsCard.vue` (portal-owned line items table)
 - **Sidebar:** `sidebar/PortalSidebar.vue`
 
 ## Pages (in `app/pages/portal/`)

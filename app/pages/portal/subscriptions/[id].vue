@@ -7,6 +7,8 @@ import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import PortalLineItemsCard from '~/features/donor-portal/components/PortalLineItemsCard.vue'
 import PortalDetailRow from '~/features/donor-portal/components/PortalDetailRow.vue'
 import SubscriptionActionDialogs from '~/features/subscriptions/shared/components/SubscriptionActionDialogs.vue'
+import DataTable from '~/features/_shared/components/DataTable.vue'
+import { subscriptionPaymentColumns } from '~/features/donor-portal/columns/subscriptionPaymentColumns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -212,37 +214,26 @@ const {
             :line-items="sub.lineItems"
             :currency="sub.currency"
             :campaign-name="sub.campaignName"
-            class="md:col-span-2"
           />
-        </div>
 
-        <!-- Payment History -->
-        <Card v-if="payments.length">
-          <CardHeader>
-            <CardTitle class="text-base flex items-center gap-2">
-              <History class="h-4 w-4" />
-              Payment History
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div class="space-y-2">
-              <NuxtLink
-                v-for="payment in payments"
-                :key="payment.id"
-                :to="`/portal/donations/${payment.id}`"
-                class="flex items-center justify-between rounded-md border p-3 text-sm hover:bg-muted/50 transition-colors"
-              >
-                <div class="flex items-center gap-3">
-                  <span>{{ formatDate(payment.createdAt) }}</span>
-                  <StatusBadge :status="payment.status" />
-                </div>
-                <span class="font-medium">{{
-                  formatAmount(payment.totalAmount, payment.currency)
-                }}</span>
-              </NuxtLink>
-            </div>
-          </CardContent>
-        </Card>
+          <!-- Payment History -->
+          <Card v-if="payments.length">
+            <CardHeader>
+              <CardTitle class="text-base flex items-center gap-2">
+                <History class="h-4 w-4" />
+                Payment History
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DataTable
+                :columns="subscriptionPaymentColumns"
+                :data="payments"
+                :show-pagination="payments.length > 10"
+                :page-size="10"
+              />
+            </CardContent>
+          </Card>
+        </div>
       </template>
     </div>
 

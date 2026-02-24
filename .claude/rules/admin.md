@@ -31,6 +31,6 @@ Admin-specific UI components, composables, and patterns used across admin pages.
 
 ## Admin list pattern (donations, donors, subscriptions)
 
-`AdminListPage` wraps breadcrumbs, page header (date range picker + filter button + quick find + export), `AdminDataTable`, `AdminFilterSheet` with FormRenderer. Each page provides columns, data, filter composable, export mapper via `#export-menu` slot.
+`AdminListPage` wraps breadcrumbs, page header (date range picker + filter button + quick find + export), `DataTable` (from `_shared/`), `AdminFilterSheet` with FormRenderer. Each page provides columns, data, filter composable, export mapper via `#export-menu` slot.
 
 **Cross-entity filtering:** `_shared/composables/useEntityDataService` provides lookup maps. Filter composables use `_shared/utils/buildCustomFieldSchema` + `withCustomFieldEvaluators` for JSONB custom field conditions.
