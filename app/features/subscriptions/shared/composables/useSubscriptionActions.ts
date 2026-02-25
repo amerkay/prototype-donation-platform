@@ -22,7 +22,8 @@ export function useSubscriptionActions(subscriptions: Ref<Subscription[]>) {
   const changeAmountState = reactive({
     open: false,
     subscriptionId: null as string | null,
-    newAmount: ''
+    newAmount: '',
+    minAmount: 1
   })
 
   // Pause handlers
@@ -72,11 +73,12 @@ export function useSubscriptionActions(subscriptions: Ref<Subscription[]>) {
   }
 
   // Change amount handlers
-  const openChangeAmount = (id: string) => {
+  const openChangeAmount = (id: string, minAmount: number = 1) => {
     const sub = subscriptions.value.find((s) => s.id === id)
     if (sub) {
       changeAmountState.subscriptionId = id
       changeAmountState.newAmount = sub.amount.toString()
+      changeAmountState.minAmount = minAmount
       changeAmountState.open = true
     }
   }
@@ -85,7 +87,7 @@ export function useSubscriptionActions(subscriptions: Ref<Subscription[]>) {
     const sub = subscriptions.value.find((s) => s.id === changeAmountState.subscriptionId)
     if (sub && changeAmountState.newAmount) {
       const newAmount = parseFloat(changeAmountState.newAmount)
-      if (newAmount > 0) {
+      if (newAmount >= changeAmountState.minAmount) {
         sub.amount = newAmount
         toast.success('Subscription amount updated successfully')
         changeAmountState.subscriptionId = null

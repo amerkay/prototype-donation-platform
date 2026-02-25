@@ -6,11 +6,15 @@ export interface ActionGateConfig {
   minDonorValueLastYear: number
 }
 
+export interface RefundGateConfig extends ActionGateConfig {
+  windowDays: 30 | 60 | 90 | 180
+}
+
 export interface DonorPortalSettings {
   pauseSubscription: ActionGateConfig
   cancelSubscription: ActionGateConfig
-  refundOneTime: ActionGateConfig
-  refundSubscription: ActionGateConfig
+  refund: RefundGateConfig
+  changeAmount: ActionGateConfig
 }
 
 const DEFAULT_ACTION: ActionGateConfig = {
@@ -22,8 +26,8 @@ const DEFAULT_ACTION: ActionGateConfig = {
 const DEFAULTS: DonorPortalSettings = {
   pauseSubscription: { ...DEFAULT_ACTION },
   cancelSubscription: { ...DEFAULT_ACTION },
-  refundOneTime: { ...DEFAULT_ACTION },
-  refundSubscription: { ...DEFAULT_ACTION }
+  refund: { ...DEFAULT_ACTION, windowDays: 30 },
+  changeAmount: { ...DEFAULT_ACTION }
 }
 
 export const useDonorPortalSettingsStore = defineSettingsStore<DonorPortalSettings>(

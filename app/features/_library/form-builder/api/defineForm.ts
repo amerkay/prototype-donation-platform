@@ -1,4 +1,4 @@
-import type { z } from 'zod'
+import { z } from 'zod'
 import type { Component } from 'vue'
 import type {
   ComposableForm,
@@ -132,6 +132,7 @@ export function numberField(name: string, config: NumberFieldConfig): NumberFiel
   return {
     type: 'number',
     name,
+    rules: z.number({ invalid_type_error: 'Must be a number' }),
     ...config
   }
 }
@@ -143,6 +144,7 @@ export function currencyField(name: string, config: CurrencyFieldConfig): Curren
   return {
     type: 'currency',
     name,
+    rules: z.number({ invalid_type_error: 'Must be a number' }).min(0),
     ...config
   }
 }

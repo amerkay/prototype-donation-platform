@@ -63,7 +63,7 @@ const donorValueLastYear = computed(() => {
 })
 
 const eligibility = computed(() => {
-  if (!transaction.value) return { canPause: false, canCancel: false, canRefund: false }
+  if (!transaction.value) return { canPause: false, canCancel: false, canRefund: false, canChangeAmount: false }
   return checkEligibility({
     transaction: transaction.value,
     donorValueLastYear: donorValueLastYear.value

@@ -19,14 +19,14 @@ import { Label } from '@/components/ui/label'
 const props = defineProps<{
   showPauseDialog: boolean
   showCancelDialog: boolean
-  changeAmountState: { open: boolean; newAmount: string }
+  changeAmountState: { open: boolean; newAmount: string; minAmount: number }
   currentSubscription: Subscription | null | undefined
 }>()
 
 const emit = defineEmits<{
   'update:showPauseDialog': [value: boolean]
   'update:showCancelDialog': [value: boolean]
-  'update:changeAmountState': [value: { open: boolean; newAmount: string }]
+  'update:changeAmountState': [value: { open: boolean; newAmount: string; minAmount: number }]
   pause: []
   cancel: []
   changeAmount: []
@@ -49,9 +49,13 @@ const changeOpen = computed({
   set: (v) => emit('update:changeAmountState', { ...props.changeAmountState, open: v })
 })
 
-const isAmountUnchanged = computed(() => {
+const isAmountInvalid = computed(() => {
   if (!props.currentSubscription) return true
-  return parseFloat(props.changeAmountState.newAmount) === props.currentSubscription.amount
+  const value = parseFloat(props.changeAmountState.newAmount)
+  return (
+    value === props.currentSubscription.amount ||
+    value < props.changeAmountState.minAmount
+  )
 })
 </script>
 
@@ -106,7 +110,7 @@ const isAmountUnchanged = computed(() => {
               :model-value="changeAmountState.newAmount"
               type="number"
               step="0.01"
-              min="0.01"
+              :min="changeAmountState.minAmount"
               placeholder="0.00"
               @update:model-value="
                 emit('update:changeAmountState', {
@@ -120,6 +124,9 @@ const isAmountUnchanged = computed(() => {
             >
           </div>
         </div>
+        <p v-if="changeAmountState.minAmount > 1" class="text-xs text-muted-foreground">
+          Minimum amount: {{ currentSubscription?.currency || '£' }}{{ changeAmountState.minAmount }}
+        </p>
         <p class="text-sm text-muted-foreground">
           The new amount will take effect on your next billing date:
           {{
@@ -132,7 +139,7 @@ const isAmountUnchanged = computed(() => {
     </template>
     <template #footer>
       <Button variant="outline" @click="changeOpen = false">Cancel</Button>
-      <Button :disabled="isAmountUnchanged" @click="$emit('changeAmount')">Update Amount</Button>
+      <Button :disabled="isAmountInvalid" @click="$emit('changeAmount')">Update Amount</Button>
     </template>
   </BaseDialogOrDrawer>
 </template>

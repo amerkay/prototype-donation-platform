@@ -2,7 +2,8 @@ import type { Subscription } from '~/features/subscriptions/shared/types'
 import type { Transaction } from '~/features/donor-portal/types'
 import {
   useDonorPortalSettingsStore,
-  type ActionGateConfig
+  type ActionGateConfig,
+  type RefundGateConfig
 } from '~/features/settings/admin/stores/donorPortalSettings'
 
 export interface EligibilityInput {
@@ -15,10 +16,17 @@ export interface EligibilityResult {
   canPause: boolean
   canCancel: boolean
   canRefund: boolean
+  canChangeAmount: boolean
 }
 
 function getMonthsSince(dateStr: string): number {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / (30.44 * 24 * 60 * 60 * 1000))
+}
+
+function isWithinRefundWindow(config: RefundGateConfig, createdAt: string | undefined): boolean {
+  if (!createdAt) return false
+  const windowMs = config.windowDays * 24 * 60 * 60 * 1000
+  return Date.now() - new Date(createdAt).getTime() <= windowMs
 }
 
 function evaluateGate(
@@ -51,14 +59,6 @@ export function useActionEligibility() {
   function checkEligibility(input: EligibilityInput): EligibilityResult {
     const { subscription, transaction, donorValueLastYear } = input
 
-    // Debug: verify store config reaches portal (remove after testing)
-    console.log('[eligibility] store config:', {
-      pause: { ...store.pauseSubscription },
-      cancel: { ...store.cancelSubscription },
-      refundOneTime: { ...store.refundOneTime },
-      refundSubscription: { ...store.refundSubscription }
-    })
-
     const canPause = subscription
       ? evaluateGate(store.pauseSubscription, subscription.createdAt, donorValueLastYear, false)
       : false
@@ -68,17 +68,21 @@ export function useActionEligibility() {
       : false
 
     const isOneTime = transaction?.type === 'one_time'
-    const refundConfig = isOneTime ? store.refundOneTime : store.refundSubscription
-    const canRefund = evaluateGate(
-      refundConfig,
-      transaction?.createdAt ?? subscription?.createdAt,
-      donorValueLastYear,
-      isOneTime
-    )
+    const withinWindow = isWithinRefundWindow(store.refund, transaction?.createdAt)
+    const canRefund =
+      withinWindow &&
+      evaluateGate(
+        store.refund,
+        transaction?.createdAt ?? subscription?.createdAt,
+        donorValueLastYear,
+        isOneTime  // skip duration check for one-time payments
+      )
 
-    console.log('[eligibility] results:', { canPause, canCancel, canRefund, donorValueLastYear })
+    const canChangeAmount = subscription
+      ? evaluateGate(store.changeAmount, subscription.createdAt, donorValueLastYear, false)
+      : false
 
-    return { canPause, canCancel, canRefund }
+    return { canPause, canCancel, canRefund, canChangeAmount }
   }
 
   return { checkEligibility }

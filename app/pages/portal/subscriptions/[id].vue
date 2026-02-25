@@ -3,6 +3,7 @@ import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPort
 import { useActionEligibility } from '~/features/donor-portal/composables/useActionEligibility'
 import { useSubscriptionActions } from '~/features/subscriptions/shared/composables/useSubscriptionActions'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import PortalLineItemsCard from '~/features/donor-portal/components/PortalLineItemsCard.vue'
 import PortalDetailRow from '~/features/donor-portal/components/PortalDetailRow.vue'
@@ -20,8 +21,19 @@ const route = useRoute()
 const { subscriptions, transactions } = useDonorPortal()
 const { formatAmount, formatDate } = useCampaignFormatters()
 const { checkEligibility } = useActionEligibility()
+const { campaigns } = useCampaigns()
 
 const sub = computed(() => subscriptions.value.find((s) => s.id === route.params.id))
+
+// Resolve minimum amount from the subscription's campaign default form, per frequency.
+// Returns null if no form can be found — button is hidden in that case.
+const changeAmountMin = computed((): number | null => {
+  if (!sub.value) return null
+  const campaign = campaigns.value.find((c) => c.id === sub.value!.campaignId)
+  const defaultForm = campaign?.forms.find((f) => f.isDefault)
+  const freq = sub.value.frequency as 'monthly' | 'yearly'
+  return defaultForm?.config.donationAmounts.frequencies[freq]?.customAmount.min ?? null
+})
 
 const payments = computed(() =>
   transactions.value
@@ -54,7 +66,7 @@ const donorValueLastYear = computed(() => {
 })
 
 const eligibility = computed(() => {
-  if (!sub.value) return { canPause: false, canCancel: false, canRefund: false }
+  if (!sub.value) return { canPause: false, canCancel: false, canRefund: false, canChangeAmount: false }
   return checkEligibility({
     subscription: sub.value,
     donorValueLastYear: donorValueLastYear.value
@@ -128,10 +140,10 @@ const {
               <Pause class="size-4 mr-1.5" /> Pause
             </Button>
             <Button
-              v-if="sub.status === 'active'"
+              v-if="sub.status === 'active' && eligibility.canChangeAmount && changeAmountMin !== null"
               variant="outline"
               size="sm"
-              @click="openChangeAmount(sub.id)"
+              @click="openChangeAmount(sub.id, changeAmountMin!)"
             >
               <DollarSign class="size-4 mr-1.5" /> Change Amount
             </Button>

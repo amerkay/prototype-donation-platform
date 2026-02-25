@@ -24,7 +24,7 @@ defineExpose(expose)
       :section="form"
       validate-on-mount
       update-only-when-valid
-      class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+      class="grid grid-cols-1 md:grid-cols-2 gap-6"
     />
     <StickyButtonGroup
       :is-dirty="store.isDirty"

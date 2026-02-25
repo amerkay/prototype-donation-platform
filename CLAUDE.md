@@ -112,6 +112,7 @@ app/features/[feature-name]/
 11. Accordion IDs in `productOpenAccordionId` are prefixed with form section ID (e.g., `product.basic`, not `basic`)
 12. Currency removal from supported list must check form usage (enabledCurrencies/baseDefaultCurrency) before saving
 13. **Supabase migration**: `app/sample-api-responses/SUPABASE_SCHEMA_DRAFT.md` (22 tables) and `SUPABASE_NOTES.md` (migration TODOs) are the blueprint. Search `TODO-SUPABASE` to find all migration points.
+13a. **Stripe API security**: `app/sample-api-responses/STRIPE_API_NOTES.md` — server-side verification blueprint for refund, pause, cancel, change-amount. All eligibility gates must be re-evaluated server-side; never trust frontend flags.
 14. **Previews must use exact donor-facing components/mechanisms** — never mock or duplicate. Admins see the real layout donors see; DRY is automatic.
 15. **Immutable records**: generate receipt/certificate PDFs at donation time, store on S3. PDF = snapshot. See `COMPLIANCE_DECISIONS.md`.
 16. **Refunds** are negative transactions (`type: 'refund'`) with `refund_of_transaction_id` FK. Cover costs = no special treatment.

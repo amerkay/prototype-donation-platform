@@ -10,8 +10,8 @@ const store = useDonorPortalSettingsStore()
 const originalData = computed(() => ({
   pauseSubscription: { ...store.pauseSubscription },
   cancelSubscription: { ...store.cancelSubscription },
-  refundOneTime: { ...store.refundOneTime },
-  refundSubscription: { ...store.refundSubscription }
+  refund: { ...store.refund },
+  changeAmount: { ...store.changeAmount }
 }))
 
 const formConfigRef = ref()
