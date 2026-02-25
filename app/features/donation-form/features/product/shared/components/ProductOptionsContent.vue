@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { ICON_CLOSE, ICON_CREATE, ICON_PRODUCT } from '~/lib/icons'
+import { ICON_MINUS, ICON_CREATE, ICON_PRODUCT } from '~/lib/icons'
 import { Button } from '@/components/ui/button'
 import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
@@ -190,7 +190,7 @@ defineExpose({
             :disabled="localQuantity <= 1"
             @click="localQuantity = Math.max(1, localQuantity - 1)"
           >
-            <ICON_CLOSE />
+            <ICON_MINUS />
             <span class="sr-only">Decrease</span>
           </Button>
           <div class="flex-1 text-center min-w-20">

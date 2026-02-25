@@ -24,6 +24,7 @@ export { Filter as ICON_FILTER } from 'lucide-vue-next'
 export { Pause as ICON_PAUSE } from 'lucide-vue-next'
 export { Pencil as ICON_EDIT } from 'lucide-vue-next'
 export { Play as ICON_RESUME } from 'lucide-vue-next'
+export { Minus as ICON_MINUS } from 'lucide-vue-next' // quantity decrement / remove one
 export { Plus as ICON_CREATE } from 'lucide-vue-next'
 export { RefreshCw as ICON_RECURRING } from 'lucide-vue-next' // recurring donation / subscription cycle indicator
 export { RefreshCw as ICON_RETRY } from 'lucide-vue-next' // retry payment / reload
