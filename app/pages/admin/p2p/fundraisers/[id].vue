@@ -32,7 +32,13 @@ import {
 definePageMeta({ layout: 'admin' })
 
 const route = useRoute()
-const { getFundraiserById, getParentName, completeFundraiser, endFundraiser, reactivateFundraiser } = useFundraisers()
+const {
+  getFundraiserById,
+  getParentName,
+  completeFundraiser,
+  endFundraiser,
+  reactivateFundraiser
+} = useFundraisers()
 const { getCampaignById } = useCampaigns()
 const { formatAmount, getProgressPercentage } = useCampaignFormatters()
 const store = useCampaignConfigStore()

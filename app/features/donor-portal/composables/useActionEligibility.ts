@@ -75,7 +75,7 @@ export function useActionEligibility() {
         store.refund,
         transaction?.createdAt ?? subscription?.createdAt,
         donorValueLastYear,
-        isOneTime  // skip duration check for one-time payments
+        isOneTime // skip duration check for one-time payments
       )
 
     const canChangeAmount = subscription

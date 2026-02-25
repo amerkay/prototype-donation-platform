@@ -66,7 +66,8 @@ const donorValueLastYear = computed(() => {
 })
 
 const eligibility = computed(() => {
-  if (!sub.value) return { canPause: false, canCancel: false, canRefund: false, canChangeAmount: false }
+  if (!sub.value)
+    return { canPause: false, canCancel: false, canRefund: false, canChangeAmount: false }
   return checkEligibility({
     subscription: sub.value,
     donorValueLastYear: donorValueLastYear.value
@@ -140,7 +141,9 @@ const {
               <Pause class="size-4 mr-1.5" /> Pause
             </Button>
             <Button
-              v-if="sub.status === 'active' && eligibility.canChangeAmount && changeAmountMin !== null"
+              v-if="
+                sub.status === 'active' && eligibility.canChangeAmount && changeAmountMin !== null
+              "
               variant="outline"
               size="sm"
               @click="openChangeAmount(sub.id, changeAmountMin!)"

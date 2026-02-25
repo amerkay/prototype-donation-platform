@@ -52,10 +52,7 @@ const changeOpen = computed({
 const isAmountInvalid = computed(() => {
   if (!props.currentSubscription) return true
   const value = parseFloat(props.changeAmountState.newAmount)
-  return (
-    value === props.currentSubscription.amount ||
-    value < props.changeAmountState.minAmount
-  )
+  return value === props.currentSubscription.amount || value < props.changeAmountState.minAmount
 })
 </script>
 
@@ -125,7 +122,8 @@ const isAmountInvalid = computed(() => {
           </div>
         </div>
         <p v-if="changeAmountState.minAmount > 1" class="text-xs text-muted-foreground">
-          Minimum amount: {{ currentSubscription?.currency || '£' }}{{ changeAmountState.minAmount }}
+          Minimum amount: {{ currentSubscription?.currency || '£'
+          }}{{ changeAmountState.minAmount }}
         </p>
         <p class="text-sm text-muted-foreground">
           The new amount will take effect on your next billing date:
