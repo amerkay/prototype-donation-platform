@@ -22,7 +22,7 @@ const BASE_SCHEMA: ContextSchema = {
       { value: 'cancelled', label: 'Cancelled' }
     ]
   },
-  amount: { label: 'Amount', type: 'number', group: 'Subscription' },
+  totalAmount: { label: 'Amount', type: 'number', group: 'Subscription' },
   frequency: {
     label: 'Frequency',
     type: 'string',

@@ -39,7 +39,7 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
       ])
   },
   createPaymentMethodColumn<Transaction>(),
-  createAmountColumn<Transaction>({ buttonClass: '-mr-4' }),
+  createAmountColumn<Transaction>({ buttonClass: '-mr-4', showBaseTooltip: false }),
   createStatusColumn<Transaction>(),
   createViewActionColumn<Transaction>((r) => `/portal/donations/${r.id}`)
 ]
@@ -73,7 +73,11 @@ export const transactionColumnsCompact: ColumnDef<Transaction>[] = [
           : null
       ])
   },
-  createAmountColumn<Transaction>({ sortable: false, cellClass: 'text-right font-medium text-sm' }),
+  createAmountColumn<Transaction>({
+    sortable: false,
+    cellClass: 'text-right font-medium text-sm',
+    showBaseTooltip: false
+  }),
   createStatusColumn<Transaction>(),
   createViewActionColumn<Transaction>((r) => `/portal/donations/${r.id}`)
 ]

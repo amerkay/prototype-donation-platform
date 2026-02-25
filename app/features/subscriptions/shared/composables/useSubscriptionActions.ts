@@ -77,7 +77,7 @@ export function useSubscriptionActions(subscriptions: Ref<Subscription[]>) {
     const sub = subscriptions.value.find((s) => s.id === id)
     if (sub) {
       changeAmountState.subscriptionId = id
-      changeAmountState.newAmount = sub.amount.toString()
+      changeAmountState.newAmount = sub.totalAmount.toString()
       changeAmountState.minAmount = minAmount
       changeAmountState.open = true
     }
@@ -88,7 +88,9 @@ export function useSubscriptionActions(subscriptions: Ref<Subscription[]>) {
     if (sub && changeAmountState.newAmount) {
       const newAmount = parseFloat(changeAmountState.newAmount)
       if (newAmount >= changeAmountState.minAmount) {
-        sub.amount = newAmount
+        sub.totalAmount = newAmount
+        sub.subtotal = newAmount
+        sub.coverCostsAmount = 0
         toast.success('Subscription amount updated successfully')
         changeAmountState.subscriptionId = null
         changeAmountState.newAmount = ''

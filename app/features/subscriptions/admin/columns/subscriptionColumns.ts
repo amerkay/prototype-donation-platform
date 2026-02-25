@@ -57,7 +57,7 @@ export const subscriptionColumns: ColumnDef<EnrichedSubscription>[] = [
       ])
   },
   {
-    accessorKey: 'amount',
+    accessorKey: 'totalAmount',
     header: ({ column }) =>
       h(
         Button,
@@ -72,7 +72,7 @@ export const subscriptionColumns: ColumnDef<EnrichedSubscription>[] = [
         h(
           'span',
           { class: 'text-sm font-medium' },
-          formatCurrency(row.original.amount, row.original.currency)
+          formatCurrency(row.original.totalAmount, row.original.currency)
         ),
         h(
           'span',

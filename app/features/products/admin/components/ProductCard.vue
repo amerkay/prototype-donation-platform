@@ -2,6 +2,8 @@
 import type { ImpactProduct } from '~/features/products/admin/types'
 import { useProducts } from '~/features/products/admin/composables/useProducts'
 import { useCertificateTemplates } from '~/features/templates/admin/composables/useCertificateTemplates'
+import { getCurrencySymbol } from '~/features/donation-form/shared/composables/useCurrency'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import AdminEntityCard from '~/features/_admin/components/AdminEntityCard.vue'
 import AdminEntityCardPlaceholder from '~/features/_admin/components/AdminEntityCardPlaceholder.vue'
 import AdminDeleteButton from '~/features/_admin/components/AdminDeleteButton.vue'
@@ -27,15 +29,17 @@ defineEmits<{
 
 const { getDeleteProtection } = useProducts()
 const { getTemplateById } = useCertificateTemplates()
+const currencyStore = useCurrencySettingsStore()
 
 const deleteProtection = computed(() => getDeleteProtection(props.product.id))
 const href = computed(() => `/admin/products/${props.product.id}`)
 
 const priceDisplay = computed(() => {
   const p = props.product
-  if (p.price) return `$${p.price}`
-  if (p.minPrice && p.default) return `$${p.minPrice}-$${p.default}`
-  if (p.minPrice) return `From $${p.minPrice}`
+  const sym = getCurrencySymbol(currencyStore.defaultCurrency)
+  if (p.price) return `${sym}${p.price}`
+  if (p.minPrice && p.default) return `${sym}${p.minPrice}-${sym}${p.default}`
+  if (p.minPrice) return `From ${sym}${p.minPrice}`
   return 'Custom'
 })
 

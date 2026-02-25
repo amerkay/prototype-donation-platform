@@ -614,8 +614,12 @@ CREATE TABLE subscriptions (
   charity_name TEXT NOT NULL,
   donor_user_id UUID REFERENCES donor_users(id) ON DELETE SET NULL,
 
-  amount DECIMAL(10,2) NOT NULL,
+  subtotal DECIMAL(10,2) NOT NULL,
+  cover_costs_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+  total_amount DECIMAL(10,2) NOT NULL, -- subtotal + cover_costs_amount
   currency TEXT NOT NULL DEFAULT 'GBP',
+  base_currency TEXT NOT NULL DEFAULT 'GBP',
+  exchange_rate DECIMAL(10,6) NOT NULL DEFAULT 1, -- 1 donor currency = X base currency
   frequency TEXT NOT NULL
     CHECK (frequency IN ('monthly', 'yearly')),
 
@@ -634,9 +638,10 @@ CREATE TABLE subscriptions (
   cancelled_at TIMESTAMPTZ,
   paused_at TIMESTAMPTZ,
 
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  total_paid DECIMAL(12,2) NOT NULL DEFAULT 0,
-  payment_count INT NOT NULL DEFAULT 0
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  -- NOTE: total_paid and payment_count are computed from linked transactions
+  -- (SUM/COUNT of transactions WHERE subscription_id = id AND type = 'subscription_payment')
+  -- Use a view or computed column rather than denormalized storage
 );
 
 CREATE INDEX idx_subscriptions_campaign ON subscriptions(campaign_id);

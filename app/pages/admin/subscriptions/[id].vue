@@ -37,7 +37,7 @@ const breadcrumbs = computed(() => [
   { label: 'Subscriptions', href: '/admin/subscriptions' },
   {
     label: sub.value
-      ? `${sub.value.donorName ?? 'Unknown'} — ${formatCurrency(sub.value.amount, sub.value.currency)}/${sub.value.frequency}`
+      ? `${sub.value.donorName ?? 'Unknown'} — ${formatCurrency(sub.value.totalAmount, sub.value.currency)}/${sub.value.frequency}`
       : 'Not Found'
   }
 ])
@@ -93,9 +93,8 @@ const {
           <div>
             <div class="flex items-center gap-3">
               <h1 class="text-2xl font-bold">
-                {{ sub.donorName ?? 'Unknown' }} — {{ formatCurrency(sub.amount, sub.currency) }}/{{
-                  sub.frequency
-                }}
+                {{ sub.donorName ?? 'Unknown' }} —
+                {{ formatCurrency(sub.totalAmount, sub.currency) }}/{{ sub.frequency }}
               </h1>
               <StatusBadge :status="sub.status" />
             </div>
@@ -165,7 +164,7 @@ const {
               </AdminDetailRow>
               <AdminDetailRow
                 label="Amount"
-                :value="formatCurrency(sub.amount, sub.currency)"
+                :value="formatCurrency(sub.totalAmount, sub.currency)"
                 value-class="font-medium"
               />
               <Separator />
@@ -203,33 +202,35 @@ const {
               </CardTitle>
             </CardHeader>
             <CardContent class="space-y-2 text-sm">
-              <AdminDetailRow
-                label="Lifetime Subtotal"
-                :value="formatCurrency(totalSubtotal, sub.currency)"
-              />
-              <AdminDetailRow
-                v-if="totalCoverCosts > 0"
-                label="Lifetime Cover Costs"
-                :value="formatCurrency(totalCoverCosts, sub.currency)"
-              />
-              <AdminDetailRow
-                label="Lifetime Total"
-                :value="formatCurrency(sub.totalPaid, sub.currency)"
-                value-class="font-medium"
-              />
+              <AdminDetailRow label="Lifetime Subtotal">
+                <span>{{ formatCurrency(totalSubtotal, sub.currency) }}</span>
+                <span v-if="sub.exchangeRate !== 1" class="text-xs text-muted-foreground ml-1">
+                  (≈ {{ formatCurrency(totalSubtotal * sub.exchangeRate, sub.baseCurrency) }})
+                </span>
+              </AdminDetailRow>
+              <AdminDetailRow v-if="totalCoverCosts > 0" label="Lifetime Cover Costs">
+                <span>{{ formatCurrency(totalCoverCosts, sub.currency) }}</span>
+                <span v-if="sub.exchangeRate !== 1" class="text-xs text-muted-foreground ml-1">
+                  (≈ {{ formatCurrency(totalCoverCosts * sub.exchangeRate, sub.baseCurrency) }})
+                </span>
+              </AdminDetailRow>
+              <AdminDetailRow label="Lifetime Total" value-class="font-medium">
+                <span class="font-medium">{{ formatCurrency(sub.totalPaid, sub.currency) }}</span>
+                <span
+                  v-if="sub.exchangeRate !== 1"
+                  class="text-xs text-muted-foreground ml-1 font-normal"
+                >
+                  (≈ {{ formatCurrency(sub.totalPaid * sub.exchangeRate, sub.baseCurrency) }})
+                </span>
+              </AdminDetailRow>
               <Separator />
               <AdminDetailRow label="Payment Count" :value="String(sub.paymentCount)" />
-              <AdminDetailRow
-                label="Average Payment"
-                :value="formatCurrency(avgPayment, sub.currency)"
-              />
-              <div
-                v-if="sub.exchangeRate !== 1"
-                class="flex justify-between text-xs text-muted-foreground"
-              >
-                <span>Exchange Rate</span>
-                <span>1 {{ sub.currency }} = {{ sub.exchangeRate }} {{ sub.baseCurrency }}</span>
-              </div>
+              <AdminDetailRow label="Average Payment">
+                <span>{{ formatCurrency(avgPayment, sub.currency) }}</span>
+                <span v-if="sub.exchangeRate !== 1" class="text-xs text-muted-foreground ml-1">
+                  (≈ {{ formatCurrency(avgPayment * sub.exchangeRate, sub.baseCurrency) }})
+                </span>
+              </AdminDetailRow>
             </CardContent>
           </Card>
 

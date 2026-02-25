@@ -17,6 +17,8 @@ import { useDonationFormStore } from '~/features/donation-form/donor/stores/dona
 import { useAfterSaleSettingsStore } from '~/features/settings/admin/stores/afterSaleSettings'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
+import { getExchangeRatesForBase } from '~/sample-api-responses/api-sample-response-exchange-rates'
 import { useReactiveTransactions } from '~/sample-api-responses/useReactiveTransactions'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { sanitizeRichText } from '~/features/_library/form-builder/utils/sanitize-html'
@@ -32,6 +34,7 @@ const campaignId = computed(() => (route.params.campaign_slug as string) || '')
 const campaignName = computed(() => getCampaignById(campaignId.value)?.name || 'this campaign')
 
 const { smartRound } = useCurrency(() => store.selectedCurrency)
+const currencySettings = useCurrencySettingsStore()
 const { transactions, addSubscription } = useReactiveTransactions()
 const upgraded = ref(false)
 
@@ -110,10 +113,17 @@ const handleConfirmUpgrade = () => {
         frequency: 'monthly' as const
       }
     ],
-    amount: monthlyAmount,
+    subtotal: monthlyAmount,
+    coverCostsAmount: 0,
+    totalAmount: monthlyAmount,
     currency: store.selectedCurrency,
-    baseCurrency: store.selectedCurrency,
-    exchangeRate: 1,
+    baseCurrency: currencySettings.defaultCurrency,
+    exchangeRate:
+      store.selectedCurrency !== currencySettings.defaultCurrency
+        ? (getExchangeRatesForBase(store.selectedCurrency).rates[
+            currencySettings.defaultCurrency
+          ] ?? 1)
+        : 1,
     frequency: 'monthly',
     paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
     status: 'active',

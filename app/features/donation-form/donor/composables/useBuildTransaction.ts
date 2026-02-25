@@ -2,6 +2,8 @@ import type { Transaction, TransactionLineItem } from '~/features/donor-portal/t
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
+import { getExchangeRatesForBase } from '~/sample-api-responses/api-sample-response-exchange-rates'
 import { generateEntityId } from '~/lib/generateEntityId'
 
 /**
@@ -12,6 +14,7 @@ export function useBuildTransaction() {
   const store = useDonationFormStore()
   const formConfig = useFormConfigStore()
   const { getCampaignById } = useCampaigns()
+  const currencySettings = useCurrencySettingsStore()
 
   function buildTransaction(): Transaction {
     const route = useRoute()
@@ -51,6 +54,18 @@ export function useBuildTransaction() {
     const shippingInfo = store.formSections.shipping as Record<string, string> | undefined
     const giftAidData = store.formSections.giftAid as Record<string, boolean> | undefined
 
+    // Compute exchange rate: donor currency → org base currency
+    const donorCurrency = store.selectedCurrency
+    const baseCurrency = currencySettings.defaultCurrency
+    let exchangeRate = 1
+    if (donorCurrency !== baseCurrency) {
+      const rates = getExchangeRatesForBase(donorCurrency)
+      exchangeRate = rates.rates[baseCurrency] ?? 1
+    }
+
+    const giftAid = !!giftAidData?.claimGiftAid
+    const subtotal = store.totalDonationAmount
+
     return {
       id: generateEntityId('txn'),
       organizationId: 'org-001',
@@ -64,19 +79,20 @@ export function useBuildTransaction() {
       campaignName: campaign?.name || 'Donation',
       charityName: 'Borneo Orangutan Survival',
       lineItems,
-      subtotal: store.totalDonationAmount,
+      subtotal,
       coverCostsAmount: store.coverCostsAmount,
       totalAmount: store.totalAmount,
-      currency: store.selectedCurrency,
-      baseCurrency: store.selectedCurrency,
-      exchangeRate: 1,
+      currency: donorCurrency,
+      baseCurrency,
+      exchangeRate,
       paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
       status: 'succeeded',
       donorId: `donor-${Date.now()}`,
       donorName: `${donorName?.firstName || ''} ${donorName?.lastName || ''}`.trim(),
       donorEmail: (donorInfo.email as string) || '',
       isAnonymous: false,
-      giftAid: !!giftAidData?.claimGiftAid,
+      giftAid,
+      ...(giftAid && { giftAidAmount: Math.round(subtotal * 25) / 100 }),
       ...(shippingInfo?.line1 && {
         donorAddress: {
           line1: shippingInfo.line1,

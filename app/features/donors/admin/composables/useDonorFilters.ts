@@ -67,7 +67,7 @@ function buildCustomEvaluators() {
       {
         'subscription.status': (s) => s.status,
         'subscription.frequency': (s) => s.frequency,
-        'subscription.amount': (s) => s.amount
+        'subscription.totalAmount': (s) => s.totalAmount
       }
     )
   }

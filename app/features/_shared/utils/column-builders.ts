@@ -2,6 +2,7 @@ import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { NuxtLink } from '#components'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { ICON_SORT } from '~/lib/icons'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { formatDate } from '~/lib/formatDate'
@@ -39,6 +40,8 @@ interface AmountColumnOptions<T> {
   getAmount?: (row: T) => number
   /** Function to get the currency from the row (default: row.original.currency) */
   getCurrency?: (row: T) => string
+  /** Show tooltip with base-currency equivalent for cross-currency amounts (default: true) */
+  showBaseTooltip?: boolean
   /** Additional content to render below the amount */
   renderSubtext?: (row: T) => ReturnType<typeof h> | null
 }
@@ -136,6 +139,7 @@ export function createAmountColumn<T>(options: AmountColumnOptions<T> = {}): Col
     cellClass = 'text-right font-medium text-sm whitespace-nowrap',
     getAmount,
     getCurrency,
+    showBaseTooltip = true,
     renderSubtext
   } = options
 
@@ -160,12 +164,33 @@ export function createAmountColumn<T>(options: AmountColumnOptions<T> = {}): Col
       const original = row.original as Record<string, unknown>
       const amount = getAmount ? getAmount(row.original) : (original[accessorKey] as number)
       const currency = getCurrency ? getCurrency(row.original) : (original.currency as string)
+      const baseCurrency = original.baseCurrency as string | undefined
+      const exchangeRate = original.exchangeRate as number | undefined
       const subtext = renderSubtext ? renderSubtext(row.original) : null
 
-      return h('div', { class: cellClass }, [
-        formatCurrency(amount, currency),
-        subtext && h('div', {}, subtext)
-      ])
+      const amountText = formatCurrency(amount, currency)
+
+      // Show tooltip with base-currency equivalent when currencies differ
+      if (showBaseTooltip && baseCurrency && currency !== baseCurrency && exchangeRate) {
+        const baseAmount = amount * exchangeRate
+        return h('div', { class: cellClass }, [
+          h(TooltipProvider, () =>
+            h(Tooltip, () => [
+              h(TooltipTrigger, { asChild: true }, () =>
+                h(
+                  'span',
+                  { class: 'cursor-help border-b border-dotted border-muted-foreground/50' },
+                  amountText
+                )
+              ),
+              h(TooltipContent, () => `≈ ${formatCurrency(baseAmount, baseCurrency)}`)
+            ])
+          ),
+          subtext && h('div', {}, subtext)
+        ])
+      }
+
+      return h('div', { class: cellClass }, [amountText, subtext && h('div', {}, subtext)])
     }
   }
 }

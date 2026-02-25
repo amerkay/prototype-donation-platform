@@ -118,7 +118,7 @@ const {
           <div>
             <div class="flex items-center gap-3">
               <h1 class="text-2xl font-semibold tracking-tight">
-                {{ sub.campaignName }} — {{ formatAmount(sub.amount, sub.currency) }}/{{
+                {{ sub.campaignName }} — {{ formatAmount(sub.totalAmount, sub.currency) }}/{{
                   sub.frequency
                 }}
               </h1>
@@ -189,7 +189,7 @@ const {
                 <span class="capitalize">{{ sub.frequency }}</span>
               </PortalDetailRow>
               <PortalDetailRow label="Amount">
-                <span class="font-medium">{{ formatAmount(sub.amount, sub.currency) }}</span>
+                <span class="font-medium">{{ formatAmount(sub.totalAmount, sub.currency) }}</span>
               </PortalDetailRow>
               <Separator />
               <PortalDetailRow label="Payment" :value="paymentMethodLabel" />

@@ -43,7 +43,7 @@ export function useDonorStats(donorId: Ref<string> | string) {
   const monthlyRecurring = computed(() =>
     activeSubscriptions.value.reduce((sum, s) => {
       const multiplier = s.frequency === 'yearly' ? 1 / 12 : 1
-      return sum + s.amount * s.exchangeRate * multiplier
+      return sum + s.totalAmount * s.exchangeRate * multiplier
     }, 0)
   )
 

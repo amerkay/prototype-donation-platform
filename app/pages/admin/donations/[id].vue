@@ -109,25 +109,30 @@ const breadcrumbs = computed(() => [
                 <span class="font-mono text-xs">{{ txn.processorTransactionId }}</span>
               </AdminDetailRow>
               <Separator />
-              <AdminDetailRow
-                label="Subtotal"
-                :value="formatCurrency(txn.subtotal, txn.currency)"
-              />
-              <AdminDetailRow
-                v-if="txn.coverCostsAmount > 0"
-                label="Cover Costs"
-                :value="formatCurrency(txn.coverCostsAmount, txn.currency)"
-              />
+              <AdminDetailRow label="Subtotal">
+                <span>{{ formatCurrency(txn.subtotal, txn.currency) }}</span>
+                <span v-if="txn.exchangeRate !== 1" class="text-xs text-muted-foreground ml-1">
+                  (≈ {{ formatCurrency(txn.subtotal * txn.exchangeRate, txn.baseCurrency) }})
+                </span>
+              </AdminDetailRow>
+              <AdminDetailRow v-if="txn.coverCostsAmount > 0" label="Cover Costs">
+                <span>{{ formatCurrency(txn.coverCostsAmount, txn.currency) }}</span>
+                <span v-if="txn.exchangeRate !== 1" class="text-xs text-muted-foreground ml-1">
+                  (≈
+                  {{ formatCurrency(txn.coverCostsAmount * txn.exchangeRate, txn.baseCurrency) }})
+                </span>
+              </AdminDetailRow>
               <div class="flex justify-between font-medium">
                 <span>Total</span>
-                <span>{{ formatCurrency(txn.totalAmount, txn.currency) }}</span>
-              </div>
-              <div
-                v-if="txn.exchangeRate !== 1"
-                class="flex justify-between text-xs text-muted-foreground"
-              >
-                <span>Exchange Rate</span>
-                <span>1 {{ txn.currency }} = {{ txn.exchangeRate }} {{ txn.baseCurrency }}</span>
+                <span>
+                  {{ formatCurrency(txn.totalAmount, txn.currency) }}
+                  <span
+                    v-if="txn.exchangeRate !== 1"
+                    class="text-xs text-muted-foreground ml-1 font-normal"
+                  >
+                    (≈ {{ formatCurrency(txn.totalAmount * txn.exchangeRate, txn.baseCurrency) }})
+                  </span>
+                </span>
               </div>
               <div v-if="txn.subscriptionId" class="flex items-center gap-2 pt-1">
                 <ICON_RECURRING class="h-4 w-4 text-muted-foreground" />

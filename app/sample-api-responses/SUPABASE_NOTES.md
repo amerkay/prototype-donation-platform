@@ -393,6 +393,14 @@ Apr 2024  Renewal comes in
 - Matches prototype TS type (`Transaction.baseCurrency`, `Transaction.exchangeRate`)
 - Enables accurate multi-currency aggregation in donor portal and admin views
 
+### Subscription Schema Alignment
+
+- Renamed `amount` → `total_amount` on `subscriptions` table to match `transactions` naming
+- Added `subtotal DECIMAL(10,2)` + `cover_costs_amount DECIMAL(10,2)` (mirrors transactions)
+- Added `base_currency TEXT` + `exchange_rate DECIMAL(10,6)` for multi-currency support
+- Removed `total_paid` and `payment_count` as stored columns — compute from linked transactions instead (SUM/COUNT of `transactions WHERE subscription_id = id AND type = 'subscription_payment'`)
+- MRR calculation includes yearly subscriptions ÷ 12: `SUM(total_amount * exchange_rate * CASE WHEN frequency = 'yearly' THEN 1/12 ELSE 1 END)`
+
 ---
 
 ## Campaign Status & Completion

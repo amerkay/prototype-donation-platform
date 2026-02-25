@@ -35,7 +35,7 @@ const paymentMethodLabel = (pm: {
           </StatusBadge>
         </div>
         <CardDescription>
-          {{ formatAmount(subscription.amount, subscription.currency) }}/{{
+          {{ formatAmount(subscription.totalAmount, subscription.currency) }}/{{
             subscription.frequency
           }}
           via

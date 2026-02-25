@@ -24,7 +24,7 @@ export const SUBSCRIPTION_FILTER_SCHEMA: ContextSchema = {
       { value: 'yearly', label: 'Yearly' }
     ]
   },
-  'subscription.amount': {
+  'subscription.totalAmount': {
     label: 'Amount',
     type: 'number',
     group: 'Related Subscription'

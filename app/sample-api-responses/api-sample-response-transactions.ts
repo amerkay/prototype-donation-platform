@@ -2633,7 +2633,9 @@ export const subscriptions: Subscription[] = [
         frequency: 'monthly'
       }
     ],
-    amount: 15.45,
+    subtotal: 15,
+    coverCostsAmount: 0.45,
+    totalAmount: 15.45,
     currency: 'GBP',
     baseCurrency: 'GBP',
     exchangeRate: 1,
@@ -2675,7 +2677,9 @@ export const subscriptions: Subscription[] = [
         frequency: 'monthly'
       }
     ],
-    amount: 25.75,
+    subtotal: 25,
+    coverCostsAmount: 0.75,
+    totalAmount: 25.75,
     currency: 'GBP',
     baseCurrency: 'GBP',
     exchangeRate: 1,
@@ -2710,7 +2714,9 @@ export const subscriptions: Subscription[] = [
         frequency: 'monthly'
       }
     ],
-    amount: 25,
+    subtotal: 25,
+    coverCostsAmount: 0,
+    totalAmount: 25,
     currency: 'GBP',
     baseCurrency: 'GBP',
     exchangeRate: 1,
@@ -2745,7 +2751,9 @@ export const subscriptions: Subscription[] = [
         frequency: 'monthly'
       }
     ],
-    amount: 10,
+    subtotal: 10,
+    coverCostsAmount: 0,
+    totalAmount: 10,
     currency: 'GBP',
     baseCurrency: 'GBP',
     exchangeRate: 1,
@@ -2780,7 +2788,9 @@ export const subscriptions: Subscription[] = [
         frequency: 'monthly'
       }
     ],
-    amount: 10,
+    subtotal: 10,
+    coverCostsAmount: 0,
+    totalAmount: 10,
     currency: 'GBP',
     baseCurrency: 'GBP',
     exchangeRate: 1,
@@ -2815,7 +2825,9 @@ export const subscriptions: Subscription[] = [
         frequency: 'monthly'
       }
     ],
-    amount: 25,
+    subtotal: 25,
+    coverCostsAmount: 0,
+    totalAmount: 25,
     currency: 'USD',
     baseCurrency: 'GBP',
     exchangeRate: 0.79,
@@ -2850,7 +2862,9 @@ export const subscriptions: Subscription[] = [
         frequency: 'monthly'
       }
     ],
-    amount: 10,
+    subtotal: 10,
+    coverCostsAmount: 0,
+    totalAmount: 10,
     currency: 'GBP',
     baseCurrency: 'GBP',
     exchangeRate: 1,
@@ -2885,7 +2899,9 @@ export const subscriptions: Subscription[] = [
         frequency: 'monthly'
       }
     ],
-    amount: 30,
+    subtotal: 30,
+    coverCostsAmount: 0,
+    totalAmount: 30,
     currency: 'EUR',
     baseCurrency: 'GBP',
     exchangeRate: 0.86,

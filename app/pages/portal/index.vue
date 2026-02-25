@@ -22,8 +22,19 @@ definePageMeta({
 
 const { formatAmount, getProgressPercentage } = useCampaignFormatters()
 
-const { transactions, activeSubscriptions, activeFundraisers, totalDonated, totalTransactions } =
-  useDonorPortal()
+const {
+  transactions,
+  activeSubscriptions,
+  activeFundraisers,
+  totalDonated,
+  hasMultiCurrencyDonations,
+  totalTransactions
+} = useDonorPortal()
+
+const totalDonatedLabel = computed(() => {
+  const formatted = formatAmount(totalDonated.value)
+  return hasMultiCurrencyDonations.value ? `≈ ${formatted}` : formatted
+})
 
 const recentTransactions = computed(() => transactions.value.slice(0, 5))
 </script>
@@ -40,7 +51,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
 
       <!-- Stats row -->
       <div class="grid gap-6 grid-cols-2 md:grid-cols-4">
-        <StatsCard :icon="ICON_MONEY" label="Total Donated" :value="formatAmount(totalDonated)" />
+        <StatsCard :icon="ICON_MONEY" label="Total Donated" :value="totalDonatedLabel" />
         <StatsCard :icon="ICON_RECEIPT" label="Transactions" :value="totalTransactions" />
         <StatsCard
           :icon="ICON_SUBSCRIPTION"
@@ -104,7 +115,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
                     {{ sub.lineItems.map((i) => i.productTitle).join(', ') }}
                   </p>
                   <p class="text-xs text-muted-foreground">
-                    {{ formatAmount(sub.amount, sub.currency) }}/{{ sub.frequency }}
+                    {{ formatAmount(sub.totalAmount, sub.currency) }}/{{ sub.frequency }}
                   </p>
                 </div>
                 <StatusBadge :status="sub.status" />

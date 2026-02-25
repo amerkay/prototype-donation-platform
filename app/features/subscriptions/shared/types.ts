@@ -32,7 +32,9 @@ export interface Subscription {
 
   lineItems: TransactionLineItem[]
 
-  amount: number
+  subtotal: number
+  coverCostsAmount: number
+  totalAmount: number
   currency: string
   baseCurrency: string
   exchangeRate: number

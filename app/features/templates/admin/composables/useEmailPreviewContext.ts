@@ -164,7 +164,7 @@ export function useEmailPreviewContext(
   )
 
   const subscriptionAmount = computed(() =>
-    formatMoney(latestSubscription.value?.amount, latestSubscription.value?.currency || 'USD')
+    formatMoney(latestSubscription.value?.totalAmount, latestSubscription.value?.currency || 'USD')
   )
 
   const sampleVariablesByCategory = computed<Record<EmailTemplateCategory, Record<string, string>>>(

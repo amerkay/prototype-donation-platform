@@ -58,6 +58,10 @@ export function useDonorPortal() {
     succeededTransactions.value.reduce((sum, t) => sum + t.totalAmount * t.exchangeRate, 0)
   )
 
+  const hasMultiCurrencyDonations = computed(() =>
+    succeededTransactions.value.some((t) => t.currency !== t.baseCurrency)
+  )
+
   const totalTransactions = computed(() => succeededTransactions.value.length)
 
   return {
@@ -68,6 +72,7 @@ export function useDonorPortal() {
     activeSubscriptions,
     activeFundraisers,
     totalDonated,
+    hasMultiCurrencyDonations,
     totalTransactions,
     addTransaction
   }

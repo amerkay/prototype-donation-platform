@@ -52,7 +52,9 @@ const changeOpen = computed({
 const isAmountInvalid = computed(() => {
   if (!props.currentSubscription) return true
   const value = parseFloat(props.changeAmountState.newAmount)
-  return value === props.currentSubscription.amount || value < props.changeAmountState.minAmount
+  return (
+    value === props.currentSubscription.totalAmount || value < props.changeAmountState.minAmount
+  )
 })
 </script>
 

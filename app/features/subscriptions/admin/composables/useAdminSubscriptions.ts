@@ -47,13 +47,17 @@ export function useAdminSubscriptions() {
   )
 
   const monthlyRecurringRevenue = computed(() =>
-    activeSubscriptions.value
-      .filter((s) => s.frequency === 'monthly')
-      .reduce((sum, s) => sum + s.amount * s.exchangeRate, 0)
+    activeSubscriptions.value.reduce((sum, s) => {
+      const multiplier = s.frequency === 'yearly' ? 1 / 12 : 1
+      return sum + s.totalAmount * s.exchangeRate * multiplier
+    }, 0)
   )
 
   const totalLifetimeValue = computed(() =>
-    allSubscriptions.value.reduce((sum, s) => sum + s.totalPaid * s.exchangeRate, 0)
+    allSubscriptions.value.reduce(
+      (sum, s) => sum + s.totalAmount * s.exchangeRate * s.paymentCount,
+      0
+    )
   )
 
   const stats = computed(() => [
