@@ -73,7 +73,7 @@ export function useActionEligibility() {
       withinWindow &&
       evaluateGate(
         store.refund,
-        transaction?.createdAt ?? subscription?.createdAt,
+        subscription?.createdAt ?? transaction?.createdAt,
         donorValueLastYear,
         isOneTime // skip duration check for one-time payments
       )
