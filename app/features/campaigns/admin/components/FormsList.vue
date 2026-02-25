@@ -31,15 +31,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
+import AdminDeleteDialog from '~/features/_admin/components/AdminDeleteDialog.vue'
 import {
   Empty,
   EmptyContent,
@@ -363,20 +355,12 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
     />
 
     <!-- Delete Confirmation Dialog -->
-    <AlertDialog :open="!!formToDelete" @update:open="(open) => !open && (formToDelete = null)">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete Form</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to delete "{{ formToDelete?.name }}"? You can restore it by
-            discarding changes.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <Button variant="destructive" @click="handleConfirmDelete"> Delete </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <AdminDeleteDialog
+      :open="!!formToDelete"
+      title="Delete Form"
+      :description="`Are you sure you want to delete &quot;${formToDelete?.name}&quot;? You can restore it by discarding changes.`"
+      @update:open="(open) => !open && (formToDelete = null)"
+      @confirm="handleConfirmDelete"
+    />
   </div>
 </template>

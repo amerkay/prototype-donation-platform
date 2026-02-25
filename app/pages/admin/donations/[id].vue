@@ -12,21 +12,9 @@ import StatusBadge from '~/components/StatusBadge.vue'
 import { paymentMethodLabel } from '~/lib/formatPaymentMethod'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger
-} from '@/components/ui/alert-dialog'
-import { Checkbox } from '@/components/ui/checkbox'
-import { ICON_DONATION, ICON_SUBSCRIPTION, ICON_REFUND, ICON_RECURRING } from '~/lib/icons'
+import RefundConfirmationDialog from '~/features/donations/shared/components/RefundConfirmationDialog.vue'
+import { ICON_DONATION, ICON_SUBSCRIPTION, ICON_RECURRING } from '~/lib/icons'
 import { useAdminSubscriptions } from '~/features/subscriptions/admin/composables/useAdminSubscriptions'
 
 definePageMeta({ layout: 'admin' })
@@ -80,31 +68,13 @@ const breadcrumbs = computed(() => [
             </div>
             <p class="text-sm text-muted-foreground">{{ formatDateTime(txn.createdAt) }}</p>
           </div>
-          <AlertDialog v-if="canRefund">
-            <AlertDialogTrigger as-child>
-              <Button variant="destructive" size="sm">
-                <ICON_REFUND class="size-4 mr-1.5" />
-                Refund {{ formatCurrency(txn.totalAmount, txn.currency) }}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Refund this donation?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will reverse the transaction of
-                  {{ formatCurrency(txn.totalAmount, txn.currency) }}. This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <div v-if="isSubscriptionPayment" class="flex items-center gap-2 pt-2">
-                <Checkbox id="also-cancel" v-model:checked="alsoCancel" />
-                <label for="also-cancel" class="text-sm">Also cancel the subscription</label>
-              </div>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction @click="handleRefund">Confirm Refund</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <RefundConfirmationDialog
+            v-model:also-cancel="alsoCancel"
+            :can-refund="canRefund"
+            :formatted-amount="formatCurrency(txn.totalAmount, txn.currency)"
+            :show-cancel-subscription="isSubscriptionPayment"
+            @confirm="handleRefund"
+          />
         </div>
 
         <div class="grid gap-6 md:grid-cols-2">

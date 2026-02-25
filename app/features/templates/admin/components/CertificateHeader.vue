@@ -6,16 +6,7 @@ import AdminResourceHeader from '~/features/_admin/components/AdminResourceHeade
 import AdminStatusSelect from '~/features/_admin/components/AdminStatusSelect.vue'
 import AdminDeleteButton from '~/features/_admin/components/AdminDeleteButton.vue'
 import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
+import AdminDeleteDialog from '~/features/_admin/components/AdminDeleteDialog.vue'
 
 const store = useCertificateTemplateStore()
 const { getDeleteProtection } = useCertificateTemplates()
@@ -133,22 +124,12 @@ function cancelStatusChange() {
     </template>
   </AdminResourceHeader>
 
-  <AlertDialog v-model:open="showStatusChangeDialog">
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>Clear Product Associations?</AlertDialogTitle>
-        <AlertDialogDescription>
-          Archiving this certificate template will clear all product associations. This will affect
-          {{ linkedProductCount }} product{{ linkedProductCount !== 1 ? 's' : '' }}. <br /><br />
-          Are you sure you want to continue?
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel @click="cancelStatusChange">Cancel</AlertDialogCancel>
-        <AlertDialogAction @click="confirmStatusChange"
-          >Archive & Clear Associations</AlertDialogAction
-        >
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
+  <AdminDeleteDialog
+    :open="showStatusChangeDialog"
+    title="Clear Product Associations?"
+    :description="`Archiving this certificate template will clear all product associations. This will affect ${linkedProductCount} product${linkedProductCount !== 1 ? 's' : ''}.\n\nAre you sure you want to continue?`"
+    confirm-label="Archive & Clear Associations"
+    @update:open="(v) => !v && cancelStatusChange()"
+    @confirm="confirmStatusChange"
+  />
 </template>

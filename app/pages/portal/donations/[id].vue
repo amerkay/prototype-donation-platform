@@ -7,22 +7,10 @@ import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import PortalLineItemsCard from '~/features/donor-portal/components/PortalLineItemsCard.vue'
 import PortalDetailRow from '~/features/donor-portal/components/PortalDetailRow.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger
-} from '@/components/ui/alert-dialog'
-import { Checkbox } from '@/components/ui/checkbox'
-import { ICON_CLIPBOARD_LIST, ICON_SUBSCRIPTION, ICON_REFUND } from '~/lib/icons'
+import RefundConfirmationDialog from '~/features/donations/shared/components/RefundConfirmationDialog.vue'
+import { ICON_CLIPBOARD_LIST, ICON_SUBSCRIPTION } from '~/lib/icons'
 
 definePageMeta({ layout: 'portal' })
 
@@ -120,35 +108,13 @@ const breadcrumbs = computed(() => [
               {{ transaction.charityName }} · {{ formatDate(transaction.createdAt) }}
             </p>
           </div>
-          <AlertDialog v-if="canRefund">
-            <AlertDialogTrigger as-child>
-              <Button variant="destructive" size="sm">
-                <ICON_REFUND class="size-4 mr-1.5" />
-                Refund {{ formatAmount(transaction.totalAmount, transaction.currency) }}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Refund this donation?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will reverse the transaction of
-                  {{ formatAmount(transaction.totalAmount, transaction.currency) }}. This action
-                  cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <div
-                v-if="isSubscriptionPayment && eligibility.canCancel"
-                class="flex items-center gap-2 pt-2"
-              >
-                <Checkbox id="also-cancel-portal" v-model:checked="alsoCancel" />
-                <label for="also-cancel-portal" class="text-sm">Also cancel the subscription</label>
-              </div>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction @click="handleRefund">Confirm Refund</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <RefundConfirmationDialog
+            v-model:also-cancel="alsoCancel"
+            :can-refund="canRefund"
+            :formatted-amount="formatAmount(transaction.totalAmount, transaction.currency)"
+            :show-cancel-subscription="isSubscriptionPayment && eligibility.canCancel"
+            @confirm="handleRefund"
+          />
         </div>
 
         <!-- Detail Cards Grid -->

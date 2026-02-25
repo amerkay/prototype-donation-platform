@@ -132,6 +132,7 @@ app/features/[feature-name]/
 30. **Code audit after fixes**: After fixing a bug pattern, always search for the same pattern across the codebase before considering the fix complete.
 31. **P2P status model**: Campaign `draft|active|completed|ended`; P2P templates `draft|active` only (no archive, no terminal); Fundraisers `active|completed|ended`. Subscription `paused` is separate domain — kept.
 32. **`configStore.fundraisers` is a snapshot**: initialized once from `campaign.fundraisers`, NOT reactive to `useCampaigns`. Always sync it after `updateCampaign()` when `configStore.id === campaign.id`.
+33. **AlertDialogs must be separate components** — never inline in pages/parent components. Reuse `AdminDeleteDialog` for simple confirmations.
 
 <!-- end continuous learning notes -->
 
