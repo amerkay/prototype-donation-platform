@@ -106,7 +106,6 @@ export function createDynamicItemField(): (values: Record<string, unknown>) => F
         label: 'Max Length',
         min: 1,
         max: 1000,
-        optional: true,
         rules: z.number().min(1).max(1000).optional()
       }
     } else if (type === 'number') {
@@ -114,14 +113,12 @@ export function createDynamicItemField(): (values: Record<string, unknown>) => F
         type: 'number',
         name: '',
         label: 'Minimum',
-        optional: true,
         rules: z.number().optional()
       }
       fields.max = {
         type: 'number',
         name: '',
         label: 'Maximum',
-        optional: true,
         rules: z.number().optional()
       }
     }

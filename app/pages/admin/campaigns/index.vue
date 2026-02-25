@@ -4,13 +4,14 @@ import AdminPageHeader from '~/features/_admin/components/AdminPageHeader.vue'
 import CampaignList from '~/features/campaigns/admin/components/CampaignList.vue'
 import FilterTabs from '~/components/FilterTabs.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
+import CampaignCreateWizard from '~/features/campaigns/admin/components/CampaignCreateWizard.vue'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { ICON_CREATE } from '~/lib/icons'
 
 definePageMeta({ layout: 'admin' })
 
-const { campaigns, createCampaign } = useCampaigns()
+const { campaigns } = useCampaigns()
 
 const standardCampaigns = computed(() => campaigns.value.filter((c) => c.type === 'standard'))
 
@@ -71,12 +72,9 @@ const stats = computed(() => [
 
 const breadcrumbs = [{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Campaigns' }]
 
+const showCreateWizard = ref(false)
 const handleNewCampaign = () => {
-  const campaignId = createCampaign({
-    type: 'standard',
-    name: 'New Campaign'
-  })
-  navigateTo(`/admin/campaigns/${campaignId}`)
+  showCreateWizard.value = true
 }
 </script>
 
@@ -104,5 +102,7 @@ const handleNewCampaign = () => {
 
       <CampaignList :campaigns="filteredCampaigns" />
     </div>
+
+    <CampaignCreateWizard v-model:open="showCreateWizard" />
   </div>
 </template>

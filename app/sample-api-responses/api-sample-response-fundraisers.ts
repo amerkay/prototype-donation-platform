@@ -17,7 +17,7 @@ export const fundraisers: CampaignFundraiser[] = [
     name: 'Wild Amer',
     email: 'awesome@charity.co.uk',
     createdAt: '2025-11-15T00:00:00Z',
-    ...computeFundraiserStats('wild-amer-birthday-fundraiser'),
+    ...computeFundraiserStats('wild-amer-birthday-fundraiser', 'GBP'),
     goal: 1000,
     slug: 'wild-amer-birthday',
     story:
@@ -33,7 +33,7 @@ export const fundraisers: CampaignFundraiser[] = [
     name: 'Wild Amer',
     email: 'awesome@charity.co.uk',
     createdAt: '2025-12-20T00:00:00Z',
-    ...computeFundraiserStats('wild-amer-birthday-2-fundraiser'),
+    ...computeFundraiserStats('wild-amer-birthday-2-fundraiser', 'GBP'),
     goal: 500,
     slug: 'wild-amer-birthday-2',
     story: 'Another fundraiser I created to support orangutans! Help me reach my goal.',

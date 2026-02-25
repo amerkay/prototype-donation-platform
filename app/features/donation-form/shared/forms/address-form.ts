@@ -221,7 +221,6 @@ export function useAddressFields(
     autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-line1`,
     defaultValue: '',
     visibleWhen,
-    ...(allOrNothing && { optional: true }),
     rules: allOrNothing ? z.string().optional() : address1Rule
   })
 
@@ -230,7 +229,6 @@ export function useAddressFields(
     placeholder: 'Flat 4B',
     autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-line2`,
     defaultValue: '',
-    optional: true,
     rules: z.string().optional()
   })
 
@@ -241,7 +239,6 @@ export function useAddressFields(
     autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level2`,
     defaultValue: '',
     visibleWhen,
-    ...(allOrNothing && { optional: true }),
     rules: allOrNothing ? z.string().optional() : cityRule
   })
 
@@ -256,7 +253,6 @@ export function useAddressFields(
     },
     autocomplete: `section-${autocompleteSection} ${autocompleteSection} address-level1`,
     defaultValue: '',
-    ...(allOrNothing && { optional: true }),
     rules: allOrNothing ? z.string().optional() : z.string().min(2, 'State/Region is required')
   })
 
@@ -271,7 +267,6 @@ export function useAddressFields(
     },
     autocomplete: `section-${autocompleteSection} ${autocompleteSection} postal-code`,
     defaultValue: '',
-    ...(allOrNothing && { optional: true }),
     rules: allOrNothing ? z.string().optional() : z.string().min(3, 'Postcode is required')
   })
 
@@ -307,7 +302,6 @@ export function useAddressFields(
       { value: 'DK', label: 'Denmark' },
       { value: 'FI', label: 'Finland' }
     ],
-    ...(allOrNothing && { optional: true }),
     rules: allOrNothing ? z.string().optional() : z.string().min(1, 'Country is required'),
     disabled: !!forcedCountry,
     autocomplete: `section-${autocompleteSection} ${autocompleteSection} country`,

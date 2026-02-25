@@ -42,7 +42,6 @@ export function createSelectFieldAdminConfig(): Record<string, FieldDef> {
           label: 'Default Value',
           placeholder: 'Select default option...',
           description: 'Preview your dropdown options',
-          optional: true,
           options: ({ parent }: { parent?: Record<string, unknown> }) => {
             const optionLabels = (parent?.options as string[]) ?? []
 

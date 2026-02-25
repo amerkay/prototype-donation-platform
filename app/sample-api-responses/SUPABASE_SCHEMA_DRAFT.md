@@ -355,6 +355,8 @@ CREATE TABLE campaign_stats (
   total_donors INT NOT NULL DEFAULT 0,
   average_donation DECIMAL(10,2) NOT NULL DEFAULT 0,
   top_donation DECIMAL(10,2) NOT NULL DEFAULT 0,
+  -- campaign currency (immutable after creation, from crowdfunding JSONB)
+  currency TEXT NOT NULL DEFAULT 'GBP',
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ```
@@ -689,6 +691,10 @@ CREATE TABLE transactions (
   -- org base currency at transaction time (for multi-currency aggregation)
   exchange_rate DECIMAL(10,6),
   -- 1 original currency = X base currency
+  campaign_currency TEXT,
+  -- campaign currency at transaction time
+  campaign_exchange_rate DECIMAL(10,6),
+  -- 1 original currency = X campaign currency
 
   payment_method_type TEXT NOT NULL
     CHECK (payment_method_type IN ('card', 'paypal', 'bank_transfer')),
@@ -966,14 +972,17 @@ BEGIN
     target_campaign_id := NEW.campaign_id;
   END IF;
 
-  INSERT INTO campaign_stats (campaign_id, total_raised, total_donations, total_donors, average_donation, top_donation, updated_at)
+  -- Aggregate in campaign currency using campaign_exchange_rate
+  INSERT INTO campaign_stats (campaign_id, total_raised, total_donations, total_donors, average_donation, top_donation, currency, updated_at)
   SELECT
     target_campaign_id,
-    COALESCE(SUM(subtotal), 0),
+    COALESCE(SUM(total_amount * COALESCE(campaign_exchange_rate, 1)), 0),
     COUNT(*),
     COUNT(DISTINCT donor_email),
-    COALESCE(AVG(subtotal), 0),
-    COALESCE(MAX(subtotal), 0),
+    COALESCE(AVG(total_amount * COALESCE(campaign_exchange_rate, 1)), 0),
+    COALESCE(MAX(total_amount * COALESCE(campaign_exchange_rate, 1)), 0),
+    -- Get campaign currency from crowdfunding JSONB
+    COALESCE((SELECT (crowdfunding->>'currency') FROM campaigns WHERE id = target_campaign_id), 'GBP'),
     now()
   FROM transactions
   WHERE campaign_id = target_campaign_id AND status = 'succeeded'
@@ -983,18 +992,20 @@ BEGIN
     total_donors     = EXCLUDED.total_donors,
     average_donation = EXCLUDED.average_donation,
     top_donation     = EXCLUDED.top_donation,
+    currency         = EXCLUDED.currency,
     updated_at       = now();
 
   -- Also refresh the old campaign if campaign_id changed on UPDATE
   IF TG_OP = 'UPDATE' AND OLD.campaign_id != NEW.campaign_id THEN
-    INSERT INTO campaign_stats (campaign_id, total_raised, total_donations, total_donors, average_donation, top_donation, updated_at)
+    INSERT INTO campaign_stats (campaign_id, total_raised, total_donations, total_donors, average_donation, top_donation, currency, updated_at)
     SELECT
       OLD.campaign_id,
-      COALESCE(SUM(subtotal), 0),
+      COALESCE(SUM(total_amount * COALESCE(campaign_exchange_rate, 1)), 0),
       COUNT(*),
       COUNT(DISTINCT donor_email),
-      COALESCE(AVG(subtotal), 0),
-      COALESCE(MAX(subtotal), 0),
+      COALESCE(AVG(total_amount * COALESCE(campaign_exchange_rate, 1)), 0),
+      COALESCE(MAX(total_amount * COALESCE(campaign_exchange_rate, 1)), 0),
+      COALESCE((SELECT (crowdfunding->>'currency') FROM campaigns WHERE id = OLD.campaign_id), 'GBP'),
       now()
     FROM transactions
     WHERE campaign_id = OLD.campaign_id AND status = 'succeeded'
@@ -1004,6 +1015,7 @@ BEGIN
       total_donors     = EXCLUDED.total_donors,
       average_donation = EXCLUDED.average_donation,
       top_donation     = EXCLUDED.top_donation,
+      currency         = EXCLUDED.currency,
       updated_at       = now();
   END IF;
 

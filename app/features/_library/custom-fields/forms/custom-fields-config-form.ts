@@ -212,8 +212,7 @@ export function useCustomFieldsConfigForm(
                 ? 'Control when this hidden field is included in form submission based on other field values'
                 : 'Control when this field is shown based on other field values',
             defaultValue: false,
-            visibleWhen: ({ values }: FieldContext) => !!values.type,
-            optional: true
+            visibleWhen: ({ values }: FieldContext) => !!values.type
           }),
 
           visibilityConditions: fieldGroup('visibilityConditions', {
@@ -226,7 +225,6 @@ export function useCustomFieldsConfigForm(
                 label: ({ values }: FieldContext) =>
                   values.type === 'hidden' ? 'Include this field when' : 'Show this field when',
                 labelClass: 'mb-2',
-                optional: true,
                 fields: {
                   match: radioGroupField('match', {
                     label: 'Match',

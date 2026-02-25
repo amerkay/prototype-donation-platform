@@ -23,7 +23,7 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2026-01-14T10:30:00Z',
-    stats: computeCampaignStats('adopt-orangutan', {
+    stats: computeCampaignStats('adopt-orangutan', 'GBP', {
       totalRaised: 45820.5,
       totalDonations: 342,
       totalDonors: 287,
@@ -32,6 +32,7 @@ export const campaigns: Campaign[] = [
     }),
     crowdfunding: {
       enabled: true,
+      currency: 'GBP',
       coverPhoto: '/imgs/baby-orangutan-hammick.webp',
       title: 'Help Save Borneo Orangutans',
       shortDescription:
@@ -61,9 +62,10 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2025-11-01T00:00:00Z',
     updatedAt: '2026-01-10T14:00:00Z',
-    stats: computeCampaignStats('birthday-p2p-template'),
+    stats: computeCampaignStats('birthday-p2p-template', 'GBP'),
     crowdfunding: {
       enabled: true,
+      currency: 'GBP',
       title: 'Help Me Celebrate by Giving Back',
       shortDescription:
         "Instead of birthday gifts, I'm asking friends and family to support a cause close to my heart.",
@@ -94,7 +96,7 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2025-10-01T00:00:00Z',
     updatedAt: '2026-01-12T09:00:00Z',
-    stats: computeCampaignStats('tribute-p2p-template', {
+    stats: computeCampaignStats('tribute-p2p-template', 'GBP', {
       totalRaised: 12450,
       totalDonations: 89,
       totalDonors: 76,
@@ -103,6 +105,7 @@ export const campaigns: Campaign[] = [
     }),
     crowdfunding: {
       enabled: true,
+      currency: 'GBP',
       title: 'In Memory of Someone Special',
       shortDescription: 'Honouring a life well lived by supporting a cause they believed in.',
       story:
@@ -133,7 +136,7 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2025-09-15T00:00:00Z',
     updatedAt: '2026-01-08T11:00:00Z',
-    stats: computeCampaignStats('challenge-p2p-template', {
+    stats: computeCampaignStats('challenge-p2p-template', 'GBP', {
       totalRaised: 28340,
       totalDonations: 215,
       totalDonors: 189,
@@ -142,6 +145,7 @@ export const campaigns: Campaign[] = [
     }),
     crowdfunding: {
       enabled: true,
+      currency: 'GBP',
       title: "I'm Taking on a Challenge for Charity",
       shortDescription: 'Sponsor my challenge and help raise funds for an incredible cause.',
       story:
@@ -171,7 +175,7 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2025-08-01T00:00:00Z',
     updatedAt: '2026-01-05T16:00:00Z',
-    stats: computeCampaignStats('wedding-p2p-template', {
+    stats: computeCampaignStats('wedding-p2p-template', 'GBP', {
       totalRaised: 8720,
       totalDonations: 64,
       totalDonors: 58,
@@ -180,6 +184,7 @@ export const campaigns: Campaign[] = [
     }),
     crowdfunding: {
       enabled: true,
+      currency: 'GBP',
       title: 'Instead of Gifts, Please Donate',
       shortDescription: 'We have everything we need — except your support for a cause we love.',
       story:
@@ -210,9 +215,10 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2025-11-15T00:00:00Z',
     updatedAt: '2026-01-15T10:00:00Z',
-    stats: computeCampaignStats('wild-amer-birthday-fundraiser'),
+    stats: computeCampaignStats('wild-amer-birthday-fundraiser', 'GBP'),
     crowdfunding: {
       enabled: true,
+      currency: 'GBP',
       coverPhoto: '/imgs/baby-orangutan-hammick.webp',
       title: "Wild's 35th Birthday - Help Save Orangutans",
       shortDescription: "I'm celebrating my birthday by raising £1,000 for orangutan conservation!",
@@ -243,9 +249,10 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2025-12-20T00:00:00Z',
     updatedAt: '2026-01-10T16:00:00Z',
-    stats: computeCampaignStats('wild-amer-birthday-2-fundraiser'),
+    stats: computeCampaignStats('wild-amer-birthday-2-fundraiser', 'GBP'),
     crowdfunding: {
       enabled: true,
+      currency: 'GBP',
       title: 'Mini Campaign for Orangutans',
       shortDescription: 'A smaller goal to test the waters - every little helps!',
       story:
@@ -274,7 +281,7 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2026-01-05T00:00:00Z',
     updatedAt: '2026-02-01T10:00:00Z',
-    stats: computeCampaignStats('summer-fete-stalls', {
+    stats: computeCampaignStats('summer-fete-stalls', 'GBP', {
       totalRaised: 875,
       totalDonations: 28,
       totalDonors: 28,
@@ -283,6 +290,7 @@ export const campaigns: Campaign[] = [
     }),
     crowdfunding: {
       enabled: true,
+      currency: 'GBP',
       title: 'Summer Fete 2026 — Book Your Stall',
       shortDescription:
         'Reserve a stall for the annual Summer Fete. Choose from standard, large, or corner positions.',
@@ -308,7 +316,7 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2026-01-10T00:00:00Z',
     updatedAt: '2026-02-05T10:00:00Z',
-    stats: computeCampaignStats('annual-dog-show', {
+    stats: computeCampaignStats('annual-dog-show', 'GBP', {
       totalRaised: 142.5,
       totalDonations: 57,
       totalDonors: 34,
@@ -317,6 +325,7 @@ export const campaigns: Campaign[] = [
     }),
     crowdfunding: {
       enabled: true,
+      currency: 'GBP',
       title: 'Village Dog Show 2026',
       shortDescription:
         'Enter your dog into one or more categories — just £2.50 per entry. All welcome, pedigree or not!',
@@ -342,7 +351,7 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2026-01-12T00:00:00Z',
     updatedAt: '2026-02-08T10:00:00Z',
-    stats: computeCampaignStats('classic-car-show', {
+    stats: computeCampaignStats('classic-car-show', 'GBP', {
       totalRaised: 0,
       totalDonations: 41,
       totalDonors: 41,
@@ -351,6 +360,7 @@ export const campaigns: Campaign[] = [
     }),
     crowdfunding: {
       enabled: true,
+      currency: 'GBP',
       title: 'Classic Car Show — Free Entry',
       shortDescription:
         'Register your classic car for the annual show. All makes, models, and years welcome.',

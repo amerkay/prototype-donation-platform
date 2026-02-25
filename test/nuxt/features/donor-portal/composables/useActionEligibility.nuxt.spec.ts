@@ -30,6 +30,8 @@ function makeTxn(overrides: Partial<Transaction> = {}): Transaction {
     currency: 'GBP',
     baseCurrency: 'GBP',
     exchangeRate: 1,
+    campaignCurrency: 'GBP',
+    campaignExchangeRate: 1,
     subtotal: 50,
     coverCostsAmount: 0,
     totalAmount: 50,

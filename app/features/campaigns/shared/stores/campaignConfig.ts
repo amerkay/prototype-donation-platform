@@ -58,6 +58,17 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
   const isFundraiser = computed(() => type.value === 'fundraiser')
   const maxFormsAllowed = computed(() => (isP2P.value ? 1 : Infinity))
 
+  /** Campaign currency (from crowdfunding settings, immutable after creation) */
+  const currency = computed({
+    get: () => crowdfunding.value?.currency ?? '',
+    set: (val: string) => {
+      if (!crowdfunding.value) return
+      // Currency is immutable after creation — only allow during initialization or new campaigns
+      if (id.value && crowdfunding.value.currency) return
+      crowdfunding.value.currency = val
+    }
+  })
+
   const progressPercentage = computed((): number => {
     if (!crowdfunding.value?.goalAmount || crowdfunding.value.goalAmount === 0) return 0
     return Math.min((stats.value!.totalRaised / crowdfunding.value.goalAmount) * 100, 100)
@@ -187,6 +198,7 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     isDirty,
     isSaving,
     // Getters
+    currency,
     isP2P,
     isFundraiser,
     maxFormsAllowed,

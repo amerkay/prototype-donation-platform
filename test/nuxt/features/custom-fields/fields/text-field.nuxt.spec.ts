@@ -56,7 +56,7 @@ describe('text-field factory', () => {
 
       expect(fieldMeta.type).toBe('text')
       expect(fieldMeta.label).toBe('Username')
-      expect(fieldMeta.optional).toBe(true)
+      expect(!fieldMeta.rules || (fieldMeta.rules as ZodTypeAny).isOptional()).toBe(true)
       expect(fieldMeta.defaultValue).toBe('')
     })
 
@@ -69,7 +69,7 @@ describe('text-field factory', () => {
 
       const fieldMeta = textFieldToComposable(config)
 
-      expect(fieldMeta.optional).toBe(false)
+      expect((fieldMeta.rules as ZodTypeAny)?.isOptional()).toBe(false)
       expect(fieldMeta.rules).toBeDefined()
 
       // Verify validation rejects empty string
@@ -90,7 +90,7 @@ describe('text-field factory', () => {
 
       const fieldMeta = textFieldToComposable(config)
 
-      expect(fieldMeta.optional).toBe(true)
+      expect(!fieldMeta.rules || (fieldMeta.rules as ZodTypeAny).isOptional()).toBe(true)
 
       // Verify validation accepts empty string
       const schema = fieldMeta.rules as ZodTypeAny
@@ -150,7 +150,7 @@ describe('text-field factory', () => {
 
       expect(fieldMeta.placeholder).toBe('Enter your address')
       expect(fieldMeta.maxLength).toBe(200)
-      expect(fieldMeta.optional).toBe(false)
+      expect((fieldMeta.rules as ZodTypeAny)?.isOptional()).toBe(false)
       expect(fieldMeta.defaultValue).toBe('123 Main St')
     })
 
@@ -169,7 +169,7 @@ describe('text-field factory', () => {
       const fieldMeta = textFieldToComposable(config) as TextFieldDef
 
       expect(fieldMeta.placeholder).toBe('Top level')
-      expect(fieldMeta.optional).toBe(false)
+      expect((fieldMeta.rules as ZodTypeAny)?.isOptional()).toBe(false)
     })
 
     it('handles missing advancedSettings gracefully', () => {
@@ -182,7 +182,7 @@ describe('text-field factory', () => {
 
       expect(fieldMeta.type).toBe('text')
       expect(fieldMeta.label).toBe('Simple Field')
-      expect(fieldMeta.optional).toBe(true)
+      expect(!fieldMeta.rules || (fieldMeta.rules as ZodTypeAny).isOptional()).toBe(true)
     })
 
     it('handles empty string values correctly', () => {
@@ -328,7 +328,7 @@ describe('text-field factory', () => {
       expect(fieldMeta.label).toBe('Full Name')
       expect(fieldMeta.placeholder).toBe('John Doe')
       expect(fieldMeta.maxLength).toBe(100)
-      expect(fieldMeta.optional).toBe(false)
+      expect((fieldMeta.rules as ZodTypeAny)?.isOptional()).toBe(false)
 
       // 4. Extract default value
       const defaultValue = getTextFieldDefaultValue(userConfig)

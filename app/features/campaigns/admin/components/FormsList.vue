@@ -1,17 +1,11 @@
 <script setup lang="ts">
 import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
-import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import type { CampaignForm } from '~/features/campaigns/shared/types'
-import {
-  generateFormId,
-  generateFormName,
-  convertTemplateAmounts
-} from '~/features/donation-form/admin/templates'
+import { generateFormId, generateFormName } from '~/features/donation-form/admin/templates'
 import type { DonationFormTemplate } from '~/features/donation-form/admin/templates'
-import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
+import { useCreateFormFromTemplate } from '~/features/donation-form/admin/composables/useCreateFormFromTemplate'
 import DonationFormTemplatesDialog from '~/features/donation-form/admin/components/DonationFormTemplatesDialog.vue'
-import { useProducts } from '~/features/products/admin/composables/useProducts'
 import CopyFormFromCampaignDialog from '~/features/campaigns/admin/components/CopyFormFromCampaignDialog.vue'
 import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
 import {
@@ -57,11 +51,9 @@ const props = defineProps<{
 
 const router = useRouter()
 const store = useCampaignConfigStore()
-const currencySettings = useCurrencySettingsStore()
-const { smartRound } = useCurrency()
+const { createFormFromTemplate } = useCreateFormFromTemplate()
 
 const { forms, setDefaultForm, renameForm, createForm, duplicateForm } = useForms(store.id!)
-const { seedProducts } = useProducts()
 
 const visibleForms = computed(() => forms.value.filter((f) => !store.pendingFormDeletes.has(f.id)))
 
@@ -108,25 +100,14 @@ const handleAddForm = () => {
 
 const handleTemplateSelect = async (template: DonationFormTemplate) => {
   try {
-    // Generate unique form ID and name
-    const formId = generateFormId(store.id!, template.metadata.id)
     const existingNames = forms.value.map((f) => f.name)
-    const formName = generateFormName(template.metadata.name, existingNames)
-
-    // Generate form config from template and convert GBP amounts to default currency
-    const defaultCurrency = currencySettings.defaultCurrency
-    const templateResult = template.factory(store.id!, defaultCurrency)
-    const { config, products } = convertTemplateAmounts(templateResult, (amount) =>
-      smartRound(amount, defaultCurrency, 'GBP')
+    const { formId, formName, config, products } = createFormFromTemplate(
+      store.id!,
+      template,
+      existingNames,
+      store.currency
     )
-
-    // Seed template products into org catalog (find-or-create by name) and get resolved IDs
-    const resolvedProducts = products.length ? seedProducts(products) : []
-
-    // Create form
-    await createForm(formId, formName, config, resolvedProducts)
-
-    // Navigate to edit page
+    await createForm(formId, formName, config, products)
     router.push(`/admin/campaigns/${store.id}/forms/${formId}/edit`)
   } catch (error) {
     console.error('Failed to create form', error)
@@ -249,7 +230,10 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
                   />
                   <span v-else class="font-medium">{{ form.name }}</span>
                 </div>
-                <div class="flex items-center gap-1.5 mt-0.5">
+                <div
+                  v-if="!store.isP2P && !store.isFundraiser"
+                  class="flex items-center gap-1.5 mt-0.5"
+                >
                   <Badge variant="outline" class="text-xs capitalize">
                     {{ form.config.form.formType ?? 'donation' }}
                   </Badge>

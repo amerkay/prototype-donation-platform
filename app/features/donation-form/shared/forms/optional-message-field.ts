@@ -61,7 +61,6 @@ export function createMessageFields(options: MessageFieldOptions = {}): Record<s
   const isIncludeMessage = toggleField('isIncludeMessage', {
     label: toggleLabel,
     description: toggleDescription,
-    optional: true,
     visibleWhen,
     defaultValue: false
   })

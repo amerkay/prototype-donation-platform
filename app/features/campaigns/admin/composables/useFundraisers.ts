@@ -38,6 +38,7 @@ export function useFundraisers() {
   /** Stats for AdminListPage header */
   const stats = computed(() => {
     const active = allFundraisers.value.filter((f) => f.status === 'active').length
+    // TODO: cross-currency aggregation — currently sums without conversion
     const totalRaised = allFundraisers.value.reduce((sum, f) => sum + f.raisedAmount, 0)
     const avg = allFundraisers.value.length > 0 ? totalRaised / allFundraisers.value.length : 0
 

@@ -17,6 +17,7 @@ import { useFormBuilderContext } from '~/features/_library/form-builder/composab
 import FormFieldWrapper from '~/features/_library/form-builder/internal/FormFieldWrapper.vue'
 import { resolveVeeFieldPath } from '~/features/_library/form-builder/composables/useFieldPath'
 import { extractDefaultValues } from '~/features/_library/form-builder/utils/defaults'
+import { resolveFieldRules } from '~/features/_library/form-builder/utils/validation'
 import { useAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 
 function getValueAtVeePath(root: unknown, veePath: string): unknown {
@@ -57,6 +58,17 @@ const scopedFormValues = computed(() => ({
   root: formValues.value
 }))
 provide('scopedFormValues', scopedFormValues)
+
+// Auto-derive optional from Zod rules (same approach as useFieldWrapper)
+const isOptional = computed(() => {
+  const fieldContext = {
+    values: formValues.value,
+    parent: formValues.value,
+    root: formValues.value
+  }
+  const resolved = resolveFieldRules(props.meta.rules, fieldContext)
+  return resolved ? resolved.isOptional() : true
+})
 
 // Provide accordion group for child collapsible field-groups
 const { provideAccordionGroup } = useAccordionGroup()
@@ -467,7 +479,7 @@ function removeItem(index: number) {
   <FormFieldWrapper
     :label="resolvedLabel"
     :description="resolvedDescription"
-    :optional="meta.optional"
+    :optional="isOptional"
     :errors="allErrors"
     :invalid="false"
     :class="cn('space-y-1')"

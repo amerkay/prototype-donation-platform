@@ -78,8 +78,7 @@ export function createTributeFormSection(config: TributeSettings): ComposableFor
     const honoreeLastName = textField('honoreeLastName', {
       label: 'Last Name',
       placeholder: 'Last name',
-      defaultValue: '',
-      optional: true
+      defaultValue: ''
     })
 
     const honoreeName = fieldGroup('honoreeName', {
@@ -93,7 +92,6 @@ export function createTributeFormSection(config: TributeSettings): ComposableFor
       label: 'Relationship',
       placeholder: 'Select relationship...',
       defaultValue: '',
-      optional: true,
       options: config.relationships.map((r: { value: string; label: string }) => ({
         value: r.value,
         label: r.label
@@ -143,8 +141,7 @@ export function createTributeFormSection(config: TributeSettings): ComposableFor
     const recipientLastName = textField('recipientLastName', {
       label: 'Last Name',
       placeholder: 'Last name',
-      defaultValue: '',
-      optional: true
+      defaultValue: ''
     })
 
     const recipientName = fieldGroup('recipientName', {

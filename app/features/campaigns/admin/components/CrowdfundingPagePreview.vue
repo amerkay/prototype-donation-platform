@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import CrowdfundingPage from '~/features/campaigns/donor/components/CrowdfundingPage.vue'
 import PreviewEditable from '~/features/_admin/components/PreviewEditable.vue'
 import type { Campaign } from '~/features/campaigns/shared/types'
@@ -7,6 +8,7 @@ import type { Campaign } from '~/features/campaigns/shared/types'
 withDefaults(defineProps<{ editable?: boolean }>(), { editable: false })
 
 const store = useCampaignConfigStore()
+const currencyStore = useCurrencySettingsStore()
 
 // For P2P templates, show preview with empty stats (not aggregate)
 // This helps admins see how fundraiser pages will look with default goal
@@ -23,7 +25,7 @@ const campaignForPreview = computed<Campaign | null>(() => {
         totalDonors: 0,
         averageDonation: 0,
         topDonation: 0,
-        currency: 'GBP'
+        currency: store.currency || currencyStore.defaultCurrency
       },
       recentDonations: []
     }

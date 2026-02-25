@@ -1,5 +1,7 @@
 import { computed, toValue, unref, type MaybeRefOrGetter, type ComputedRef } from 'vue'
+import type { z } from 'zod'
 import type { FieldContext } from '~/features/_library/form-builder/types'
+import { resolveFieldRules } from '../utils/validation'
 import { useResolvedFieldMeta } from './useResolvedFieldMeta'
 import { useFormBuilderContext } from './useFormBuilderContext'
 
@@ -17,7 +19,7 @@ type FieldMetaLike = {
   description?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   placeholder?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   helpText?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
-  optional?: boolean
+  rules?: z.ZodTypeAny | ComputedRef<z.ZodTypeAny> | ((ctx: FieldContext) => z.ZodTypeAny)
   disabled?: boolean | ComputedRef<boolean> | ((ctx: FieldContext) => boolean)
   labelClass?: string
   descriptionClass?: string
@@ -74,13 +76,19 @@ export function useFieldWrapper(
     return meta.disabled
   })
 
+  /** Auto-derive optional from Zod rules: no rules or schema.isOptional() → optional */
+  const isOptional = computed(() => {
+    const resolved = resolveFieldRules(meta.rules, fieldContext.value)
+    return resolved ? resolved.isOptional() : true
+  })
+
   const wrapperProps = computed(() => {
     const errorsArray = toValue(errors)
     const baseProps = {
       label: resolvedLabel.value,
       description: resolvedDescription.value,
       helpText: resolvedHelpText.value,
-      optional: meta.optional,
+      optional: isOptional.value,
       errors: errorsArray,
       invalid: errorsArray.length > 0,
       labelClass: meta.labelClass,
@@ -103,6 +111,7 @@ export function useFieldWrapper(
 
   return {
     wrapperProps,
+    isOptional,
     resolvedLabel,
     resolvedDescription,
     resolvedPlaceholder,

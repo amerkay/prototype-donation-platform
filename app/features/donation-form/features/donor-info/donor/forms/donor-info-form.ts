@@ -51,7 +51,6 @@ export const useDonorInfoFormSection: ComposableForm = defineForm('donor-info', 
     placeholder: '+1 (555) 123-4567',
     description: 'Optional - for order updates',
     autocomplete: 'tel',
-    optional: true,
     defaultValue: '',
     showSeparatorAfter: true,
     visibleWhen: ({ values }) => {
@@ -69,7 +68,6 @@ export const useDonorInfoFormSection: ComposableForm = defineForm('donor-info', 
         ? 'Your name will show as "Anonymous" on our crowdfunding pages'
         : 'Your first name and last initial will be displayed on our crowdfunding pages'
     },
-    optional: true,
     defaultValue: false
   })
 

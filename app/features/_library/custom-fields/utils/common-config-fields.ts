@@ -30,7 +30,6 @@ export function createPlaceholderField(placeholder = 'Enter placeholder text...'
   return textField('placeholder', {
     label: 'Placeholder',
     placeholder,
-    optional: true,
     rules: z.string().optional()
   })
 }
@@ -45,7 +44,6 @@ export function createMaxLengthField(placeholder = '100'): FieldDef {
   return numberField('maxLength', {
     label: 'Maximum Length',
     placeholder,
-    optional: true,
     min: 1,
     max: 10000,
     rules: z.number().min(1).max(10000).optional()

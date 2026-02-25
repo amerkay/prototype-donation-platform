@@ -73,7 +73,7 @@ export interface CampaignStats {
   totalDonors: number
   averageDonation: number
   topDonation: number
-  /** Currency stats are denominated in (org base currency) */
+  /** Currency stats are denominated in (campaign currency, set at creation) */
   currency: string
 }
 
@@ -82,10 +82,12 @@ export interface CampaignStats {
  */
 export interface CrowdfundingSettings {
   enabled: boolean
+  /** Campaign currency for goal display and default donation currency (defaults to org defaultCurrency) */
+  currency?: string
   coverPhoto?: string
   title: string
   shortDescription: string
-  story: string
+  story?: string
   showProgressBar: boolean
   showRecentDonations: boolean
   defaultDonationsView: 'recent' | 'top'

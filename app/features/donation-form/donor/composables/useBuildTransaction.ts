@@ -85,6 +85,8 @@ export function useBuildTransaction() {
       currency: donorCurrency,
       baseCurrency,
       exchangeRate,
+      campaignCurrency: baseCurrency, // TODO: use actual campaign currency
+      campaignExchangeRate: exchangeRate, // TODO: compute donor→campaign rate
       paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
       status: 'succeeded',
       donorId: `donor-${Date.now()}`,

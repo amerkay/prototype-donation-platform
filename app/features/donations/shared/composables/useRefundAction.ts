@@ -64,6 +64,8 @@ export function useRefundAction(options: UseRefundActionOptions) {
       currency: txn.currency,
       baseCurrency: txn.baseCurrency,
       exchangeRate: txn.exchangeRate,
+      campaignCurrency: txn.campaignCurrency,
+      campaignExchangeRate: txn.campaignExchangeRate,
       paymentMethod: txn.paymentMethod,
       status: 'succeeded',
       donorId: txn.donorId,

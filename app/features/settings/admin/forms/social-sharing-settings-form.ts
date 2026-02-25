@@ -20,32 +20,27 @@ export const useSocialSharingSettingsForm = defineForm('socialSharing', (_ctx) =
 
   const facebook = toggleField('facebook', {
     label: 'Facebook',
-    description: 'Enable sharing to Facebook',
-    optional: true
+    description: 'Enable sharing to Facebook'
   })
 
   const twitter = toggleField('twitter', {
     label: 'Twitter',
-    description: 'Enable sharing to Twitter/X',
-    optional: true
+    description: 'Enable sharing to Twitter/X'
   })
 
   const linkedin = toggleField('linkedin', {
     label: 'LinkedIn',
-    description: 'Enable sharing to LinkedIn',
-    optional: true
+    description: 'Enable sharing to LinkedIn'
   })
 
   const whatsapp = toggleField('whatsapp', {
     label: 'WhatsApp',
-    description: 'Enable sharing to WhatsApp',
-    optional: true
+    description: 'Enable sharing to WhatsApp'
   })
 
   const email = toggleField('email', {
     label: 'Email',
-    description: 'Enable sharing via email',
-    optional: true
+    description: 'Enable sharing via email'
   })
 
   const socialSharing = fieldGroup('socialSharing', {

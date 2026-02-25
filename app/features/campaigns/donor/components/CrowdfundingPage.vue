@@ -187,6 +187,7 @@ const hasSocialSharing = computed(() => {
               :donations="displayedDonations"
               :total-count="campaign.stats?.totalDonations || 0"
               :default-view="campaign.crowdfunding.defaultDonationsView"
+              :campaign-currency="campaign.crowdfunding?.currency"
             />
 
             <Separator class="@3xl:hidden" />

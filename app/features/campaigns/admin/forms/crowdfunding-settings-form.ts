@@ -1,3 +1,4 @@
+import { computed } from 'vue'
 import * as z from 'zod'
 import {
   defineForm,
@@ -8,10 +9,18 @@ import {
   selectField,
   sliderField,
   currencyField,
+  comboboxField,
   dateField,
   alertField
 } from '~/features/_library/form-builder/api'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
+import {
+  getCurrencyOptionsForSelect,
+  getCurrencySymbol
+} from '~/features/donation-form/shared/composables/useCurrency'
+import type { FieldContext } from '~/features/_library/form-builder/types'
+import { useForms } from '~/features/campaigns/shared/composables/useForms'
 
 /**
  * Crowdfunding page settings form
@@ -33,6 +42,42 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
   const isEnabled = ({ values }: { values: Record<string, unknown> }) =>
     values.enabled === true || store.isP2P || store.isFundraiser
 
+  // Currency options: fundraisers use parent form's enabledCurrencies, others use org supported
+  const currencyStore = useCurrencySettingsStore()
+  const currencyOptions = computed(() => {
+    if (store.isFundraiser && store.parentCampaignId) {
+      const { forms } = useForms(store.parentCampaignId)
+      const parentForm = forms.value[0]
+      const enabled = parentForm?.config.donationAmounts.enabledCurrencies
+      if (enabled?.length) return getCurrencyOptionsForSelect(enabled)
+    }
+    return getCurrencyOptionsForSelect(currencyStore.supportedCurrencies)
+  })
+
+  const currency = comboboxField('currency', {
+    label: () => (store.isP2P ? 'Default Campaign Currency' : 'Campaign Currency'),
+    description: () =>
+      store.isFundraiser
+        ? 'Currency for your fundraising goal and donation page'
+        : store.isP2P
+          ? 'Default currency for fundraiser goals and donation pages'
+          : 'Currency for the campaign goal display',
+    defaultValue: currencyStore.defaultCurrency,
+    searchPlaceholder: 'Search currencies...',
+    options: () => currencyOptions.value,
+    // Hidden for existing campaigns (currency is immutable after creation)
+    visibleWhen: (ctx) => isEnabled(ctx) && !store.id,
+    rules: z.string().min(1, 'Currency is required')
+  })
+
+  // Read-only currency display for existing campaigns
+  const currencyNotice = alertField('currencyNotice', {
+    variant: 'info',
+    description: () =>
+      `Campaign currency: ${store.currency || currencyStore.defaultCurrency} — set at creation and cannot be changed.`,
+    visibleWhen: (ctx) => isEnabled(ctx) && !!store.id
+  })
+
   const goalAmount = currencyField('goalAmount', {
     label: () => (store.isP2P ? 'Default Goal Amount' : 'Goal Amount'),
     description: () =>
@@ -40,8 +85,9 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
         ? 'Default target fundraising amount for new fundraisers'
         : 'Target fundraising amount (optional)',
     placeholder: '500',
-    optional: true,
     min: 0,
+    currencySymbol: ({ values }: FieldContext) =>
+      getCurrencySymbol((values?.currency as string) || currencyStore.defaultCurrency),
     visibleWhen: isEnabled,
     rules: z.number().min(1, 'Goal must be at least 1').optional()
   })
@@ -53,14 +99,12 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
         ? 'Display goal progress visualization by default'
         : 'Display goal progress visualization',
     visibleWhen: isEnabled,
-    optional: true,
     showSeparatorAfter: () => store.isP2P
   })
 
   const endDate = dateField('endDate', {
     label: 'End Date',
     description: 'When the campaign closes (optional)',
-    optional: true,
     visibleWhen: (ctx) => isEnabled(ctx) && !store.isP2P,
     rules: () => {
       const skipPastCheck = store.status === 'completed' || store.status === 'ended'
@@ -108,8 +152,7 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
         : 'Upload a campaign cover image (recommended: 1200x675px, 16:9 ratio)',
     visibleWhen: isEnabled,
     accept: 'image/*',
-    recommendedDimensions: '1200x675px',
-    optional: true
+    recommendedDimensions: '1200x675px'
   })
 
   const story = textareaField('story', {
@@ -121,7 +164,7 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     placeholder: 'Tell your compelling story here...',
     visibleWhen: isEnabled,
     rows: 8,
-    rules: z.string().min(100, 'Story must be at least 100 characters'),
+    rules: z.string().min(100, 'Story must be at least 100 characters').or(z.literal('')).nullish(),
     showSeparatorAfter: true
   })
 
@@ -131,8 +174,7 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
       store.isP2P
         ? 'Display list of recent supporters by default'
         : 'Display list of recent supporters',
-    visibleWhen: (ctx) => isEnabled(ctx) && !store.isFundraiser,
-    optional: true
+    visibleWhen: (ctx) => isEnabled(ctx) && !store.isFundraiser
   })
 
   const defaultDonationsView = selectField('defaultDonationsView', {
@@ -181,8 +223,7 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     label: 'Enable Social Sharing',
     description: 'Allow visitors to share this campaign on social media',
     labelClass: 'font-bold',
-    visibleWhen: (ctx) => isEnabled(ctx) && !store.isFundraiser,
-    optional: true
+    visibleWhen: (ctx) => isEnabled(ctx) && !store.isFundraiser
   })
 
   const sharingNotice = alertField('sharingNotice', {
@@ -200,6 +241,8 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
   return {
     enabled,
 
+    currency,
+    currencyNotice,
     goalAmount,
     showProgressBar,
     endDate,

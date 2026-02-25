@@ -152,7 +152,6 @@ export interface BaseFieldConfig {
   description?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   placeholder?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   defaultValue?: unknown
-  optional?: boolean
   disabled?: boolean | ComputedRef<boolean> | ((ctx: FieldContext) => boolean)
   visibleWhen?: VisibilityFn | ConditionGroup
   showSeparatorAfter?: boolean | ((ctx: FieldContext) => boolean)

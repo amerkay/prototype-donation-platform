@@ -6,6 +6,7 @@ import { useFundraisers } from '~/features/campaigns/admin/composables/useFundra
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
+import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { formatDate } from '~/lib/formatDate'
 import StatusBadge from '~/components/StatusBadge.vue'
@@ -41,6 +42,7 @@ const {
 } = useFundraisers()
 const { getCampaignById } = useCampaigns()
 const { formatAmount, getProgressPercentage } = useCampaignFormatters()
+const charityStore = useCharitySettingsStore()
 const store = useCampaignConfigStore()
 const { brandingStyle } = useBrandingCssVars()
 
@@ -68,6 +70,10 @@ const breadcrumbs = computed(() => [
 const canComplete = computed(() => fundraiser.value?.status === 'active')
 const canEnd = computed(() => fundraiser.value?.status === 'active')
 const canReactivate = computed(() => fundraiser.value?.status !== 'active')
+
+const handlePreview = () => {
+  window.open(`/${charityStore.slug}/campaign/${fundraiser.value?.campaignId}`, '_blank')
+}
 </script>
 
 <template>
@@ -75,7 +81,13 @@ const canReactivate = computed(() => fundraiser.value?.status !== 'active')
     <p class="text-muted-foreground">Fundraiser not found.</p>
   </div>
 
-  <EditLayout v-else :breadcrumbs="breadcrumbs" :is-dirty="false">
+  <EditLayout
+    v-else
+    :breadcrumbs="breadcrumbs"
+    :is-dirty="false"
+    preview-label="Preview"
+    @preview="handlePreview"
+  >
     <template #header>
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-4 px-4">
         <div>

@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import type { CampaignDonation } from '~/features/campaigns/shared/types'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
+import { formatCurrency } from '~/lib/formatCurrency'
+import { getExchangeRatesForBase } from '~/sample-api-responses/api-sample-response-exchange-rates'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 const props = defineProps<{
   donation: CampaignDonation
+  campaignCurrency?: string
 }>()
 
 const { formatAmount, formatRelativeTime, getDonorInitials } = useCampaignFormatters()
@@ -12,6 +16,17 @@ const { formatAmount, formatRelativeTime, getDonorInitials } = useCampaignFormat
 const displayName = computed(() =>
   props.donation.isAnonymous ? 'Anonymous' : props.donation.donorName
 )
+
+const isMixedCurrency = computed(
+  () => props.campaignCurrency && props.donation.currency !== props.campaignCurrency
+)
+
+const convertedAmount = computed(() => {
+  if (!isMixedCurrency.value || !props.campaignCurrency) return ''
+  const rates = getExchangeRatesForBase(props.donation.currency)
+  const rate = rates.rates[props.campaignCurrency] ?? 1
+  return formatCurrency(props.donation.amount * rate, props.campaignCurrency)
+})
 </script>
 
 <template>
@@ -27,7 +42,23 @@ const displayName = computed(() =>
           {{ displayName }}
         </span>
         <span class="text-sm @3xl:text-base font-semibold text-primary shrink-0">
-          {{ formatAmount(donation.amount, donation.currency) }}
+          <template v-if="isMixedCurrency">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <span class="cursor-help border-b border-dashed border-primary/40">
+                    ≈ {{ convertedAmount }}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Originally {{ formatAmount(donation.amount, donation.currency) }}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </template>
+          <template v-else>
+            {{ formatAmount(donation.amount, donation.currency) }}
+          </template>
         </span>
       </div>
       <p

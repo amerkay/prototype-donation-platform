@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
+import { z } from 'zod'
 import FormFieldDate from '~/features/_library/form-builder/fields/FormFieldDate.vue'
 import type { DateFieldDef, FieldContext } from '~/features/_library/form-builder/types'
 import { mountFormField } from '../test-utils'
@@ -37,10 +38,10 @@ describe('FormFieldDate - Normal Operation', () => {
     expect(button.text()).toContain('March 15th, 2026')
   })
 
-  it('shows optional indicator when optional is true', async () => {
+  it('shows optional indicator when rules allow undefined', async () => {
     const wrapper = await mountFormFieldDate({
-      label: 'Optional Date',
-      optional: true
+      label: 'Optional Date'
+      // No rules → auto-detected as optional
     })
 
     expect(wrapper.text()).toContain('(optional)')
@@ -114,28 +115,31 @@ describe('FormFieldDate - Error Handling', () => {
 
 describe('FormFieldDate - Clear Button', () => {
   it('shows clear button when optional and has value', async () => {
-    const wrapper = await mountFormFieldDate({ optional: true }, '2026-03-15')
+    const wrapper = await mountFormFieldDate({ rules: z.string().date().optional() }, '2026-03-15')
 
     const clearBtn = wrapper.find('button[aria-label="Clear date"]')
     expect(clearBtn.exists()).toBe(true)
   })
 
   it('hides clear button when no value is set', async () => {
-    const wrapper = await mountFormFieldDate({ optional: true })
+    const wrapper = await mountFormFieldDate({ rules: z.string().date().optional() })
 
     const clearBtn = wrapper.find('button[aria-label="Clear date"]')
     expect(clearBtn.exists()).toBe(false)
   })
 
   it('hides clear button when field is not optional', async () => {
-    const wrapper = await mountFormFieldDate({ optional: false }, '2026-03-15')
+    const wrapper = await mountFormFieldDate({ rules: z.string().date('Required') }, '2026-03-15')
 
     const clearBtn = wrapper.find('button[aria-label="Clear date"]')
     expect(clearBtn.exists()).toBe(false)
   })
 
   it('hides clear button when field is disabled', async () => {
-    const wrapper = await mountFormFieldDate({ optional: true, disabled: true }, '2026-03-15')
+    const wrapper = await mountFormFieldDate(
+      { rules: z.string().date().optional(), disabled: true },
+      '2026-03-15'
+    )
 
     const clearBtn = wrapper.find('button[aria-label="Clear date"]')
     expect(clearBtn.exists()).toBe(false)
@@ -144,7 +148,7 @@ describe('FormFieldDate - Clear Button', () => {
   it('emits null when clear button is clicked', async () => {
     const onUpdateModelValue = vi.fn()
     const { wrapper } = await mountFormField(FormFieldDate, {
-      meta: { type: 'date', label: 'Test Date', optional: true },
+      meta: { type: 'date', label: 'Test Date', rules: z.string().date().optional() },
       modelValue: '2026-03-15',
       errors: [],
       name: 'testDate',
@@ -235,7 +239,6 @@ describe('FormFieldDate - Integration', () => {
       {
         label: 'Full Featured Date',
         description: 'Pick a campaign end date',
-        optional: true,
         class: 'custom-class',
         labelClass: 'label-custom'
       },

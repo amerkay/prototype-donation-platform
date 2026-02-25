@@ -17,7 +17,8 @@ export function createMultipleProductsTemplate(
       version: '1.0',
       form: {
         title: 'Build Your Impact Cart',
-        subtitle: 'Select items to support orangutan conservation'
+        subtitle: 'Select items to support orangutan conservation',
+        formType: 'donation'
       },
       donationAmounts: {
         baseDefaultCurrency: defaultCurrency,

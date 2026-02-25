@@ -31,7 +31,6 @@ export function createTextFieldAdminConfig(): Record<string, FieldDef> {
         defaultValue: textFieldConstructor('defaultValue', {
           label: 'Default Value',
           placeholder: 'Optional default text',
-          optional: true,
           rules: z.string().optional()
         })
       }
@@ -55,7 +54,6 @@ export function textFieldToComposable(config: TextFieldConfig): FieldDef {
     placeholder,
     maxLength,
     defaultValue,
-    optional,
     rules: optional ? z.string().optional() : z.string().min(1, `${config.label} is required`)
   })
 }

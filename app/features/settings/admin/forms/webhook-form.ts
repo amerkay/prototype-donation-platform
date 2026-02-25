@@ -21,8 +21,7 @@ export const useWebhookForm = defineForm('webhook', () => {
   const events = textField('events', {
     label: 'Events',
     description: 'Leave empty to subscribe to all events, or enter comma-separated event names.',
-    placeholder: WEBHOOK_EVENTS.slice(0, 3).join(', '),
-    optional: true
+    placeholder: WEBHOOK_EVENTS.slice(0, 3).join(', ')
   })
 
   return { url, events }

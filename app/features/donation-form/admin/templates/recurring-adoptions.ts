@@ -17,7 +17,8 @@ export function createRecurringAdoptionsTemplate(
       version: '1.0',
       form: {
         title: 'Adopt an Orangutan',
-        subtitle: 'Choose an orangutan to support with monthly donations'
+        subtitle: 'Choose an orangutan to support with monthly donations',
+        formType: 'donation'
       },
       donationAmounts: {
         baseDefaultCurrency: defaultCurrency,
@@ -152,18 +153,6 @@ export function createRecurringAdoptionsTemplate(
         name: 'Adopt Maya',
         title: 'Adopt Maya the Orangutan',
         description: "Monthly sponsorship for Maya's ongoing medical care",
-        minPrice: 3,
-        default: 10,
-        frequency: 'monthly',
-        image: '🦧',
-        thumbnail: '🦧',
-        icon: '🦧'
-      },
-      {
-        id: 'adopt-kiko',
-        name: 'Adopt Kiko',
-        title: 'Adopt Kiko the Orangutan',
-        description: 'Support Kiko as he prepares for release back to the wild',
         minPrice: 3,
         default: 10,
         frequency: 'monthly',

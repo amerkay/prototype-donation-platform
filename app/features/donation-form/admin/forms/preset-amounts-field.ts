@@ -8,6 +8,7 @@ import {
 } from '~/features/_library/form-builder/api'
 import type { FieldContext } from '~/features/_library/form-builder/types'
 import { getCurrencySymbol } from '~/features/donation-form/shared/composables/useCurrency'
+import { getBaseDefaultCurrencyFromRoot } from './donation-form-donation-amounts-form'
 
 /**
  * Creates an array field for preset donation amounts with optional descriptions
@@ -30,9 +31,8 @@ export function createPresetAmountsField() {
       const rootValues = context.root as Record<string, unknown>
       const enableDescriptions = rootValues.enableAmountDescriptions as boolean | undefined
 
-      // Get currency symbol from baseDefaultCurrency
-      const donationAmounts = (rootValues.donationAmounts as Record<string, unknown>) || {}
-      const baseDefaultCurrency = (donationAmounts.baseDefaultCurrency as string) || 'GBP'
+      // Get currency symbol from baseDefaultCurrency (may be in currencySettings or donationAmounts group)
+      const baseDefaultCurrency = getBaseDefaultCurrencyFromRoot(rootValues)
       const currencySymbol = getCurrencySymbol(baseDefaultCurrency)
 
       // Dynamic label based on amount value
@@ -57,11 +57,7 @@ export function createPresetAmountsField() {
             placeholder: '25',
             min: 1,
             currencySymbol: ({ root }: FieldContext) => {
-              const donationAmounts = (root as Record<string, unknown>).donationAmounts as
-                | Record<string, unknown>
-                | undefined
-              const baseDefaultCurrency = (donationAmounts?.baseDefaultCurrency as string) || 'GBP'
-              return getCurrencySymbol(baseDefaultCurrency)
+              return getCurrencySymbol(getBaseDefaultCurrencyFromRoot(root))
             },
             rules: ({ values }: FieldContext) => {
               const minAmount = (values.customAmount as Record<string, unknown> | undefined)

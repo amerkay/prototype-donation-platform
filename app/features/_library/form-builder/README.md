@@ -81,8 +81,8 @@ import { toggleField, checkboxField } from '~/features/form-builder/api'
 
 const subscribe = toggleField('subscribe', {
   label: 'Subscribe to newsletter',
-  description: 'Get weekly updates',
-  optional: true // Shows "(optional)" badge, no validation required
+  description: 'Get weekly updates'
+  // No rules → auto-detected as optional, shows "(optional)" badge
 })
 
 // Single checkbox (boolean)
@@ -896,7 +896,7 @@ All fields support:
   description?: string | ComputedRef<string> | (ctx: FieldContext) => string
   placeholder?: string | ComputedRef<string> | (ctx: FieldContext) => string
   defaultValue?: unknown
-  optional?: boolean               // "(optional)" badge
+  // optional is auto-derived: no rules or schema.isOptional() → shows "(optional)" badge
   disabled?: boolean | ComputedRef<boolean> | (ctx: FieldContext) => boolean
   visibleWhen?: ((ctx: FieldContext) => boolean) | ConditionGroup
   rules?: z.ZodTypeAny | ComputedRef<z.ZodTypeAny> | (ctx: FieldContext) => z.ZodTypeAny

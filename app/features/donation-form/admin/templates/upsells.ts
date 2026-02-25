@@ -17,7 +17,8 @@ export function createUpsellsTemplate(
       version: '1.0',
       form: {
         title: 'Make an Impact for Orangutans',
-        subtitle: 'Choose your donation amount'
+        subtitle: 'Choose your donation amount',
+        formType: 'donation'
       },
       donationAmounts: {
         baseDefaultCurrency: defaultCurrency,

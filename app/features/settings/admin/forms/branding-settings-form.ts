@@ -54,7 +54,6 @@ export const useBrandingSettingsForm = defineForm('brandingSettings', () => {
     accept: 'image/*',
     maxSizeMB: 2,
     recommendedDimensions: '400x100',
-    optional: true,
     rules: z.string().nullable().optional(),
     showSeparatorAfter: true
   })
@@ -64,7 +63,6 @@ export const useBrandingSettingsForm = defineForm('brandingSettings', () => {
     description: 'Advanced: add custom CSS for donor-facing pages',
     placeholder: '/* Custom styles */',
     rows: 4,
-    optional: true,
     rules: z.string().optional()
   })
 

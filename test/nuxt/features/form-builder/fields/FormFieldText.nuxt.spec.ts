@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { nextTick } from 'vue'
+import { z } from 'zod'
 import FormFieldText from '~/features/_library/form-builder/fields/FormFieldText.vue'
 import type { TextFieldDef, FieldContext } from '~/features/_library/form-builder/types'
 import { mountFormField } from '../test-utils'
@@ -60,10 +61,10 @@ describe('FormFieldText - Normal Operation', () => {
     expect(onUpdateModelValue).toHaveBeenCalledWith('New Value')
   })
 
-  it('shows optional indicator when optional is true', async () => {
+  it('shows optional indicator when no rules are set', async () => {
     const wrapper = await mountFormFieldText({
-      label: 'Optional Field',
-      optional: true
+      label: 'Optional Field'
+      // No rules → auto-detected as optional
     })
 
     expect(wrapper.text()).toContain('(optional)')
@@ -393,8 +394,8 @@ describe('FormFieldText - Integration', () => {
         label: 'Full Featured Field',
         description: 'This field has all features',
         placeholder: 'Type here...',
-        optional: true,
         maxLength: 50,
+        rules: z.string().optional(),
         autocomplete: 'username',
         class: 'custom-class',
         labelClass: 'label-custom',

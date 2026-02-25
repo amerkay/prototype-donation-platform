@@ -1,0 +1,41 @@
+import type { DonationFormTemplate } from '~/features/donation-form/admin/templates'
+import {
+  generateFormId,
+  generateFormName,
+  convertTemplateAmounts
+} from '~/features/donation-form/admin/templates'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
+import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
+import { useProducts } from '~/features/products/admin/composables/useProducts'
+
+/**
+ * Extracts form-from-template creation logic for reuse across
+ * FormsList (campaign edit) and CampaignCreateWizard.
+ */
+export function useCreateFormFromTemplate() {
+  const currencySettings = useCurrencySettingsStore()
+  const { smartRound } = useCurrency()
+  const { seedProducts } = useProducts()
+
+  function createFormFromTemplate(
+    campaignId: string,
+    template: DonationFormTemplate,
+    existingFormNames: string[],
+    /** Override currency (e.g. campaign currency from wizard). Falls back to org default. */
+    overrideCurrency?: string
+  ) {
+    const formId = generateFormId(campaignId, template.metadata.id)
+    const formName = generateFormName(template.metadata.name, existingFormNames)
+    const targetCurrency = overrideCurrency || currencySettings.defaultCurrency
+    const result = template.factory(campaignId, targetCurrency)
+    const { config, products } = convertTemplateAmounts(result, (amount) =>
+      smartRound(amount, targetCurrency, 'GBP')
+    )
+    // Populate enabledCurrencies so the field default doesn't trigger dirty-on-open
+    config.donationAmounts.enabledCurrencies = currencySettings.supportedCurrencies
+    const resolvedProducts = products.length ? seedProducts(products) : []
+    return { formId, formName, config, products: resolvedProducts }
+  }
+
+  return { createFormFromTemplate }
+}

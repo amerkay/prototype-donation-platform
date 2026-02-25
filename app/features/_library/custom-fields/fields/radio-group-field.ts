@@ -51,7 +51,6 @@ export function createRadioGroupFieldAdminConfig(): Record<string, FieldDef> {
           label: 'Default Value',
           description: 'Select which option should be pre-selected',
           placeholder: 'No default selected',
-          optional: true,
           options: ({ parent }: { parent?: Record<string, unknown> }) => {
             const optionLabels = (parent?.options as string[]) ?? []
             return optionLabels.map((label) => ({

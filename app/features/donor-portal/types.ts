@@ -68,6 +68,10 @@ export interface Transaction {
   baseCurrency: string
   /** Exchange rate used: 1 original currency = X base currency */
   exchangeRate: number
+  /** Campaign currency at time of transaction */
+  campaignCurrency: string
+  /** Exchange rate: 1 original currency = X campaign currency */
+  campaignExchangeRate: number
 
   paymentMethod: PaymentMethod
   status: TransactionStatus

@@ -15,7 +15,7 @@ export const useCampaignDonationFormsForm = defineForm('campaign-basic', (_ctx) 
   // Note: Validation uses props.formsCount which is injected by CampaignMasterConfigPanel
   const formsList = componentField('formsList', {
     component: FormsList,
-    // Hide for fundraiser campaigns (they inherit forms from parent template)
+    // Hidden for fundraiser campaigns (uses inline donation amounts instead)
     visibleWhen: () => !store.isFundraiser,
     // Validate using the formsCount prop that will be injected
     rules: z.any().refine(

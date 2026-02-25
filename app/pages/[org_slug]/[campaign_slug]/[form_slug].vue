@@ -20,8 +20,9 @@ const formSlug = computed(() => route.params.form_slug as string)
 const formConfigStore = useFormConfigStore()
 const donationStore = useDonationFormStore()
 const cartStore = useImpactCartStore()
-const { getForm } = useForms(campaignSlug.value)
 
+// Each campaign (including fundraisers) has its own forms via copy-on-create
+const { getForm } = useForms(campaignSlug.value)
 const form = computed(() => getForm(formSlug.value))
 
 // Initialize form config on mount

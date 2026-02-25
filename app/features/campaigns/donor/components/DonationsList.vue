@@ -7,6 +7,7 @@ const props = defineProps<{
   donations: CampaignDonation[]
   totalCount: number
   defaultView?: 'recent' | 'top'
+  campaignCurrency?: string
 }>()
 
 const currentView = ref<'recent' | 'top'>(props.defaultView || 'recent')
@@ -57,7 +58,12 @@ const sortedDonations = computed(() => {
 
     <!-- Donations list -->
     <div class="space-y-2">
-      <DonationItem v-for="donation in sortedDonations" :key="donation.id" :donation="donation" />
+      <DonationItem
+        v-for="donation in sortedDonations"
+        :key="donation.id"
+        :donation="donation"
+        :campaign-currency="campaignCurrency"
+      />
     </div>
 
     <!-- Total count -->

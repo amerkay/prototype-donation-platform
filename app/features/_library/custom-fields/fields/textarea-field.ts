@@ -32,7 +32,6 @@ export function createTextareaFieldAdminConfig(): Record<string, FieldDef> {
         rows: numberField('rows', {
           label: 'Number of Rows',
           placeholder: '4',
-          optional: true,
           min: 1,
           max: 20,
           defaultValue: 4,
@@ -43,7 +42,6 @@ export function createTextareaFieldAdminConfig(): Record<string, FieldDef> {
         defaultValue: textareaFieldConstructor('defaultValue', {
           label: 'Default Value',
           placeholder: 'Optional default text',
-          optional: true,
           rows: 3,
           rules: z.string().optional()
         })

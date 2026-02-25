@@ -20,6 +20,7 @@ import { createEntryFieldsConfigSection } from '~/features/donation-form/feature
 import type { ContextSchemaInput } from '~/features/_library/custom-fields/forms/custom-fields-config-form'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
+import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { FEATURE_FORM_TYPE_SUPPORT, type FormType } from '~/features/donation-form/shared/types'
 
 /** Check if a feature is supported for the current form type from root form values */
@@ -47,6 +48,7 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
   return defineForm('donationFormAdmin', (ctx: FormContext) => {
     const currencyStore = useCurrencySettingsStore()
     const formConfigStore = useFormConfigStore()
+    const campaignStore = useCampaignConfigStore()
 
     // Provide accordion group for single-open behavior
     provideAccordionGroup()
@@ -91,13 +93,14 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
       }
     })
 
-    // Form Settings - basic settings and branding info
+    // Form Settings - hidden for fundraisers
     const formSettings = fieldGroup('formSettings', {
       label: 'Form Settings',
       description: 'Configure basic form settings.',
       collapsible: true,
       collapsibleDefaultOpen: true,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+      visibleWhen: () => !campaignStore.isFundraiser,
       fields: formBasicFields,
       // Flatten structure: form.formSettings.form → store.form
       $storePath: {
@@ -112,11 +115,13 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
       ...frequencyFields
     } = formDonationAmountsFields
 
+    // Currency Settings - hidden for fundraisers
     const currencySettings = fieldGroup('currencySettings', {
       label: 'Currency Settings',
       description: 'Configure which currencies donors can use on this form.',
       collapsible: true,
       collapsibleDefaultOpen: false,
+      visibleWhen: () => !campaignStore.isFundraiser,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
       fields: {
         currencyInfo,
@@ -129,12 +134,14 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
       }
     })
 
-    // Donation Amounts - frequency settings (donation type only)
+    // Donation Amounts - non-collapsible and always open for fundraisers
     const donationAmounts = fieldGroup('donationAmounts', {
       label: 'Donation Amounts',
-      description: 'Configure donation amounts and frequency options.',
-      collapsible: true,
-      collapsibleDefaultOpen: false,
+      description: campaignStore.isFundraiser
+        ? 'Customise the preset donation amounts on your form.'
+        : 'Configure donation amounts and frequency options.',
+      collapsible: !campaignStore.isFundraiser,
+      collapsibleDefaultOpen: campaignStore.isFundraiser,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
       visibleWhen: (ctx: FieldContext) => isDonationFormType(ctx),
       fields: frequencyFields,
@@ -143,7 +150,7 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
       }
     })
 
-    // Features - all donation features grouped together
+    // Features - hidden for fundraisers
     const features = fieldGroup('features', {
       label: 'Features',
       description:
@@ -151,6 +158,7 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
       collapsible: true,
       collapsibleDefaultOpen: false,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+      visibleWhen: () => !campaignStore.isFundraiser,
       fields: {
         impactBoost: fieldGroup('impactBoost', {
           // label: 'Impact Boost',
@@ -246,13 +254,14 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
       }
     })
 
-    // Custom Fields - standalone section
+    // Custom Fields - hidden for fundraisers
     const customFields = fieldGroup('customFields', {
       label: 'Custom Fields',
       description: 'Add custom form fields with flexible field types and conditional logic.',
       collapsible: true,
       collapsibleDefaultOpen: false,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+      visibleWhen: () => !campaignStore.isFundraiser,
       fields: customFieldsFields
     })
 

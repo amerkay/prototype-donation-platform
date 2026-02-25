@@ -18,7 +18,8 @@ export function createBasicTemplate(
       version: '1.0',
       form: {
         title: 'Support Orangutan Conservation',
-        subtitle: 'Choose your donation amount'
+        subtitle: 'Choose your donation amount',
+        formType: 'donation'
       },
       donationAmounts: {
         baseDefaultCurrency: defaultCurrency,

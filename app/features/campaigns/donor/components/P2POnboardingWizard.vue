@@ -1,13 +1,22 @@
 <script setup lang="ts">
-import type { Campaign } from '~/features/campaigns/shared/types'
+import type { Campaign, CampaignFundraiser } from '~/features/campaigns/shared/types'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
+import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { getPresetById } from '~/features/campaigns/admin/templates'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
+import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import {
   useP2PDetailsForm,
   createP2PCustomiseForm
 } from '~/features/campaigns/donor/forms/p2p-onboarding-form'
 import { extractDefaultValues } from '~/features/_library/form-builder/utils/defaults'
+import {
+  getCurrencyOptionsForSelect,
+  getCurrencySymbol
+} from '~/features/donation-form/shared/composables/useCurrency'
+import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
+import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { generateEntityId } from '~/lib/generateEntityId'
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -28,8 +37,23 @@ const props = defineProps<{
   campaign: Campaign
 }>()
 
-const { createCampaign } = useCampaigns()
+const { createCampaign, getCampaignById, updateCampaign } = useCampaigns()
 const charityStore = useCharitySettingsStore()
+const currencyStore = useCurrencySettingsStore()
+const formsStore = useFormsStore()
+const { forms: parentForms, defaultForm: parentDefaultForm } = useForms(props.campaign.id)
+
+// Currency options from parent's form enabledCurrencies or org supported
+const currencyOptions = computed(() => {
+  const parentForm = parentForms.value[0]
+  const enabled = parentForm?.config.donationAmounts.enabledCurrencies
+  if (enabled?.length) return getCurrencyOptionsForSelect(enabled)
+  return getCurrencyOptionsForSelect(currencyStore.supportedCurrencies)
+})
+
+const defaultCurrency = computed(
+  () => props.campaign.crowdfunding.currency ?? currencyStore.defaultCurrency
+)
 
 // Preset icon lookup
 const presetIcon = computed(() => {
@@ -50,7 +74,9 @@ const customiseForm = computed(() =>
   createP2PCustomiseForm({
     pageTitle: props.campaign.crowdfunding.title,
     goal: props.campaign.crowdfunding.goalAmount ?? 500,
-    story: props.campaign.crowdfunding.story
+    story: props.campaign.crowdfunding.story ?? '',
+    currency: defaultCurrency.value,
+    currencyOptions: currencyOptions.value
   })
 )
 
@@ -118,6 +144,10 @@ const lastName = computed(() => {
 })
 
 const pageTitle = computed(() => (customiseData.value.pageTitle as string) || '')
+const selectedCurrency = computed(
+  () => (customiseData.value.currency as string) || defaultCurrency.value
+)
+const currencySymbol = computed(() => getCurrencySymbol(selectedCurrency.value))
 const goal = computed(() => (customiseData.value.goal as number) || 0)
 const story = computed(() => (customiseData.value.story as string) || '')
 
@@ -133,6 +163,7 @@ const handleLaunch = () => {
     name: `${firstName.value}'s Fundraiser`,
     crowdfunding: {
       enabled: true,
+      currency: selectedCurrency.value,
       title: pageTitle.value,
       shortDescription: props.campaign.crowdfunding.shortDescription,
       story: story.value,
@@ -145,6 +176,52 @@ const handleLaunch = () => {
     },
     peerToPeer: { enabled: false }
   })
+
+  // Copy-on-create: deep-copy parent's default form into the new fundraiser
+  const sourceForm = parentDefaultForm.value
+  if (sourceForm) {
+    const newFormId = generateEntityId('form')
+    const copiedConfig = JSON.parse(JSON.stringify(sourceForm.config))
+    // Apply the fundraiser's selected currency as baseDefaultCurrency
+    copiedConfig.donationAmounts.baseDefaultCurrency = selectedCurrency.value
+    formsStore.addForm(
+      id,
+      newFormId,
+      sourceForm.name,
+      copiedConfig,
+      JSON.parse(JSON.stringify(sourceForm.products))
+    )
+  }
+
+  // Register fundraiser metadata on parent so portal can find it
+  // TODO-SUPABASE: replace hardcoded email with auth.uid() from supabase.auth.getUser()
+  const parentCampaign = getCampaignById(props.campaign.id)
+  if (parentCampaign) {
+    const fundraiserRecord: CampaignFundraiser = {
+      id: generateEntityId('fundraiser'),
+      campaignId: id,
+      parentCampaignId: props.campaign.id,
+      name: `${firstName.value} ${lastName.value}`.trim(),
+      email: 'awesome@charity.co.uk',
+      createdAt: new Date().toISOString(),
+      raisedAmount: 0,
+      donationCount: 0,
+      currency: selectedCurrency.value,
+      goal: goal.value || undefined,
+      slug: id,
+      story: story.value || undefined,
+      status: 'active',
+      isArchived: false
+    }
+    updateCampaign(props.campaign.id, {
+      fundraisers: [...parentCampaign.fundraisers, fundraiserRecord]
+    })
+    // Sync configStore if parent is currently open (learning #32)
+    const configStore = useCampaignConfigStore()
+    if (configStore.id === props.campaign.id) {
+      configStore.fundraisers.push(fundraiserRecord)
+    }
+  }
 
   createdCampaignId.value = id
   launched.value = true
@@ -272,8 +349,8 @@ const handleLaunch = () => {
           </div>
           <div class="space-y-1">
             <div class="flex justify-between text-xs text-muted-foreground">
-              <span>£0 raised</span>
-              <span>Goal: £{{ goal.toLocaleString() }}</span>
+              <span>{{ currencySymbol }}0 raised</span>
+              <span>Goal: {{ currencySymbol }}{{ goal.toLocaleString() }}</span>
             </div>
             <Progress :model-value="0" class="h-2" />
           </div>

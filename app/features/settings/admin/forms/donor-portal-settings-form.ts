@@ -30,8 +30,7 @@ function actionSection(key: string, label: string, description: string, storePat
 
       if (parts.length === 0) return 'Enabled for all donors (no restrictions).'
       return `${label} enabled if ${parts.join(' AND ')}.`
-    },
-    optional: true
+    }
   })
 
   const duration = sliderField(`${key}Duration`, {
@@ -110,8 +109,7 @@ export const useDonorPortalSettingsForm = defineForm('donorPortal', (_ctx) => {
           if (duration > 0) parts.push(`subscription active for ${formatDuration(duration)}+`)
           if (minValue > 0) parts.push(`donor value above ${symbol}${minValue}`)
           return `Refund enabled if ${parts.join(' AND ')}.`
-        },
-        optional: true
+        }
       }),
       refundWindowDays: selectField('refundWindowDays', {
         label: 'Refund window',

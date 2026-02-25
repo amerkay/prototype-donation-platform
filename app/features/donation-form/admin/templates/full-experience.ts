@@ -18,7 +18,8 @@ export function createFullExperienceTemplate(
       version: '1.0',
       form: {
         title: 'Make a Donation',
-        subtitle: 'Choose your donation amount'
+        subtitle: 'Choose your donation amount',
+        formType: 'donation'
       },
       donationAmounts: {
         baseDefaultCurrency: defaultCurrency,

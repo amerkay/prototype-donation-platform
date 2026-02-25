@@ -71,7 +71,6 @@ export function createStallBookingTemplate(
               type: 'text' as const,
               id: 'business_name',
               label: 'Business / Organisation',
-              optional: true,
               placeholder: 'Business or org name'
             },
             {

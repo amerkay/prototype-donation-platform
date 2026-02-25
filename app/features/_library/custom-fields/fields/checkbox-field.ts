@@ -30,7 +30,6 @@ export function createCheckboxFieldAdminConfig(): Record<string, FieldDef> {
           description: 'Leave empty for a single checkbox, or add options for a checkbox group',
           sortable: true,
           addButtonText: 'Add Option',
-          optional: true,
           itemField: textField('', {
             placeholder: 'Enter option text',
             rules: z.string().min(1, 'Option text is required')

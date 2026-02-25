@@ -34,8 +34,7 @@ export const useAfterSaleSettingsForm = defineForm('afterSale', (_ctx) => {
   // ── Recurring Upsell ──
   const recurringUpsellEnabled = toggleField('recurringUpsellEnabled', {
     label: 'Enable recurring upsell',
-    description: 'Show a "Make this a monthly gift" prompt after one-time donations',
-    optional: true
+    description: 'Show a "Make this a monthly gift" prompt after one-time donations'
   })
 
   const recurringUpsellFraction = selectField('recurringUpsellFraction', {
@@ -78,8 +77,7 @@ export const useAfterSaleSettingsForm = defineForm('afterSale', (_ctx) => {
   // ── Social Sharing ──
   const socialSharingEnabled = toggleField('socialSharingEnabled', {
     label: 'Enable social sharing',
-    description: 'Show a "Spread the word" prompt on the confirmation page',
-    optional: true
+    description: 'Show a "Spread the word" prompt on the confirmation page'
   })
 
   const socialSharingMessage = textField('socialSharingMessage', {

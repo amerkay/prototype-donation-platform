@@ -34,7 +34,7 @@ export function createCampaignConfigMaster() {
     // Lock all sections when campaign is in a terminal state
     const isStatusLocked = () => store.status === 'completed' || store.status === 'ended'
 
-    // "Donation Forms" section - hidden for fundraiser (forms inherited from template)
+    // "Donation Forms" section - hidden for fundraiser (uses inline donation amounts instead)
     const donationForms = fieldGroup('donationForms', {
       label: 'Donation Forms',
       description: 'Configure donation form assignments for this campaign.',
@@ -43,7 +43,6 @@ export function createCampaignConfigMaster() {
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
       fields: donationFormsFields,
       disabled: isStatusLocked,
-      // Hidden for fundraiser campaigns (forms inherited from template)
       visibleWhen: () => !store.isFundraiser
     })
 

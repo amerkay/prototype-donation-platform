@@ -19,8 +19,7 @@ export const useDonationFormBasicForm = defineForm('formBasic', () => {
 
   const formSubtitle = textField('subtitle', {
     label: 'Form Subtitle',
-    placeholder: 'Enter form subtitle',
-    optional: true
+    placeholder: 'Enter form subtitle'
   })
 
   const formType = readonlyField('formType', {

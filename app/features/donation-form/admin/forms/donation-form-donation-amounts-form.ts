@@ -15,6 +15,8 @@ import {
   getCurrencySymbol
 } from '~/features/donation-form/shared/composables/useCurrency'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
+import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { createPresetAmountsField } from './preset-amounts-field'
 
 // Zod schema for frequency validation
@@ -84,7 +86,7 @@ const frequencySchema = z
   })
 
 /** Resolve base default currency from root form values (may be in donationAmounts or currencySettings group) */
-function getBaseDefaultCurrencyFromRoot(root: unknown): string {
+export function getBaseDefaultCurrencyFromRoot(root: unknown): string {
   const r = root as Record<string, Record<string, unknown> | undefined>
   return (
     (r?.currencySettings?.baseDefaultCurrency as string) ||
@@ -97,18 +99,23 @@ function getBaseDefaultCurrencyFromRoot(root: unknown): string {
 function createFrequencyTabFields(
   placeholder: string,
   maxPlaceholder: string,
-  description: string
+  description: string,
+  isFundraiser: boolean
 ): Record<string, FieldDef> {
+  const isEnabled = ({ values }: FieldContext) => !!(values?.enabled as boolean | undefined)
+  const isEnabledAndNotFundraiser = (ctx: FieldContext) => isEnabled(ctx) && !isFundraiser
+
   return {
     enabled: toggleField('enabled', {
       label: 'Enabled',
       description,
+      visibleWhen: () => !isFundraiser,
       rules: z.boolean()
     }),
     label: textField('label', {
       label: 'Display Label',
       placeholder,
-      visibleWhen: ({ values }: FieldContext) => !!(values?.enabled as boolean | undefined),
+      visibleWhen: isEnabledAndNotFundraiser,
       rules: ({ values }: FieldContext) => {
         const enabled = values.enabled as boolean | undefined
         return enabled ? z.string().min(1, 'Label is required') : z.string()
@@ -117,14 +124,14 @@ function createFrequencyTabFields(
     enableAmountDescriptions: toggleField('enableAmountDescriptions', {
       label: 'Add descriptions per amount',
       description: 'Show a description (short text + image) for each preset amount',
-      visibleWhen: ({ values }: FieldContext) => !!(values?.enabled as boolean | undefined),
+      visibleWhen: isEnabledAndNotFundraiser,
       rules: z.boolean().optional()
     }),
     presetAmounts: createPresetAmountsField(),
     customAmount: fieldGroup('customAmount', {
       label: 'Custom Amount Range',
       class: 'grid grid-cols-2 gap-x-3',
-      visibleWhen: ({ values }: FieldContext) => !!(values?.enabled as boolean | undefined),
+      visibleWhen: isEnabledAndNotFundraiser,
       fields: {
         min: currencyField('min', {
           label: 'Minimum',
@@ -157,6 +164,10 @@ function createFrequencyTabFields(
 export const useDonationFormDonationAmountsForm = defineForm('formDonationAmounts', () => {
   // Get currency options from store — reactive computed so options update when org settings change
   const currencyStore = useCurrencySettingsStore()
+  const campaignStore = useCampaignConfigStore()
+  const formConfigStore = useFormConfigStore()
+  const isFundraiser = campaignStore.isFundraiser
+
   const supportedOptions = computed(() =>
     getCurrencyOptionsForSelect(currencyStore.supportedCurrencies)
   )
@@ -205,40 +216,51 @@ export const useDonationFormDonationAmountsForm = defineForm('formDonationAmount
     }
   })
 
+  // Build tabs — fundraisers only see frequencies enabled in their copied form
+  const allTabs = [
+    {
+      value: 'once',
+      label: 'One-time',
+      fields: createFrequencyTabFields(
+        'One-time',
+        '1000000',
+        'Show One-time as an option on the donation form',
+        isFundraiser
+      )
+    },
+    {
+      value: 'monthly',
+      label: 'Monthly',
+      fields: createFrequencyTabFields(
+        'Monthly',
+        '1000000',
+        'Show Monthly as an option on the donation form',
+        isFundraiser
+      )
+    },
+    {
+      value: 'yearly',
+      label: 'Yearly',
+      fields: createFrequencyTabFields(
+        'Yearly',
+        '50000',
+        'Show Yearly as an option on the donation form',
+        isFundraiser
+      )
+    }
+  ]
+
+  const enabledFreqs = formConfigStore.donationAmounts?.frequencies as
+    | Record<string, { enabled?: boolean }>
+    | undefined
+  const tabs = isFundraiser ? allTabs.filter((t) => enabledFreqs?.[t.value]?.enabled) : allTabs
+
   const frequencies = tabsField('frequencies', {
     tabsListClass: 'w-full',
     label: 'Donation Frequencies',
     description: 'Configure available donation frequencies and their preset amounts',
-    defaultValue: 'once',
-    tabs: [
-      {
-        value: 'once',
-        label: 'One-time',
-        fields: createFrequencyTabFields(
-          'One-time',
-          '1000000',
-          'Show One-time as an option on the donation form'
-        )
-      },
-      {
-        value: 'monthly',
-        label: 'Monthly',
-        fields: createFrequencyTabFields(
-          'Monthly',
-          '1000000',
-          'Show Monthly as an option on the donation form'
-        )
-      },
-      {
-        value: 'yearly',
-        label: 'Yearly',
-        fields: createFrequencyTabFields(
-          'Yearly',
-          '50000',
-          'Show Yearly as an option on the donation form'
-        )
-      }
-    ],
+    defaultValue: tabs[0]?.value ?? 'once',
+    tabs,
     rules: z
       .object({
         once: frequencySchema,

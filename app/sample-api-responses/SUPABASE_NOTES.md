@@ -269,8 +269,22 @@ Both `completed` and `ended` are terminal — cannot transition back to active. 
 
 ---
 
+## Campaign Currency Immutability
+
+`crowdfunding.currency` is set once at campaign creation and never changed. This is enforced at three levels:
+
+1. **Client store guard** — `campaignConfig.ts` setter ignores writes when `store.id` exists
+2. **Admin form** — currency combobox hidden for existing campaigns; replaced with read-only `alertField`
+3. **DB (future)** — `campaigns.crowdfunding->>'currency'` should be enforced immutable via trigger or application-layer check on UPDATE
+
+Transactions store `campaign_currency` and `campaign_exchange_rate` at creation time. Stats are aggregated in campaign currency via `total_amount * campaign_exchange_rate`. Cross-currency fundraiser aggregation is a known TODO (sums without conversion).
+
+---
+
 ## TODOs / Notes not to forget
 
+- [ ] Campaign currency immutability: add server-side guard on UPDATE to prevent `crowdfunding->>'currency'` changes after initial INSERT
+- [ ] Cross-currency fundraiser aggregation: `useFundraisers` sums `raisedAmount` without conversion when fundraisers use different currencies
 - [ ] Currency auto-population trigger replaces client-side `ensureCurrencyEntries` (see trigger above)
 - [ ] Currency removal guard: server-side check that no forms reference a currency (`enabledCurrencies`/`baseDefaultCurrency` in `campaign_forms.settings` JSONB) before allowing removal from `org_config.supported_currencies`
 - [ ] Per-user `interfaceConfig` table: sorting, table/card mode, filter presets — persists across devices

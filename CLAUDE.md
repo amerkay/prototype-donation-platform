@@ -14,9 +14,29 @@ pnpm dlx shadcn-vue@latest add [component]  # Add shadcn-vue component
 
 Do NOT run `pnpm dev` — no browser access.
 
+## Critical Patterns
+
+**CRUD pattern** (campaigns, products, certificates, emails): Singleton composable (`useSessionStorageSingleton`) → Card listing (`AdminCardGrid` + `AdminEntityCard` with #image/#badges/#stats/#actions) → Pinia edit store (`useEditableState`) → Edit page (`EditLayout` + `useEditState` from `_shared/`) → Config form (`AdminConfigPanel` + FormRenderer + `StickyButtonGroup`). Delete protection via `getDeleteProtection()`. Smart dirty detection: `useEditState` reads `originalData` from `store.toSnapshot()`, NOT composable.
+
+**Admin list pattern** (donations, donors, subscriptions): `AdminListPage` + `DataTable` + `AdminFilterSheet`. Cross-entity filtering: `useEntityDataService` + `buildCustomFieldSchema` + `withCustomFieldEvaluators`.
+
+**Form-builder for ALL forms**: Use `defineForm()`, field constructors, `FormRenderer`. Read `app/features/_library/form-builder/README.md` first. NON-NEGOTIABLE.
+
+**`_library/` is sacred**: `form-builder` and `custom-fields` must NEVER contain donation-specific logic. Read READMEs first: `app/features/_library/form-builder/README.md`, `app/features/_library/custom-fields/README.md`.
+
+**Admin previews**: Populate real Pinia stores with sample data, render real donor components. Never inject preview context into donor components.
+
+**v-html sanitization**: ALL `v-html` → `sanitizeRichText()` from `~/features/_library/form-builder/utils/sanitize-html.ts`. Templates with variables → `processTemplateRichText()` from `~/features/templates/admin/utils/template-rich-text.ts`.
+
+**Save/discard**: ALL admin/portal settings pages MUST use `StickyButtonGroup` from `~/features/_admin/components/StickyButtonGroup.vue`. Never custom button bars.
+
+**AlertDialogs**: Must be separate components — never inline. Reuse `AdminDeleteDialog` for simple confirmations.
+
+**Terminal state**: `editableMode = ref(!isTerminal.value)`, pass `editable={undefined}` to `EditLayout` when terminal.
+
 ## Architecture
 
-**Vertical Slice Architecture**: organize by WHO uses it (`admin/` vs `donor/`), not what it displays.
+**Vertical Slice**: Organize by WHO uses it (`admin/` vs `donor/`), not what it displays.
 
 ```
 app/features/[feature-name]/
@@ -25,144 +45,60 @@ app/features/[feature-name]/
   shared/      → only when BOTH sides import it (80%+ rule)
 ```
 
-**Rules**: If 80%+ usage is one side, move it there. Stores follow their primary consumer.
+**Type organization**: Config types (`*Settings`) → `admin/types.ts`. Runtime types → `admin/` or `donor/types.ts` by primary consumer. Truly shared (~50/50) → `shared/types.ts`.
 
-**Type Organization**:
+**`_library/`**: Domain-agnostic reusable modules (form-builder, custom-fields).
+**`_admin/`**: Admin-specific UI — sidebar, list pages, detail cards, config panels, quick find.
+**`_shared/`**: Cross-boundary infrastructure — BreadcrumbBar, DataTable, EditLayout, useEditState, useEntityDataService, NavUser, column/filter utils.
 
-- Config types (`*Settings` interfaces) → `admin/types.ts`
-- Runtime types (data models, state shapes) → `donor/types.ts` or `admin/types.ts` based on primary consumer
-- Truly shared types (used ~50/50 by both) → `shared/types.ts`
-
-**Library modules** (`app/features/_library/`): form-builder and custom-fields are **reusable, domain-agnostic**. They MUST NEVER contain donation-specific logic. When working with these modules, ALWAYS read their README.md first:
-
-- `app/features/_library/form-builder/README.md` — defineForm API, field types, containers, conditions, store mapping
-- `app/features/_library/custom-fields/README.md` — field factories, admin config, runtime rendering
-
-**Admin infrastructure** (`app/features/_admin/`): admin-specific UI (sidebar, list pages, detail cards with stats, config panels).
-
-**Shared infrastructure** (`app/features/_shared/`): cross-boundary code used by both admin and portal — `BreadcrumbBar`, `EditLayout`, `useEditState`, `useEntityDataService`, `NavUser`, column/filter utils.
+Use glob/grep to discover files, stores, composables, and pages — they are not enumerated here.
 
 ## Code Standards
 
-**Components**: `<script setup lang="ts">`. Order: imports, constants, props/emits, state, computed, methods. PascalCase components, camelCase variables, UPPER_SNAKE_CASE constants.
-
-**Styling**: NEVER concatenate classes. Use `cn()` from `@/lib/utils`. Explicit conditionals for dynamic classes.
-
-**State**: Local `ref()`/`computed()` in components. Composables for shared state. No prop mutations — emit events.
-
-**Validation**: vee-validate + Zod. Schema per field type.
-
-**shadcn-vue**: Do not edit `app/components/ui/` unless necessary. For frontend tasks needing ready-made components, consult `.claude/shadcn-vue-components.md` (lists all components with purposes). Use the docs URL template in that file (`https://www.shadcn-vue.com/docs/components/[component].html`) to read full documentation before building custom UI.
-
-**Save/Discard actions**: All admin and donor portal settings pages with save/discard functionality MUST use `StickyButtonGroup` from `~/features/_admin/components/StickyButtonGroup.vue`. Never create custom save/discard button bars.
-
-**v-html sanitization**: ALL `v-html` usage MUST sanitize content using `sanitizeRichText()` from `~/features/_library/form-builder/utils/sanitize-html.ts`. For templates with variables, use `processTemplateRichText()` from `~/features/templates/admin/utils/template-rich-text.ts`. Never render unsanitized HTML.
-
-## Project Summary
-
-<!-- regenerate with /update-project-summary -->
-
-| Feature       | Path                                   | Purpose                                                                                                                                                                                                                                                                                          |
-| ------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| donation-form | `app/features/donation-form/`          | Multi-step donation wizard with 13 sub-features (contact-consent, cover-costs, custom-fields, donor-info, entry-fields, gift-aid, impact-boost, impact-cart, product, product-selector, shipping-notice, terms, tribute); 9 form templates (incl. registration, stall-booking, dog-show-entries) |
-| campaigns     | `app/features/campaigns/`              | Campaign CRUD, crowdfunding, P2P fundraising, card grid listing + edit pages                                                                                                                                                                                                                     |
-| donations     | `app/features/donations/`              | Admin donation list/detail with refund actions; shared `useRefundAction` composable; columns, custom field filters                                                                                                                                                                               |
-| donors        | `app/features/donors/`                 | Admin donor list/detail: columns, composables, cross-entity custom field filters                                                                                                                                                                                                                 |
-| donor-portal  | `app/features/donor-portal/`           | Donor dashboard: transaction history, fundraiser management, action eligibility gating                                                                                                                                                                                                           |
-| products      | `app/features/products/`               | Impact product CRUD: card grid listing, edit page with preview, forms, store, ProductPickerList for form linking                                                                                                                                                                                 |
-| subscriptions | `app/features/subscriptions/`          | Subscription management: admin list/detail, portal detail with pause/cancel/change-amount actions, shared `SubscriptionActionDialogs` + `useSubscriptionActions`, read-only `SubscriptionCard`, cross-entity custom field filters                                                                |
-| settings      | `app/features/settings/`               | Org config: general, branding, charity (tabbed per-currency overrides), currency, team, API, billing, payments, social-sharing, after-sale (recurring upsell), donor-portal (action eligibility)                                                                                                 |
-| templates     | `app/features/templates/`              | Certificates, receipts, customizable emails (donor + eCards only): card grid listing, edit pages, tokenized card system, model-driven Vue SFC rendering                                                                                                                                          |
-| emails        | `app/emails/`                          | nuxt-email-renderer: DonationEmail + 7 tokenized card components; `system/templates.ts` for hard-coded admin/P2P/team emails                                                                                                                                                                     |
-| form-builder  | `app/features/_library/form-builder/`  | Schema-driven form framework: defineForm API, 19 field types, conditions, containers, filters                                                                                                                                                                                                    |
-| custom-fields | `app/features/_library/custom-fields/` | Admin-configurable dynamic fields with 8 field type factories                                                                                                                                                                                                                                    |
-| \_admin       | `app/features/_admin/`                 | Admin-specific UI: sidebar, AdminListPage, AdminConfigPanel, AdminEntityCard, AdminCardGrid, PreviewEditable, quick find; admin detail cards (DonorInfoCard with stats, LineItemsCard, CustomFieldsCard, TransactionHistoryCard), `useDonorStats`                                                 |
-| \_shared      | `app/features/_shared/`                | Cross-boundary shared: BreadcrumbBar, DataTable, EditLayout, useEditState, useEntityDataService, NavUser, column-builders, actionColumn, filter utils                                                                                                                                            |
-
-**CRUD pattern (campaigns, products, certificates, emails):** Singleton composable (`useSessionStorageSingleton`) → Card listing (`AdminCardGrid` + `*Card.vue` wrapping `AdminEntityCard` with slots for #image/#badges/#stats/#actions) → Pinia edit store (`useEditableState`) → Edit page (`[id].vue` + `EditLayout` + `useEditState` from `_shared/`) → Config form (`AdminConfigPanel` wrapping FormRenderer + StickyButtonGroup). Utility: `app/lib/generateEntityId.ts`. **Delete protection:** Each composable exposes `getDeleteProtection(id): DeleteProtection` (interface in `_shared/composables/useEditState.ts`) — Cards and Headers both call it for consistent disabled state. **Toast wrappers:** `update*Name()`/`update*Status()` methods in each composable show sonner toasts; raw `update*()` is silent (used by `store.save()` which toasts via `useEditState`). **Smart dirty detection:** `useEditState` patches `store.markDirty()` with deep comparison (`hasChanges` computed) so `isDirty` auto-clears when form values return to saved state. **Requires** `originalData` to read from store (via `store.toSnapshot()`), NOT from the composable — composable data doesn't change on edit, so `hasChanges` would always be `false`.
-
-**Admin list pattern (donations, donors, subscriptions):** `AdminListPage` component wraps breadcrumbs, page header with date range picker + filter button + quick find + export dropdown, `DataTable` (from `_shared/`), and `AdminFilterSheet` with `FormRenderer`. Each page provides columns, data, filter composable, and export mapper via `#export-menu` slot. `useEntityDataService` (singleton) provides cross-entity lookup maps. `useQuickFind` adds debounced text search. Filter composables use `useFilterState` with dynamic schemas (product names, custom fields scanned from data) and custom evaluators for cross-entity + JSONB custom field conditions. `buildCustomFieldSchema` (`_shared/utils/`) scans transaction `customFields` for dynamic filter schema; `withCustomFieldEvaluators` uses Proxy for cross-entity custom field evaluation without pre-registration.
-
-**Key stores:** `donation-form/shared/stores/formConfig.ts` (admin config), `donation-form/donor/stores/donationForm.ts` (donor state, per-form-ID persistence), `donation-form/features/impact-cart/donor/stores/impactCart.ts` (cart by frequency, per-form-ID persistence), `campaigns/shared/stores/campaignConfig.ts` (campaign config), `campaigns/shared/stores/forms.ts` (campaign forms), `settings/admin/stores/charitySettings.ts` (charity identity, phone, reply-to email, structured address, tabbed per-currency overrides with auto-population), `settings/admin/stores/currencySettings.ts` (org currencies), `settings/admin/stores/generalSettings.ts`, `settings/admin/stores/brandingSettings.ts`, `settings/admin/stores/teamSettings.ts`, `settings/admin/stores/paymentSettings.ts`, `settings/admin/stores/apiSettings.ts`, `settings/admin/stores/billingSettings.ts`, `settings/admin/stores/socialSharingSettings.ts` (org-level social platform availability), `settings/admin/stores/afterSaleSettings.ts` (recurring upsell, social sharing post-donation), `settings/admin/stores/donorPortalSettings.ts` (action eligibility gates), `templates/admin/stores/certificateTemplate.ts`, `templates/admin/stores/emailTemplate.ts`, `templates/admin/stores/receiptTemplate.ts`, `products/admin/stores/product.ts`, `_admin/stores/adminDateRange.ts` (shared date range picker state).
-
-**Key composables:** `useCampaigns()`, `useForms()`, `useFundraisers()`, `useFundraiserFilters()`, `useCampaignShare()`, `useCampaignTypes()`, `useCampaignFormatters()`, `useDonorPortal()`, `useActionEligibility()`, `useRefundAction()`, `useSubscriptionActions()`, `useAdminSubscriptions()`, `useDonations()`, `useDonors()`, `useDonorStats()` (shared donor metrics for detail cards), `useProducts()`, `useCertificateTemplates()`, `useEmailTemplates()`, `useCurrency()`, `useDonationCurrencies()`, `useFormTypeLabels()`, `useDonationFormContext()`, `useAdminConfigForm()`, `useEditState()` (in `_shared/`), `defineSettingsStore()` (generic store factory), `useSessionStorageSingleton()`, `useGeneratePdf()`, `useBrandingCssVars()`, `usePreviewEditable()`, `useFilterState()`, `useEntityDataService()`, `useQuickFind()`, `useExport()`, `findFormsUsingCurrencies()`/`stripCurrenciesFromForms()` (currency guard composable).
-
-**Layouts:** `admin.vue`, `admin-preview.vue`, `donor.vue`, `portal.vue`, `print.vue`, `default.vue`.
-
-**Pages:** `app/pages/admin/` (dashboard, campaigns/[id]/forms/[formId], p2p/templates/index+[id], p2p/fundraisers/index+[id], donations/[id], donors/[id], products/[id], subscriptions/[id], templates: certificates/[id] + emails/[id] + receipts + email-cards-preview, settings: general/branding/charity/currency/team/api/billing/payments/social-sharing/after-sale/donor-portal + payments/callback/stripe-connect/paypal-connect), `app/pages/[org_slug]/` (donor-facing: campaign pages, forms, P2P onboarding/templates), `app/pages/portal/` (donor dashboard: donations/[id], subscriptions/[id], fundraisers/[id]/index+edit, my-data), `app/pages/print/` (PDF render routes: certificate, receipt), `app/pages/preview-pangea.vue`, `app/pages/index.vue` (landing), `app/pages/terms.vue`.
-
-**Server API:** `server/api/pdf.post.ts` (PDF generation via Puppeteer), `server/api/print-data.get.ts` (token-based model retrieval), `server/api/export.post.ts` (data export), `server/api/send-email.post.ts` (email sending). **PDF utils:** `server/utils/pdf/generate-pdf.ts` (Puppeteer + @sparticuz/chromium), `server/utils/pdf/print-data-store.ts` (Nitro useStorage with netlify-blobs/fs drivers, 30s TTL).
-
-<!-- end project summary -->
-
-## Continuous Learning
+- **Component order**: `<script setup lang="ts">`. Imports, constants, props/emits, state, computed, methods.
+- **Styling**: NEVER concatenate classes. Use `cn()` from `@/lib/utils`. Explicit conditionals for dynamic classes.
+- **shadcn-vue**: Consult `.claude/shadcn-vue-components.md` for available components. Docs: `https://www.shadcn-vue.com/docs/components/[component].html`.
+- **Internal links**: NEVER use `<a>` for internal navigation. Always `NuxtLink`. In `.ts` files: `import { NuxtLink } from '#components'`.
+- **Nuxt nested routes**: `pages/foo/index.vue` + `pages/foo/[id].vue` for siblings. NOT `pages/foo.vue` + `pages/foo/[id].vue` (that's parent-child).
 
 <!-- continuous learning notes -->
 
-1. `componentField` excluded from autoMap by default; persist via `$storePath` or manual getData/setData
-2. With `reka-ui` combobox, avoid manual open/select handlers that fight internal state
-3. `pnpm analyze` outputs chunk sizes mid-stream, not at end; grep for `.js` to find bundle info
-4. UX polish: previews show real data (linked products, not placeholders), toasts on every save
-5. Archived entities must disable destructive/additive actions (e.g., no adding products to archived templates)
-6. `form-builder/filters/` provides `useFilterState(id, schema, options?)` — condition-builder-based filters with auto form+predicate+URL sync via `_f` param
-7. `form-builder/conditions/ui/` houses condition builder UI (moved from custom-fields); condition barrel re-exports it
-8. `$storePath` deep writes silently fail if intermediates missing; stores must pre-populate (e.g., `ensureOverrideEntries` after hydrate)
-9. For cross-field validation in tabs, use dynamic `rules(ctx)` on the field reading sibling `values` (like donation-amounts `label` field pattern)
-10. This is a prototype — don't overthink type/schema changes. Bias toward simple, direct solutions over future-proof abstractions.
-11. Accordion IDs in `productOpenAccordionId` are prefixed with form section ID (e.g., `product.basic`, not `basic`)
-12. Currency removal from supported list must check form usage (enabledCurrencies/baseDefaultCurrency) before saving
-13. **Supabase migration**: `app/sample-api-responses/SUPABASE_SCHEMA_DRAFT.md` (22 tables) and `SUPABASE_NOTES.md` (migration TODOs) are the blueprint. Search `TODO-SUPABASE` to find all migration points.
-13a. **Stripe API security**: `app/sample-api-responses/STRIPE_API_NOTES.md` — server-side verification blueprint for refund, pause, cancel, change-amount. All eligibility gates must be re-evaluated server-side; never trust frontend flags.
-14. **Previews must use exact donor-facing components/mechanisms** — never mock or duplicate. Admins see the real layout donors see; DRY is automatic.
-15. **Immutable records**: generate receipt/certificate PDFs at donation time, store on S3. PDF = snapshot. See `COMPLIANCE_DECISIONS.md`.
-16. **Refunds** are negative transactions (`type: 'refund'`) with `refund_of_transaction_id` FK. Cover costs = no special treatment.
-17. **GDPR**: anonymize PII on transactions (don't delete), delete PDFs, keep financial data (Article 17(3)(b)). `consent_records` table.
-18. **HMRC Gift Aid**: `gift_aid_declarations` table — name, address, date. 6-year retention after last covered donation.
-19. **AdminEntityCard**: All CRUD listing cards use slot-based `AdminEntityCard` wrapper (#image/#badges/#stats/#actions). Image area = `aspect-3/1`. Use `AdminEntityCardPlaceholder` for missing images.
-20. **System emails** (admin/P2P/team) are hard-coded in `app/emails/system/templates.ts`, not admin-editable. Only donor + eCard emails are customizable.
-21. **fieldGroup nests data**: `fieldGroup('name', { fields: { firstName } })` produces `{ name: { firstName } }` in emitted form data, NOT flat `{ firstName }`. Always account for nesting when reading formSections.
-22. **Admin preview data pattern**: Populate real Pinia stores with sample data, render real donor components. Never inject/prop preview context into donor components — they must stay preview-unaware.
-23. **Currency totals**: Always `totalAmount × exchangeRate`. Subscription mirrors Transaction: `subtotal + coverCostsAmount = totalAmount`.
-24. **Internal links**: NEVER use `<a>` tags for internal navigation. Always use `NuxtLink`. In `.ts` files (e.g. column defs), import via `import { NuxtLink } from '#components'`. — cover costs go to the charity (not platform), so `totalAmount` is the true donation. `exchangeRate` converts to base currency (1 if already base). Donor value for eligibility is per-org (`charityName`), not global.
-25. **Nuxt nested routes**: `pages/foo.vue` + `pages/foo/[id].vue` = parent-child (needs `<NuxtPage/>`). Use `pages/foo/index.vue` + `pages/foo/[id].vue` for sibling routes.
-26. **Detail cards split**: Admin has DonorInfoCard (with stats), LineItemsCard, CustomFieldsCard, TransactionHistoryCard. Portal has PortalDonorCard (no stats/link), PortalLineItemsCard, PortalDetailRow. `_shared/` holds cross-boundary infra (EditLayout, useEditState, DataTable, etc.).
-27. **Column `meta.thClass`**: DataTable reads `columnDef.meta.thClass` for `<th>` styling. Amount columns use `meta: { thClass: 'w-full text-right' }` to fill space and right-align headers.
-28. **shadcn Card without CardHeader**: `CardContent` defaults to `pt-6` assuming a header above. Use `pt-0` when there's no `CardHeader`.
-29. **Terminal state = editableMode off**: Pages with `editableMode` must init `ref(!isTerminal.value)` + pass `editable={undefined}` to EditLayout when terminal. Always audit sibling pages (e.g. form edit under campaign) for the same pattern.
-30. **Code audit after fixes**: After fixing a bug pattern, always search for the same pattern across the codebase before considering the fix complete.
-31. **P2P status model**: Campaign `draft|active|completed|ended`; P2P templates `draft|active` only (no archive, no terminal); Fundraisers `active|completed|ended`. Subscription `paused` is separate domain — kept.
-32. **`configStore.fundraisers` is a snapshot**: initialized once from `campaign.fundraisers`, NOT reactive to `useCampaigns`. Always sync it after `updateCampaign()` when `configStore.id === campaign.id`.
-33. **AlertDialogs must be separate components** — never inline in pages/parent components. Reuse `AdminDeleteDialog` for simple confirmations.
+## Continuous Learning
+
+1. `componentField` excluded from autoMap; persist via `$storePath` or manual getData/setData
+2. reka-ui combobox: avoid manual open/select handlers that fight internal state
+3. `$storePath` deep writes silently fail if intermediates missing; stores must pre-populate
+4. Cross-field validation in tabs: use dynamic `rules(ctx)` reading sibling `values`
+5. Prototype — bias toward simple, direct solutions over future-proof abstractions
+6. Accordion IDs prefixed with section ID (e.g., `product.basic`, not `basic`)
+7. Currency removal must check form usage (enabledCurrencies/baseDefaultCurrency) before saving
+8. Supabase migration: search `TODO-SUPABASE`. Schema: `SUPABASE_SCHEMA_DRAFT.md`, notes: `SUPABASE_NOTES.md`
+9. Stripe API security: `STRIPE_API_NOTES.md` — server-side verification for all eligibility gates
+10. Immutable records: generate receipt/certificate PDFs at donation time, store on S3
+11. Refunds = negative transactions with `refund_of_transaction_id` FK. Cover costs → charity, no special treatment
+12. GDPR: anonymize PII (don't delete), keep financial data (Article 17(3)(b)). `consent_records` table
+13. HMRC Gift Aid: `gift_aid_declarations` table — 6-year retention after last covered donation
+14. System emails hard-coded in `app/emails/system/templates.ts`, not admin-editable
+15. `fieldGroup` nests data: `fieldGroup('name', { fields: { firstName } })` → `{ name: { firstName } }`
+16. Currency totals: `totalAmount × exchangeRate` = base; `× campaignExchangeRate` = campaign currency (immutable after creation)
+17. Donor value for eligibility is per-org (`charityName`), not global
+18. P2P status: Campaign `draft|active|completed|ended`; Templates `draft|active`; Fundraisers `active|completed|ended`
+19. `configStore.fundraisers` is a snapshot — always sync after `updateCampaign()` when `configStore.id === campaign.id`
 
 <!-- end continuous learning notes -->
+
+## Code Rules
+
+1. **PLAN FIRST**: Present 3+ options with 1-line desc + star rating (★) during planning. Questions only during planning, never mid-implementation.
+2. **INVESTIGATE + FOLLOW PATTERNS**: Search codebase for similar patterns before writing code. Match conventions exactly.
+3. **FORM-BUILDER FOR ALL FORMS**: Use `defineForm()`, field constructors, `FormRenderer`. Read README first. NON-NEGOTIABLE.
+4. **`_library/` IS SACRED**: No donation logic in form-builder or custom-fields.
+5. **TESTS UNCOVER BUGS**: If a test fails on sensible assertions, STOP and report — don't change test to match broken behavior.
+6. **DEFER FORMATTING**: Batch at end: `pnpm format:fix; pnpm lint:fix; pnpm typecheck` (up to 60s).
+7. **SUMMARIES + MEMORY**: Brief updates after each answer. End with conventional commit message. After tasks: check if structure changed (→ `/update-project-summary`), if learned something durable (→ update CL), if data models changed (→ update Supabase docs). Keep CL bullets ≤1 line, never duplicate — merge or clarify.
+8. **COMMITS**: Short conventional commits. Check `git --no-pager diff --staged` first. No "Authored by Anthropic" line.
 
 ## Superpowers Overrides
 
 - **No auto-commits**: NEVER commit automatically. Only commit when I explicitly ask.
 - **No worktrees**: NEVER use git worktrees. Work directly on the current branch.
-
-## Code Rules
-
-YOU MUST ALWAYS FOLLOW THESE RULES (COMMANDMENTS):
-
-1. **THINK → PLAN → WORK**: MUST identify root causes, explore 5+ approaches, choose the most minimal elegant solution. Think of 5+ solutions that are minimal, elegant, pattern-following, maintainable, readable and DRY with pros/cons and star rating for each. Pick the best, explain why. Make a detailed plan with steps before coding. **Planning mode questions**: When using `AskUserQuestion` during planning, present each option with a 1-line description including pros/cons and a star rating (★★★★☆) based on minimal overall code (even if it requires refactoring), readable, maintainable, DRY criteria. Always give me at least 3-4 options. Do NOT ask questions mid-implementation — only during planning.
-2. **INVESTIGATE FIRST**: YOU MUST ALWAYS start by searching the codebase for similar patterns or related files before writing any code.
-3. **FOLLOW EXISTING PATTERNS**: MUST study similar files in codebase first. Match established conventions exactly.
-4. **PREFER SHORTER CODE**: MUST prioritize readability and maintainability. Less code is ALWAYS better code.
-5. **DRY PRINCIPLE**: MUST extract repeated logic. One responsibility per component. Never repeat code.
-6. **MINIMAL EDITS**: MUST make the least changes to solve the problem. Remove all obsolete code immediately.
-7. **FEATURE-BASED**: MUST place all feature code in `app/features/[feature-name]/`. Never violate architecture.
-8. **TYPE SAFETY**: MUST use strict TypeScript. NEVER use `any` types. Mirror API structures exactly.
-9. **SELF-CONTAINED LOGIC**: MUST prefer isolated, clear implementations. Avoid complex dependencies.
-10. **USE shadcn-vue**: MUST use existing components or request missing ones. Do not reinvent UI.
-11. **WRITE TESTS TO UNCOVER BUGS**: Do the tests make sense? Avoid testing buggy behavior as if it's correct. If a test fails on sensible assertions, STOP and report — do not change the test to match broken behavior.
-12. **DEFER FORMATTING**: Do NOT fix lint/format issues one by one. Batch them at the end: `pnpm format:fix; pnpm lint:fix; pnpm typecheck`. These commands take up to 60 seconds.
-13. **USE FORM-BUILDER FOR ALL FORMS**: ANY form or field definition MUST use `app/features/_library/form-builder/`. NEVER create forms manually with vee-validate or custom field components. Before building or modifying ANY form, you MUST read `app/features/_library/form-builder/README.md` in full. Use `defineForm()`, field constructors (`textField()`, `selectField()`, etc.), and `FormRenderer`. This is NON-NEGOTIABLE.
-14. **`_library/` IS SACRED**: `app/features/_library/form-builder` and `app/features/_library/custom-fields` CAN NEVER have donation platform logic. They MUST be treated as independent reusable units.
-15. **READ THE DOCS**: When working with form-builder or custom-fields, ALWAYS read the relevant README.md first (`app/features/_library/form-builder/README.md` or `app/features/_library/custom-fields/README.md`).
-16. **SHORT SUMMARIES**: MUST provide brief updates after EACH answer. End with minimal conventional commit message about all the work we did in the entire session including compacted summaries unless I instruct you otherwise. The conv. commit first line must be a summary of all work done, and then bullet points with more details, keeping it concise.
-17. **KEEP MEMORY CURRENT**: After completing any task:
-    - Ask: "Did I change project structure?" If yes, bold reminder to run `/update-project-summary`
-    - Ask: "Did I learn something crucial, durable, and reusable?" If yes, update the Continuous Learning section. Rules: keep bullets short (1 line, ~100 chars), NEVER duplicate — always merge or clarify existing bullets when related. Prune stale/obsolete entries.
-    - Ask: "Did I change data models, API patterns, or filter/query logic?" If yes, update `app/sample-api-responses/SUPABASE_NOTES.md` (migration TODOs) and/or `app/sample-api-responses/SUPABASE_SCHEMA_DRAFT.md` (schema) to stay in sync. These docs are the Supabase migration blueprint — they must reflect current prototype state. **SUPABASE_NOTES.md must stay concise and actionable** — only triggers, RLS, role SQL, data layer architecture, and TODOs. NEVER add changelog-style entries ("Added X", "Renamed Y"), schema consolidation summaries (that's in the schema draft), file replacement tables, or store boilerplate patterns. If a schema change is made, update the schema draft DDL directly.
-18. **COMMIT MESSAGE STANDARD**: Use short conventional commits following rule #16. NEVER include the "Authored by Anthropic" line in commit messages. Always check for all staged changes `git --no-pager diff --staged` before writing the commit message.

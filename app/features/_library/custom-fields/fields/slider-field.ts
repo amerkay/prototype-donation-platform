@@ -40,7 +40,6 @@ export function createSliderFieldAdminConfig(): Record<string, FieldDef> {
         step: numberField('step', {
           label: 'Step',
           placeholder: '1',
-          optional: true,
           min: 5,
           defaultValue: 5,
           rules: z.number().min(1).optional()
@@ -48,20 +47,17 @@ export function createSliderFieldAdminConfig(): Record<string, FieldDef> {
         prefix: textField('prefix', {
           label: 'Prefix',
           placeholder: '$',
-          optional: true,
           rules: z.string().max(10).optional()
         }),
         suffix: textField('suffix', {
           label: 'Suffix',
           placeholder: '%',
-          optional: true,
           rules: z.string().max(10).optional()
         }),
         optional: createOptionalField(),
         defaultValue: sliderFieldConstructor('defaultValue', {
           label: 'Default Value',
           description: 'Preview your slider configuration',
-          optional: true,
           min: ({ parent }: FieldContext) => {
             return (parent?.min as number) ?? 0
           },

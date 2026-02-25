@@ -4,9 +4,11 @@ import {
   textField,
   textareaField,
   currencyField,
+  comboboxField,
   fieldGroup
 } from '~/features/_library/form-builder/api'
-import type { ComposableForm } from '~/features/_library/form-builder/types'
+import type { ComposableForm, FieldContext } from '~/features/_library/form-builder/types'
+import { getCurrencySymbol } from '~/features/donation-form/shared/composables/useCurrency'
 
 /**
  * P2P Onboarding Step 2: Personal details
@@ -27,8 +29,7 @@ export const useP2PDetailsForm: ComposableForm = defineForm('p2p-details', (ctx)
     label: 'Last name',
     placeholder: 'Smith',
     autocomplete: 'family-name',
-    defaultValue: '',
-    optional: true
+    defaultValue: ''
   })
 
   const name = fieldGroup('name', {
@@ -55,6 +56,8 @@ export function createP2PCustomiseForm(defaults: {
   pageTitle: string
   goal: number
   story: string
+  currency: string
+  currencyOptions: Array<{ value: string; label: string }>
 }): ComposableForm {
   return defineForm('p2p-customise', (ctx) => {
     ctx.title = 'Customise Your Page'
@@ -67,21 +70,32 @@ export function createP2PCustomiseForm(defaults: {
       rules: z.string().min(1, 'Page title is required')
     })
 
+    const currency = comboboxField('currency', {
+      label: 'Fundraising currency',
+      description: 'Currency for your goal and donation page',
+      defaultValue: defaults.currency,
+      searchPlaceholder: 'Search currencies...',
+      options: defaults.currencyOptions,
+      visibleWhen: () => defaults.currencyOptions.length > 1,
+      rules: z.string().min(1, 'Currency is required')
+    })
+
     const goal = currencyField('goal', {
       label: 'Fundraising goal',
       min: 10,
       defaultValue: defaults.goal,
-      rules: z.number().min(10, 'Goal must be at least £10')
+      currencySymbol: ({ values }: FieldContext) =>
+        getCurrencySymbol((values?.currency as string) || defaults.currency),
+      rules: z.number().min(10, 'Goal must be at least 10')
     })
 
     const story = textareaField('story', {
       label: 'Your story',
       placeholder: 'Tell potential donors why this cause matters to you...',
       rows: 5,
-      defaultValue: defaults.story,
-      optional: true
+      defaultValue: defaults.story
     })
 
-    return { pageTitle, goal, story }
+    return { pageTitle, currency, goal, story }
   })
 }

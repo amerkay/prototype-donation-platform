@@ -26,7 +26,6 @@ export function createEmailOptInField(
     description:
       config?.description || 'Get updates on our impact and latest news. Unsubscribe anytime.',
     defaultValue: false,
-    optional: true,
     visibleWhen
   })
 

@@ -90,7 +90,6 @@ export function createGiftAidFields(
       description:
         'I understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of Gift Aid claimed on all my donations in that tax year it is my responsibility to pay any difference.',
       defaultValue: false,
-      optional: true,
       visibleWhen: ({ values }: { values: Record<string, unknown> }) => shouldShow({ values }),
       showSeparatorAfter: true
     },
@@ -106,7 +105,6 @@ export function createGiftAidFields(
       },
       descriptionClass: 'truncate',
       defaultValue: false,
-      optional: true,
       visibleWhen: ({ values }: { values: Record<string, unknown> }) => {
         // First check parent visibility
         if (!shouldShow({ values })) return false

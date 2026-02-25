@@ -17,7 +17,8 @@ export function createBasicWithImpactTemplate(
       version: '1.0',
       form: {
         title: 'Support Orangutan Conservation',
-        subtitle: 'See the impact of your donation'
+        subtitle: 'See the impact of your donation',
+        formType: 'donation'
       },
       donationAmounts: {
         baseDefaultCurrency: defaultCurrency,

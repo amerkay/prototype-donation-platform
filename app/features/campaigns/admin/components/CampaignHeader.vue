@@ -208,7 +208,7 @@ const disabledOptions = computed(() => {
         <span class="text-sm font-medium whitespace-nowrap">
           {{ formatAmount(store.stats.totalRaised, store.stats.currency) }}
           <span class="text-muted-foreground font-normal">
-            / {{ formatAmount(store.crowdfunding?.goalAmount ?? 0) }}
+            / {{ formatAmount(store.crowdfunding?.goalAmount ?? 0, store.stats.currency) }}
           </span>
         </span>
         <span

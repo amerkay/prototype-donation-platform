@@ -26,19 +26,16 @@ export function createNumberFieldAdminConfig(): Record<string, FieldDef> {
         min: numberFieldConstructor('min', {
           label: 'Minimum Value',
           placeholder: 'No minimum',
-          optional: true,
           rules: z.number().optional()
         }),
         max: numberFieldConstructor('max', {
           label: 'Maximum Value',
           placeholder: 'No maximum',
-          optional: true,
           rules: z.number().optional()
         }),
         step: numberFieldConstructor('step', {
           label: 'Step',
           placeholder: '1',
-          optional: true,
           min: 0,
           rules: z.number().min(1).optional()
         }),
@@ -46,7 +43,6 @@ export function createNumberFieldAdminConfig(): Record<string, FieldDef> {
         defaultValue: numberFieldConstructor('defaultValue', {
           label: 'Default Value',
           placeholder: 'Optional default number',
-          optional: true,
           rules: z.number().optional()
         })
       }

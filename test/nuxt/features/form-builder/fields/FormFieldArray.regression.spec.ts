@@ -326,7 +326,7 @@ describe('FormFieldArray - Advanced Field Interactions (Continued)', () => {
               type: 'textarea',
               name: '',
               label: 'Description',
-              optional: true
+              rules: z.string().optional()
             }
           }
         }

@@ -16,7 +16,7 @@ type Props = FieldProps<string | null, DateFieldDef>
 const props = defineProps<Props>()
 const emit = defineEmits<FieldEmits<string | null>>()
 
-const { wrapperProps, resolvedDisabled } = useFieldWrapper(
+const { wrapperProps, isOptional, resolvedDisabled } = useFieldWrapper(
   props.meta,
   props.name,
   () => props.errors,
@@ -60,7 +60,7 @@ const maxValue = computed<DateValue | undefined>(() =>
   props.meta.maxDate ? toCalendarDate(props.meta.maxDate) : undefined
 )
 
-const showClear = computed(() => props.modelValue && props.meta.optional && !resolvedDisabled.value)
+const showClear = computed(() => props.modelValue && isOptional.value && !resolvedDisabled.value)
 </script>
 
 <template>

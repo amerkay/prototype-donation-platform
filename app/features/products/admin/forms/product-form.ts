@@ -30,15 +30,13 @@ export const useProductForm = defineForm('product', () => {
   })
 
   const image = imageUploadField('image', {
-    label: 'Product Image',
-    optional: true
+    label: 'Product Image'
   })
 
   const certificateTemplateId = selectField('certificateTemplateId', {
     label: 'Certificate Template',
     description: 'Select a template to email certificates when this product is purchased.',
     placeholder: 'No certificate',
-    optional: true,
     options: () => templateOptions.value
   })
 
@@ -59,7 +57,6 @@ export const useProductForm = defineForm('product', () => {
   const certificateTitle = textField('certificateTitle', {
     label: 'Certificate Title',
     placeholder: 'e.g., Maya',
-    optional: true,
     description: 'Short title shown on certificates instead of full product title',
     maxLength: 50,
     visibleWhen: (ctx) => !!ctx.values.certificateTemplateId
@@ -70,7 +67,6 @@ export const useProductForm = defineForm('product', () => {
     description: 'Text shown next to product image on certificates',
     placeholder: 'e.g., Your support helps provide food, shelter, and medical care...',
     rows: 3,
-    optional: true,
     maxLength: 250,
     visibleWhen: (ctx) => !!ctx.values.certificateTemplateId
   })
@@ -107,7 +103,6 @@ export const useProductForm = defineForm('product', () => {
     label: 'Fixed Price',
     placeholder: '30',
     min: 0,
-    optional: true,
     visibleWhen: (ctx) => ctx.values.frequency === 'once'
   })
 
@@ -115,7 +110,6 @@ export const useProductForm = defineForm('product', () => {
     label: 'Min Price',
     placeholder: '5',
     min: 0,
-    optional: true,
     visibleWhen: (ctx) => ctx.values.frequency !== 'once'
   })
 
@@ -123,7 +117,6 @@ export const useProductForm = defineForm('product', () => {
     label: 'Default Price',
     placeholder: '10',
     min: 0,
-    optional: true,
     visibleWhen: (ctx) => ctx.values.frequency !== 'once'
   })
 
