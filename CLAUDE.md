@@ -6,10 +6,12 @@ Multi-step donation platform: single/recurring donations, multi-item cart, dynam
 
 ```bash
 pnpm test:run              # All tests
-pnpm test:run -- test/nuxt/path/to/spec.ts -t "test name"  # Single test
+pnpm test:nuxt -- test/nuxt/path/to/spec.ts              # Single nuxt test file
+pnpm test:nuxt -- test/nuxt/path/to/spec.ts -t "name"   # Single nuxt test by name
 pnpm typecheck             # Type checking
 pnpm format:fix; pnpm lint:fix  # Fix formatting + lint (defer till end)
 pnpm dlx shadcn-vue@latest add [component]  # Add shadcn-vue component
+python3 scripts/extract-prompts.py [N]     # Last N sessions' prompts & Q&A (default: 3, --all for all)
 ```
 
 Do NOT run `pnpm dev` — no browser access.
@@ -84,6 +86,10 @@ Use glob/grep to discover files, stores, composables, and pages — they are not
 17. Donor value for eligibility is per-org (`charityName`), not global
 18. P2P status: Campaign `draft|active|completed|ended`; Templates `draft|active`; Fundraisers `active|completed|ended`
 19. `configStore.fundraisers` is a snapshot — always sync after `updateCampaign()` when `configStore.id === campaign.id`
+20. Test commands: `pnpm test:nuxt -- <path>` for nuxt tests (not `pnpm test:run --`); `pnpm test:run` runs all projects
+21. `BaseDialogOrDrawer` uses teleport — stub it in tests to render slots inline (Dialog content is invisible to `wrapper.text()`)
+22. `visibleWhen` closures in `defineForm` read Pinia stores at call time (not at module init) — call `form.setup(ctx)` directly to unit-test visibility logic against store state
+23. `wrapper.vm as Record<string, any>` with `// eslint-disable-next-line @typescript-eslint/no-explicit-any` to access Vue component internals in tests
 
 <!-- end continuous learning notes -->
 
