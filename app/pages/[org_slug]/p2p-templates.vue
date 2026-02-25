@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
-import CampaignCard from '~/features/campaigns/admin/components/CampaignCard.vue'
-import { Button } from '@/components/ui/button'
-import { ICON_FORWARD, ICON_DONORS } from '~/lib/icons'
+import P2PTemplateCard from '~/features/campaigns/donor/components/P2PTemplateCard.vue'
+import { ICON_DONORS } from '~/lib/icons'
 
 definePageMeta({
   layout: 'donor'
@@ -10,15 +9,12 @@ definePageMeta({
 
 const { campaigns } = useCampaigns()
 const route = useRoute()
-const router = useRouter()
 
 const p2pCampaigns = computed(() =>
   campaigns.value.filter((c) => c.type === 'p2p' && c.status === 'active')
 )
 
-const handleSelect = (campaignId: string) => {
-  router.push(`/${route.params.org_slug}/p2p-onboard/${campaignId}`)
-}
+const templateHref = (campaignId: string) => `/${route.params.org_slug}/p2p-onboard/${campaignId}`
 </script>
 
 <template>
@@ -40,14 +36,12 @@ const handleSelect = (campaignId: string) => {
 
       <!-- Template Grid -->
       <div class="grid gap-6 sm:grid-cols-2">
-        <CampaignCard v-for="campaign in p2pCampaigns" :key="campaign.id" :campaign="campaign">
-          <template #actions>
-            <Button class="w-full" @click="handleSelect(campaign.id)">
-              Start Fundraising
-              <ICON_FORWARD class="w-4 h-4 ml-1" />
-            </Button>
-          </template>
-        </CampaignCard>
+        <P2PTemplateCard
+          v-for="campaign in p2pCampaigns"
+          :key="campaign.id"
+          :campaign="campaign"
+          :href="templateHref(campaign.id)"
+        />
       </div>
     </div>
   </div>
