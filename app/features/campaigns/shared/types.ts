@@ -7,13 +7,24 @@
 import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 
-export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed' | 'archived'
+export type CampaignStatus = 'draft' | 'active' | 'completed' | 'ended'
+
+/** Dropdown-selectable statuses (ended/completed are set via action buttons, not dropdown) */
+export const CAMPAIGN_STATUS_OPTIONS: { value: CampaignStatus; label: string }[] = [
+  { value: 'draft', label: 'Draft' },
+  { value: 'active', label: 'Active' }
+]
 
 export type CampaignType = 'standard' | 'p2p' | 'fundraiser'
 
 export type P2PPreset = 'birthday' | 'tribute' | 'challenge' | 'wedding' | 'custom'
 
-export type FundraiserStatus = 'active' | 'paused' | 'removed'
+export type FundraiserStatus = 'active' | 'completed' | 'ended'
+
+/** Dropdown-selectable statuses (ended/completed are set via action buttons) */
+export const FUNDRAISER_STATUS_OPTIONS: { value: FundraiserStatus; label: string }[] = [
+  { value: 'active', label: 'Active' }
+]
 
 /**
  * Campaign fundraiser (lightweight metadata for stats rollup)
@@ -25,7 +36,7 @@ export interface CampaignFundraiser {
   parentCampaignId: string // The P2P template campaign this fundraiser belongs to
   name: string
   email: string
-  joinedAt: string
+  createdAt: string
   raisedAmount: number
   donationCount: number
   /** Currency for raisedAmount and goal (org base currency) */
@@ -35,6 +46,8 @@ export interface CampaignFundraiser {
   story?: string
   coverPhoto?: string
   status: FundraiserStatus
+  isArchived: boolean
+  completedAt?: string
 }
 
 /**
@@ -116,6 +129,7 @@ export interface Campaign {
   parentCampaignId?: string // For fundraiser campaigns, links to P2P template
   name: string
   status: CampaignStatus
+  isArchived: boolean
   createdAt: string
   updatedAt: string
   stats: CampaignStats

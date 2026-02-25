@@ -26,7 +26,10 @@ const form = computed(() => getForm(formId))
 // Initialize store synchronously so child components have store data during setup
 const store = useFormConfigStore()
 const { brandingStyle } = useBrandingCssVars()
-const editableMode = ref(true)
+const campaignIsTerminal = computed(
+  () => campaign.value?.status === 'completed' || campaign.value?.status === 'ended'
+)
+const editableMode = ref(!campaignIsTerminal.value)
 if (form.value) {
   store.initialize(form.value.config, form.value.products, form.value.id)
 }
@@ -81,14 +84,15 @@ const handlePreview = () => {
 <template>
   <EditLayout
     v-if="campaign && form"
-    v-model:editable="editableMode"
+    :editable="campaignIsTerminal ? undefined : editableMode"
     :breadcrumbs="breadcrumbs"
-    :is-dirty="store.isDirty"
+    :is-dirty="campaignIsTerminal ? false : store.isDirty"
     :show-discard-dialog="showDiscardDialog"
     preview-label="Form Preview"
     editable-last-item
     :max-length="75"
     @preview="handlePreview"
+    @update:editable="editableMode = $event"
     @update:show-discard-dialog="showDiscardDialog = $event"
     @confirm-discard="confirmDiscard"
     @update:last-item-label="renameForm(formId, $event)"
@@ -100,7 +104,7 @@ const handlePreview = () => {
     <template #preview-label>Form Preview</template>
     <template #preview>
       <div :style="brandingStyle">
-        <DonationFormPreview :editable="editableMode" />
+        <DonationFormPreview :editable="campaignIsTerminal ? false : editableMode" />
       </div>
     </template>
   </EditLayout>

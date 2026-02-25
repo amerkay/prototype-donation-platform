@@ -290,7 +290,8 @@ CREATE TABLE campaigns (
   type TEXT NOT NULL DEFAULT 'standard'
     CHECK (type IN ('standard', 'p2p', 'fundraiser')),
   status TEXT NOT NULL DEFAULT 'draft'
-    CHECK (status IN ('draft', 'active', 'paused', 'completed', 'archived')),
+    CHECK (status IN ('draft', 'active', 'completed', 'ended')),
+  is_archived BOOLEAN NOT NULL DEFAULT false,
   p2p_preset TEXT
     CHECK (p2p_preset IN ('birthday', 'tribute', 'challenge', 'wedding')),
   parent_campaign_id UUID REFERENCES campaigns(id) ON DELETE SET NULL,
@@ -380,10 +381,12 @@ CREATE TABLE campaign_fundraisers (
   story TEXT,
   cover_photo TEXT,
   status TEXT NOT NULL DEFAULT 'active'
-    CHECK (status IN ('active', 'paused', 'removed')),
+    CHECK (status IN ('active', 'completed', 'ended')),
+  is_archived BOOLEAN NOT NULL DEFAULT false,
+  completed_at TIMESTAMPTZ,
   raised_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
   donation_count INT NOT NULL DEFAULT 0,
-  joined_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX idx_fundraisers_parent ON campaign_fundraisers(parent_campaign_id);
@@ -1319,7 +1322,7 @@ CREATE POLICY "subscriptions_select_admin" ON subscriptions FOR SELECT
 -- --- Campaign Fundraisers (public) ---
 -- Anyone can view active fundraisers
 CREATE POLICY "fundraisers_select_public" ON campaign_fundraisers FOR SELECT
-  USING (status = 'active');
+  USING (status IN ('active', 'completed'));
 
 -- --- Products ---
 CREATE POLICY "products_select" ON products FOR SELECT

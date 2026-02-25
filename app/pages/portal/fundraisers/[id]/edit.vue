@@ -4,6 +4,7 @@ import CampaignHeader from '~/features/campaigns/admin/components/CampaignHeader
 import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/CampaignMasterConfigPanel.vue'
 import CrowdfundingPagePreview from '~/features/campaigns/admin/components/CrowdfundingPagePreview.vue'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { EyeOff } from 'lucide-vue-next'
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
@@ -61,7 +62,8 @@ const campaignForStore = computed(() => store.fullCampaign)
 // Form ref for validation
 const formRef = ref()
 
-const editableMode = ref(true)
+const isTerminal = computed(() => store.status === 'completed' || store.status === 'ended')
+const editableMode = ref(!isTerminal.value)
 const crowdfundingEnabled = computed(() => store.crowdfunding?.enabled !== false)
 const { brandingStyle } = useBrandingCssVars()
 
@@ -126,25 +128,36 @@ const handleDeleted = () => {
 <template>
   <EditLayout
     v-if="campaign"
-    v-model:editable="editableMode"
+    :editable="isTerminal ? undefined : editableMode"
     :breadcrumbs="breadcrumbs"
-    :is-dirty="store.isDirty"
+    :is-dirty="isTerminal ? false : store.isDirty"
     :show-discard-dialog="showDiscardDialog"
     :show-preview="crowdfundingEnabled"
     preview-label="Preview"
-    editable-last-item
+    :editable-last-item="!isTerminal"
     :max-length="75"
     @preview="handlePreview"
+    @update:editable="editableMode = $event"
     @update:show-discard-dialog="showDiscardDialog = $event"
     @confirm-discard="confirmDiscard"
     @update:last-item-label="handleNameUpdate"
   >
     <template #header>
       <CampaignHeader
+        :can-activate="true"
+        portal-mode
+        class="mb-2"
         @update:name="handleNameUpdate"
         @update:status="handleStatusUpdate"
         @deleted="handleDeleted"
       />
+
+      <Alert v-if="isTerminal">
+        <AlertDescription>
+          This fundraiser has {{ store.status === 'completed' ? 'completed' : 'ended' }}. Editing is
+          disabled.
+        </AlertDescription>
+      </Alert>
     </template>
 
     <template #content>
@@ -153,7 +166,10 @@ const handleDeleted = () => {
 
     <template #preview>
       <div :style="brandingStyle">
-        <CrowdfundingPagePreview v-if="crowdfundingEnabled" :editable="editableMode" />
+        <CrowdfundingPagePreview
+          v-if="crowdfundingEnabled"
+          :editable="isTerminal ? false : editableMode"
+        />
         <Empty v-else class="border border-dashed">
           <EmptyHeader>
             <EmptyMedia variant="icon"><EyeOff /></EmptyMedia>

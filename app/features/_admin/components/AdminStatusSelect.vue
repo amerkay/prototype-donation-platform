@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getStatusColor } from '~/lib/statusColors'
+import { getStatusColor, getStatusLabel } from '~/lib/statusColors'
 import { cn } from '@/lib/utils'
 import FieldHelpText from '~/features/_library/form-builder/internal/FieldHelpText.vue'
 import {
@@ -23,6 +23,11 @@ const emit = defineEmits<{
 
 const statusColor = computed(() => getStatusColor(props.modelValue))
 
+const hasSelectableOptions = computed(() => {
+  const disabledValues = new Set(props.disabledOptions?.map((o) => o.value))
+  return props.options.some((o) => o.value !== props.modelValue && !disabledValues.has(o.value))
+})
+
 function getDisabledReason(value: string): string | undefined {
   return props.disabledOptions?.find((o) => o.value === value)?.reason
 }
@@ -33,7 +38,23 @@ function handleChange(value: string | number | bigint | Record<string, unknown> 
 </script>
 
 <template>
-  <Select :model-value="modelValue" @update:model-value="handleChange">
+  <!-- Static badge when no selectable options -->
+  <span
+    v-if="!hasSelectableOptions"
+    :class="
+      cn(
+        'inline-flex items-center gap-1.5 rounded-full border px-2 py-0 h-6 text-xs font-medium',
+        statusColor.border,
+        statusColor.text
+      )
+    "
+  >
+    <span :class="cn('size-1.5 shrink-0 rounded-full', statusColor.dot)" />
+    {{ getStatusLabel(modelValue) }}
+  </span>
+
+  <!-- Dropdown when options are available -->
+  <Select v-else :model-value="modelValue" @update:model-value="handleChange">
     <SelectTrigger
       :class="
         cn(

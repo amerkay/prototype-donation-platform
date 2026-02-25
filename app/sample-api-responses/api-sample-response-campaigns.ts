@@ -20,6 +20,7 @@ export const campaigns: Campaign[] = [
     type: 'standard',
     name: 'Adopt an Orangutan',
     status: 'active',
+    isArchived: false,
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2026-01-14T10:30:00Z',
     stats: computeCampaignStats('adopt-orangutan', {
@@ -57,6 +58,7 @@ export const campaigns: Campaign[] = [
     p2pPreset: 'birthday',
     name: 'Birthday Fundraiser Template',
     status: 'active',
+    isArchived: false,
     createdAt: '2025-11-01T00:00:00Z',
     updatedAt: '2026-01-10T14:00:00Z',
     stats: computeCampaignStats('birthday-p2p-template'),
@@ -89,6 +91,7 @@ export const campaigns: Campaign[] = [
     p2pPreset: 'tribute',
     name: 'In Memory of a Loved One',
     status: 'active',
+    isArchived: false,
     createdAt: '2025-10-01T00:00:00Z',
     updatedAt: '2026-01-12T09:00:00Z',
     stats: computeCampaignStats('tribute-p2p-template', {
@@ -127,6 +130,7 @@ export const campaigns: Campaign[] = [
     p2pPreset: 'challenge',
     name: 'Marathon Challenge Fundraiser',
     status: 'active',
+    isArchived: false,
     createdAt: '2025-09-15T00:00:00Z',
     updatedAt: '2026-01-08T11:00:00Z',
     stats: computeCampaignStats('challenge-p2p-template', {
@@ -164,6 +168,7 @@ export const campaigns: Campaign[] = [
     p2pPreset: 'wedding',
     name: 'Our Wedding Fundraiser',
     status: 'active',
+    isArchived: false,
     createdAt: '2025-08-01T00:00:00Z',
     updatedAt: '2026-01-05T16:00:00Z',
     stats: computeCampaignStats('wedding-p2p-template', {
@@ -202,6 +207,7 @@ export const campaigns: Campaign[] = [
     p2pPreset: 'birthday',
     name: "Wild Amer's Birthday Fundraiser",
     status: 'active',
+    isArchived: false,
     createdAt: '2025-11-15T00:00:00Z',
     updatedAt: '2026-01-15T10:00:00Z',
     stats: computeCampaignStats('wild-amer-birthday-fundraiser'),
@@ -233,7 +239,8 @@ export const campaigns: Campaign[] = [
     parentCampaignId: 'birthday-p2p-template',
     p2pPreset: 'birthday',
     name: "Wild Amer's Mini Fundraiser",
-    status: 'active',
+    status: 'completed',
+    isArchived: false,
     createdAt: '2025-12-20T00:00:00Z',
     updatedAt: '2026-01-10T16:00:00Z',
     stats: computeCampaignStats('wild-amer-birthday-2-fundraiser'),
@@ -264,6 +271,7 @@ export const campaigns: Campaign[] = [
     type: 'standard',
     name: 'Summer Fete Stall Booking',
     status: 'active',
+    isArchived: false,
     createdAt: '2026-01-05T00:00:00Z',
     updatedAt: '2026-02-01T10:00:00Z',
     stats: computeCampaignStats('summer-fete-stalls', {
@@ -297,6 +305,7 @@ export const campaigns: Campaign[] = [
     type: 'standard',
     name: 'Annual Dog Show',
     status: 'active',
+    isArchived: false,
     createdAt: '2026-01-10T00:00:00Z',
     updatedAt: '2026-02-05T10:00:00Z',
     stats: computeCampaignStats('annual-dog-show', {
@@ -330,6 +339,7 @@ export const campaigns: Campaign[] = [
     type: 'standard',
     name: 'Classic Car Show',
     status: 'active',
+    isArchived: false,
     createdAt: '2026-01-12T00:00:00Z',
     updatedAt: '2026-02-08T10:00:00Z',
     stats: computeCampaignStats('classic-car-show', {

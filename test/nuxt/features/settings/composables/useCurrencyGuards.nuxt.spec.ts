@@ -20,6 +20,7 @@ function makeCampaign(id: string, name: string, type: Campaign['type'] = 'standa
     name,
     type,
     status: 'active',
+    isArchived: false,
     createdAt: '',
     updatedAt: '',
     stats: {} as Campaign['stats'],

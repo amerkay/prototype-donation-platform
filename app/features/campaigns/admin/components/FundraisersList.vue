@@ -1,30 +1,23 @@
 <script setup lang="ts">
+import { h } from 'vue'
+import type { ColumnDef } from '@tanstack/vue-table'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
+import { useFundraisers } from '~/features/campaigns/admin/composables/useFundraisers'
 import { useClipboard } from '@vueuse/core'
 import type { CampaignFundraiser } from '~/features/campaigns/shared/types'
+import DataTable from '~/features/_shared/components/DataTable.vue'
+import { embeddedFundraiserColumns } from '~/features/campaigns/admin/columns/fundraiserColumns'
 import BaseDialogOrDrawer from '@/components/BaseDialogOrDrawer.vue'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import {
@@ -33,22 +26,18 @@ import {
   Copy,
   Users,
   Check,
-  Search,
   MoreHorizontal,
-  ExternalLink,
-  Pause,
-  Play,
-  Trash2,
+  Eye,
+  CheckCircle,
+  OctagonX,
+  RotateCcw,
   TrendingUp,
   Target
 } from 'lucide-vue-next'
 
 const store = useCampaignConfigStore()
-const { formatAmount, formatDate, getInitials } = useCampaignFormatters()
-
-// Search and filter state
-const searchQuery = ref('')
-const statusFilter = ref<string>('all')
+const { formatAmount } = useCampaignFormatters()
+const { completeFundraiser, endFundraiser, reactivateFundraiser } = useFundraisers()
 
 // Invite sheet state
 const showInviteSheet = ref(false)
@@ -72,69 +61,74 @@ const averageRaised = computed(() => {
   return totalFundraiserRaised.value / store.fundraisers.length
 })
 
-// Filtered and sorted fundraisers
-const filteredFundraisers = computed(() => {
-  let results = [...store.fundraisers]
+// Action column with dropdown
+function createActionColumn(): ColumnDef<CampaignFundraiser> {
+  return {
+    id: 'actions',
+    header: '',
+    cell: ({ row }) => {
+      const f = row.original
+      const items: ReturnType<typeof h>[] = []
 
-  // Text search
-  if (searchQuery.value) {
-    const q = searchQuery.value.toLowerCase()
-    results = results.filter(
-      (f) => f.name.toLowerCase().includes(q) || f.email.toLowerCase().includes(q)
-    )
-  }
+      // View detail link
+      items.push(
+        h(DropdownMenuItem, { onClick: () => navigateTo(`/admin/p2p/fundraisers/${f.id}`) }, () => [
+          h(Eye, { class: 'size-4 mr-2' }),
+          'View'
+        ])
+      )
 
-  // Status filter
-  if (statusFilter.value !== 'all') {
-    results = results.filter((f) => f.status === statusFilter.value)
-  }
+      // Reactivate (completed/ended only)
+      if (f.status !== 'active') {
+        items.push(
+          h(DropdownMenuItem, { onClick: () => reactivateFundraiser(f.id) }, () => [
+            h(RotateCcw, { class: 'size-4 mr-2' }),
+            'Reactivate'
+          ])
+        )
+      }
 
-  // Sort by raised amount descending
-  return results.sort((a, b) => b.raisedAmount - a.raisedAmount)
-})
+      // Complete / End (active only)
+      if (f.status === 'active') {
+        items.push(
+          h(DropdownMenuItem, { onClick: () => completeFundraiser(f.id) }, () => [
+            h(CheckCircle, { class: 'size-4 mr-2' }),
+            'Complete'
+          ])
+        )
+        items.push(
+          h(
+            DropdownMenuItem,
+            {
+              class: 'text-destructive focus:text-destructive',
+              onClick: () => endFundraiser(f.id)
+            },
+            () => [h(OctagonX, { class: 'size-4 mr-2' }), 'End']
+          )
+        )
+      }
 
-const getProgressPercentage = (fundraiser: CampaignFundraiser) => {
-  if (!fundraiser.goal || fundraiser.goal === 0) return 0
-  return Math.min((fundraiser.raisedAmount / fundraiser.goal) * 100, 100)
-}
-
-const STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive'> = {
-  active: 'default',
-  paused: 'secondary',
-  removed: 'destructive'
-}
-
-// Actions (mock)
-const handleViewPage = (fundraiser: CampaignFundraiser) => {
-  window.open(`https://donate.example.com/fundraise/${fundraiser.slug}`, '_blank')
-}
-
-const handlePause = async (fundraiser: CampaignFundraiser) => {
-  // TODO: API call
-  const idx = store.fundraisers.findIndex((f) => f.id === fundraiser.id)
-  if (idx !== -1) {
-    store.fundraisers[idx] = {
-      ...store.fundraisers[idx]!,
-      status: fundraiser.status === 'paused' ? 'active' : 'paused'
+      return h('div', { class: 'flex justify-end' }, [
+        h(DropdownMenu, {}, () => [
+          h(DropdownMenuTrigger, { asChild: true }, () =>
+            h(Button, { variant: 'outline', size: 'icon', class: 'h-8 w-8' }, () =>
+              h(MoreHorizontal, { class: 'size-4' })
+            )
+          ),
+          h(DropdownMenuContent, { align: 'end' }, () => items)
+        ])
+      ])
     }
   }
 }
 
-const handleRemove = async (fundraiser: CampaignFundraiser) => {
-  // TODO: API call
-  const idx = store.fundraisers.findIndex((f) => f.id === fundraiser.id)
-  if (idx !== -1) {
-    store.fundraisers[idx] = { ...store.fundraisers[idx]!, status: 'removed' }
-  }
-}
+const columns = computed(() => [...embeddedFundraiserColumns(), createActionColumn()])
 
 // Send invite (mock)
 const sendInvites = async () => {
-  // Save custom message to store
   if (store.peerToPeer) {
     store.peerToPeer.customMessage = inviteMessage.value
   }
-
   await new Promise((resolve) => setTimeout(resolve, 500))
   inviteSent.value = true
   setTimeout(() => {
@@ -174,126 +168,20 @@ const sendInvites = async () => {
       </div>
     </div>
 
-    <!-- Search / Filter Bar -->
-    <div class="flex items-center gap-2 mb-4">
-      <div class="relative flex-1">
-        <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input v-model="searchQuery" placeholder="Search by name or email..." class="pl-9 h-9" />
-      </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-          <Button variant="outline" size="sm" class="h-9">
-            {{ statusFilter === 'all' ? 'All Statuses' : statusFilter }}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem @click="statusFilter = 'all'">All Statuses</DropdownMenuItem>
-          <DropdownMenuItem @click="statusFilter = 'active'">Active</DropdownMenuItem>
-          <DropdownMenuItem @click="statusFilter = 'paused'">Paused</DropdownMenuItem>
-          <DropdownMenuItem @click="statusFilter = 'removed'">Removed</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-
-    <!-- Table -->
-    <Table v-if="filteredFundraisers.length > 0">
-      <TableHeader>
-        <TableRow>
-          <TableHead>Fundraiser</TableHead>
-          <TableHead>Goal & Progress</TableHead>
-          <TableHead>Joined</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead class="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        <TableRow v-for="fundraiser in filteredFundraisers" :key="fundraiser.id">
-          <TableCell>
-            <div class="flex items-center gap-3">
-              <Avatar class="w-8 h-8">
-                <AvatarFallback class="text-xs">
-                  {{ getInitials(fundraiser.name) }}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p class="font-medium">{{ fundraiser.name }}</p>
-                <p class="text-xs text-muted-foreground">{{ fundraiser.email }}</p>
-              </div>
-            </div>
-          </TableCell>
-          <TableCell>
-            <div class="min-w-[140px]">
-              <div class="flex items-baseline justify-between text-sm mb-1">
-                <span class="font-medium">{{
-                  formatAmount(fundraiser.raisedAmount, fundraiser.currency)
-                }}</span>
-                <span v-if="fundraiser.goal" class="text-xs text-muted-foreground">
-                  of {{ formatAmount(fundraiser.goal, fundraiser.currency) }}
-                </span>
-              </div>
-              <Progress
-                v-if="fundraiser.goal"
-                :model-value="getProgressPercentage(fundraiser)"
-                class="h-1.5"
-              />
-              <p class="text-xs text-muted-foreground mt-0.5">
-                {{ fundraiser.donationCount }} donation{{
-                  fundraiser.donationCount !== 1 ? 's' : ''
-                }}
-              </p>
-            </div>
-          </TableCell>
-          <TableCell class="text-muted-foreground text-sm">
-            {{ formatDate(fundraiser.joinedAt) }}
-          </TableCell>
-          <TableCell>
-            <Badge :variant="STATUS_VARIANTS[fundraiser.status]" class="capitalize">
-              {{ fundraiser.status }}
-            </Badge>
-          </TableCell>
-          <TableCell class="text-right">
-            <DropdownMenu>
-              <DropdownMenuTrigger as-child>
-                <Button variant="outline" size="icon" class="h-8 w-8">
-                  <MoreHorizontal class="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem @click="handleViewPage(fundraiser)">
-                  <ExternalLink class="w-4 h-4 mr-2" />
-                  View Page
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  v-if="fundraiser.status !== 'removed'"
-                  @click="handlePause(fundraiser)"
-                >
-                  <component
-                    :is="fundraiser.status === 'paused' ? Play : Pause"
-                    class="w-4 h-4 mr-2"
-                  />
-                  {{ fundraiser.status === 'paused' ? 'Resume' : 'Pause' }}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  v-if="fundraiser.status !== 'removed'"
-                  class="text-destructive focus:text-destructive"
-                  @click="handleRemove(fundraiser)"
-                >
-                  <Trash2 class="w-4 h-4 mr-2" />
-                  Remove
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
+    <!-- DataTable -->
+    <DataTable
+      v-if="store.fundraisers.length > 0"
+      :columns="columns"
+      :data="store.fundraisers"
+      :show-pagination="store.fundraisers.length > 10"
+      @row-click="
+        (row: { original: CampaignFundraiser }) =>
+          navigateTo(`/admin/p2p/fundraisers/${row.original.id}`)
+      "
+    />
 
     <!-- Empty State -->
-    <div
-      v-else-if="store.fundraisers.length === 0"
-      class="text-center py-10 border rounded-lg border-dashed"
-    >
+    <div v-else class="text-center py-10 border rounded-lg border-dashed">
       <Users class="w-12 h-12 mx-auto text-muted-foreground/40 mb-3" />
       <p class="font-medium">No fundraisers yet</p>
       <p class="text-sm text-muted-foreground mt-1">
@@ -303,12 +191,6 @@ const sendInvites = async () => {
         <UserPlus class="w-4 h-4 mr-2" />
         Invite Fundraiser
       </Button>
-    </div>
-
-    <!-- No Results State -->
-    <div v-else class="text-center py-8 border rounded-lg">
-      <Search class="w-8 h-8 mx-auto text-muted-foreground/40 mb-2" />
-      <p class="text-sm text-muted-foreground">No fundraisers match your filters</p>
     </div>
 
     <!-- Invite Button (when fundraisers exist) -->
@@ -329,7 +211,6 @@ const sendInvites = async () => {
 
       <template #content>
         <div class="space-y-6">
-          <!-- Custom Invite Message -->
           <div class="space-y-2">
             <Label>Invite Message</Label>
             <p class="text-xs text-muted-foreground">
@@ -344,7 +225,6 @@ const sendInvites = async () => {
 
           <Separator />
 
-          <!-- Email Invite -->
           <div class="space-y-2">
             <Label>Email Addresses</Label>
             <p class="text-xs text-muted-foreground">
@@ -375,7 +255,6 @@ const sendInvites = async () => {
             </div>
           </div>
 
-          <!-- Copy Link -->
           <div class="space-y-2">
             <Label>Invite Link</Label>
             <div class="flex gap-2">

@@ -10,6 +10,8 @@ const props = defineProps<{
   displayClass?: string
   /** Maximum length for the input */
   maxLength?: number
+  /** Disable editing (display text only, no pencil icon) */
+  disabled?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -76,7 +78,20 @@ function onKeydown(e: KeyboardEvent) {
     </Button>
   </div>
 
-  <!-- Display mode -->
+  <!-- Display mode (disabled) -->
+  <span
+    v-else-if="disabled"
+    :class="
+      cn(
+        'inline-flex min-w-0 items-center px-1.5 py-0.5 -mx-1.5',
+        props.displayClass || 'text-sm font-medium'
+      )
+    "
+  >
+    <span class="truncate">{{ modelValue }}</span>
+  </span>
+
+  <!-- Display mode (editable) -->
   <button
     v-else
     :class="

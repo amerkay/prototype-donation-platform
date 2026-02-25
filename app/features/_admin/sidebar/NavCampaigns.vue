@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Folder, Forward, MoreHorizontal, Trash2, Megaphone } from 'lucide-vue-next'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
+import { getCampaignEditPath } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import { useActiveLink } from './composables/useActiveLink'
 
 import {
@@ -27,7 +28,7 @@ const { isActive } = useActiveLink()
 const campaigns = computed(() =>
   getRecentCampaigns(3).map((c) => ({
     name: c.name,
-    url: `/admin/campaigns/${c.id}`
+    url: getCampaignEditPath(c.type, c.id)
   }))
 )
 </script>

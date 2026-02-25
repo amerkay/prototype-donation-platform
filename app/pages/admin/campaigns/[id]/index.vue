@@ -21,7 +21,14 @@ definePageMeta({
 
 const route = useRoute()
 const router = useRouter()
-const { getCampaignById, updateCampaign, updateCampaignName, updateCampaignStatus } = useCampaigns()
+const {
+  getCampaignById,
+  updateCampaign,
+  updateCampaignName,
+  updateCampaignStatus,
+  archiveCampaign,
+  unarchiveCampaign
+} = useCampaigns()
 const store = useCampaignConfigStore()
 
 // Get campaign data
@@ -71,9 +78,10 @@ const formsCount = computed(
 )
 const canActivate = computed(() => (formRef.value?.isValid ?? false) && formsCount.value > 0)
 
+const isTerminal = computed(() => store.status === 'completed' || store.status === 'ended')
 const crowdfundingEnabled = computed(() => store.crowdfunding?.enabled !== false)
 const { brandingStyle } = useBrandingCssVars()
-const editableMode = ref(true)
+const editableMode = ref(!isTerminal.value)
 
 // Use admin edit composable for save/discard logic
 const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBaseline } =
@@ -97,9 +105,11 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBasel
 // Breadcrumbs
 const breadcrumbs = computed(() => {
   const typeBreadcrumb = getCampaignTypeBreadcrumb({ type: store.type })
+  const isP2PType = store.type === 'p2p' || store.type === 'fundraiser'
   return [
-    { label: 'Dashboard', href: '/' },
-    { label: 'Campaigns', href: '/admin/campaigns/standard' },
+    { label: 'Dashboard', href: '/admin/dashboard' },
+    // P2P types need a category crumb ("Peer to Peer > P2P Templates / Fundraiser Pages")
+    ...(isP2PType ? [{ label: 'Peer to Peer' }] : []),
     { label: typeBreadcrumb.label, href: typeBreadcrumb.href },
     { label: store.name }
   ]
@@ -117,6 +127,17 @@ async function handleNameUpdate(newName: string) {
   }
 }
 
+async function handleArchiveToggle(archived: boolean) {
+  if (!store.id) return
+  store.isArchived = archived
+  if (archived) {
+    await archiveCampaign(store.id)
+  } else {
+    await unarchiveCampaign(store.id)
+  }
+  patchBaseline({ isArchived: archived })
+}
+
 async function handleStatusUpdate(newStatus: CampaignStatus) {
   if (!store.id) return
   // Prevent reverting to draft once donations have been received
@@ -128,9 +149,9 @@ async function handleStatusUpdate(newStatus: CampaignStatus) {
   }
   const previousStatus = store.status
 
-  // Auto-clear past end date when reactivating from completed/archived
+  // Auto-clear past end date when reactivating from completed/ended
   // A past date is meaningless for a reactivated campaign
-  const fromLocked = previousStatus === 'completed' || previousStatus === 'archived'
+  const fromLocked = previousStatus === 'completed' || previousStatus === 'ended'
   let clearedEndDate = false
   let previousEndDate: string | null = null
   if (fromLocked && store.crowdfunding?.endDate) {
@@ -191,15 +212,16 @@ const handleDeleted = () => {
 <template>
   <EditLayout
     v-if="campaign"
-    v-model:editable="editableMode"
+    :editable="isTerminal ? undefined : editableMode"
     :breadcrumbs="breadcrumbs"
-    :is-dirty="store.isDirty"
+    :is-dirty="isTerminal ? false : store.isDirty"
     :show-discard-dialog="showDiscardDialog"
     :show-preview="crowdfundingEnabled"
     preview-label="Preview"
-    editable-last-item
+    :editable-last-item="!isTerminal"
     :max-length="75"
     @preview="handlePreview"
+    @update:editable="editableMode = $event"
     @update:show-discard-dialog="showDiscardDialog = $event"
     @confirm-discard="confirmDiscard"
     @update:last-item-label="handleNameUpdate"
@@ -210,6 +232,7 @@ const handleDeleted = () => {
         :can-activate="canActivate"
         @update:name="handleNameUpdate"
         @update:status="handleStatusUpdate"
+        @update:archived="handleArchiveToggle"
         @deleted="handleDeleted"
       />
     </template>
@@ -221,7 +244,10 @@ const handleDeleted = () => {
 
     <template #preview>
       <div :style="brandingStyle">
-        <CrowdfundingPagePreview v-if="crowdfundingEnabled" :editable="editableMode" />
+        <CrowdfundingPagePreview
+          v-if="crowdfundingEnabled"
+          :editable="isTerminal ? false : editableMode"
+        />
         <Empty v-else class="border border-dashed">
           <EmptyHeader>
             <EmptyMedia variant="icon"><EyeOff /></EmptyMedia>

@@ -145,6 +145,16 @@ export function useCampaigns() {
     toast.success('Campaign status updated')
   }
 
+  const archiveCampaign = async (id: string): Promise<void> => {
+    await updateCampaign(id, { isArchived: true })
+    toast.success('Campaign archived')
+  }
+
+  const unarchiveCampaign = async (id: string): Promise<void> => {
+    await updateCampaign(id, { isArchived: false })
+    toast.success('Campaign unarchived')
+  }
+
   /**
    * Create a new campaign
    */
@@ -159,6 +169,7 @@ export function useCampaigns() {
       type: campaignData.type ?? 'standard',
       name: campaignData.name ?? 'Untitled Campaign',
       status: 'draft',
+      isArchived: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       stats: {
@@ -275,6 +286,8 @@ export function useCampaigns() {
     updateCampaign,
     updateCampaignName,
     updateCampaignStatus,
+    archiveCampaign,
+    unarchiveCampaign,
     createCampaign,
     deleteCampaign,
     getDeleteProtection

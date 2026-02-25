@@ -14,6 +14,7 @@ import {
   ArrowRight
 } from 'lucide-vue-next'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
+import { getCampaignEditPath } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import { useDonors } from '~/features/donors/admin/composables/useDonors'
 import { useDonations } from '~/features/donations/admin/composables/useDonations'
 import { useAdminSubscriptions } from '~/features/subscriptions/admin/composables/useAdminSubscriptions'
@@ -63,7 +64,7 @@ const statCards = computed(() => [
     value: activeCampaigns.value.length,
     subtitle: `of ${campaigns.value.length} total`,
     icon: Megaphone,
-    to: '/admin/campaigns/standard'
+    to: '/admin/campaigns'
   }
 ])
 
@@ -283,7 +284,7 @@ const topCampaigns = computed(() =>
               <CardTitle>Top Campaigns</CardTitle>
               <CardDescription>Campaigns by total raised</CardDescription>
             </div>
-            <NuxtLink to="/admin/campaigns/standard">
+            <NuxtLink to="/admin/campaigns">
               <Button variant="outline" size="sm">
                 View all
                 <ArrowRight class="ml-1 h-4 w-4" />
@@ -295,7 +296,7 @@ const topCampaigns = computed(() =>
               <NuxtLink
                 v-for="campaign in topCampaigns"
                 :key="campaign.id"
-                :to="`/admin/campaigns/${campaign.id}`"
+                :to="getCampaignEditPath(campaign.type, campaign.id)"
                 class="flex items-center justify-between gap-2 rounded-md p-2 -mx-2 hover:bg-muted/50 transition-colors"
               >
                 <div class="min-w-0 flex-1">

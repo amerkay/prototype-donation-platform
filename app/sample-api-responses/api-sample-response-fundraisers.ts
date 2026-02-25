@@ -16,7 +16,7 @@ export const fundraisers: CampaignFundraiser[] = [
     campaignId: 'wild-amer-birthday-fundraiser',
     name: 'Wild Amer',
     email: 'awesome@charity.co.uk',
-    joinedAt: '2025-11-15T00:00:00Z',
+    createdAt: '2025-11-15T00:00:00Z',
     ...computeFundraiserStats('wild-amer-birthday-fundraiser'),
     goal: 1000,
     slug: 'wild-amer-birthday',
@@ -24,6 +24,7 @@ export const fundraisers: CampaignFundraiser[] = [
       "I'm celebrating my birthday by raising funds for orangutan conservation! This is my personal campaign.",
     coverPhoto: '/imgs/baby-orangutan-hammick.webp',
     status: 'active',
+    isArchived: false,
     parentCampaignId: 'birthday-p2p-template'
   },
   {
@@ -31,12 +32,14 @@ export const fundraisers: CampaignFundraiser[] = [
     campaignId: 'wild-amer-birthday-2-fundraiser',
     name: 'Wild Amer',
     email: 'awesome@charity.co.uk',
-    joinedAt: '2025-12-20T00:00:00Z',
+    createdAt: '2025-12-20T00:00:00Z',
     ...computeFundraiserStats('wild-amer-birthday-2-fundraiser'),
     goal: 500,
     slug: 'wild-amer-birthday-2',
     story: 'Another fundraiser I created to support orangutans! Help me reach my goal.',
-    status: 'active',
+    status: 'completed',
+    isArchived: false,
+    completedAt: '2026-02-01T00:00:00Z',
     parentCampaignId: 'birthday-p2p-template'
   }
 ]

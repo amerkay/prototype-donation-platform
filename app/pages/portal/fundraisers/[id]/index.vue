@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import DataTable from '~/features/_shared/components/DataTable.vue'
@@ -26,11 +27,24 @@ definePageMeta({
 const route = useRoute()
 const { formatAmount, getProgressPercentage } = useCampaignFormatters()
 const { currentUserFundraisers } = useDonorPortal()
+const { campaigns } = useCampaigns()
 const charityStore = useCharitySettingsStore()
 
 const fundraiser = computed(() =>
   currentUserFundraisers.value.find((f) => f.id === route.params.id)
 )
+
+// Check fundraiser metadata status from parent
+const fundraiserMeta = computed(() => {
+  if (!fundraiser.value) return undefined
+  const parent = campaigns.value.find((c) => c.id === fundraiser.value!.parentCampaignId)
+  return parent?.fundraisers.find((f) => f.campaignId === fundraiser.value!.id)
+})
+
+const isTerminal = computed(() => {
+  const s = fundraiserMeta.value?.status ?? fundraiser.value?.status
+  return s === 'completed' || s === 'ended'
+})
 
 const breadcrumbItems = computed(() => {
   if (!fundraiser.value) {
@@ -52,7 +66,7 @@ const breadcrumbItems = computed(() => {
   <div>
     <BreadcrumbBar :items="breadcrumbItems" />
     <div class="flex flex-1 flex-col gap-6 px-4 py-2 pb-8 sm:px-6">
-      <!-- Not found -->
+      <!-- Not found / Removed -->
       <Empty v-if="!fundraiser">
         <EmptyHeader>
           <EmptyMedia variant="icon">
@@ -88,7 +102,7 @@ const breadcrumbItems = computed(() => {
 
           <!-- Actions -->
           <div class="flex gap-2 sm:shrink-0">
-            <NuxtLink :to="`/portal/fundraisers/${fundraiser.id}/edit`">
+            <NuxtLink v-if="!isTerminal" :to="`/portal/fundraisers/${fundraiser.id}/edit`">
               <Button variant="default" size="sm" as="span">
                 <Pencil class="w-3.5 h-3.5 mr-1" />
                 Edit Campaign

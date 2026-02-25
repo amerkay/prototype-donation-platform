@@ -395,6 +395,42 @@ Apr 2024  Renewal comes in
 
 ---
 
+## Campaign Status & Completion
+
+### Campaign Status Model
+
+- `draft` — initial state, not yet published (standard campaigns only; P2P templates also use draft)
+- `active` — live, accepting donations
+- `completed` — naturally ended (end date reached), terminal state
+- `ended` — manually ended by owner/admin, terminal state
+- `is_archived` — orthogonal boolean flag for standard campaigns only (not P2P templates)
+
+### Fundraiser Status Model
+
+Same as campaigns minus `draft`, plus:
+
+### Terminal States
+
+Both `completed` and `ended` are terminal — cannot transition back to active. Enforce via CHECK constraint or API validation. Terminal states disable editing.
+
+### Completion Triggers
+
+- **End date reached**: Cron job / pg_cron checks `campaigns.crowdfunding->>'endDate'` daily, sets matching campaigns/fundraisers to `completed`
+- **Manual "End" action**: Donor or admin clicks "End Campaign" / "End Fundraiser" → sets to `ended` (displayed as "Ended")
+- **Goal met does NOT auto-complete** — campaigns stay active to collect more
+
+### Parent Campaign Gating
+
+- When parent P2P template status is `completed` or `ended`, all child fundraisers are locked (editing disabled)
+- Enforced at app level (not DB constraint) — parent status checked on page load and status change attempts
+- `campaign_fundraisers.parent_campaign_id` FK already exists for the join
+
+### RLS Update
+
+- `fundraisers_select_public` policy: `status IN ('active', 'completed', 'ended')` — ended pages should still be viewable
+
+---
+
 ## TODOs / Notes not to forget
 
 - [ ] Currency auto-population trigger replaces client-side `ensureCurrencyEntries` (see trigger above)

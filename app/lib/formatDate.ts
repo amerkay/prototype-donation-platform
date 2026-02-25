@@ -1,10 +1,12 @@
 /** "14 Jan 2026" — columns, detail pages, settings */
 export function formatDate(dateString: string): string {
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return '—'
   return new Intl.DateTimeFormat('en-GB', {
     day: 'numeric',
     month: 'short',
     year: 'numeric'
-  }).format(new Date(dateString))
+  }).format(date)
 }
 
 /** "14 Jan 2026, 10:30" — donation/subscription detail headers */

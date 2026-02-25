@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import CampaignCard from '~/features/campaigns/admin/components/CampaignCard.vue'
 import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
+import StatusBadge from '~/components/StatusBadge.vue'
 import { Button } from '@/components/ui/button'
 import {
   Empty,
@@ -13,13 +15,32 @@ import {
   EmptyTitle
 } from '@/components/ui/empty'
 import { ArrowRight, Megaphone, Pencil } from 'lucide-vue-next'
+import type { Campaign } from '~/features/campaigns/shared/types'
 
 definePageMeta({
   layout: 'portal'
 })
 
 const { currentUserFundraisers } = useDonorPortal()
+const { campaigns } = useCampaigns()
 const charityStore = useCharitySettingsStore()
+
+/** Get the fundraiser metadata status from the parent P2P template */
+function getFundraiserMetaStatus(fundraiserCampaign: Campaign) {
+  const parent = campaigns.value.find((c) => c.id === fundraiserCampaign.parentCampaignId)
+  if (!parent) return undefined
+  return parent.fundraisers.find((f) => f.campaignId === fundraiserCampaign.id)?.status
+}
+
+const visibleFundraisers = computed(() => currentUserFundraisers.value)
+
+/** Whether a fundraiser is in a terminal state (completed or ended) */
+function isTerminal(f: Campaign) {
+  const meta = getFundraiserMetaStatus(f)
+  return (
+    meta === 'completed' || meta === 'ended' || f.status === 'completed' || f.status === 'ended'
+  )
+}
 </script>
 
 <template>
@@ -33,7 +54,7 @@ const charityStore = useCharitySettingsStore()
         <p class="text-sm text-muted-foreground">Campaigns you've started and how they're doing.</p>
       </div>
 
-      <Empty v-if="currentUserFundraisers.length === 0">
+      <Empty v-if="visibleFundraisers.length === 0">
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <Megaphone />
@@ -53,19 +74,28 @@ const charityStore = useCharitySettingsStore()
 
       <div v-else class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <CampaignCard
-          v-for="f in currentUserFundraisers"
+          v-for="f in visibleFundraisers"
           :key="f.id"
           :campaign="f"
           :href="`/portal/fundraisers/${f.id}`"
         >
           <template #actions>
             <div class="flex gap-2">
-              <NuxtLink :to="`/portal/fundraisers/${f.id}/edit`" class="flex-1">
+              <NuxtLink
+                v-if="!isTerminal(f)"
+                :to="`/portal/fundraisers/${f.id}/edit`"
+                class="flex-1"
+              >
                 <Button variant="default" size="sm" class="w-full" as="span">
                   <Pencil class="w-3.5 h-3.5 mr-1" />
                   Edit Campaign
                 </Button>
               </NuxtLink>
+              <StatusBadge
+                v-else
+                :status="getFundraiserMetaStatus(f) ?? f.status"
+                class="self-center"
+              />
               <NuxtLink :to="`/portal/fundraisers/${f.id}`">
                 <Button variant="outline" size="sm" as="span">
                   Donations <ArrowRight class="w-3.5 h-3.5 ml-1" />

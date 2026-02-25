@@ -30,7 +30,9 @@
       "WebFetch(domain:nuxtemail.com)",
       "Bash(echo:*)",
       "Bash(git --no-pager log --oneline -5)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(echo .worktrees:*)",
+      "Bash(tail:*)"
     ]
   },
   "outputStyle": "Explanatory",

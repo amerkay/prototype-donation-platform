@@ -31,8 +31,8 @@ export function createCampaignConfigMaster() {
     const crowdfundingFields = useCrowdfundingSettingsForm.setup(ctx)
     const peerToPeerFields = useP2PSettingsForm.setup(ctx)
 
-    // Lock all sections when campaign is completed or archived
-    const isStatusLocked = () => store.status === 'completed' || store.status === 'archived'
+    // Lock all sections when campaign is in a terminal state
+    const isStatusLocked = () => store.status === 'completed' || store.status === 'ended'
 
     // "Donation Forms" section - hidden for fundraiser (forms inherited from template)
     const donationForms = fieldGroup('donationForms', {

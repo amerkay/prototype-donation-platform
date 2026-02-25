@@ -6,25 +6,35 @@ import {
 } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
-import type { CampaignStatus } from '~/features/campaigns/shared/types'
+import {
+  CAMPAIGN_STATUS_OPTIONS,
+  FUNDRAISER_STATUS_OPTIONS,
+  type CampaignStatus
+} from '~/features/campaigns/shared/types'
 import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
 import AdminResourceHeader from '~/features/_admin/components/AdminResourceHeader.vue'
 import AdminStatusSelect from '~/features/_admin/components/AdminStatusSelect.vue'
 import AdminDeleteButton from '~/features/_admin/components/AdminDeleteButton.vue'
+import EndFundraiserButton from '~/features/campaigns/admin/components/EndFundraiserButton.vue'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
+import { Archive, ArchiveRestore } from 'lucide-vue-next'
 
 const store = useCampaignConfigStore()
-const { getDeleteProtection } = useCampaigns()
+const { getDeleteProtection, getCampaignById } = useCampaigns()
 const { formatAmount, formatTimeRemainingShort } = useCampaignFormatters()
 
 const props = defineProps<{
   canActivate?: boolean
+  /** Portal mode: hide admin-only controls (archive, delete), show stop action */
+  portalMode?: boolean
 }>()
 
 const emit = defineEmits<{
   'update:name': [value: string]
   'update:status': [value: CampaignStatus]
+  'update:archived': [value: boolean]
   deleted: []
 }>()
 
@@ -38,21 +48,84 @@ const typeBadgeVariant = computed(() => getCampaignTypeBadgeVariant(store.type))
 
 const showProgress = computed(() => !store.isP2P && store.crowdfunding?.goalAmount)
 
-const STATUS_OPTIONS: { value: string; label: string }[] = [
-  { value: 'draft', label: 'Draft' },
-  { value: 'active', label: 'Active' },
-  { value: 'paused', label: 'Paused' },
+const isFundraiser = computed(() => store.type === 'fundraiser')
+
+/** Admin gets all statuses including terminal; portal gets only active */
+const ALL_CAMPAIGN_STATUSES: { value: string; label: string }[] = [
+  ...CAMPAIGN_STATUS_OPTIONS,
   { value: 'completed', label: 'Completed' },
-  { value: 'archived', label: 'Archived' }
+  { value: 'ended', label: 'Ended' }
 ]
+
+const ALL_FUNDRAISER_STATUSES: { value: string; label: string }[] = [
+  { value: 'active', label: 'Active' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'ended', label: 'Ended' }
+]
+
+/** P2P templates only have draft + active (no terminal states, no archive) */
+const P2P_STATUS_OPTIONS: { value: string; label: string }[] = [
+  { value: 'draft', label: 'Draft' },
+  { value: 'active', label: 'Active' }
+]
+
+const activeStatusOptions = computed(() => {
+  if (props.portalMode) {
+    return isFundraiser.value ? FUNDRAISER_STATUS_OPTIONS : CAMPAIGN_STATUS_OPTIONS
+  }
+  if (store.isP2P) return P2P_STATUS_OPTIONS
+  return isFundraiser.value ? ALL_FUNDRAISER_STATUSES : ALL_CAMPAIGN_STATUSES
+})
+
+// Parent gating: lock fundraiser when parent campaign is ended/completed
+const parentCampaign = computed(() =>
+  store.parentCampaignId ? getCampaignById(store.parentCampaignId) : undefined
+)
+
+const parentLocked = computed(() => {
+  if (!parentCampaign.value) return false
+  return parentCampaign.value.status === 'completed' || parentCampaign.value.status === 'ended'
+})
+
+const isTerminal = computed(() => store.status === 'completed' || store.status === 'ended')
+
+const canEnd = computed(
+  () => props.portalMode && !isTerminal.value && !parentLocked.value && store.status === 'active'
+)
 
 const disabledOptions = computed(() => {
   const disabled: { value: string; reason: string }[] = []
+
+  // Archived campaigns: must unarchive before changing status
+  if (store.isArchived) {
+    for (const opt of activeStatusOptions.value) {
+      disabled.push({ value: opt.value, reason: 'Unarchive to change status' })
+    }
+    return disabled
+  }
+
+  // Parent campaign locked — disable all status changes
+  if (parentLocked.value) {
+    for (const opt of activeStatusOptions.value) {
+      disabled.push({ value: opt.value, reason: 'Parent campaign has ended' })
+    }
+    return disabled
+  }
+
+  // Portal mode: terminal states lock the dropdown
+  if (props.portalMode && isTerminal.value) {
+    for (const opt of activeStatusOptions.value) {
+      disabled.push({ value: opt.value, reason: 'This fundraiser has ended' })
+    }
+    return disabled
+  }
+
+  // Standard campaign rules
   if (hasDonations.value) {
     disabled.push({ value: 'draft', reason: 'Cannot revert to draft after receiving donations' })
   }
   if (!props.canActivate) {
-    for (const opt of STATUS_OPTIONS) {
+    for (const opt of activeStatusOptions.value) {
       if (opt.value !== 'draft') {
         disabled.push({
           value: opt.value,
@@ -78,11 +151,17 @@ const disabledOptions = computed(() => {
         />
         <div class="ml-auto shrink-0 sm:hidden">
           <AdminDeleteButton
+            v-if="!portalMode"
             :entity-name="store.name"
             entity-type="Campaign"
             :disabled="!deleteProtection.canDelete"
             :disabled-reason="deleteProtection.reason"
             @deleted="emit('deleted')"
+          />
+          <EndFundraiserButton
+            v-if="canEnd"
+            :name="store.name"
+            @confirm="emit('update:status', 'ended' as CampaignStatus)"
           />
         </div>
       </div>
@@ -94,14 +173,20 @@ const disabledOptions = computed(() => {
       </Badge>
       <AdminStatusSelect
         :model-value="store.status"
-        :options="STATUS_OPTIONS"
+        :options="activeStatusOptions"
         :disabled-options="disabledOptions"
         @update:model-value="emit('update:status', $event as CampaignStatus)"
       />
-    </template>
+      <!-- Archived badge (admin only) -->
+      <Badge
+        v-if="!portalMode && store.isArchived"
+        variant="secondary"
+        class="h-6 shrink-0 px-2 py-0 inline-flex items-center text-xs"
+      >
+        Archived
+      </Badge>
 
-    <template #center>
-      <!-- P2P templates: total raised only -->
+      <!-- P2P templates: total raised -->
       <div
         v-if="store.isP2P"
         class="flex h-6 items-center gap-3 px-3 bg-background rounded-full border"
@@ -115,9 +200,9 @@ const disabledOptions = computed(() => {
       <!-- Standard campaigns: progress chip -->
       <div
         v-else-if="showProgress"
-        class="flex h-7 w-full items-center gap-3 px-3 bg-background rounded-full border sm:w-auto"
+        class="flex h-7 items-center gap-3 px-3 bg-background rounded-full border"
       >
-        <div class="w-24">
+        <div class="w-14 sm:w-18 md:w-28">
           <Progress :model-value="store.progressPercentage" class="h-2" />
         </div>
         <span class="text-sm font-medium whitespace-nowrap">
@@ -136,7 +221,27 @@ const disabledOptions = computed(() => {
     </template>
 
     <template #right>
+      <!-- End Fundraiser (portal only, active) -->
+      <EndFundraiserButton
+        v-if="canEnd"
+        :name="store.name"
+        @confirm="emit('update:status', 'ended' as CampaignStatus)"
+      />
+
+      <!-- Archive / Unarchive button (admin only, terminal states only) -->
+      <Button
+        v-if="!portalMode && !store.isP2P && (isTerminal || store.isArchived)"
+        variant="ghost"
+        size="icon"
+        class="h-8 w-8"
+        :title="store.isArchived ? 'Unarchive' : 'Archive'"
+        @click="emit('update:archived', !store.isArchived)"
+      >
+        <ArchiveRestore v-if="store.isArchived" class="h-4 w-4" />
+        <Archive v-else class="h-4 w-4" />
+      </Button>
       <AdminDeleteButton
+        v-if="!portalMode"
         :entity-name="store.name"
         entity-type="Campaign"
         :disabled="!deleteProtection.canDelete"

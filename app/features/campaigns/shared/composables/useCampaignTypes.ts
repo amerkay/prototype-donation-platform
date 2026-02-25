@@ -46,14 +46,23 @@ export function getCampaignTypeBreadcrumb(campaign: Campaign | { type: CampaignT
 } {
   switch (campaign.type) {
     case 'standard':
-      return { label: 'Standard', href: '/admin/campaigns/standard' }
+      return { label: 'Campaigns', href: '/admin/campaigns' }
     case 'p2p':
-      return { label: 'P2P Templates', href: '/admin/campaigns/p2p' }
+      return { label: 'P2P Templates', href: '/admin/p2p/templates' }
     case 'fundraiser':
-      return { label: 'My Fundraisers', href: '/admin/campaigns/fundraisers' }
+      return { label: 'Fundraiser Pages', href: '/admin/p2p/fundraisers' }
     default:
-      return { label: 'Campaigns', href: '/admin/campaigns/standard' }
+      return { label: 'Campaigns', href: '/admin/campaigns' }
   }
+}
+
+/**
+ * Get the admin edit/detail URL for a campaign based on its type.
+ * P2P templates → /admin/p2p/templates/[id], others → /admin/campaigns/[id]
+ */
+export function getCampaignEditPath(type: CampaignType, id: string): string {
+  if (type === 'p2p') return `/admin/p2p/templates/${id}`
+  return `/admin/campaigns/${id}`
 }
 
 /**

@@ -219,7 +219,7 @@ const breadcrumbs = computed(() => [
             :currency="txn.currency"
             title="Order Details"
             :campaign-name="txn.campaignName"
-            :campaign-link="`/admin/campaigns/standard/${txn.campaignId}`"
+            :campaign-link="`/admin/campaigns/${txn.campaignId}`"
             class="md:col-span-2"
           />
         </div>

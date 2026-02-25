@@ -126,8 +126,16 @@ app/features/[feature-name]/
 25. **Nuxt nested routes**: `pages/foo.vue` + `pages/foo/[id].vue` = parent-child (needs `<NuxtPage/>`). Use `pages/foo/index.vue` + `pages/foo/[id].vue` for sibling routes.
 26. **Detail cards split**: Admin has DonorInfoCard (with stats), LineItemsCard, CustomFieldsCard, TransactionHistoryCard. Portal has PortalDonorCard (no stats/link), PortalLineItemsCard, PortalDetailRow. `_shared/` holds cross-boundary infra (EditLayout, useEditState, DataTable, etc.).
 27. **Column `meta.thClass`**: DataTable reads `columnDef.meta.thClass` for `<th>` styling. Amount columns use `meta: { thClass: 'w-full text-right' }` to fill space and right-align headers.
+28. **shadcn Card without CardHeader**: `CardContent` defaults to `pt-6` assuming a header above. Use `pt-0` when there's no `CardHeader`.
+29. **Terminal state = editableMode off**: Pages with `editableMode` must init `ref(!isTerminal.value)` + pass `editable={undefined}` to EditLayout when terminal. Always audit sibling pages (e.g. form edit under campaign) for the same pattern.
+30. **Code audit after fixes**: After fixing a bug pattern, always search for the same pattern across the codebase before considering the fix complete.
 
 <!-- end continuous learning notes -->
+
+## Superpowers Overrides
+
+- **No auto-commits**: NEVER commit automatically. Only commit when I explicitly ask.
+- **No worktrees**: NEVER use git worktrees. Work directly on the current branch.
 
 ## Code Rules
 

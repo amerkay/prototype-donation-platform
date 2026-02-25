@@ -31,12 +31,12 @@ const PALETTES: Record<StatusColor, { dot: string; text: string; border: string 
 const STATUS_MAP: Record<string, StatusColor> = {
   active: 'green',
   succeeded: 'green',
-  paused: 'amber',
   pending: 'amber',
   past_due: 'amber',
   failed: 'red',
   cancelled: 'red',
   completed: 'blue',
+  ended: 'red',
   draft: 'gray',
   archived: 'gray',
   refunded: 'gray'
@@ -45,4 +45,9 @@ const STATUS_MAP: Record<string, StatusColor> = {
 /** Returns Tailwind classes for dot, text, and border based on status string */
 export function getStatusColor(status: string) {
   return PALETTES[STATUS_MAP[status] ?? 'gray']
+}
+
+/** Returns a user-facing label for a status (capitalised) */
+export function getStatusLabel(status: string): string {
+  return status.charAt(0).toUpperCase() + status.slice(1)
 }

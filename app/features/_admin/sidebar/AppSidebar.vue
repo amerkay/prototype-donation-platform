@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   Megaphone,
   Users,
+  HandHeart,
   Heart,
   PoundSterling,
   CreditCard,
@@ -54,14 +55,20 @@ const navMain = computed(() => [
     title: 'Campaigns',
     url: '/admin/campaigns',
     icon: Megaphone,
+    exact: true
+  },
+  {
+    title: 'Peer to Peer',
+    url: '#',
+    icon: HandHeart,
     items: [
       {
-        title: 'Standard',
-        url: '/admin/campaigns/standard'
+        title: 'Templates',
+        url: '/admin/p2p/templates'
       },
       {
-        title: 'P2P Templates',
-        url: '/admin/campaigns/p2p'
+        title: 'Fundraiser Pages',
+        url: '/admin/p2p/fundraisers'
       }
     ]
   },

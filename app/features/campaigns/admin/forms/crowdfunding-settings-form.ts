@@ -63,7 +63,7 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
     optional: true,
     visibleWhen: (ctx) => isEnabled(ctx) && !store.isP2P,
     rules: () => {
-      const skipPastCheck = store.status === 'completed' || store.status === 'archived'
+      const skipPastCheck = store.status === 'completed' || store.status === 'ended'
       const base = z.string().date('Must be a valid date')
       return skipPastCheck
         ? base.nullish()

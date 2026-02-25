@@ -26,4 +26,5 @@ coverage/
 data/mailpit*
 
 .netlify/
-report/
+report/.worktrees
+report/**

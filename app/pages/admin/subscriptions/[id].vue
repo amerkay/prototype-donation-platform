@@ -238,7 +238,7 @@ const {
             :currency="sub.currency"
             title="Order Details"
             :campaign-name="sub.campaignName"
-            :campaign-link="`/admin/campaigns/standard/${sub.campaignId}`"
+            :campaign-link="`/admin/campaigns/${sub.campaignId}`"
             class="md:col-span-2 lg:col-span-3"
           />
         </div>

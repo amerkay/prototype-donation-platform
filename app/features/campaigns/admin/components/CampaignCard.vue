@@ -3,7 +3,8 @@ import type { Campaign } from '~/features/campaigns/shared/types'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import {
   getCampaignTypeShortLabel,
-  getCampaignTypeBadgeVariant
+  getCampaignTypeBadgeVariant,
+  getCampaignEditPath
 } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import AdminEntityCard from '~/features/_admin/components/AdminEntityCard.vue'
@@ -52,7 +53,9 @@ const activeFundraisersCount = computed(
   () => props.campaign.fundraisers.filter((f) => f.status === 'active').length
 )
 
-const editUrl = computed(() => props.href ?? `/admin/campaigns/${props.campaign.id}`)
+const editUrl = computed(
+  () => props.href ?? getCampaignEditPath(props.campaign.type, props.campaign.id)
+)
 </script>
 
 <template>
@@ -79,6 +82,7 @@ const editUrl = computed(() => props.href ?? `/admin/campaigns/${props.campaign.
         {{ campaignTypeLabel }}
       </Badge>
       <StatusBadge :status="campaign.status" />
+      <Badge v-if="campaign.isArchived" variant="secondary" class="text-xs"> Archived </Badge>
     </template>
 
     <template v-if="!compact" #stats>

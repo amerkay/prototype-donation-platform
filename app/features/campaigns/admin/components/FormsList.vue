@@ -48,7 +48,16 @@ import {
   EmptyMedia,
   EmptyTitle
 } from '@/components/ui/empty'
-import { Edit, Check, FileText, Plus, Copy, MoreHorizontal, Trash2 } from 'lucide-vue-next'
+import {
+  Edit,
+  Check,
+  FileText,
+  Plus,
+  Copy,
+  MoreHorizontal,
+  Trash2,
+  ExternalLink
+} from 'lucide-vue-next'
 
 const props = defineProps<{
   disabled?: boolean
@@ -252,7 +261,7 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
                   <Badge variant="outline" class="text-xs capitalize">
                     {{ form.config.form.formType ?? 'donation' }}
                   </Badge>
-                  <Badge v-if="form.isDefault" variant="default" class="gap-1">
+                  <Badge v-if="form.isDefault" variant="secondary" class="gap-1">
                     <Check class="w-3 h-3" />
                     Default
                   </Badge>
@@ -261,12 +270,21 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
             </TableCell>
             <TableCell class="text-right">
               <div class="flex items-center justify-end gap-2">
-                <template v-if="!props.disabled">
-                  <Button size="sm" @click="handleEditForm(form.id)">
-                    <Edit class="w-4 h-4 mr-1.5" />
-                    Edit
-                  </Button>
-                </template>
+                <Button v-if="!props.disabled" size="sm" @click="handleEditForm(form.id)">
+                  <Edit class="w-4 h-4 mr-1.5" />
+                  Edit
+                </Button>
+                <Button
+                  v-else
+                  variant="outline"
+                  size="sm"
+                  as="a"
+                  :href="`/admin/campaigns/${store.id}/forms/${form.id}/preview`"
+                  target="_blank"
+                >
+                  <ExternalLink class="w-4 h-4 mr-1.5" />
+                  Preview
+                </Button>
                 <DropdownMenu v-if="canModifyForms">
                   <DropdownMenuTrigger as-child>
                     <Button variant="outline" size="icon" title="More actions">
@@ -324,7 +342,7 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
         <Copy class="w-4 h-4 mr-1.5" />
         Copy from...
       </Button>
-      <Button class="flex-1 sm:flex-initial" size="sm" @click="handleAddForm">
+      <Button class="flex-1 sm:flex-initial" variant="outline" size="sm" @click="handleAddForm">
         <Plus class="w-4 h-4 mr-1.5" />
         Add Form
       </Button>

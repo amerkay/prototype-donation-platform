@@ -43,6 +43,7 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
   const parentCampaignId = ref<string | null>(null)
   const name = ref('')
   const status = ref<CampaignStatus>('draft')
+  const isArchived = ref(false)
   const stats = ref<CampaignStats | null>(null)
   const crowdfunding = ref<CrowdfundingSettings | null>(null)
   const peerToPeer = ref<PeerToPeerSettings | null>(null)
@@ -101,6 +102,7 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
       ...(parentCampaignId.value ? { parentCampaignId: parentCampaignId.value } : {}),
       name: name.value,
       status: status.value,
+      isArchived: isArchived.value,
       createdAt: createdAt.value,
       updatedAt: updatedAt.value,
       stats: stats.value,
@@ -121,6 +123,7 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     parentCampaignId.value = campaign.parentCampaignId ?? null
     name.value = campaign.name
     status.value = campaign.status
+    isArchived.value = campaign.isArchived ?? false
     stats.value = { ...campaign.stats }
     crowdfunding.value = { ...campaign.crowdfunding }
     peerToPeer.value = { ...campaign.peerToPeer }
@@ -139,6 +142,7 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     parentCampaignId.value = null
     name.value = ''
     status.value = 'draft'
+    isArchived.value = false
     stats.value = null
     crowdfunding.value = null
     peerToPeer.value = null
@@ -171,6 +175,7 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     parentCampaignId,
     name,
     status,
+    isArchived,
     stats,
     crowdfunding,
     peerToPeer,
