@@ -4,7 +4,7 @@ import type { Donor } from '~/features/donors/admin/types'
 import { NuxtLink } from '#components'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowUpDown } from 'lucide-vue-next'
+import { ICON_SORT } from '~/lib/icons'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { formatDate } from '~/lib/formatDate'
 
@@ -18,7 +18,7 @@ export const donorColumns: ColumnDef<Donor>[] = [
           variant: 'ghost',
           onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
         },
-        () => ['Name', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
+        () => ['Name', h(ICON_SORT, { class: 'ml-2 h-4 w-4' })]
       ),
     cell: ({ row }) =>
       h('div', {}, [
@@ -42,7 +42,7 @@ export const donorColumns: ColumnDef<Donor>[] = [
           variant: 'ghost',
           onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
         },
-        () => ['Donations', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
+        () => ['Donations', h(ICON_SORT, { class: 'ml-2 h-4 w-4' })]
       ),
     cell: ({ row }) => h('span', { class: 'text-sm' }, row.getValue('donationCount') as number)
   },
@@ -55,7 +55,7 @@ export const donorColumns: ColumnDef<Donor>[] = [
           variant: 'ghost',
           onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
         },
-        () => ['Total Donated', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
+        () => ['Total Donated', h(ICON_SORT, { class: 'ml-2 h-4 w-4' })]
       ),
     cell: ({ row }) =>
       h(
@@ -73,7 +73,7 @@ export const donorColumns: ColumnDef<Donor>[] = [
           variant: 'ghost',
           onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
         },
-        () => ['Last Donation', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
+        () => ['Last Donation', h(ICON_SORT, { class: 'ml-2 h-4 w-4' })]
       ),
     cell: ({ row }) =>
       h('span', { class: 'text-sm' }, formatDate(row.getValue('lastDonationDate') as string))

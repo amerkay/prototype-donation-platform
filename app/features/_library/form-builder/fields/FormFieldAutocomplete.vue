@@ -11,7 +11,7 @@ import {
   ComboboxViewport
 } from 'reka-ui'
 import { Spinner } from '@/components/ui/spinner'
-import { Check } from 'lucide-vue-next'
+import { ICON_CONFIRM } from '~/lib/icons'
 import { cn } from '@/lib/utils'
 import type {
   AutocompleteOption,
@@ -212,7 +212,7 @@ const notFoundText = computed(() => props.meta.notFoundText ?? 'No results found
               <ComboboxItemIndicator
                 class="absolute right-2 inline-flex items-center justify-center"
               >
-                <Check class="h-4 w-4" />
+                <ICON_CONFIRM class="h-4 w-4" />
               </ComboboxItemIndicator>
 
               <div class="flex flex-1 flex-col">

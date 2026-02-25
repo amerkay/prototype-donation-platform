@@ -2,7 +2,7 @@ import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { NuxtLink } from '#components'
 import { Button } from '@/components/ui/button'
-import { ArrowUpDown } from 'lucide-vue-next'
+import { ICON_SORT } from '~/lib/icons'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { formatDate } from '~/lib/formatDate'
 import { paymentMethodLabel } from '~/lib/formatPaymentMethod'
@@ -90,7 +90,7 @@ export function createDateColumn<T>(options: DateColumnOptions<T> = {}): ColumnD
               class: buttonClass,
               onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
             },
-            () => [label, h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
+            () => [label, h(ICON_SORT, { class: 'ml-2 h-4 w-4' })]
           )
       : label,
     cell: ({ row }) => {
@@ -152,7 +152,7 @@ export function createAmountColumn<T>(options: AmountColumnOptions<T> = {}): Col
                 class: buttonClass,
                 onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
               },
-              () => [label, h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
+              () => [label, h(ICON_SORT, { class: 'ml-2 h-4 w-4' })]
             )
           ])
       : () => h('div', { class: 'text-right' }, label),

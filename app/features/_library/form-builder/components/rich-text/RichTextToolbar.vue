@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Bold, Italic, Underline, Link, Braces } from 'lucide-vue-next'
+import { ICON_BOLD, ICON_ITALIC, ICON_UNDERLINE, ICON_LINK, ICON_VARIABLE } from '~/lib/icons'
 import { cn } from '@/lib/utils'
 import type { RichTextVariable } from '~/features/_library/form-builder/types'
 
@@ -75,7 +75,7 @@ function variablePreview(value: string) {
       :disabled="disabled"
       @click="toggleBold"
     >
-      <Bold class="size-4" />
+      <ICON_BOLD class="size-4" />
     </Button>
     <Button
       type="button"
@@ -85,7 +85,7 @@ function variablePreview(value: string) {
       :disabled="disabled"
       @click="toggleItalic"
     >
-      <Italic class="size-4" />
+      <ICON_ITALIC class="size-4" />
     </Button>
     <Button
       type="button"
@@ -95,7 +95,7 @@ function variablePreview(value: string) {
       :disabled="disabled"
       @click="toggleUnderline"
     >
-      <Underline class="size-4" />
+      <ICON_UNDERLINE class="size-4" />
     </Button>
 
     <Separator orientation="vertical" class="mx-1 h-5" />
@@ -110,7 +110,7 @@ function variablePreview(value: string) {
           :class="cn(editor.isActive('link') && 'bg-accent')"
           :disabled="disabled"
         >
-          <Link class="size-4" />
+          <ICON_LINK class="size-4" />
         </Button>
       </PopoverTrigger>
       <PopoverContent class="w-72 p-3" align="start">
@@ -127,7 +127,7 @@ function variablePreview(value: string) {
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <Button type="button" variant="ghost" size="icon-sm" :disabled="disabled">
-            <Braces class="size-4" />
+            <ICON_VARIABLE class="size-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">

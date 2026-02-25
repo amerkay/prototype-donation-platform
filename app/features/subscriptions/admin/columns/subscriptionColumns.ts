@@ -3,7 +3,7 @@ import type { ColumnDef } from '@tanstack/vue-table'
 import type { Subscription } from '~/features/subscriptions/shared/types'
 import { NuxtLink } from '#components'
 import { Button } from '@/components/ui/button'
-import { ArrowUpDown } from 'lucide-vue-next'
+import { ICON_SORT } from '~/lib/icons'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { formatDate } from '~/lib/formatDate'
 import {
@@ -27,7 +27,7 @@ export const subscriptionColumns: ColumnDef<EnrichedSubscription>[] = [
           variant: 'ghost',
           onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
         },
-        () => ['Started', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
+        () => ['Started', h(ICON_SORT, { class: 'ml-2 h-4 w-4' })]
       ),
     cell: ({ row }) =>
       h('div', {}, [
@@ -65,7 +65,7 @@ export const subscriptionColumns: ColumnDef<EnrichedSubscription>[] = [
           variant: 'ghost',
           onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
         },
-        () => ['Amount', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
+        () => ['Amount', h(ICON_SORT, { class: 'ml-2 h-4 w-4' })]
       ),
     cell: ({ row }) =>
       h('div', {}, [
@@ -101,7 +101,7 @@ export const subscriptionColumns: ColumnDef<EnrichedSubscription>[] = [
           variant: 'ghost',
           onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
         },
-        () => ['Lifetime', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
+        () => ['Lifetime', h(ICON_SORT, { class: 'ml-2 h-4 w-4' })]
       ),
     cell: ({ row }) =>
       h('div', {}, [

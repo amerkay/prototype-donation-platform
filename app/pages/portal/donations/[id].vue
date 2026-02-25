@@ -22,7 +22,7 @@ import {
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ClipboardList, CreditCard, Undo2 } from 'lucide-vue-next'
+import { ICON_CLIPBOARD_LIST, ICON_SUBSCRIPTION, ICON_REFUND } from '~/lib/icons'
 
 definePageMeta({ layout: 'portal' })
 
@@ -123,7 +123,7 @@ const breadcrumbs = computed(() => [
           <AlertDialog v-if="canRefund">
             <AlertDialogTrigger as-child>
               <Button variant="destructive" size="sm">
-                <Undo2 class="size-4 mr-1.5" />
+                <ICON_REFUND class="size-4 mr-1.5" />
                 Refund {{ formatAmount(transaction.totalAmount, transaction.currency) }}
               </Button>
             </AlertDialogTrigger>
@@ -157,7 +157,7 @@ const breadcrumbs = computed(() => [
           <Card>
             <CardHeader>
               <CardTitle class="text-base flex items-center gap-2">
-                <ClipboardList class="h-4 w-4" />
+                <ICON_CLIPBOARD_LIST class="h-4 w-4" />
                 Donation Info
               </CardTitle>
             </CardHeader>
@@ -198,7 +198,7 @@ const breadcrumbs = computed(() => [
           <Card>
             <CardHeader>
               <CardTitle class="text-base flex items-center gap-2">
-                <CreditCard class="h-4 w-4" />
+                <ICON_SUBSCRIPTION class="h-4 w-4" />
                 Payment & Totals
               </CardTitle>
             </CardHeader>

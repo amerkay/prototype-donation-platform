@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AlertTriangle, ChevronDown } from 'lucide-vue-next'
+import { ICON_WARNING, ICON_CHEVRON_DOWN } from '~/lib/icons'
 import {
   AlertDialog,
   AlertDialogContent,
@@ -36,7 +36,7 @@ const showForms = ref(false)
           <div
             class="bg-amber-500/10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
           >
-            <AlertTriangle class="h-4 w-4 text-amber-500" />
+            <ICON_WARNING class="h-4 w-4 text-amber-500" />
           </div>
           Remove Currency from Forms
         </AlertDialogTitle>
@@ -54,7 +54,7 @@ const showForms = ref(false)
         <CollapsibleTrigger as-child>
           <Button variant="ghost" size="sm" class="text-muted-foreground gap-1.5 px-0">
             {{ showForms ? 'Hide' : 'Show' }} affected forms ({{ forms.length }})
-            <ChevronDown
+            <ICON_CHEVRON_DOWN
               class="h-4 w-4 transition-transform"
               :class="{ 'rotate-180': showForms }"
             />

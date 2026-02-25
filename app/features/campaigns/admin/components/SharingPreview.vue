@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import ShareContent from '~/features/campaigns/donor/components/ShareContent.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Share2 } from 'lucide-vue-next'
+import { ICON_SHARE } from '~/lib/icons'
 </script>
 
 <template>
   <Card>
     <CardHeader>
       <CardTitle class="flex items-center gap-2">
-        <Share2 class="w-5 h-5" />
+        <ICON_SHARE class="w-5 h-5" />
         Share Preview
       </CardTitle>
     </CardHeader>

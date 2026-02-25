@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Minus, Plus, Package } from 'lucide-vue-next'
+import { ICON_CLOSE, ICON_CREATE, ICON_PRODUCT } from '~/lib/icons'
 import { Button } from '@/components/ui/button'
 import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
@@ -155,7 +155,7 @@ defineExpose({
         class="w-12 h-12 rounded-md bg-muted flex items-center justify-center text-muted-foreground shrink-0"
         data-field="basic.image"
       >
-        <Package class="size-6" />
+        <ICON_PRODUCT class="size-6" />
       </div>
       <div class="flex-1 min-w-0 text-left">
         <h2 class="text-lg font-semibold -mt-1" data-field="basic.title">{{ product.title }}</h2>
@@ -190,7 +190,7 @@ defineExpose({
             :disabled="localQuantity <= 1"
             @click="localQuantity = Math.max(1, localQuantity - 1)"
           >
-            <Minus />
+            <ICON_CLOSE />
             <span class="sr-only">Decrease</span>
           </Button>
           <div class="flex-1 text-center min-w-20">
@@ -205,7 +205,7 @@ defineExpose({
             :disabled="localQuantity >= maxQuantity"
             @click="localQuantity = Math.min(maxQuantity, localQuantity + 1)"
           >
-            <Plus />
+            <ICON_CREATE />
             <span class="sr-only">Increase</span>
           </Button>
         </div>

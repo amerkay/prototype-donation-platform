@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, FileText, Check } from 'lucide-vue-next'
+import { ICON_BACK, ICON_FORM, ICON_CONFIRM } from '~/lib/icons'
 
 interface Props {
   open: boolean
@@ -88,7 +88,7 @@ const handleOpenChange = (open: boolean) => {
               class="h-6 w-6 -ml-1"
               @click="handleBack"
             >
-              <ArrowLeft class="h-4 w-4" />
+              <ICON_BACK class="h-4 w-4" />
             </Button>
             <span>{{ selectedCampaign ? 'Select Form' : 'Select Campaign' }}</span>
           </div>
@@ -105,7 +105,7 @@ const handleOpenChange = (open: boolean) => {
       <!-- Step 1: Campaign Selection -->
       <ScrollArea v-if="!selectedCampaign" class="h-[400px] pr-4">
         <div v-if="availableCampaigns.length === 0" class="text-center py-12 text-muted-foreground">
-          <FileText class="w-12 h-12 mx-auto mb-3 opacity-40" />
+          <ICON_FORM class="w-12 h-12 mx-auto mb-3 opacity-40" />
           <p class="text-sm">No other campaigns with forms found</p>
         </div>
         <div v-else class="grid gap-3">
@@ -138,7 +138,7 @@ const handleOpenChange = (open: boolean) => {
           v-if="selectedCampaignForms.length === 0"
           class="text-center py-12 text-muted-foreground"
         >
-          <FileText class="w-12 h-12 mx-auto mb-3 opacity-40" />
+          <ICON_FORM class="w-12 h-12 mx-auto mb-3 opacity-40" />
           <p class="text-sm">No forms found in this campaign</p>
         </div>
         <div v-else class="grid gap-3">
@@ -149,12 +149,12 @@ const handleOpenChange = (open: boolean) => {
             @click="handleFormSelect(form)"
           >
             <div class="flex items-center gap-3 flex-1 min-w-0">
-              <FileText class="w-4 h-4 text-muted-foreground shrink-0" />
+              <ICON_FORM class="w-4 h-4 text-muted-foreground shrink-0" />
               <div class="flex-1 min-w-0">
                 <p class="font-medium truncate">{{ form.name }}</p>
                 <div class="flex items-center gap-2 mt-1">
                   <Badge v-if="form.isDefault" variant="default" class="text-xs gap-1">
-                    <Check class="w-3 h-3" />
+                    <ICON_CONFIRM class="w-3 h-3" />
                     Default
                   </Badge>
                 </div>

@@ -12,7 +12,7 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { ExternalLink, Pencil } from 'lucide-vue-next'
+import { ICON_EDIT, ICON_EXTERNAL_LINK } from '~/lib/icons'
 import { LEAVE_GUARD_KEY, type LeaveGuard } from '~/features/_shared/composables/useEditState'
 
 interface Props {
@@ -96,12 +96,12 @@ const leaveGuard = inject<LeaveGuard | null>(LEAVE_GUARD_KEY, null)
                 :class="editable && 'bg-accent'"
                 @click="emit('update:editable', !editable)"
               >
-                <Pencil class="w-4 h-4" />
+                <ICON_EDIT class="w-4 h-4" />
                 <span v-if="editable">Editing</span>
               </Button>
               <slot name="preview-actions" />
               <Button v-if="showPreview" variant="outline" size="sm" @click="emit('preview')">
-                <ExternalLink class="w-4 h-4 mr-2" />
+                <ICON_EXTERNAL_LINK class="w-4 h-4 mr-2" />
                 {{ previewLabel }}
               </Button>
             </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
-import { Heart, Share2 } from 'lucide-vue-next'
+import { ICON_DONATION, ICON_SHARE } from '~/lib/icons'
 
 defineProps<{
   /** Show share button */
@@ -21,7 +21,7 @@ const emit = defineEmits<{
       data-field="donationForms"
       @click="emit('donate')"
     >
-      <Heart class="w-4 h-4 mr-2" />
+      <ICON_DONATION class="w-4 h-4 mr-2" />
       Donate Now
     </Button>
     <Button
@@ -32,7 +32,7 @@ const emit = defineEmits<{
       data-field="crowdfunding.enableSocialSharing"
       @click="emit('share')"
     >
-      <Share2 class="w-4 h-4 @3xl:mr-2" />
+      <ICON_SHARE class="w-4 h-4 @3xl:mr-2" />
       <span class="sr-only @3xl:not-sr-only">Share Campaign</span>
     </Button>
   </div>

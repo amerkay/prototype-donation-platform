@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
-import { Save, Loader2, RotateCcw, AlertCircle } from 'lucide-vue-next'
+import { ICON_SAVE, ICON_LOADING, ICON_DISCARD, ICON_WARNING } from '~/lib/icons'
 import { cn } from '@/lib/utils'
 
 const props = withDefaults(
@@ -37,7 +37,7 @@ const hasErrors = computed(() => !props.isValid)
       <slot name="notice" />
 
       <div v-if="hasErrors" class="flex items-center gap-1 text-xs text-destructive">
-        <AlertCircle class="w-3 h-3" />
+        <ICON_WARNING class="w-3 h-3" />
         <span>Please fix errors before saving</span>
       </div>
 
@@ -48,8 +48,8 @@ const hasErrors = computed(() => !props.isValid)
           class="flex-1"
           @click="emit('save')"
         >
-          <Loader2 v-if="props.isSaving" class="w-4 h-4 mr-2 animate-spin" />
-          <Save v-else class="w-4 h-4 mr-2" />
+          <ICON_LOADING v-if="props.isSaving" class="w-4 h-4 mr-2 animate-spin" />
+          <ICON_SAVE v-else class="w-4 h-4 mr-2" />
           {{ props.isSaving ? 'Saving...' : 'Save Changes' }}
         </Button>
         <Button
@@ -59,7 +59,7 @@ const hasErrors = computed(() => !props.isValid)
           :disabled="props.isSaving"
           @click="emit('discard')"
         >
-          <RotateCcw class="w-4 h-4 mr-2" />
+          <ICON_DISCARD class="w-4 h-4 mr-2" />
           Discard
         </Button>
       </div>

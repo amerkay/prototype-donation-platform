@@ -2,20 +2,20 @@
 import type { SidebarProps } from '@/components/ui/sidebar'
 
 import {
-  LayoutDashboard,
-  Megaphone,
-  Users,
-  HandHeart,
-  Heart,
-  PoundSterling,
-  CreditCard,
-  FileText,
-  Plug,
-  Settings2,
-  LifeBuoy,
-  Send,
-  Box
-} from 'lucide-vue-next'
+  ICON_DASHBOARD,
+  ICON_CAMPAIGN,
+  ICON_DONORS,
+  ICON_P2P,
+  ICON_DONATION,
+  ICON_CURRENCY_GBP,
+  ICON_SUBSCRIPTION,
+  ICON_FORM,
+  ICON_INTEGRATIONS,
+  ICON_SETTINGS_2,
+  ICON_SUPPORT,
+  ICON_SEND,
+  ICON_BOX
+} from '~/lib/icons'
 
 import NavMain from '~/features/_admin/sidebar/NavMain.vue'
 import NavCampaigns from '~/features/_admin/sidebar/NavCampaigns.vue'
@@ -48,19 +48,19 @@ const navMain = computed(() => [
   {
     title: 'Dashboard',
     url: '/admin/dashboard',
-    icon: LayoutDashboard,
+    icon: ICON_DASHBOARD,
     exact: true
   },
   {
     title: 'Campaigns',
     url: '/admin/campaigns',
-    icon: Megaphone,
+    icon: ICON_CAMPAIGN,
     exact: true
   },
   {
     title: 'Peer to Peer',
     url: '#',
-    icon: HandHeart,
+    icon: ICON_P2P,
     items: [
       {
         title: 'Templates',
@@ -75,27 +75,27 @@ const navMain = computed(() => [
   {
     title: 'Donors',
     url: '/admin/donors',
-    icon: Users
+    icon: ICON_DONORS
   },
   {
     title: 'Donations',
     url: '/admin/donations',
-    icon: PoundSterling
+    icon: ICON_CURRENCY_GBP
   },
   {
     title: 'Subscriptions',
     url: '/admin/subscriptions',
-    icon: CreditCard
+    icon: ICON_SUBSCRIPTION
   },
   {
     title: 'Impact Products',
     url: '/admin/products',
-    icon: Box
+    icon: ICON_BOX
   },
   {
     title: 'Templates',
     url: '#',
-    icon: FileText,
+    icon: ICON_FORM,
     items: [
       {
         title: 'Receipts',
@@ -114,7 +114,7 @@ const navMain = computed(() => [
   {
     title: 'Integrations',
     url: '#',
-    icon: Plug,
+    icon: ICON_INTEGRATIONS,
     disabled: true,
     items: [
       {
@@ -142,7 +142,7 @@ const navMain = computed(() => [
   {
     title: 'Settings',
     url: '#',
-    icon: Settings2,
+    icon: ICON_SETTINGS_2,
     items: [
       {
         title: 'General',
@@ -196,12 +196,12 @@ const navSecondary = [
   {
     title: 'Support',
     url: '#',
-    icon: LifeBuoy
+    icon: ICON_SUPPORT
   },
   {
     title: 'Feedback',
     url: '#',
-    icon: Send
+    icon: ICON_SEND
   }
 ]
 
@@ -224,7 +224,7 @@ const data = {
               <div
                 class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
               >
-                <Heart class="size-4" />
+                <ICON_DONATION class="size-4" />
               </div>
               <div class="grid flex-1 text-left text-sm leading-tight">
                 <span class="truncate font-medium">Borneo Orangutan Survival Foundations</span>

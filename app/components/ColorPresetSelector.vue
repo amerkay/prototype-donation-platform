@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Check, ChevronDown, Palette } from 'lucide-vue-next'
+import { ICON_CONFIRM, ICON_CHEVRON_DOWN, ICON_PALETTE } from '~/lib/icons'
 import { computed, ref, watch } from 'vue'
 import ColorSwatch from '@/components/ColorSwatch.vue'
 import { normalizeHexColor } from '~/lib/colors'
@@ -127,7 +127,7 @@ function commitCustomColor(): void {
             <ColorSwatch :color="displayColor" size="md" />
             <span>{{ displayLabel }}</span>
           </div>
-          <ChevronDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ICON_CHEVRON_DOWN class="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent class="w-[280px] p-3">
@@ -141,7 +141,7 @@ function commitCustomColor(): void {
           >
             <ColorSwatch :color="primaryColor" size="md" />
             <span class="flex-1 text-left">Primary</span>
-            <Check v-if="currentMode === 'primary'" class="h-4 w-4 text-primary" />
+            <ICON_CONFIRM v-if="currentMode === 'primary'" class="h-4 w-4 text-primary" />
           </button>
 
           <!-- Secondary Option -->
@@ -153,7 +153,7 @@ function commitCustomColor(): void {
           >
             <ColorSwatch :color="secondaryColor" size="md" />
             <span class="flex-1 text-left">Secondary</span>
-            <Check v-if="currentMode === 'secondary'" class="h-4 w-4 text-primary" />
+            <ICON_CONFIRM v-if="currentMode === 'secondary'" class="h-4 w-4 text-primary" />
           </button>
 
           <!-- Black Option -->
@@ -165,7 +165,7 @@ function commitCustomColor(): void {
           >
             <ColorSwatch :color="DARK_PRESET_HEX" size="md" />
             <span class="flex-1 text-left">Black</span>
-            <Check v-if="currentMode === 'dark'" class="h-4 w-4 text-primary" />
+            <ICON_CONFIRM v-if="currentMode === 'dark'" class="h-4 w-4 text-primary" />
           </button>
 
           <!-- Custom Option -->
@@ -176,9 +176,9 @@ function commitCustomColor(): void {
               :class="currentMode === 'custom' ? 'bg-muted' : ''"
               @click="selectCustom"
             >
-              <Palette class="h-3.5 w-3.5 text-muted-foreground" />
+              <ICON_PALETTE class="h-3.5 w-3.5 text-muted-foreground" />
               <span class="flex-1 text-left">Custom</span>
-              <Check v-if="currentMode === 'custom'" class="h-4 w-4 text-primary" />
+              <ICON_CONFIRM v-if="currentMode === 'custom'" class="h-4 w-4 text-primary" />
             </button>
 
             <!-- Inline Color Picker (only shown when Custom is selected) -->

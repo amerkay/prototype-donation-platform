@@ -13,7 +13,13 @@ import AdminDeleteButton from '~/features/_admin/components/AdminDeleteButton.vu
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
-import { Heart, Users, TrendingUp, Target, Pencil } from 'lucide-vue-next'
+import {
+  ICON_TIME_REMAINING,
+  ICON_DONATION,
+  ICON_DONORS,
+  ICON_TRENDING,
+  ICON_EDIT
+} from '~/lib/icons'
 
 const props = defineProps<{
   campaign: Campaign
@@ -74,7 +80,7 @@ const editUrl = computed(
         :alt="campaign.name"
         class="w-full h-full object-cover"
       />
-      <AdminEntityCardPlaceholder v-else :icon="Heart" />
+      <AdminEntityCardPlaceholder v-else :icon="ICON_DONATION" />
     </template>
 
     <template #badges>
@@ -113,21 +119,21 @@ const editUrl = computed(
       <!-- Stats Grid -->
       <div class="flex justify-between pt-2">
         <div v-if="isP2P" class="flex items-center gap-2 text-sm">
-          <Users class="w-4 h-4 text-muted-foreground" />
+          <ICON_DONORS class="w-4 h-4 text-muted-foreground" />
           <div>
             <p class="font-medium">{{ activeFundraisersCount }}</p>
             <p class="text-xs text-muted-foreground">Active</p>
           </div>
         </div>
         <div class="flex items-center gap-2 text-sm">
-          <Users class="w-4 h-4 text-muted-foreground" />
+          <ICON_DONORS class="w-4 h-4 text-muted-foreground" />
           <div>
             <p class="font-medium">{{ campaign.stats.totalDonors }}</p>
             <p class="text-xs text-muted-foreground">Donors</p>
           </div>
         </div>
         <div class="flex items-center gap-2 text-sm">
-          <TrendingUp class="w-4 h-4 text-muted-foreground" />
+          <ICON_TRENDING class="w-4 h-4 text-muted-foreground" />
           <div>
             <p class="font-medium">{{ campaign.stats.totalDonations }}</p>
             <p class="text-xs text-muted-foreground">Donations</p>
@@ -140,7 +146,7 @@ const editUrl = computed(
         v-if="formatTimeRemaining(campaign.crowdfunding.endDate)"
         class="flex items-center gap-2 pt-2 border-t"
       >
-        <Target class="w-4 h-4 text-muted-foreground" />
+        <ICON_TIME_REMAINING class="w-4 h-4 text-muted-foreground" />
         <span class="text-sm text-muted-foreground">
           {{ formatTimeRemaining(campaign.crowdfunding.endDate) }} remaining
         </span>
@@ -152,7 +158,7 @@ const editUrl = computed(
         <div class="flex gap-2">
           <Button variant="default" size="sm" class="flex-1" as-child>
             <NuxtLink :to="editUrl">
-              <Pencil class="w-3.5 h-3.5 mr-1.5" />
+              <ICON_EDIT class="w-3.5 h-3.5 mr-1.5" />
               Edit
             </NuxtLink>
           </Button>

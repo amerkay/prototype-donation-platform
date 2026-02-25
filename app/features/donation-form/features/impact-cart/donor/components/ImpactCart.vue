@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ShoppingCart } from 'lucide-vue-next'
+import { ICON_CART } from '~/lib/icons'
 import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
 import { getCartItemKey } from '~/features/donation-form/features/impact-cart/donor/utils'
@@ -144,7 +144,7 @@ defineExpose({
     <!-- Cart items (when has items) -->
     <template v-if="items.length > 0">
       <div class="flex items-center gap-2 pt-2">
-        <ShoppingCart class="size-4 text-muted-foreground" />
+        <ICON_CART class="size-4 text-muted-foreground" />
         <h3 class="text-sm font-semibold">Your cart</h3>
       </div>
       <TransitionGroup name="list" tag="div" class="space-y-2 scroll-mt-6">
@@ -204,7 +204,7 @@ defineExpose({
     <Empty v-else-if="!products && items.length === 0" class="border">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <ShoppingCart />
+          <ICON_CART />
         </EmptyMedia>
         <EmptyTitle>{{ labels.emptyCartTitle }}</EmptyTitle>
       </EmptyHeader>

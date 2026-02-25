@@ -19,15 +19,15 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import {
-  Heart,
-  MoreHorizontal,
-  CheckCircle,
-  OctagonX,
-  RotateCcw,
-  Users,
-  User,
-  Megaphone
-} from 'lucide-vue-next'
+  ICON_DONATION,
+  ICON_MORE_ACTIONS,
+  ICON_COMPLETE,
+  ICON_TERMINAL_STOP,
+  ICON_REFUND,
+  ICON_DONORS,
+  ICON_SECTION_DONOR,
+  ICON_CAMPAIGN
+} from '~/lib/icons'
 
 definePageMeta({ layout: 'admin' })
 
@@ -90,23 +90,23 @@ const canReactivate = computed(() => fundraiser.value?.status !== 'active')
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
             <Button variant="outline" size="sm">
-              <MoreHorizontal class="size-4 mr-1.5" />
+              <ICON_MORE_ACTIONS class="size-4 mr-1.5" />
               Actions
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem v-if="canReactivate" @click="reactivateFundraiser(fundraiser!.id)">
-              <RotateCcw class="size-4 mr-2" /> Reactivate
+              <ICON_REFUND class="size-4 mr-2" /> Reactivate
             </DropdownMenuItem>
             <DropdownMenuItem v-if="canComplete" @click="completeFundraiser(fundraiser!.id)">
-              <CheckCircle class="size-4 mr-2" /> Complete
+              <ICON_COMPLETE class="size-4 mr-2" /> Complete
             </DropdownMenuItem>
             <DropdownMenuItem
               v-if="canEnd"
               class="text-destructive focus:text-destructive"
               @click="endFundraiser(fundraiser!.id)"
             >
-              <OctagonX class="size-4 mr-2" /> End
+              <ICON_TERMINAL_STOP class="size-4 mr-2" /> End
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -119,7 +119,7 @@ const canReactivate = computed(() => fundraiser.value?.status !== 'active')
         <Card>
           <CardHeader>
             <CardTitle class="text-base flex items-center gap-2">
-              <User class="size-4" /> Fundraiser Info
+              <ICON_SECTION_DONOR class="size-4" /> Fundraiser Info
             </CardTitle>
           </CardHeader>
           <CardContent class="space-y-2 text-sm">
@@ -149,7 +149,7 @@ const canReactivate = computed(() => fundraiser.value?.status !== 'active')
             <CardContent class="pt-0">
               <div class="flex items-center gap-3">
                 <div class="rounded-lg bg-muted p-2">
-                  <Heart class="size-4 text-muted-foreground" />
+                  <ICON_DONATION class="size-4 text-muted-foreground" />
                 </div>
                 <div>
                   <p class="text-2xl font-bold">{{ fundraiser.donationCount }}</p>
@@ -162,7 +162,7 @@ const canReactivate = computed(() => fundraiser.value?.status !== 'active')
             <CardContent class="pt-0">
               <div class="flex items-center gap-3">
                 <div class="rounded-lg bg-muted p-2">
-                  <Users class="size-4 text-muted-foreground" />
+                  <ICON_DONORS class="size-4 text-muted-foreground" />
                 </div>
                 <div>
                   <p class="text-2xl font-bold">
@@ -207,7 +207,7 @@ const canReactivate = computed(() => fundraiser.value?.status !== 'active')
         <CrowdfundingPagePreview :editable="false" />
       </div>
       <div v-else class="border border-dashed rounded-lg p-8 text-center text-muted-foreground">
-        <Megaphone class="size-8 mx-auto mb-2 opacity-40" />
+        <ICON_CAMPAIGN class="size-8 mx-auto mb-2 opacity-40" />
         <p>Preview unavailable</p>
       </div>
     </template>

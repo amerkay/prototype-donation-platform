@@ -8,7 +8,13 @@ import StatsCard from '@/components/StatsCard.vue'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { ArrowRight, CreditCard, DollarSign, Megaphone, Receipt } from 'lucide-vue-next'
+import {
+  ICON_FORWARD,
+  ICON_SUBSCRIPTION,
+  ICON_MONEY,
+  ICON_CAMPAIGN,
+  ICON_RECEIPT
+} from '~/lib/icons'
 
 definePageMeta({
   layout: 'portal'
@@ -34,10 +40,14 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
 
       <!-- Stats row -->
       <div class="grid gap-6 grid-cols-2 md:grid-cols-4">
-        <StatsCard :icon="DollarSign" label="Total Donated" :value="formatAmount(totalDonated)" />
-        <StatsCard :icon="Receipt" label="Transactions" :value="totalTransactions" />
-        <StatsCard :icon="CreditCard" label="Subscriptions" :value="activeSubscriptions.length" />
-        <StatsCard :icon="Megaphone" label="Fundraisers" :value="activeFundraisers.length" />
+        <StatsCard :icon="ICON_MONEY" label="Total Donated" :value="formatAmount(totalDonated)" />
+        <StatsCard :icon="ICON_RECEIPT" label="Transactions" :value="totalTransactions" />
+        <StatsCard
+          :icon="ICON_SUBSCRIPTION"
+          label="Subscriptions"
+          :value="activeSubscriptions.length"
+        />
+        <StatsCard :icon="ICON_CAMPAIGN" label="Fundraisers" :value="activeFundraisers.length" />
       </div>
 
       <div class="grid gap-6 md:grid-cols-2">
@@ -45,7 +55,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
         <Card class="md:col-span-2 lg:col-span-3 overflow-hidden">
           <CardHeader>
             <div class="flex items-center gap-2">
-              <Receipt class="w-4 h-4 text-muted-foreground" />
+              <ICON_RECEIPT class="w-4 h-4 text-muted-foreground" />
               <CardTitle class="text-base font-semibold">Recent Transactions</CardTitle>
             </div>
           </CardHeader>
@@ -60,7 +70,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
           <CardFooter>
             <NuxtLink to="/portal/donations" class="w-full md:max-w-xs">
               <Button variant="outline" size="sm" class="w-full">
-                View all donations <ArrowRight class="w-3.5 h-3.5" />
+                View all donations <ICON_FORWARD class="w-3.5 h-3.5" />
               </Button>
             </NuxtLink>
           </CardFooter>
@@ -70,7 +80,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
         <Card>
           <CardHeader>
             <div class="flex items-center gap-2">
-              <CreditCard class="w-4 h-4 text-muted-foreground" />
+              <ICON_SUBSCRIPTION class="w-4 h-4 text-muted-foreground" />
               <CardTitle class="text-base font-semibold">
                 Subscriptions
                 <span class="text-muted-foreground font-normal"
@@ -110,7 +120,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
           <CardFooter>
             <NuxtLink to="/portal/subscriptions" class="w-full md:max-w-xs">
               <Button variant="outline" size="sm" class="w-full">
-                View all subscriptions <ArrowRight class="w-3.5 h-3.5" />
+                View all subscriptions <ICON_FORWARD class="w-3.5 h-3.5" />
               </Button>
             </NuxtLink>
           </CardFooter>
@@ -120,7 +130,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
         <Card>
           <CardHeader>
             <div class="flex items-center gap-2">
-              <Megaphone class="w-4 h-4 text-muted-foreground" />
+              <ICON_CAMPAIGN class="w-4 h-4 text-muted-foreground" />
               <CardTitle class="text-base font-semibold">
                 My Fundraisers
                 <span class="text-muted-foreground font-normal"
@@ -167,7 +177,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
           <CardFooter>
             <NuxtLink to="/portal/fundraisers" class="w-full md:max-w-xs">
               <Button variant="outline" size="sm" class="w-full">
-                View all fundraisers <ArrowRight class="w-3.5 h-3.5" />
+                View all fundraisers <ICON_FORWARD class="w-3.5 h-3.5" />
               </Button>
             </NuxtLink>
           </CardFooter>

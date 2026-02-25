@@ -14,15 +14,15 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  PartyPopper,
-  User,
-  Pencil,
-  Eye,
-  Heart
-} from 'lucide-vue-next'
+  ICON_BACK,
+  ICON_FORWARD,
+  ICON_CONFIRM,
+  ICON_PARTY_POPPER,
+  ICON_SECTION_DONOR,
+  ICON_EDIT,
+  ICON_VIEW,
+  ICON_DONATION
+} from '~/lib/icons'
 
 const props = defineProps<{
   campaign: Campaign
@@ -33,8 +33,8 @@ const charityStore = useCharitySettingsStore()
 
 // Preset icon lookup
 const presetIcon = computed(() => {
-  if (!props.campaign.p2pPreset) return Heart
-  return getPresetById(props.campaign.p2pPreset)?.metadata.icon ?? Heart
+  if (!props.campaign.p2pPreset) return ICON_DONATION
+  return getPresetById(props.campaign.p2pPreset)?.metadata.icon ?? ICON_DONATION
 })
 
 // Step state
@@ -42,7 +42,7 @@ const currentStep = ref(1)
 const totalSteps = 4
 const progressPercent = computed(() => (currentStep.value / totalSteps) * 100)
 
-const stepIcons = [PartyPopper, User, Pencil, Eye]
+const stepIcons = [ICON_PARTY_POPPER, ICON_SECTION_DONOR, ICON_EDIT, ICON_VIEW]
 const stepLabels = ['Welcome', 'Your Details', 'Customise', 'Preview']
 
 // Form definitions
@@ -186,22 +186,22 @@ const handleLaunch = () => {
           <p>In the next steps you will:</p>
           <ul class="space-y-1 ml-4">
             <li class="flex items-start gap-2">
-              <Check class="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <ICON_CONFIRM class="w-4 h-4 text-primary mt-0.5 shrink-0" />
               <span>Enter your personal details</span>
             </li>
             <li class="flex items-start gap-2">
-              <Check class="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <ICON_CONFIRM class="w-4 h-4 text-primary mt-0.5 shrink-0" />
               <span>Customise your fundraising page with a title, goal, and story</span>
             </li>
             <li class="flex items-start gap-2">
-              <Check class="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <ICON_CONFIRM class="w-4 h-4 text-primary mt-0.5 shrink-0" />
               <span>Preview and launch your page</span>
             </li>
           </ul>
         </div>
         <Button class="w-full" @click="nextStep">
           Get Started
-          <ArrowRight class="w-4 h-4 ml-1" />
+          <ICON_FORWARD class="w-4 h-4 ml-1" />
         </Button>
       </CardContent>
     </Card>
@@ -217,12 +217,12 @@ const handleLaunch = () => {
         />
         <div class="flex gap-2 pt-4">
           <Button variant="outline" @click="prevStep">
-            <ArrowLeft class="w-4 h-4 mr-1" />
+            <ICON_BACK class="w-4 h-4 mr-1" />
             Back
           </Button>
           <Button class="flex-1" @click="tryNextFromDetails">
             Continue
-            <ArrowRight class="w-4 h-4 ml-1" />
+            <ICON_FORWARD class="w-4 h-4 ml-1" />
           </Button>
         </div>
       </CardContent>
@@ -239,12 +239,12 @@ const handleLaunch = () => {
         />
         <div class="flex gap-2 pt-4">
           <Button variant="outline" @click="prevStep">
-            <ArrowLeft class="w-4 h-4 mr-1" />
+            <ICON_BACK class="w-4 h-4 mr-1" />
             Back
           </Button>
           <Button class="flex-1" @click="tryNextFromCustomise">
             Preview
-            <Eye class="w-4 h-4 ml-1" />
+            <ICON_VIEW class="w-4 h-4 ml-1" />
           </Button>
         </div>
       </CardContent>
@@ -292,12 +292,12 @@ const handleLaunch = () => {
 
         <div class="flex gap-2 pt-2">
           <Button variant="outline" @click="prevStep">
-            <ArrowLeft class="w-4 h-4 mr-1" />
+            <ICON_BACK class="w-4 h-4 mr-1" />
             Edit
           </Button>
           <Button class="flex-1" @click="handleLaunch">
             Launch My Page
-            <PartyPopper class="w-4 h-4 ml-1" />
+            <ICON_PARTY_POPPER class="w-4 h-4 ml-1" />
           </Button>
         </div>
       </CardContent>
@@ -309,7 +309,7 @@ const handleLaunch = () => {
         <div
           class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto"
         >
-          <Check class="w-8 h-8 text-green-600 dark:text-green-400" />
+          <ICON_CONFIRM class="w-8 h-8 text-green-600 dark:text-green-400" />
         </div>
         <h2 class="text-xl font-bold">Your Page is Live!</h2>
         <p class="text-muted-foreground max-w-md mx-auto">

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { ChevronDown } from 'lucide-vue-next'
+import { ICON_CHEVRON_DOWN } from '~/lib/icons'
 
 const showRounding = ref(false)
 </script>
@@ -59,7 +59,7 @@ const showRounding = ref(false)
         class="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
       >
         Rounding rules
-        <ChevronDown
+        <ICON_CHEVRON_DOWN
           class="h-3.5 w-3.5 transition-transform"
           :class="{ 'rotate-180': showRounding }"
         />

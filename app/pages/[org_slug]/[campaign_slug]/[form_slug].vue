@@ -4,7 +4,7 @@ import { useFormConfigStore } from '~/features/donation-form/shared/stores/formC
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
 import { useForms } from '~/features/campaigns/shared/composables/useForms'
-import { AlertCircle } from 'lucide-vue-next'
+import { ICON_WARNING } from '~/lib/icons'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
@@ -54,7 +54,7 @@ watch(
       <div v-else class="max-w-md mx-auto">
         <Card>
           <CardContent class="py-10 text-center space-y-4">
-            <AlertCircle class="w-12 h-12 text-muted-foreground mx-auto" />
+            <ICON_WARNING class="w-12 h-12 text-muted-foreground mx-auto" />
             <h2 class="text-lg font-semibold">Form Not Found</h2>
             <p class="text-sm text-muted-foreground">
               This donation form doesn't exist or is no longer available.

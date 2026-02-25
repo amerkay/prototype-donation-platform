@@ -18,7 +18,7 @@ import CampaignActions from './CampaignActions.vue'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Heart, ChevronDown, ChevronUp, ExternalLink } from 'lucide-vue-next'
+import { ICON_DONATION, ICON_CHEVRON_DOWN, ICON_CHEVRON_UP, ICON_EXTERNAL_LINK } from '~/lib/icons'
 
 const props = defineProps<{
   campaign: Campaign
@@ -112,7 +112,7 @@ const hasSocialSharing = computed(() => {
             v-else
             class="w-full h-full flex items-center justify-center bg-linear-to-br from-primary/20 to-primary/5 @3xl:min-h-80"
           >
-            <Heart class="w-12 h-12 @3xl:w-20 @3xl:h-20 text-primary/40" />
+            <ICON_DONATION class="w-12 h-12 @3xl:w-20 @3xl:h-20 text-primary/40" />
           </div>
         </div>
 
@@ -172,8 +172,8 @@ const hasSocialSharing = computed(() => {
                 @click="isStoryExpanded = !isStoryExpanded"
               >
                 {{ isStoryExpanded ? 'Read less' : 'Read more' }}
-                <ChevronUp v-if="isStoryExpanded" class="w-4 h-4 ml-1" />
-                <ChevronDown v-else class="w-4 h-4 ml-1" />
+                <ICON_CHEVRON_UP v-if="isStoryExpanded" class="w-4 h-4 ml-1" />
+                <ICON_CHEVRON_DOWN v-else class="w-4 h-4 ml-1" />
               </Button>
             </div>
 
@@ -233,7 +233,7 @@ const hasSocialSharing = computed(() => {
                   :data-field="targets?.website"
                 >
                   {{ charityInfo.website.replace(/^https?:\/\//, '') }}
-                  <ExternalLink class="w-3 h-3" />
+                  <ICON_EXTERNAL_LINK class="w-3 h-3" />
                 </a>
               </CardContent>
             </Card>
@@ -287,7 +287,7 @@ const hasSocialSharing = computed(() => {
 
   <!-- Empty state -->
   <div v-else class="bg-muted/50 rounded-xl border p-8 text-center">
-    <Heart class="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+    <ICON_DONATION class="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
     <p class="text-muted-foreground">No campaign data loaded</p>
   </div>
 </template>

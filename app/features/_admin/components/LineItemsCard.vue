@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TransactionLineItem } from '~/features/donor-portal/types'
 import { NuxtLink } from '#components'
-import { ReceiptText } from 'lucide-vue-next'
+import { ICON_SECTION_LINE_ITEMS } from '~/lib/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -26,7 +26,7 @@ defineProps<{
   <Card v-if="lineItems.length > 0" class="min-w-0 overflow-hidden">
     <CardHeader>
       <CardTitle class="text-base flex items-center gap-2">
-        <ReceiptText class="h-4 w-4" />
+        <ICON_SECTION_LINE_ITEMS class="h-4 w-4" />
         {{ title ?? 'Line Items' }}
       </CardTitle>
     </CardHeader>

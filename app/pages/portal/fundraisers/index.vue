@@ -14,7 +14,7 @@ import {
   EmptyMedia,
   EmptyTitle
 } from '@/components/ui/empty'
-import { ArrowRight, Megaphone, Pencil } from 'lucide-vue-next'
+import { ICON_FORWARD, ICON_CAMPAIGN, ICON_EDIT } from '~/lib/icons'
 import type { Campaign } from '~/features/campaigns/shared/types'
 
 definePageMeta({
@@ -57,7 +57,7 @@ function isTerminal(f: Campaign) {
       <Empty v-if="visibleFundraisers.length === 0">
         <EmptyHeader>
           <EmptyMedia variant="icon">
-            <Megaphone />
+            <ICON_CAMPAIGN />
           </EmptyMedia>
           <EmptyTitle>No fundraisers yet</EmptyTitle>
           <EmptyDescription>
@@ -87,7 +87,7 @@ function isTerminal(f: Campaign) {
                 class="flex-1"
               >
                 <Button variant="default" size="sm" class="w-full" as="span">
-                  <Pencil class="w-3.5 h-3.5 mr-1" />
+                  <ICON_EDIT class="w-3.5 h-3.5 mr-1" />
                   Edit Campaign
                 </Button>
               </NuxtLink>
@@ -98,7 +98,7 @@ function isTerminal(f: Campaign) {
               />
               <NuxtLink :to="`/portal/fundraisers/${f.id}`">
                 <Button variant="outline" size="sm" as="span">
-                  Donations <ArrowRight class="w-3.5 h-3.5 ml-1" />
+                  Donations <ICON_FORWARD class="w-3.5 h-3.5 ml-1" />
                 </Button>
               </NuxtLink>
             </div>

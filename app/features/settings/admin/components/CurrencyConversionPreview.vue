@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
-import { ArrowDown } from 'lucide-vue-next'
+import { ICON_SORT_DESC } from '~/lib/icons'
 import FieldHelpText from '~/features/_library/form-builder/internal/FieldHelpText.vue'
 import AmountSelector from '~/features/donation-form/donor/components/AmountSelector.vue'
 import PreviewCurrencySelect from '~/features/_admin/components/PreviewCurrencySelect.vue'
@@ -139,7 +139,7 @@ const dummyAmount = ref(0)
         <div class="flex items-center justify-center gap-2 py-1">
           <div class="bg-border h-px flex-1" />
           <div class="flex items-center gap-1.5">
-            <ArrowDown class="text-muted-foreground h-3 w-3" />
+            <ICON_SORT_DESC class="text-muted-foreground h-3 w-3" />
             <PreviewCurrencySelect
               :model-value="selectedCurrency"
               :currencies="targetCurrencies"

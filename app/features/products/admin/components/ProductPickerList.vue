@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Package, Plus, X } from 'lucide-vue-next'
+import { ICON_PRODUCT, ICON_CREATE, ICON_CLOSE } from '~/lib/icons'
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -76,7 +76,7 @@ function confirmSelection() {
             class="w-8 h-8 rounded-md object-cover shrink-0"
           />
           <div v-else class="w-8 h-8 rounded-md bg-muted flex items-center justify-center shrink-0">
-            <Package class="size-4 text-muted-foreground" />
+            <ICON_PRODUCT class="size-4 text-muted-foreground" />
           </div>
           <span class="text-sm font-medium truncate flex-1">{{ product.name }}</span>
           <slot name="item-actions" :product="product" />
@@ -87,7 +87,7 @@ function confirmSelection() {
             :disabled="disabled"
             @click="emit('remove', product.id)"
           >
-            <X class="h-3.5 w-3.5" />
+            <ICON_CLOSE class="h-3.5 w-3.5" />
           </Button>
         </div>
         <slot name="item-below" :product="product" />
@@ -97,7 +97,7 @@ function confirmSelection() {
     <p v-else class="text-sm text-muted-foreground">{{ emptyLabel }}</p>
 
     <Button variant="outline" size="sm" :disabled="disabled" @click="openDialog">
-      <Plus class="w-3.5 h-3.5 mr-1.5" />
+      <ICON_CREATE class="w-3.5 h-3.5 mr-1.5" />
       {{ addLabel }}
     </Button>
 
@@ -125,7 +125,7 @@ function confirmSelection() {
               class="w-7 h-7 rounded object-cover shrink-0"
             />
             <div v-else class="w-7 h-7 rounded bg-muted flex items-center justify-center shrink-0">
-              <Package class="size-3.5 text-muted-foreground" />
+              <ICON_PRODUCT class="size-3.5 text-muted-foreground" />
             </div>
             <div class="min-w-0 flex-1 overflow-hidden">
               <p class="text-sm truncate">{{ product.name }}</p>

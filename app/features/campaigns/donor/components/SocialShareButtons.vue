@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import type { SocialSharingSettings } from '~/features/settings/admin/stores/socialSharingSettings'
 import { Button } from '@/components/ui/button'
-import { Facebook, Twitter, Linkedin, Mail, Link2, MessageCircle } from 'lucide-vue-next'
+import {
+  ICON_SOCIAL_FACEBOOK,
+  ICON_SOCIAL_TWITTER,
+  ICON_SOCIAL_LINKEDIN,
+  ICON_EMAIL,
+  ICON_SOCIAL_COPY_LINK,
+  ICON_SOCIAL_WHATSAPP
+} from '~/lib/icons'
 
 type ShareSettings = SocialSharingSettings & { copyLink?: boolean }
 
@@ -28,12 +35,12 @@ const emit = defineEmits<{
 
 // Social platform configuration
 const socialPlatforms = [
-  { key: 'facebook', label: 'Facebook', icon: Facebook },
-  { key: 'twitter', label: 'Twitter / X', icon: Twitter },
-  { key: 'linkedin', label: 'LinkedIn', icon: Linkedin },
-  { key: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
-  { key: 'email', label: 'Email', icon: Mail },
-  { key: 'copyLink', label: 'Copy Link', icon: Link2 }
+  { key: 'facebook', label: 'Facebook', icon: ICON_SOCIAL_FACEBOOK },
+  { key: 'twitter', label: 'Twitter / X', icon: ICON_SOCIAL_TWITTER },
+  { key: 'linkedin', label: 'LinkedIn', icon: ICON_SOCIAL_LINKEDIN },
+  { key: 'whatsapp', label: 'WhatsApp', icon: ICON_SOCIAL_WHATSAPP },
+  { key: 'email', label: 'Email', icon: ICON_EMAIL },
+  { key: 'copyLink', label: 'Copy Link', icon: ICON_SOCIAL_COPY_LINK }
 ] as const
 
 // Get enabled platforms from settings

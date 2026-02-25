@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, provide } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowRight } from 'lucide-vue-next'
+import { ICON_FORWARD } from '~/lib/icons'
 import ReceiptPreview from '~/features/templates/admin/components/ReceiptPreview.vue'
 import PreviewEditable from '~/features/_admin/components/PreviewEditable.vue'
 import CoverCostsInfoCard from '~/features/donation-form/features/cover-costs/donor/components/CoverCostsInfoCard.vue'
@@ -167,7 +167,7 @@ defineExpose({ activeTab })
               class="flex items-center gap-1 text-primary hover:underline"
             >
               Edit Receipt
-              <ArrowRight class="size-3" />
+              <ICON_FORWARD class="size-3" />
             </NuxtLink>
           </div>
         </div>

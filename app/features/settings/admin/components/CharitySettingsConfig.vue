@@ -10,7 +10,7 @@ import { useCharitySettingsStore } from '~/features/settings/admin/stores/charit
 import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
 import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 import { Button } from '@/components/ui/button'
-import { Eye } from 'lucide-vue-next'
+import { ICON_VIEW } from '~/lib/icons'
 
 const store = useCharitySettingsStore()
 provideAccordionGroup(charityOpenAccordionId)
@@ -33,7 +33,7 @@ defineExpose(expose)
     <FormRenderer ref="formRef" v-model="modelValue" :section="form" validate-on-mount />
 
     <Button variant="outline" size="sm" class="lg:hidden" @click="$emit('preview')">
-      <Eye class="w-4 h-4 mr-2" />
+      <ICON_VIEW class="w-4 h-4 mr-2" />
       Preview
     </Button>
 

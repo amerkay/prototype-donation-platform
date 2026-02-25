@@ -5,7 +5,7 @@ import ProductCard from '~/features/products/admin/components/ProductCard.vue'
 import AdminCardGrid from '~/features/_admin/components/AdminCardGrid.vue'
 import { useProducts } from '~/features/products/admin/composables/useProducts'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-vue-next'
+import { ICON_CREATE } from '~/lib/icons'
 
 definePageMeta({ layout: 'admin' })
 
@@ -32,7 +32,7 @@ function handleDuplicate(id: string) {
       <AdminPageHeader title="Impact Products" :stats="stats">
         <template #action>
           <Button class="w-full sm:w-auto" size="sm" @click="handleNew">
-            <Plus class="w-4 h-4 mr-2" />
+            <ICON_CREATE class="w-4 h-4 mr-2" />
             New Product
           </Button>
         </template>

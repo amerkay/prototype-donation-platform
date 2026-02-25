@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowRight } from 'lucide-vue-next'
+import { ICON_FORWARD } from '~/lib/icons'
 import { useProductStore } from '~/features/products/admin/stores/product'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useCertificateTemplates } from '~/features/templates/admin/composables/useCertificateTemplates'
@@ -135,7 +135,7 @@ watch(productOpenAccordionId, (id) => {
               class="flex items-center gap-1 text-primary hover:underline"
             >
               Edit Certificate
-              <ArrowRight class="size-3" />
+              <ICON_FORWARD class="size-3" />
             </NuxtLink>
           </div>
         </TabsContent>

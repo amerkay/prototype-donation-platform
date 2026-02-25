@@ -4,7 +4,7 @@ import { RangeCalendar } from '@/components/ui/range-calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { CalendarIcon, X } from 'lucide-vue-next'
+import { ICON_DATE, ICON_CLOSE } from '~/lib/icons'
 import { cn } from '@/lib/utils'
 import { CalendarDate, today, getLocalTimeZone } from '@internationalized/date'
 
@@ -73,7 +73,7 @@ const activePreset = computed(() => {
     <Popover>
       <PopoverTrigger as-child>
         <Button variant="outline" size="sm" :class="cn('justify-start text-left font-normal')">
-          <CalendarIcon class="mr-2 h-4 w-4" />
+          <ICON_DATE class="mr-2 h-4 w-4" />
           {{ triggerLabel }}
         </Button>
       </PopoverTrigger>
@@ -99,7 +99,7 @@ const activePreset = computed(() => {
       </PopoverContent>
     </Popover>
     <Button v-if="hasRange" variant="ghost" size="icon" class="h-8 w-8" @click="clear">
-      <X class="h-4 w-4" />
+      <ICON_CLOSE class="h-4 w-4" />
     </Button>
   </div>
 </template>

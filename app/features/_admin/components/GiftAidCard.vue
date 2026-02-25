@@ -4,7 +4,7 @@ import { formatDate } from '~/lib/formatDate'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Badge } from '@/components/ui/badge'
-import { HeartHandshake, ChevronRight } from 'lucide-vue-next'
+import { ICON_SECTION_GIFT_AID, ICON_CHEVRON_RIGHT } from '~/lib/icons'
 
 const props = defineProps<{
   declarations: GiftAidDeclaration[]
@@ -23,7 +23,7 @@ const older = computed(() => sorted.value.slice(1))
   <Card>
     <CardHeader>
       <CardTitle class="text-base flex items-center gap-2">
-        <HeartHandshake class="h-4 w-4" />
+        <ICON_SECTION_GIFT_AID class="h-4 w-4" />
         Gift Aid Declarations
       </CardTitle>
     </CardHeader>
@@ -53,7 +53,9 @@ const older = computed(() => sorted.value.slice(1))
           <CollapsibleTrigger
             class="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors group"
           >
-            <ChevronRight class="h-3 w-3 transition-transform group-data-[state=open]:rotate-90" />
+            <ICON_CHEVRON_RIGHT
+              class="h-3 w-3 transition-transform group-data-[state=open]:rotate-90"
+            />
             {{ older.length }} earlier {{ older.length === 1 ? 'declaration' : 'declarations' }}
           </CollapsibleTrigger>
           <CollapsibleContent>

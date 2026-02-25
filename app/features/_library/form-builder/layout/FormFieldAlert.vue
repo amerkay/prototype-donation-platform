@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Info, TriangleAlert } from 'lucide-vue-next'
+import { ICON_INFO, ICON_WARNING } from '~/lib/icons'
 import { cn } from '@/lib/utils'
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
 import type { AlertFieldDef } from '~/features/_library/form-builder/types'
@@ -81,8 +81,8 @@ const {
     :variant="alertVariant"
     :class="cn(hashHighlightClass, resolvedClass)"
   >
-    <Info v-if="showInfoIcon" class="size-4" />
-    <TriangleAlert v-else-if="showDestructiveIcon" class="size-4" />
+    <ICON_INFO v-if="showInfoIcon" class="size-4" />
+    <ICON_WARNING v-else-if="showDestructiveIcon" class="size-4" />
 
     <AlertTitle v-if="resolvedLabel">{{ resolvedLabel }}</AlertTitle>
     <AlertDescription :class="meta.descriptionClass">

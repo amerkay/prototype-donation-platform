@@ -15,7 +15,7 @@ import {
   certificatePreviewProductId
 } from '~/features/templates/admin/forms/certificate-template-form'
 import { Button } from '@/components/ui/button'
-import { Download, Loader2 } from 'lucide-vue-next'
+import { ICON_DOWNLOAD, ICON_LOADING } from '~/lib/icons'
 
 definePageMeta({ layout: 'admin' })
 
@@ -151,8 +151,8 @@ function handleDeleted() {
             downloadPdf('certificate', { currency: previewCurrency, product: previewProduct })
           "
         >
-          <Loader2 v-if="isGenerating" class="w-4 h-4 mr-2 animate-spin" />
-          <Download v-else class="w-4 h-4 mr-2" />
+          <ICON_LOADING v-if="isGenerating" class="w-4 h-4 mr-2 animate-spin" />
+          <ICON_DOWNLOAD v-else class="w-4 h-4 mr-2" />
           PDF
         </Button>
       </template>

@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
-import { Check, ChevronDown, Palette } from 'lucide-vue-next'
+import { ICON_CONFIRM, ICON_CHEVRON_DOWN, ICON_PALETTE } from '~/lib/icons'
 import FieldHelpText from '~/features/_library/form-builder/internal/FieldHelpText.vue'
 import { useFormBuilderContext } from '~/features/_library/form-builder/composables/useFormBuilderContext'
 import {
@@ -62,7 +62,7 @@ function selectTemplate(template: BrandingTemplate) {
         <span class="flex-1 text-left font-medium">
           {{ activeTemplate?.name ?? 'Custom' }}
         </span>
-        <ChevronDown class="size-4 text-muted-foreground shrink-0" />
+        <ICON_CHEVRON_DOWN class="size-4 text-muted-foreground shrink-0" />
       </button>
     </PopoverTrigger>
 
@@ -81,7 +81,7 @@ function selectTemplate(template: BrandingTemplate) {
         @click="selectTemplate(template)"
       >
         <div class="size-4 flex items-center justify-center shrink-0">
-          <Check v-if="activeTemplate?.id === template.id" class="size-3.5 text-primary" />
+          <ICON_CONFIRM v-if="activeTemplate?.id === template.id" class="size-3.5 text-primary" />
         </div>
         <div class="flex items-center gap-1">
           <span
@@ -107,9 +107,9 @@ function selectTemplate(template: BrandingTemplate) {
         "
       >
         <div class="size-4 flex items-center justify-center shrink-0">
-          <Check v-if="!activeTemplate" class="size-3.5 text-primary" />
+          <ICON_CONFIRM v-if="!activeTemplate" class="size-3.5 text-primary" />
         </div>
-        <Palette class="size-3.5 text-muted-foreground" />
+        <ICON_PALETTE class="size-3.5 text-muted-foreground" />
         <span class="text-muted-foreground">Custom</span>
         <span class="ml-auto text-xs text-muted-foreground/60">
           <FieldHelpText side="top" icon-class="size-3">

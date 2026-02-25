@@ -19,7 +19,7 @@ import EndFundraiserButton from '~/features/campaigns/admin/components/EndFundra
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { Archive, ArchiveRestore } from 'lucide-vue-next'
+import { ICON_ARCHIVE, ICON_RESTORE } from '~/lib/icons'
 
 const store = useCampaignConfigStore()
 const { getDeleteProtection, getCampaignById } = useCampaigns()
@@ -237,8 +237,8 @@ const disabledOptions = computed(() => {
         :title="store.isArchived ? 'Unarchive' : 'Archive'"
         @click="emit('update:archived', !store.isArchived)"
       >
-        <ArchiveRestore v-if="store.isArchived" class="h-4 w-4" />
-        <Archive v-else class="h-4 w-4" />
+        <ICON_RESTORE v-if="store.isArchived" class="h-4 w-4" />
+        <ICON_ARCHIVE v-else class="h-4 w-4" />
       </Button>
       <AdminDeleteButton
         v-if="!portalMode"

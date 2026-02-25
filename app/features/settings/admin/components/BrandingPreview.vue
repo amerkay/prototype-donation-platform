@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowRight } from 'lucide-vue-next'
+import { ICON_FORWARD } from '~/lib/icons'
 import DonationFlowWizard from '~/features/donation-form/donor/DonationFlowWizard.vue'
 import CrowdfundingPage from '~/features/campaigns/donor/components/CrowdfundingPage.vue'
 import ReceiptPreview from '~/features/templates/admin/components/ReceiptPreview.vue'
@@ -54,7 +54,7 @@ const TABS = [
           class="flex items-center gap-1 text-primary hover:underline"
         >
           Edit Forms
-          <ArrowRight class="size-3" />
+          <ICON_FORWARD class="size-3" />
         </NuxtLink>
       </div>
     </TabsContent>
@@ -74,7 +74,7 @@ const TABS = [
           class="flex items-center gap-1 text-primary hover:underline"
         >
           Edit Campaigns
-          <ArrowRight class="size-3" />
+          <ICON_FORWARD class="size-3" />
         </NuxtLink>
       </div>
     </TabsContent>
@@ -92,7 +92,7 @@ const TABS = [
             class="flex items-center gap-1 text-primary hover:underline"
           >
             Edit Receipt
-            <ArrowRight class="size-3" />
+            <ICON_FORWARD class="size-3" />
           </NuxtLink>
         </div>
       </div>
@@ -111,7 +111,7 @@ const TABS = [
             class="flex items-center gap-1 text-primary hover:underline"
           >
             Edit Certificate
-            <ArrowRight class="size-3" />
+            <ICON_FORWARD class="size-3" />
           </NuxtLink>
         </div>
       </div>

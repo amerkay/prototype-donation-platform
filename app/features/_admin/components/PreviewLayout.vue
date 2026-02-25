@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Smartphone, Tablet, Monitor } from 'lucide-vue-next'
+import { ICON_BACK, ICON_MOBILE, ICON_TABLET, ICON_DESKTOP } from '~/lib/icons'
 
 type DeviceMode = 'mobile' | 'tablet' | 'desktop'
 
@@ -39,7 +39,7 @@ const goBack = () => {
       <div class="px-4 py-2 flex items-center justify-between gap-4">
         <div class="flex items-center gap-2">
           <Button variant="ghost" size="sm" @click="goBack">
-            <ArrowLeft class="w-4 h-4 mr-1" />
+            <ICON_BACK class="w-4 h-4 mr-1" />
             {{ backLabel }}
           </Button>
         </div>
@@ -52,7 +52,7 @@ const goBack = () => {
             :class="{ 'bg-background shadow-sm': deviceMode === 'mobile' }"
             @click="deviceMode = 'mobile'"
           >
-            <Smartphone class="w-4 h-4" />
+            <ICON_MOBILE class="w-4 h-4" />
           </Button>
           <Button
             variant="ghost"
@@ -60,7 +60,7 @@ const goBack = () => {
             :class="{ 'bg-background shadow-sm': deviceMode === 'tablet' }"
             @click="deviceMode = 'tablet'"
           >
-            <Tablet class="w-4 h-4" />
+            <ICON_TABLET class="w-4 h-4" />
           </Button>
           <Button
             variant="ghost"
@@ -68,7 +68,7 @@ const goBack = () => {
             :class="{ 'bg-background shadow-sm': deviceMode === 'desktop' }"
             @click="deviceMode = 'desktop'"
           >
-            <Monitor class="w-4 h-4" />
+            <ICON_DESKTOP class="w-4 h-4" />
           </Button>
         </div>
 

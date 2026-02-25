@@ -6,7 +6,7 @@ import FilterTabs from '~/components/FilterTabs.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-vue-next'
+import { ICON_CREATE } from '~/lib/icons'
 
 definePageMeta({ layout: 'admin' })
 
@@ -88,7 +88,7 @@ const handleNewCampaign = () => {
       <AdminPageHeader title="Campaigns" :stats="stats">
         <template #action>
           <Button class="w-full sm:w-auto" size="sm" @click="handleNewCampaign">
-            <Plus class="w-4 h-4 mr-2" />
+            <ICON_CREATE class="w-4 h-4 mr-2" />
             New Campaign
           </Button>
         </template>

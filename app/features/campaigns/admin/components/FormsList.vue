@@ -49,15 +49,15 @@ import {
   EmptyTitle
 } from '@/components/ui/empty'
 import {
-  Edit,
-  Check,
-  FileText,
-  Plus,
-  Copy,
-  MoreHorizontal,
-  Trash2,
-  ExternalLink
-} from 'lucide-vue-next'
+  ICON_EDIT,
+  ICON_CONFIRM,
+  ICON_FORM,
+  ICON_CREATE,
+  ICON_COPY,
+  ICON_MORE_ACTIONS,
+  ICON_DELETE,
+  ICON_EXTERNAL_LINK
+} from '~/lib/icons'
 
 const props = defineProps<{
   disabled?: boolean
@@ -194,7 +194,7 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
   <div>
     <div class="mb-3">
       <h3 class="text-sm flex items-center gap-x-1.5">
-        <FileText class="size-4" />
+        <ICON_FORM class="size-4" />
         Donation Forms
       </h3>
     </div>
@@ -214,7 +214,7 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
     <Empty v-if="visibleForms.length === 0" class="border border-dashed">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <FileText />
+          <ICON_FORM />
         </EmptyMedia>
         <EmptyTitle>No Forms Yet</EmptyTitle>
         <EmptyDescription>
@@ -224,11 +224,11 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
       <EmptyContent v-if="!props.disabled">
         <div class="flex flex-col sm:flex-row gap-2">
           <Button @click="handleAddForm">
-            <Plus class="w-4 h-4 mr-1.5" />
+            <ICON_CREATE class="w-4 h-4 mr-1.5" />
             Create Your First Form
           </Button>
           <Button variant="outline" class="text-foreground" @click="showCopyDialog = true">
-            <Copy class="w-4 h-4 mr-1.5" />
+            <ICON_COPY class="w-4 h-4 mr-1.5" />
             Copy from another campaign
           </Button>
         </div>
@@ -262,7 +262,7 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
                     {{ form.config.form.formType ?? 'donation' }}
                   </Badge>
                   <Badge v-if="form.isDefault" variant="secondary" class="gap-1">
-                    <Check class="w-3 h-3" />
+                    <ICON_CONFIRM class="w-3 h-3" />
                     Default
                   </Badge>
                 </div>
@@ -271,7 +271,7 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
             <TableCell class="text-right">
               <div class="flex items-center justify-end gap-2">
                 <Button v-if="!props.disabled" size="sm" @click="handleEditForm(form.id)">
-                  <Edit class="w-4 h-4 mr-1.5" />
+                  <ICON_EDIT class="w-4 h-4 mr-1.5" />
                   Edit
                 </Button>
                 <Button
@@ -282,13 +282,13 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
                   :href="`/admin/campaigns/${store.id}/forms/${form.id}/preview`"
                   target="_blank"
                 >
-                  <ExternalLink class="w-4 h-4 mr-1.5" />
+                  <ICON_EXTERNAL_LINK class="w-4 h-4 mr-1.5" />
                   Preview
                 </Button>
                 <DropdownMenu v-if="canModifyForms">
                   <DropdownMenuTrigger as-child>
                     <Button variant="outline" size="icon" title="More actions">
-                      <MoreHorizontal class="w-4 h-4" />
+                      <ICON_MORE_ACTIONS class="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -297,7 +297,7 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
                       :disabled="settingDefaultId === form.id"
                       @click="handleSetDefault(form.id)"
                     >
-                      <Check class="w-4 h-4 mr-2" />
+                      <ICON_CONFIRM class="w-4 h-4 mr-2" />
                       {{ settingDefaultId === form.id ? 'Setting...' : 'Set default' }}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator v-if="!form.isDefault && canModifyForms" />
@@ -306,7 +306,7 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
                       :disabled="duplicatingId === form.id"
                       @click="handleDuplicateForm(form.id, form.name)"
                     >
-                      <Copy class="w-4 h-4 mr-2" />
+                      <ICON_COPY class="w-4 h-4 mr-2" />
                       {{ duplicatingId === form.id ? 'Duplicating...' : 'Duplicate' }}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator v-if="canModifyForms" />
@@ -315,7 +315,7 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
                       class="text-destructive focus:text-destructive"
                       @click="handleDeleteForm(form.id, form.name)"
                     >
-                      <Trash2 class="w-4 h-4 mr-2" />
+                      <ICON_DELETE class="w-4 h-4 mr-2" />
                       Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -339,11 +339,11 @@ const handleCopyFromCampaign = async (sourceForm: CampaignForm, sourceCampaignId
         size="sm"
         @click="showCopyDialog = true"
       >
-        <Copy class="w-4 h-4 mr-1.5" />
+        <ICON_COPY class="w-4 h-4 mr-1.5" />
         Copy from...
       </Button>
       <Button class="flex-1 sm:flex-initial" variant="outline" size="sm" @click="handleAddForm">
-        <Plus class="w-4 h-4 mr-1.5" />
+        <ICON_CREATE class="w-4 h-4 mr-1.5" />
         Add Form
       </Button>
     </div>

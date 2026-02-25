@@ -1,6 +1,6 @@
 import type { Component } from 'vue'
 import type { Campaign, P2PPreset } from '~/features/campaigns/shared/types'
-import { Cake, Heart, Trophy, Gem, Pencil } from 'lucide-vue-next'
+import { ICON_CAKE, ICON_DONATION, ICON_TROPHY, ICON_GEM, ICON_EDIT } from '~/lib/icons'
 import { createBirthdayPreset } from './birthday'
 import { createTributePreset } from './tribute'
 import { createChallengePreset } from './challenge'
@@ -39,7 +39,7 @@ export const P2P_PRESET_REGISTRY: P2PCampaignPreset[] = [
       id: 'birthday',
       name: 'Birthday Fundraiser',
       description: 'Celebrate a birthday by asking friends and family to donate instead of gifts',
-      icon: Cake
+      icon: ICON_CAKE
     },
     factory: createBirthdayPreset
   },
@@ -48,7 +48,7 @@ export const P2P_PRESET_REGISTRY: P2PCampaignPreset[] = [
       id: 'tribute',
       name: 'Tribute & Memorial',
       description: 'Honour or remember a loved one with a dedicated fundraising campaign',
-      icon: Heart
+      icon: ICON_DONATION
     },
     factory: createTributePreset
   },
@@ -57,7 +57,7 @@ export const P2P_PRESET_REGISTRY: P2PCampaignPreset[] = [
       id: 'challenge',
       name: 'Challenge Fundraiser',
       description: 'Take on a personal challenge and rally supporters to sponsor your effort',
-      icon: Trophy
+      icon: ICON_TROPHY
     },
     factory: createChallengePreset
   },
@@ -66,7 +66,7 @@ export const P2P_PRESET_REGISTRY: P2PCampaignPreset[] = [
       id: 'wedding',
       name: 'Wedding Fundraiser',
       description: 'Ask wedding guests to donate to a cause you care about instead of gifts',
-      icon: Gem
+      icon: ICON_GEM
     },
     factory: createWeddingPreset
   },
@@ -75,7 +75,7 @@ export const P2P_PRESET_REGISTRY: P2PCampaignPreset[] = [
       id: 'custom',
       name: 'Custom',
       description: 'Start from scratch and build your own peer-to-peer campaign',
-      icon: Pencil
+      icon: ICON_EDIT
     },
     factory: createCustomPreset
   }

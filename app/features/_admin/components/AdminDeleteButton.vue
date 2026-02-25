@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Trash2 } from 'lucide-vue-next'
+import { ICON_DELETE } from '~/lib/icons'
 
 defineProps<{
   /** Entity name shown in confirmation, e.g. "New Campaign" */
@@ -37,7 +37,7 @@ function handleConfirm() {
     <PopoverTrigger as-child>
       <span class="inline-flex">
         <Button variant="ghost" size="icon" class="pointer-events-none text-destructive opacity-30">
-          <Trash2 class="size-4" />
+          <ICON_DELETE class="size-4" />
         </Button>
       </span>
     </PopoverTrigger>
@@ -50,7 +50,7 @@ function handleConfirm() {
     class="text-destructive hover:text-destructive"
     @click="showDialog = true"
   >
-    <Trash2 class="size-4" />
+    <ICON_DELETE class="size-4" />
   </Button>
 
   <AlertDialog v-model:open="showDialog">

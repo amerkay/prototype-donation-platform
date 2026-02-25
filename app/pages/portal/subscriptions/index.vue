@@ -4,7 +4,7 @@ import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPort
 import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import FilterTabs from '~/components/FilterTabs.vue'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
-import { CreditCard } from 'lucide-vue-next'
+import { ICON_SUBSCRIPTION } from '~/lib/icons'
 import SubscriptionCard from '~/features/subscriptions/donor/components/SubscriptionCard.vue'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -77,7 +77,7 @@ const filterCounts = computed(() => {
         <Empty v-if="filteredSubscriptions.length === 0">
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <CreditCard />
+              <ICON_SUBSCRIPTION />
             </EmptyMedia>
             <EmptyTitle
               >No {{ activeFilter === 'all' ? '' : activeFilter }} subscriptions</EmptyTitle

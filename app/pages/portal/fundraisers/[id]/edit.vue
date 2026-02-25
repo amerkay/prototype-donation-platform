@@ -5,7 +5,7 @@ import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/Cam
 import CrowdfundingPagePreview from '~/features/campaigns/admin/components/CrowdfundingPagePreview.vue'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { EyeOff } from 'lucide-vue-next'
+import { ICON_HIDE } from '~/lib/icons'
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
@@ -172,7 +172,7 @@ const handleDeleted = () => {
         />
         <Empty v-else class="border border-dashed">
           <EmptyHeader>
-            <EmptyMedia variant="icon"><EyeOff /></EmptyMedia>
+            <EmptyMedia variant="icon"><ICON_HIDE /></EmptyMedia>
             <EmptyTitle>Preview Unavailable</EmptyTitle>
             <EmptyDescription>
               Crowdfunding Page is currently disabled. Enable it in the settings to see the preview.

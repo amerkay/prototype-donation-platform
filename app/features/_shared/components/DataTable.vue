@@ -19,7 +19,7 @@ import { valueUpdater } from '@/components/ui/table/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Search, Loader2 } from 'lucide-vue-next'
+import { ICON_SEARCH, ICON_LOADING } from '~/lib/icons'
 import { getCurrentInstance } from 'vue'
 
 const searchQuery = defineModel<string>('searchQuery')
@@ -80,11 +80,11 @@ const SKELETON_ROWS = 5
   <div>
     <div v-if="showSearch" class="flex items-center py-4">
       <div class="relative w-full max-w-sm">
-        <Search
+        <ICON_SEARCH
           v-if="!isSearching"
           class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
         />
-        <Loader2
+        <ICON_LOADING
           v-else
           class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground animate-spin"
         />

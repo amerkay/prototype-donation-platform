@@ -9,7 +9,7 @@ import {
   ComboboxRoot,
   ComboboxViewport
 } from 'reka-ui'
-import { Check, ChevronsUpDown } from 'lucide-vue-next'
+import { ICON_CONFIRM, ICON_DROPDOWN_TRIGGER } from '~/lib/icons'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import type {
@@ -181,7 +181,7 @@ const removeBadge = (value: string | number, event: Event) => {
           />
         </div>
 
-        <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        <ICON_DROPDOWN_TRIGGER class="ml-2 h-4 w-4 shrink-0 opacity-50" />
       </ComboboxAnchor>
 
       <ComboboxContent
@@ -205,7 +205,7 @@ const removeBadge = (value: string | number, event: Event) => {
                 v-if="isSelected(option.value)"
                 class="absolute right-2 inline-flex items-center justify-center"
               >
-                <Check class="h-4 w-4" />
+                <ICON_CONFIRM class="h-4 w-4" />
               </ComboboxItemIndicator>
 
               <div class="flex flex-1 flex-col">

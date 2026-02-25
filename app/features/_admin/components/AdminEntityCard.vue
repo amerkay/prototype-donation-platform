@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { Calendar } from 'lucide-vue-next'
+import { ICON_DATE } from '~/lib/icons'
 import { formatDistance } from 'date-fns'
 
 const props = defineProps<{
@@ -41,7 +41,7 @@ const formattedDate = computed(() =>
         <slot name="badges" />
       </div>
       <p class="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
-        <Calendar class="w-3 h-3" />
+        <ICON_DATE class="w-3 h-3" />
         Updated {{ formattedDate }}
       </p>
     </CardHeader>

@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Eye } from 'lucide-vue-next'
+import { ICON_VIEW } from '~/lib/icons'
 
 const { products } = useProducts()
 const { getTemplateById } = useCertificateTemplates()
@@ -113,7 +113,7 @@ function getOtherTemplateName(templateId?: string): string | undefined {
         :disabled="activePreviewProductId === product.id"
         @click="certificatePreviewProductId = product.id"
       >
-        <Eye class="h-3.5 w-3.5" />
+        <ICON_VIEW class="h-3.5 w-3.5" />
       </Button>
     </template>
 

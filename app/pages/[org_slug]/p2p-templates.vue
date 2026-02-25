@@ -2,7 +2,7 @@
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import CampaignCard from '~/features/campaigns/admin/components/CampaignCard.vue'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Users } from 'lucide-vue-next'
+import { ICON_FORWARD, ICON_DONORS } from '~/lib/icons'
 
 definePageMeta({
   layout: 'donor'
@@ -27,7 +27,7 @@ const handleSelect = (campaignId: string) => {
       <!-- Hero -->
       <div class="text-center space-y-3">
         <div class="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-          <Users class="w-7 h-7 text-primary" />
+          <ICON_DONORS class="w-7 h-7 text-primary" />
         </div>
         <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">
           Start Your Own Fundraiser for BOSF
@@ -44,7 +44,7 @@ const handleSelect = (campaignId: string) => {
           <template #actions>
             <Button class="w-full" @click="handleSelect(campaign.id)">
               Start Fundraising
-              <ArrowRight class="w-4 h-4 ml-1" />
+              <ICON_FORWARD class="w-4 h-4 ml-1" />
             </Button>
           </template>
         </CampaignCard>

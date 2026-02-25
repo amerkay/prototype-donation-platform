@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { ArrowLeft } from 'lucide-vue-next'
+import { ICON_BACK } from '~/lib/icons'
 
 defineProps<{
   label?: string
@@ -14,7 +14,7 @@ defineProps<{
       <!-- Left: Back to explore -->
       <NuxtLink to="/" class="shrink-0">
         <Button variant="ghost" size="sm" as="span">
-          <ArrowLeft class="w-4 h-4 mr-1" />
+          <ICON_BACK class="w-4 h-4 mr-1" />
           Explore Prototype
         </Button>
       </NuxtLink>

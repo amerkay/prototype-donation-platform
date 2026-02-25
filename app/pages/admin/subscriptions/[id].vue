@@ -15,7 +15,14 @@ import { paymentMethodLabel } from '~/lib/formatPaymentMethod'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Pause, Play, X, DollarSign, RefreshCw, Wallet } from 'lucide-vue-next'
+import {
+  ICON_PAUSE,
+  ICON_RESUME,
+  ICON_MONEY,
+  ICON_WALLET,
+  ICON_TERMINAL_STOP,
+  ICON_SUBSCRIPTION
+} from '~/lib/icons'
 
 definePageMeta({ layout: 'admin' })
 
@@ -100,7 +107,7 @@ const {
               size="sm"
               @click="handleResume(sub.id)"
             >
-              <Play class="size-4 mr-1.5" />
+              <ICON_RESUME class="size-4 mr-1.5" />
               Resume
             </Button>
             <Button
@@ -109,7 +116,7 @@ const {
               size="sm"
               @click="confirmPause(sub.id)"
             >
-              <Pause class="size-4 mr-1.5" />
+              <ICON_PAUSE class="size-4 mr-1.5" />
               Pause
             </Button>
             <Button
@@ -118,7 +125,7 @@ const {
               size="sm"
               @click="openChangeAmount(sub.id)"
             >
-              <DollarSign class="size-4 mr-1.5" />
+              <ICON_MONEY class="size-4 mr-1.5" />
               Change Amount
             </Button>
             <Button
@@ -128,7 +135,7 @@ const {
               class="text-destructive hover:text-destructive"
               @click="confirmCancel(sub.id)"
             >
-              <X class="size-4 mr-1.5" />
+              <ICON_TERMINAL_STOP class="size-4 mr-1.5" />
               Cancel
             </Button>
           </div>
@@ -147,7 +154,7 @@ const {
           <Card>
             <CardHeader>
               <CardTitle class="text-base flex items-center gap-2">
-                <RefreshCw class="h-4 w-4" />
+                <ICON_SUBSCRIPTION class="h-4 w-4" />
                 Subscription
               </CardTitle>
             </CardHeader>
@@ -191,7 +198,7 @@ const {
           <Card>
             <CardHeader>
               <CardTitle class="text-base flex items-center gap-2">
-                <Wallet class="h-4 w-4" />
+                <ICON_WALLET class="h-4 w-4" />
                 Financials
               </CardTitle>
             </CardHeader>

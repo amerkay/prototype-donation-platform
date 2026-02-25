@@ -21,19 +21,19 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import {
-  UserPlus,
-  Mail,
-  Copy,
-  Users,
-  Check,
-  MoreHorizontal,
-  Eye,
-  CheckCircle,
-  OctagonX,
-  RotateCcw,
-  TrendingUp,
-  Target
-} from 'lucide-vue-next'
+  ICON_USER_PLUS,
+  ICON_EMAIL,
+  ICON_COPY,
+  ICON_DONORS,
+  ICON_CONFIRM,
+  ICON_MORE_ACTIONS,
+  ICON_VIEW,
+  ICON_COMPLETE,
+  ICON_TERMINAL_STOP,
+  ICON_REFUND,
+  ICON_TRENDING,
+  ICON_TARGET
+} from '~/lib/icons'
 
 const store = useCampaignConfigStore()
 const { formatAmount } = useCampaignFormatters()
@@ -73,7 +73,7 @@ function createActionColumn(): ColumnDef<CampaignFundraiser> {
       // View detail link
       items.push(
         h(DropdownMenuItem, { onClick: () => navigateTo(`/admin/p2p/fundraisers/${f.id}`) }, () => [
-          h(Eye, { class: 'size-4 mr-2' }),
+          h(ICON_VIEW, { class: 'size-4 mr-2' }),
           'View'
         ])
       )
@@ -82,7 +82,7 @@ function createActionColumn(): ColumnDef<CampaignFundraiser> {
       if (f.status !== 'active') {
         items.push(
           h(DropdownMenuItem, { onClick: () => reactivateFundraiser(f.id) }, () => [
-            h(RotateCcw, { class: 'size-4 mr-2' }),
+            h(ICON_REFUND, { class: 'size-4 mr-2' }),
             'Reactivate'
           ])
         )
@@ -92,7 +92,7 @@ function createActionColumn(): ColumnDef<CampaignFundraiser> {
       if (f.status === 'active') {
         items.push(
           h(DropdownMenuItem, { onClick: () => completeFundraiser(f.id) }, () => [
-            h(CheckCircle, { class: 'size-4 mr-2' }),
+            h(ICON_COMPLETE, { class: 'size-4 mr-2' }),
             'Complete'
           ])
         )
@@ -103,7 +103,7 @@ function createActionColumn(): ColumnDef<CampaignFundraiser> {
               class: 'text-destructive focus:text-destructive',
               onClick: () => endFundraiser(f.id)
             },
-            () => [h(OctagonX, { class: 'size-4 mr-2' }), 'End']
+            () => [h(ICON_TERMINAL_STOP, { class: 'size-4 mr-2' }), 'End']
           )
         )
       }
@@ -112,7 +112,7 @@ function createActionColumn(): ColumnDef<CampaignFundraiser> {
         h(DropdownMenu, {}, () => [
           h(DropdownMenuTrigger, { asChild: true }, () =>
             h(Button, { variant: 'outline', size: 'icon', class: 'h-8 w-8' }, () =>
-              h(MoreHorizontal, { class: 'size-4' })
+              h(ICON_MORE_ACTIONS, { class: 'size-4' })
             )
           ),
           h(DropdownMenuContent, { align: 'end' }, () => items)
@@ -144,14 +144,14 @@ const sendInvites = async () => {
     <!-- Stats Header -->
     <div class="grid grid-cols-3 gap-4 mb-4">
       <div class="flex items-center gap-2 p-3 rounded-lg border bg-background">
-        <Users class="size-4 text-muted-foreground" />
+        <ICON_DONORS class="size-4 text-muted-foreground" />
         <div>
           <p class="text-lg font-semibold leading-none">{{ activeFundraisers.length }}</p>
           <p class="text-xs text-muted-foreground mt-0.5">Active Fundraisers</p>
         </div>
       </div>
       <div class="flex items-center gap-2 p-3 rounded-lg border bg-background">
-        <TrendingUp class="size-4 text-muted-foreground" />
+        <ICON_TRENDING class="size-4 text-muted-foreground" />
         <div>
           <p class="text-lg font-semibold leading-none">
             {{ formatAmount(totalFundraiserRaised, 'GBP') }}
@@ -160,7 +160,7 @@ const sendInvites = async () => {
         </div>
       </div>
       <div class="flex items-center gap-2 p-3 rounded-lg border bg-background">
-        <Target class="size-4 text-muted-foreground" />
+        <ICON_TARGET class="size-4 text-muted-foreground" />
         <div>
           <p class="text-lg font-semibold leading-none">{{ formatAmount(averageRaised, 'GBP') }}</p>
           <p class="text-xs text-muted-foreground mt-0.5">Avg per Fundraiser</p>
@@ -182,13 +182,13 @@ const sendInvites = async () => {
 
     <!-- Empty State -->
     <div v-else class="text-center py-10 border rounded-lg border-dashed">
-      <Users class="w-12 h-12 mx-auto text-muted-foreground/40 mb-3" />
+      <ICON_DONORS class="w-12 h-12 mx-auto text-muted-foreground/40 mb-3" />
       <p class="font-medium">No fundraisers yet</p>
       <p class="text-sm text-muted-foreground mt-1">
         Invite supporters to start their own fundraising pages
       </p>
       <Button class="mt-4" @click="showInviteSheet = true">
-        <UserPlus class="w-4 h-4 mr-2" />
+        <ICON_USER_PLUS class="w-4 h-4 mr-2" />
         Invite Fundraiser
       </Button>
     </div>
@@ -196,7 +196,7 @@ const sendInvites = async () => {
     <!-- Invite Button (when fundraisers exist) -->
     <div v-if="store.fundraisers.length > 0" class="flex justify-end mt-3">
       <Button size="sm" @click="showInviteSheet = true">
-        <UserPlus class="w-4 h-4 mr-2" />
+        <ICON_USER_PLUS class="w-4 h-4 mr-2" />
         Invite Fundraiser
       </Button>
     </div>
@@ -240,8 +240,8 @@ const sendInvites = async () => {
               :disabled="!inviteEmails.trim() || inviteSent"
               @click="sendInvites"
             >
-              <Check v-if="inviteSent" class="w-4 h-4 mr-2" />
-              <Mail v-else class="w-4 h-4 mr-2" />
+              <ICON_CONFIRM v-if="inviteSent" class="w-4 h-4 mr-2" />
+              <ICON_EMAIL v-else class="w-4 h-4 mr-2" />
               {{ inviteSent ? 'Invites Sent!' : 'Send Invites' }}
             </Button>
           </div>
@@ -260,8 +260,8 @@ const sendInvites = async () => {
             <div class="flex gap-2">
               <Input :model-value="inviteLink" readonly class="font-mono text-sm" />
               <Button variant="outline" @click="copy()">
-                <Check v-if="copied" class="w-4 h-4" />
-                <Copy v-else class="w-4 h-4" />
+                <ICON_CONFIRM v-if="copied" class="w-4 h-4" />
+                <ICON_COPY v-else class="w-4 h-4" />
               </Button>
             </div>
           </div>

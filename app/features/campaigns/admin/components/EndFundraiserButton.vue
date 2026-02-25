@@ -9,7 +9,7 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { OctagonX } from 'lucide-vue-next'
+import { ICON_TERMINAL_STOP } from '~/lib/icons'
 
 defineProps<{
   name: string
@@ -33,7 +33,7 @@ function handleConfirm() {
     title="End Fundraiser"
     @click="showDialog = true"
   >
-    <OctagonX class="size-4" />
+    <ICON_TERMINAL_STOP class="size-4" />
   </Button>
 
   <AlertDialog v-model:open="showDialog">

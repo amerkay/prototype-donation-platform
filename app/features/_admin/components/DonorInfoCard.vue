@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { User, Gift } from 'lucide-vue-next'
+import { ICON_SECTION_DONOR, ICON_TRIBUTE } from '~/lib/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import AdminDetailRow from '~/features/_admin/components/AdminDetailRow.vue'
@@ -41,7 +41,7 @@ const {
   <Card>
     <CardHeader>
       <CardTitle class="text-base flex items-center gap-2">
-        <User class="h-4 w-4" />
+        <ICON_SECTION_DONOR class="h-4 w-4" />
         Donor
       </CardTitle>
     </CardHeader>
@@ -105,7 +105,7 @@ const {
         <p class="bg-muted rounded p-2 text-sm italic">"{{ message }}"</p>
       </div>
       <div v-if="tribute" class="flex items-center gap-2 pt-1">
-        <Gift class="h-4 w-4 text-muted-foreground" />
+        <ICON_TRIBUTE class="h-4 w-4 text-muted-foreground" />
         <span class="capitalize">{{ tribute.type }}</span>
         <span class="text-muted-foreground">for</span>
         <span class="font-medium">{{ tribute.honoreeName }}</span>

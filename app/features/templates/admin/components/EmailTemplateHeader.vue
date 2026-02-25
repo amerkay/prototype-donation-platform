@@ -7,7 +7,7 @@ import AdminResourceHeader from '~/features/_admin/components/AdminResourceHeade
 import InlineEditableText from '~/features/_admin/components/InlineEditableText.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Send } from 'lucide-vue-next'
+import { ICON_SEND } from '~/lib/icons'
 
 const store = useEmailTemplateStore()
 const meta = computed(() => EMAIL_TEMPLATE_META[store.type])
@@ -57,7 +57,7 @@ const emit = defineEmits<{
 
     <template #right>
       <Button variant="outline" size="sm" :disabled="isSending" @click="sendTestEmail">
-        <Send class="w-3.5 h-3.5" />
+        <ICON_SEND class="w-3.5 h-3.5" />
         {{ isSending ? 'Sending…' : 'Send Test Email' }}
       </Button>
     </template>

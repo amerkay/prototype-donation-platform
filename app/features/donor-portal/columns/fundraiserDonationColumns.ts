@@ -2,7 +2,7 @@ import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import type { CampaignDonation } from '~/features/campaigns/shared/types'
 import { Button } from '@/components/ui/button'
-import { ArrowUpDown } from 'lucide-vue-next'
+import { ICON_SORT } from '~/lib/icons'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { createDateColumn } from '~/features/_shared/utils/column-builders'
 
@@ -34,7 +34,7 @@ export const fundraiserDonationColumns: ColumnDef<CampaignDonation>[] = [
             class: '-mr-2',
             onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
           },
-          () => ['Amount', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
+          () => ['Amount', h(ICON_SORT, { class: 'ml-2 h-4 w-4' })]
         )
       ]),
     cell: ({ row }) =>

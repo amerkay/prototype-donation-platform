@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { LucideIcon } from 'lucide-vue-next'
-import { ChevronRight } from 'lucide-vue-next'
+import { type LucideIconType, ICON_CHEVRON_RIGHT } from '~/lib/icons'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { useActiveLink } from './composables/useActiveLink'
 import {
@@ -19,7 +18,7 @@ interface Props {
   items: {
     title: string
     url: string
-    icon: LucideIcon
+    icon: LucideIconType
     isActive?: boolean
     exact?: boolean
     disabled?: boolean
@@ -77,7 +76,7 @@ watch(
             >
               <component :is="item.icon" />
               <span>{{ item.title }}</span>
-              <ChevronRight
+              <ICON_CHEVRON_RIGHT
                 class="ml-auto transition-transform duration-200 group-data-[state=open]/menu-item:rotate-90"
               />
             </SidebarMenuButton>
@@ -97,7 +96,7 @@ watch(
             </SidebarMenuButton>
             <CollapsibleTrigger v-if="item.items?.length" as-child>
               <SidebarMenuAction class="data-[state=open]:rotate-90">
-                <ChevronRight />
+                <ICON_CHEVRON_RIGHT />
                 <span class="sr-only">Toggle</span>
               </SidebarMenuAction>
             </CollapsibleTrigger>

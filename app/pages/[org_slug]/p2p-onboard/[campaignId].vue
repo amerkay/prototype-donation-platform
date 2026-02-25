@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import P2POnboardingWizard from '~/features/campaigns/donor/components/P2POnboardingWizard.vue'
-import { AlertCircle } from 'lucide-vue-next'
+import { ICON_WARNING } from '~/lib/icons'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
@@ -28,7 +28,7 @@ const campaign = computed(() => {
     <div v-else class="max-w-md mx-auto">
       <Card>
         <CardContent class="py-10 text-center space-y-4">
-          <AlertCircle class="w-12 h-12 text-muted-foreground mx-auto" />
+          <ICON_WARNING class="w-12 h-12 text-muted-foreground mx-auto" />
           <h2 class="text-lg font-semibold">Template Not Found</h2>
           <p class="text-sm text-muted-foreground">
             This fundraiser template doesn't exist or is no longer available.

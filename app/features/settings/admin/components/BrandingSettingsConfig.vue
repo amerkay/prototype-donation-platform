@@ -6,7 +6,7 @@ import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brand
 import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { Button } from '@/components/ui/button'
-import { Eye } from 'lucide-vue-next'
+import { ICON_VIEW } from '~/lib/icons'
 
 const store = useBrandingSettingsStore()
 
@@ -32,7 +32,7 @@ defineExpose(expose)
       update-only-when-valid
     />
     <Button variant="outline" size="sm" class="lg:hidden" @click="$emit('preview')">
-      <Eye class="w-4 h-4 mr-2" />
+      <ICON_VIEW class="w-4 h-4 mr-2" />
       Preview
     </Button>
     <StickyButtonGroup

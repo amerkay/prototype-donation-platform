@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Upload, X, Image as ImageIcon } from 'lucide-vue-next'
+import { ICON_IMAGE, ICON_UPLOAD, ICON_CLOSE } from '~/lib/icons'
 import { useDropZone, useFileDialog } from '@vueuse/core'
 import { cn } from '@/lib/utils'
 import type {
@@ -161,7 +161,7 @@ function replaceImage() {
             :disabled="resolvedDisabled"
             @click="replaceImage"
           >
-            <Upload class="size-3 sm:size-3.5" />
+            <ICON_UPLOAD class="size-3 sm:size-3.5" />
             Replace
           </Button>
           <Button
@@ -172,7 +172,7 @@ function replaceImage() {
             :disabled="resolvedDisabled"
             @click="removeImage"
           >
-            <X class="size-3 sm:size-3.5" />
+            <ICON_CLOSE class="size-3 sm:size-3.5" />
             Remove
           </Button>
         </div>
@@ -203,7 +203,7 @@ function replaceImage() {
               )
             "
           >
-            <ImageIcon
+            <ICON_IMAGE
               :class="cn('w-5 h-5', isOverDropZone ? 'text-primary' : 'text-muted-foreground')"
             />
           </div>
@@ -225,7 +225,7 @@ function replaceImage() {
             :disabled="resolvedDisabled"
             @click.stop="openFileDialog"
           >
-            <Upload class="w-3.5 h-3.5 mr-2" />
+            <ICON_UPLOAD class="w-3.5 h-3.5 mr-2" />
             Choose File
           </Button>
         </div>

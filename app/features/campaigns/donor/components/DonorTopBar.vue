@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
-import { Menu, X } from 'lucide-vue-next'
+import { ICON_MENU, ICON_CLOSE } from '~/lib/icons'
 import { useForms } from '~/features/campaigns/shared/composables/useForms'
 
 const route = useRoute()
@@ -44,8 +44,8 @@ const isActive = (to: string) => {
 
     <!-- Mobile: Hamburger (replaces right label on mobile) -->
     <Button variant="ghost" size="sm" class="sm:hidden" @click="mobileMenuOpen = !mobileMenuOpen">
-      <X v-if="mobileMenuOpen" class="w-4 h-4" />
-      <Menu v-else class="w-4 h-4" />
+      <ICON_CLOSE v-if="mobileMenuOpen" class="w-4 h-4" />
+      <ICON_MENU v-else class="w-4 h-4" />
     </Button>
 
     <!-- Mobile menu -->

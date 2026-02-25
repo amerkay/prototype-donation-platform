@@ -5,7 +5,7 @@ import CertificateTemplateCard from '~/features/templates/admin/components/Certi
 import AdminCardGrid from '~/features/_admin/components/AdminCardGrid.vue'
 import { useCertificateTemplates } from '~/features/templates/admin/composables/useCertificateTemplates'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-vue-next'
+import { ICON_CREATE } from '~/lib/icons'
 
 definePageMeta({ layout: 'admin' })
 
@@ -37,7 +37,7 @@ function handleDuplicate(id: string) {
       <AdminPageHeader title="Certificate Templates" :stats="stats">
         <template #action>
           <Button class="w-full sm:w-auto" size="sm" @click="handleNew">
-            <Plus class="w-4 h-4 mr-2" />
+            <ICON_CREATE class="w-4 h-4 mr-2" />
             New Certificate
           </Button>
         </template>

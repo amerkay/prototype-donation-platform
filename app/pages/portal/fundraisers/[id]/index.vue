@@ -18,7 +18,14 @@ import {
   EmptyMedia,
   EmptyTitle
 } from '@/components/ui/empty'
-import { ExternalLink, Heart, Megaphone, Pencil, Receipt, Users } from 'lucide-vue-next'
+import {
+  ICON_EXTERNAL_LINK,
+  ICON_DONATION,
+  ICON_CAMPAIGN,
+  ICON_EDIT,
+  ICON_RECEIPT,
+  ICON_DONORS
+} from '~/lib/icons'
 
 definePageMeta({
   layout: 'portal'
@@ -70,7 +77,7 @@ const breadcrumbItems = computed(() => {
       <Empty v-if="!fundraiser">
         <EmptyHeader>
           <EmptyMedia variant="icon">
-            <Megaphone />
+            <ICON_CAMPAIGN />
           </EmptyMedia>
           <EmptyTitle>Can't find this fundraiser</EmptyTitle>
           <EmptyDescription> It may have been removed or the link is incorrect. </EmptyDescription>
@@ -104,13 +111,13 @@ const breadcrumbItems = computed(() => {
           <div class="flex gap-2 sm:shrink-0">
             <NuxtLink v-if="!isTerminal" :to="`/portal/fundraisers/${fundraiser.id}/edit`">
               <Button variant="default" size="sm" as="span">
-                <Pencil class="w-3.5 h-3.5 mr-1" />
+                <ICON_EDIT class="w-3.5 h-3.5 mr-1" />
                 Edit Campaign
               </Button>
             </NuxtLink>
             <NuxtLink :to="`/${charityStore.slug}/${fundraiser.id}`">
               <Button variant="outline" size="sm" as="span">
-                <ExternalLink class="w-3.5 h-3.5 mr-1" />
+                <ICON_EXTERNAL_LINK class="w-3.5 h-3.5 mr-1" />
                 View Page
               </Button>
             </NuxtLink>
@@ -158,15 +165,19 @@ const breadcrumbItems = computed(() => {
               </div>
             </CardContent>
           </Card>
-          <StatsCard :icon="Heart" label="Donations" :value="fundraiser.stats.totalDonations" />
-          <StatsCard :icon="Users" label="Donors" :value="fundraiser.stats.totalDonors" />
+          <StatsCard
+            :icon="ICON_DONATION"
+            label="Donations"
+            :value="fundraiser.stats.totalDonations"
+          />
+          <StatsCard :icon="ICON_DONORS" label="Donors" :value="fundraiser.stats.totalDonors" />
         </div>
 
         <!-- Donations table -->
         <Card class="overflow-hidden">
           <CardHeader>
             <CardTitle class="text-base flex items-center gap-2">
-              <Receipt class="h-4 w-4" />
+              <ICON_RECEIPT class="h-4 w-4" />
               Donations Received
             </CardTitle>
           </CardHeader>

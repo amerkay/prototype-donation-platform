@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { Download, FileText, Heart, Shield, ShieldCheck } from 'lucide-vue-next'
+import {
+  ICON_DOWNLOAD,
+  ICON_FORM,
+  ICON_DONATION,
+  ICON_PRIVACY,
+  ICON_SECTION_CONSENT
+} from '~/lib/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -62,7 +68,7 @@ function downloadMyData() {
         <Card>
           <CardHeader>
             <CardTitle class="text-base flex items-center gap-2">
-              <Download class="h-4 w-4" />
+              <ICON_DOWNLOAD class="h-4 w-4" />
               Download My Data
             </CardTitle>
             <CardDescription>
@@ -72,7 +78,7 @@ function downloadMyData() {
           </CardHeader>
           <CardContent>
             <Button @click="downloadMyData">
-              <Download class="mr-2 size-4" />
+              <ICON_DOWNLOAD class="mr-2 size-4" />
               Download My Data
             </Button>
           </CardContent>
@@ -81,7 +87,7 @@ function downloadMyData() {
         <Card>
           <CardHeader>
             <CardTitle class="text-base flex items-center gap-2">
-              <Shield class="h-4 w-4" />
+              <ICON_PRIVACY class="h-4 w-4" />
               Your Privacy Rights
             </CardTitle>
             <CardDescription>
@@ -110,7 +116,7 @@ function downloadMyData() {
       <Card>
         <CardHeader>
           <CardTitle class="text-base flex items-center gap-2">
-            <FileText class="h-4 w-4" />
+            <ICON_FORM class="h-4 w-4" />
             Data We Hold
           </CardTitle>
           <CardDescription>
@@ -143,7 +149,7 @@ function downloadMyData() {
       <Card v-if="declarations.length">
         <CardHeader>
           <CardTitle class="text-base flex items-center gap-2">
-            <Heart class="h-4 w-4" />
+            <ICON_DONATION class="h-4 w-4" />
             Gift Aid Declarations
           </CardTitle>
           <CardDescription>
@@ -183,7 +189,7 @@ function downloadMyData() {
       <Card>
         <CardHeader>
           <CardTitle class="text-base flex items-center gap-2">
-            <ShieldCheck class="h-4 w-4" />
+            <ICON_SECTION_CONSENT class="h-4 w-4" />
             Consent History
           </CardTitle>
           <CardDescription>

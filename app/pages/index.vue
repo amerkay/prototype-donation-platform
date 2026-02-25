@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Heart, LayoutDashboard, Users, Settings, ArrowRight } from 'lucide-vue-next'
+import {
+  ICON_DONATION,
+  ICON_DASHBOARD,
+  ICON_DONORS,
+  ICON_SETTINGS,
+  ICON_FORWARD
+} from '~/lib/icons'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 
 definePageMeta({
@@ -15,21 +21,21 @@ const donorCards = computed(() => [
     title: 'Crowdfunding Page',
     description:
       'A campaign page with hero image, story, progress bar, recent donations, and social sharing.',
-    icon: Heart,
+    icon: ICON_DONATION,
     to: `/${charityStore.slug}/adopt-orangutan`
   },
   {
     title: 'Donor Portal',
     description:
       'Donation history, active subscriptions, fundraiser management, and payment details.',
-    icon: LayoutDashboard,
+    icon: ICON_DASHBOARD,
     to: '/portal'
   },
   {
     title: 'P2P Campaign Templates',
     description:
       'Browse peer-to-peer fundraiser templates and walk through the supporter onboarding flow.',
-    icon: Users,
+    icon: ICON_DONORS,
     to: `/${charityStore.slug}/p2p-templates`
   }
 ])
@@ -52,7 +58,7 @@ const donorCards = computed(() => [
       <!-- Admin Section -->
       <section class="space-y-4">
         <div class="flex items-center gap-2">
-          <Settings class="w-5 h-5 text-muted-foreground" />
+          <ICON_SETTINGS class="w-5 h-5 text-muted-foreground" />
           <h2 class="text-xl font-semibold">Admin Dashboard</h2>
         </div>
         <NuxtLink to="/admin/campaigns" class="group block">
@@ -66,7 +72,7 @@ const donorCards = computed(() => [
                     social sharing.
                   </CardDescription>
                 </div>
-                <ArrowRight
+                <ICON_FORWARD
                   class="w-5 h-5 text-muted-foreground shrink-0 ml-4 opacity-0 group-hover:opacity-100 transition-opacity"
                 />
               </div>
@@ -80,7 +86,7 @@ const donorCards = computed(() => [
       <!-- Donor Section -->
       <section class="space-y-4">
         <div class="flex items-center gap-2">
-          <Heart class="w-5 h-5 text-muted-foreground" />
+          <ICON_DONATION class="w-5 h-5 text-muted-foreground" />
           <h2 class="text-xl font-semibold">Donor Experience</h2>
         </div>
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

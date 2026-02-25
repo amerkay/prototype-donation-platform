@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
-import { CreditCard, Receipt, Mail, Trash2 } from 'lucide-vue-next'
+import { ICON_SUBSCRIPTION, ICON_RECEIPT, ICON_EMAIL, ICON_DELETE } from '~/lib/icons'
 
 definePageMeta({ layout: 'admin' })
 
@@ -99,7 +99,7 @@ function saveCard() {
         <Card>
           <CardHeader>
             <div class="flex items-center gap-2">
-              <CreditCard class="w-5 h-5 text-primary" />
+              <ICON_SUBSCRIPTION class="w-5 h-5 text-primary" />
               <CardTitle>Payment Method</CardTitle>
             </div>
             <CardDescription>Card on file for automatic monthly billing.</CardDescription>
@@ -132,7 +132,7 @@ function saveCard() {
                   class="text-destructive hover:text-destructive"
                   @click="store.removePaymentCard()"
                 >
-                  <Trash2 class="w-4 h-4 mr-1" />
+                  <ICON_DELETE class="w-4 h-4 mr-1" />
                   Remove
                 </Button>
               </div>
@@ -140,7 +140,7 @@ function saveCard() {
             <div v-else class="space-y-3">
               <p class="text-sm text-muted-foreground">No payment card on file.</p>
               <Button size="sm" @click="openCardDialog">
-                <CreditCard class="w-4 h-4 mr-2" />
+                <ICON_SUBSCRIPTION class="w-4 h-4 mr-2" />
                 Add Card
               </Button>
             </div>
@@ -151,7 +151,7 @@ function saveCard() {
         <Card>
           <CardHeader>
             <div class="flex items-center gap-2">
-              <Mail class="w-5 h-5 text-primary" />
+              <ICON_EMAIL class="w-5 h-5 text-primary" />
               <CardTitle>Billing Email</CardTitle>
             </div>
             <CardDescription>Invoices and receipts are sent to this address.</CardDescription>
@@ -179,7 +179,7 @@ function saveCard() {
       <Card>
         <CardHeader>
           <div class="flex items-center gap-2">
-            <Receipt class="w-5 h-5 text-primary" />
+            <ICON_RECEIPT class="w-5 h-5 text-primary" />
             <CardTitle>Monthly Statements</CardTitle>
           </div>
           <CardDescription>

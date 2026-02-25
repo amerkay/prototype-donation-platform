@@ -26,7 +26,7 @@ import {
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import { Checkbox } from '@/components/ui/checkbox'
-import { RefreshCw, Heart, Undo2, CreditCard } from 'lucide-vue-next'
+import { ICON_DONATION, ICON_SUBSCRIPTION, ICON_REFUND, ICON_RECURRING } from '~/lib/icons'
 import { useAdminSubscriptions } from '~/features/subscriptions/admin/composables/useAdminSubscriptions'
 
 definePageMeta({ layout: 'admin' })
@@ -83,7 +83,7 @@ const breadcrumbs = computed(() => [
           <AlertDialog v-if="canRefund">
             <AlertDialogTrigger as-child>
               <Button variant="destructive" size="sm">
-                <Undo2 class="size-4 mr-1.5" />
+                <ICON_REFUND class="size-4 mr-1.5" />
                 Refund {{ formatCurrency(txn.totalAmount, txn.currency) }}
               </Button>
             </AlertDialogTrigger>
@@ -124,7 +124,7 @@ const breadcrumbs = computed(() => [
           <Card>
             <CardHeader>
               <CardTitle class="text-base flex items-center gap-2">
-                <CreditCard class="h-4 w-4" />
+                <ICON_SUBSCRIPTION class="h-4 w-4" />
                 Payment
               </CardTitle>
             </CardHeader>
@@ -160,7 +160,7 @@ const breadcrumbs = computed(() => [
                 <span>1 {{ txn.currency }} = {{ txn.exchangeRate }} {{ txn.baseCurrency }}</span>
               </div>
               <div v-if="txn.subscriptionId" class="flex items-center gap-2 pt-1">
-                <RefreshCw class="h-4 w-4 text-muted-foreground" />
+                <ICON_RECURRING class="h-4 w-4 text-muted-foreground" />
                 <span class="text-muted-foreground">Recurring —</span>
                 <NuxtLink
                   :to="`/admin/subscriptions/${txn.subscriptionId}`"
@@ -179,7 +179,7 @@ const breadcrumbs = computed(() => [
           <Card v-if="txn.giftAid">
             <CardHeader>
               <CardTitle class="text-base flex items-center gap-2">
-                <Heart class="h-4 w-4" />
+                <ICON_DONATION class="h-4 w-4" />
                 Gift Aid
               </CardTitle>
             </CardHeader>

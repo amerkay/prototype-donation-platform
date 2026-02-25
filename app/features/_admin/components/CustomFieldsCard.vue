@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SlidersHorizontal } from 'lucide-vue-next'
+import { ICON_SECTION_CUSTOM_FIELDS } from '~/lib/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import AdminDetailRow from '~/features/_admin/components/AdminDetailRow.vue'
 
@@ -21,7 +21,7 @@ function formatLabel(key: string): string {
   <Card v-if="entries.length > 0">
     <CardHeader>
       <CardTitle class="text-base flex items-center gap-2">
-        <SlidersHorizontal class="h-4 w-4" />
+        <ICON_SECTION_CUSTOM_FIELDS class="h-4 w-4" />
         Custom Fields
       </CardTitle>
     </CardHeader>

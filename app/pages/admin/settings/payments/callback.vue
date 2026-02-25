@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { usePaymentSettingsStore } from '~/features/settings/admin/stores/paymentSettings'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CheckCircle2, XCircle } from 'lucide-vue-next'
+import { ICON_SUCCESS_STATUS, ICON_ERROR_STATUS } from '~/lib/icons'
 
 definePageMeta({ layout: 'admin' })
 
@@ -47,8 +47,8 @@ onMounted(() => {
     <Card class="w-full max-w-sm text-center">
       <CardHeader>
         <div class="mx-auto mb-2">
-          <CheckCircle2 v-if="status === 'success'" class="h-12 w-12 text-green-500" />
-          <XCircle v-else class="h-12 w-12 text-destructive" />
+          <ICON_SUCCESS_STATUS v-if="status === 'success'" class="h-12 w-12 text-green-500" />
+          <ICON_ERROR_STATUS v-else class="h-12 w-12 text-destructive" />
         </div>
         <CardTitle>{{ status === 'success' ? 'Connected!' : 'Connection Failed' }}</CardTitle>
       </CardHeader>

@@ -6,7 +6,7 @@ import AdminEntityCard from '~/features/_admin/components/AdminEntityCard.vue'
 import AdminDeleteButton from '~/features/_admin/components/AdminDeleteButton.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
 import { Button } from '@/components/ui/button'
-import { Copy, Pencil } from 'lucide-vue-next'
+import { ICON_COPY, ICON_EDIT } from '~/lib/icons'
 
 const props = defineProps<{
   template: CertificateTemplate
@@ -38,12 +38,12 @@ const href = computed(() => `/admin/templates/certificates/${props.template.id}`
       <div class="flex gap-2">
         <Button variant="default" size="sm" class="flex-1" as-child>
           <NuxtLink :to="href">
-            <Pencil class="w-3.5 h-3.5 mr-1.5" />
+            <ICON_EDIT class="w-3.5 h-3.5 mr-1.5" />
             Edit
           </NuxtLink>
         </Button>
         <Button variant="outline" size="sm" @click="$emit('duplicate')">
-          <Copy class="w-3.5 h-3.5" />
+          <ICON_COPY class="w-3.5 h-3.5" />
         </Button>
         <AdminDeleteButton
           :entity-name="template.name"

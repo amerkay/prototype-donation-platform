@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import type { SidebarProps } from '@/components/ui/sidebar'
 import {
-  LayoutDashboard,
-  Receipt,
-  CreditCard,
-  Megaphone,
-  Heart,
-  LifeBuoy,
-  Send,
-  Download
-} from 'lucide-vue-next'
+  ICON_DASHBOARD,
+  ICON_RECEIPT,
+  ICON_SUBSCRIPTION,
+  ICON_CAMPAIGN,
+  ICON_DONATION,
+  ICON_SUPPORT,
+  ICON_SEND,
+  ICON_DOWNLOAD
+} from '~/lib/icons'
 import NavUser from '~/features/_shared/sidebar/NavUser.vue'
 import {
   Sidebar,
@@ -35,16 +35,16 @@ const isActive = (url: string) => {
 }
 
 const navItems = [
-  { title: 'Dashboard', url: '/portal', icon: LayoutDashboard },
-  { title: 'Donation History', url: '/portal/donations', icon: Receipt },
-  { title: 'Subscriptions', url: '/portal/subscriptions', icon: CreditCard },
-  { title: 'My Fundraisers', url: '/portal/fundraisers', icon: Megaphone },
-  { title: 'My Data', url: '/portal/my-data', icon: Download }
+  { title: 'Dashboard', url: '/portal', icon: ICON_DASHBOARD },
+  { title: 'Donation History', url: '/portal/donations', icon: ICON_RECEIPT },
+  { title: 'Subscriptions', url: '/portal/subscriptions', icon: ICON_SUBSCRIPTION },
+  { title: 'My Fundraisers', url: '/portal/fundraisers', icon: ICON_CAMPAIGN },
+  { title: 'My Data', url: '/portal/my-data', icon: ICON_DOWNLOAD }
 ]
 
 const navSecondary = [
-  { title: 'Support', url: '#', icon: LifeBuoy },
-  { title: 'Feedback', url: '#', icon: Send }
+  { title: 'Support', url: '#', icon: ICON_SUPPORT },
+  { title: 'Feedback', url: '#', icon: ICON_SEND }
 ]
 
 const user = {
@@ -64,7 +64,7 @@ const user = {
               <div
                 class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
               >
-                <Heart class="size-4" />
+                <ICON_DONATION class="size-4" />
               </div>
               <div class="grid flex-1 text-left text-sm leading-tight">
                 <span class="truncate font-medium">Donor Portal</span>

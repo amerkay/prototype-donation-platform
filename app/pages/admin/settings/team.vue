@@ -16,7 +16,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Plus, MoreHorizontal, Shield, Code, User, Crown } from 'lucide-vue-next'
+import {
+  ICON_CREATE,
+  ICON_MORE_ACTIONS,
+  ICON_ROLE_ADMIN,
+  ICON_ROLE_DEVELOPER,
+  ICON_ROLE_MEMBER,
+  ICON_ROLE_OWNER
+} from '~/lib/icons'
 
 import { formatDate } from '~/lib/formatDate'
 
@@ -31,11 +38,11 @@ const breadcrumbs = [
   { label: 'Team' }
 ]
 
-const roleIcons: Record<string, typeof Crown> = {
-  owner: Crown,
-  admin: Shield,
-  developer: Code,
-  member: User
+const roleIcons: Record<string, typeof ICON_ROLE_OWNER> = {
+  owner: ICON_ROLE_OWNER,
+  admin: ICON_ROLE_ADMIN,
+  developer: ICON_ROLE_DEVELOPER,
+  member: ICON_ROLE_MEMBER
 }
 
 const roleBadgeVariant = (role: string) => {
@@ -84,7 +91,7 @@ function confirmRemove() {
           </p>
         </div>
         <Button size="sm" @click="openInvite">
-          <Plus class="w-4 h-4 mr-2" />
+          <ICON_CREATE class="w-4 h-4 mr-2" />
           Invite Member
         </Button>
       </div>
@@ -123,7 +130,7 @@ function confirmRemove() {
             <DropdownMenu v-if="member.role !== 'owner'">
               <DropdownMenuTrigger as-child>
                 <Button variant="ghost" size="icon" class="h-8 w-8">
-                  <MoreHorizontal class="h-4 w-4" />
+                  <ICON_MORE_ACTIONS class="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">

@@ -15,7 +15,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Filter, Download } from 'lucide-vue-next'
+import { ICON_FILTER, ICON_DOWNLOAD } from '~/lib/icons'
 
 const searchQuery = defineModel<string>('searchQuery')
 
@@ -66,7 +66,7 @@ function handleResetFilters() {
             <AdminDateRangePicker v-model="dateStore.dateRange" />
 
             <Button variant="outline" size="sm" @click="showFilters = true">
-              <Filter class="mr-2 h-4 w-4" />
+              <ICON_FILTER class="mr-2 h-4 w-4" />
               Filters
               <Badge v-if="activeFilterCount" variant="secondary" class="ml-1.5 text-xs">
                 {{ activeFilterCount }}
@@ -76,7 +76,7 @@ function handleResetFilters() {
             <DropdownMenu>
               <DropdownMenuTrigger as-child>
                 <Button variant="outline" size="sm" :disabled="isExporting">
-                  <Download class="mr-2 h-4 w-4" />
+                  <ICON_DOWNLOAD class="mr-2 h-4 w-4" />
                   Export
                 </Button>
               </DropdownMenuTrigger>

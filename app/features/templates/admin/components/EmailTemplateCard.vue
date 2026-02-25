@@ -8,7 +8,7 @@ import AdminEntityCard from '~/features/_admin/components/AdminEntityCard.vue'
 import AdminEntityCardPlaceholder from '~/features/_admin/components/AdminEntityCardPlaceholder.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Pencil } from 'lucide-vue-next'
+import { ICON_EDIT } from '~/lib/icons'
 
 const props = defineProps<{
   template: EmailTemplate
@@ -42,7 +42,7 @@ const href = computed(() => `/admin/templates/emails/${props.template.id}`)
     <template #actions>
       <Button variant="default" size="sm" class="w-full" as-child>
         <NuxtLink :to="href">
-          <Pencil class="w-3.5 h-3.5 mr-1.5" />
+          <ICON_EDIT class="w-3.5 h-3.5 mr-1.5" />
           Edit
         </NuxtLink>
       </Button>

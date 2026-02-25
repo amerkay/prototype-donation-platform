@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
-import { Braces } from 'lucide-vue-next'
+import { ICON_VARIABLE } from '~/lib/icons'
 import type { FieldProps, FieldEmits, TextFieldDef } from '~/features/_library/form-builder/types'
 import {
   useFieldWrapper,
@@ -81,7 +81,7 @@ function insertVariable(key: string) {
             :disabled="resolvedDisabled"
             type="button"
           >
-            <Braces class="h-3.5 w-3.5" />
+            <ICON_VARIABLE class="h-3.5 w-3.5" />
             <span class="sr-only">Insert variable</span>
           </Button>
         </DropdownMenuTrigger>

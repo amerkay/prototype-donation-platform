@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, toRef } from 'vue'
-import { Pencil } from 'lucide-vue-next'
+import { ICON_EDIT } from '~/lib/icons'
 import { usePreviewEditable } from '~/features/_admin/composables/usePreviewEditable'
 import '~/features/_admin/composables/preview-editable.css'
 
@@ -33,7 +33,7 @@ const { hoveredField, editButtonStyle, hoverOutlineStyle, navigateToField } = us
         :style="editButtonStyle"
         @click.stop="navigateToField()"
       >
-        <Pencil class="h-3 w-3" />
+        <ICON_EDIT class="h-3 w-3" />
       </button>
     </Transition>
   </div>

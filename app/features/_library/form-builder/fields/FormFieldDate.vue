@@ -5,7 +5,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { CalendarIcon, X } from 'lucide-vue-next'
+import { ICON_DATE, ICON_CLOSE } from '~/lib/icons'
 import { format, parseISO } from 'date-fns'
 import type { FieldProps, FieldEmits, DateFieldDef } from '~/features/_library/form-builder/types'
 import { useFieldWrapper } from '~/features/_library/form-builder/composables/useFieldWrapper'
@@ -80,7 +80,7 @@ const showClear = computed(() => props.modelValue && props.meta.optional && !res
               )
             "
           >
-            <CalendarIcon class="mr-2 h-4 w-4 shrink-0" />
+            <ICON_DATE class="mr-2 h-4 w-4 shrink-0" />
             <span class="truncate">{{ displayText || 'Pick a date' }}</span>
           </Button>
         </PopoverTrigger>
@@ -93,7 +93,7 @@ const showClear = computed(() => props.modelValue && props.meta.optional && !res
           aria-label="Clear date"
           @click="emit('update:modelValue', null)"
         >
-          <X class="h-4 w-4" />
+          <ICON_CLOSE class="h-4 w-4" />
         </Button>
       </div>
       <PopoverContent class="w-auto p-0" align="start">

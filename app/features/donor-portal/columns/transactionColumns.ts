@@ -2,7 +2,7 @@ import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import type { Transaction } from '~/features/donor-portal/types'
 import { NuxtLink } from '#components'
-import { RefreshCw } from 'lucide-vue-next'
+import { ICON_RECURRING } from '~/lib/icons'
 import {
   createDateColumn,
   createAmountColumn,
@@ -33,7 +33,7 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
                 to: `/portal/subscriptions/${row.original.subscriptionId}`,
                 class: 'inline-flex items-center gap-1 text-xs text-primary hover:underline mt-0.5'
               },
-              () => [h(RefreshCw, { class: 'size-3' }), 'Subscription']
+              () => [h(ICON_RECURRING, { class: 'size-3' }), 'Subscription']
             )
           : null
       ])
@@ -68,7 +68,7 @@ export const transactionColumnsCompact: ColumnDef<Transaction>[] = [
                 to: `/portal/subscriptions/${row.original.subscriptionId}`,
                 class: 'inline-flex items-center gap-1 text-xs text-primary hover:underline mt-0.5'
               },
-              () => [h(RefreshCw, { class: 'size-3' }), 'Subscription']
+              () => [h(ICON_RECURRING, { class: 'size-3' }), 'Subscription']
             )
           : null
       ])

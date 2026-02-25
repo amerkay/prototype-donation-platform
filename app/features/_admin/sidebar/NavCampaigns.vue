@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Folder, Forward, MoreHorizontal, Trash2, Megaphone } from 'lucide-vue-next'
+import { ICON_SHARE, ICON_FOLDER, ICON_MORE_ACTIONS, ICON_DELETE, ICON_CAMPAIGN } from '~/lib/icons'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { getCampaignEditPath } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import { useActiveLink } from './composables/useActiveLink'
@@ -40,14 +40,14 @@ const campaigns = computed(() =>
       <SidebarMenuItem v-for="item in campaigns" :key="item.name">
         <SidebarMenuButton as-child :variant="isActive(item.url) ? 'selected' : 'default'">
           <NuxtLink :to="item.url">
-            <Megaphone />
+            <ICON_CAMPAIGN />
             <span>{{ item.name }}</span>
           </NuxtLink>
         </SidebarMenuButton>
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
             <SidebarMenuAction show-on-hover>
-              <MoreHorizontal />
+              <ICON_MORE_ACTIONS />
               <span class="sr-only">More</span>
             </SidebarMenuAction>
           </DropdownMenuTrigger>
@@ -57,16 +57,16 @@ const campaigns = computed(() =>
             :align="isMobile ? 'end' : 'start'"
           >
             <DropdownMenuItem>
-              <Folder class="text-muted-foreground" />
+              <ICON_FOLDER class="text-muted-foreground" />
               <span>View Campaign</span>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Forward class="text-muted-foreground" />
+              <ICON_SHARE class="text-muted-foreground" />
               <span>Share Campaign</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Trash2 class="text-muted-foreground" />
+              <ICON_DELETE class="text-muted-foreground" />
               <span>Delete Campaign</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -75,7 +75,7 @@ const campaigns = computed(() =>
       <SidebarMenuItem>
         <SidebarMenuButton as-child>
           <NuxtLink to="/admin/campaigns">
-            <MoreHorizontal />
+            <ICON_MORE_ACTIONS />
             <span>View All</span>
           </NuxtLink>
         </SidebarMenuButton>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AlertTriangle } from 'lucide-vue-next'
+import { ICON_WARNING } from '~/lib/icons'
 import {
   AlertDialog,
   AlertDialogContent,
@@ -32,7 +32,7 @@ const emit = defineEmits<{
           <div
             class="bg-amber-500/10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
           >
-            <AlertTriangle class="h-4 w-4 text-amber-500" />
+            <ICON_WARNING class="h-4 w-4 text-amber-500" />
           </div>
           Cannot Remove Currency
         </AlertDialogTitle>

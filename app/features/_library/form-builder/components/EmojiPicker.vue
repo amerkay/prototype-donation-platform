@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
-import { Search, Smile, X } from 'lucide-vue-next'
+import { ICON_SEARCH, ICON_EMOJI, ICON_CLOSE } from '~/lib/icons'
 
 /**
  * Emojibase compact format:
@@ -246,7 +246,7 @@ function handleKeyDown(e: KeyboardEvent) {
         :disabled="disabled"
         :tabindex="hideTrigger ? -1 : 0"
       >
-        <Smile class="h-5 w-5" />
+        <ICON_EMOJI class="h-5 w-5" />
         <span v-if="!selectedValue" class="ml-2">Select an emoji</span>
       </Button>
     </PopoverTrigger>
@@ -260,7 +260,7 @@ function handleKeyDown(e: KeyboardEvent) {
       <div class="sticky top-0 bg-background border-b z-10">
         <div class="p-2 sm:p-3">
           <div class="relative">
-            <Search
+            <ICON_SEARCH
               class="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground"
             />
             <Input
@@ -279,7 +279,7 @@ function handleKeyDown(e: KeyboardEvent) {
               class="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 sm:h-6 sm:w-6 p-0"
               @click="search = ''"
             >
-              <X class="h-3 w-3 sm:h-4 sm:w-4" />
+              <ICON_CLOSE class="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
         </div>
@@ -375,7 +375,7 @@ function handleKeyDown(e: KeyboardEvent) {
               v-if="Object.keys(filteredEmojis).length === 0"
               class="text-center text-muted-foreground py-8 sm:py-12"
             >
-              <Smile class="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 sm:mb-3 opacity-50" />
+              <ICON_EMOJI class="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 sm:mb-3 opacity-50" />
               <p class="text-xs sm:text-sm">No emoji found</p>
               <p class="text-xs mt-1">Try a different search term</p>
             </div>

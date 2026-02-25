@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { Unplug } from 'lucide-vue-next'
+import { ICON_DISCONNECT } from '~/lib/icons'
 
 const store = usePaymentSettingsStore()
 const showDisconnect = ref(false)
@@ -59,7 +59,7 @@ function confirmDisconnect() {
         <Separator />
 
         <Button variant="outline" size="sm" @click="showDisconnect = true">
-          <Unplug class="w-4 h-4 mr-2" />
+          <ICON_DISCONNECT class="w-4 h-4 mr-2" />
           Disconnect
         </Button>
       </template>

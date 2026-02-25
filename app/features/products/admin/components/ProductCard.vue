@@ -8,7 +8,7 @@ import AdminDeleteButton from '~/features/_admin/components/AdminDeleteButton.vu
 import StatusBadge from '~/components/StatusBadge.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Copy, Package, Pencil, Award } from 'lucide-vue-next'
+import { ICON_COPY, ICON_PRODUCT, ICON_EDIT, ICON_CERTIFICATE } from '~/lib/icons'
 
 const FREQUENCY_LABELS: Record<string, string> = {
   once: 'One-time',
@@ -55,7 +55,7 @@ const certificateName = computed(() => {
         :alt="product.name"
         class="w-full h-full object-cover"
       />
-      <AdminEntityCardPlaceholder v-else :icon="Package" />
+      <AdminEntityCardPlaceholder v-else :icon="ICON_PRODUCT" />
     </template>
 
     <template #badges>
@@ -67,7 +67,7 @@ const certificateName = computed(() => {
       </Badge>
       <StatusBadge :status="product.status" class="text-[10px] px-1.5 py-0" />
       <p v-if="certificateName" class="flex items-center gap-1 text-xs text-muted-foreground">
-        <Award class="w-3 h-3" />
+        <ICON_CERTIFICATE class="w-3 h-3" />
         {{ certificateName }}
       </p>
     </template>
@@ -76,12 +76,12 @@ const certificateName = computed(() => {
       <div class="flex gap-2">
         <Button variant="default" size="sm" class="flex-1" as-child>
           <NuxtLink :to="href">
-            <Pencil class="w-3.5 h-3.5 mr-1.5" />
+            <ICON_EDIT class="w-3.5 h-3.5 mr-1.5" />
             Edit
           </NuxtLink>
         </Button>
         <Button variant="outline" size="sm" @click="$emit('duplicate')">
-          <Copy class="w-3.5 h-3.5" />
+          <ICON_COPY class="w-3.5 h-3.5" />
         </Button>
         <AdminDeleteButton
           :entity-name="product.name"

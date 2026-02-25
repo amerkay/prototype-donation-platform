@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { Button } from '@/components/ui/button'
-import { X } from 'lucide-vue-next'
+import { ICON_CLOSE } from '~/lib/icons'
 import type { FieldProps, FieldEmits, EmojiFieldDef } from '~/features/_library/form-builder/types'
 import { useFieldWrapper } from '~/features/_library/form-builder/composables/useFieldWrapper'
 import FormFieldWrapper from '~/features/_library/form-builder/internal/FormFieldWrapper.vue'
@@ -62,7 +62,7 @@ onMounted(() => {
             }
           "
         >
-          <X class="h-4 w-4" />
+          <ICON_CLOSE class="h-4 w-4" />
         </Button>
       </div>
     </div>

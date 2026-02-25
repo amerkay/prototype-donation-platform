@@ -6,13 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
-  PoundSterling,
-  Users,
-  CreditCard,
-  Megaphone,
-  TrendingUp,
-  ArrowRight
-} from 'lucide-vue-next'
+  ICON_CURRENCY_GBP,
+  ICON_DONORS,
+  ICON_SUBSCRIPTION,
+  ICON_CAMPAIGN,
+  ICON_TRENDING,
+  ICON_FORWARD
+} from '~/lib/icons'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { getCampaignEditPath } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import { useDonors } from '~/features/donors/admin/composables/useDonors'
@@ -42,28 +42,28 @@ const statCards = computed(() => [
     title: 'Total Revenue',
     value: formatCurrency(totalRevenue.value, 'GBP', 0),
     subtitle: `${totalDonations.value} donations`,
-    icon: PoundSterling,
+    icon: ICON_CURRENCY_GBP,
     to: '/admin/donations'
   },
   {
     title: 'Total Donors',
     value: totalDonors.value,
     subtitle: 'Unique donors',
-    icon: Users,
+    icon: ICON_DONORS,
     to: '/admin/donors'
   },
   {
     title: 'Active Subscriptions',
     value: activeSubscriptions.value.length,
     subtitle: `${formatCurrency(monthlyRecurringRevenue.value, 'GBP')} MRR`,
-    icon: CreditCard,
+    icon: ICON_SUBSCRIPTION,
     to: '/admin/subscriptions'
   },
   {
     title: 'Active Campaigns',
     value: activeCampaigns.value.length,
     subtitle: `of ${campaigns.value.length} total`,
-    icon: Megaphone,
+    icon: ICON_CAMPAIGN,
     to: '/admin/campaigns'
   }
 ])
@@ -247,7 +247,7 @@ const topCampaigns = computed(() =>
             <NuxtLink to="/admin/donations">
               <Button variant="outline" size="sm">
                 View all
-                <ArrowRight class="ml-1 h-4 w-4" />
+                <ICON_FORWARD class="ml-1 h-4 w-4" />
               </Button>
             </NuxtLink>
           </CardHeader>
@@ -262,7 +262,7 @@ const topCampaigns = computed(() =>
                   <div class="flex items-center gap-1.5">
                     <span class="text-sm font-medium truncate">{{ activity.donor }}</span>
                     <Badge v-if="activity.isRecurring" variant="secondary" class="text-xs shrink-0">
-                      <TrendingUp class="h-3 w-3 mr-0.5" />
+                      <ICON_TRENDING class="h-3 w-3 mr-0.5" />
                       Recurring
                     </Badge>
                   </div>
@@ -287,7 +287,7 @@ const topCampaigns = computed(() =>
             <NuxtLink to="/admin/campaigns">
               <Button variant="outline" size="sm">
                 View all
-                <ArrowRight class="ml-1 h-4 w-4" />
+                <ICON_FORWARD class="ml-1 h-4 w-4" />
               </Button>
             </NuxtLink>
           </CardHeader>

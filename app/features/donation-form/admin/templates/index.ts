@@ -2,16 +2,16 @@ import type { FullFormConfig } from '~/features/donation-form/shared/stores/form
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 import type { FormType } from '~/features/donation-form/shared/types'
 import {
-  Zap,
-  Heart,
-  TrendingUp,
-  ShoppingCart,
-  Sparkles,
-  Crown,
-  ClipboardList,
-  Store,
-  PawPrint
-} from 'lucide-vue-next'
+  ICON_ZAP,
+  ICON_DONATION,
+  ICON_TRENDING,
+  ICON_CART,
+  ICON_SPARKLES,
+  ICON_ROLE_OWNER,
+  ICON_CLIPBOARD_LIST,
+  ICON_STORE,
+  ICON_PAW_PRINT
+} from '~/lib/icons'
 import { createBasicTemplate } from './basic'
 import { createBasicWithImpactTemplate } from './basic-with-impact'
 import { createUpsellsTemplate } from './upsells'
@@ -29,7 +29,7 @@ export interface TemplateMetadata {
   id: string
   name: string
   description: string
-  icon: typeof Zap
+  icon: typeof ICON_ZAP
   category: 'simple' | 'enhanced' | 'advanced'
   requiresProducts?: boolean
   /** Form type this template creates. Defaults to 'donation' when undefined */
@@ -64,7 +64,7 @@ export const TEMPLATE_REGISTRY: DonationFormTemplate[] = [
       id: 'basic',
       name: 'Basic',
       description: 'One-time and monthly donations only, all features disabled',
-      icon: Zap,
+      icon: ICON_ZAP,
       category: 'simple'
     },
     factory: createBasicTemplate
@@ -74,7 +74,7 @@ export const TEMPLATE_REGISTRY: DonationFormTemplate[] = [
       id: 'basic-with-impact',
       name: 'Basic with Impact Statements',
       description: 'One-time and monthly with impact descriptions per amount',
-      icon: Heart,
+      icon: ICON_DONATION,
       category: 'simple'
     },
     factory: createBasicWithImpactTemplate
@@ -84,7 +84,7 @@ export const TEMPLATE_REGISTRY: DonationFormTemplate[] = [
       id: 'upsells',
       name: 'Upsells',
       description: 'Upsell features enabled (recurring boost, increase boost)',
-      icon: TrendingUp,
+      icon: ICON_TRENDING,
       category: 'enhanced'
     },
     factory: createUpsellsTemplate
@@ -94,7 +94,7 @@ export const TEMPLATE_REGISTRY: DonationFormTemplate[] = [
       id: 'multiple-products',
       name: 'Multiple Products',
       description: 'Multi-item cart with product selection',
-      icon: ShoppingCart,
+      icon: ICON_CART,
       category: 'enhanced',
       requiresProducts: true
     },
@@ -105,7 +105,7 @@ export const TEMPLATE_REGISTRY: DonationFormTemplate[] = [
       id: 'recurring-adoptions',
       name: 'Recurring Symbolic Adoptions',
       description: 'Product selector with symbolic adoption features',
-      icon: Sparkles,
+      icon: ICON_SPARKLES,
       category: 'enhanced',
       requiresProducts: true
     },
@@ -116,7 +116,7 @@ export const TEMPLATE_REGISTRY: DonationFormTemplate[] = [
       id: 'full-experience',
       name: 'Full Experience',
       description: 'All features enabled (except impact statements)',
-      icon: Crown,
+      icon: ICON_ROLE_OWNER,
       category: 'advanced'
     },
     factory: createFullExperienceTemplate
@@ -126,7 +126,7 @@ export const TEMPLATE_REGISTRY: DonationFormTemplate[] = [
       id: 'registration',
       name: 'Registration',
       description: 'Per-item entry fields for event registrations',
-      icon: ClipboardList,
+      icon: ICON_CLIPBOARD_LIST,
       category: 'simple',
       formType: 'registration'
     },
@@ -137,7 +137,7 @@ export const TEMPLATE_REGISTRY: DonationFormTemplate[] = [
       id: 'stall-booking',
       name: 'Stall Booking',
       description: 'Per-item entry fields for market or fete stall bookings',
-      icon: Store,
+      icon: ICON_STORE,
       category: 'simple',
       formType: 'registration'
     },
@@ -148,7 +148,7 @@ export const TEMPLATE_REGISTRY: DonationFormTemplate[] = [
       id: 'dog-show-entries',
       name: 'Dog Show Entries',
       description: 'Shared entry fields for one dog entering multiple categories',
-      icon: PawPrint,
+      icon: ICON_PAW_PRINT,
       category: 'simple',
       formType: 'registration'
     },

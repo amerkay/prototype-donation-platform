@@ -1,7 +1,7 @@
 import { h } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import { Button } from '@/components/ui/button'
-import { Eye } from 'lucide-vue-next'
+import { ICON_VIEW } from '~/lib/icons'
 
 /** Appends a ghost Eye-icon button column that navigates to a detail URL */
 export function createViewActionColumn<T>(getUrl: (row: T) => string): ColumnDef<T> {
@@ -21,7 +21,7 @@ export function createViewActionColumn<T>(getUrl: (row: T) => string): ColumnDef
               navigateTo(getUrl(row.original))
             }
           },
-          () => h(Eye, { class: 'h-4 w-4' })
+          () => h(ICON_VIEW, { class: 'h-4 w-4' })
         )
       ])
   }

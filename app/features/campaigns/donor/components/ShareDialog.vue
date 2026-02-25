@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
-import { Share2 } from 'lucide-vue-next'
+import { ICON_SHARE } from '~/lib/icons'
 import type { Campaign } from '~/features/campaigns/shared/types'
 
 const props = defineProps<{
@@ -28,7 +28,7 @@ const brandingStyle = useInjectedBrandingStyle()
     <DialogContent class="sm:max-w-md" :style="brandingStyle">
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2">
-          <Share2 class="w-5 h-5" />
+          <ICON_SHARE class="w-5 h-5" />
           Share this campaign
         </DialogTitle>
         <DialogDescription>

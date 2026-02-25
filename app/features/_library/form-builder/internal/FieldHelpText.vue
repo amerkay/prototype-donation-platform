@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useSlots } from 'vue'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { CircleHelp } from 'lucide-vue-next'
+import { ICON_HELP_TEXT } from '~/lib/icons'
 
 withDefaults(
   defineProps<{
@@ -24,7 +24,7 @@ const hasTrigger = computed(() => !!slots.trigger)
         class="pointer-events-auto relative z-10 inline-flex items-center gap-1 cursor-help text-muted-foreground hover:text-foreground"
       >
         <slot name="trigger" />
-        <CircleHelp :class="iconClass" />
+        <ICON_HELP_TEXT :class="iconClass" />
       </button>
     </PopoverTrigger>
 
@@ -34,7 +34,7 @@ const hasTrigger = computed(() => !!slots.trigger)
         type="button"
         class="pointer-events-auto relative z-10 inline-flex text-muted-foreground hover:text-foreground"
       >
-        <CircleHelp :class="iconClass" />
+        <ICON_HELP_TEXT :class="iconClass" />
       </button>
     </PopoverTrigger>
 

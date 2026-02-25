@@ -4,7 +4,7 @@ import ProductCard from '~/features/donation-form/features/product/donor/compone
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty'
-import { Search } from 'lucide-vue-next'
+import { ICON_SEARCH } from '~/lib/icons'
 
 interface Props {
   products: Product[]
@@ -59,7 +59,7 @@ const handleSearchUpdate = (value: string | number) => {
     <!-- Search Input -->
     <div class="relative">
       <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-        <Search class="size-4" />
+        <ICON_SEARCH class="size-4" />
       </span>
       <Input
         :model-value="searchQuery"
@@ -93,7 +93,7 @@ const handleSearchUpdate = (value: string | number) => {
     <Empty v-if="products.length === 0" class="py-6">
       <EmptyHeader>
         <EmptyMedia>
-          <Search class="size-8 text-muted-foreground" />
+          <ICON_SEARCH class="size-8 text-muted-foreground" />
         </EmptyMedia>
         <EmptyTitle>No Results</EmptyTitle>
         <EmptyDescription> No items found matching "{{ searchQuery }}" </EmptyDescription>

@@ -2,7 +2,7 @@
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Check, Pencil, X } from 'lucide-vue-next'
+import { ICON_CONFIRM, ICON_EDIT, ICON_CLOSE } from '~/lib/icons'
 
 const props = defineProps<{
   modelValue: string
@@ -71,10 +71,10 @@ function onKeydown(e: KeyboardEvent) {
       class="ml-1 h-7 w-7 shrink-0"
       @mousedown.prevent="submitEdit"
     >
-      <Check class="h-4 w-4" />
+      <ICON_CONFIRM class="h-4 w-4" />
     </Button>
     <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0" @mousedown.prevent="cancelEdit">
-      <X class="h-4 w-4" />
+      <ICON_CLOSE class="h-4 w-4" />
     </Button>
   </div>
 
@@ -103,7 +103,7 @@ function onKeydown(e: KeyboardEvent) {
     @click="startEditing(modelValue)"
   >
     <span class="truncate">{{ modelValue }}</span>
-    <Pencil
+    <ICON_EDIT
       class="h-3 w-3 shrink-0 text-muted-foreground md:opacity-0 group-hover:opacity-100 transition-opacity"
     />
   </button>

@@ -7,7 +7,7 @@ import SocialShareButtons from './SocialShareButtons.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
-import { Copy, Check } from 'lucide-vue-next'
+import { ICON_COPY, ICON_CONFIRM } from '~/lib/icons'
 import type { Campaign } from '~/features/campaigns/shared/types'
 
 const props = withDefaults(
@@ -58,8 +58,8 @@ const hasOtherPlatforms = computed(() => {
       <div class="flex gap-2">
         <Input :model-value="campaignUrl" readonly class="font-mono text-xs" />
         <Button variant="outline" @click="copy()">
-          <Check v-if="copied" class="w-4 h-4" />
-          <Copy v-else class="w-4 h-4" />
+          <ICON_CONFIRM v-if="copied" class="w-4 h-4" />
+          <ICON_COPY v-else class="w-4 h-4" />
         </Button>
       </div>
     </div>

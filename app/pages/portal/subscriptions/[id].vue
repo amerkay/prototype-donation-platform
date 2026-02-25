@@ -13,7 +13,15 @@ import { subscriptionPaymentColumns } from '~/features/donor-portal/columns/subs
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { RefreshCw, Wallet, History, Pause, Play, X, DollarSign } from 'lucide-vue-next'
+import {
+  ICON_RECURRING,
+  ICON_WALLET,
+  ICON_HISTORY,
+  ICON_PAUSE,
+  ICON_RESUME,
+  ICON_CLOSE,
+  ICON_MONEY
+} from '~/lib/icons'
 
 definePageMeta({ layout: 'portal' })
 
@@ -130,7 +138,7 @@ const {
               size="sm"
               @click="handleResume(sub.id)"
             >
-              <Play class="size-4 mr-1.5" /> Resume
+              <ICON_RESUME class="size-4 mr-1.5" /> Resume
             </Button>
             <Button
               v-if="sub.status === 'active' && eligibility.canPause"
@@ -138,7 +146,7 @@ const {
               size="sm"
               @click="confirmPause(sub.id)"
             >
-              <Pause class="size-4 mr-1.5" /> Pause
+              <ICON_PAUSE class="size-4 mr-1.5" /> Pause
             </Button>
             <Button
               v-if="
@@ -148,7 +156,7 @@ const {
               size="sm"
               @click="openChangeAmount(sub.id, changeAmountMin!)"
             >
-              <DollarSign class="size-4 mr-1.5" /> Change Amount
+              <ICON_MONEY class="size-4 mr-1.5" /> Change Amount
             </Button>
             <Button
               v-if="(sub.status === 'active' || sub.status === 'paused') && eligibility.canCancel"
@@ -157,7 +165,7 @@ const {
               class="text-destructive hover:text-destructive"
               @click="confirmCancel(sub.id)"
             >
-              <X class="size-4 mr-1.5" /> Cancel
+              <ICON_CLOSE class="size-4 mr-1.5" /> Cancel
             </Button>
           </div>
         </div>
@@ -168,7 +176,7 @@ const {
           <Card>
             <CardHeader>
               <CardTitle class="text-base flex items-center gap-2">
-                <RefreshCw class="h-4 w-4" />
+                <ICON_RECURRING class="h-4 w-4" />
                 Subscription
               </CardTitle>
             </CardHeader>
@@ -208,7 +216,7 @@ const {
           <Card>
             <CardHeader>
               <CardTitle class="text-base flex items-center gap-2">
-                <Wallet class="h-4 w-4" />
+                <ICON_WALLET class="h-4 w-4" />
                 Financials
               </CardTitle>
             </CardHeader>
@@ -235,7 +243,7 @@ const {
           <Card v-if="payments.length">
             <CardHeader>
               <CardTitle class="text-base flex items-center gap-2">
-                <History class="h-4 w-4" />
+                <ICON_HISTORY class="h-4 w-4" />
                 Payment History
               </CardTitle>
             </CardHeader>

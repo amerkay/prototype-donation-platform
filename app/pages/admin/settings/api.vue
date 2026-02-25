@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import AdminDeleteDialog from '~/features/_admin/components/AdminDeleteDialog.vue'
-import { Key, Webhook, Plus, Trash2, Copy } from 'lucide-vue-next'
+import { ICON_API_KEY, ICON_WEBHOOK, ICON_CREATE, ICON_DELETE, ICON_COPY } from '~/lib/icons'
 import { toast } from 'vue-sonner'
 
 import { formatDate as _formatDate } from '~/lib/formatDate'
@@ -110,11 +110,11 @@ function confirmDeleteWebhook() {
         <CardHeader>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <Key class="w-5 h-5 text-primary" />
+              <ICON_API_KEY class="w-5 h-5 text-primary" />
               <CardTitle>API Keys</CardTitle>
             </div>
             <Button size="sm" @click="openCreateKey">
-              <Plus class="w-4 h-4 mr-2" />
+              <ICON_CREATE class="w-4 h-4 mr-2" />
               Create Key
             </Button>
           </div>
@@ -154,7 +154,7 @@ function confirmDeleteWebhook() {
                   class="h-8 w-8"
                   @click="copyToClipboard(key.prefix)"
                 >
-                  <Copy class="h-4 w-4" />
+                  <ICON_COPY class="h-4 w-4" />
                 </Button>
                 <Button
                   variant="ghost"
@@ -162,7 +162,7 @@ function confirmDeleteWebhook() {
                   class="h-8 w-8 text-destructive hover:text-destructive"
                   @click="keyToDelete = key.id"
                 >
-                  <Trash2 class="h-4 w-4" />
+                  <ICON_DELETE class="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -175,11 +175,11 @@ function confirmDeleteWebhook() {
         <CardHeader>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <Webhook class="w-5 h-5 text-primary" />
+              <ICON_WEBHOOK class="w-5 h-5 text-primary" />
               <CardTitle>Webhooks</CardTitle>
             </div>
             <Button size="sm" @click="openAddWebhook">
-              <Plus class="w-4 h-4 mr-2" />
+              <ICON_CREATE class="w-4 h-4 mr-2" />
               Add Endpoint
             </Button>
           </div>
@@ -217,7 +217,7 @@ function confirmDeleteWebhook() {
                   class="h-8 w-8 text-destructive hover:text-destructive"
                   @click="webhookToDelete = wh.id"
                 >
-                  <Trash2 class="h-4 w-4" />
+                  <ICON_DELETE class="h-4 w-4" />
                 </Button>
               </div>
             </div>

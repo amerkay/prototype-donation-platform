@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { BadgeCheck, ChevronsUpDown, CreditCard, LogOut, Moon, Sun } from 'lucide-vue-next'
+import {
+  ICON_ACCOUNT,
+  ICON_DROPDOWN_TRIGGER,
+  ICON_BILLING,
+  ICON_LOGOUT,
+  ICON_DARK_MODE,
+  ICON_LIGHT_MODE
+} from '~/lib/icons'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -57,7 +64,7 @@ const toggleTheme = () => {
               <span class="truncate font-medium">{{ user.name }}</span>
               <span class="truncate text-xs">{{ user.email }}</span>
             </div>
-            <ChevronsUpDown class="ml-auto size-4" />
+            <ICON_DROPDOWN_TRIGGER class="ml-auto size-4" />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent
@@ -88,11 +95,11 @@ const toggleTheme = () => {
           <DropdownMenuSeparator /> -->
           <DropdownMenuGroup>
             <DropdownMenuItem>
-              <BadgeCheck />
+              <ICON_ACCOUNT />
               Account
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <CreditCard />
+              <ICON_BILLING />
               Billing
             </DropdownMenuItem>
             <!-- <DropdownMenuItem>
@@ -102,13 +109,13 @@ const toggleTheme = () => {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem @click="toggleTheme">
-            <Sun v-if="isDark" />
-            <Moon v-else />
+            <ICON_LIGHT_MODE v-if="isDark" />
+            <ICON_DARK_MODE v-else />
             {{ isDark ? 'Light Mode' : 'Dark Mode' }}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
-            <LogOut />
+            <ICON_LOGOUT />
             Log out
           </DropdownMenuItem>
         </DropdownMenuContent>
