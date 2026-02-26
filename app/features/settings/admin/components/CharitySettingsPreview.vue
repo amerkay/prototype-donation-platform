@@ -9,42 +9,28 @@ import CoverCostsModalContent from '~/features/donation-form/features/cover-cost
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import { defineForm } from '~/features/_library/form-builder/api'
 import { createTermsAcceptanceField } from '~/features/donation-form/features/terms/donor/forms/terms-acceptance-field'
-import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
-import {
-  charityActiveTab,
-  charityOpenAccordionId
-} from '~/features/settings/admin/forms/charity-settings-form'
+import { charityOpenAccordionId } from '~/features/settings/admin/forms/charity-settings-form'
 import {
   activateHashTarget,
   HASH_TARGET_PASSIVE_KEY
 } from '~/features/_library/form-builder/composables/useHashTarget'
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     editable?: boolean
-    selectedCurrency?: string
   }>(),
   { editable: false }
 )
 
-const emit = defineEmits<{
-  'update:selectedCurrency': [value: string]
-}>()
-
 // Prevent preview FormRenderers from stealing the global hash target activator
 provide(HASH_TARGET_PASSIVE_KEY, true)
 
-const currencyStore = useCurrencySettingsStore()
 const { brandingStyle } = useBrandingCssVars()
 const charityStore = useCharitySettingsStore()
 
 const activeTab = ref('receipt')
-const selectedCurrency = computed({
-  get: () => props.selectedCurrency ?? currencyStore.defaultCurrency,
-  set: (v) => emit('update:selectedCurrency', v)
-})
 
 // Accordion IDs match form section prefix + field name
 const ACCORDION_IDS = {
@@ -53,16 +39,16 @@ const ACCORDION_IDS = {
   terms: 'charitySettings.terms'
 } as const
 
-// --- Receipt targets (currency-aware) ---
+// --- Receipt targets (flat charity paths) ---
 
-const charityReceiptTargets = computed(() => ({
-  charity: `charitySettings.currencyTabs.${selectedCurrency.value}`,
-  phone: `charitySettings.currencyTabs.${selectedCurrency.value}.phone`,
-  website: `charitySettings.currencyTabs.${selectedCurrency.value}.website`,
-  description: `charitySettings.currencyTabs.${selectedCurrency.value}.description`,
-  emailSignature: `charitySettings.currencyTabs.${selectedCurrency.value}.emailSignature`,
+const charityReceiptTargets = {
+  charity: 'charitySettings.charitySettings',
+  phone: 'charitySettings.charitySettings.phone',
+  website: 'charitySettings.charitySettings.website',
+  description: 'charitySettings.charitySettings.description',
+  emailSignature: 'charitySettings.charitySettings.emailSignature',
   logo: 'branding.logo'
-}))
+}
 
 // --- Costs targets ---
 
@@ -82,33 +68,14 @@ const termsPreviewSection = computed(() => {
   return defineForm('termsPreview', () => createTermsAcceptanceField(undefined, config))
 })
 
-// Reactive key to force re-mount when config changes
 const termsPreviewKey = computed(
   () =>
     `${termsSettings.value?.label}-${termsSettings.value?.description}-${termsSettings.value?.mode}`
 )
 
-// --- Bi-directional sync ---
+// --- Accordion ↔ preview tab sync ---
 
-// Suppress reverse sync when programmatically setting values
 let suppressAccordionToTab = false
-let suppressTabToAccordion = false
-let suppressHashActivation = false
-
-// Form currency tab → preview currency + switch to receipt tab
-watch(charityActiveTab, (tab) => {
-  if (tab && currencyStore.supportedCurrencies.includes(tab)) {
-    suppressHashActivation = true
-    suppressTabToAccordion = true
-    selectedCurrency.value = tab
-    activeTab.value = 'receipt'
-    // Clear after queued watchers have fired
-    nextTick(() => {
-      suppressTabToAccordion = false
-      suppressHashActivation = false
-    })
-  }
-})
 
 // Accordion open → switch preview tab
 watch(charityOpenAccordionId, (id) => {
@@ -120,22 +87,14 @@ watch(charityOpenAccordionId, (id) => {
 
 // Preview tab → open corresponding accordion on form side
 watch(activeTab, (tab) => {
-  if (suppressTabToAccordion) return
   suppressAccordionToTab = true
-  if (tab === 'receipt') charityOpenAccordionId.value = ACCORDION_IDS.charityDetails
-  else if (tab === 'costs') charityOpenAccordionId.value = ACCORDION_IDS.costs
+  if (tab === 'receipt') {
+    charityOpenAccordionId.value = ACCORDION_IDS.charityDetails
+    nextTick(() => activateHashTarget(ACCORDION_IDS.charityDetails))
+  } else if (tab === 'costs') charityOpenAccordionId.value = ACCORDION_IDS.costs
   else if (tab === 'terms') charityOpenAccordionId.value = ACCORDION_IDS.terms
   nextTick(() => {
     suppressAccordionToTab = false
-  })
-})
-
-// Sync currency changes to form tab (only activate hash from preview-side changes)
-watch(selectedCurrency, (currency) => {
-  charityActiveTab.value = currency
-  if (suppressHashActivation) return
-  nextTick(() => {
-    activateHashTarget(`charitySettings.currencyTabs.${currency}`)
   })
 })
 
@@ -155,10 +114,7 @@ defineExpose({ activeTab })
       <TabsContent value="receipt">
         <div class="space-y-3">
           <div :style="brandingStyle">
-            <ReceiptPreview
-              :currency="selectedCurrency"
-              :external-targets="charityReceiptTargets"
-            />
+            <ReceiptPreview :external-targets="charityReceiptTargets" />
           </div>
           <div class="flex justify-between text-xs text-muted-foreground px-1">
             <span>Preview with charity details</span>

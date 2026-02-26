@@ -18,71 +18,27 @@ export const currencySettings: CurrencySettings = {
   }
 }
 
-const EMPTY_EMAIL_FIELDS = {
-  emailSenderId: '',
-  emailSenderName: '',
-  emailSenderAddress: '',
-  emailSignature: ''
-}
-
 export const charitySettings: CharitySettings = {
   slug: 'bosf',
-  currencyEntries: {
-    GBP: {
-      currency: 'GBP',
-      name: 'Borneo Orangutan Survival Foundation',
-      registrationNumber: 'RCN123456',
-      phone: '+44 20 7219 3000',
-      website: 'https://borneoorangutansurvival.org/',
-      description:
-        'We rescue, rehabilitate, and release orangutans while protecting their natural habitat through community engagement and sustainable forest management programs across Borneo and Sumatra.',
-      address: {
-        address1: '4 Millbank',
-        address2: '',
-        city: 'London',
-        region: 'Greater London',
-        postcode: 'SW1P 3JA',
-        country: 'GB'
-      },
-      emailSenderId: 'member-001',
-      emailSenderName: 'Wild Amer',
-      emailSenderAddress: 'awesome@charity.co.uk',
-      emailSignature: 'With gratitude,\nThe Borneo Orangutan Survival Team'
+  charity: {
+    name: 'Borneo Orangutan Survival Foundation',
+    registrationNumber: 'RCN123456',
+    phone: '+44 20 7219 3000',
+    website: 'https://borneoorangutansurvival.org/',
+    description:
+      'We rescue, rehabilitate, and release orangutans while protecting their natural habitat through community engagement and sustainable forest management programs across Borneo and Sumatra.',
+    address: {
+      address1: '4 Millbank',
+      address2: '',
+      city: 'London',
+      region: 'Greater London',
+      postcode: 'SW1P 3JA',
+      country: 'GB'
     },
-    USD: {
-      currency: 'USD',
-      name: 'Borneo Orangutan Survival Foundation USA',
-      registrationNumber: 'EIN 84-1234567',
-      phone: '+1 202 555 0180',
-      website: '',
-      description: '',
-      address: {
-        address1: '1250 Connecticut Ave NW',
-        address2: 'Suite 700',
-        city: 'Washington',
-        region: 'DC',
-        postcode: '20036',
-        country: 'US'
-      },
-      ...EMPTY_EMAIL_FIELDS
-    },
-    EUR: {
-      currency: 'EUR',
-      name: 'BOS Foundation Europe',
-      registrationNumber: 'RSIN 8234.56.789',
-      phone: '',
-      website: '',
-      description: '',
-      address: {
-        address1: 'Keizersgracht 520',
-        address2: '',
-        city: 'Amsterdam',
-        region: 'North Holland',
-        postcode: '1017 EK',
-        country: 'NL'
-      },
-      ...EMPTY_EMAIL_FIELDS
-    }
+    emailSenderId: 'member-001',
+    emailSenderName: 'Wild Amer',
+    emailSenderAddress: 'awesome@charity.co.uk',
+    emailSignature: 'With gratitude,\nThe Borneo Orangutan Survival Team'
   },
   charityCosts: {
     heading: 'Help Us Keep More for the Orangutans',

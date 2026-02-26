@@ -132,7 +132,6 @@ On donor erasure request:
 
 ## International Tax Receipts
 
-- Receipt templates are per-currency via charity settings (`organization_charity_currencies`)
-- GBP donations use UK charity identity (name, reg#, address), USD uses US entity, etc.
-- The `currency` field on transactions implicitly identifies which charity entity was used
+- Charity identity is a single flat org-level object (`org_identity.charity` JSONB) — no per-currency overrides
+- The `currency` field on transactions identifies which currency was used; the stored PDF captures the charity identity at donation time
 - No separate `tax_receipt_type` field needed — currency + stored PDF captures everything

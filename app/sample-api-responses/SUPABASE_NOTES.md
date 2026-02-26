@@ -59,59 +59,6 @@ $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 ---
 
-## Currency Auto-Population Trigger
-
-Replaces the client-side `ensureCurrencyEntries()` pattern. When a currency is added to `org_config.supported_currencies`, a trigger auto-populates a default row in `org_identity.currency_overrides`.
-
-```sql
-CREATE OR REPLACE FUNCTION auto_populate_currency_overrides()
-RETURNS TRIGGER AS $$
-DECLARE
-  new_codes TEXT[];
-  old_codes TEXT[];
-  code TEXT;
-  current_overrides JSONB;
-BEGIN
-  -- Extract currency codes from new and old supported_currencies JSONB arrays
-  SELECT array_agg(elem->>'code') INTO new_codes
-  FROM jsonb_array_elements(NEW.supported_currencies) AS elem;
-
-  IF TG_OP = 'UPDATE' THEN
-    SELECT array_agg(elem->>'code') INTO old_codes
-    FROM jsonb_array_elements(OLD.supported_currencies) AS elem;
-  ELSE
-    old_codes := ARRAY[]::TEXT[];
-  END IF;
-
-  -- For each newly added currency, ensure an override entry exists in org_identity
-  FOREACH code IN ARRAY new_codes LOOP
-    IF code != ALL(COALESCE(old_codes, ARRAY[]::TEXT[])) THEN
-      SELECT currency_overrides INTO current_overrides
-      FROM org_identity WHERE organization_id = NEW.organization_id;
-
-      IF current_overrides IS NULL OR NOT current_overrides ? code THEN
-        UPDATE org_identity
-        SET currency_overrides = COALESCE(currency_overrides, '{}'::JSONB)
-          || jsonb_build_object(code, '{}'::JSONB)
-        WHERE organization_id = NEW.organization_id;
-      END IF;
-    END IF;
-  END LOOP;
-
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER org_config_currency_sync
-  AFTER INSERT OR UPDATE OF supported_currencies ON org_config
-  FOR EACH ROW
-  EXECUTE FUNCTION auto_populate_currency_overrides();
-```
-
-> This eliminates the need for `ensureCurrencyEntries()` in the client-side charity settings store. Currency overrides are guaranteed to exist server-side whenever a currency is added to the supported list.
-
----
-
 ## Quantity Remaining Trigger
 
 The `campaign_forms.impact_cart` JSONB column includes a `quantityRemaining` map (keyed by product ID). A trigger on `transactions` decrements stock when a transaction succeeds:
@@ -285,7 +232,6 @@ Transactions store `campaign_currency` and `campaign_exchange_rate` at creation 
 
 - [ ] Campaign currency immutability: add server-side guard on UPDATE to prevent `crowdfunding->>'currency'` changes after initial INSERT
 - [ ] Cross-currency fundraiser aggregation: `useFundraisers` sums `raisedAmount` without conversion when fundraisers use different currencies
-- [ ] Currency auto-population trigger replaces client-side `ensureCurrencyEntries` (see trigger above)
 - [ ] Currency removal guard: server-side check that no forms reference a currency (`enabledCurrencies`/`baseDefaultCurrency` in `campaign_forms.settings` JSONB) before allowing removal from `org_config.supported_currencies`
 - [ ] Per-user `interfaceConfig` table: sorting, table/card mode, filter presets — persists across devices
 - [ ] `useFilterState` `mode: 'server'` option — emit `FilterConditionValues` JSON, skip client predicate

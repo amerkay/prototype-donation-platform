@@ -33,7 +33,14 @@ export function useDownloadDonationReceipt() {
     const { getCampaignById } = useCampaigns()
 
     const currency = store.selectedCurrency
-    const charityInfo = charity.getCharityForCurrency(currency)
+    const charityInfo = {
+      name: charity.name,
+      registrationNumber: charity.registrationNumber,
+      address: charity.formattedAddress,
+      phone: charity.phone,
+      email: charity.emailSenderAddress,
+      website: charity.website
+    }
     const donorInfo = store.formSections.donorInfo as Record<string, unknown>
     const donorName = donorInfo.name as Record<string, string> | undefined
     const shippingInfo = store.formSections.shipping as Record<string, string> | undefined

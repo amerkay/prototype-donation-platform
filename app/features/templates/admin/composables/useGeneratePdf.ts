@@ -105,7 +105,6 @@ export function useGeneratePdf() {
       } else {
         const receipt = useReceiptTemplateStore()
         const charity = useCharitySettingsStore()
-        const charityInfo = charity.getCharityForCurrency(activeCurrency)
         body = {
           type: 'receipt',
           data: {
@@ -125,12 +124,12 @@ export function useGeneratePdf() {
               primaryColor: branding.primaryColor
             },
             charity: {
-              name: charityInfo.name,
-              registrationNumber: charityInfo.registrationNumber,
-              address: charityInfo.address,
-              phone: charityInfo.phone,
-              email: charityInfo.email,
-              website: charityInfo.website
+              name: charity.name,
+              registrationNumber: charity.registrationNumber,
+              address: charity.formattedAddress,
+              phone: charity.phone,
+              email: charity.emailSenderAddress,
+              website: charity.website
             },
             donation: {
               receiptNumber: 'RCP-2025-001234',

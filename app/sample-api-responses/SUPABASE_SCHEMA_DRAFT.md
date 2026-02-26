@@ -194,6 +194,12 @@ CREATE TABLE org_identity (
   --   ]
   -- }
 
+  -- Flat charity identity (org-level, no per-currency overrides)
+  charity JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- { name, registrationNumber, phone, website, description,
+  --   address: { address1, address2, city, region, postcode, country },
+  --   emailSenderId, emailSenderName, emailSenderAddress, emailSignature }
+
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -246,30 +252,6 @@ CREATE TRIGGER org_financial_updated_at
   BEFORE UPDATE ON org_financial FOR EACH ROW
   EXECUTE FUNCTION set_updated_at();
 
--- Per-currency charity details (one row per org+currency, all equal status)
-CREATE TABLE organization_charity_currencies (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-  currency_code TEXT NOT NULL,
-  name TEXT NOT NULL DEFAULT '',
-  registration_number TEXT NOT NULL DEFAULT '',
-  phone TEXT NOT NULL DEFAULT '',
-  website TEXT NOT NULL DEFAULT '',
-  description TEXT NOT NULL DEFAULT '',
-  address_line1 TEXT NOT NULL DEFAULT '',
-  address_line2 TEXT NOT NULL DEFAULT '',
-  city TEXT NOT NULL DEFAULT '',
-  region TEXT NOT NULL DEFAULT '',
-  postcode TEXT NOT NULL DEFAULT '',
-  country TEXT NOT NULL DEFAULT '',
-  email_sender_id UUID,
-  email_sender_name TEXT NOT NULL DEFAULT '',
-  email_sender_address TEXT NOT NULL DEFAULT '',
-  email_signature TEXT NOT NULL DEFAULT '',
-  UNIQUE(organization_id, currency_code)
-);
-
-CREATE INDEX idx_org_charity_currencies_org ON organization_charity_currencies(organization_id);
 ```
 
 > **Exchange rates** are fetched at runtime from an external API (e.g., exchangerate-api.com). They are not stored in the database. The `supportedCurrencies[].multiplier` field in `org_identity.currency` is an org-level display multiplier for preset amounts, not a live FX rate.
@@ -1097,51 +1079,6 @@ CREATE TRIGGER transactions_denormalize_org
   EXECUTE FUNCTION denormalize_transaction_org();
 ```
 
-### Currency Auto-Population Trigger
-
-```sql
--- ============================================
--- CURRENCY AUTO-POPULATION TRIGGER
--- ============================================
--- When org_identity.currency changes, auto-create/remove
--- organization_charity_currencies rows to match supportedCurrencies.
-CREATE OR REPLACE FUNCTION sync_charity_currency_rows()
-RETURNS TRIGGER AS $$
-DECLARE
-  currency_item JSONB;
-  currency_code TEXT;
-  supported_codes TEXT[];
-BEGIN
-  -- Extract supported currency codes from JSONB
-  SELECT ARRAY(
-    SELECT item->>'code'
-    FROM jsonb_array_elements(NEW.currency->'supportedCurrencies') AS item
-  ) INTO supported_codes;
-
-  -- Insert missing currency rows
-  FOR currency_item IN SELECT * FROM jsonb_array_elements(NEW.currency->'supportedCurrencies')
-  LOOP
-    currency_code := currency_item->>'code';
-    INSERT INTO organization_charity_currencies (organization_id, currency_code)
-    VALUES (NEW.organization_id, currency_code)
-    ON CONFLICT (organization_id, currency_code) DO NOTHING;
-  END LOOP;
-
-  -- Remove currency rows no longer in supported list
-  DELETE FROM organization_charity_currencies
-  WHERE organization_id = NEW.organization_id
-    AND currency_code != ALL(supported_codes);
-
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER org_identity_sync_currencies
-  AFTER INSERT OR UPDATE OF currency ON org_identity
-  FOR EACH ROW
-  EXECUTE FUNCTION sync_charity_currency_rows();
-```
-
 ---
 
 ## Row-Level Security (RLS) Policies
@@ -1160,7 +1097,6 @@ ALTER TABLE org_config ENABLE ROW LEVEL SECURITY;
 ALTER TABLE org_identity ENABLE ROW LEVEL SECURITY;
 ALTER TABLE org_integrations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE org_financial ENABLE ROW LEVEL SECURITY;
-ALTER TABLE organization_charity_currencies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE campaigns ENABLE ROW LEVEL SECURITY;
 ALTER TABLE campaign_stats ENABLE ROW LEVEL SECURITY;
 ALTER TABLE campaign_fundraisers ENABLE ROW LEVEL SECURITY;
@@ -1230,13 +1166,6 @@ CREATE POLICY "org_financial_select" ON org_financial FOR SELECT
 
 CREATE POLICY "org_financial_upsert" ON org_financial FOR ALL
   USING (has_role_in_org(organization_id, 'owner'));
-
--- --- Organization Charity Currencies (admin+) ---
-CREATE POLICY "charity_currencies_select" ON organization_charity_currencies FOR SELECT
-  USING (has_role_in_org(organization_id, 'member'));
-
-CREATE POLICY "charity_currencies_modify" ON organization_charity_currencies FOR ALL
-  USING (has_role_in_org(organization_id, 'admin'));
 
 -- --- Campaigns (admin) ---
 -- Org members can view non-deleted campaigns
@@ -1468,31 +1397,32 @@ CREATE POLICY "donor_documents_select_admin" ON storage.objects FOR SELECT
 
 ## JSONB Field Justification
 
-| Column             | Location           | Why JSONB?                                                                                          |
-| ------------------ | ------------------ | --------------------------------------------------------------------------------------------------- |
-| `general`          | `org_config`       | Flat key-value settings that change together. No cross-table joins needed. Admin-only config.       |
-| `branding`         | `org_config`       | Theme/styling blob consumed as a unit. Never queried individually in SQL.                           |
-| `social_sharing`   | `org_config`       | Boolean flags consumed as a unit. Simple on/off toggles for social platforms.                       |
-| `donor_portal`     | `org_config`       | Nested eligibility rules consumed as a unit. Never queried individually. Admin-only config.         |
-| `currency`         | `org_identity`     | Nested structure with array of supported currencies + multipliers. Queried as a whole on page load. |
-| `api_keys`         | `org_integrations` | Variable-length array of key objects. Developer-only, never SQL-filtered.                           |
-| `webhooks`         | `org_integrations` | Variable-length array of webhook configs. Developer-only, never SQL-filtered.                       |
-| `payments`         | `org_financial`    | Nested processor configs (Stripe/PayPal) with varying shapes. Owner-only.                           |
-| `billing`          | `org_financial`    | Plan/usage blob consumed as a unit. Owner-only.                                                     |
-| `crowdfunding`     | `campaigns`        | Page layout config read as a unit. Never filtered in SQL (always loaded with campaign).             |
-| `peer_to_peer`     | `campaigns`        | P2P config blob. Only relevant for type='p2p'. Loaded with campaign, never queried individually.    |
-| `charity`          | `campaigns`        | Campaign-level charity override. Small flat object, always loaded with campaign.                    |
-| `social_sharing`   | `campaigns`        | Per-campaign social override. Boolean flags consumed as a unit.                                     |
-| `donation_amounts` | `campaign_forms`   | Nested frequencies → preset amounts hierarchy. Complex tree structure that would require 2+ tables. |
-| `impact_cart`      | `campaign_forms`   | Simple feature toggle + 1 setting. Not worth a separate table.                                      |
-| `product_selector` | `campaign_forms`   | Feature config with 5 text fields. Loaded with form, never queried individually.                    |
-| `impact_boost`     | `campaign_forms`   | Feature config with 4 fields. Loaded with form, never queried individually.                         |
-| `cover_costs`      | `campaign_forms`   | Feature config with 3 fields. Loaded with form, never queried individually.                         |
-| `gift_aid`         | `campaign_forms`   | Single boolean toggle. JSONB for consistency with other feature configs.                            |
-| `tribute`          | `campaign_forms`   | Feature config with 10+ fields including icons. Loaded with form, never queried individually.       |
-| `custom_fields`    | `campaign_forms`   | Variable-length array with recursive visibility conditions. Schema varies by field type.            |
-| `entry_fields`     | `campaign_forms`   | Form-type-specific config varying by form_type. Polymorphic structure.                              |
-| `custom_fields`    | `transactions`     | Denormalized snapshot of custom field values at transaction time. Filtered via GIN index.           |
+| Column             | Location           | Why JSONB?                                                                                            |
+| ------------------ | ------------------ | ----------------------------------------------------------------------------------------------------- |
+| `general`          | `org_config`       | Flat key-value settings that change together. No cross-table joins needed. Admin-only config.         |
+| `branding`         | `org_config`       | Theme/styling blob consumed as a unit. Never queried individually in SQL.                             |
+| `social_sharing`   | `org_config`       | Boolean flags consumed as a unit. Simple on/off toggles for social platforms.                         |
+| `donor_portal`     | `org_config`       | Nested eligibility rules consumed as a unit. Never queried individually. Admin-only config.           |
+| `currency`         | `org_identity`     | Nested structure with array of supported currencies + multipliers. Queried as a whole on page load.   |
+| `charity`          | `org_identity`     | Flat org-level charity identity (name, address, email sender, etc.). Always loaded with org settings. |
+| `api_keys`         | `org_integrations` | Variable-length array of key objects. Developer-only, never SQL-filtered.                             |
+| `webhooks`         | `org_integrations` | Variable-length array of webhook configs. Developer-only, never SQL-filtered.                         |
+| `payments`         | `org_financial`    | Nested processor configs (Stripe/PayPal) with varying shapes. Owner-only.                             |
+| `billing`          | `org_financial`    | Plan/usage blob consumed as a unit. Owner-only.                                                       |
+| `crowdfunding`     | `campaigns`        | Page layout config read as a unit. Never filtered in SQL (always loaded with campaign).               |
+| `peer_to_peer`     | `campaigns`        | P2P config blob. Only relevant for type='p2p'. Loaded with campaign, never queried individually.      |
+| `charity`          | `campaigns`        | Campaign-level charity override. Small flat object, always loaded with campaign.                      |
+| `social_sharing`   | `campaigns`        | Per-campaign social override. Boolean flags consumed as a unit.                                       |
+| `donation_amounts` | `campaign_forms`   | Nested frequencies → preset amounts hierarchy. Complex tree structure that would require 2+ tables.   |
+| `impact_cart`      | `campaign_forms`   | Simple feature toggle + 1 setting. Not worth a separate table.                                        |
+| `product_selector` | `campaign_forms`   | Feature config with 5 text fields. Loaded with form, never queried individually.                      |
+| `impact_boost`     | `campaign_forms`   | Feature config with 4 fields. Loaded with form, never queried individually.                           |
+| `cover_costs`      | `campaign_forms`   | Feature config with 3 fields. Loaded with form, never queried individually.                           |
+| `gift_aid`         | `campaign_forms`   | Single boolean toggle. JSONB for consistency with other feature configs.                              |
+| `tribute`          | `campaign_forms`   | Feature config with 10+ fields including icons. Loaded with form, never queried individually.         |
+| `custom_fields`    | `campaign_forms`   | Variable-length array with recursive visibility conditions. Schema varies by field type.              |
+| `entry_fields`     | `campaign_forms`   | Form-type-specific config varying by form_type. Polymorphic structure.                                |
+| `custom_fields`    | `transactions`     | Denormalized snapshot of custom field values at transaction time. Filtered via GIN index.             |
 
 **Queryable columns kept outside JSONB:** `form_type`, `title`, `subtitle`, `base_default_currency`, `enabled_currencies` on `campaign_forms`; `type`, `status`, `slug` on `campaigns`. These are used in WHERE clauses, indexes, and RLS policies.
 
@@ -1503,14 +1433,14 @@ CREATE POLICY "donor_documents_select_admin" ON storage.objects FOR SELECT
 | Category             | Count  | Tables                                                                                                          |
 | -------------------- | ------ | --------------------------------------------------------------------------------------------------------------- |
 | Organizations & Auth | 2      | organizations, profiles                                                                                         |
-| Org Settings         | 5      | org_config, org_identity, org_integrations, org_financial, organization_charity_currencies                      |
+| Org Settings         | 4      | org_config, org_identity, org_integrations, org_financial                                                       |
 | Campaigns            | 3      | campaigns, campaign_stats, campaign_fundraisers                                                                 |
 | Forms                | 2      | campaign_forms, form_products (junction)                                                                        |
 | Products             | 1      | products                                                                                                        |
 | Donor Portal         | 6      | donor_users, subscriptions, subscription_line_items, transactions, transaction_line_items, transaction_tributes |
 | Compliance           | 2      | gift_aid_declarations, consent_records                                                                          |
 | Lookups              | 1      | tribute_relationships                                                                                           |
-| **Total**            | **22** | + 2 views (`campaign_donations_view`, `donors_summary_view`) + 2 storage buckets                                |
+| **Total**            | **21** | + 2 views (`campaign_donations_view`, `donors_summary_view`) + 2 storage buckets                                |
 
 ---
 
@@ -1651,12 +1581,8 @@ const [config, identity, integrations, financial] = await Promise.all([
 // developer role: integrations succeeds, financial returns empty (RLS blocks)
 // member role: config and identity succeed, integrations and financial return empty
 
-// Get charity currency overrides
-const currencies = await supabase
-  .from('organization_charity_currencies')
-  .select('*')
-  .eq('organization_id', orgId)
-  .order('currency_code')
+// Access flat charity identity from org_identity JSONB
+// identity.charity = { name, registrationNumber, phone, website, description, address, emailSenderId, ... }
 
 // Find forms using a specific currency (for currency removal guard)
 const formsUsingCurrency = await supabase

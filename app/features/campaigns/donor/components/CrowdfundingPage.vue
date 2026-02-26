@@ -6,7 +6,6 @@ import {
   BRANDING_STYLE_KEY
 } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
-import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useSocialSharingSettingsStore } from '~/features/settings/admin/stores/socialSharingSettings'
 import { useCampaignShare } from '~/features/campaigns/shared/composables/useCampaignShare'
 import ShareDialog from './ShareDialog.vue'
@@ -32,10 +31,15 @@ const { brandingStyle } = useBrandingCssVars()
 provide(BRANDING_STYLE_KEY, brandingStyle)
 
 const charityStore = useCharitySettingsStore()
-const currencyStore = useCurrencySettingsStore()
-const charityInfo = computed(() =>
-  charityStore.getCharityForCurrency(props.currency ?? currencyStore.defaultCurrency)
-)
+const charityInfo = computed(() => ({
+  name: charityStore.name,
+  registrationNumber: charityStore.registrationNumber,
+  phone: charityStore.phone,
+  email: charityStore.emailSenderAddress,
+  website: charityStore.website,
+  description: charityStore.description,
+  address: charityStore.formattedAddress
+}))
 const orgSharing = useSocialSharingSettingsStore()
 const { campaignUrl } = useCampaignShare(computed(() => props.campaign.id))
 

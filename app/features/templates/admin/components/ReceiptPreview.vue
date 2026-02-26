@@ -27,7 +27,6 @@ const branding = useBrandingSettingsStore()
 const currencyStore = useCurrencySettingsStore()
 
 const activeCurrency = computed(() => props.currency || currencyStore.defaultCurrency)
-const charityInfo = computed(() => charityStore.getCharityForCurrency(activeCurrency.value))
 const sampleAmount = computed(() => formatCurrency(50, activeCurrency.value))
 
 const sampleDate = new Intl.DateTimeFormat('en-GB', {
@@ -56,12 +55,12 @@ const receiptModel = computed<ReceiptModel>(() => ({
     primaryColor: branding.primaryColor
   },
   charity: {
-    name: charityInfo.value.name,
-    registrationNumber: charityInfo.value.registrationNumber,
-    address: charityInfo.value.address,
-    phone: charityInfo.value.phone,
-    email: charityInfo.value.email,
-    website: charityInfo.value.website
+    name: charityStore.name,
+    registrationNumber: charityStore.registrationNumber,
+    address: charityStore.formattedAddress,
+    phone: charityStore.phone,
+    email: charityStore.emailSenderAddress,
+    website: charityStore.website
   },
   donation: {
     receiptNumber: 'RCP-2025-001234',

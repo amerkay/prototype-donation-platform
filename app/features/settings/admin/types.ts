@@ -9,10 +9,21 @@ export interface CurrencySettings {
 }
 
 /**
- * Per-currency charity entry (equal status — no enabled toggle, all fully populated)
+ * Structured charity address
  */
-export interface CharityCurrencyEntry {
-  currency: string
+export interface CharityAddress {
+  address1: string
+  address2: string
+  city: string
+  region: string
+  postcode: string
+  country: string
+}
+
+/**
+ * Flat org-level charity identity
+ */
+export interface CharityInfo {
   name: string
   registrationNumber: string
   phone: string
@@ -26,24 +37,11 @@ export interface CharityCurrencyEntry {
 }
 
 /**
- * Structured charity address
- */
-export interface CharityAddress {
-  address1: string
-  address2: string
-  city: string
-  region: string
-  postcode: string
-  country: string
-}
-
-/**
  * Organization-level charity settings
- * Per-currency details stored as equal entries in currencyEntries record.
  */
 export interface CharitySettings {
   slug: string
-  currencyEntries: Record<string, CharityCurrencyEntry>
+  charity: CharityInfo
   charityCosts: CharityCostsSettings
   terms: TermsSettings
 }
@@ -82,31 +80,7 @@ export interface TermsSettings {
   }
 }
 
-/** Per-currency entry fields (excludes address, handled separately) */
-export const CHARITY_ENTRY_FIELDS = [
-  'name',
-  'registrationNumber',
-  'phone',
-  'website',
-  'description'
-] as const
-
-/** Address fields for content checking (top-level in form address group) */
-export const CHARITY_ADDRESS_FIELDS = ['address1', 'city', 'country'] as const
-
-/** Address fields nested inside group1 in the form */
-export const CHARITY_ADDRESS_GROUP_FIELDS = ['region', 'postcode'] as const
-
-/** Per-currency entry fields including email sender (excludes address) */
-export const CHARITY_ENTRY_ALL_FIELDS = [
-  ...CHARITY_ENTRY_FIELDS,
-  'emailSenderId',
-  'emailSenderName',
-  'emailSenderAddress',
-  'emailSignature'
-] as const
-
-/** Org-level scalar fields on CharitySettings (not per-currency) */
+/** Org-level scalar fields on CharitySettings */
 export const CHARITY_ORG_FIELDS = ['slug'] as const
 
 /**

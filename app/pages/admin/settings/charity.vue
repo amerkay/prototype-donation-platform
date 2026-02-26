@@ -3,10 +3,8 @@ import { computed, ref } from 'vue'
 import EditLayout from '~/features/_shared/components/EditLayout.vue'
 import CharitySettingsConfig from '~/features/settings/admin/components/CharitySettingsConfig.vue'
 import CharitySettingsPreview from '~/features/settings/admin/components/CharitySettingsPreview.vue'
-import PreviewCurrencySelect from '~/features/_admin/components/PreviewCurrencySelect.vue'
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
-import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useEditState } from '~/features/_shared/composables/useEditState'
 
 const store = useCharitySettingsStore()
@@ -27,8 +25,6 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useEdit
   }
 })
 
-const currencyStore = useCurrencySettingsStore()
-const selectedCurrency = ref(currencyStore.defaultCurrency)
 const showPreviewDialog = ref(false)
 
 const breadcrumbs = [
@@ -64,21 +60,8 @@ definePageMeta({
         </div>
       </template>
 
-      <template #preview-actions>
-        <PreviewCurrencySelect
-          v-if="previewRef?.activeTab === 'receipt'"
-          :model-value="selectedCurrency"
-          :currencies="currencyStore.supportedCurrencies"
-          @update:model-value="selectedCurrency = $event"
-        />
-      </template>
-
       <template #preview>
-        <CharitySettingsPreview
-          ref="previewRef"
-          v-model:selected-currency="selectedCurrency"
-          :editable="editableMode"
-        />
+        <CharitySettingsPreview ref="previewRef" :editable="editableMode" />
       </template>
     </EditLayout>
 
@@ -90,10 +73,7 @@ definePageMeta({
     >
       <template #header>Charity Preview</template>
       <template #content>
-        <CharitySettingsPreview
-          v-model:selected-currency="selectedCurrency"
-          :editable="editableMode"
-        />
+        <CharitySettingsPreview :editable="editableMode" />
       </template>
     </BaseDialogOrDrawer>
   </div>
