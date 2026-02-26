@@ -32,7 +32,10 @@
       "Bash(git --no-pager log --oneline -5)",
       "Bash(done)",
       "Bash(echo .worktrees:*)",
-      "Bash(tail:*)"
+      "Bash(tail:*)",
+      "Bash(pnpm analyze:complexity:*)",
+      "Bash(pnpm analyze:dead:*)",
+      "Bash(pnpm analyze:circular:*)"
     ]
   },
   "outputStyle": "Explanatory",
