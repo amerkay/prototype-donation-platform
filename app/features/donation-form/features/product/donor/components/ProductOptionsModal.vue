@@ -9,7 +9,6 @@ import {
   useCustomFieldsForm,
   extractCustomFieldDefaults
 } from '~/features/_library/custom-fields/utils'
-import type { ContextSchema } from '~/features/_library/form-builder/conditions'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 import type {
   DonationAmountsSettings,
@@ -18,10 +17,7 @@ import type {
 import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
 import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
 import type { CartItem } from '~/features/donation-form/features/impact-cart/donor/types'
-import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
-import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
-import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
-import { useDonationCurrencies } from '~/features/donation-form/shared/composables/useDonationCurrencies'
+import { useEntryFieldsContext } from '~/features/donation-form/donor/composables/useEntryFieldsContext'
 import ProductOptionsContent from '~/features/donation-form/features/product/shared/components/ProductOptionsContent.vue'
 
 interface Props {
@@ -50,45 +46,9 @@ const emit = defineEmits<{
 }>()
 
 const { labels } = useFormTypeLabels()
-const formConfigStore = useFormConfigStore()
-const cartStore = useImpactCartStore()
-const donationStore = useDonationFormStore()
-const { effectiveCurrencies } = useDonationCurrencies()
 const brandingStyle = useInjectedBrandingStyle()
 
-const cartProducts = computed(() => [
-  ...new Set([
-    ...cartStore.multipleCart.map((item) => item.id),
-    ...(donationStore.selectedProducts.monthly ? [donationStore.selectedProducts.monthly.id] : []),
-    ...(donationStore.selectedProducts.yearly ? [donationStore.selectedProducts.yearly.id] : [])
-  ])
-])
-
-const entryContext = computed(() => ({
-  cartProducts: cartProducts.value,
-  cartItemCount: cartStore.multipleCart.length,
-  cartTotal: cartStore.multipleCartTotal,
-  currency: props.currency
-}))
-
-const entryContextSchema = computed<ContextSchema>(() => ({
-  cartProducts: {
-    label: 'Cart Has Product',
-    type: 'array',
-    description: 'Products currently in donor cart (all frequencies)',
-    options: formConfigStore.products.map((p) => ({ value: p.id, label: p.title }))
-  },
-  cartItemCount: { label: 'Cart Item Count', type: 'number' },
-  cartTotal: { label: 'Cart Total', type: 'number' },
-  currency: {
-    label: 'Currency',
-    type: 'array',
-    options: effectiveCurrencies.value.supportedCurrencies.map((code) => ({
-      value: code,
-      label: code
-    }))
-  }
-}))
+const { entryContext, entryContextSchema } = useEntryFieldsContext(() => props.currency)
 
 // Internal state
 const open = ref(false)

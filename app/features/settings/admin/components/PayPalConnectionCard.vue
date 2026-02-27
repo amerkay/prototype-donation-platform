@@ -15,7 +15,7 @@ const showDisconnect = ref(false)
 function startConnect() {
   const state = crypto.randomUUID()
   sessionStorage.setItem('oauth-state', state)
-  navigateTo(`/admin/settings/payments/paypal-connect?state=${state}`)
+  navigateTo(`/admin/settings/payments/connect/paypal?state=${state}`)
 }
 
 function confirmDisconnect() {

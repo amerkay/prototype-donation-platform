@@ -4,6 +4,11 @@ import { componentField, sliderField } from '~/features/_library/form-builder/ap
 import { getCurrencySymbol } from '~/features/donation-form/shared/composables/useCurrency'
 import CoverCostsInfoCard from '~/features/donation-form/features/cover-costs/donor/components/CoverCostsInfoCard.vue'
 
+function formatCoverValue(value: number, donationAmount: number, currency: string): string {
+  if (donationAmount >= 10) return `${value}%`
+  return `${getCurrencySymbol(currency)}${value.toFixed(2)}`
+}
+
 /**
  * Universal cover costs field that adapts between percentage and fixed amount modes
  *
@@ -67,30 +72,16 @@ export function createCoverCostsField(
     // Dynamic value formatting
     formatValue: (value: number, ctx?: FieldContext) => {
       const donationAmount = (ctx?.values?.donationAmount as number) || 0
-      const isPercentageMode = donationAmount >= thresholdAmount
-
-      if (isPercentageMode) {
-        return `${value}%`
-      } else {
-        const currency = (ctx?.values?.currency as string) || 'GBP'
-        const symbol = getCurrencySymbol(currency)
-        return `${symbol}${value.toFixed(2)}`
-      }
+      const currency = (ctx?.values?.currency as string) || 'GBP'
+      return formatCoverValue(value, donationAmount, currency)
     },
 
     descriptionClass: 'whitespace-nowrap',
     showMinMax: true,
     minMaxFormatter: (value: number, ctx?: FieldContext) => {
       const donationAmount = (ctx?.values?.donationAmount as number) || 0
-      const isPercentageMode = donationAmount >= thresholdAmount
-
-      if (isPercentageMode) {
-        return `${value}%`
-      } else {
-        const currency = (ctx?.values?.currency as string) || 'GBP'
-        const symbol = getCurrencySymbol(currency)
-        return `${symbol}${value.toFixed(2)}`
-      }
+      const currency = (ctx?.values?.currency as string) || 'GBP'
+      return formatCoverValue(value, donationAmount, currency)
     },
 
     rules: z.number().min(0).max(30),

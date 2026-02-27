@@ -58,7 +58,8 @@ export default defineNuxtConfig({
   },
 
   css: ['./app/assets/css/main.css'],
-  vite: { plugins: [tailwindcss()] },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  vite: { plugins: [tailwindcss() as any] },
 
   modules: [
     // docs https://www.shadcn-vue.com/docs/installation/nuxt

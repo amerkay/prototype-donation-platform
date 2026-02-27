@@ -41,7 +41,7 @@ const { wrapperProps, resolvedDisabled, resolvedClass } = useFieldWrapper(
       :aria-invalid="!!errors.length"
       :orientation="meta.orientation"
       :class="cn(meta.orientation === 'horizontal' && 'grid-flow-col', resolvedClass)"
-      @update:model-value="$emit('update:modelValue', $event)"
+      @update:model-value="$emit('update:modelValue', $event as string | number)"
     >
       <FieldLabel
         v-for="option in meta.options"

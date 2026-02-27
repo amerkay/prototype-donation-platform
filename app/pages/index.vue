@@ -99,7 +99,7 @@ const donorCards = computed(() => [
                 <div class="space-y-1">
                   <CardTitle class="text-base flex items-center gap-2">
                     {{ card.title }}
-                    <ArrowRight
+                    <ICON_FORWARD
                       class="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                     />
                   </CardTitle>

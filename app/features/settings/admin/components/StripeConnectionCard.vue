@@ -15,7 +15,7 @@ const showDisconnect = ref(false)
 function startConnect() {
   const state = crypto.randomUUID()
   sessionStorage.setItem('oauth-state', state)
-  navigateTo(`/admin/settings/payments/stripe-connect?state=${state}`)
+  navigateTo(`/admin/settings/payments/connect/stripe?state=${state}`)
 }
 
 function confirmDisconnect() {

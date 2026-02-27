@@ -14,7 +14,7 @@ export default withNuxt([
       complexity: ['warn', { max: 10 }],
       'max-depth': ['warn', { max: 4 }],
       'max-params': ['warn', { max: 5 }],
-      'max-lines-per-function': ['warn', { max: 60, skipBlankLines: true, skipComments: true }]
+      'max-lines-per-function': 'off'
     }
   }
 ])

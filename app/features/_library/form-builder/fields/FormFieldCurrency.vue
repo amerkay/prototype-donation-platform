@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, toValue, type HTMLAttributes, type ComputedRef } from 'vue'
+import { computed, inject, toValue, type ComputedRef } from 'vue'
 
 import {
   InputGroup,
@@ -21,7 +21,7 @@ import FormFieldWrapper from '~/features/_library/form-builder/internal/FormFiel
 import { cn } from '@/lib/utils'
 
 interface Props extends FieldProps<number | string | null, CurrencyFieldDef> {
-  class?: HTMLAttributes['class']
+  class?: string
 }
 
 const props = defineProps<Props>()
