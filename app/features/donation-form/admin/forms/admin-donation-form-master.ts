@@ -89,7 +89,7 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
       },
       cta: {
         label: 'Edit currency settings',
-        to: '/admin/settings/currency#currencyMultipliers'
+        to: '/admin/settings/currency#currencies.currencyTabs.multipliers'
       }
     })
 

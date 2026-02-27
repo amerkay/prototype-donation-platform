@@ -53,6 +53,104 @@ export function resolveFieldRules(
   return typeof rules === 'function' ? rules(fieldContext) : rules
 }
 
+function validateFieldGroup(
+  fieldDef: FieldDef,
+  fieldValue: unknown,
+  fullPath: string,
+  fieldContext: FieldContext,
+  errors: Map<string, string>
+): void {
+  if (!('fields' in fieldDef) || !fieldDef.fields) return
+  const nestedValues = (fieldValue as Record<string, unknown>) || {}
+  const nestedContext = buildNestedContext(fieldContext, nestedValues)
+  validateFields(fieldDef.fields, nestedValues, fullPath, nestedContext, errors)
+  // Validate field-group level rules (e.g., "at least one option must be enabled")
+  const groupRules = resolveFieldRules(fieldDef.rules, nestedContext)
+  if (groupRules) {
+    const message = validateWithZod(groupRules, fieldValue)
+    if (message) errors.set(fullPath, message)
+  }
+}
+
+function validateTabs(
+  fieldDef: FieldDef,
+  fieldValue: unknown,
+  fullPath: string,
+  fieldContext: FieldContext,
+  errors: Map<string, string>
+): void {
+  if (!('tabs' in fieldDef)) return
+  const tabsValue = (fieldValue as Record<string, unknown>) || {}
+  for (const tab of fieldDef.tabs) {
+    const tabValues = (tabsValue[tab.value] as Record<string, unknown>) || {}
+    const tabContext = buildNestedContext(fieldContext, tabValues)
+    validateFields(tab.fields, tabValues, `${fullPath}.${tab.value}`, tabContext, errors)
+  }
+  // Validate tabs-level rules
+  const tabsContext = buildNestedContext(fieldContext, tabsValue)
+  const tabsRules = resolveFieldRules(fieldDef.rules, tabsContext)
+  if (tabsRules) {
+    const message = validateWithZod(tabsRules, fieldValue)
+    if (message) errors.set(fullPath, message)
+  }
+}
+
+function validateArray(
+  fieldDef: FieldDef,
+  fieldValue: unknown,
+  fullPath: string,
+  fieldContext: FieldContext,
+  errors: Map<string, string>
+): void {
+  if (!('itemField' in fieldDef)) return
+  const arrayValue = Array.isArray(fieldValue) ? fieldValue : []
+
+  for (let i = 0; i < arrayValue.length; i++) {
+    const itemValue = arrayValue[i]
+    // Resolve itemField metadata - pass the ITEM's values, not parent context values
+    // This ensures dynamic field builders like buildConditionItemField receive correct data
+    const itemDef =
+      typeof fieldDef.itemField === 'function'
+        ? fieldDef.itemField(itemValue as Record<string, unknown>, {
+            index: i,
+            items: arrayValue as Record<string, unknown>[],
+            root: fieldContext.root
+          })
+        : fieldDef.itemField
+    const itemContext =
+      typeof itemValue === 'object' && itemValue !== null
+        ? buildNestedContext(fieldContext, itemValue as Record<string, unknown>)
+        : fieldContext
+    validateField(itemDef, itemValue, `${fullPath}[${i}]`, itemContext, errors)
+  }
+
+  // Validate array-level rules
+  const arrayRules = resolveFieldRules(fieldDef.rules, fieldContext)
+  if (arrayRules) {
+    const message = validateWithZod(arrayRules, fieldValue)
+    if (message) errors.set(fullPath, message)
+  }
+}
+
+function validateScalarField(
+  fieldDef: FieldDef,
+  fieldValue: unknown,
+  fullPath: string,
+  fieldContext: FieldContext,
+  errors: Map<string, string>
+): void {
+  const rules = resolveFieldRules(fieldDef.rules, fieldContext)
+  if (!rules) return
+  // Use defaultValue if field value is undefined/null and defaultValue exists
+  // This ensures fields with default values don't show validation errors before mounting
+  let valueToValidate = fieldValue
+  if ((fieldValue === undefined || fieldValue === null) && 'defaultValue' in fieldDef) {
+    valueToValidate = fieldDef.defaultValue
+  }
+  const message = validateWithZod(rules, valueToValidate)
+  if (message) errors.set(fullPath, message)
+}
+
 /**
  * Recursively validate a single field and collect errors into the errors map.
  * Handles field-groups, tabs, and arrays by recursing appropriately.
@@ -70,87 +168,16 @@ export function validateField(
   fieldContext: FieldContext,
   errors: Map<string, string>
 ): void {
-  // Field-group: recurse into nested fields + validate container-level rules
   if (fieldDef.type === 'field-group' && 'fields' in fieldDef && fieldDef.fields) {
-    const nestedValues = (fieldValue as Record<string, unknown>) || {}
-    const nestedContext = buildNestedContext(fieldContext, nestedValues)
-    validateFields(fieldDef.fields, nestedValues, fullPath, nestedContext, errors)
-
-    // Validate field-group level rules (e.g., "at least one option must be enabled")
-    const groupRules = resolveFieldRules(fieldDef.rules, nestedContext)
-    if (groupRules) {
-      const message = validateWithZod(groupRules, fieldValue)
-      if (message) errors.set(fullPath, message)
-    }
-    return
+    return validateFieldGroup(fieldDef, fieldValue, fullPath, fieldContext, errors)
   }
-
-  // Tabs: recurse into each tab's fields + validate container-level rules
   if (fieldDef.type === 'tabs' && 'tabs' in fieldDef) {
-    const tabsValue = (fieldValue as Record<string, unknown>) || {}
-    for (const tab of fieldDef.tabs) {
-      const tabValues = (tabsValue[tab.value] as Record<string, unknown>) || {}
-      const tabContext = buildNestedContext(fieldContext, tabValues)
-      validateFields(tab.fields, tabValues, `${fullPath}.${tab.value}`, tabContext, errors)
-    }
-
-    // Validate tabs-level rules
-    const tabsContext = buildNestedContext(fieldContext, tabsValue)
-    const tabsRules = resolveFieldRules(fieldDef.rules, tabsContext)
-    if (tabsRules) {
-      const message = validateWithZod(tabsRules, fieldValue)
-      if (message) errors.set(fullPath, message)
-    }
-    return
+    return validateTabs(fieldDef, fieldValue, fullPath, fieldContext, errors)
   }
-
-  // Arrays: validate each item + array itself
   if (fieldDef.type === 'array' && 'itemField' in fieldDef) {
-    const arrayValue = Array.isArray(fieldValue) ? fieldValue : []
-
-    for (let i = 0; i < arrayValue.length; i++) {
-      const itemValue = arrayValue[i]
-
-      // Resolve itemField metadata - pass the ITEM's values, not parent context values
-      // This ensures dynamic field builders like buildConditionItemField receive correct data
-      const itemDef =
-        typeof fieldDef.itemField === 'function'
-          ? fieldDef.itemField(itemValue as Record<string, unknown>, {
-              index: i,
-              items: arrayValue as Record<string, unknown>[],
-              root: fieldContext.root
-            })
-          : fieldDef.itemField
-
-      const itemContext =
-        typeof itemValue === 'object' && itemValue !== null
-          ? buildNestedContext(fieldContext, itemValue as Record<string, unknown>)
-          : fieldContext
-
-      validateField(itemDef, itemValue, `${fullPath}[${i}]`, itemContext, errors)
-    }
-
-    // Validate array-level rules
-    const arrayRules = resolveFieldRules(fieldDef.rules, fieldContext)
-    if (arrayRules) {
-      const message = validateWithZod(arrayRules, fieldValue)
-      if (message) errors.set(fullPath, message)
-    }
-    return
+    return validateArray(fieldDef, fieldValue, fullPath, fieldContext, errors)
   }
-
-  // Scalar field: validate rules directly
-  const rules = resolveFieldRules(fieldDef.rules, fieldContext)
-  if (rules) {
-    // Use defaultValue if field value is undefined/null and defaultValue exists
-    // This ensures fields with default values don't show validation errors before mounting
-    let valueToValidate = fieldValue
-    if ((fieldValue === undefined || fieldValue === null) && 'defaultValue' in fieldDef) {
-      valueToValidate = fieldDef.defaultValue
-    }
-    const message = validateWithZod(rules, valueToValidate)
-    if (message) errors.set(fullPath, message)
-  }
+  validateScalarField(fieldDef, fieldValue, fullPath, fieldContext, errors)
 }
 
 /**

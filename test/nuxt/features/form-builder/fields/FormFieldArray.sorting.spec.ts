@@ -441,17 +441,84 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
     assertNoDuplicateIds(wrapper)
   })
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const createDynamicFieldConfig = (values: Record<string, unknown>): any => {
+    const type = values.type as string | undefined
+    const label = (values.label as string) || 'Unnamed Field'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const fields: Record<string, any> = {
+      type: {
+        type: 'select',
+        name: '',
+        label: 'Type',
+        options: [
+          { value: 'text', label: 'Text' },
+          { value: 'slider', label: 'Slider' },
+          { value: 'select', label: 'Select' }
+        ],
+        rules: z.enum(['text', 'slider', 'select'])
+      },
+      label: { type: 'text', name: '', label: 'Label', rules: z.string().min(1) }
+    }
+    if (type === 'slider') {
+      fields.min = { type: 'number', name: '', label: 'Min', rules: z.number() }
+      fields.max = { type: 'number', name: '', label: 'Max', rules: z.number() }
+      fields.step = { type: 'number', name: '', label: 'Step', rules: z.number() }
+      fields.prefix = { type: 'text', name: '', label: 'Prefix', rules: z.string().optional() }
+      fields.suffix = { type: 'text', name: '', label: 'Suffix', rules: z.string().optional() }
+    } else if (type === 'select') {
+      fields.options = {
+        type: 'array',
+        name: '',
+        label: 'Options',
+        itemField: { type: 'text', name: '', label: 'Option', rules: z.string() },
+        rules: z.array(z.string()).optional()
+      }
+    } else if (type === 'text') {
+      fields.placeholder = {
+        type: 'text',
+        name: '',
+        label: 'Placeholder',
+        rules: z.string().optional()
+      }
+      fields.maxLength = {
+        type: 'number',
+        name: '',
+        label: 'Max Length',
+        rules: z.number().optional()
+      }
+    }
+    return {
+      type: 'field-group',
+      name: '',
+      label: `${type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Field'}: ${label}`,
+      collapsible: true,
+      collapsibleDefaultOpen: false,
+      fields
+    }
+  }
+
+  function verifyItemNoLeakage(
+    item: Record<string, unknown> | undefined,
+    expectedType: string,
+    presentKeys: Record<string, unknown>,
+    absentKeys: string[]
+  ) {
+    expect(item?.type).toBe(expectedType)
+    for (const [key, val] of Object.entries(presentKeys)) {
+      expect(item?.[key]).toEqual(val)
+    }
+    for (const key of absentKeys) {
+      expect(item?.[key]).toBeUndefined()
+    }
+  }
+
   it('maintains nested field-group data integrity when reordering items with different configurations', async () => {
     /**
      * CRITICAL TEST: Custom Fields Use Case
      *
      * Tests the real-world scenario from custom-fields where each array item
      * can have a completely different nested field configuration based on type.
-     *
-     * Example: Array of form field configurations where:
-     * - Item 0: Slider field (has min, max, step, prefix, suffix)
-     * - Item 1: Select field (has options array)
-     * - Item 2: Text field (has placeholder, maxLength)
      *
      * When reordering, we must ensure:
      * 1. Slider config stays with slider item (no mixing with select options)
@@ -460,7 +527,6 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
      * 4. vee-validate paths resolve correctly after reorder
      */
 
-    // Define initial data matching custom fields structure
     const initialData = [
       {
         type: 'slider',
@@ -476,116 +542,11 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
         label: 'Payment Method',
         options: ['Credit Card', 'PayPal', 'Bank Transfer']
       },
-      {
-        type: 'text',
-        label: 'Full Name',
-        placeholder: 'Enter your name',
-        maxLength: 100
-      }
+      { type: 'text', label: 'Full Name', placeholder: 'Enter your name', maxLength: 100 }
     ]
 
-    // Create itemField function that returns different configs based on type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const itemFieldFn = (values: Record<string, unknown>): any => {
-      const type = values.type as string | undefined
-      const label = (values.label as string) || 'Unnamed Field'
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fields: Record<string, any> = {
-        type: {
-          type: 'select',
-          name: '',
-          label: 'Type',
-          options: [
-            { value: 'text', label: 'Text' },
-            { value: 'slider', label: 'Slider' },
-            { value: 'select', label: 'Select' }
-          ],
-          rules: z.enum(['text', 'slider', 'select'])
-        },
-        label: {
-          type: 'text',
-          name: '',
-          label: 'Label',
-          rules: z.string().min(1)
-        }
-      }
-
-      // Add type-specific fields
-      if (type === 'slider') {
-        fields.min = {
-          type: 'number',
-          name: '',
-          label: 'Min',
-          rules: z.number()
-        }
-        fields.max = {
-          type: 'number',
-          name: '',
-          label: 'Max',
-          rules: z.number()
-        }
-        fields.step = {
-          type: 'number',
-          name: '',
-          label: 'Step',
-          rules: z.number()
-        }
-        fields.prefix = {
-          type: 'text',
-          name: '',
-          label: 'Prefix',
-          rules: z.string().optional()
-        }
-        fields.suffix = {
-          type: 'text',
-          name: '',
-          label: 'Suffix',
-          rules: z.string().optional()
-        }
-      } else if (type === 'select') {
-        fields.options = {
-          type: 'array',
-          name: '',
-          label: 'Options',
-          itemField: {
-            type: 'text',
-            name: '',
-            label: 'Option',
-            rules: z.string()
-          },
-          rules: z.array(z.string()).optional()
-        }
-      } else if (type === 'text') {
-        fields.placeholder = {
-          type: 'text',
-          name: '',
-          label: 'Placeholder',
-          rules: z.string().optional()
-        }
-        fields.maxLength = {
-          type: 'number',
-          name: '',
-          label: 'Max Length',
-          rules: z.number().optional()
-        }
-      }
-
-      return {
-        type: 'field-group',
-        name: '',
-        label: `${type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Field'}: ${label}`,
-        collapsible: true,
-        collapsibleDefaultOpen: false,
-        fields
-      }
-    }
-
     const { wrapper, formValues } = await mountFormFieldArray(
-      {
-        sortable: true,
-        itemField: itemFieldFn
-      },
+      { sortable: true, itemField: createDynamicFieldConfig },
       initialData
     )
 
@@ -593,8 +554,6 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
     let values = getSectionValues(formValues)
     let arrayValues = values?.testArray as Array<Record<string, unknown>>
     expect(arrayValues).toHaveLength(3)
-
-    // Verify slider config (item 0)
     expect(arrayValues[0]).toEqual({
       type: 'slider',
       label: 'Donation Amount',
@@ -604,15 +563,11 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
       prefix: '$',
       suffix: ' USD'
     })
-
-    // Verify select config (item 1)
     expect(arrayValues[1]).toEqual({
       type: 'select',
       label: 'Payment Method',
       options: ['Credit Card', 'PayPal', 'Bank Transfer']
     })
-
-    // Verify text config (item 2)
     expect(arrayValues[2]).toEqual({
       type: 'text',
       label: 'Full Name',
@@ -624,43 +579,28 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
     // Expected order: [select, text, slider]
     await simulateDragAndDrop(wrapper, 0, 2)
 
-    // CRITICAL: Verify all nested data moved correctly
     values = getSectionValues(formValues)
     arrayValues = values?.testArray as Array<Record<string, unknown>>
     expect(arrayValues).toHaveLength(3)
 
-    // Item 0 should now be select (was item 1)
-    expect(arrayValues[0]?.type).toBe('select')
-    expect(arrayValues[0]?.label).toBe('Payment Method')
-    expect(arrayValues[0]?.options).toEqual(['Credit Card', 'PayPal', 'Bank Transfer'])
-    // CRITICAL: Verify NO slider fields leaked into select
-    expect(arrayValues[0]?.min).toBeUndefined()
-    expect(arrayValues[0]?.max).toBeUndefined()
-    expect(arrayValues[0]?.step).toBeUndefined()
-
-    // Item 1 should now be text (was item 2)
-    expect(arrayValues[1]?.type).toBe('text')
-    expect(arrayValues[1]?.label).toBe('Full Name')
-    expect(arrayValues[1]?.placeholder).toBe('Enter your name')
-    expect(arrayValues[1]?.maxLength).toBe(100)
-    // CRITICAL: Verify NO select options leaked into text
-    expect(arrayValues[1]?.options).toBeUndefined()
-    // CRITICAL: Verify NO slider fields leaked into text
-    expect(arrayValues[1]?.min).toBeUndefined()
-
-    // Item 2 should now be slider (was item 0)
-    expect(arrayValues[2]?.type).toBe('slider')
-    expect(arrayValues[2]?.label).toBe('Donation Amount')
-    expect(arrayValues[2]?.min).toBe(10)
-    expect(arrayValues[2]?.max).toBe(1000)
-    expect(arrayValues[2]?.step).toBe(5)
-    expect(arrayValues[2]?.prefix).toBe('$')
-    expect(arrayValues[2]?.suffix).toBe(' USD')
-    // CRITICAL: Verify NO select options leaked into slider
-    expect(arrayValues[2]?.options).toBeUndefined()
-    // CRITICAL: Verify NO text fields leaked into slider
-    expect(arrayValues[2]?.placeholder).toBeUndefined()
-    expect(arrayValues[2]?.maxLength).toBeUndefined()
+    verifyItemNoLeakage(
+      arrayValues[0],
+      'select',
+      { label: 'Payment Method', options: ['Credit Card', 'PayPal', 'Bank Transfer'] },
+      ['min', 'max', 'step']
+    )
+    verifyItemNoLeakage(
+      arrayValues[1],
+      'text',
+      { label: 'Full Name', placeholder: 'Enter your name', maxLength: 100 },
+      ['options', 'min']
+    )
+    verifyItemNoLeakage(
+      arrayValues[2],
+      'slider',
+      { label: 'Donation Amount', min: 10, max: 1000, step: 5, prefix: '$', suffix: ' USD' },
+      ['options', 'placeholder', 'maxLength']
+    )
 
     // SIMULATE DRAG: Move text (index 1) to start (index 0)
     // Expected order: [text, select, slider]
@@ -669,20 +609,24 @@ describe('FormFieldArray - Complex Reordering Scenarios', () => {
     values = getSectionValues(formValues)
     arrayValues = values?.testArray as Array<Record<string, unknown>>
 
-    // Verify final order and data integrity
-    expect(arrayValues[0]?.type).toBe('text')
-    expect(arrayValues[0]?.label).toBe('Full Name')
-    expect(arrayValues[0]?.placeholder).toBe('Enter your name')
-    expect(arrayValues[0]?.maxLength).toBe(100)
-
-    expect(arrayValues[1]?.type).toBe('select')
-    expect(arrayValues[1]?.label).toBe('Payment Method')
-    expect(arrayValues[1]?.options).toEqual(['Credit Card', 'PayPal', 'Bank Transfer'])
-
-    expect(arrayValues[2]?.type).toBe('slider')
-    expect(arrayValues[2]?.label).toBe('Donation Amount')
-    expect(arrayValues[2]?.min).toBe(10)
-    expect(arrayValues[2]?.max).toBe(1000)
+    verifyItemNoLeakage(
+      arrayValues[0],
+      'text',
+      { label: 'Full Name', placeholder: 'Enter your name', maxLength: 100 },
+      []
+    )
+    verifyItemNoLeakage(
+      arrayValues[1],
+      'select',
+      { label: 'Payment Method', options: ['Credit Card', 'PayPal', 'Bank Transfer'] },
+      []
+    )
+    verifyItemNoLeakage(
+      arrayValues[2],
+      'slider',
+      { label: 'Donation Amount', min: 10, max: 1000 },
+      []
+    )
 
     assertNoDuplicateIds(wrapper)
   })

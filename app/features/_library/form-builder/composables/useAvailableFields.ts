@@ -29,6 +29,44 @@ export interface AvailableField {
   group: string
 }
 
+const CONTAINER_TYPES = new Set(['field-group', 'tabs', 'array', 'card', 'alert'])
+
+function mapFieldTypeToConditionType(
+  fieldDef: FieldDef
+): 'string' | 'number' | 'boolean' | 'array' {
+  if (fieldDef.type === 'number' || fieldDef.type === 'currency' || fieldDef.type === 'slider') {
+    return 'number'
+  }
+  if (fieldDef.type === 'toggle') return 'boolean'
+  if (fieldDef.type === 'checkbox' && 'options' in fieldDef && Array.isArray(fieldDef.options)) {
+    return 'array'
+  }
+  return 'string'
+}
+
+function normalizeFieldOptions(fieldDef: FieldDef): ContextFieldOption[] | undefined {
+  if (!('options' in fieldDef) || !Array.isArray(fieldDef.options)) return undefined
+  return fieldDef.options.map((opt) =>
+    typeof opt === 'string' ? { value: opt, label: opt } : { value: opt.value, label: opt.label }
+  )
+}
+
+function extractContainerChildren(
+  fieldDef: FieldDef,
+  fullKey: string,
+  ctx: FieldContext
+): AvailableField[] {
+  if (fieldDef.type === 'field-group' && 'fields' in fieldDef && fieldDef.fields) {
+    return extractFormFields(fieldDef.fields, fullKey, ctx)
+  }
+  if (fieldDef.type === 'tabs' && 'tabs' in fieldDef) {
+    return fieldDef.tabs.flatMap((tab) =>
+      extractFormFields(tab.fields, `${fullKey}.${tab.value}`, ctx)
+    )
+  }
+  return []
+}
+
 /**
  * Recursively extract fields from form definition
  * Flattens nested field-groups and tabs with dot-notation paths
@@ -43,64 +81,16 @@ function extractFormFields(
   for (const [key, fieldDef] of Object.entries(fields)) {
     const fullKey = prefix ? `${prefix}.${key}` : key
 
-    // Skip container/display fields (field-group, tabs, array, card, alert)
-    if (
-      fieldDef.type === 'field-group' ||
-      fieldDef.type === 'tabs' ||
-      fieldDef.type === 'array' ||
-      fieldDef.type === 'card' ||
-      fieldDef.type === 'alert'
-    ) {
-      // Recursively extract children for field-group
-      if (fieldDef.type === 'field-group' && 'fields' in fieldDef && fieldDef.fields) {
-        result.push(...extractFormFields(fieldDef.fields, fullKey, ctx))
-      }
-
-      // Recursively extract children for tabs
-      if (fieldDef.type === 'tabs' && 'tabs' in fieldDef) {
-        for (const tab of fieldDef.tabs) {
-          const tabKey = `${fullKey}.${tab.value}`
-          result.push(...extractFormFields(tab.fields, tabKey, ctx))
-        }
-      }
-
+    if (CONTAINER_TYPES.has(fieldDef.type)) {
+      result.push(...extractContainerChildren(fieldDef, fullKey, ctx))
       continue
-    }
-
-    // Extract label (resolve dynamic functions)
-    const label = resolveText(fieldDef.label, ctx) || key
-
-    // Map form field type to condition type
-    let conditionType: 'string' | 'number' | 'boolean' | 'array' = 'string'
-    if (fieldDef.type === 'number' || fieldDef.type === 'currency' || fieldDef.type === 'slider') {
-      conditionType = 'number'
-    } else if (fieldDef.type === 'toggle') {
-      conditionType = 'boolean'
-    } else if (
-      fieldDef.type === 'checkbox' &&
-      'options' in fieldDef &&
-      Array.isArray(fieldDef.options)
-    ) {
-      // Multi-select checkbox
-      conditionType = 'array'
-    }
-
-    // Extract options for select/radio/checkbox fields
-    let options: ContextFieldOption[] | undefined
-    if ('options' in fieldDef && Array.isArray(fieldDef.options)) {
-      options = fieldDef.options.map((opt) => {
-        if (typeof opt === 'string') {
-          return { value: opt, label: opt }
-        }
-        return { value: opt.value, label: opt.label }
-      })
     }
 
     result.push({
       key: fullKey,
-      label,
-      type: conditionType,
-      options,
+      label: resolveText(fieldDef.label, ctx) || key,
+      type: mapFieldTypeToConditionType(fieldDef),
+      options: normalizeFieldOptions(fieldDef),
       group: 'Form Fields'
     })
   }

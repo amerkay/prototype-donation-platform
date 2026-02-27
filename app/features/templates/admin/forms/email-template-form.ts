@@ -39,7 +39,7 @@ export const useEmailTemplateForm = defineForm('emailTemplate', () => {
       'The email signature is configured in Charity Settings and shared across all emails.',
     cta: {
       label: 'Edit signature',
-      to: '/admin/settings/charity#charitySettings.currencyTabs.emailSignature',
+      to: '/admin/settings/charity#charitySettings.emailSignature',
       inline: true
     }
   })
@@ -49,7 +49,7 @@ export const useEmailTemplateForm = defineForm('emailTemplate', () => {
     description: 'The sender email address is configured in Charity Settings.',
     cta: {
       label: 'Edit sender email',
-      to: '/admin/settings/charity#charitySettings.currencyTabs.supportEmail',
+      to: '/admin/settings/charity#charitySettings.supportEmail',
       inline: true
     }
   })

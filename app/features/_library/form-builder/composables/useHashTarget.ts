@@ -96,6 +96,32 @@ export function canResolveHashTarget(target: string): boolean {
 
 // --- Hash Resolution ---
 
+function matchesHash(key: string, fullPath: string, hash: string, nameOnly: boolean): boolean {
+  return nameOnly ? key === hash : fullPath === hash
+}
+
+function resolveInTabs(
+  field: FieldDef,
+  fullPath: string,
+  hash: string,
+  nameOnly: boolean
+): string | null {
+  if (!('tabs' in field)) return null
+  for (const tab of field.tabs) {
+    const tabPath = `${fullPath}.${tab.value}`
+    if (matchesHash(tab.value, tabPath, hash, nameOnly)) return tabPath
+    const found = resolveHashToFieldPath(hash, tab.fields, tabPath, nameOnly)
+    if (found) return found
+  }
+  return null
+}
+
+function matchesArrayIndexPath(hash: string, fullPath: string): string | null {
+  if (!hash.startsWith(`${fullPath}.`)) return null
+  const indexSegment = hash.slice(fullPath.length + 1).split('.')[0]
+  return indexSegment && /^\d+$/.test(indexSegment) ? hash : null
+}
+
 /**
  * Walk field tree to resolve URL hash to full field path.
  * Two-pass: exact path match first, then field-name-only fallback.
@@ -109,28 +135,22 @@ function resolveHashToFieldPath(
   for (const [key, field] of Object.entries(fields)) {
     const fullPath = prefix ? `${prefix}.${key}` : key
 
-    if (nameOnly ? key === hash : fullPath === hash) return fullPath
+    if (matchesHash(key, fullPath, hash, nameOnly)) return fullPath
 
     if (field.type === 'field-group' && 'fields' in field && field.fields) {
       const found = resolveHashToFieldPath(hash, field.fields, fullPath, nameOnly)
       if (found) return found
     }
 
-    if (field.type === 'tabs' && 'tabs' in field) {
-      for (const tab of field.tabs) {
-        const tabPath = `${fullPath}.${tab.value}`
-        if (nameOnly ? tab.value === hash : tabPath === hash) return tabPath
-        const found = resolveHashToFieldPath(hash, tab.fields, tabPath, nameOnly)
-        if (found) return found
-      }
+    if (field.type === 'tabs') {
+      const found = resolveInTabs(field, fullPath, hash, nameOnly)
+      if (found) return found
     }
 
     // Support dot-notation array index paths: e.g., costs.0, costs.1
     if (field.type === 'array') {
-      if (hash.startsWith(`${fullPath}.`)) {
-        const indexSegment = hash.slice(fullPath.length + 1).split('.')[0]
-        if (indexSegment && /^\d+$/.test(indexSegment)) return hash
-      }
+      const found = matchesArrayIndexPath(hash, fullPath)
+      if (found) return found
     }
   }
   return null

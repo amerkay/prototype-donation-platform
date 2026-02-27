@@ -13,7 +13,6 @@ pnpm format:fix; pnpm lint:fix  # Fix formatting + lint (defer till end)
 pnpm analyze:dead              # Unused files, exports, dependencies (Knip)
 pnpm analyze:dupes             # Copy-paste duplicate code blocks (jscpd)
 pnpm analyze:long [N] [lines]  # Top N files by line count, flagged over threshold (default: 30, 300)
-pnpm analyze:complexity        # Cyclomatic complexity + nesting warnings (ESLint)
 pnpm analyze:circular          # Circular imports between composables/stores (madge, excludes ui/)
 pnpm dlx shadcn-vue@latest add [component]  # Add shadcn-vue component
 python3 scripts/extract-prompts.py [N]     # Last N sessions' prompts & Q&A (default: 3, --all for all)

@@ -167,112 +167,129 @@ export function useEmailPreviewContext(
     formatMoney(latestSubscription.value?.totalAmount, latestSubscription.value?.currency || 'USD')
   )
 
-  const sampleVariablesByCategory = computed<Record<EmailTemplateCategory, Record<string, string>>>(
-    () => ({
-      ecard: {
-        FIRST_NAME: latestDonor.value?.firstName || 'Friend',
-        LAST_NAME: latestDonor.value?.lastName || 'Supporter',
-        DONOR_NAME: latestDonor.value?.fullName || 'A generous supporter',
-        AMOUNT: donationAmount.value || '$0.00',
-        DATE:
-          formatDate(latestSucceededDonation.value?.createdAt) ||
-          formatDate(new Date().toISOString()),
-        HONOREE_NAME: 'Someone Special'
-      },
-      donor: {
-        FIRST_NAME: latestDonor.value?.firstName || 'Friend',
-        LAST_NAME: latestDonor.value?.lastName || 'Supporter',
-        AMOUNT: donationAmount.value || subscriptionAmount.value || '$0.00',
-        DATE:
-          formatDate(latestSucceededDonation.value?.createdAt) ||
-          formatDate(new Date().toISOString()),
-        CAMPAIGN_NAME:
-          latestCampaign.value?.name ||
-          latestSucceededDonation.value?.campaignName ||
-          'Our Mission Fund',
-        FREQUENCY:
-          formatFrequency(
-            latestSubscription.value?.frequency ||
-              latestSucceededDonation.value?.lineItems[0]?.frequency
-          ) || 'monthly',
-        NEXT_BILLING_DATE: formatDate(latestSubscription.value?.nextBillingDate) || ''
-      }
-    })
-  )
+  const sharedDate = () =>
+    formatDate(latestSucceededDonation.value?.createdAt) || formatDate(new Date().toISOString())
 
-  const cards = computed<EmailCardsPayload>(() => ({
-    IMPACT_PRODUCT_CARD: {
-      name: latestProduct.value?.name || 'Direct support for our mission',
-      description:
-        latestProduct.value?.description ||
-        latestCampaign.value?.crowdfunding?.shortDescription ||
-        'Your support helps deliver practical services and long-term impact.',
-      imageUrl: impactCardImageUrl.value
-    },
-    DONATION_SUMMARY_CARD: latestSucceededDonation.value
-      ? {
-          amount: donationAmount.value,
-          date: formatDate(latestSucceededDonation.value.createdAt),
-          frequency: formatFrequency(latestSucceededDonation.value.lineItems[0]?.frequency),
-          campaignName: latestSucceededDonation.value.campaignName,
-          reference: latestSucceededDonation.value.id.toUpperCase()
-        }
-      : undefined,
-    SUBSCRIPTION_STATUS_CARD: latestSubscription.value
-      ? {
-          status: titleCase(latestSubscription.value.status),
-          amount: subscriptionAmount.value,
-          frequency: formatFrequency(latestSubscription.value.frequency),
-          nextBillingDate: formatDate(latestSubscription.value.nextBillingDate),
-          effectiveDate: formatDate(latestSubscription.value.currentPeriodStart)
-        }
-      : undefined,
-    ORDER_BREAKDOWN_CARD: {
-      items:
-        orderLineItems.value.length > 0
-          ? orderLineItems.value
-          : [{ name: 'General donation', quantity: 1, amount: donationAmount.value }],
-      total: donationAmount.value || subscriptionAmount.value,
-      frequency: formatFrequency(
+  const buildEcardVars = () => ({
+    FIRST_NAME: latestDonor.value?.firstName || 'Friend',
+    LAST_NAME: latestDonor.value?.lastName || 'Supporter',
+    DONOR_NAME: latestDonor.value?.fullName || 'A generous supporter',
+    AMOUNT: donationAmount.value || '$0.00',
+    DATE: sharedDate(),
+    HONOREE_NAME: 'Someone Special'
+  })
+
+  const buildDonorEmailVars = () => ({
+    FIRST_NAME: latestDonor.value?.firstName || 'Friend',
+    LAST_NAME: latestDonor.value?.lastName || 'Supporter',
+    AMOUNT: donationAmount.value || subscriptionAmount.value || '$0.00',
+    DATE: sharedDate(),
+    CAMPAIGN_NAME:
+      latestCampaign.value?.name ||
+      latestSucceededDonation.value?.campaignName ||
+      'Our Mission Fund',
+    FREQUENCY:
+      formatFrequency(
         latestSubscription.value?.frequency ||
           latestSucceededDonation.value?.lineItems[0]?.frequency
-      )
-    },
-    PAYMENT_RETRY_CARD: {
-      amount: formatMoney(
-        latestFailedDonation.value?.totalAmount,
-        latestFailedDonation.value?.currency || latestSubscription.value?.currency || 'USD'
-      ),
-      failedDate: formatDate(latestFailedDonation.value?.createdAt),
-      retryDate: formatDate(latestSubscription.value?.nextBillingDate),
-      actionText: 'Please update your payment details so your ongoing support can continue.',
-      portalUrl: donorPortalUrl.value,
-      portalLinkText: 'Open donor portal',
-      buttonBackgroundColor: buttonBackgroundColor.value
-    },
-    PAYMENT_METHOD_CARD: {
-      methodLabel: formatPaymentMethod(
-        latestSubscription.value?.paymentMethod || latestSucceededDonation.value?.paymentMethod
-      ),
-      expiry: latestSubscription.value?.nextBillingDate
-        ? `Next bill ${formatDate(latestSubscription.value.nextBillingDate)}`
-        : undefined,
-      billingContact: latestDonor.value?.email || charityStore.emailSenderAddress,
-      actionText: 'Update payment details any time in your donor portal.',
-      portalUrl: donorPortalUrl.value,
-      portalLinkText: 'Open donor portal',
-      buttonBackgroundColor: buttonBackgroundColor.value
-    },
-    CAMPAIGN_CONTEXT_CARD: {
-      campaignName: latestCampaign.value?.name || latestSucceededDonation.value?.campaignName,
-      description:
-        latestCampaign.value?.crowdfunding?.shortDescription ||
-        latestCampaign.value?.crowdfunding?.title ||
-        'Your support helps us continue practical services and long-term impact.',
-      imageUrl: campaignCardImageUrl.value,
-      campaignUrl: campaignCardUrl.value,
-      buttonBackgroundColor: buttonBackgroundColor.value
+      ) || 'monthly',
+    NEXT_BILLING_DATE: formatDate(latestSubscription.value?.nextBillingDate) || ''
+  })
+
+  const sampleVariablesByCategory = computed<Record<EmailTemplateCategory, Record<string, string>>>(
+    () => ({ ecard: buildEcardVars(), donor: buildDonorEmailVars() })
+  )
+
+  const buildImpactProductCard = () => ({
+    name: latestProduct.value?.name || 'Direct support for our mission',
+    description:
+      latestProduct.value?.description ||
+      latestCampaign.value?.crowdfunding?.shortDescription ||
+      'Your support helps deliver practical services and long-term impact.',
+    imageUrl: impactCardImageUrl.value
+  })
+
+  const buildDonationSummaryCard = () => {
+    const txn = latestSucceededDonation.value
+    if (!txn) return undefined
+    return {
+      amount: donationAmount.value,
+      date: formatDate(txn.createdAt),
+      frequency: formatFrequency(txn.lineItems[0]?.frequency),
+      campaignName: txn.campaignName,
+      reference: txn.id.toUpperCase()
     }
+  }
+
+  const buildSubscriptionStatusCard = () => {
+    const sub = latestSubscription.value
+    if (!sub) return undefined
+    return {
+      status: titleCase(sub.status),
+      amount: subscriptionAmount.value,
+      frequency: formatFrequency(sub.frequency),
+      nextBillingDate: formatDate(sub.nextBillingDate),
+      effectiveDate: formatDate(sub.currentPeriodStart)
+    }
+  }
+
+  const buildOrderBreakdownCard = () => ({
+    items:
+      orderLineItems.value.length > 0
+        ? orderLineItems.value
+        : [{ name: 'General donation', quantity: 1, amount: donationAmount.value }],
+    total: donationAmount.value || subscriptionAmount.value,
+    frequency: formatFrequency(
+      latestSubscription.value?.frequency || latestSucceededDonation.value?.lineItems[0]?.frequency
+    )
+  })
+
+  const buildPaymentRetryCard = () => ({
+    amount: formatMoney(
+      latestFailedDonation.value?.totalAmount,
+      latestFailedDonation.value?.currency || latestSubscription.value?.currency || 'USD'
+    ),
+    failedDate: formatDate(latestFailedDonation.value?.createdAt),
+    retryDate: formatDate(latestSubscription.value?.nextBillingDate),
+    actionText: 'Please update your payment details so your ongoing support can continue.',
+    portalUrl: donorPortalUrl.value,
+    portalLinkText: 'Open donor portal',
+    buttonBackgroundColor: buttonBackgroundColor.value
+  })
+
+  const buildPaymentMethodCard = () => ({
+    methodLabel: formatPaymentMethod(
+      latestSubscription.value?.paymentMethod || latestSucceededDonation.value?.paymentMethod
+    ),
+    expiry: latestSubscription.value?.nextBillingDate
+      ? `Next bill ${formatDate(latestSubscription.value.nextBillingDate)}`
+      : undefined,
+    billingContact: latestDonor.value?.email || charityStore.emailSenderAddress,
+    actionText: 'Update payment details any time in your donor portal.',
+    portalUrl: donorPortalUrl.value,
+    portalLinkText: 'Open donor portal',
+    buttonBackgroundColor: buttonBackgroundColor.value
+  })
+
+  const buildCampaignContextCard = () => ({
+    campaignName: latestCampaign.value?.name || latestSucceededDonation.value?.campaignName,
+    description:
+      latestCampaign.value?.crowdfunding?.shortDescription ||
+      latestCampaign.value?.crowdfunding?.title ||
+      'Your support helps us continue practical services and long-term impact.',
+    imageUrl: campaignCardImageUrl.value,
+    campaignUrl: campaignCardUrl.value,
+    buttonBackgroundColor: buttonBackgroundColor.value
+  })
+
+  const cards = computed<EmailCardsPayload>(() => ({
+    IMPACT_PRODUCT_CARD: buildImpactProductCard(),
+    DONATION_SUMMARY_CARD: buildDonationSummaryCard(),
+    SUBSCRIPTION_STATUS_CARD: buildSubscriptionStatusCard(),
+    ORDER_BREAKDOWN_CARD: buildOrderBreakdownCard(),
+    PAYMENT_RETRY_CARD: buildPaymentRetryCard(),
+    PAYMENT_METHOD_CARD: buildPaymentMethodCard(),
+    CAMPAIGN_CONTEXT_CARD: buildCampaignContextCard()
   }))
 
   return {

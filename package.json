@@ -23,7 +23,6 @@
     "analyze:dead": "knip",
     "analyze:dupes": "jscpd",
     "analyze:long": "tsx scripts/long-files.ts",
-    "analyze:complexity": "eslint app/",
     "analyze:circular": "madge --circular --ts-config tsconfig.json --extensions ts --exclude '^components/ui/' app/"
   },
   "jscpd": {
@@ -90,7 +89,6 @@
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.94",
     "@nuxt/test-utils": "^4.0.0",
-    "@types/madge": "^5.0.3",
     "@types/nodemailer": "^7.0.11",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
