@@ -76,7 +76,6 @@ const hasSocialSharing = computed(() => {
 <template>
   <div v-if="campaign.crowdfunding" class="@container">
     <div class="bg-background rounded-xl border overflow-hidden">
-
       <!-- ============================================================
            WITH COVER PHOTO: true two-column layout on desktop
            Left col:  image (top) + story + charity
