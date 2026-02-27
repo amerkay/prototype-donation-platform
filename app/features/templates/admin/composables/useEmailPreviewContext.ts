@@ -117,7 +117,7 @@ export function useEmailPreviewContext(
     fallbackImageUrl(
       latestProduct.value?.image,
       latestCampaign.value?.crowdfunding?.coverPhoto,
-      '/imgs/orangutan-images/baimah.jpg',
+      undefined,
       siteUrl
     )
   )
@@ -125,7 +125,7 @@ export function useEmailPreviewContext(
     fallbackImageUrl(
       latestCampaign.value?.crowdfunding?.coverPhoto,
       latestProduct.value?.image,
-      '/imgs/orangutan-images/baimah.jpg',
+      undefined,
       siteUrl
     )
   )

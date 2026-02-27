@@ -13,11 +13,10 @@ const props = defineProps<Props>()
 const shortDescription = computed(() =>
   props.description.length > 100 ? `${props.description.slice(0, 100)}...` : props.description
 )
-const resolvedImageUrl = computed(() => props.imageUrl || '/imgs/orangutan-images/baimah.jpg')
 </script>
 
 <template>
-  <EmailCardMediaRow :image-url="resolvedImageUrl" :image-alt="name">
+  <EmailCardMediaRow :image-url="imageUrl" :image-alt="name">
     <div style="font-weight: 600">
       {{ name }}
     </div>
