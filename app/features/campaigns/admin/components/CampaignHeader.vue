@@ -88,6 +88,7 @@ const parentLocked = computed(() => {
 })
 
 const isTerminal = computed(() => store.status === 'completed' || store.status === 'ended')
+const isDraft = computed(() => store.status === 'draft')
 
 const canEnd = computed(
   () => props.portalMode && !isTerminal.value && !parentLocked.value && store.status === 'active'
@@ -149,7 +150,16 @@ const disabledOptions = computed(() => {
           :max-length="75"
           @update:model-value="emit('update:name', $event)"
         />
-        <div class="ml-auto shrink-0 sm:hidden">
+        <div class="ml-auto shrink-0 sm:hidden flex items-center gap-2">
+          <Button
+            v-if="!portalMode && isDraft"
+            size="sm"
+            :disabled="!canActivate"
+            :title="!canActivate ? 'Requires valid settings and at least one form' : undefined"
+            @click="emit('update:status', 'active' as CampaignStatus)"
+          >
+            Publish
+          </Button>
           <AdminDeleteButton
             v-if="!portalMode"
             :entity-name="store.name"
@@ -239,6 +249,15 @@ const disabledOptions = computed(() => {
       >
         <ICON_RESTORE v-if="store.isArchived" class="h-4 w-4" />
         <ICON_ARCHIVE v-else class="h-4 w-4" />
+      </Button>
+      <Button
+        v-if="!portalMode && isDraft"
+        size="sm"
+        :disabled="!canActivate"
+        :title="!canActivate ? 'Requires valid settings and at least one form' : undefined"
+        @click="emit('update:status', 'active' as CampaignStatus)"
+      >
+        Publish
       </Button>
       <AdminDeleteButton
         v-if="!portalMode"

@@ -20,7 +20,7 @@ withDefaults(
       </div>
       <div
         v-if="$slots.right"
-        class="shrink-0"
+        class="shrink-0 flex items-center gap-2"
         :class="{
           'hidden sm:block': hideRightOnMobile,
           'w-full sm:w-auto': !hideRightOnMobile,

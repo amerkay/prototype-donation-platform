@@ -13,6 +13,7 @@ import { getCampaignTypeBreadcrumb } from '~/features/campaigns/shared/composabl
 import { openAccordionId } from '~/features/campaigns/admin/forms/campaign-config-master'
 import { useEditState } from '~/features/_shared/composables/useEditState'
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
+import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { toast } from 'vue-sonner'
 
 definePageMeta({
@@ -30,6 +31,7 @@ const {
   unarchiveCampaign
 } = useCampaigns()
 const store = useCampaignConfigStore()
+const charityStore = useCharitySettingsStore()
 
 // Get campaign data
 const campaign = computed(() => getCampaignById(route.params.id as string))
@@ -185,6 +187,16 @@ async function handleStatusUpdate(newStatus: CampaignStatus) {
   try {
     await updateCampaignStatus(store.id, newStatus)
     patchBaseline({ status: newStatus })
+    if (newStatus === 'active' && previousStatus === 'draft') {
+      const orgSlug = charityStore.slug?.trim()
+      const liveUrl = orgSlug ? `/${orgSlug}/${store.id}` : null
+      toast.success('Campaign published', {
+        description: 'Your campaign is now live.',
+        ...(liveUrl && {
+          action: { label: 'View live campaign', onClick: () => window.open(liveUrl, '_blank') }
+        })
+      })
+    }
     if (clearedEndDate !== null) {
       store.markDirty()
       toast.info('End date cleared', {
