@@ -28,7 +28,7 @@ const sortedDonations = computed(() => {
 <template>
   <div class="space-y-3">
     <!-- Header with view toggle -->
-    <div class="flex items-center justify-between ml-3">
+    <div class="flex items-center justify-between">
       <h3
         class="font-semibold text-sm @3xl:text-base uppercase tracking-wide text-muted-foreground"
       >
@@ -57,7 +57,7 @@ const sortedDonations = computed(() => {
     </div>
 
     <!-- Donations list -->
-    <div class="space-y-2">
+    <div class="space-y-2 -mx-2 @3xl:-mx-3">
       <DonationItem
         v-for="donation in sortedDonations"
         :key="donation.id"

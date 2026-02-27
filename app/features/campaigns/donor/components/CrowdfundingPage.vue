@@ -5,19 +5,18 @@ import {
   useBrandingCssVars,
   BRANDING_STYLE_KEY
 } from '~/features/settings/admin/composables/useBrandingCssVars'
-import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useSocialSharingSettingsStore } from '~/features/settings/admin/stores/socialSharingSettings'
 import { useCampaignShare } from '~/features/campaigns/shared/composables/useCampaignShare'
 import ShareDialog from './ShareDialog.vue'
 import DonateDialog from './DonateDialog.vue'
-import SocialShareButtons from './SocialShareButtons.vue'
-import DonationsList from './DonationsList.vue'
 import CampaignProgress from './CampaignProgress.vue'
 import CampaignActions from './CampaignActions.vue'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import CampaignStorySection from './CampaignStorySection.vue'
+import CharityInfoCard from './CharityInfoCard.vue'
+import DonationsPanel from './DonationsPanel.vue'
+import CampaignShareSection from './CampaignShareSection.vue'
 import { Separator } from '@/components/ui/separator'
-import { ICON_DONATION, ICON_CHEVRON_DOWN, ICON_CHEVRON_UP, ICON_EXTERNAL_LINK } from '~/lib/icons'
+import { ICON_DONATION } from '~/lib/icons'
 
 const props = defineProps<{
   campaign: Campaign
@@ -30,16 +29,6 @@ const props = defineProps<{
 const { brandingStyle } = useBrandingCssVars()
 provide(BRANDING_STYLE_KEY, brandingStyle)
 
-const charityStore = useCharitySettingsStore()
-const charityInfo = computed(() => ({
-  name: charityStore.name,
-  registrationNumber: charityStore.registrationNumber,
-  phone: charityStore.phone,
-  email: charityStore.emailSenderAddress,
-  website: charityStore.website,
-  description: charityStore.description,
-  address: charityStore.formattedAddress
-}))
 const orgSharing = useSocialSharingSettingsStore()
 const { campaignUrl } = useCampaignShare(computed(() => props.campaign.id))
 
@@ -60,33 +49,21 @@ const effectiveSharing = computed<(SocialSharingSettings & { copyLink: boolean }
 const showShareDialog = ref(false)
 const showDonateDialog = ref(false)
 
-// Story expand/collapse state
-const isStoryExpanded = ref(false)
-const storyPreviewLength = 350
-
-// Computed for story preview
-const storyPreview = computed(() => {
-  const story = props.campaign.crowdfunding?.story || ''
-  if (story.length <= storyPreviewLength) return story
-  return story.slice(0, storyPreviewLength).trim() + '...'
-})
-
-const hasMoreStory = computed(() => {
-  return (props.campaign.crowdfunding?.story?.length || 0) > storyPreviewLength
-})
-
 // Get limited donations for display
 const displayedDonations = computed(() => {
   const limit = props.campaign.crowdfunding?.numberOfDonationsToShow || 5
   return props.campaign.recentDonations.slice(0, limit)
 })
 
-// Handle social share click
+const totalDonations = computed(() => props.campaign.stats?.totalDonations ?? 0)
+
 const handleSocialShare = (platform: string) => {
   if (platform === 'copyLink') {
     showShareDialog.value = true
   }
 }
+
+const hasImage = computed(() => !!props.campaign.crowdfunding?.coverPhoto)
 
 // Check if any social sharing is enabled (respects both org + campaign settings)
 const hasSocialSharing = computed(() => {
@@ -99,190 +76,246 @@ const hasSocialSharing = computed(() => {
 <template>
   <div v-if="campaign.crowdfunding" class="@container">
     <div class="bg-background rounded-xl border overflow-hidden">
-      <!-- Hero Section: Cover Photo + Campaign Info -->
-      <div class="@3xl:flex @3xl:mb-8">
-        <!-- Cover Photo - reaches top and left edges on desktop -->
+
+      <!-- ============================================================
+           WITH COVER PHOTO: true two-column layout on desktop
+           Left col:  image (top) + story + charity
+           Right col: campaign info + donations
+           Mobile DOM order: mobile-image → info → donations → story → charity → social
+           ============================================================ -->
+      <template v-if="hasImage">
+        <!-- Mobile-only image (hidden on desktop — desktop image lives inside the left column) -->
         <div
           data-field="crowdfunding.coverPhoto"
-          class="relative aspect-video @3xl:aspect-auto @3xl:w-3/5 bg-muted overflow-hidden"
+          class="relative aspect-video @3xl:hidden bg-muted overflow-hidden"
         >
           <img
-            v-if="campaign.crowdfunding.coverPhoto"
             :src="campaign.crowdfunding.coverPhoto"
             :alt="campaign.crowdfunding.title"
-            class="w-full h-full object-cover @3xl:min-h-80"
+            class="w-full h-full object-cover"
           />
-          <div
-            v-else
-            class="w-full h-full flex items-center justify-center bg-linear-to-br from-primary/20 to-primary/5 @3xl:min-h-80"
-          >
-            <ICON_DONATION class="w-12 h-12 @3xl:w-20 @3xl:h-20 text-primary/40" />
+        </div>
+
+        <!-- Desktop two-column flex -->
+        <div class="@3xl:flex @3xl:items-start">
+          <!-- ── Right column (DOM first → mobile renders it right after the mobile image) ── -->
+          <div class="@3xl:order-2 @3xl:w-2/5 @3xl:flex @3xl:flex-col">
+            <!-- Campaign info -->
+            <div class="px-4 pt-4 pb-3 space-y-3 @3xl:p-8 @3xl:space-y-4">
+              <h2
+                data-field="crowdfunding.title"
+                class="text-xl @3xl:text-2xl font-bold leading-tight"
+              >
+                {{ campaign.crowdfunding.title }}
+              </h2>
+              <p
+                data-field="crowdfunding.shortDescription"
+                class="text-sm @3xl:text-base text-muted-foreground leading-relaxed"
+              >
+                {{ campaign.crowdfunding.shortDescription }}
+              </p>
+              <CampaignProgress
+                v-if="
+                  campaign.crowdfunding.showProgressBar &&
+                  campaign.crowdfunding.goalAmount &&
+                  campaign.stats
+                "
+                data-field="crowdfunding.goalAmount"
+                :stats="campaign.stats"
+                :goal-amount="campaign.crowdfunding.goalAmount"
+                :end-date="campaign.crowdfunding.endDate"
+              />
+              <CampaignActions
+                :show-share="hasSocialSharing"
+                @donate="showDonateDialog = true"
+                @share="showShareDialog = true"
+              />
+            </div>
+
+            <!-- Donations -->
+            <div
+              v-if="campaign.crowdfunding.showRecentDonations"
+              class="px-4 pb-4 @3xl:px-8 @3xl:pb-8"
+              data-field="crowdfunding.showRecentDonations"
+            >
+              <Separator class="@3xl:hidden my-3" />
+              <DonationsPanel
+                :donations="displayedDonations"
+                :total-count="totalDonations"
+                :default-view="campaign.crowdfunding.defaultDonationsView"
+                :campaign-currency="campaign.crowdfunding?.currency"
+              />
+            </div>
+          </div>
+
+          <!-- ── Left column (DOM second, visually first on desktop) ── -->
+          <div class="@3xl:order-1 @3xl:flex-1 @3xl:flex @3xl:flex-col">
+            <!-- Desktop-only image (hidden on mobile — mobile uses the image above) -->
+            <div
+              data-field="crowdfunding.coverPhoto"
+              class="hidden @3xl:flex @3xl:flex-1 bg-muted overflow-hidden"
+            >
+              <img
+                :src="campaign.crowdfunding.coverPhoto"
+                :alt="campaign.crowdfunding.title"
+                class="w-full object-cover @3xl:min-h-80"
+              />
+            </div>
+
+            <!-- Story -->
+            <div
+              v-if="campaign.crowdfunding.story"
+              data-field="crowdfunding.story"
+              class="px-4 pb-4 @3xl:px-8 @3xl:py-6 space-y-3"
+            >
+              <Separator class="@3xl:hidden my-3" />
+              <CampaignStorySection :story="campaign.crowdfunding.story" />
+            </div>
+
+            <!-- About the Charity -->
+            <div class="px-4 pb-4 @3xl:px-8 @3xl:pb-8">
+              <Separator class="@3xl:hidden my-3" />
+              <CharityInfoCard :targets="targets" />
+            </div>
           </div>
         </div>
 
-        <!-- Campaign Info -->
+        <!-- Social Sharing — full width below both columns -->
         <div
-          class="p-4 space-y-3 @3xl:w-2/5 @3xl:p-8 @3xl:pl-12 @3xl:flex @3xl:flex-col @3xl:justify-center @3xl:space-y-4"
+          v-if="hasSocialSharing"
+          class="space-y-3 px-4 pb-4 @3xl:px-8 @3xl:pb-8 @3xl:pt-4"
+          data-field="crowdfunding.enableSocialSharing"
         >
-          <h2 data-field="crowdfunding.title" class="text-xl @3xl:text-2xl font-bold leading-tight">
-            {{ campaign.crowdfunding.title }}
-          </h2>
-          <p
-            data-field="crowdfunding.shortDescription"
-            class="text-sm @3xl:text-base text-muted-foreground leading-relaxed"
-          >
-            {{ campaign.crowdfunding.shortDescription }}
-          </p>
-          <CampaignProgress
-            v-if="
-              campaign.crowdfunding.showProgressBar &&
-              campaign.crowdfunding.goalAmount &&
-              campaign.stats
-            "
-            data-field="crowdfunding.goalAmount"
-            :stats="campaign.stats"
-            :goal-amount="campaign.crowdfunding.goalAmount"
-            :end-date="campaign.crowdfunding.endDate"
-          />
-          <CampaignActions
-            :show-share="hasSocialSharing"
-            @donate="showDonateDialog = true"
-            @share="showShareDialog = true"
+          <Separator class="@3xl:hidden my-3" />
+          <CampaignShareSection
+            :settings="effectiveSharing"
+            :campaign-url="campaignUrl"
+            :campaign-title="campaign.crowdfunding?.title || campaign.name"
+            :short-description="campaign.crowdfunding?.shortDescription"
+            @share="handleSocialShare"
           />
         </div>
-      </div>
+      </template>
 
-      <!-- Main Content -->
-      <div class="px-4 pb-4 @3xl:p-8 @3xl:pt-0">
-        <Separator class="@3xl:hidden mb-4" />
-
-        <!-- Two-column layout for desktop -->
-        <div class="@3xl:flex">
-          <!-- Left Column: Story, Charity, Social -->
-          <div class="flex-1 space-y-4">
-            <!-- Story Section -->
-            <div data-field="crowdfunding.story" class="space-y-3">
-              <h3 class="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
-                Our Story
-              </h3>
-              <div class="text-sm leading-relaxed whitespace-pre-line">
-                {{ isStoryExpanded ? campaign.crowdfunding.story : storyPreview }}
+      <!-- ============================================================
+           WITHOUT COVER PHOTO: centered constrained layout on desktop
+           Hero: title+desc left, progress+actions right
+           Main: story+charity left, donations right
+           ============================================================ -->
+      <template v-else>
+        <div class="@3xl:max-w-4xl @3xl:mx-auto">
+          <!-- Hero Section: title, description, progress, actions -->
+          <div class="px-4 pt-4 pb-3 space-y-3 @3xl:p-8 @3xl:space-y-4">
+            <div class="space-y-3 @3xl:flex @3xl:gap-8 @3xl:items-start @3xl:space-y-0">
+              <!-- Left: title + description -->
+              <div class="space-y-3 @3xl:flex-1">
+                <h2
+                  data-field="crowdfunding.title"
+                  class="text-xl @3xl:text-2xl font-bold leading-tight"
+                >
+                  {{ campaign.crowdfunding.title }}
+                </h2>
+                <p
+                  data-field="crowdfunding.shortDescription"
+                  class="text-sm @3xl:text-base text-muted-foreground leading-relaxed"
+                >
+                  {{ campaign.crowdfunding.shortDescription }}
+                </p>
               </div>
-              <Button
-                v-if="hasMoreStory"
-                variant="outline"
-                size="sm"
-                class="text-primary"
-                @click="isStoryExpanded = !isStoryExpanded"
-              >
-                {{ isStoryExpanded ? 'Read less' : 'Read more' }}
-                <ICON_CHEVRON_UP v-if="isStoryExpanded" class="w-4 h-4 ml-1" />
-                <ICON_CHEVRON_DOWN v-else class="w-4 h-4 ml-1" />
-              </Button>
-            </div>
 
-            <Separator class="@3xl:hidden" />
-
-            <!-- Recent Donations (Mobile/Tablet only - moves to right column on desktop) -->
-            <DonationsList
-              v-if="campaign.crowdfunding.showRecentDonations"
-              data-field="crowdfunding.showRecentDonations"
-              class="@3xl:hidden"
-              :donations="displayedDonations"
-              :total-count="campaign.stats?.totalDonations || 0"
-              :default-view="campaign.crowdfunding.defaultDonationsView"
-              :campaign-currency="campaign.crowdfunding?.currency"
-            />
-
-            <Separator class="@3xl:hidden" />
-
-            <!-- About the Charity -->
-            <Card data-field="crowdfunding.charityNotice" class="gap-2">
-              <CardHeader class="pb-0 px-5">
-                <h3 class="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
-                  About the Charity
-                </h3>
-              </CardHeader>
-              <CardContent class="px-5 space-y-2">
-                <div
-                  :data-field="
-                    [targets?.charityName, targets?.phone, targets?.email]
-                      .filter(Boolean)
-                      .join(',') || undefined
+              <!-- Right: progress + actions -->
+              <div class="space-y-3 @3xl:w-2/5 @3xl:shrink-0">
+                <CampaignProgress
+                  v-if="
+                    campaign.crowdfunding.showProgressBar &&
+                    campaign.crowdfunding.goalAmount &&
+                    campaign.stats
                   "
-                >
-                  <h4 class="font-semibold text-sm">{{ charityInfo.name }}</h4>
-                  <p class="text-xs text-muted-foreground">
-                    Registered Charity: {{ charityInfo.registrationNumber }}
-                  </p>
-                </div>
-                <p
-                  v-if="charityInfo.address"
-                  class="text-xs text-muted-foreground"
-                  :data-field="targets?.charityAddress"
-                >
-                  {{ charityInfo.address }}
-                </p>
-                <p
-                  class="text-sm text-muted-foreground line-clamp-3"
-                  :data-field="targets?.description"
-                >
-                  {{ charityInfo.description }}
-                </p>
-                <a
-                  v-if="charityInfo.website"
-                  :href="charityInfo.website"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                  :data-field="targets?.website"
-                >
-                  {{ charityInfo.website.replace(/^https?:\/\//, '') }}
-                  <ICON_EXTERNAL_LINK class="w-3 h-3" />
-                </a>
-              </CardContent>
-            </Card>
-
-            <!-- Social Sharing (respects campaign + org-level settings) -->
-            <div
-              v-if="hasSocialSharing"
-              class="space-y-3 pb-4 @3xl:pb-0"
-              data-field="crowdfunding.enableSocialSharing"
-            >
-              <h3
-                class="font-semibold text-sm uppercase tracking-wide text-muted-foreground text-center"
-              >
-                Share this campaign
-              </h3>
-              <div class="flex justify-center gap-2 flex-wrap">
-                <SocialShareButtons
-                  :settings="effectiveSharing"
-                  :campaign-url="campaignUrl"
-                  :campaign-title="campaign.crowdfunding?.title || campaign.name"
-                  :short-description="campaign.crowdfunding?.shortDescription"
-                  size="icon"
-                  @share="handleSocialShare"
+                  data-field="crowdfunding.goalAmount"
+                  :stats="campaign.stats"
+                  :goal-amount="campaign.crowdfunding.goalAmount"
+                  :end-date="campaign.crowdfunding.endDate"
+                />
+                <CampaignActions
+                  :show-share="hasSocialSharing"
+                  @donate="showDonateDialog = true"
+                  @share="showShareDialog = true"
                 />
               </div>
             </div>
           </div>
 
-          <!-- Right Column: Recent Donations (Desktop only) -->
-          <aside
-            v-if="campaign.crowdfunding.showRecentDonations"
-            class="hidden @3xl:block @3xl:w-2/5 @3xl:pl-10 shrink-0"
-          >
-            <div class="sticky top-6">
-              <DonationsList
+          <!-- Main Content -->
+          <div class="px-4 pb-4 @3xl:p-8 @3xl:pt-0">
+            <Separator class="@3xl:hidden my-3" />
+
+            <!-- Two-column layout for desktop -->
+            <div class="@3xl:flex @3xl:gap-8">
+              <!-- Left Column: Story + mobile Donations + Charity -->
+              <div class="flex-1 space-y-4">
+                <div
+                  v-if="campaign.crowdfunding.story"
+                  data-field="crowdfunding.story"
+                  class="space-y-3"
+                >
+                  <CampaignStorySection :story="campaign.crowdfunding.story" />
+                </div>
+
+                <Separator v-if="campaign.crowdfunding.story" class="@3xl:hidden" />
+
+                <!-- Recent Donations: mobile/tablet only -->
+                <div
+                  v-if="campaign.crowdfunding.showRecentDonations"
+                  class="@3xl:hidden"
+                  data-field="crowdfunding.showRecentDonations"
+                >
+                  <DonationsPanel
+                    :donations="displayedDonations"
+                    :total-count="totalDonations"
+                    :default-view="campaign.crowdfunding.defaultDonationsView"
+                    :campaign-currency="campaign.crowdfunding?.currency"
+                    compact
+                  />
+                </div>
+
+                <Separator v-if="campaign.crowdfunding.showRecentDonations" class="@3xl:hidden" />
+
+                <CharityInfoCard :targets="targets" />
+              </div>
+
+              <!-- Right Column: Recent Donations (desktop only) -->
+              <aside
+                v-if="campaign.crowdfunding.showRecentDonations"
+                class="hidden @3xl:block @3xl:w-2/5 shrink-0"
                 data-field="crowdfunding.showRecentDonations"
-                :donations="displayedDonations"
-                :total-count="campaign.stats?.totalDonations || 0"
-                :default-view="campaign.crowdfunding.defaultDonationsView"
+              >
+                <div class="sticky top-6">
+                  <DonationsPanel
+                    :donations="displayedDonations"
+                    :total-count="totalDonations"
+                    :default-view="campaign.crowdfunding.defaultDonationsView"
+                  />
+                </div>
+              </aside>
+            </div>
+
+            <!-- Social Sharing — full width, outside two-column layout -->
+            <div
+              v-if="hasSocialSharing"
+              class="space-y-3 pt-4 pb-4 @3xl:pt-6 @3xl:pb-0"
+              data-field="crowdfunding.enableSocialSharing"
+            >
+              <CampaignShareSection
+                :settings="effectiveSharing"
+                :campaign-url="campaignUrl"
+                :campaign-title="campaign.crowdfunding?.title || campaign.name"
+                :short-description="campaign.crowdfunding?.shortDescription"
+                @share="handleSocialShare"
               />
             </div>
-          </aside>
+          </div>
         </div>
-      </div>
+      </template>
 
       <!-- Dialogs -->
       <ShareDialog v-model:open="showShareDialog" :campaign="campaign" />
