@@ -5,26 +5,26 @@ paths:
 
 # Donation Form Feature
 
-Multi-step donation wizard with 13 sub-features.
+## To add a new donation form sub-feature
 
-## Key files
+1. Create a directory under `features/` with `admin/` and `donor/` subdirectories
+2. Admin config: use `useAdminConfigForm()` for store-to-form binding with the edit store at `shared/stores/formConfig.ts`
+3. Donor state: read/write through the donor store at `donor/stores/donationForm.ts` (manages step, amounts, frequencies, donor info)
+4. Existing sub-features for reference: contact-consent, cover-costs, custom-fields, donor-info, entry-fields, gift-aid, impact-boost, impact-cart, product, product-selector, shipping-notice, terms, tribute
 
-- **Admin config store:** `shared/stores/formConfig.ts`
-- **Donor state store:** `donor/stores/donationForm.ts` (step, amounts, frequencies, donor info)
-- **Types:** `shared/types.ts` — FormType (`donation`|`registration`), FormSettings, FormTypeLabels
-- **Form type labels:** `shared/composables/useFormTypeLabels.ts` — per-type terminology overrides
-- **Wizard entry:** `donor/DonationFlowWizard.vue`
-- **Reusable forms:** `shared/forms/address-form.ts` (country-specific), `shared/forms/optional-message-field.ts`
+## To modify the donor checkout flow
 
-## Sub-features (in `features/`)
+1. The wizard entry point is `donor/DonationFlowWizard.vue`
+2. Form type (`donation` | `registration`) determines available steps — see `shared/types.ts` for `FormType`, `FormSettings`, `FormTypeLabels`
+3. Per-type terminology overrides live in `shared/composables/useFormTypeLabels.ts`
 
-contact-consent, cover-costs, custom-fields, donor-info, entry-fields, gift-aid, impact-boost, impact-cart, product, product-selector, shipping-notice, terms, tribute
+## To work with shared form definitions
 
-Each sub-feature follows the `admin/` + `donor/` split.
+- Address form (country-specific): `shared/forms/address-form.ts`
+- Optional message field: `shared/forms/optional-message-field.ts`
 
-## Patterns
+## To work with currency and cart
 
-- Admin forms use `useAdminConfigForm()` for store-to-form binding
+- Currency composables: `shared/composables/useCurrency.ts` and `useDonationCurrencies.ts`
+- Impact cart (manages items by frequency): `features/impact-cart/donor/stores/impactCart.ts`
 - Donor composables flatten store data for custom field context evaluation
-- Currency: `shared/composables/useCurrency.ts` and `useDonationCurrencies.ts`
-- Impact cart store (`features/impact-cart/donor/stores/impactCart.ts`) manages cart items by frequency

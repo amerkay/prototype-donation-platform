@@ -37,9 +37,9 @@ Prompt the agent to audit all `.claude/rules/*.md` files against the current cod
 
 **For each existing rules file:**
 
-1. **Verify key files still exist** — remove stale entries, add new important files.
+1. **Verify referenced files still exist** — remove stale paths, add new important files.
 2. **Verify counts and lists** — sub-feature counts, field type counts, component lists.
-3. **Verify patterns** — confirm documented patterns still match actual code.
+3. **Verify procedures** — confirm documented steps still match actual code patterns.
 4. **Keep it short** — scannable in 10 seconds. Cut anything obvious from reading code.
 
 **Check for missing rules files:** Every feature directory under `app/features/` must be checked for a corresponding `.claude/rules/<feature>.md`. Create one if ALL true:
@@ -50,7 +50,7 @@ Prompt the agent to audit all `.claude/rules/*.md` files against the current cod
 
 Do NOT create rules files for simple, self-documenting features.
 
-**Rules file format:**
+**Rules file format — procedural style:**
 
 ```markdown
 ---
@@ -61,15 +61,18 @@ paths:
 
 # Feature Name
 
-One-line purpose.
+## To [common task in this feature]
 
-## Key files
+1. Start by [first step] — `relative/path.ts`
+2. Then [second step]
+3. [Third step if needed]
 
-- **Role:** `relative/path.ts` — what it does (one line)
+## To [another common task]
 
-## Patterns
-
-- Bullet points of non-obvious conventions, gotchas, or architectural decisions
+1. [Step with file reference]
+2. [Step with constraint or gotcha]
 ```
 
-**Rules for rules:** NEVER duplicate CLAUDE.md content. NEVER document obvious things. DO document key file roles, non-obvious patterns, gotchas, limitations. Keep each file under 40 lines of content (excluding frontmatter). If a feature was removed, delete its rules file. Always create in `.claude/rules/` — never elsewhere.
+Structure rules as "To [do X]" procedures with numbered steps. File paths appear in context of the steps, not as standalone listings. Hard constraints (import rules, sacred rules) go at the top as bold declarations.
+
+**Rules for rules:** NEVER duplicate CLAUDE.md content. NEVER document obvious things. DO document procedures, constraints, and gotchas. Keep each file under 40 lines of content (excluding frontmatter). If a feature was removed, delete its rules file. Always create in `.claude/rules/` — never elsewhere.

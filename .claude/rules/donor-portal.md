@@ -6,16 +6,17 @@ paths:
 
 # Donor Portal Feature
 
-Donor-facing dashboard for viewing donation history, managing subscriptions, and tracking fundraisers.
+## To add a new portal page or section
 
-## Key files
+1. Main data comes from `composables/useDonorPortal.ts` — provides transactions, subscriptions, fundraisers, and computed stats
+2. Use portal-specific detail components: `PortalDetailRow`, `PortalDonorCard` (no stats/link), `PortalLineItemsCard`
+3. Types in `types.ts`: `Transaction`, `PaymentMethod`, `TransactionLineItem`, `GiftAidDeclaration`, `ConsentRecord`
 
-- **Main composable:** `composables/useDonorPortal.ts` — transactions, subscriptions, fundraisers, computed stats
-- **Eligibility:** `composables/useActionEligibility.ts` — gates pause/cancel/refund based on org settings (duration, donor value)
-- **Types:** `types.ts` — Transaction, PaymentMethod, TransactionLineItem, GiftAidDeclaration, ConsentRecord
-- **Detail components:** `PortalDetailRow.vue`, `PortalDonorCard.vue` (no stats/link), `PortalLineItemsCard.vue`
+## To add a portal action (refund, pause, cancel, etc.)
 
-## Patterns
-
-- **Shared action composables**: `useRefundAction` (in `donations/shared/`) and `useSubscriptionActions` + `SubscriptionActionDialogs` (in `subscriptions/shared/`) reused by both portal and admin
-- **Portal wraps with eligibility**: Portal pages gate actions via `useActionEligibility`; admin pages use same composables without eligibility checks
+1. Reuse shared action composables — do NOT duplicate logic:
+   - Refunds: `useRefundAction` from `donations/shared/`
+   - Subscription actions: `useSubscriptionActions` + `SubscriptionActionDialogs` from `subscriptions/shared/`
+2. Gate the action with eligibility: wrap calls using `useActionEligibility` from `composables/useActionEligibility.ts`
+   - This gates pause/cancel/refund based on org settings (duration, donor value)
+3. Admin pages use the same shared composables but skip eligibility checks — the portal is the only place that enforces eligibility

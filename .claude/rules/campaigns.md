@@ -8,26 +8,33 @@ paths:
 
 # Campaigns Feature
 
-Campaign CRUD with sub-features extracted into `features/` directories.
+## To modify campaign capabilities or add a campaign type
 
-## Key files
+1. Edit `shared/utils/campaignCapabilities.ts` — single source of truth for `getCampaignCapabilities(type)` (18 flags) and `getFormType(type)`
+2. Current types: `standard`, `p2p`, `p2p-fundraiser`, `event`
+3. Form types: campaigns use either `donation` or `registration` forms — determined by `getFormType(campaignType)`
 
-- **Composables:** `shared/composables/useCampaigns.ts` (CRUD), `useForm.ts` (single form ops), `useCampaignTypes.ts` (`getCampaignEditPath`), `useCampaignFormatters.ts`
-- **Store:** `shared/stores/campaignConfig.ts` (snapshot, NOT reactive to useCampaigns)
-- **Capabilities:** `shared/utils/campaignCapabilities.ts` — `getCampaignCapabilities(type)`, `getFormType(type)`
-- **Types:** `shared/types.ts` — `CampaignType`, `CampaignStatus`, `FundraiserStatus`
+## To work with campaign data
 
-## Sub-features (in `features/`)
+1. List/CRUD operations: use `shared/composables/useCampaigns.ts`
+2. Edit store: use `shared/stores/campaignConfig.ts` — this is a snapshot, NOT reactive to `useCampaigns`
+3. After calling `updateCampaign()`, always sync `configStore.fundraisers` when `configStore.id === campaign.id`
+4. For campaign routing: use `getCampaignEditPath` from `useCampaignTypes.ts`
+5. For display formatting: use `useCampaignFormatters.ts`
 
-- **crowdfunding/** — goal + progress bar, `CrowdfundingPage.vue` (preview + live), donor components
-- **matched-giving/** — match periods, `MatchPeriodsList.vue` (componentField), `useMatchedGiving.ts`
+## To work with sub-features
+
+Sub-features live in `features/` subdirectories. Each follows the standard admin/donor split:
+
+- **crowdfunding/** — goal + progress bar, `CrowdfundingPage.vue` (used for both admin preview and live donor view)
+- **matched-giving/** — match periods via `MatchPeriodsList.vue` (a `componentField`), `useMatchedGiving.ts` (provide/inject for donor-side)
 - **p2p/** — fundraiser pages, templates, onboarding wizard, `useFundraisers.ts`, `fundraiserColumns.ts`
-- **sharing/** — social share dialog, `useCampaignShare.ts`
+- **sharing/** — social share dialog via `useCampaignShare.ts`
 
-## Patterns
+## Status model
 
-- **Campaign types**: `standard`, `p2p`, `p2p-fundraiser`, `event` — capabilities determined by `getCampaignCapabilities()`
-- **Form types**: campaigns use either `donation` or `registration` forms via `getFormType(campaignType)`
-- **Status model**: Campaigns: `draft|active|completed|ended`. P2P templates: `draft|active`. Fundraisers: `active|completed|ended`.
-- **Crowdfunding page**: `features/crowdfunding/donor/components/CrowdfundingPage.vue` — both admin preview and live
-- **configStore snapshot**: `campaignConfig.fundraisers` initialized once; always sync after `updateCampaign()` when `configStore.id === campaign.id`
+- Campaigns: `draft` → `active` → `completed` | `ended`
+- P2P templates: `draft` → `active`
+- Fundraisers: `active` → `completed` | `ended`
+
+Types in `shared/types.ts`: `CampaignType`, `CampaignStatus`, `FundraiserStatus`.

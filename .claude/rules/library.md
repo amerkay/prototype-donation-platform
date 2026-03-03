@@ -5,33 +5,34 @@ paths:
 
 # Library Modules (form-builder + custom-fields)
 
-## form-builder
+**SACRED RULE**: No imports from outside `_library/` (except `@/components/ui/` and `@/lib/utils`). Keep abstractions generic — use "field", "form", "value", never "donation", "campaign", "donor".
 
-Schema-driven form framework using Composition API + vee-validate + Zod.
+## To add a new form field type
 
-- Entry point: `defineForm()` in `api/defineForm.ts`
-- Field constructors: `textField()`, `numberField()`, `selectField()`, `comboboxField()`, `arrayField()`, etc.
-- All fields support: `label`, `helpText`, `rules`, `visibleWhen`, `disabled`, `onChange`, `onVisibilityChange`
-- `FieldHelpText` component (`internal/FieldHelpText.vue`) — reusable info icon + popover, supports `#trigger` slot
-- Condition system in `conditions/` — declarative `ConditionGroup` for serializable visibility rules
-- Condition builder UI in `conditions/ui/` — shared builders for custom-fields and filter UIs
-- Filter system in `filters/` — `useFilterState(id, schema, options?)` for condition-builder-based admin filters with URL sync
-- Containers: `FormFieldArray` (repeating), `FormFieldGroup` (collapsible), `FormFieldTabs`
-- Store auto-mapping via `$storePath` metadata + `useAdminConfigForm()`
-- No Pinia stores — state managed via vee-validate + Vue Composition API
+1. Read `form-builder/README.md` first
+2. Create a field constructor function following existing patterns in `api/` (e.g., `textField()`, `numberField()`, `selectField()`)
+3. All fields must support: `label`, `helpText`, `rules`, `visibleWhen`, `disabled`, `onChange`, `onVisibilityChange`
+4. Entry point for form definitions: `defineForm()` in `api/defineForm.ts`
+5. For help text UI: use `FieldHelpText` component (`internal/FieldHelpText.vue`) — supports `#trigger` slot
+6. Containers: `FormFieldArray` (repeating), `FormFieldGroup` (collapsible), `FormFieldTabs`
+7. Store auto-mapping: use `$storePath` metadata + `useAdminConfigForm()`
+8. No Pinia stores — state is managed via vee-validate + Vue Composition API
 
-## custom-fields
+## To add a new custom field type
 
-Admin-configurable dynamic fields. Each field type exports a factory:
+1. Read `custom-fields/README.md` first
+2. Create a factory that exports three functions:
+   - `createAdminConfig()` — admin UI form definition
+   - `toComposable(config)` — converts admin config to runtime field
+   - `getDefaultValue(config)` — extracts default value
+3. Existing types for reference: text, textarea, number, slider, select, radio-group, checkbox, hidden
 
-- `createAdminConfig()` — admin UI form definition
-- `toComposable(config)` — converts admin config to runtime field
-- `getDefaultValue(config)` — extracts default value
+## To work with conditions and filters
 
-8 field type factories: text, textarea, number, slider, select, radio-group, checkbox, hidden.
+- Declarative visibility: `conditions/` — `ConditionGroup` for serializable visibility rules
+- Condition builder UI: `conditions/ui/` — shared builders for custom-fields and filter UIs
+- Filter system: `filters/` — `useFilterState(id, schema, options?)` for condition-builder-based admin filters with URL sync
 
-## Rules
+## Tests
 
-- Keep abstractions generic — use "field", "form", "value", never "donation", "campaign", "donor"
-- No imports from outside `_library/` (except `@/components/ui/` and `@/lib/utils`)
-- Tests: `test/nuxt/features/form-builder/` and `test/nuxt/features/custom-fields/`
+Located at `test/nuxt/features/form-builder/` and `test/nuxt/features/custom-fields/`.

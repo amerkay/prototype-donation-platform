@@ -5,15 +5,22 @@ paths:
 
 # Shared Infrastructure (`_shared/`)
 
-Cross-boundary code used by **both** admin and portal. 80%+ rule: if mostly one side, keep it there.
+**Import rule**: `_admin/` and `donor-portal/` may import from `_shared/`, but `_shared/` must NEVER import from feature folders (except `_library/`).
 
-## Key files
+**80% rule**: Only put code here if BOTH admin and portal import it. If mostly one side, keep it there.
 
-- **Components:** `BreadcrumbBar.vue`, `DataTable.vue` (TanStack Vue Table), `EditLayout.vue` (two-column + discard/leave dialogs)
-- **Composables:** `useEditState.ts` (save/discard/dirty/nav guard — exports `EditableStore`, `DeleteProtection`), `useEntityDataService.ts` (cross-entity lookups)
-- **Utils:** `column-builders.ts` (supports `meta.thClass` for `<th>` styling), `actionColumn.ts`, `buildCustomFieldSchema.ts`, `buildCrossEntityEvaluators.ts`
+## To add a shared component
 
-## Rules
+1. Drop the "Admin" prefix (e.g., `EditLayout` not `AdminEditLayout`)
+2. Existing shared components: `BreadcrumbBar`, `DataTable` (TanStack Vue Table), `EditLayout` (two-column + discard/leave dialogs)
 
-- **Naming:** Drop "Admin" prefix for shared components (e.g., `EditLayout` not `AdminEditLayout`)
-- **Imports flow inward:** `_admin/` and `donor-portal/` may import from `_shared/`, but `_shared/` must NEVER import from feature folders (except `_library/`)
+## To build an edit page
+
+1. Use `EditLayout` for the two-column layout with built-in discard/leave dialogs
+2. Wire up save/discard/dirty/nav guard via `useEditState` (exports `EditableStore`, `DeleteProtection`)
+
+## To use cross-entity data in filters or lookups
+
+1. Use `useEntityDataService` for cross-entity lookup maps
+2. Build filter schemas with `buildCustomFieldSchema` + `buildCrossEntityEvaluators`
+3. For table columns: use `column-builders.ts` (supports `meta.thClass` for `<th>` styling) and `actionColumn.ts`

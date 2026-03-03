@@ -5,19 +5,21 @@ paths:
 
 # Email Templates — Nuxt Email Renderer
 
-Uses `nuxt-email-renderer` (auto-imports `E*` components: `EHtml`, `EHead`, `EBody`, `EContainer`, `ESection`, `EHeading`, `EText`, `EButton`, `EStyle`, `EFont`, etc.).
+## To modify email body rendering
 
-## Structure
+1. The main template is `app/emails/DonationEmail.vue` — it renders body HTML + tokenized card slots
+2. Body HTML contains card tokens (e.g., `{{ IMPACT_PRODUCT_CARD }}`). These are parsed by `splitBodyIntoCardSegments()` in `components/cards/registry.ts`
+3. ALL body HTML must be sanitized via `sanitizeRichText()` with `profile: 'email'`
+4. Uses `nuxt-email-renderer` — auto-imports `E*` components: `EHtml`, `EHead`, `EBody`, `EContainer`, `ESection`, `EHeading`, `EText`, `EButton`, `EStyle`, `EFont`
 
-- `app/emails/DonationEmail.vue` — main template, renders body HTML + tokenized card slots
-- `app/emails/components/cards/` — 7 card components
-- `app/emails/components/cards/layouts/` — shared card layout primitives (shell, action button, info panel, media)
-- `app/emails/components/cards/registry.ts` — card component map + `splitBodyIntoCardSegments()` parser
-- `app/emails/components/cards/types.ts` — `EmailCardToken`, per-card data interfaces, `EmailCardsPayload`
+## To add a new email card
 
-## Key patterns
+1. Create the card component in `app/emails/components/cards/`
+2. Use layout primitives from `components/cards/layouts/` (shell, action button, info panel, media)
+3. Define the card's data interface in `components/cards/types.ts` (add to `EmailCardToken` and `EmailCardsPayload`)
+4. Register the component in `components/cards/registry.ts` card component map
+5. Card layouts use **inline styles and table-based layout** for email client compatibility — no Tailwind
 
-- Card tokens (`{{ IMPACT_PRODUCT_CARD }}` etc.) embedded in body HTML, resolved at render via `splitBodyIntoCardSegments()`
-- All body HTML sanitized via `sanitizeRichText()` with `profile: 'email'`
-- Card layout primitives use inline styles and table-based layout for email client compatibility — no Tailwind
-- Admin-side email template config in `app/features/templates/admin/` (store: `emailTemplate.ts`, composable: `useEmailTemplates()`)
+## To connect with admin template editing
+
+Admin-side email template config lives in `app/features/templates/admin/` (store: `emailTemplate.ts`, composable: `useEmailTemplates()`). System emails are hard-coded in `app/emails/system/templates.ts` and are NOT admin-editable.
