@@ -141,7 +141,10 @@ function buildCampaignTransactions(config: CampaignTransactionConfig): Transacti
   }
 
   const startMs = new Date(config.dateRange[0]).getTime()
-  const endMs = new Date(config.dateRange[1]).getTime()
+  // Cap end date at "now" — no future-dated transactions (a scheduled match period
+  // shouldn't have pool drawn because no transactions exist in its window yet)
+  const nowMs = Date.now()
+  const endMs = Math.min(new Date(config.dateRange[1]).getTime(), nowMs)
 
   const failRate = config.failRate ?? 0.02
   const refundRate = config.refundRate ?? 0.03
@@ -429,7 +432,7 @@ const campaignConfigs: CampaignTransactionConfig[] = [
     count: 120,
     avgAmount: 42,
     currency: 'GBP',
-    dateRange: ['2026-02-01', '2026-03-31'],
+    dateRange: ['2026-02-25', '2026-03-31'],
     products: ORANGUTAN_PRODUCTS,
     matchPeriods: [
       {
