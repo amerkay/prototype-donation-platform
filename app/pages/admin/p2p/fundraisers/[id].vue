@@ -195,6 +195,7 @@ const handlePreview = () => {
               :goal-amount="fundraiser.goal"
               :end-date="fundraiserCampaign.crowdfunding.endDate"
               :matched-giving="fundraiserCampaign.matchedGiving"
+              :campaign-status="fundraiserCampaign.status"
               hide-footer
             />
           </CardContent>

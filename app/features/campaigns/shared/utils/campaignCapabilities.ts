@@ -2,10 +2,15 @@ import type { CampaignType } from '~/features/campaigns/shared/types'
 
 // Re-exported from matched-giving sub-feature (canonical location)
 import type { DonationFrequency } from '~/features/campaigns/features/matched-giving/shared/utils/matchPeriodUtils'
-export type { DonationFrequency } from '~/features/campaigns/features/matched-giving/shared/utils/matchPeriodUtils'
+export type {
+  DonationFrequency,
+  MatchDisplayMode
+} from '~/features/campaigns/features/matched-giving/shared/utils/matchPeriodUtils'
 export {
   getPeriodStatus,
   getActivePeriod,
+  getMatchDisplayMode,
+  getDisplayPeriod,
   calculateMatch
 } from '~/features/campaigns/features/matched-giving/shared/utils/matchPeriodUtils'
 

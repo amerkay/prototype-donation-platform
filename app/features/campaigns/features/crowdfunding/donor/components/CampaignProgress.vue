@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import type { CampaignStats, MatchedGivingSettings } from '~/features/campaigns/shared/types'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
-import { getActivePeriod } from '~/features/campaigns/shared/utils/campaignCapabilities'
+import {
+  getMatchDisplayMode,
+  getDisplayPeriod
+} from '~/features/campaigns/shared/utils/campaignCapabilities'
 import { Progress } from '@/components/ui/progress'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 
@@ -10,6 +13,8 @@ const props = defineProps<{
   goalAmount: number
   endDate?: string | null
   matchedGiving?: MatchedGivingSettings
+  /** Campaign status — drives active vs historical vs hidden match display */
+  campaignStatus?: string
   /** Compact mode for admin header chip */
   compact?: boolean
   /** Hide the supporters + time remaining footer (when host shows its own stats) */
@@ -18,72 +23,91 @@ const props = defineProps<{
 
 const { formatAmount, formatTimeRemaining } = useCampaignFormatters()
 
-// Find the currently active match period
-const activePeriod = computed(() => {
-  if (!props.matchedGiving?.periods?.length) return null
-  return getActivePeriod(props.matchedGiving.periods)
+const periods = computed(() => props.matchedGiving?.periods ?? [])
+
+// Three-mode display: active (live matcher card), historical (muted summary), hidden (no card)
+const displayMode = computed(() => {
+  if (!periods.value.length) return 'hidden'
+  return getMatchDisplayMode(periods.value, props.campaignStatus)
 })
 
-const isMatched = computed(() => activePeriod.value != null)
-const multiplier = computed(() => activePeriod.value?.matchMultiplier ?? 1)
+// Best period for display: active one, or highest-drawn for historical
+const displayPeriod = computed(() => getDisplayPeriod(periods.value))
+
+const multiplier = computed(() => displayPeriod.value?.matchMultiplier ?? 1)
 
 const actualRaised = computed(() => props.stats.totalRaised)
 
 // Total matched: sum of poolDrawn across all periods (actual match funds disbursed)
-const totalPoolDrawn = computed(() =>
-  (props.matchedGiving?.periods ?? []).reduce((sum, p) => sum + p.poolDrawn, 0)
-)
+const totalPoolDrawn = computed(() => periods.value.reduce((sum, p) => sum + p.poolDrawn, 0))
 const matchedTotal = computed(() => actualRaised.value + totalPoolDrawn.value)
 
 // Progress percentage: for matched campaigns use total impact, otherwise raw raised
 const progress = computed(() => {
   if (!props.goalAmount) return 0
-  const effective = isMatched.value ? matchedTotal.value : actualRaised.value
+  const effective = displayMode.value !== 'hidden' ? matchedTotal.value : actualRaised.value
   return Math.min(Math.round((effective / props.goalAmount) * 100), 100)
 })
 
 // Pool remaining for active period
 const poolRemaining = computed(() => {
-  if (!activePeriod.value) return 0
-  return activePeriod.value.poolAmount - activePeriod.value.poolDrawn
+  if (!displayPeriod.value) return 0
+  return displayPeriod.value.poolAmount - displayPeriod.value.poolDrawn
 })
 </script>
 
 <template>
   <div v-if="!compact" class="space-y-2">
-    <!-- Matcher badge (above progress bar) — only when active period exists -->
+    <!-- Active matcher badge — live pool with remaining funds -->
     <div
-      v-if="isMatched && activePeriod?.matcherName"
+      v-if="displayMode === 'active' && displayPeriod?.matcherName"
       class="flex items-center gap-3 rounded-lg bg-primary/5 border border-primary/15 px-3 py-2.5"
     >
-      <Avatar v-if="activePeriod.matcherLogo" class="h-8 w-8 shrink-0">
-        <AvatarImage :src="activePeriod.matcherLogo" />
+      <Avatar v-if="displayPeriod.matcherLogo" class="h-8 w-8 shrink-0">
+        <AvatarImage :src="displayPeriod.matcherLogo" />
       </Avatar>
       <div class="min-w-0 flex-1">
         <p class="text-sm font-semibold leading-tight truncate">
-          Matched {{ multiplier }}x by {{ activePeriod.matcherName }}
+          Matched {{ multiplier }}x by {{ displayPeriod.matcherName }}
         </p>
         <p
-          v-if="activePeriod.displayMessage"
+          v-if="displayPeriod.displayMessage"
           class="text-xs text-muted-foreground leading-snug line-clamp-2 mt-0.5"
         >
-          {{ activePeriod.displayMessage }}
+          {{ displayPeriod.displayMessage }}
         </p>
         <p class="text-xs text-muted-foreground/80 leading-tight mt-0.5">
           <span class="font-medium text-muted-foreground">
             {{ formatAmount(poolRemaining, stats.currency, 0) }}
           </span>
-          of {{ formatAmount(activePeriod.poolAmount, stats.currency, 0) }} match remaining
+          of {{ formatAmount(displayPeriod.poolAmount, stats.currency, 0) }} match remaining
         </p>
       </div>
       <span class="ml-auto shrink-0 text-lg font-bold text-primary">{{ multiplier }}x</span>
+    </div>
+
+    <!-- Historical matcher badge — matching ended, muted summary -->
+    <div
+      v-else-if="displayMode === 'historical' && displayPeriod?.matcherName"
+      class="flex items-center gap-3 rounded-lg bg-muted/50 border border-muted px-3 py-2.5"
+    >
+      <Avatar v-if="displayPeriod.matcherLogo" class="h-8 w-8 shrink-0 opacity-70">
+        <AvatarImage :src="displayPeriod.matcherLogo" />
+      </Avatar>
+      <div class="min-w-0 flex-1">
+        <p class="text-sm font-medium leading-tight truncate text-muted-foreground">
+          Matching ended &mdash;
+          {{ formatAmount(totalPoolDrawn, stats.currency, 0) }} matched by
+          {{ displayPeriod.matcherName }}
+        </p>
+      </div>
     </div>
 
     <!-- Progress bar (single bar for both standard and matched) -->
     <Progress :model-value="progress" class="h-3" />
 
     <!-- Matched: total impact headline + breakdown -->
-    <template v-if="totalPoolDrawn > 0 || isMatched">
+    <template v-if="displayMode !== 'hidden'">
       <div class="flex justify-between items-baseline text-sm">
         <div>
           <span class="font-bold text-lg">

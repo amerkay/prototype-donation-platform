@@ -7,7 +7,10 @@ import { useFundraisers } from '~/features/campaigns/features/p2p/admin/composab
 import { useClipboard } from '@vueuse/core'
 import type { CampaignFundraiser } from '~/features/campaigns/shared/types'
 import DataTable from '~/features/_shared/components/DataTable.vue'
-import { embeddedFundraiserColumns } from '~/features/campaigns/features/p2p/admin/columns/fundraiserColumns'
+import {
+  embeddedFundraiserColumns,
+  type FundraiserMatchContext
+} from '~/features/campaigns/features/p2p/admin/columns/fundraiserColumns'
 import BaseDialogOrDrawer from '@/components/BaseDialogOrDrawer.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -122,7 +125,16 @@ function createActionColumn(): ColumnDef<CampaignFundraiser> {
   }
 }
 
-const columns = computed(() => [...embeddedFundraiserColumns(), createActionColumn()])
+const getMatchContext = (): FundraiserMatchContext | null => {
+  if (!store.matchedGiving?.periods?.length) return null
+  const totalMatched = store.matchedGiving.periods.reduce((sum, p) => sum + p.poolDrawn, 0)
+  return { matchedGiving: store.matchedGiving, totalMatched }
+}
+
+const columns = computed(() => [
+  ...embeddedFundraiserColumns(() => getMatchContext()),
+  createActionColumn()
+])
 
 // Send invite (mock)
 const sendInvites = async () => {

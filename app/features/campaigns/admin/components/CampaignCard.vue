@@ -6,6 +6,7 @@ import {
   getCampaignTypeBadgeVariant,
   getCampaignEditPath
 } from '~/features/campaigns/shared/composables/useCampaignTypes'
+import { getActivePeriod } from '~/features/campaigns/shared/utils/campaignCapabilities'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import AdminEntityCard from '~/features/_admin/components/AdminEntityCard.vue'
 import AdminEntityCardPlaceholder from '~/features/_admin/components/AdminEntityCardPlaceholder.vue'
@@ -48,6 +49,10 @@ const parentTemplate = computed(() => {
   return getCampaignById(props.campaign.parentCampaignId)
 })
 
+const hasActivePeriod = computed(
+  () => getActivePeriod(props.campaign.matchedGiving?.periods ?? []) != null
+)
+
 const activeFundraisersCount = computed(
   () => props.campaign.fundraisers.filter((f) => f.status === 'active').length
 )
@@ -81,7 +86,11 @@ const editUrl = computed(
         {{ campaignTypeLabel }}
       </Badge>
       <StatusBadge :status="campaign.status" />
-      <Badge v-if="campaign.matchedGiving?.periods?.length" variant="secondary" class="text-xs">
+      <Badge
+        v-if="campaign.matchedGiving?.periods?.length"
+        :variant="hasActivePeriod ? 'secondary' : 'outline'"
+        class="text-xs"
+      >
         Matched
       </Badge>
       <Badge v-if="campaign.isArchived" variant="secondary" class="text-xs"> Archived </Badge>
@@ -105,6 +114,7 @@ const editUrl = computed(
         :goal-amount="campaign.crowdfunding.goalAmount"
         :end-date="campaign.crowdfunding.endDate"
         :matched-giving="campaign.matchedGiving"
+        :campaign-status="campaign.status"
         hide-footer
       />
 

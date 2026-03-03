@@ -182,11 +182,11 @@ const disabledOptions = computed(() => {
         {{ campaignTypeLabel }}
       </Badge>
       <Badge
-        v-if="store.hasMatchedGiving && store.activePeriod"
-        variant="secondary"
+        v-if="store.hasMatchedGiving"
+        :variant="store.activePeriod ? 'secondary' : 'outline'"
         class="h-6 shrink-0 px-2 py-0 inline-flex items-center text-xs gap-1"
       >
-        {{ store.activePeriod.matchMultiplier }}x Match
+        {{ store.activePeriod ? `${store.activePeriod.matchMultiplier}x Match` : 'Matched' }}
       </Badge>
       <AdminStatusSelect
         :model-value="store.status"
@@ -224,6 +224,7 @@ const disabledOptions = computed(() => {
           :goal-amount="store.crowdfunding?.goalAmount ?? 0"
           :end-date="store.crowdfunding?.endDate"
           :matched-giving="store.matchedGiving"
+          :campaign-status="store.status"
           compact
         >
           <span class="text-sm font-medium whitespace-nowrap">

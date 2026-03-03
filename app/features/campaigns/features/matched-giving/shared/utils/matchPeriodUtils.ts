@@ -2,6 +2,9 @@ import type { MatchPeriod, MatchPeriodStatus } from '../types'
 
 export type DonationFrequency = 'once' | 'monthly' | 'yearly'
 
+/** How a matched-giving card should render based on campaign + period state. */
+export type MatchDisplayMode = 'active' | 'historical' | 'hidden'
+
 /**
  * Compute the status of a match period from its dates and pool usage.
  * Priority: exhausted > date-based (scheduled/active/ended).
@@ -21,6 +24,44 @@ export function getActivePeriod(
   now: Date = new Date()
 ): MatchPeriod | null {
   return periods.find((p) => getPeriodStatus(p, now) === 'active') ?? null
+}
+
+/**
+ * Determine display mode for matched giving based on campaign status and period state.
+ * - Campaign completed/ended → 'historical' if any pool was drawn, else 'hidden'
+ * - Active period exists → 'active'
+ * - No active period but pool was drawn → 'historical'
+ * - Otherwise → 'hidden'
+ */
+export function getMatchDisplayMode(
+  periods: MatchPeriod[],
+  campaignStatus?: string,
+  now: Date = new Date()
+): MatchDisplayMode {
+  const totalPoolDrawn = periods.reduce((sum, p) => sum + p.poolDrawn, 0)
+
+  if (campaignStatus === 'completed' || campaignStatus === 'ended') {
+    return totalPoolDrawn > 0 ? 'historical' : 'hidden'
+  }
+
+  if (getActivePeriod(periods, now)) return 'active'
+
+  return totalPoolDrawn > 0 ? 'historical' : 'hidden'
+}
+
+/**
+ * Get the most relevant period for display: active period if exists,
+ * otherwise the period with the most pool drawn (best historical candidate).
+ */
+export function getDisplayPeriod(
+  periods: MatchPeriod[],
+  now: Date = new Date()
+): MatchPeriod | null {
+  return (
+    getActivePeriod(periods, now) ??
+    [...periods].sort((a, b) => b.poolDrawn - a.poolDrawn)[0] ??
+    null
+  )
 }
 
 /**

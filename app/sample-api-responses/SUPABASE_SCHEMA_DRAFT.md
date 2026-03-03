@@ -340,6 +340,8 @@ CREATE TRIGGER campaigns_audit
 CREATE TABLE campaign_stats (
   campaign_id UUID PRIMARY KEY REFERENCES campaigns(id) ON DELETE CASCADE,
   total_raised DECIMAL(12,2) NOT NULL DEFAULT 0,
+  -- Trigger-maintained: SUM of matched_amount from this campaign's transactions
+  total_matched DECIMAL(12,2) NOT NULL DEFAULT 0,
   total_donations INT NOT NULL DEFAULT 0,
   total_donors INT NOT NULL DEFAULT 0,
   average_donation DECIMAL(10,2) NOT NULL DEFAULT 0,
@@ -1031,6 +1033,22 @@ JOIN transactions t ON t.donor_user_id = du.id AND t.status = 'succeeded'
 GROUP BY du.id, du.name, du.email, du.avatar_url, du.auth_user_id, du.created_at, t.organization_id;
 ```
 
+### Match Periods Status View
+
+```sql
+-- Computed match period status — always accurate at query time (no cron needed).
+-- Mirrors getPeriodStatus() from matchPeriodUtils.ts: exhausted > date-based.
+CREATE VIEW match_periods_view AS
+SELECT mp.*,
+  CASE
+    WHEN mp.pool_drawn >= mp.pool_amount THEN 'exhausted'
+    WHEN now() < mp.start_date THEN 'scheduled'
+    WHEN now() > mp.end_date THEN 'ended'
+    ELSE 'active'
+  END AS status
+FROM match_periods mp;
+```
+
 ---
 
 ## Trigger Functions
@@ -1056,10 +1074,11 @@ BEGIN
   END IF;
 
   -- Aggregate in campaign currency using campaign_exchange_rate
-  INSERT INTO campaign_stats (campaign_id, total_raised, total_donations, total_donors, average_donation, top_donation, currency, updated_at)
+  INSERT INTO campaign_stats (campaign_id, total_raised, total_matched, total_donations, total_donors, average_donation, top_donation, currency, updated_at)
   SELECT
     target_campaign_id,
     COALESCE(SUM(total_amount * COALESCE(campaign_exchange_rate, 1)), 0),
+    COALESCE(SUM(matched_amount), 0),
     COUNT(*),
     COUNT(DISTINCT donor_email),
     COALESCE(AVG(total_amount * COALESCE(campaign_exchange_rate, 1)), 0),
@@ -1071,6 +1090,7 @@ BEGIN
   WHERE campaign_id = target_campaign_id AND status = 'succeeded'
   ON CONFLICT (campaign_id) DO UPDATE SET
     total_raised     = EXCLUDED.total_raised,
+    total_matched    = EXCLUDED.total_matched,
     total_donations  = EXCLUDED.total_donations,
     total_donors     = EXCLUDED.total_donors,
     average_donation = EXCLUDED.average_donation,
@@ -1080,10 +1100,11 @@ BEGIN
 
   -- Also refresh the old campaign if campaign_id changed on UPDATE
   IF TG_OP = 'UPDATE' AND OLD.campaign_id != NEW.campaign_id THEN
-    INSERT INTO campaign_stats (campaign_id, total_raised, total_donations, total_donors, average_donation, top_donation, currency, updated_at)
+    INSERT INTO campaign_stats (campaign_id, total_raised, total_matched, total_donations, total_donors, average_donation, top_donation, currency, updated_at)
     SELECT
       OLD.campaign_id,
       COALESCE(SUM(total_amount * COALESCE(campaign_exchange_rate, 1)), 0),
+      COALESCE(SUM(matched_amount), 0),
       COUNT(*),
       COUNT(DISTINCT donor_email),
       COALESCE(AVG(total_amount * COALESCE(campaign_exchange_rate, 1)), 0),
@@ -1094,6 +1115,7 @@ BEGIN
     WHERE campaign_id = OLD.campaign_id AND status = 'succeeded'
     ON CONFLICT (campaign_id) DO UPDATE SET
       total_raised     = EXCLUDED.total_raised,
+      total_matched    = EXCLUDED.total_matched,
       total_donations  = EXCLUDED.total_donations,
       total_donors     = EXCLUDED.total_donors,
       average_donation = EXCLUDED.average_donation,
@@ -1535,13 +1557,13 @@ CREATE POLICY "donor_documents_select_admin" ON storage.objects FOR SELECT
 | -------------------- | ------ | --------------------------------------------------------------------------------------------------------------- |
 | Organizations & Auth | 2      | organizations, profiles                                                                                         |
 | Org Settings         | 4      | org_config, org_identity, org_integrations, org_financial                                                       |
-| Campaigns            | 3      | campaigns, campaign_stats, campaign_fundraisers                                                                 |
+| Campaigns            | 4      | campaigns, campaign_stats, campaign_fundraisers, match_periods                                                  |
 | Forms                | 2      | campaign_forms, form_products (junction)                                                                        |
 | Products             | 1      | products                                                                                                        |
 | Donor Portal         | 6      | donor_users, subscriptions, subscription_line_items, transactions, transaction_line_items, transaction_tributes |
 | Compliance           | 2      | gift_aid_declarations, consent_records                                                                          |
 | Lookups              | 1      | tribute_relationships                                                                                           |
-| **Total**            | **21** | + 2 views (`campaign_donations_view`, `donors_summary_view`) + 2 storage buckets                                |
+| **Total**            | **22** | + 3 views (`campaign_donations_view`, `donors_summary_view`, `match_periods_view`) + 2 storage buckets          |
 
 ---
 

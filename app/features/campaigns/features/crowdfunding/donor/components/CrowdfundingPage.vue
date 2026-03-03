@@ -124,6 +124,7 @@ const hasSocialSharing = computed(() => {
                 :goal-amount="campaign.crowdfunding.goalAmount"
                 :end-date="campaign.crowdfunding.endDate"
                 :matched-giving="campaign.matchedGiving"
+                :campaign-status="campaign.status"
               />
               <CampaignActions
                 :show-share="hasSocialSharing"
@@ -236,6 +237,7 @@ const hasSocialSharing = computed(() => {
                   :goal-amount="campaign.crowdfunding.goalAmount"
                   :end-date="campaign.crowdfunding.endDate"
                   :matched-giving="campaign.matchedGiving"
+                  :campaign-status="campaign.status"
                 />
                 <CampaignActions
                   :show-share="hasSocialSharing"

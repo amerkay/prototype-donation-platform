@@ -129,6 +129,7 @@ const breadcrumbItems = computed(() => {
                 :goal-amount="fundraiser.crowdfunding.goalAmount"
                 :end-date="fundraiser.crowdfunding.endDate"
                 :matched-giving="fundraiser.matchedGiving"
+                :campaign-status="fundraiser.status"
                 hide-footer
               />
             </CardContent>
