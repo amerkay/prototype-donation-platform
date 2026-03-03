@@ -37,6 +37,7 @@ function makeTxn(overrides: Partial<Transaction> = {}): Transaction {
     totalAmount: 50,
     paymentMethod: { type: 'card', brand: 'visa', last4: '4242' },
     createdAt: daysAgo(5),
+    matchedAmount: 0,
     lineItems: [],
     ...overrides
   }

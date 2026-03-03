@@ -28,25 +28,27 @@ export function getActivePeriod(
 
 /**
  * Determine display mode for matched giving based on campaign status and period state.
- * - Campaign completed/ended → 'historical' if any pool was drawn, else 'hidden'
- * - Active period exists → 'active'
- * - No active period but pool was drawn → 'historical'
- * - Otherwise → 'hidden'
+ * Uses the campaign's own totalMatched (from its transactions) rather than the shared
+ * poolDrawn on periods, so fundraisers only show matching if they actually have matched donations.
+ *
+ * Priority:
+ * 1. Active period exists AND campaign can still receive donations → 'active'
+ * 2. Campaign has matched funds (totalMatched > 0) → 'historical'
+ * 3. Otherwise → 'hidden'
  */
 export function getMatchDisplayMode(
   periods: MatchPeriod[],
   campaignStatus?: string,
-  now: Date = new Date()
+  now: Date = new Date(),
+  totalMatched: number = 0
 ): MatchDisplayMode {
-  const totalPoolDrawn = periods.reduce((sum, p) => sum + p.poolDrawn, 0)
+  const isTerminal = campaignStatus === 'completed' || campaignStatus === 'ended'
 
-  if (campaignStatus === 'completed' || campaignStatus === 'ended') {
-    return totalPoolDrawn > 0 ? 'historical' : 'hidden'
-  }
+  // Active period + non-terminal campaign → show live matcher card
+  if (!isTerminal && getActivePeriod(periods, now)) return 'active'
 
-  if (getActivePeriod(periods, now)) return 'active'
-
-  return totalPoolDrawn > 0 ? 'historical' : 'hidden'
+  // Has matched funds → show historical summary
+  return totalMatched > 0 ? 'historical' : 'hidden'
 }
 
 /**

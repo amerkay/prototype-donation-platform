@@ -79,6 +79,8 @@ export interface CampaignDonation {
  */
 export interface CampaignStats {
   totalRaised: number
+  /** Sum of matchedAmount from this campaign's transactions */
+  totalMatched: number
   totalDonations: number
   totalDonors: number
   averageDonation: number

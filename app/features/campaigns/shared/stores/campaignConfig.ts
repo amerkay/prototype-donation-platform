@@ -81,10 +81,10 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     matchedGiving.value.periods.reduce((sum, p) => sum + p.poolDrawn, 0)
   )
 
-  /** Total matched amount (sum of poolDrawn across all periods) — represents actual match funds disbursed */
+  /** Total impact = raised + matched (from campaign's own transaction data) */
   const matchedTotal = computed((): number => {
     if (!hasMatchedGiving.value || !stats.value) return 0
-    return stats.value.totalRaised + totalPoolDrawn.value
+    return stats.value.totalRaised + stats.value.totalMatched
   })
 
   /** Campaign currency (from crowdfunding settings, immutable after creation) */

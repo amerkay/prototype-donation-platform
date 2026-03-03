@@ -108,6 +108,11 @@ export interface Transaction {
   anonymizedAt?: string
   receiptPdfUrl?: string
 
+  /** Match amount at time of donation (0 if unmatched) */
+  matchedAmount: number
+  /** Which match period matched this donation (null if unmatched) */
+  matchPeriodId?: string
+
   customFields?: Record<string, string>
 
   createdAt: string

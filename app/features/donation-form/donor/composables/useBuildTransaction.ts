@@ -127,6 +127,7 @@ export function useBuildTransaction() {
       ...(Object.keys(store.formSections.customFields || {}).length > 0 && {
         customFields: store.formSections.customFields as Record<string, string>
       }),
+      matchedAmount: 0,
       legalBasis: 'contractual_necessity',
       createdAt: now,
       receiptUrl: '#'

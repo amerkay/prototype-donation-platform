@@ -27,3 +27,4 @@ paths:
 1. Restore/clear/reset mocks between tests — leaked mocks make suites untrustworthy
 2. Cover state edges: loading, empty, error, permission/feature-flag paths, boundary values
 3. If a test fails on sensible assertions, STOP and report — don't change the test to match broken behavior
+4. **MUST avoid white-box testing**: do not couple tests to component internals, method calls, ref names, or component structure. Refactors must not break tests unless behavior changes. ([v1.test-utils.vuejs.org][1])

@@ -4,6 +4,7 @@ import type { ColumnDef } from '@tanstack/vue-table'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import { useFundraisers } from '~/features/campaigns/features/p2p/admin/composables/useFundraisers'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useClipboard } from '@vueuse/core'
 import type { CampaignFundraiser } from '~/features/campaigns/shared/types'
 import DataTable from '~/features/_shared/components/DataTable.vue'
@@ -41,6 +42,7 @@ import {
 const store = useCampaignConfigStore()
 const { formatAmount } = useCampaignFormatters()
 const { completeFundraiser, endFundraiser, reactivateFundraiser } = useFundraisers()
+const { getCampaignById } = useCampaigns()
 
 // Invite sheet state
 const showInviteSheet = ref(false)
@@ -125,14 +127,16 @@ function createActionColumn(): ColumnDef<CampaignFundraiser> {
   }
 }
 
-const getMatchContext = (): FundraiserMatchContext | null => {
+const getMatchContext = (f: CampaignFundraiser): FundraiserMatchContext | null => {
   if (!store.matchedGiving?.periods?.length) return null
-  const totalMatched = store.matchedGiving.periods.reduce((sum, p) => sum + p.poolDrawn, 0)
+  // Use each fundraiser's own campaign stats for totalMatched
+  const fundraiserCampaign = getCampaignById(f.campaignId)
+  const totalMatched = fundraiserCampaign?.stats.totalMatched ?? 0
   return { matchedGiving: store.matchedGiving, totalMatched }
 }
 
 const columns = computed(() => [
-  ...embeddedFundraiserColumns(() => getMatchContext()),
+  ...embeddedFundraiserColumns((f) => getMatchContext(f)),
   createActionColumn()
 ])
 

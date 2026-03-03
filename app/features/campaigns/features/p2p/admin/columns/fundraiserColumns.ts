@@ -11,10 +11,10 @@ import StatusBadge from '~/components/StatusBadge.vue'
 import type { CampaignFundraiser, MatchedGivingSettings } from '~/features/campaigns/shared/types'
 import { getActivePeriod } from '~/features/campaigns/shared/utils/campaignCapabilities'
 
-/** Matched giving context for a fundraiser: parent's matched giving + total pool drawn for this fundraiser */
+/** Matched giving context for a fundraiser: parent's matched giving + per-fundraiser matched total */
 export interface FundraiserMatchContext {
   matchedGiving: MatchedGivingSettings
-  /** Total matched amount for this specific fundraiser (poolDrawn from parent periods) */
+  /** Total matched amount for this specific fundraiser (from its own campaign's stats.totalMatched) */
   totalMatched: number
 }
 
@@ -40,6 +40,8 @@ function createFundraiserColumn(options?: {
       const matchCtx = getMatchContext?.(row.original)
       const hasActivePeriod =
         matchCtx && getActivePeriod(matchCtx.matchedGiving.periods ?? []) != null
+      // Show badge when match is live (opportunity) or fundraiser has matched funds (history)
+      const showMatchBadge = hasActivePeriod || (matchCtx && matchCtx.totalMatched > 0)
 
       return h('div', { class: 'flex items-center gap-3' }, [
         h(Avatar, { class: 'size-8' }, () =>
@@ -57,7 +59,7 @@ function createFundraiserColumn(options?: {
                     },
                     () => getCampaignName(row.original.campaignId)
                   ),
-                  ...(matchCtx
+                  ...(showMatchBadge
                     ? [
                         h(
                           Badge,
@@ -78,7 +80,7 @@ function createFundraiserColumn(options?: {
               h('span', { class: 'font-medium text-foreground' }, row.original.name)
             ]),
             // Badge for embedded view (no getCampaignName)
-            ...(matchCtx && !getCampaignName
+            ...(showMatchBadge && !getCampaignName
               ? [
                   h(
                     Badge,

@@ -21,11 +21,13 @@ const { allFundraisers, getParentName, stats } = useFundraisers()
 const { getCampaignById } = useCampaigns()
 const getCampaignPageTitle = (id: string) => getCampaignById(id)?.crowdfunding.title ?? 'Unknown'
 
-/** Resolve matched giving context from parent P2P campaign */
+/** Resolve matched giving context from parent P2P campaign, with per-fundraiser totalMatched */
 const getMatchContext = (f: CampaignFundraiser): FundraiserMatchContext | null => {
   const parent = getCampaignById(f.parentCampaignId)
   if (!parent?.matchedGiving?.periods?.length) return null
-  const totalMatched = parent.matchedGiving.periods.reduce((sum, p) => sum + p.poolDrawn, 0)
+  // Use the fundraiser's own campaign stats for totalMatched (not the parent's poolDrawn)
+  const fundraiserCampaign = getCampaignById(f.campaignId)
+  const totalMatched = fundraiserCampaign?.stats.totalMatched ?? 0
   return { matchedGiving: parent.matchedGiving, totalMatched }
 }
 const {

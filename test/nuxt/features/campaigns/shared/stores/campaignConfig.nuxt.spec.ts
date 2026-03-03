@@ -13,6 +13,7 @@ import type {
 function makeCampaign(overrides: Partial<Campaign> = {}): Campaign {
   const defaultStats: CampaignStats = {
     totalRaised: 0,
+    totalMatched: 0,
     totalDonations: 0,
     totalDonors: 0,
     averageDonation: 0,
@@ -170,6 +171,7 @@ describe('Campaign Config Store', () => {
           type: 'standard',
           stats: {
             totalRaised: 5000,
+            totalMatched: 3000,
             totalDonations: 50,
             totalDonors: 40,
             averageDonation: 100,
@@ -191,7 +193,7 @@ describe('Campaign Config Store', () => {
           }
         })
       )
-      expect(store.matchedTotal).toBe(8000) // 5000 raised + 3000 matched
+      expect(store.matchedTotal).toBe(8000) // 5000 raised + 3000 matched (from stats.totalMatched)
     })
   })
 
@@ -214,6 +216,7 @@ describe('Campaign Config Store', () => {
           },
           stats: {
             totalRaised: 750,
+            totalMatched: 0,
             totalDonations: 10,
             totalDonors: 8,
             averageDonation: 75,
@@ -244,6 +247,7 @@ describe('Campaign Config Store', () => {
           },
           stats: {
             totalRaised: 200,
+            totalMatched: 0,
             totalDonations: 2,
             totalDonors: 2,
             averageDonation: 100,
@@ -276,6 +280,7 @@ describe('Campaign Config Store', () => {
           },
           stats: {
             totalRaised: 300,
+            totalMatched: 0,
             totalDonations: 3,
             totalDonors: 3,
             averageDonation: 100,
@@ -306,6 +311,7 @@ describe('Campaign Config Store', () => {
           },
           stats: {
             totalRaised: 500,
+            totalMatched: 0,
             totalDonations: 5,
             totalDonors: 5,
             averageDonation: 100,

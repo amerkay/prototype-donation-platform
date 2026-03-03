@@ -73,6 +73,7 @@ export function useRefundAction(options: UseRefundActionOptions) {
       donorEmail: txn.donorEmail,
       isAnonymous: txn.isAnonymous,
       giftAid: false,
+      matchedAmount: 0,
       legalBasis: txn.legalBasis,
       createdAt: new Date().toISOString()
     })

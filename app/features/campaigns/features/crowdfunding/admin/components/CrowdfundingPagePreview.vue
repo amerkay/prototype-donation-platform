@@ -22,6 +22,7 @@ const campaignForPreview = computed<Campaign | null>(() => {
       ...store.fullCampaign,
       stats: {
         totalRaised: 0,
+        totalMatched: 0,
         totalDonations: 0,
         totalDonors: 0,
         averageDonation: 0,

@@ -51,6 +51,10 @@ export function useCampaigns() {
     const parent = getRawCampaignById(campaign.parentCampaignId)
     if (!parent) return campaign
 
+    // Fundraiser metadata (in parent's fundraisers[]) is the source of truth for status —
+    // it's what reactivate/complete/end actions update. The raw Campaign.status may be stale.
+    const fundraiserMeta = parent.fundraisers.find((f) => f.campaignId === campaign.id)
+
     return {
       ...parent,
       // Fundraiser-specific overrides (what the fundraiser creator can edit)
@@ -59,7 +63,7 @@ export function useCampaigns() {
       parentCampaignId: campaign.parentCampaignId,
       p2pPreset: campaign.p2pPreset,
       name: campaign.name,
-      status: campaign.status,
+      status: fundraiserMeta?.status ?? campaign.status,
       isArchived: campaign.isArchived,
       crowdfunding: campaign.crowdfunding,
       stats: campaign.stats,
@@ -145,6 +149,21 @@ export function useCampaigns() {
       updatedAt: new Date().toISOString()
     } as Campaign
 
+    // For p2p-fundraiser campaigns: sync status to the fundraiser metadata in the parent's
+    // fundraisers[] array, which is the source of truth for getCampaignById merges.
+    if (updates.status && originalCampaign.type === 'p2p-fundraiser' && originalCampaign.parentCampaignId) {
+      const parentIdx = campaigns.value.findIndex((c) => c.id === originalCampaign.parentCampaignId)
+      if (parentIdx !== -1) {
+        const parent = campaigns.value[parentIdx]!
+        const fIdx = parent.fundraisers.findIndex((f) => f.campaignId === id)
+        if (fIdx !== -1) {
+          const updatedFundraisers = [...parent.fundraisers]
+          updatedFundraisers[fIdx] = { ...updatedFundraisers[fIdx]!, status: updates.status as any }
+          campaigns.value[parentIdx] = { ...parent, fundraisers: updatedFundraisers }
+        }
+      }
+    }
+
     isLoading.value = true
     error.value = null
     try {
@@ -207,6 +226,7 @@ export function useCampaigns() {
       updatedAt: new Date().toISOString(),
       stats: {
         totalRaised: 0,
+        totalMatched: 0,
         totalDonations: 0,
         totalDonors: 0,
         averageDonation: 0,

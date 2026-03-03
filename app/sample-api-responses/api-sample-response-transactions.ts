@@ -1,1487 +1,466 @@
-import type { Transaction, GiftAidDeclaration, ConsentRecord } from '~/features/donor-portal/types'
+import type {
+  Transaction,
+  GiftAidDeclaration,
+  ConsentRecord,
+  TransactionStatus,
+  PaymentProcessor,
+  PaymentMethodType
+} from '~/features/donor-portal/types'
 import type { Subscription } from '~/features/subscriptions/shared/types'
 import type { CampaignDonation, CampaignStats } from '~/features/campaigns/shared/types'
 
-/**
- * Sample transactions — master table for ALL donations across ALL donors.
- *
- * In production this is the `transactions` table in Supabase.
- * Helper functions below derive campaign-specific views (recent donations,
- * stats) so that campaigns.ts doesn't duplicate this data.
- *
- * Donor ID mapping (named donors only, anonymous = ''):
- *   donor-001  Wild Amer         awesome@charity.co.uk
- *   donor-002  Emma Wilson       emma.wilson@example.com
- *   donor-003  Michael Lee       michael.lee@example.com
- *   donor-004  John Smith        john.smith@example.com
- *   donor-005  Rachel Green      rachel.green@example.com
- *   donor-006  Sarah Mitchell    sarah.mitchell@example.com
- *   donor-007  Tom Wilson        tom.wilson@example.com
- *   donor-008  Emma Davis        emma.davis@example.com
- *   donor-009  Alice Cooper      alice.cooper@example.com
- *   donor-010  Bob Harris        bob.harris@example.com
- *   donor-011  Claire Wang       claire.wang@example.com
- *   donor-012  Dan Patel         dan.patel@example.com
- *   donor-013  Laura Kim         laura.kim@example.com
- *   donor-014  Mark Johnson      mark.johnson@example.com
- *   donor-015  Sophie Turner     sophie.turner@example.com
- *   donor-016  James Brown       james.brown@example.com
- *
- * Records 1-12:  Wild Amer (awesome@charity.co.uk) — donor portal demo data
- * Records 13-15: Other donors → adopt-orangutan campaign
- * Records 16-17: Other donors → birthday-p2p-template campaign
- * Records 18-20: Other donors → wild-amer-birthday-fundraiser campaign
- * Records 21-22: Other donors → wild-amer-birthday-2-fundraiser campaign
- * Records 23-27: Other donors → spread across existing campaigns
- * Records 28-32: Other donors → spread across existing campaigns
- * Records 33-41: Subscription payments for sub-004 through sub-008
- * Records 42-62: Backfill subscription payments for sub-001 through sub-008
- */
-export const transactions: Transaction[] = [
-  // ============================================
-  // WILD AMER TRANSACTIONS (donor portal)
-  // ============================================
+// ============================================
+// SEEDED PRNG — deterministic random generation
+// ============================================
 
-  // 1. Simple one-time Stripe card donation
+/** Mulberry32: simple seeded 32-bit PRNG */
+function mulberry32(seed: number): () => number {
+  let s = seed | 0
+  return () => {
+    s = (s + 0x6d2b79f5) | 0
+    let t = Math.imul(s ^ (s >>> 15), 1 | s)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+// ============================================
+// TRANSACTION GENERATOR
+// ============================================
+
+interface CampaignTransactionConfig {
+  campaignId: string
+  campaignName: string
+  charityName: string
+  count: number
+  avgAmount: number
+  currency: string
+  dateRange: [string, string]
+  products: { id: string; title: string; unitPrice: number }[]
+  /** Match periods — transactions within a period's date range get matchedAmount */
+  matchPeriods?: {
+    id: string
+    multiplier: number
+    startDate: string
+    endDate: string
+    poolAmount: number
+  }[]
+  /** Probability of edge cases (0-1) */
+  failRate?: number
+  refundRate?: number
+  anonymousRate?: number
+  crossCurrencyRate?: number
+  tributeRate?: number
+  coverCostsRate?: number
+  multiItemRate?: number
+  /** Seed for deterministic generation */
+  seed: number
+}
+
+const DONOR_POOL = [
+  { id: 'donor-001', name: 'Wild Amer', email: 'awesome@charity.co.uk' },
+  { id: 'donor-002', name: 'Emma Wilson', email: 'emma.wilson@example.com' },
+  { id: 'donor-003', name: 'Michael Lee', email: 'michael.lee@example.com' },
+  { id: 'donor-004', name: 'John Smith', email: 'john.smith@example.com' },
+  { id: 'donor-005', name: 'Rachel Green', email: 'rachel.green@example.com' },
+  { id: 'donor-006', name: 'Sarah Mitchell', email: 'sarah.mitchell@example.com' },
+  { id: 'donor-007', name: 'Tom Wilson', email: 'tom.wilson@example.com' },
+  { id: 'donor-008', name: 'Emma Davis', email: 'emma.davis@example.com' },
+  { id: 'donor-009', name: 'Alice Cooper', email: 'alice.cooper@example.com' },
+  { id: 'donor-010', name: 'Bob Harris', email: 'bob.harris@example.com' },
+  { id: 'donor-011', name: 'Claire Wang', email: 'claire.wang@example.com' },
+  { id: 'donor-012', name: 'Dan Patel', email: 'dan.patel@example.com' },
+  { id: 'donor-013', name: 'Laura Kim', email: 'laura.kim@example.com' },
+  { id: 'donor-014', name: 'Mark Johnson', email: 'mark.johnson@example.com' },
+  { id: 'donor-015', name: 'Sophie Turner', email: 'sophie.turner@example.com' },
+  { id: 'donor-016', name: 'James Brown', email: 'james.brown@example.com' },
+  { id: 'donor-017', name: 'Olivia Chen', email: 'olivia.chen@example.com' },
+  { id: 'donor-018', name: 'Noah Williams', email: 'noah.williams@example.com' },
+  { id: 'donor-019', name: 'Isla Thompson', email: 'isla.thompson@example.com' },
+  { id: 'donor-020', name: 'Liam Davies', email: 'liam.davies@example.com' }
+]
+
+const MESSAGES = [
+  'Keep up the great work!',
+  'Happy to support this cause!',
+  'Love what you do!',
+  'Making a difference together!',
+  'For a better future!',
+  'Great cause!',
+  'Every little helps!',
+  'Proud to contribute!',
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  undefined // Most donations have no message
+]
+
+const TRIBUTE_NAMES = [
+  'Rose Amer',
+  'Michael Chen',
+  'David Thompson',
+  'Margaret Wilson',
+  'James Lee'
+]
+
+const CARD_BRANDS = ['visa', 'mastercard', 'amex'] as const
+const CARD_LAST4S = ['4242', '5556', '1234', '8901', '6789', '0019', '3344', '7799', '1122', '9900']
+
+const CROSS_CURRENCIES: { currency: string; rate: number }[] = [
+  { currency: 'USD', rate: 0.79 },
+  { currency: 'EUR', rate: 0.86 },
+  { currency: 'CAD', rate: 0.58 },
+  { currency: 'AUD', rate: 0.52 }
+]
+
+const ADDRESSES = [
   {
-    id: 'txn-001',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3PqR7sK2x9B1mN4o',
-    type: 'one_time',
+    line1: '42 Oakwood Drive',
+    city: 'London',
+    region: 'Greater London',
+    postcode: 'SW1A 2AA',
+    country: 'GB'
+  },
+  { line1: '15 Elm Street', city: 'Birmingham', postcode: 'B1 1AA', country: 'GB' },
+  { line1: '28 Maple Road', city: 'Bristol', postcode: 'BS1 4DJ', country: 'GB' },
+  { line1: '9 Cherry Close', city: 'Leeds', postcode: 'LS1 5AA', country: 'GB' },
+  { line1: '55 Pine Avenue', city: 'Oxford', postcode: 'OX1 2AA', country: 'GB' },
+  { line1: '12 Willow Court', city: 'Cambridge', postcode: 'CB2 1TN', country: 'GB' },
+  { line1: '34 Birch Lane', city: 'Bath', postcode: 'BA1 1AA', country: 'GB' }
+]
+
+function buildCampaignTransactions(config: CampaignTransactionConfig): Transaction[] {
+  const rand = mulberry32(config.seed)
+  const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)]!
+  const rangeAmount = (avg: number) => {
+    // Generate amounts from 0.3x to 2.5x the average, rounded to nearest penny
+    const raw = avg * (0.3 + rand() * 2.2)
+    return Math.round(raw * 100) / 100
+  }
+
+  const startMs = new Date(config.dateRange[0]).getTime()
+  const endMs = new Date(config.dateRange[1]).getTime()
+
+  const failRate = config.failRate ?? 0.02
+  const refundRate = config.refundRate ?? 0.03
+  const anonRate = config.anonymousRate ?? 0.12
+  const crossRate = config.crossCurrencyRate ?? 0.08
+  const tributeRate = config.tributeRate ?? 0.05
+  const coverRate = config.coverCostsRate ?? 0.35
+  const multiItemRate = config.multiItemRate ?? 0.15
+
+  // Track pool remaining per match period
+  const poolRemaining = new Map<string, number>()
+  for (const mp of config.matchPeriods ?? []) {
+    poolRemaining.set(mp.id, mp.poolAmount)
+  }
+
+  const results: Transaction[] = []
+
+  for (let i = 0; i < config.count; i++) {
+    const id = `gen-${config.campaignId}-${String(i).padStart(4, '0')}`
+    const createdAt = new Date(startMs + rand() * (endMs - startMs)).toISOString()
+
+    // Determine status
+    let status: TransactionStatus = 'succeeded'
+    const statusRoll = rand()
+    if (statusRoll < failRate) status = 'failed'
+    else if (statusRoll < failRate + refundRate) status = 'refunded'
+
+    // Pick donor
+    const isAnonymous = rand() < anonRate
+    const donor = pick(DONOR_POOL)
+
+    // Cross-currency?
+    const isCross = rand() < crossRate
+    const crossCurr = isCross ? pick(CROSS_CURRENCIES) : null
+    const currency = crossCurr?.currency ?? config.currency
+    const exchangeRate = crossCurr?.rate ?? 1
+
+    // Processor
+    const processor: PaymentProcessor = rand() < 0.15 ? 'paypal' : 'stripe'
+    const paymentMethod: {
+      type: PaymentMethodType
+      last4?: string
+      brand?: string
+      email?: string
+    } =
+      processor === 'paypal'
+        ? { type: 'paypal', email: donor.email }
+        : {
+            type: rand() < 0.05 ? 'bank_transfer' : 'card',
+            last4: pick(CARD_LAST4S),
+            brand: pick([...CARD_BRANDS])
+          }
+
+    // Products / line items
+    const isMultiItem = rand() < multiItemRate && config.products.length > 1
+    const selectedProducts = isMultiItem
+      ? config.products.filter(() => rand() < 0.5).slice(0, 3)
+      : [pick(config.products)]
+    // Ensure at least one product
+    const products = selectedProducts.length > 0 ? selectedProducts : [pick(config.products)]
+
+    const lineItems = products.map((p) => {
+      const qty = rand() < 0.1 ? Math.ceil(rand() * 5) : 1
+      const unitPrice = rangeAmount(p.unitPrice)
+      return {
+        productId: p.id,
+        productTitle: p.title,
+        quantity: qty,
+        unitPrice,
+        frequency: 'once' as const
+      }
+    })
+
+    const subtotal = lineItems.reduce((sum, li) => sum + li.unitPrice * li.quantity, 0)
+    const coverCosts = rand() < coverRate
+    const coverCostsAmount = coverCosts ? Math.round(subtotal * 0.03 * 100) / 100 : 0
+    const totalAmount = Math.round((subtotal + coverCostsAmount) * 100) / 100
+
+    // Tribute
+    const hasTribute = rand() < tributeRate
+    const tribute = hasTribute
+      ? {
+          type: (rand() < 0.5 ? 'gift' : 'memorial') as 'gift' | 'memorial',
+          honoreeName: pick(TRIBUTE_NAMES)
+        }
+      : undefined
+
+    // Gift Aid (only UK donors with address, ~30%)
+    const hasGiftAid = !isCross && rand() < 0.3
+    const address = hasGiftAid ? pick(ADDRESSES) : rand() < 0.15 ? pick(ADDRESSES) : undefined
+
+    // Message
+    const message = rand() < 0.25 ? pick(MESSAGES) : undefined
+
+    // Match period check
+    let matchedAmount = 0
+    let matchPeriodId: string | undefined
+    if (status === 'succeeded' && config.matchPeriods) {
+      const txDate = new Date(createdAt).getTime()
+      for (const mp of config.matchPeriods) {
+        const mpStart = new Date(mp.startDate).getTime()
+        const mpEnd = new Date(mp.endDate).getTime()
+        if (txDate >= mpStart && txDate <= mpEnd) {
+          const remaining = poolRemaining.get(mp.id) ?? 0
+          if (remaining > 0) {
+            // Match amount = totalAmount * (multiplier - 1) in campaign currency
+            const matchable = totalAmount * exchangeRate * (mp.multiplier - 1)
+            matchedAmount = Math.round(Math.min(matchable, remaining) * 100) / 100
+            matchPeriodId = mp.id
+            poolRemaining.set(mp.id, remaining - matchedAmount)
+          }
+          break
+        }
+      }
+    }
+
+    // Processor transaction ID
+    const processorTxId =
+      processor === 'paypal'
+        ? `PAYID-${id.slice(-8).toUpperCase()}`
+        : `pi_${id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20)}`
+
+    const txn: Transaction = {
+      id,
+      organizationId: 'org-001',
+      processor,
+      processorTransactionId: processorTxId,
+      type: status === 'refunded' ? 'refund' : 'one_time',
+      campaignId: config.campaignId,
+      campaignName: config.campaignName,
+      charityName: config.charityName,
+      lineItems,
+      subtotal: Math.round(subtotal * 100) / 100,
+      coverCostsAmount,
+      totalAmount,
+      currency,
+      baseCurrency: 'GBP',
+      exchangeRate,
+      campaignCurrency: config.currency,
+      campaignExchangeRate: exchangeRate,
+      paymentMethod,
+      status,
+      donorId: isAnonymous ? '' : donor.id,
+      donorName: isAnonymous ? 'Anonymous' : donor.name,
+      donorEmail: isAnonymous ? `anon-${id}@example.com` : donor.email,
+      isAnonymous,
+      ...(message ? { message } : {}),
+      ...(tribute ? { tribute } : {}),
+      giftAid: hasGiftAid,
+      ...(hasGiftAid ? { giftAidAmount: Math.round(subtotal * 0.25 * 100) / 100 } : {}),
+      ...(address ? { donorAddress: address } : {}),
+      matchedAmount,
+      ...(matchPeriodId ? { matchPeriodId } : {}),
+      legalBasis: 'contractual_necessity',
+      createdAt,
+      receiptUrl: status !== 'failed' ? '#' : undefined
+    }
+
+    results.push(txn)
+  }
+
+  return results
+}
+
+// ============================================
+// CAMPAIGN CONFIGS
+// ============================================
+
+const ORANGUTAN_PRODUCTS = [
+  { id: 'tree-planting', title: 'Plant 10 Native Rainforest Trees for Wildlife', unitPrice: 30 },
+  { id: 'education-program', title: 'Support Local Conservation Education Program', unitPrice: 50 },
+  { id: 'adopt-bumi', title: 'Adopt Bumi the Rescued Baby', unitPrice: 15 },
+  { id: 'adopt-maya', title: 'Adopt Maya the Survivor', unitPrice: 10 }
+]
+
+const BIRTHDAY_PRODUCTS = [
+  { id: 'tree-planting', title: 'Plant 10 Native Rainforest Trees for Wildlife', unitPrice: 30 },
+  { id: 'adopt-bumi', title: 'Adopt Bumi the Rescued Baby', unitPrice: 25 },
+  { id: 'adopt-maya', title: 'Adopt Maya the Survivor', unitPrice: 20 },
+  { id: 'education-program', title: 'Support Local Conservation Education Program', unitPrice: 50 }
+]
+
+const campaignConfigs: CampaignTransactionConfig[] = [
+  {
     campaignId: 'adopt-orangutan',
     campaignName: 'Adopt an Orangutan',
     charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'tree-planting',
-        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        quantity: 2,
-        unitPrice: 30,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 60,
-    coverCostsAmount: 1.8,
-    totalAmount: 61.8,
+    count: 340,
+    avgAmount: 135,
     currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: true,
-    giftAidDeclarationId: 'gad-001',
-    giftAidAmount: 15,
-    donorAddress: {
-      line1: '42 Oakwood Drive',
-      city: 'London',
-      region: 'Greater London',
-      postcode: 'SW1A 2AA',
-      country: 'GB'
-    },
-    customFields: { source: 'website', company_name: 'Amer Holdings' },
-    createdAt: '2026-01-28T14:30:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
+    dateRange: ['2025-06-01', '2026-02-28'],
+    products: ORANGUTAN_PRODUCTS,
+    seed: 1001
   },
-
-  // 2. PayPal one-time donation with tribute
   {
-    id: 'txn-002',
-    organizationId: 'org-001',
-    processor: 'paypal',
-    processorTransactionId: 'PAYID-M5N8K3L2',
-    type: 'one_time',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'education-program',
-        productTitle: 'Support Local Conservation Education Program',
-        quantity: 1,
-        unitPrice: 100,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 100,
-    coverCostsAmount: 0,
-    totalAmount: 100,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'paypal', email: 'awesome@charity.co.uk' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    message: 'In loving memory of Grandma Rose',
-    tribute: { type: 'memorial', honoreeName: 'Rose Amer' },
-    giftAid: false,
-    customFields: { source: 'social_media', referral_code: 'MEMORIAL2026' },
-    createdAt: '2026-01-20T10:15:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 3. Subscription payment (monthly Adopt Bumi)
-  {
-    id: 'txn-003',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3PqS2tK2x9B1mN5p',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-001',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 15,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 15,
-    coverCostsAmount: 0.45,
-    totalAmount: 15.45,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: true,
-    giftAidDeclarationId: 'gad-001',
-    giftAidAmount: 3.75,
-    donorAddress: {
-      line1: '42 Oakwood Drive',
-      city: 'London',
-      region: 'Greater London',
-      postcode: 'SW1A 2AA',
-      country: 'GB'
-    },
-    createdAt: '2026-01-15T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 4. Impact Cart multi-item checkout (mixed frequencies via Stripe)
-  {
-    id: 'txn-004',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3PqT8uK2x9B1mN6q',
-    type: 'one_time',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'tree-planting',
-        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        quantity: 1,
-        unitPrice: 30,
-        frequency: 'once'
-      },
-      {
-        productId: 'education-program',
-        productTitle: 'Support Local Conservation Education Program',
-        quantity: 1,
-        unitPrice: 50,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 80,
-    coverCostsAmount: 2.4,
-    totalAmount: 82.4,
-    currency: 'USD',
-    baseCurrency: 'GBP',
-    exchangeRate: 1.33,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1.33,
-    paymentMethod: { type: 'card', last4: '5556', brand: 'mastercard' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    message: 'Keep up the great work!',
-    giftAid: true,
-    giftAidDeclarationId: 'gad-001',
-    giftAidAmount: 20,
-    donorAddress: {
-      line1: '42 Oakwood Drive',
-      city: 'London',
-      region: 'Greater London',
-      postcode: 'SW1A 2AA',
-      country: 'GB'
-    },
-    customFields: { source: 'email_campaign', department: 'Marketing' },
-    createdAt: '2026-01-10T16:45:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 5. Subscription payment (monthly education program via PayPal)
-  {
-    id: 'txn-005',
-    organizationId: 'org-001',
-    processor: 'paypal',
-    processorTransactionId: 'PAYID-M5N9K4L3',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-003',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'education-program',
-        productTitle: 'Support Local Conservation Education Program',
-        quantity: 1,
-        unitPrice: 25,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 25,
-    coverCostsAmount: 0,
-    totalAmount: 25,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'paypal', email: 'awesome@charity.co.uk' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2026-01-01T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 6. Failed transaction
-  {
-    id: 'txn-006',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3PqU9vK2x9B1mN7r',
-    type: 'one_time',
-    campaignId: 'wild-amer-birthday-fundraiser',
-    campaignName: "Wild Amer's Birthday Fundraiser",
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'tree-planting',
-        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        quantity: 1,
-        unitPrice: 30,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 30,
-    coverCostsAmount: 0,
-    totalAmount: 30,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '0019', brand: 'visa' },
-    status: 'failed',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: false,
-    legalBasis: 'contractual_necessity',
-    createdAt: '2025-12-28T09:20:00Z'
-  },
-
-  // 7. Refunded transaction
-  {
-    id: 'txn-007',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3PqV0wK2x9B1mN8s',
-    type: 'one_time',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 200,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 200,
-    coverCostsAmount: 6,
-    totalAmount: 206,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
-    status: 'refunded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: true,
-    giftAidDeclarationId: 'gad-001',
-    giftAidAmount: 50,
-    donorAddress: {
-      line1: '42 Oakwood Drive',
-      city: 'London',
-      region: 'Greater London',
-      postcode: 'SW1A 2AA',
-      country: 'GB'
-    },
-    giftAidReversed: true,
-    giftAidAmountReversed: 50,
-    createdAt: '2025-12-15T11:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 8. Subscription payment for multi-item subscription (Bumi + Maya)
-  {
-    id: 'txn-008',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3PqW1xK2x9B1mN9t',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-002',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 15,
-        frequency: 'monthly'
-      },
-      {
-        productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Survivor',
-        quantity: 1,
-        unitPrice: 10,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 25,
-    coverCostsAmount: 0.75,
-    totalAmount: 25.75,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: true,
-    giftAidDeclarationId: 'gad-001',
-    giftAidAmount: 6.25,
-    donorAddress: {
-      line1: '42 Oakwood Drive',
-      city: 'London',
-      region: 'Greater London',
-      postcode: 'SW1A 2AA',
-      country: 'GB'
-    },
-    createdAt: '2025-12-15T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 9. One-time donation to birthday fundraiser with gift tribute
-  {
-    id: 'txn-009',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3PqX2yK2x9B1mN0u',
-    type: 'one_time',
     campaignId: 'birthday-p2p-template',
     campaignName: 'Birthday Fundraiser Template',
     charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Survivor',
-        quantity: 1,
-        unitPrice: 25,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 25,
-    coverCostsAmount: 0,
-    totalAmount: 25,
+    count: 12,
+    avgAmount: 45,
     currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '5556', brand: 'mastercard' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    message: 'Happy Birthday Michael!',
-    tribute: { type: 'gift', honoreeName: 'Michael Chen' },
-    giftAid: true,
-    giftAidDeclarationId: 'gad-001',
-    giftAidAmount: 6.25,
-    donorAddress: {
-      line1: '42 Oakwood Drive',
-      city: 'London',
-      region: 'Greater London',
-      postcode: 'SW1A 2AA',
-      country: 'GB'
-    },
-    createdAt: '2025-12-01T18:30:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
+    dateRange: ['2025-10-01', '2026-02-15'],
+    products: BIRTHDAY_PRODUCTS,
+    seed: 1002
   },
-
-  // 10. Older subscription payment
   {
-    id: 'txn-010',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3PqY3zK2x9B1mN1v',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-001',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 15,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 15,
-    coverCostsAmount: 0.45,
-    totalAmount: 15.45,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: true,
-    giftAidDeclarationId: 'gad-001',
-    giftAidAmount: 3.75,
-    donorAddress: {
-      line1: '42 Oakwood Drive',
-      city: 'London',
-      region: 'Greater London',
-      postcode: 'SW1A 2AA',
-      country: 'GB'
-    },
-    createdAt: '2025-12-15T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 11. Impact Cart multi-item via PayPal (recurring items)
-  {
-    id: 'txn-011',
-    organizationId: 'org-001',
-    processor: 'paypal',
-    processorTransactionId: 'PAYID-M5P0K5L4',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-003',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'education-program',
-        productTitle: 'Support Local Conservation Education Program',
-        quantity: 1,
-        unitPrice: 25,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 25,
-    coverCostsAmount: 0,
-    totalAmount: 25,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'paypal', email: 'awesome@charity.co.uk' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2025-12-01T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 12. Older one-time donation via bank transfer
-  {
-    id: 'txn-012',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3PqZ4aK2x9B1mN2w',
-    type: 'one_time',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'tree-planting',
-        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        quantity: 3,
-        unitPrice: 30,
-        frequency: 'once'
-      },
-      {
-        productId: 'education-program',
-        productTitle: 'Support Local Conservation Education Program',
-        quantity: 1,
-        unitPrice: 410,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 500,
-    coverCostsAmount: 15,
-    totalAmount: 515,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'bank_transfer' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: true,
-    giftAid: true,
-    giftAidDeclarationId: 'gad-001',
-    giftAidAmount: 125,
-    donorAddress: {
-      line1: '42 Oakwood Drive',
-      city: 'London',
-      region: 'Greater London',
-      postcode: 'SW1A 2AA',
-      country: 'GB'
-    },
-    customFields: { source: 'direct_mail', designation: 'General Fund' },
-    createdAt: '2025-11-10T14:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // ============================================
-  // ADOPT-ORANGUTAN CAMPAIGN — other donors
-  // ============================================
-
-  // 13. Emma Wilson — $317 USD (education program)
-  {
-    id: 'txn-013',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RaA1bK2x9B1mN3x',
-    type: 'one_time',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'education-program',
-        productTitle: 'Support Local Conservation Education Program',
-        quantity: 1,
-        unitPrice: 317,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 317,
-    coverCostsAmount: 9.51,
-    totalAmount: 326.51,
-    currency: 'USD',
-    baseCurrency: 'GBP',
-    exchangeRate: 0.79,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 0.79,
-    paymentMethod: { type: 'card', last4: '1234', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Emma Wilson',
-    donorId: 'donor-002',
-    donorEmail: 'emma.wilson@example.com',
-    isAnonymous: false,
-    message: 'Keep up the amazing work saving these beautiful creatures!',
-    giftAid: false,
-    customFields: { source: 'google_ads', referral_code: 'GADS2026' },
-    createdAt: '2026-01-14T09:30:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 14. Anonymous — £1000 (bank transfer, education program)
-  {
-    id: 'txn-014',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RaE5fK2x9B1mN7b',
-    type: 'one_time',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'education-program',
-        productTitle: 'Support Local Conservation Education Program',
-        quantity: 1,
-        unitPrice: 1000,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 1000,
-    coverCostsAmount: 30,
-    totalAmount: 1030,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'bank_transfer' },
-    status: 'succeeded',
-    donorName: 'Anonymous',
-    donorId: '',
-    donorEmail: 'anon2@example.com',
-    isAnonymous: true,
-    giftAid: true,
-    giftAidDeclarationId: 'gad-003',
-    giftAidAmount: 250,
-    donorAddress: { line1: '15 Elm Street', city: 'Birmingham', postcode: 'B1 1AA', country: 'GB' },
-    createdAt: '2026-01-13T14:20:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 15. Michael Lee — £300 (tree planting bulk)
-  {
-    id: 'txn-015',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RaJ0kK2x9B1mN2g',
-    type: 'one_time',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'tree-planting',
-        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        quantity: 10,
-        unitPrice: 30,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 300,
-    coverCostsAmount: 9,
-    totalAmount: 309,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '8901', brand: 'mastercard' },
-    status: 'succeeded',
-    donorName: 'Michael Lee',
-    donorId: 'donor-003',
-    donorEmail: 'michael.lee@example.com',
-    isAnonymous: false,
-    message: 'Donated on behalf of my company.',
-    giftAid: false,
-    customFields: {
-      source: 'website',
-      company_name: 'Lee Enterprises',
-      designation: 'Habitat Restoration'
-    },
-    createdAt: '2026-01-11T09:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // ============================================
-  // BIRTHDAY P2P TEMPLATE — other donors
-  // ============================================
-
-  // 16. John Smith — £100 (adopt-maya one-time gift)
-  {
-    id: 'txn-016',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RbA1lK2x9B1mN3h',
-    type: 'one_time',
-    campaignId: 'birthday-p2p-template',
-    campaignName: 'Birthday Fundraiser Template',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Survivor',
-        quantity: 1,
-        unitPrice: 100,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 100,
-    coverCostsAmount: 0,
-    totalAmount: 100,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '4567', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'John Smith',
-    donorId: 'donor-004',
-    donorEmail: 'john.smith@example.com',
-    isAnonymous: false,
-    message: 'Happy Birthday Sarah!',
-    giftAid: false,
-    createdAt: '2026-01-10T12:30:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 17. Rachel Green — £75 (education program)
-  {
-    id: 'txn-017',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RbC3nK2x9B1mN5j',
-    type: 'one_time',
-    campaignId: 'birthday-p2p-template',
-    campaignName: 'Birthday Fundraiser Template',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'education-program',
-        productTitle: 'Support Local Conservation Education Program',
-        quantity: 1,
-        unitPrice: 75,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 75,
-    coverCostsAmount: 0,
-    totalAmount: 75,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '6789', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Rachel Green',
-    donorId: 'donor-005',
-    donorEmail: 'rachel.green@example.com',
-    isAnonymous: false,
-    message: 'Great cause!',
-    giftAid: true,
-    giftAidDeclarationId: 'gad-004',
-    giftAidAmount: 18.75,
-    donorAddress: { line1: '28 Maple Road', city: 'Bristol', postcode: 'BS1 4DJ', country: 'GB' },
-    createdAt: '2026-01-09T18:20:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // ============================================
-  // WILD AMER BIRTHDAY FUNDRAISER — other donors
-  // ============================================
-
-  // 18. Sarah Mitchell — £25 (adopt-bumi)
-  {
-    id: 'txn-018',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RcA1oK2x9B1mN6k',
-    type: 'one_time',
     campaignId: 'wild-amer-birthday-fundraiser',
     campaignName: "Wild Amer's Birthday Fundraiser",
     charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 25,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 25,
-    coverCostsAmount: 0,
-    totalAmount: 25,
+    count: 8,
+    avgAmount: 22.5,
     currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '1111', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Sarah Mitchell',
-    donorId: 'donor-006',
-    donorEmail: 'sarah.mitchell@example.com',
-    isAnonymous: false,
-    message: 'Happy Birthday Wild! Great cause!',
-    giftAid: false,
-    createdAt: '2026-01-15T09:30:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 19. Tom Wilson — $50 USD (education program)
-  {
-    id: 'txn-019',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RcB2pK2x9B1mN7l',
-    type: 'one_time',
-    campaignId: 'wild-amer-birthday-fundraiser',
-    campaignName: "Wild Amer's Birthday Fundraiser",
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
+    dateRange: ['2026-02-01', '2026-03-15'],
+    products: BIRTHDAY_PRODUCTS,
+    matchPeriods: [
       {
-        productId: 'education-program',
-        productTitle: 'Support Local Conservation Education Program',
-        quantity: 1,
-        unitPrice: 50,
-        frequency: 'once'
+        id: 'mp-p2p-1',
+        multiplier: 2,
+        startDate: '2026-03-01T00:00:00Z',
+        endDate: '2026-03-31T00:00:00Z',
+        poolAmount: 10000
       }
     ],
-    subtotal: 50,
-    coverCostsAmount: 0,
-    totalAmount: 50,
-    currency: 'USD',
-    baseCurrency: 'GBP',
-    exchangeRate: 0.75,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 0.75,
-    paymentMethod: { type: 'card', last4: '2222', brand: 'mastercard' },
-    status: 'succeeded',
-    donorName: 'Tom Wilson',
-    donorId: 'donor-007',
-    donorEmail: 'tom.wilson@example.com',
-    isAnonymous: false,
-    message: 'Amazing initiative! Keep up the good work.',
-    giftAid: true,
-    giftAidDeclarationId: 'gad-005',
-    giftAidAmount: 12.5,
-    donorAddress: { line1: '9 Cherry Close', city: 'Leeds', postcode: 'LS1 5AA', country: 'GB' },
-    createdAt: '2026-01-14T18:20:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
+    seed: 2001
   },
-
-  // 20. Anonymous — £10 (adopt-maya)
   {
-    id: 'txn-020',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RcC3qK2x9B1mN8m',
-    type: 'one_time',
-    campaignId: 'wild-amer-birthday-fundraiser',
-    campaignName: "Wild Amer's Birthday Fundraiser",
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Survivor',
-        quantity: 1,
-        unitPrice: 10,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 10,
-    coverCostsAmount: 0,
-    totalAmount: 10,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '3333', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Anonymous',
-    donorId: '',
-    donorEmail: 'anon5@example.com',
-    isAnonymous: true,
-    giftAid: false,
-    createdAt: '2026-01-14T14:10:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // ============================================
-  // WILD AMER BIRTHDAY 2 FUNDRAISER — other donors
-  // ============================================
-
-  // 21. Emma Davis — £25 (education program)
-  {
-    id: 'txn-021',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RdA1fK2x9B1mN3b',
-    type: 'one_time',
     campaignId: 'wild-amer-birthday-2-fundraiser',
     campaignName: "Wild Amer's Mini Fundraiser",
     charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'education-program',
-        productTitle: 'Support Local Conservation Education Program',
-        quantity: 1,
-        unitPrice: 25,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 25,
-    coverCostsAmount: 0,
-    totalAmount: 25,
+    count: 5,
+    avgAmount: 20,
     currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '3355', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Emma Davis',
-    donorId: 'donor-008',
-    donorEmail: 'emma.davis@example.com',
-    isAnonymous: false,
-    message: 'Great work!',
-    giftAid: false,
-    createdAt: '2026-01-10T15:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 22. John Smith — £15 (adopt-bumi)
-  {
-    id: 'txn-022',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RdB2gK2x9B1mN4c',
-    type: 'one_time',
-    campaignId: 'wild-amer-birthday-2-fundraiser',
-    campaignName: "Wild Amer's Mini Fundraiser",
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
+    dateRange: ['2025-12-20', '2026-01-31'],
+    products: BIRTHDAY_PRODUCTS,
+    // Match period exists but date range is entirely before it → zero matched
+    matchPeriods: [
       {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 15,
-        frequency: 'once'
+        id: 'mp-p2p-1',
+        multiplier: 2,
+        startDate: '2026-03-01T00:00:00Z',
+        endDate: '2026-03-31T00:00:00Z',
+        poolAmount: 10000
       }
     ],
-    subtotal: 15,
-    coverCostsAmount: 0,
-    totalAmount: 15,
+    seed: 2002
+  },
+  {
+    campaignId: 'tribute-p2p-template',
+    campaignName: 'In Memory of a Loved One',
+    charityName: 'Borneo Orangutan Survival',
+    count: 85,
+    avgAmount: 140,
     currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '4466', brand: 'mastercard' },
-    status: 'succeeded',
-    donorName: 'John Smith',
-    donorId: 'donor-004',
-    donorEmail: 'john.smith@example.com',
-    isAnonymous: false,
-    giftAid: true,
-    giftAidDeclarationId: 'gad-006',
-    giftAidAmount: 3.75,
-    donorAddress: { line1: '55 Pine Avenue', city: 'Oxford', postcode: 'OX1 2AA', country: 'GB' },
-    createdAt: '2026-01-09T12:30:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
+    dateRange: ['2025-06-01', '2026-02-15'],
+    products: ORANGUTAN_PRODUCTS,
+    tributeRate: 0.6,
+    seed: 1003
   },
-
-  // ============================================
-  // SPREAD ACROSS EXISTING CAMPAIGNS — other donors
-  // ============================================
-
-  // 23. Alice Cooper — €58 EUR (adopt-orangutan, adopt-maya)
   {
-    id: 'txn-023',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3ReA1hK2x9B1mN5d',
-    type: 'one_time',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
+    campaignId: 'challenge-p2p-template',
+    campaignName: 'Marathon Challenge Fundraiser',
     charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Survivor',
-        quantity: 1,
-        unitPrice: 58,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 58,
-    coverCostsAmount: 0,
-    totalAmount: 58,
-    currency: 'EUR',
-    baseCurrency: 'GBP',
-    exchangeRate: 0.86,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 0.86,
-    paymentMethod: { type: 'card', last4: '7788', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Alice Cooper',
-    donorId: 'donor-009',
-    donorEmail: 'alice.cooper@example.com',
-    isAnonymous: false,
-    message: 'For the orangutans!',
-    giftAid: false,
-    customFields: { source: 'social_media' },
-    createdAt: '2026-01-12T10:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 24. Bob Harris — £100 (adopt-orangutan, adopt-bumi)
-  {
-    id: 'txn-024',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3ReB2iK2x9B1mN6e',
-    type: 'one_time',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 100,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 100,
-    coverCostsAmount: 3,
-    totalAmount: 103,
+    count: 200,
+    avgAmount: 132,
     currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '9900', brand: 'mastercard' },
-    status: 'succeeded',
-    donorName: 'Bob Harris',
-    donorId: 'donor-010',
-    donorEmail: 'bob.harris@example.com',
-    isAnonymous: false,
-    message: 'Great cause mate!',
-    giftAid: false,
-    customFields: { referral_code: 'BDAY25' },
-    createdAt: '2026-01-10T14:30:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
+    dateRange: ['2025-06-01', '2026-02-15'],
+    products: ORANGUTAN_PRODUCTS,
+    seed: 1004
   },
-
-  // 25. Claire Wang — £75 (birthday-p2p-template, multi-item cart)
   {
-    id: 'txn-025',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3ReC3jK2x9B1mN7f',
-    type: 'one_time',
-    campaignId: 'birthday-p2p-template',
-    campaignName: 'Birthday Fundraiser Template',
+    campaignId: 'wedding-p2p-template',
+    campaignName: 'Our Wedding Fundraiser',
     charityName: 'Borneo Orangutan Survival',
-    lineItems: [
+    count: 60,
+    avgAmount: 136,
+    currency: 'GBP',
+    dateRange: ['2025-06-01', '2026-02-15'],
+    products: ORANGUTAN_PRODUCTS,
+    seed: 1005
+  },
+  {
+    campaignId: 'matched-giving-spring',
+    campaignName: 'Spring Matched Giving Appeal',
+    charityName: 'Borneo Orangutan Survival',
+    count: 120,
+    avgAmount: 42,
+    currency: 'GBP',
+    dateRange: ['2026-02-01', '2026-03-31'],
+    products: ORANGUTAN_PRODUCTS,
+    matchPeriods: [
       {
-        productId: 'tree-planting',
-        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        quantity: 1,
-        unitPrice: 30,
-        frequency: 'once'
+        id: 'mp-1',
+        multiplier: 2,
+        startDate: '2026-03-01T00:00:00Z',
+        endDate: '2026-03-15T00:00:00Z',
+        poolAmount: 30000
       },
       {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 45,
-        frequency: 'once'
+        id: 'mp-2',
+        multiplier: 3,
+        startDate: '2026-03-16T00:00:00Z',
+        endDate: '2026-03-31T00:00:00Z',
+        poolAmount: 20000
       }
     ],
-    subtotal: 75,
-    coverCostsAmount: 0,
-    totalAmount: 75,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '1122', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Claire Wang',
-    donorId: 'donor-011',
-    donorEmail: 'claire.wang@example.com',
-    isAnonymous: false,
-    giftAid: true,
-    giftAidDeclarationId: 'gad-002',
-    giftAidAmount: 18.75,
-    donorAddress: {
-      line1: '12 Willow Court',
-      city: 'Cambridge',
-      postcode: 'CB2 1TN',
-      country: 'GB'
-    },
-    createdAt: '2026-01-08T16:15:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
+    seed: 3001
+  }
+]
 
-  // 26. Anonymous — £30 (birthday-p2p-template, tree-planting)
-  {
-    id: 'txn-026',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3ReD4kK2x9B1mN8g',
-    type: 'one_time',
-    campaignId: 'birthday-p2p-template',
-    campaignName: 'Birthday Fundraiser Template',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'tree-planting',
-        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        quantity: 1,
-        unitPrice: 30,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 30,
-    coverCostsAmount: 0,
-    totalAmount: 30,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '3344', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Anonymous',
-    donorId: '',
-    donorEmail: 'anon6@example.com',
-    isAnonymous: true,
-    giftAid: false,
-    createdAt: '2026-01-06T11:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
+// Generate all one-time transactions from configs
+const generatedTransactions: Transaction[] = campaignConfigs.flatMap(buildCampaignTransactions)
 
-  // 27. Dan Patel — £25 (wild-amer-birthday-fundraiser, education-program)
-  {
-    id: 'txn-027',
-    organizationId: 'org-001',
-    processor: 'paypal',
-    processorTransactionId: 'PAYID-M6Q1K6L5',
-    type: 'one_time',
-    campaignId: 'wild-amer-birthday-fundraiser',
-    campaignName: "Wild Amer's Birthday Fundraiser",
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'education-program',
-        productTitle: 'Support Local Conservation Education Program',
-        quantity: 1,
-        unitPrice: 25,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 25,
-    coverCostsAmount: 0,
-    totalAmount: 25,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'paypal', email: 'dan.patel@example.com' },
-    status: 'succeeded',
-    donorName: 'Dan Patel',
-    donorId: 'donor-012',
-    donorEmail: 'dan.patel@example.com',
-    isAnonymous: false,
-    message: 'Happy Birthday Wild!',
-    giftAid: false,
-    createdAt: '2026-01-04T09:45:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
+// ============================================
+// HAND-CRAFTED SUBSCRIPTION PAYMENTS
+// These must link to specific subscription IDs and can't be generated.
+// ============================================
 
-  // 28. Laura Kim — £20 (wild-amer-birthday-2-fundraiser, adopt-maya)
-  {
-    id: 'txn-028',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RfA1lK2x9B1mN9h',
-    type: 'one_time',
-    campaignId: 'wild-amer-birthday-2-fundraiser',
-    campaignName: "Wild Amer's Mini Fundraiser",
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Survivor',
-        quantity: 1,
-        unitPrice: 20,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 20,
-    coverCostsAmount: 0,
-    totalAmount: 20,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '5577', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Laura Kim',
-    donorId: 'donor-013',
-    donorEmail: 'laura.kim@example.com',
-    isAnonymous: false,
-    message: 'Love this campaign!',
-    giftAid: false,
-    customFields: { source: 'social_media' },
-    createdAt: '2026-01-20T10:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 29. Mark Johnson — $63 USD (adopt-orangutan, adopt-bumi)
-  {
-    id: 'txn-029',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RfB2mK2x9B1mN0i',
-    type: 'one_time',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 63,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 63,
-    coverCostsAmount: 1.89,
-    totalAmount: 64.89,
-    currency: 'USD',
-    baseCurrency: 'GBP',
-    exchangeRate: 0.79,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 0.79,
-    paymentMethod: { type: 'card', last4: '6688', brand: 'mastercard' },
-    status: 'succeeded',
-    donorName: 'Mark Johnson',
-    donorId: 'donor-014',
-    donorEmail: 'mark.johnson@example.com',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2026-01-18T15:30:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 30. Anonymous — £15 (wild-amer-birthday-fundraiser, adopt-bumi)
-  {
-    id: 'txn-030',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RfC3nK2x9B1mN1j',
-    type: 'one_time',
-    campaignId: 'wild-amer-birthday-fundraiser',
-    campaignName: "Wild Amer's Birthday Fundraiser",
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 15,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 15,
-    coverCostsAmount: 0,
-    totalAmount: 15,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '7799', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Anonymous',
-    donorId: '',
-    donorEmail: 'anon7@example.com',
-    isAnonymous: true,
-    giftAid: false,
-    createdAt: '2026-01-15T08:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 31. Sophie Turner — £25 (birthday-p2p-template, adopt-bumi)
-  {
-    id: 'txn-031',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RgA1oK2x9B1mN2k',
-    type: 'one_time',
-    campaignId: 'birthday-p2p-template',
-    campaignName: 'Birthday Fundraiser Template',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 25,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 25,
-    coverCostsAmount: 0,
-    totalAmount: 25,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '8800', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Sophie Turner',
-    donorId: 'donor-015',
-    donorEmail: 'sophie.turner@example.com',
-    isAnonymous: false,
-    message: 'Happy Birthday!',
-    giftAid: true,
-    giftAidDeclarationId: 'gad-008',
-    giftAidAmount: 6.25,
-    donorAddress: { line1: '34 Birch Lane', city: 'Bath', postcode: 'BA1 1AA', country: 'GB' },
-    customFields: { source: 'email_campaign' },
-    createdAt: '2025-12-05T12:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-
-  // 32. James Brown — £50 (adopt-orangutan, multi-item cart)
-  {
-    id: 'txn-032',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RgB2pK2x9B1mN3l',
-    type: 'one_time',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'tree-planting',
-        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        quantity: 1,
-        unitPrice: 30,
-        frequency: 'once'
-      },
-      {
-        productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Survivor',
-        quantity: 1,
-        unitPrice: 20,
-        frequency: 'once'
-      }
-    ],
-    subtotal: 50,
-    coverCostsAmount: 1.5,
-    totalAmount: 51.5,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '9911', brand: 'mastercard' },
-    status: 'succeeded',
-    donorName: 'James Brown',
-    donorId: 'donor-016',
-    donorEmail: 'james.brown@example.com',
-    isAnonymous: false,
-    giftAid: false,
-    legalBasis: 'contractual_necessity',
-    createdAt: '2025-12-02T16:45:00Z',
-    receiptUrl: '#'
-  },
-
-  // ============================================
-  // SUBSCRIPTION PAYMENTS — sub-004 through sub-008
-  // ============================================
-
-  // 33. sub-004 payment (Emma Wilson, adopt-maya, paused sub)
+const subscriptionPayments: Transaction[] = [
+  // sub-004 payments (Emma Wilson, adopt-maya, paused sub)
   {
     id: 'txn-033',
     organizationId: 'org-001',
@@ -1516,12 +495,11 @@ export const transactions: Transaction[] = [
     donorEmail: 'emma.wilson@example.com',
     isAnonymous: false,
     giftAid: false,
-    createdAt: '2025-11-01T00:00:00Z',
+    matchedAmount: 0,
     legalBasis: 'contractual_necessity',
+    createdAt: '2025-11-01T00:00:00Z',
     receiptUrl: '#'
   },
-
-  // 34. sub-004 payment (Emma Wilson, adopt-maya, paused sub)
   {
     id: 'txn-034',
     organizationId: 'org-001',
@@ -1556,12 +534,12 @@ export const transactions: Transaction[] = [
     donorEmail: 'emma.wilson@example.com',
     isAnonymous: false,
     giftAid: false,
-    createdAt: '2025-12-01T00:00:00Z',
+    matchedAmount: 0,
     legalBasis: 'contractual_necessity',
+    createdAt: '2025-12-01T00:00:00Z',
     receiptUrl: '#'
   },
-
-  // 35. sub-005 payment (Rachel Green, tree-planting, cancelled sub)
+  // sub-005 payments (Rachel Green, tree-planting, cancelled sub)
   {
     id: 'txn-035',
     organizationId: 'org-001',
@@ -1596,12 +574,11 @@ export const transactions: Transaction[] = [
     donorEmail: 'rachel.green@example.com',
     isAnonymous: false,
     giftAid: false,
-    createdAt: '2025-10-01T00:00:00Z',
+    matchedAmount: 0,
     legalBasis: 'contractual_necessity',
+    createdAt: '2025-10-01T00:00:00Z',
     receiptUrl: '#'
   },
-
-  // 36. sub-005 payment (Rachel Green, tree-planting, cancelled sub)
   {
     id: 'txn-036',
     organizationId: 'org-001',
@@ -1636,12 +613,12 @@ export const transactions: Transaction[] = [
     donorEmail: 'rachel.green@example.com',
     isAnonymous: false,
     giftAid: false,
-    createdAt: '2025-11-01T00:00:00Z',
+    matchedAmount: 0,
     legalBasis: 'contractual_necessity',
+    createdAt: '2025-11-01T00:00:00Z',
     receiptUrl: '#'
   },
-
-  // 37. sub-006 payment (Sarah Mitchell, education-program)
+  // sub-006 payments (Sarah Mitchell, education-program, USD)
   {
     id: 'txn-037',
     organizationId: 'org-001',
@@ -1676,12 +653,11 @@ export const transactions: Transaction[] = [
     donorEmail: 'sarah.mitchell@example.com',
     isAnonymous: false,
     giftAid: false,
-    createdAt: '2025-12-10T00:00:00Z',
+    matchedAmount: 0,
     legalBasis: 'contractual_necessity',
+    createdAt: '2025-12-10T00:00:00Z',
     receiptUrl: '#'
   },
-
-  // 38. sub-006 payment (Sarah Mitchell, education-program)
   {
     id: 'txn-038',
     organizationId: 'org-001',
@@ -1716,12 +692,12 @@ export const transactions: Transaction[] = [
     donorEmail: 'sarah.mitchell@example.com',
     isAnonymous: false,
     giftAid: false,
-    createdAt: '2026-01-10T00:00:00Z',
+    matchedAmount: 0,
     legalBasis: 'contractual_necessity',
+    createdAt: '2026-01-10T00:00:00Z',
     receiptUrl: '#'
   },
-
-  // 39. sub-007 payment (Tom Wilson, adopt-maya)
+  // sub-007 payment (Tom Wilson, adopt-maya)
   {
     id: 'txn-039',
     organizationId: 'org-001',
@@ -1756,12 +732,12 @@ export const transactions: Transaction[] = [
     donorEmail: 'tom.wilson@example.com',
     isAnonymous: false,
     giftAid: false,
-    createdAt: '2026-01-01T00:00:00Z',
+    matchedAmount: 0,
     legalBasis: 'contractual_necessity',
+    createdAt: '2026-01-01T00:00:00Z',
     receiptUrl: '#'
   },
-
-  // 40. sub-008 payment (Alice Cooper, education-program, PayPal)
+  // sub-008 payments (Alice Cooper, education-program, EUR PayPal)
   {
     id: 'txn-040',
     organizationId: 'org-001',
@@ -1796,12 +772,11 @@ export const transactions: Transaction[] = [
     donorEmail: 'alice.cooper@example.com',
     isAnonymous: false,
     giftAid: false,
-    createdAt: '2025-12-05T00:00:00Z',
+    matchedAmount: 0,
     legalBasis: 'contractual_necessity',
+    createdAt: '2025-12-05T00:00:00Z',
     receiptUrl: '#'
   },
-
-  // 41. sub-008 payment (Alice Cooper, education-program, PayPal)
   {
     id: 'txn-041',
     organizationId: 'org-001',
@@ -1836,8 +811,9 @@ export const transactions: Transaction[] = [
     donorEmail: 'alice.cooper@example.com',
     isAnonymous: false,
     giftAid: false,
-    createdAt: '2026-01-05T00:00:00Z',
+    matchedAmount: 0,
     legalBasis: 'contractual_necessity',
+    createdAt: '2026-01-05T00:00:00Z',
     receiptUrl: '#'
   },
 
@@ -1845,849 +821,340 @@ export const transactions: Transaction[] = [
   // BACKFILL SUBSCRIPTION PAYMENTS (sub-001 through sub-008)
   // ============================================
 
-  // 42-45. sub-001 backfill (Wild Amer, adopt-bumi, £15.45/mo — 4 missing: Aug–Nov 2025)
-  {
-    id: 'txn-042',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiA1aK2x9B1mN4a',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-001',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 15,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 15,
-    coverCostsAmount: 0.45,
-    totalAmount: 15.45,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: true,
-    giftAidDeclarationId: 'gad-001',
-    giftAidAmount: 3.75,
-    donorAddress: {
-      line1: '42 Oakwood Drive',
-      city: 'London',
-      region: 'Greater London',
-      postcode: 'SW1A 2AA',
-      country: 'GB'
-    },
-    createdAt: '2025-08-15T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-  {
-    id: 'txn-043',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiA2bK2x9B1mN5b',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-001',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 15,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 15,
-    coverCostsAmount: 0.45,
-    totalAmount: 15.45,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: true,
-    giftAidDeclarationId: 'gad-001',
-    giftAidAmount: 3.75,
-    donorAddress: {
-      line1: '42 Oakwood Drive',
-      city: 'London',
-      region: 'Greater London',
-      postcode: 'SW1A 2AA',
-      country: 'GB'
-    },
-    createdAt: '2025-09-15T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-  {
-    id: 'txn-044',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiA3cK2x9B1mN6c',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-001',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 15,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 15,
-    coverCostsAmount: 0.45,
-    totalAmount: 15.45,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: true,
-    giftAidDeclarationId: 'gad-001',
-    giftAidAmount: 3.75,
-    donorAddress: {
-      line1: '42 Oakwood Drive',
-      city: 'London',
-      region: 'Greater London',
-      postcode: 'SW1A 2AA',
-      country: 'GB'
-    },
-    createdAt: '2025-10-15T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-  {
-    id: 'txn-045',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiA4dK2x9B1mN7d',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-001',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 15,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 15,
-    coverCostsAmount: 0.45,
-    totalAmount: 15.45,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: true,
-    giftAidDeclarationId: 'gad-001',
-    giftAidAmount: 3.75,
-    donorAddress: {
-      line1: '42 Oakwood Drive',
-      city: 'London',
-      region: 'Greater London',
-      postcode: 'SW1A 2AA',
-      country: 'GB'
-    },
-    createdAt: '2025-11-15T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
+  // sub-001 backfill (Wild Amer, adopt-bumi, £15.45/mo — Aug–Nov 2025)
+  ...(['2025-08-15', '2025-09-15', '2025-10-15', '2025-11-15'] as const).map(
+    (date, i) =>
+      ({
+        id: `txn-${42 + i}`.padStart(7, '0').replace(/^0+txn/, 'txn'),
+        organizationId: 'org-001',
+        processor: 'stripe' as const,
+        processorTransactionId: `pi_3RiA${i + 1}${String.fromCharCode(97 + i)}K2x9B1mN${4 + i}${String.fromCharCode(97 + i)}`,
+        type: 'subscription_payment' as const,
+        subscriptionId: 'sub-001',
+        campaignId: 'adopt-orangutan',
+        campaignName: 'Adopt an Orangutan',
+        charityName: 'Borneo Orangutan Survival',
+        lineItems: [
+          {
+            productId: 'adopt-bumi',
+            productTitle: 'Adopt Bumi the Rescued Baby',
+            quantity: 1,
+            unitPrice: 15,
+            frequency: 'monthly' as const
+          }
+        ],
+        subtotal: 15,
+        coverCostsAmount: 0.45,
+        totalAmount: 15.45,
+        currency: 'GBP',
+        baseCurrency: 'GBP',
+        exchangeRate: 1,
+        campaignCurrency: 'GBP',
+        campaignExchangeRate: 1,
+        paymentMethod: { type: 'card' as const, last4: '4242', brand: 'visa' },
+        status: 'succeeded' as const,
+        donorName: 'Wild Amer',
+        donorId: 'donor-001',
+        donorEmail: 'awesome@charity.co.uk',
+        isAnonymous: false,
+        giftAid: true,
+        giftAidDeclarationId: 'gad-001',
+        giftAidAmount: 3.75,
+        donorAddress: {
+          line1: '42 Oakwood Drive',
+          city: 'London',
+          region: 'Greater London',
+          postcode: 'SW1A 2AA',
+          country: 'GB'
+        },
+        matchedAmount: 0,
+        legalBasis: 'contractual_necessity' as const,
+        createdAt: `${date}T00:00:00Z`,
+        receiptUrl: '#'
+      }) satisfies Transaction
+  ),
 
-  // 46-47. sub-002 backfill (Wild Amer, bumi+maya, £25.75/mo — 2 missing: Oct–Nov 2025)
-  {
-    id: 'txn-046',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiB1eK2x9B1mN8e',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-002',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 15,
-        frequency: 'monthly'
-      },
-      {
-        productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Survivor',
-        quantity: 1,
-        unitPrice: 10,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 25,
-    coverCostsAmount: 0.75,
-    totalAmount: 25.75,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: true,
-    giftAidDeclarationId: 'gad-001',
-    giftAidAmount: 6.25,
-    donorAddress: {
-      line1: '42 Oakwood Drive',
-      city: 'London',
-      region: 'Greater London',
-      postcode: 'SW1A 2AA',
-      country: 'GB'
-    },
-    createdAt: '2025-10-15T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-  {
-    id: 'txn-047',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiB2fK2x9B1mN9f',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-002',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-bumi',
-        productTitle: 'Adopt Bumi the Rescued Baby',
-        quantity: 1,
-        unitPrice: 15,
-        frequency: 'monthly'
-      },
-      {
-        productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Survivor',
-        quantity: 1,
-        unitPrice: 10,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 25,
-    coverCostsAmount: 0.75,
-    totalAmount: 25.75,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: true,
-    giftAidDeclarationId: 'gad-001',
-    giftAidAmount: 6.25,
-    donorAddress: {
-      line1: '42 Oakwood Drive',
-      city: 'London',
-      region: 'Greater London',
-      postcode: 'SW1A 2AA',
-      country: 'GB'
-    },
-    createdAt: '2025-11-15T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
+  // sub-002 backfill (Wild Amer, bumi+maya, £25.75/mo — Oct–Nov 2025)
+  ...(['2025-10-15', '2025-11-15'] as const).map(
+    (date, i) =>
+      ({
+        id: `txn-0${46 + i}`,
+        organizationId: 'org-001',
+        processor: 'stripe' as const,
+        processorTransactionId: `pi_3RiB${i + 1}${String.fromCharCode(101 + i)}K2x9B1mN${8 + i}${String.fromCharCode(101 + i)}`,
+        type: 'subscription_payment' as const,
+        subscriptionId: 'sub-002',
+        campaignId: 'adopt-orangutan',
+        campaignName: 'Adopt an Orangutan',
+        charityName: 'Borneo Orangutan Survival',
+        lineItems: [
+          {
+            productId: 'adopt-bumi',
+            productTitle: 'Adopt Bumi the Rescued Baby',
+            quantity: 1,
+            unitPrice: 15,
+            frequency: 'monthly' as const
+          },
+          {
+            productId: 'adopt-maya',
+            productTitle: 'Adopt Maya the Survivor',
+            quantity: 1,
+            unitPrice: 10,
+            frequency: 'monthly' as const
+          }
+        ],
+        subtotal: 25,
+        coverCostsAmount: 0.75,
+        totalAmount: 25.75,
+        currency: 'GBP',
+        baseCurrency: 'GBP',
+        exchangeRate: 1,
+        campaignCurrency: 'GBP',
+        campaignExchangeRate: 1,
+        paymentMethod: { type: 'card' as const, last4: '4242', brand: 'visa' },
+        status: 'succeeded' as const,
+        donorName: 'Wild Amer',
+        donorId: 'donor-001',
+        donorEmail: 'awesome@charity.co.uk',
+        isAnonymous: false,
+        giftAid: true,
+        giftAidDeclarationId: 'gad-001',
+        giftAidAmount: 6.25,
+        donorAddress: {
+          line1: '42 Oakwood Drive',
+          city: 'London',
+          region: 'Greater London',
+          postcode: 'SW1A 2AA',
+          country: 'GB'
+        },
+        matchedAmount: 0,
+        legalBasis: 'contractual_necessity' as const,
+        createdAt: `${date}T00:00:00Z`,
+        receiptUrl: '#'
+      }) satisfies Transaction
+  ),
 
-  // 48-50. sub-003 backfill (Wild Amer, education-program, £25/mo PayPal — 3 missing: Sep–Nov 2025)
-  {
-    id: 'txn-048',
-    organizationId: 'org-001',
-    processor: 'paypal',
-    processorTransactionId: 'PAYID-M6Q1K6L5',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-003',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'education-program',
-        productTitle: 'Support Local Conservation Education Program',
-        quantity: 1,
-        unitPrice: 25,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 25,
-    coverCostsAmount: 0,
-    totalAmount: 25,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'paypal', email: 'awesome@charity.co.uk' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2025-09-01T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-  {
-    id: 'txn-049',
-    organizationId: 'org-001',
-    processor: 'paypal',
-    processorTransactionId: 'PAYID-M6R2K7L6',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-003',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'education-program',
-        productTitle: 'Support Local Conservation Education Program',
-        quantity: 1,
-        unitPrice: 25,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 25,
-    coverCostsAmount: 0,
-    totalAmount: 25,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'paypal', email: 'awesome@charity.co.uk' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2025-10-01T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-  {
-    id: 'txn-050',
-    organizationId: 'org-001',
-    processor: 'paypal',
-    processorTransactionId: 'PAYID-M6S3K8L7',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-003',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'education-program',
-        productTitle: 'Support Local Conservation Education Program',
-        quantity: 1,
-        unitPrice: 25,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 25,
-    coverCostsAmount: 0,
-    totalAmount: 25,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'paypal', email: 'awesome@charity.co.uk' },
-    status: 'succeeded',
-    donorName: 'Wild Amer',
-    donorId: 'donor-001',
-    donorEmail: 'awesome@charity.co.uk',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2025-11-01T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
+  // sub-003 backfill (Wild Amer, education-program, £25/mo PayPal — Sep–Nov 2025)
+  ...(['2025-09-01', '2025-10-01', '2025-11-01'] as const).map(
+    (date, i) =>
+      ({
+        id: `txn-0${48 + i}`,
+        organizationId: 'org-001',
+        processor: 'paypal' as const,
+        processorTransactionId: `PAYID-M6${String.fromCharCode(81 + i)}${i + 1}K${6 + i}L${5 + i}`,
+        type: 'subscription_payment' as const,
+        subscriptionId: 'sub-003',
+        campaignId: 'adopt-orangutan',
+        campaignName: 'Adopt an Orangutan',
+        charityName: 'Borneo Orangutan Survival',
+        lineItems: [
+          {
+            productId: 'education-program',
+            productTitle: 'Support Local Conservation Education Program',
+            quantity: 1,
+            unitPrice: 25,
+            frequency: 'monthly' as const
+          }
+        ],
+        subtotal: 25,
+        coverCostsAmount: 0,
+        totalAmount: 25,
+        currency: 'GBP',
+        baseCurrency: 'GBP',
+        exchangeRate: 1,
+        campaignCurrency: 'GBP',
+        campaignExchangeRate: 1,
+        paymentMethod: { type: 'paypal' as const, email: 'awesome@charity.co.uk' },
+        status: 'succeeded' as const,
+        donorName: 'Wild Amer',
+        donorId: 'donor-001',
+        donorEmail: 'awesome@charity.co.uk',
+        isAnonymous: false,
+        giftAid: false,
+        matchedAmount: 0,
+        legalBasis: 'contractual_necessity' as const,
+        createdAt: `${date}T00:00:00Z`,
+        receiptUrl: '#'
+      }) satisfies Transaction
+  ),
 
-  // 51-54. sub-004 backfill (Emma Wilson, adopt-maya, £10/mo — 4 missing: Jun–Sep 2025)
-  {
-    id: 'txn-051',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiC1gK2x9B1mN0g',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-004',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Survivor',
-        quantity: 1,
-        unitPrice: 10,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 10,
-    coverCostsAmount: 0,
-    totalAmount: 10,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '5556', brand: 'mastercard' },
-    status: 'succeeded',
-    donorName: 'Emma Wilson',
-    donorId: 'donor-002',
-    donorEmail: 'emma.wilson@example.com',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2025-06-01T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-  {
-    id: 'txn-052',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiC2hK2x9B1mN1h',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-004',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Survivor',
-        quantity: 1,
-        unitPrice: 10,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 10,
-    coverCostsAmount: 0,
-    totalAmount: 10,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '5556', brand: 'mastercard' },
-    status: 'succeeded',
-    donorName: 'Emma Wilson',
-    donorId: 'donor-002',
-    donorEmail: 'emma.wilson@example.com',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2025-07-01T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-  {
-    id: 'txn-053',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiC3iK2x9B1mN2i',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-004',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Survivor',
-        quantity: 1,
-        unitPrice: 10,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 10,
-    coverCostsAmount: 0,
-    totalAmount: 10,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '5556', brand: 'mastercard' },
-    status: 'succeeded',
-    donorName: 'Emma Wilson',
-    donorId: 'donor-002',
-    donorEmail: 'emma.wilson@example.com',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2025-08-01T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-  {
-    id: 'txn-054',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiC4jK2x9B1mN3j',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-004',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Survivor',
-        quantity: 1,
-        unitPrice: 10,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 10,
-    coverCostsAmount: 0,
-    totalAmount: 10,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '5556', brand: 'mastercard' },
-    status: 'succeeded',
-    donorName: 'Emma Wilson',
-    donorId: 'donor-002',
-    donorEmail: 'emma.wilson@example.com',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2025-09-01T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
+  // sub-004 backfill (Emma Wilson, adopt-maya, £10/mo — Jun–Sep 2025)
+  ...(['2025-06-01', '2025-07-01', '2025-08-01', '2025-09-01'] as const).map(
+    (date, i) =>
+      ({
+        id: `txn-0${51 + i}`,
+        organizationId: 'org-001',
+        processor: 'stripe' as const,
+        processorTransactionId: `pi_3RiC${i + 1}${String.fromCharCode(103 + i)}K2x9B1mN${i}${String.fromCharCode(103 + i)}`,
+        type: 'subscription_payment' as const,
+        subscriptionId: 'sub-004',
+        campaignId: 'adopt-orangutan',
+        campaignName: 'Adopt an Orangutan',
+        charityName: 'Borneo Orangutan Survival',
+        lineItems: [
+          {
+            productId: 'adopt-maya',
+            productTitle: 'Adopt Maya the Survivor',
+            quantity: 1,
+            unitPrice: 10,
+            frequency: 'monthly' as const
+          }
+        ],
+        subtotal: 10,
+        coverCostsAmount: 0,
+        totalAmount: 10,
+        currency: 'GBP',
+        baseCurrency: 'GBP',
+        exchangeRate: 1,
+        campaignCurrency: 'GBP',
+        campaignExchangeRate: 1,
+        paymentMethod: { type: 'card' as const, last4: '5556', brand: 'mastercard' },
+        status: 'succeeded' as const,
+        donorName: 'Emma Wilson',
+        donorId: 'donor-002',
+        donorEmail: 'emma.wilson@example.com',
+        isAnonymous: false,
+        giftAid: false,
+        matchedAmount: 0,
+        legalBasis: 'contractual_necessity' as const,
+        createdAt: `${date}T00:00:00Z`,
+        receiptUrl: '#'
+      }) satisfies Transaction
+  ),
 
-  // 55-57. sub-005 backfill (Rachel Green, tree-planting, £10/mo — 3 missing: Jul–Sep 2025)
-  {
-    id: 'txn-055',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiD1kK2x9B1mN4k',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-005',
-    campaignId: 'birthday-p2p-template',
-    campaignName: 'Birthday Fundraiser Template',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'tree-planting',
-        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        quantity: 1,
-        unitPrice: 10,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 10,
-    coverCostsAmount: 0,
-    totalAmount: 10,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Rachel Green',
-    donorId: 'donor-005',
-    donorEmail: 'rachel.green@example.com',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2025-07-01T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-  {
-    id: 'txn-056',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiD2lK2x9B1mN5l',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-005',
-    campaignId: 'birthday-p2p-template',
-    campaignName: 'Birthday Fundraiser Template',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'tree-planting',
-        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        quantity: 1,
-        unitPrice: 10,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 10,
-    coverCostsAmount: 0,
-    totalAmount: 10,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Rachel Green',
-    donorId: 'donor-005',
-    donorEmail: 'rachel.green@example.com',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2025-08-01T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-  {
-    id: 'txn-057',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiD3mK2x9B1mN6m',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-005',
-    campaignId: 'birthday-p2p-template',
-    campaignName: 'Birthday Fundraiser Template',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'tree-planting',
-        productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
-        quantity: 1,
-        unitPrice: 10,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 10,
-    coverCostsAmount: 0,
-    totalAmount: 10,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Rachel Green',
-    donorId: 'donor-005',
-    donorEmail: 'rachel.green@example.com',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2025-09-01T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
+  // sub-005 backfill (Rachel Green, tree-planting, £10/mo — Jul–Sep 2025)
+  ...(['2025-07-01', '2025-08-01', '2025-09-01'] as const).map(
+    (date, i) =>
+      ({
+        id: `txn-0${55 + i}`,
+        organizationId: 'org-001',
+        processor: 'stripe' as const,
+        processorTransactionId: `pi_3RiD${i + 1}${String.fromCharCode(107 + i)}K2x9B1mN${4 + i}${String.fromCharCode(107 + i)}`,
+        type: 'subscription_payment' as const,
+        subscriptionId: 'sub-005',
+        campaignId: 'birthday-p2p-template',
+        campaignName: 'Birthday Fundraiser Template',
+        charityName: 'Borneo Orangutan Survival',
+        lineItems: [
+          {
+            productId: 'tree-planting',
+            productTitle: 'Plant 10 Native Rainforest Trees for Wildlife',
+            quantity: 1,
+            unitPrice: 10,
+            frequency: 'monthly' as const
+          }
+        ],
+        subtotal: 10,
+        coverCostsAmount: 0,
+        totalAmount: 10,
+        currency: 'GBP',
+        baseCurrency: 'GBP',
+        exchangeRate: 1,
+        campaignCurrency: 'GBP',
+        campaignExchangeRate: 1,
+        paymentMethod: { type: 'card' as const, last4: '4242', brand: 'visa' },
+        status: 'succeeded' as const,
+        donorName: 'Rachel Green',
+        donorId: 'donor-005',
+        donorEmail: 'rachel.green@example.com',
+        isAnonymous: false,
+        giftAid: false,
+        matchedAmount: 0,
+        legalBasis: 'contractual_necessity' as const,
+        createdAt: `${date}T00:00:00Z`,
+        receiptUrl: '#'
+      }) satisfies Transaction
+  ),
 
-  // 58-59. sub-006 backfill (Sarah Mitchell, education-program, $25/mo — 2 missing: Oct–Nov 2025)
-  {
-    id: 'txn-058',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiE1nK2x9B1mN7n',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-006',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'education-program',
-        productTitle: 'Support Local Conservation Education Program',
-        quantity: 1,
-        unitPrice: 25,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 25,
-    coverCostsAmount: 0,
-    totalAmount: 25,
-    currency: 'USD',
-    baseCurrency: 'GBP',
-    exchangeRate: 0.79,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 0.79,
-    paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Sarah Mitchell',
-    donorId: 'donor-006',
-    donorEmail: 'sarah.mitchell@example.com',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2025-10-10T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-  {
-    id: 'txn-059',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiE2oK2x9B1mN8o',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-006',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'education-program',
-        productTitle: 'Support Local Conservation Education Program',
-        quantity: 1,
-        unitPrice: 25,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 25,
-    coverCostsAmount: 0,
-    totalAmount: 25,
-    currency: 'USD',
-    baseCurrency: 'GBP',
-    exchangeRate: 0.79,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 0.79,
-    paymentMethod: { type: 'card', last4: '4242', brand: 'visa' },
-    status: 'succeeded',
-    donorName: 'Sarah Mitchell',
-    donorId: 'donor-006',
-    donorEmail: 'sarah.mitchell@example.com',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2025-11-10T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
+  // sub-006 backfill (Sarah Mitchell, education-program, $25/mo — Oct–Nov 2025)
+  ...(['2025-10-10', '2025-11-10'] as const).map(
+    (date, i) =>
+      ({
+        id: `txn-0${58 + i}`,
+        organizationId: 'org-001',
+        processor: 'stripe' as const,
+        processorTransactionId: `pi_3RiE${i + 1}${String.fromCharCode(110 + i)}K2x9B1mN${7 + i}${String.fromCharCode(110 + i)}`,
+        type: 'subscription_payment' as const,
+        subscriptionId: 'sub-006',
+        campaignId: 'adopt-orangutan',
+        campaignName: 'Adopt an Orangutan',
+        charityName: 'Borneo Orangutan Survival',
+        lineItems: [
+          {
+            productId: 'education-program',
+            productTitle: 'Support Local Conservation Education Program',
+            quantity: 1,
+            unitPrice: 25,
+            frequency: 'monthly' as const
+          }
+        ],
+        subtotal: 25,
+        coverCostsAmount: 0,
+        totalAmount: 25,
+        currency: 'USD',
+        baseCurrency: 'GBP',
+        exchangeRate: 0.79,
+        campaignCurrency: 'GBP',
+        campaignExchangeRate: 0.79,
+        paymentMethod: { type: 'card' as const, last4: '4242', brand: 'visa' },
+        status: 'succeeded' as const,
+        donorName: 'Sarah Mitchell',
+        donorId: 'donor-006',
+        donorEmail: 'sarah.mitchell@example.com',
+        isAnonymous: false,
+        giftAid: false,
+        matchedAmount: 0,
+        legalBasis: 'contractual_necessity' as const,
+        createdAt: `${date}T00:00:00Z`,
+        receiptUrl: '#'
+      }) satisfies Transaction
+  ),
 
-  // 60-61. sub-007 backfill (Tom Wilson, adopt-maya, £10/mo — 2 missing: Nov–Dec 2025)
-  {
-    id: 'txn-060',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiF1pK2x9B1mN9p',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-007',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Survivor',
-        quantity: 1,
-        unitPrice: 10,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 10,
-    coverCostsAmount: 0,
-    totalAmount: 10,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '5556', brand: 'mastercard' },
-    status: 'succeeded',
-    donorName: 'Tom Wilson',
-    donorId: 'donor-007',
-    donorEmail: 'tom.wilson@example.com',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2025-11-01T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
-  {
-    id: 'txn-061',
-    organizationId: 'org-001',
-    processor: 'stripe',
-    processorTransactionId: 'pi_3RiF2qK2x9B1mN0q',
-    type: 'subscription_payment',
-    subscriptionId: 'sub-007',
-    campaignId: 'adopt-orangutan',
-    campaignName: 'Adopt an Orangutan',
-    charityName: 'Borneo Orangutan Survival',
-    lineItems: [
-      {
-        productId: 'adopt-maya',
-        productTitle: 'Adopt Maya the Survivor',
-        quantity: 1,
-        unitPrice: 10,
-        frequency: 'monthly'
-      }
-    ],
-    subtotal: 10,
-    coverCostsAmount: 0,
-    totalAmount: 10,
-    currency: 'GBP',
-    baseCurrency: 'GBP',
-    exchangeRate: 1,
-    campaignCurrency: 'GBP',
-    campaignExchangeRate: 1,
-    paymentMethod: { type: 'card', last4: '5556', brand: 'mastercard' },
-    status: 'succeeded',
-    donorName: 'Tom Wilson',
-    donorId: 'donor-007',
-    donorEmail: 'tom.wilson@example.com',
-    isAnonymous: false,
-    giftAid: false,
-    createdAt: '2025-12-01T00:00:00Z',
-    legalBasis: 'contractual_necessity',
-    receiptUrl: '#'
-  },
+  // sub-007 backfill (Tom Wilson, adopt-maya, £10/mo — Nov–Dec 2025)
+  ...(['2025-11-01', '2025-12-01'] as const).map(
+    (date, i) =>
+      ({
+        id: `txn-0${60 + i}`,
+        organizationId: 'org-001',
+        processor: 'stripe' as const,
+        processorTransactionId: `pi_3RiF${i + 1}${String.fromCharCode(112 + i)}K2x9B1mN${9 + i}${String.fromCharCode(112 + i)}`,
+        type: 'subscription_payment' as const,
+        subscriptionId: 'sub-007',
+        campaignId: 'adopt-orangutan',
+        campaignName: 'Adopt an Orangutan',
+        charityName: 'Borneo Orangutan Survival',
+        lineItems: [
+          {
+            productId: 'adopt-maya',
+            productTitle: 'Adopt Maya the Survivor',
+            quantity: 1,
+            unitPrice: 10,
+            frequency: 'monthly' as const
+          }
+        ],
+        subtotal: 10,
+        coverCostsAmount: 0,
+        totalAmount: 10,
+        currency: 'GBP',
+        baseCurrency: 'GBP',
+        exchangeRate: 1,
+        campaignCurrency: 'GBP',
+        campaignExchangeRate: 1,
+        paymentMethod: { type: 'card' as const, last4: '5556', brand: 'mastercard' },
+        status: 'succeeded' as const,
+        donorName: 'Tom Wilson',
+        donorId: 'donor-007',
+        donorEmail: 'tom.wilson@example.com',
+        isAnonymous: false,
+        giftAid: false,
+        matchedAmount: 0,
+        legalBasis: 'contractual_necessity' as const,
+        createdAt: `${date}T00:00:00Z`,
+        receiptUrl: '#'
+      }) satisfies Transaction
+  ),
 
-  // 62. sub-008 backfill (Alice Cooper, education-program, €30/mo PayPal — 1 missing: Nov 2025)
+  // sub-008 backfill (Alice Cooper, education-program, €30/mo PayPal — Nov 2025)
   {
     id: 'txn-062',
     organizationId: 'org-001',
@@ -2722,19 +1189,31 @@ export const transactions: Transaction[] = [
     donorEmail: 'alice.cooper@example.com',
     isAnonymous: false,
     giftAid: false,
-    createdAt: '2025-11-05T00:00:00Z',
+    matchedAmount: 0,
     legalBasis: 'contractual_necessity',
+    createdAt: '2025-11-05T00:00:00Z',
     receiptUrl: '#'
   }
 ]
+
+/**
+ * All transactions — generated one-time + hand-crafted subscription payments.
+ *
+ * In production this is the `transactions` table in Supabase.
+ * Helper functions below derive campaign-specific views (recent donations,
+ * stats) so that campaigns.ts doesn't duplicate this data.
+ */
+export const transactions: Transaction[] = [...generatedTransactions, ...subscriptionPayments]
+
+// ============================================
+// SUBSCRIPTIONS
+// ============================================
 
 /**
  * Sample subscriptions for donor portal
  *
  * Covers: active, paused, cancelled, past_due, single-item, multi-item,
  * Stripe, PayPal, monthly, yearly.
- * All subscriptions now include donorId/donorName/donorEmail.
- * sub-006/007/008 rewritten to use existing BOSF campaigns/products.
  */
 export const subscriptions: Subscription[] = [
   // 1. Active monthly - single item (Adopt Bumi via Stripe)
@@ -2773,7 +1252,6 @@ export const subscriptions: Subscription[] = [
     totalPaid: 92.7,
     paymentCount: 6
   },
-
   // 2. Active monthly - multi-item Impact Cart (Bumi + Maya via Stripe)
   {
     id: 'sub-002',
@@ -2817,7 +1295,6 @@ export const subscriptions: Subscription[] = [
     totalPaid: 77.25,
     paymentCount: 3
   },
-
   // 3. Active monthly - PayPal (Education Program)
   {
     id: 'sub-003',
@@ -2854,7 +1331,6 @@ export const subscriptions: Subscription[] = [
     totalPaid: 125,
     paymentCount: 5
   },
-
   // 4. Paused subscription (Emma Wilson, adopt-maya)
   {
     id: 'sub-004',
@@ -2891,7 +1367,6 @@ export const subscriptions: Subscription[] = [
     totalPaid: 60,
     paymentCount: 6
   },
-
   // 5. Cancelled subscription (Rachel Green, tree-planting)
   {
     id: 'sub-005',
@@ -2928,7 +1403,6 @@ export const subscriptions: Subscription[] = [
     totalPaid: 50,
     paymentCount: 5
   },
-
   // 6. Active monthly - education program, USD $25/mo (Sarah Mitchell)
   {
     id: 'sub-006',
@@ -2965,7 +1439,6 @@ export const subscriptions: Subscription[] = [
     totalPaid: 100,
     paymentCount: 4
   },
-
   // 7. Active monthly - adopt-maya, GBP £10/mo (Tom Wilson)
   {
     id: 'sub-007',
@@ -3002,7 +1475,6 @@ export const subscriptions: Subscription[] = [
     totalPaid: 30,
     paymentCount: 3
   },
-
   // 8. Active monthly - education program, EUR €30/mo via PayPal (Alice Cooper)
   {
     id: 'sub-008',
@@ -3061,7 +1533,9 @@ export function getRecentDonations(campaignId: string, limit?: number): Campaign
       currency: t.currency,
       message: t.message,
       isAnonymous: t.isAnonymous,
-      createdAt: t.createdAt
+      createdAt: t.createdAt,
+      matchedAmount: t.matchedAmount,
+      ...(t.matchPeriodId ? { matchPeriodId: t.matchPeriodId } : {})
     }))
 
   return limit ? donations.slice(0, limit) : donations
@@ -3070,19 +1544,15 @@ export function getRecentDonations(campaignId: string, limit?: number): Campaign
 /**
  * Compute aggregate stats for a campaign from its transactions.
  * Uses totalAmount * exchangeRate for consistent org-currency totals (cover costs go to charity).
- * Accepts optional overrides for fields where we want to show larger "realistic"
- * numbers (since mock data only has ~40 records but production would have thousands).
+ * totalMatched is the sum of matchedAmount from this campaign's succeeded transactions.
  */
-export function computeCampaignStats(
-  campaignId: string,
-  campaignCurrency: string,
-  overrides?: Partial<CampaignStats>
-): CampaignStats {
+export function computeCampaignStats(campaignId: string, campaignCurrency: string): CampaignStats {
   const succeeded = transactions.filter(
     (t) => t.campaignId === campaignId && t.status === 'succeeded'
   )
 
   const totalRaised = succeeded.reduce((sum, t) => sum + t.totalAmount * t.campaignExchangeRate, 0)
+  const totalMatched = succeeded.reduce((sum, t) => sum + (t.matchedAmount ?? 0), 0)
   const totalDonations = succeeded.length
   const uniqueEmails = new Set(succeeded.map((t) => t.donorEmail))
   const totalDonors = uniqueEmails.size
@@ -3094,22 +1564,23 @@ export function computeCampaignStats(
 
   return {
     totalRaised,
+    totalMatched,
     totalDonations,
     totalDonors,
     averageDonation,
     topDonation,
-    currency: campaignCurrency,
-    ...overrides
+    currency: campaignCurrency
   }
 }
 
-/** Compute raisedAmount and donationCount for a fundraiser from its transactions */
+/** Compute raisedAmount, donationCount, and totalMatched for a fundraiser from its transactions */
 export function computeFundraiserStats(
   campaignId: string,
   campaignCurrency: string
 ): {
   raisedAmount: number
   donationCount: number
+  totalMatched: number
   currency: string
 } {
   const succeeded = transactions.filter(
@@ -3118,8 +1589,16 @@ export function computeFundraiserStats(
   return {
     raisedAmount: succeeded.reduce((sum, t) => sum + t.totalAmount * t.campaignExchangeRate, 0),
     donationCount: succeeded.length,
+    totalMatched: succeeded.reduce((sum, t) => sum + (t.matchedAmount ?? 0), 0),
     currency: campaignCurrency
   }
+}
+
+/** Compute total poolDrawn for a match period from actual transactions */
+export function computePoolDrawn(matchPeriodId: string): number {
+  return transactions
+    .filter((t) => t.matchPeriodId === matchPeriodId && t.status === 'succeeded')
+    .reduce((sum, t) => sum + t.matchedAmount, 0)
 }
 
 /** Get transactions for a specific donor (by email) */

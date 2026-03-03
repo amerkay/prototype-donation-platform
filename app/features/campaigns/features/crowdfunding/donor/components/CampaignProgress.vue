@@ -28,7 +28,7 @@ const periods = computed(() => props.matchedGiving?.periods ?? [])
 // Three-mode display: active (live matcher card), historical (muted summary), hidden (no card)
 const displayMode = computed(() => {
   if (!periods.value.length) return 'hidden'
-  return getMatchDisplayMode(periods.value, props.campaignStatus)
+  return getMatchDisplayMode(periods.value, props.campaignStatus, new Date(), totalMatched.value)
 })
 
 // Best period for display: active one, or highest-drawn for historical
@@ -38,9 +38,9 @@ const multiplier = computed(() => displayPeriod.value?.matchMultiplier ?? 1)
 
 const actualRaised = computed(() => props.stats.totalRaised)
 
-// Total matched: sum of poolDrawn across all periods (actual match funds disbursed)
-const totalPoolDrawn = computed(() => periods.value.reduce((sum, p) => sum + p.poolDrawn, 0))
-const matchedTotal = computed(() => actualRaised.value + totalPoolDrawn.value)
+// Total matched from this campaign's own transaction data
+const totalMatched = computed(() => props.stats.totalMatched ?? 0)
+const matchedTotal = computed(() => actualRaised.value + totalMatched.value)
 
 // Progress percentage: for matched campaigns use total impact, otherwise raw raised
 const progress = computed(() => {
@@ -97,7 +97,7 @@ const poolRemaining = computed(() => {
       <div class="min-w-0 flex-1">
         <p class="text-sm font-medium leading-tight truncate text-muted-foreground">
           Matching ended &mdash;
-          {{ formatAmount(totalPoolDrawn, stats.currency, 0) }} matched by
+          {{ formatAmount(totalMatched, stats.currency, 0) }} matched by
           {{ displayPeriod.matcherName }}
         </p>
       </div>
@@ -121,7 +121,7 @@ const poolRemaining = computed(() => {
       </div>
       <div class="text-[11px] text-muted-foreground">
         {{ formatAmount(actualRaised, stats.currency, 0) }} donated +
-        {{ formatAmount(totalPoolDrawn, stats.currency, 0) }} matched
+        {{ formatAmount(totalMatched, stats.currency, 0) }} matched
       </div>
     </template>
 

@@ -12,7 +12,11 @@ import {
   classicCarForm,
   matchedGivingForm
 } from './api-sample-response-forms'
-import { getRecentDonations, computeCampaignStats } from './api-sample-response-transactions'
+import {
+  getRecentDonations,
+  computeCampaignStats,
+  computePoolDrawn
+} from './api-sample-response-transactions'
 import { getCampaignFundraisers } from './api-sample-response-fundraisers'
 
 /** Default matched giving settings (no matching) */
@@ -27,13 +31,7 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2026-01-14T10:30:00Z',
-    stats: computeCampaignStats('adopt-orangutan', 'GBP', {
-      totalRaised: 45820.5,
-      totalDonations: 342,
-      totalDonors: 287,
-      averageDonation: 134,
-      topDonation: 1000
-    }),
+    stats: computeCampaignStats('adopt-orangutan', 'GBP'),
     crowdfunding: {
       enabled: true,
       currency: 'GBP',
@@ -94,7 +92,7 @@ export const campaigns: Campaign[] = [
           name: 'Birthday Month Match',
           matchMultiplier: 2,
           poolAmount: 10000,
-          poolDrawn: 180,
+          poolDrawn: computePoolDrawn('mp-p2p-1'),
           startDate: '2026-03-01T00:00:00Z',
           endDate: '2026-03-31T00:00:00Z',
           matcherName: 'Anonymous Donor',
@@ -116,13 +114,7 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2025-10-01T00:00:00Z',
     updatedAt: '2026-01-12T09:00:00Z',
-    stats: computeCampaignStats('tribute-p2p-template', 'GBP', {
-      totalRaised: 12450,
-      totalDonations: 89,
-      totalDonors: 76,
-      averageDonation: 140,
-      topDonation: 500
-    }),
+    stats: computeCampaignStats('tribute-p2p-template', 'GBP'),
     crowdfunding: {
       enabled: true,
       currency: 'GBP',
@@ -157,13 +149,7 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2025-09-15T00:00:00Z',
     updatedAt: '2026-01-08T11:00:00Z',
-    stats: computeCampaignStats('challenge-p2p-template', 'GBP', {
-      totalRaised: 28340,
-      totalDonations: 215,
-      totalDonors: 189,
-      averageDonation: 132,
-      topDonation: 750
-    }),
+    stats: computeCampaignStats('challenge-p2p-template', 'GBP'),
     crowdfunding: {
       enabled: true,
       currency: 'GBP',
@@ -197,13 +183,7 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2025-08-01T00:00:00Z',
     updatedAt: '2026-01-05T16:00:00Z',
-    stats: computeCampaignStats('wedding-p2p-template', 'GBP', {
-      totalRaised: 8720,
-      totalDonations: 64,
-      totalDonors: 58,
-      averageDonation: 136,
-      topDonation: 500
-    }),
+    stats: computeCampaignStats('wedding-p2p-template', 'GBP'),
     crowdfunding: {
       enabled: true,
       currency: 'GBP',
@@ -305,13 +285,7 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2026-02-01T00:00:00Z',
     updatedAt: '2026-02-15T10:00:00Z',
-    stats: computeCampaignStats('matched-giving-spring', 'GBP', {
-      totalRaised: 5200,
-      totalDonations: 124,
-      totalDonors: 108,
-      averageDonation: 42,
-      topDonation: 500
-    }),
+    stats: computeCampaignStats('matched-giving-spring', 'GBP'),
     crowdfunding: {
       enabled: true,
       currency: 'GBP',
@@ -332,7 +306,6 @@ export const campaigns: Campaign[] = [
     peerToPeer: {
       enabled: false
     },
-    // 2x match: each £1 donated draws £1 from pool → poolDrawn ≈ totalRaised
     matchedGiving: {
       periods: [
         {
@@ -340,7 +313,7 @@ export const campaigns: Campaign[] = [
           name: 'Launch Week Double Match',
           matchMultiplier: 2,
           poolAmount: 30000,
-          poolDrawn: 5200,
+          poolDrawn: computePoolDrawn('mp-1'),
           startDate: '2026-03-01T00:00:00Z',
           endDate: '2026-03-15T00:00:00Z',
           matcherName: 'The Wilkinson Foundation',
@@ -352,7 +325,7 @@ export const campaigns: Campaign[] = [
           name: 'Spring Triple Match',
           matchMultiplier: 3,
           poolAmount: 20000,
-          poolDrawn: 0,
+          poolDrawn: computePoolDrawn('mp-2'),
           startDate: '2026-03-16T00:00:00Z',
           endDate: '2026-03-31T00:00:00Z',
           matcherName: 'Smith Family Trust',
@@ -361,7 +334,7 @@ export const campaigns: Campaign[] = [
       ]
     },
     fundraisers: [],
-    recentDonations: getRecentDonations('adopt-orangutan'),
+    recentDonations: getRecentDonations('matched-giving-spring'),
     form: matchedGivingForm
   },
   // --- Event campaigns ---
@@ -374,13 +347,7 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2026-01-05T00:00:00Z',
     updatedAt: '2026-02-01T10:00:00Z',
-    stats: computeCampaignStats('summer-fete-stalls', 'GBP', {
-      totalRaised: 875,
-      totalDonations: 28,
-      totalDonors: 28,
-      averageDonation: 31,
-      topDonation: 45
-    }),
+    stats: computeCampaignStats('summer-fete-stalls', 'GBP'),
     crowdfunding: {
       enabled: true,
       currency: 'GBP',
@@ -410,13 +377,7 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2026-01-10T00:00:00Z',
     updatedAt: '2026-02-05T10:00:00Z',
-    stats: computeCampaignStats('annual-dog-show', 'GBP', {
-      totalRaised: 142.5,
-      totalDonations: 57,
-      totalDonors: 34,
-      averageDonation: 2.5,
-      topDonation: 15
-    }),
+    stats: computeCampaignStats('annual-dog-show', 'GBP'),
     crowdfunding: {
       enabled: true,
       currency: 'GBP',
@@ -446,13 +407,7 @@ export const campaigns: Campaign[] = [
     isArchived: false,
     createdAt: '2026-01-12T00:00:00Z',
     updatedAt: '2026-02-08T10:00:00Z',
-    stats: computeCampaignStats('classic-car-show', 'GBP', {
-      totalRaised: 0,
-      totalDonations: 41,
-      totalDonors: 41,
-      averageDonation: 0,
-      topDonation: 0
-    }),
+    stats: computeCampaignStats('classic-car-show', 'GBP'),
     crowdfunding: {
       enabled: true,
       currency: 'GBP',
