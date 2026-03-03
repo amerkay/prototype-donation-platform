@@ -3,6 +3,7 @@ import { toast } from 'vue-sonner'
 import type { Campaign, CampaignType } from '~/features/campaigns/shared/types'
 import type { DeleteProtection } from '~/features/_shared/composables/useEditState'
 import { campaigns as mockCampaigns } from '~/sample-api-responses/api-sample-response-campaigns'
+import { useSessionStorageSingleton } from '~/features/_admin/composables/useSessionStorageSingleton'
 
 /**
  * Campaigns Composable (Singleton Pattern)
@@ -17,17 +18,18 @@ import { campaigns as mockCampaigns } from '~/sample-api-responses/api-sample-re
  * ```
  */
 
-// Singleton state
-const campaigns = ref<Campaign[]>([...mockCampaigns])
+// Singleton state — persistence via useSessionStorageSingleton factory
+const {
+  items: campaigns,
+  $persist,
+  ensureHydrated
+} = useSessionStorageSingleton<Campaign>('campaigns', mockCampaigns)
 const isLoading = ref(false)
 const error = ref<Error | null>(null)
-let hydrated = false
 
 export function useCampaigns() {
   // Hydrate from sessionStorage on first use
-  if (!hydrated) {
-    $hydrate()
-  }
+  ensureHydrated()
 
   /**
    * Get raw campaign by ID (no parent merge — for internal write operations)
@@ -264,35 +266,6 @@ export function useCampaigns() {
 
     $persist()
     toast.success('Campaign deleted')
-  }
-
-  /** Persistence - save all campaigns (modified mocks + user-created) to sessionStorage (client-only) */
-  function $persist(): void {
-    if (!import.meta.client) return
-    try {
-      // TODO-SUPABASE: No direct equivalent - each CRUD method will call individual supabase operations
-      sessionStorage.setItem('campaigns', JSON.stringify(campaigns.value))
-    } catch (error) {
-      console.warn('Failed to persist campaigns:', error)
-    }
-  }
-
-  /** Hydration - restore persisted campaigns, falling back to mock data (client-only) */
-  function $hydrate(): void {
-    if (hydrated) return
-    if (!import.meta.client) return
-
-    try {
-      // TODO-SUPABASE: Replace with supabase.from('campaigns').select('*').eq('org_id', orgId)
-      const saved = sessionStorage.getItem('campaigns')
-      if (saved) {
-        campaigns.value = JSON.parse(saved) as Campaign[]
-      }
-      hydrated = true
-    } catch (error) {
-      console.warn('Failed to hydrate campaigns:', error)
-      hydrated = true
-    }
   }
 
   return {

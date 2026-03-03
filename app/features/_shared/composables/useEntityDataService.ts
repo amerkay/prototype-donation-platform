@@ -1,95 +1,55 @@
 import { ref, computed } from 'vue'
 import type { Transaction } from '~/features/donor-portal/types'
-import type { Subscription } from '~/features/subscriptions/shared/types'
 import type { Donor } from '~/features/donors/admin/types'
+import { useReactiveTransactions } from '~/sample-api-responses/useReactiveTransactions'
+import { buildDonorList } from '~/features/_shared/utils/buildDonorMap'
 import {
-  transactions as rawTransactions,
-  subscriptions as rawSubscriptions
-} from '~/sample-api-responses/api-sample-response-transactions'
+  enrichSubscriptions,
+  type EnrichedSubscription
+} from '~/features/_shared/utils/enrichSubscriptions'
 
-// TODO-SUPABASE: Replace sample data imports with multiple Supabase queries (transactions + subscriptions).
+// Re-export for consumers that imported EnrichedSubscription from here
+export type { EnrichedSubscription }
+
+// TODO-SUPABASE: Replace useReactiveTransactions with direct Supabase queries.
 // This composable may be retired entirely — see SUPABASE_NOTES.md for details.
-
-/** Enriched subscription type with donor info */
-export type EnrichedSubscription = Subscription & {
-  donorName: string
-  donorEmail: string
-  donorId: string
-}
 
 /**
  * Centralized entity data service with cross-entity lookup maps.
- * Simulates async Supabase data loading with a 1s initial delay.
+ * Simulates async Supabase data loading with a brief delay.
  * Singleton — all admin list pages share the same instance.
  */
 let _instance: ReturnType<typeof createDataService> | null = null
 
 function createDataService() {
   const isLoading = ref(true)
-  const transactions = ref<Transaction[]>([])
-  const subscriptions = ref<EnrichedSubscription[]>([])
-  const donors = ref<Donor[]>([])
+  const { transactions: rawTxns, subscriptions: rawSubs } = useReactiveTransactions()
 
-  // Simulate async data fetch
-  setTimeout(() => {
-    const sortedTxns = [...rawTransactions].sort(
+  // Simulate async data fetch (mirrors future Supabase await)
+  const ready = ref(false)
+  Promise.resolve().then(() => {
+    setTimeout(() => {
+      ready.value = true
+      isLoading.value = false
+    }, 1000)
+  })
+
+  const transactions = computed(() => {
+    if (!ready.value) return [] as Transaction[]
+    return [...rawTxns.value].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
-    transactions.value = sortedTxns
+  })
 
-    // Build donor map from transactions (same logic as useDonors)
-    const donorMap = new Map<string, Donor>()
-    for (const txn of rawTransactions) {
-      if (txn.status !== 'succeeded') continue
-      const existing = donorMap.get(txn.donorId)
-      const baseAmount = txn.totalAmount * txn.exchangeRate
-      if (existing) {
-        existing.totalDonated += baseAmount
-        existing.donationCount++
-        if (txn.createdAt > existing.lastDonationDate) {
-          existing.lastDonationDate = txn.createdAt
-          existing.name = txn.isAnonymous ? existing.name : txn.donorName
-        }
-        if (txn.giftAid) existing.giftAid = true
-      } else {
-        donorMap.set(txn.donorId, {
-          id: txn.donorId,
-          email: txn.donorEmail,
-          name: txn.isAnonymous ? 'Anonymous' : txn.donorName,
-          totalDonated: baseAmount,
-          donationCount: 1,
-          currency: 'GBP',
-          lastDonationDate: txn.createdAt,
-          giftAid: txn.giftAid,
-          isAnonymous: txn.isAnonymous
-        })
-      }
-    }
-    donors.value = [...donorMap.values()]
+  const donors = computed(() => {
+    if (!ready.value) return [] as Donor[]
+    return buildDonorList(rawTxns.value)
+  })
 
-    // Build subscription donor map from transactions
-    const subDonorMap = new Map<string, { name: string; email: string; donorId: string }>()
-    for (const txn of rawTransactions) {
-      if (txn.subscriptionId && !subDonorMap.has(txn.subscriptionId)) {
-        subDonorMap.set(txn.subscriptionId, {
-          name: txn.donorName,
-          email: txn.donorEmail,
-          donorId: txn.donorId
-        })
-      }
-    }
-    subscriptions.value = [...rawSubscriptions].map((sub) => {
-      const donor = subDonorMap.get(sub.id)
-      return {
-        ...sub,
-        donorName: donor?.name ?? 'Unknown',
-        donorEmail: donor?.email ?? '',
-        donorId: donor?.donorId ?? ''
-      }
-    })
-
-    isLoading.value = false
-  }, 1000)
+  const subscriptions = computed(() => {
+    if (!ready.value) return [] as EnrichedSubscription[]
+    return enrichSubscriptions(rawSubs.value, rawTxns.value)
+  })
 
   /** Map: donorId → Donor */
   const donorById = computed(() => {

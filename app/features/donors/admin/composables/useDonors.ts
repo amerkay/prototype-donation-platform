@@ -3,54 +3,22 @@ import type { Transaction } from '~/features/donor-portal/types'
 import { useReactiveTransactions } from '~/sample-api-responses/useReactiveTransactions'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
+import { buildDonorList } from '~/features/_shared/utils/buildDonorMap'
 
 // TODO-SUPABASE: Replace sample data import with:
 // const { data } = await supabase.from('donors_summary_view').select('*').eq('org_id', orgId)
 
 /**
  * Composable for admin donor management.
- * Aggregates unique donors from the master transactions table.
+ * Aggregates unique donors from the master transactions table via buildDonorList().
  */
 export function useDonors() {
   const dateStore = useAdminDateRangeStore()
   const { transactions } = useReactiveTransactions()
 
-  const donors = computed<Donor[]>(() => {
-    const map = new Map<string, Donor>()
-
-    for (const txn of transactions.value) {
-      if (txn.status !== 'succeeded') continue
-      if (!dateStore.isWithinRange(txn.createdAt)) continue
-
-      const existing = map.get(txn.donorId)
-      const baseAmount = txn.totalAmount * txn.exchangeRate
-
-      if (existing) {
-        existing.totalDonated += baseAmount
-        existing.donationCount++
-        if (txn.createdAt > existing.lastDonationDate) {
-          existing.lastDonationDate = txn.createdAt
-          existing.name = txn.isAnonymous ? existing.name : txn.donorName
-        }
-        if (txn.giftAid) existing.giftAid = true
-      } else {
-        map.set(txn.donorId, {
-          id: txn.donorId,
-          email: txn.donorEmail,
-          name: txn.isAnonymous ? 'Anonymous' : txn.donorName,
-          totalDonated: baseAmount,
-          donationCount: 1,
-          currency: 'GBP',
-          lastDonationDate: txn.createdAt,
-          giftAid: txn.giftAid,
-          isAnonymous: txn.isAnonymous
-        })
-      }
-    }
-
-    return [...map.values()].sort(
-      (a, b) => new Date(b.lastDonationDate).getTime() - new Date(a.lastDonationDate).getTime()
-    )
+  const donors = computed(() => {
+    const filtered = transactions.value.filter((t) => dateStore.isWithinRange(t.createdAt))
+    return buildDonorList(filtered)
   })
 
   const totalDonors = computed(() => donors.value.length)

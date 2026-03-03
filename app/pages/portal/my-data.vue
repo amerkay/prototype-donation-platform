@@ -12,19 +12,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
 import { formatDate, formatDateTime } from '~/lib/formatDate'
-import {
-  getUserGiftAidDeclarations,
-  getUserConsentRecords
-} from '~/sample-api-responses/api-sample-response-transactions'
+import { useCompliance } from '~/features/_shared/composables/useCompliance'
 
 definePageMeta({ layout: 'portal' })
 
 const { transactions, subscriptions } = useDonorPortal()
+const { getGiftAidDeclarations, getConsentRecords } = useCompliance()
 
 const CURRENT_USER_EMAIL = 'awesome@charity.co.uk'
 
-const declarations = computed(() => getUserGiftAidDeclarations(CURRENT_USER_EMAIL))
-const consentRecords = computed(() => getUserConsentRecords(CURRENT_USER_EMAIL))
+const declarations = computed(() => getGiftAidDeclarations(CURRENT_USER_EMAIL))
+const consentRecords = computed(() => getConsentRecords(CURRENT_USER_EMAIL))
 
 const PURPOSE_LABELS: Record<string, string> = {
   marketing_email: 'Marketing Emails'
@@ -39,8 +37,8 @@ function downloadMyData() {
     },
     transactions: transactions.value,
     subscriptions: subscriptions.value,
-    giftAidDeclarations: getUserGiftAidDeclarations(CURRENT_USER_EMAIL),
-    consentRecords: getUserConsentRecords(CURRENT_USER_EMAIL)
+    giftAidDeclarations: getGiftAidDeclarations(CURRENT_USER_EMAIL),
+    consentRecords: getConsentRecords(CURRENT_USER_EMAIL)
   }
 
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })

@@ -10,11 +10,8 @@ import { useDonors } from '~/features/donors/admin/composables/useDonors'
 import { useAdminSubscriptions } from '~/features/subscriptions/admin/composables/useAdminSubscriptions'
 import { subscriptionColumns } from '~/features/subscriptions/admin/columns/subscriptionColumns'
 import { createViewActionColumn } from '~/features/_shared/utils/actionColumn'
-import type { EnrichedSubscription } from '~/features/_shared/composables/useEntityDataService'
-import {
-  getUserConsentRecords,
-  getUserGiftAidDeclarations
-} from '~/sample-api-responses/api-sample-response-transactions'
+import type { EnrichedSubscription } from '~/features/_shared/utils/enrichSubscriptions'
+import { useCompliance } from '~/features/_shared/composables/useCompliance'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
@@ -25,6 +22,7 @@ const donorId = computed(() => route.params.id as string)
 
 const { getDonorById, getDonorTransactionsById } = useDonors()
 const { allSubscriptions } = useAdminSubscriptions()
+const { getGiftAidDeclarations, getConsentRecords } = useCompliance()
 
 const donor = computed(() => getDonorById(donorId.value))
 const donorTransactions = computed(() => getDonorTransactionsById(donorId.value))
@@ -49,8 +47,8 @@ const breadcrumbs = computed(() => [
   { label: donor.value?.name ?? 'Not Found' }
 ])
 
-const consentRecords = computed(() => getUserConsentRecords(donor.value?.email ?? ''))
-const giftAidDeclarations = computed(() => getUserGiftAidDeclarations(donor.value?.email ?? ''))
+const consentRecords = computed(() => getConsentRecords(donor.value?.email ?? ''))
+const giftAidDeclarations = computed(() => getGiftAidDeclarations(donor.value?.email ?? ''))
 </script>
 
 <template>

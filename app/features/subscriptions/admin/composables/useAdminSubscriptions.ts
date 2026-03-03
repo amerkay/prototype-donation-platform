@@ -1,45 +1,24 @@
-import type { Subscription } from '~/features/subscriptions/shared/types'
 import { useReactiveTransactions } from '~/sample-api-responses/useReactiveTransactions'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
+import { enrichSubscriptions } from '~/features/_shared/utils/enrichSubscriptions'
 
 // TODO-SUPABASE: Replace sample data import with:
 // const { data } = await supabase.from('subscriptions').select('*, subscription_line_items(*)').eq('org_id', orgId)
 
 /**
  * Composable for admin subscription management.
- * Provides all subscriptions with enriched donor info from transactions.
+ * Provides all subscriptions with enriched donor info via enrichSubscriptions().
  */
 export function useAdminSubscriptions() {
   const dateStore = useAdminDateRangeStore()
   const { transactions, subscriptions } = useReactiveTransactions()
 
-  /** Map subscription IDs to donor info from their first transaction */
-  const donorMap = computed(() => {
-    const map = new Map<string, { id: string; name: string; email: string }>()
-    for (const txn of transactions.value) {
-      if (txn.subscriptionId && !map.has(txn.subscriptionId)) {
-        map.set(txn.subscriptionId, { id: txn.donorId, name: txn.donorName, email: txn.donorEmail })
-      }
-    }
-    return map
-  })
-
-  const allSubscriptions = computed<
-    (Subscription & { donorId: string; donorName: string; donorEmail: string })[]
-  >(() =>
-    [...subscriptions.value]
-      .filter((sub) => dateStore.isWithinRange(sub.createdAt))
-      .map((sub) => {
-        const donor = donorMap.value.get(sub.id)
-        return {
-          ...sub,
-          donorId: donor?.id ?? sub.donorId ?? '',
-          donorName: donor?.name ?? sub.donorName ?? 'Unknown',
-          donorEmail: donor?.email ?? sub.donorEmail ?? ''
-        }
-      })
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  const allSubscriptions = computed(() =>
+    enrichSubscriptions(
+      subscriptions.value.filter((sub) => dateStore.isWithinRange(sub.createdAt)),
+      transactions.value
+    ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   )
 
   const activeSubscriptions = computed(() =>
