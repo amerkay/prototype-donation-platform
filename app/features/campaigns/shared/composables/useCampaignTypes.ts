@@ -14,8 +14,10 @@ export function getCampaignTypeLabel(campaign: Campaign | { type: CampaignType }
       return 'Standard'
     case 'p2p':
       return 'Peer-to-peer Template'
-    case 'fundraiser':
+    case 'p2p-fundraiser':
       return 'Peer-to-peer (P2P)'
+    case 'event':
+      return 'Event'
     default:
       return 'Standard'
   }
@@ -30,8 +32,10 @@ export function getCampaignTypeShortLabel(campaign: Campaign | { type: CampaignT
       return 'Standard'
     case 'p2p':
       return 'P2P Template'
-    case 'fundraiser':
+    case 'p2p-fundraiser':
       return 'P2P'
+    case 'event':
+      return 'Event'
     default:
       return 'Standard'
   }
@@ -49,8 +53,10 @@ export function getCampaignTypeBreadcrumb(campaign: Campaign | { type: CampaignT
       return { label: 'Campaigns', href: '/admin/campaigns' }
     case 'p2p':
       return { label: 'P2P Templates', href: '/admin/p2p/templates' }
-    case 'fundraiser':
+    case 'p2p-fundraiser':
       return { label: 'Fundraiser Pages', href: '/admin/p2p/fundraisers' }
+    case 'event':
+      return { label: 'Campaigns', href: '/admin/campaigns' }
     default:
       return { label: 'Campaigns', href: '/admin/campaigns' }
   }
@@ -74,8 +80,10 @@ export function getCampaignTypeBadgeVariant(
   switch (type) {
     case 'p2p':
       return 'secondary'
-    case 'fundraiser':
+    case 'p2p-fundraiser':
       return 'default'
+    case 'event':
+      return 'outline'
     default:
       return 'outline'
   }

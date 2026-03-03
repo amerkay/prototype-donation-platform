@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
-import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
 import StickyButtonGroup from '~/features/_admin/components/StickyButtonGroup.vue'
 import { createCampaignConfigMaster, openAccordionId } from '../forms/campaign-config-master'
@@ -16,11 +15,8 @@ const formConfigStore = useFormConfigStore()
 // This must be called in component setup(), not in form definition
 provideAccordionGroup(openAccordionId)
 
-// Get forms count for component field validation
-const { forms } = useForms(store.id!)
-const formsCount = computed(
-  () => forms.value.filter((f) => !store.pendingFormDeletes.has(f.id)).length
-)
+// Form count for component field validation (1:1 campaign:form)
+const formsCount = computed(() => (store.form ? 1 : 0))
 
 // AUTO-MAPPING: No getData/setData needed! ✨
 // Form metadata ($storePath) handles all mapping automatically
@@ -57,13 +53,13 @@ watch(
     if (!modelValue.value.donationForms) {
       ;(modelValue.value as Record<string, unknown>).donationForms = {}
     }
-    ;(modelValue.value.donationForms as Record<string, unknown>).formsList = {
+    ;(modelValue.value.donationForms as Record<string, unknown>).formCard = {
       formsCount: count
     }
     // Push into vee-validate's internal state so validation re-runs.
     // FormRenderer clones modelValue on init, so direct mutation above only
     // covers the initial snapshot — setFieldValue handles live updates.
-    formRef.value?.setFieldValue('donationForms.formsList', { formsCount: count })
+    formRef.value?.setFieldValue('donationForms.formCard', { formsCount: count })
   },
   { immediate: true }
 )

@@ -12,12 +12,10 @@ import { useCurrencySettingsStore } from '~/features/settings/admin/stores/curre
 import { currencyOpenAccordionId } from '~/features/settings/admin/forms/currency-settings-form'
 import { activateHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
-import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
 import type { PresetAmount } from '~/features/donation-form/shared/types'
 
 const currencyStore = useCurrencySettingsStore()
 const { campaigns } = useCampaigns()
-const formsStore = useFormsStore()
 
 const baseCurrency = computed(() => currencyStore.defaultCurrency)
 const { convertPrice, getMultiplier } = useCurrency(() => baseCurrency.value)
@@ -66,27 +64,26 @@ const sourceForm = computed(() => {
   let bestDate = ''
 
   for (const campaign of campaigns.value) {
-    if (campaign.type === 'fundraiser') continue
-    const forms = formsStore.getForms(campaign.id)
-    for (const form of forms) {
-      const da = form.config?.donationAmounts
-      if (!da) continue
-      if (form.config?.form?.formType === 'registration') continue
-      if (da.baseDefaultCurrency !== baseCurrency.value) continue
+    if (campaign.type === 'p2p-fundraiser') continue
+    const form = campaign.form
+    if (!form) continue
 
-      const firstFreq = Object.values(da.frequencies ?? {}).find(
-        (f) => f.enabled && f.presetAmounts?.length > 0
-      )
-      if (!firstFreq) continue
+    const da = form.config?.donationAmounts
+    if (!da) continue
+    if (da.baseDefaultCurrency !== baseCurrency.value) continue
 
-      if (form.updatedAt > bestDate) {
-        bestDate = form.updatedAt
-        best = {
-          campaignName: campaign.name,
-          formName: form.name,
-          formLink: `/admin/campaigns/${campaign.id}/forms/${form.id}/edit#presetAmounts`,
-          presets: firstFreq.presetAmounts.slice(0, 6)
-        }
+    const firstFreq = Object.values(da.frequencies ?? {}).find(
+      (f) => f.enabled && f.presetAmounts?.length > 0
+    )
+    if (!firstFreq) continue
+
+    if (form.updatedAt > bestDate) {
+      bestDate = form.updatedAt
+      best = {
+        campaignName: campaign.name,
+        formName: form.name,
+        formLink: `/admin/campaigns/${campaign.id}/forms/${form.id}/edit#presetAmounts`,
+        presets: firstFreq.presetAmounts.slice(0, 6)
       }
     }
   }

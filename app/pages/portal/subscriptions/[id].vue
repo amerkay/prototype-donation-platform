@@ -38,7 +38,7 @@ const sub = computed(() => subscriptions.value.find((s) => s.id === route.params
 const changeAmountMin = computed((): number | null => {
   if (!sub.value) return null
   const campaign = campaigns.value.find((c) => c.id === sub.value!.campaignId)
-  const defaultForm = campaign?.forms.find((f) => f.isDefault)
+  const defaultForm = campaign?.form
   const freq = sub.value.frequency as 'monthly' | 'yearly'
   return defaultForm?.config.donationAmounts.frequencies[freq]?.customAmount.min ?? null
 })

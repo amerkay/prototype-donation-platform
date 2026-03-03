@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { computed } from 'vue'
-import { useCrowdfundingSettingsForm } from '~/features/campaigns/admin/forms/crowdfunding-settings-form'
+import { useCrowdfundingSettingsForm } from '~/features/campaigns/features/crowdfunding/admin/forms/crowdfunding-settings-form'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import type { FieldDef, FieldContext } from '~/features/_library/form-builder/types'

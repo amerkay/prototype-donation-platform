@@ -13,16 +13,19 @@ definePageMeta({ layout: 'admin' })
 
 const { campaigns } = useCampaigns()
 
-const standardCampaigns = computed(() => campaigns.value.filter((c) => c.type === 'standard'))
+// Show all campaign types except P2P templates and fundraisers (they have dedicated pages)
+const listableCampaigns = computed(() =>
+  campaigns.value.filter((c) => c.type !== 'p2p' && c.type !== 'p2p-fundraiser')
+)
 
-const activeCampaigns = computed(() => standardCampaigns.value.filter((c) => c.status === 'active'))
+const activeCampaigns = computed(() => listableCampaigns.value.filter((c) => c.status === 'active'))
 
 const totalRaised = computed(() =>
-  standardCampaigns.value.reduce((sum, c) => sum + c.stats.totalRaised, 0)
+  listableCampaigns.value.reduce((sum, c) => sum + c.stats.totalRaised, 0)
 )
 
 const totalDonations = computed(() =>
-  standardCampaigns.value.reduce((sum, c) => sum + c.stats.totalDonations, 0)
+  listableCampaigns.value.reduce((sum, c) => sum + c.stats.totalDonations, 0)
 )
 
 // Filtering
@@ -39,15 +42,15 @@ const showArchived = ref(false)
 
 const statusCounts = computed(() => {
   const base = showArchived.value
-    ? standardCampaigns.value
-    : standardCampaigns.value.filter((c) => !c.isArchived)
+    ? listableCampaigns.value
+    : listableCampaigns.value.filter((c) => !c.isArchived)
   const counts: Record<string, number> = { all: base.length }
   for (const c of base) counts[c.status] = (counts[c.status] ?? 0) + 1
   return counts
 })
 
 const filteredCampaigns = computed(() => {
-  let result = standardCampaigns.value
+  let result = listableCampaigns.value
   if (!showArchived.value) result = result.filter((c) => !c.isArchived)
   if (activeStatusFilter.value !== 'all')
     result = result.filter((c) => c.status === activeStatusFilter.value)
@@ -64,7 +67,7 @@ const formattedTotalRaised = computed(() => {
 })
 
 const stats = computed(() => [
-  { value: standardCampaigns.value.length, label: 'campaigns' },
+  { value: listableCampaigns.value.length, label: 'campaigns' },
   { value: activeCampaigns.value.length, label: 'active' },
   { value: formattedTotalRaised.value, label: 'raised' },
   { value: totalDonations.value, label: 'donations' }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ShareContent from '~/features/campaigns/donor/components/ShareContent.vue'
+import ShareContent from '~/features/campaigns/features/sharing/donor/components/ShareContent.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

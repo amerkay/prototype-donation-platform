@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
-import CrowdfundingPage from '~/features/campaigns/donor/components/CrowdfundingPage.vue'
+import CrowdfundingPage from '~/features/campaigns/features/crowdfunding/donor/components/CrowdfundingPage.vue'
 import PreviewEditable from '~/features/_admin/components/PreviewEditable.vue'
-import type { Campaign } from '~/features/campaigns/shared/types'
+import type { Campaign, MatchPeriod } from '~/features/campaigns/shared/types'
 
 withDefaults(defineProps<{ editable?: boolean }>(), { editable: false })
 
@@ -15,7 +15,8 @@ const currencyStore = useCurrencySettingsStore()
 const campaignForPreview = computed<Campaign | null>(() => {
   if (!store.fullCampaign) return null
 
-  // P2P templates should preview with zeroed stats
+  // P2P templates: zero stats + donations but preserve matchedGiving (with zeroed poolDrawn)
+  // Fundraisers inherit parent's match config, so the preview should show the match banner
   if (store.isP2P) {
     return {
       ...store.fullCampaign,
@@ -26,6 +27,12 @@ const campaignForPreview = computed<Campaign | null>(() => {
         averageDonation: 0,
         topDonation: 0,
         currency: store.currency || currencyStore.defaultCurrency
+      },
+      matchedGiving: {
+        periods: (store.fullCampaign.matchedGiving?.periods ?? []).map((p: MatchPeriod) => ({
+          ...p,
+          poolDrawn: 0
+        }))
       },
       recentDonations: []
     }

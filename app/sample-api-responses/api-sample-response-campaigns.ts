@@ -1,18 +1,22 @@
 import type { Campaign } from '~/features/campaigns/shared/types'
 import {
-  adoptOrangutanForms,
-  birthdayP2PForms,
-  tributeP2PForms,
-  challengeP2PForms,
-  weddingP2PForms,
-  wildAmer1FundraiserForms,
-  wildAmer2FundraiserForms,
-  stallBookingForms,
-  dogShowForms,
-  classicCarForms
+  adoptOrangutanForm,
+  birthdayP2PForm,
+  tributeP2PForm,
+  challengeP2PForm,
+  weddingP2PForm,
+  wildAmer1FundraiserForm,
+  wildAmer2FundraiserForm,
+  stallBookingForm,
+  dogShowForm,
+  classicCarForm,
+  matchedGivingForm
 } from './api-sample-response-forms'
 import { getRecentDonations, computeCampaignStats } from './api-sample-response-transactions'
 import { getCampaignFundraisers } from './api-sample-response-fundraisers'
+
+/** Default matched giving settings (no matching) */
+const noMatchedGiving = { periods: [] }
 
 export const campaigns: Campaign[] = [
   {
@@ -49,9 +53,10 @@ export const campaigns: Campaign[] = [
     peerToPeer: {
       enabled: false
     },
+    matchedGiving: noMatchedGiving,
     fundraisers: [],
     recentDonations: getRecentDonations('adopt-orangutan'),
-    forms: adoptOrangutanForms
+    form: adoptOrangutanForm
   },
   {
     id: 'birthday-p2p-template',
@@ -82,9 +87,24 @@ export const campaigns: Campaign[] = [
       enabled: true,
       customMessage: 'Join me in celebrating by raising funds for a great cause!'
     },
+    matchedGiving: {
+      periods: [
+        {
+          id: 'mp-p2p-1',
+          name: 'Birthday Month Match',
+          multiplier: 2,
+          poolAmount: 10000,
+          poolDrawn: 180,
+          startDate: '2026-03-01T00:00:00Z',
+          endDate: '2026-03-31T00:00:00Z',
+          matcherName: 'Anonymous Donor',
+          displayMessage: 'All birthday fundraiser donations matched this month!'
+        }
+      ]
+    },
     fundraisers: getCampaignFundraisers('birthday-p2p-template'),
     recentDonations: getRecentDonations('birthday-p2p-template'),
-    forms: birthdayP2PForms
+    form: birthdayP2PForm
   },
   // P2P Template: Tribute & Memorial
   {
@@ -122,9 +142,10 @@ export const campaigns: Campaign[] = [
       customMessage:
         'Help us honour their memory by raising funds for a cause they cared deeply about.'
     },
+    matchedGiving: noMatchedGiving,
     fundraisers: [],
     recentDonations: getRecentDonations('tribute-p2p-template'),
-    forms: tributeP2PForms
+    form: tributeP2PForm
   },
   // P2P Template: Challenge Fundraiser
   {
@@ -161,9 +182,10 @@ export const campaigns: Campaign[] = [
       enabled: true,
       customMessage: 'Take on a challenge and raise funds alongside me!'
     },
+    matchedGiving: noMatchedGiving,
     fundraisers: [],
     recentDonations: getRecentDonations('challenge-p2p-template'),
-    forms: challengeP2PForms
+    form: challengeP2PForm
   },
   // P2P Template: Wedding Fundraiser
   {
@@ -200,14 +222,15 @@ export const campaigns: Campaign[] = [
       enabled: true,
       customMessage: 'Help us celebrate our wedding by supporting a cause we care about!'
     },
+    matchedGiving: noMatchedGiving,
     fundraisers: [],
     recentDonations: getRecentDonations('wedding-p2p-template'),
-    forms: weddingP2PForms
+    form: weddingP2PForm
   },
-  // Fundraiser Campaign 1: Wild Amer's Birthday Fundraiser
+  // P2P Fundraiser Campaign 1: Wild Amer's Birthday Fundraiser
   {
     id: 'wild-amer-birthday-fundraiser',
-    type: 'fundraiser',
+    type: 'p2p-fundraiser',
     parentCampaignId: 'birthday-p2p-template',
     p2pPreset: 'birthday',
     name: "Wild Amer's Birthday Fundraiser",
@@ -234,14 +257,15 @@ export const campaigns: Campaign[] = [
     peerToPeer: {
       enabled: false
     },
+    matchedGiving: noMatchedGiving,
     fundraisers: [],
     recentDonations: getRecentDonations('wild-amer-birthday-fundraiser'),
-    forms: wildAmer1FundraiserForms
+    form: wildAmer1FundraiserForm
   },
-  // Fundraiser Campaign 2: Wild Amer's Second Birthday Fundraiser
+  // P2P Fundraiser Campaign 2: Wild Amer's Second Birthday Fundraiser
   {
     id: 'wild-amer-birthday-2-fundraiser',
-    type: 'fundraiser',
+    type: 'p2p-fundraiser',
     parentCampaignId: 'birthday-p2p-template',
     p2pPreset: 'birthday',
     name: "Wild Amer's Mini Fundraiser",
@@ -267,15 +291,84 @@ export const campaigns: Campaign[] = [
     peerToPeer: {
       enabled: false
     },
+    matchedGiving: noMatchedGiving,
     fundraisers: [],
     recentDonations: getRecentDonations('wild-amer-birthday-2-fundraiser'),
-    forms: wildAmer2FundraiserForms
+    form: wildAmer2FundraiserForm
   },
-  // --- Non-donation campaigns ---
-  // Registration: Summer Fete Stall Booking
+  // Standard campaign with matched giving enabled
+  {
+    id: 'matched-giving-spring',
+    type: 'standard',
+    name: 'Spring Matched Giving Appeal',
+    status: 'active',
+    isArchived: false,
+    createdAt: '2026-02-01T00:00:00Z',
+    updatedAt: '2026-02-15T10:00:00Z',
+    stats: computeCampaignStats('matched-giving-spring', 'GBP', {
+      totalRaised: 5200,
+      totalDonations: 124,
+      totalDonors: 108,
+      averageDonation: 42,
+      topDonation: 500
+    }),
+    crowdfunding: {
+      enabled: true,
+      currency: 'GBP',
+      coverPhoto: '/imgs/baby-orangutan-hammick.webp',
+      title: 'Double Your Impact — Spring Matched Giving',
+      shortDescription:
+        'Every donation doubled! A generous supporter is matching all gifts pound for pound.',
+      story:
+        "Thanks to an incredibly generous donor, every pound you give this spring will be matched — doubling your impact for orangutan conservation.\n\nThis is a limited-time opportunity. The matching fund runs until we hit our £15,000 target or the end date, whichever comes first.\n\nDon't miss this chance to make your donation go twice as far!",
+      showProgressBar: true,
+      showRecentDonations: true,
+      defaultDonationsView: 'recent',
+      numberOfDonationsToShow: 5,
+      goalAmount: 15000,
+      endDate: '2026-06-30',
+      enableSocialSharing: true
+    },
+    peerToPeer: {
+      enabled: false
+    },
+    // 2x match: each £1 donated draws £1 from pool → poolDrawn ≈ totalRaised
+    matchedGiving: {
+      periods: [
+        {
+          id: 'mp-1',
+          name: 'Launch Week Double Match',
+          multiplier: 2,
+          poolAmount: 30000,
+          poolDrawn: 5200,
+          startDate: '2026-03-01T00:00:00Z',
+          endDate: '2026-03-15T00:00:00Z',
+          matcherName: 'The Wilkinson Foundation',
+          matcherLogo: '/imgs/BOS-USA-logo-green.webp',
+          displayMessage: 'Every pound you donate is matched pound for pound!'
+        },
+        {
+          id: 'mp-2',
+          name: 'Spring Triple Match',
+          multiplier: 3,
+          poolAmount: 20000,
+          poolDrawn: 0,
+          startDate: '2026-03-16T00:00:00Z',
+          endDate: '2026-03-31T00:00:00Z',
+          matcherName: 'Smith Family Trust',
+          displayMessage: 'Triple your impact this spring!'
+        }
+      ]
+    },
+    fundraisers: [],
+    recentDonations: getRecentDonations('adopt-orangutan'),
+    form: matchedGivingForm
+  },
+  // --- Event campaigns ---
+  // Event: Summer Fete Stall Booking
   {
     id: 'summer-fete-stalls',
-    type: 'standard',
+    type: 'event',
     name: 'Summer Fete Stall Booking',
     status: 'active',
     isArchived: false,
@@ -303,14 +396,15 @@ export const campaigns: Campaign[] = [
       enableSocialSharing: true
     },
     peerToPeer: { enabled: false },
+    matchedGiving: noMatchedGiving,
     fundraisers: [],
     recentDonations: [],
-    forms: stallBookingForms
+    form: stallBookingForm
   },
-  // Ticketing: Annual Dog Show
+  // Event: Annual Dog Show
   {
     id: 'annual-dog-show',
-    type: 'standard',
+    type: 'event',
     name: 'Annual Dog Show',
     status: 'active',
     isArchived: false,
@@ -338,14 +432,15 @@ export const campaigns: Campaign[] = [
       enableSocialSharing: true
     },
     peerToPeer: { enabled: false },
+    matchedGiving: noMatchedGiving,
     fundraisers: [],
     recentDonations: [],
-    forms: dogShowForms
+    form: dogShowForm
   },
-  // Registration: Classic Car Show (free entry)
+  // Event: Classic Car Show (free entry)
   {
     id: 'classic-car-show',
-    type: 'standard',
+    type: 'event',
     name: 'Classic Car Show',
     status: 'active',
     isArchived: false,
@@ -373,8 +468,9 @@ export const campaigns: Campaign[] = [
       enableSocialSharing: true
     },
     peerToPeer: { enabled: false },
+    matchedGiving: noMatchedGiving,
     fundraisers: [],
     recentDonations: [],
-    forms: classicCarForms
+    form: classicCarForm
   }
 ]

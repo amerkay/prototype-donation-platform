@@ -31,7 +31,7 @@ export function useDonorPortal() {
   const currentUserFundraisers = computed(() => {
     const result: Campaign[] = []
     for (const campaign of campaigns.value) {
-      if (campaign.type !== 'fundraiser') continue
+      if (campaign.type !== 'p2p-fundraiser') continue
       const parent = campaigns.value.find((c) => c.id === campaign.parentCampaignId)
       if (!parent) continue
       const match = parent.fundraisers.find(

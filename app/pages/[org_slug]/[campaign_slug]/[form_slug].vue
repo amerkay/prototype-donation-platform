@@ -3,7 +3,7 @@ import DonationFlowWizard from '~/features/donation-form/donor/DonationFlowWizar
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
-import { useForms } from '~/features/campaigns/shared/composables/useForms'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { ICON_WARNING } from '~/lib/icons'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -21,9 +21,10 @@ const formConfigStore = useFormConfigStore()
 const donationStore = useDonationFormStore()
 const cartStore = useImpactCartStore()
 
-// Each campaign (including fundraisers) has its own forms via copy-on-create
-const { getForm } = useForms(campaignSlug.value)
-const form = computed(() => getForm(formSlug.value))
+// 1:1 campaign:form — get form directly from campaign
+const { getCampaignById } = useCampaigns()
+const campaign = computed(() => getCampaignById(campaignSlug.value))
+const form = computed(() => campaign.value?.form ?? null)
 
 // Initialize form config on mount
 onMounted(() => {

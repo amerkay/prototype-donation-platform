@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
-import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
+import CampaignProgress from '~/features/campaigns/features/crowdfunding/donor/components/CampaignProgress.vue'
 import DataTable from '~/features/_shared/components/DataTable.vue'
 import { fundraiserDonationColumns } from '~/features/donor-portal/columns/fundraiserDonationColumns'
 import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import StatsCard from '@/components/StatsCard.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
 import {
   Empty,
   EmptyContent,
@@ -32,14 +30,11 @@ definePageMeta({
 })
 
 const route = useRoute()
-const { formatAmount, getProgressPercentage } = useCampaignFormatters()
-const { currentUserFundraisers } = useDonorPortal()
-const { campaigns } = useCampaigns()
+const { getCampaignById, campaigns } = useCampaigns()
 const charityStore = useCharitySettingsStore()
 
-const fundraiser = computed(() =>
-  currentUserFundraisers.value.find((f) => f.id === route.params.id)
-)
+// Use getCampaignById for auto-merge with parent (inherits matchedGiving, form, etc.)
+const fundraiser = computed(() => getCampaignById(route.params.id as string))
 
 // Check fundraiser metadata status from parent
 const fundraiserMeta = computed(() => {
@@ -126,43 +121,16 @@ const breadcrumbItems = computed(() => {
 
         <!-- Stats -->
         <div class="grid gap-6 grid-cols-2 sm:grid-cols-4 my-2">
-          <!-- Progress -->
+          <!-- Progress (with matched giving from parent if applicable) -->
           <Card v-if="fundraiser.crowdfunding.goalAmount" class="col-span-2">
             <CardContent>
-              <div class="space-y-3">
-                <div class="flex items-baseline justify-between gap-4">
-                  <div>
-                    <p class="text-3xl font-bold tracking-tight">
-                      {{ formatAmount(fundraiser.stats.totalRaised, fundraiser.stats.currency) }}
-                    </p>
-                    <p class="text-sm text-muted-foreground mt-0.5">
-                      raised of {{ formatAmount(fundraiser.crowdfunding.goalAmount) }} goal
-                    </p>
-                  </div>
-                  <div class="text-right">
-                    <p class="text-2xl font-bold text-muted-foreground">
-                      {{
-                        Math.round(
-                          getProgressPercentage(
-                            fundraiser.stats.totalRaised,
-                            fundraiser.crowdfunding.goalAmount
-                          )
-                        )
-                      }}%
-                    </p>
-                    <p class="text-xs text-muted-foreground">complete</p>
-                  </div>
-                </div>
-                <Progress
-                  :model-value="
-                    getProgressPercentage(
-                      fundraiser.stats.totalRaised,
-                      fundraiser.crowdfunding.goalAmount
-                    )
-                  "
-                  class="h-3 mt-4 sm:mt-7"
-                />
-              </div>
+              <CampaignProgress
+                :stats="fundraiser.stats"
+                :goal-amount="fundraiser.crowdfunding.goalAmount"
+                :end-date="fundraiser.crowdfunding.endDate"
+                :matched-giving="fundraiser.matchedGiving"
+                hide-footer
+              />
             </CardContent>
           </Card>
           <StatsCard

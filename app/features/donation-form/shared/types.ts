@@ -58,20 +58,6 @@ export const FORM_TYPE_DEFAULTS: Record<FormType, FormTypeLabels> = {
   }
 }
 
-/**
- * Map of feature keys to the form types that support them.
- * Features not listed here are supported by all form types.
- */
-export const FEATURE_FORM_TYPE_SUPPORT: Record<string, FormType[]> = {
-  donationAmounts: ['donation'],
-  productSelector: ['donation'],
-  tribute: ['donation'],
-  impactBoost: ['donation'],
-  entryFields: ['registration'],
-  contactConsent: ['donation', 'registration'],
-  terms: ['donation', 'registration']
-}
-
 export interface EntryFieldsSettings {
   enabled: boolean
   mode: 'shared' | 'per-item'

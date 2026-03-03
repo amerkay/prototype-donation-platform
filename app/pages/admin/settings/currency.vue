@@ -8,7 +8,6 @@ import CurrencyBatchRemoveDialog from '~/features/settings/admin/components/Curr
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useEditState } from '~/features/_shared/composables/useEditState'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
-import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
 import {
   findFormsUsingCurrencies,
   stripCurrenciesFromForms
@@ -18,7 +17,6 @@ import type { AffectedForm } from '~/features/settings/admin/composables/useCurr
 const store = useCurrencySettingsStore()
 
 const { campaigns } = useCampaigns()
-const formsStore = useFormsStore()
 
 const originalData = computed(() => store.toSnapshot())
 
@@ -31,8 +29,8 @@ const blockedForms = ref<AffectedForm[]>([])
 const showBatchRemoveDialog = ref(false)
 const batchRemoveCurrencies = ref<string[]>([])
 const batchRemoveForms = ref<AffectedForm[]>([])
-/** Store campaign/form IDs for batch strip (need them beyond dialog display) */
-const batchRemoveFormIds = ref<Array<{ campaignId: string; formId: string }>>([])
+/** Store campaign IDs for batch strip (need them beyond dialog display) */
+const batchRemoveFormIds = ref<Array<{ campaignId: string }>>([])
 
 const lastSavedSupported = ref([...store.supportedCurrencies])
 
@@ -60,8 +58,7 @@ async function handleSave() {
   if (removedCurrencies.size > 0) {
     const { defaultBlocked, enabledOnly, enabledOnlyIds } = findFormsUsingCurrencies(
       removedCurrencies,
-      campaigns.value,
-      formsStore
+      campaigns.value
     )
 
     // Tier 1: block if any form uses removed currency as default
@@ -87,7 +84,7 @@ async function handleSave() {
 
 async function handleBatchConfirm() {
   showBatchRemoveDialog.value = false
-  stripCurrenciesFromForms(batchRemoveCurrencies.value, batchRemoveFormIds.value, formsStore)
+  stripCurrenciesFromForms(batchRemoveCurrencies.value, batchRemoveFormIds.value, campaigns.value)
   await _handleSave()
 }
 

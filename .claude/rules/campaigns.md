@@ -8,20 +8,26 @@ paths:
 
 # Campaigns Feature
 
-Campaign CRUD with standard, crowdfunding, and P2P fundraising types.
+Campaign CRUD with sub-features extracted into `features/` directories.
 
 ## Key files
 
-- **Composables:** `shared/composables/useCampaigns.ts` (CRUD), `useForms.ts`, `useCampaignTypes.ts` (`getCampaignEditPath`), `useCampaignShare.ts`, `useCampaignFormatters.ts`
-- **P2P:** `admin/composables/useFundraisers.ts`, `useFundraiserFilters.ts`
-- **Stores:** `shared/stores/campaignConfig.ts` (snapshot, NOT reactive to useCampaigns), `shared/stores/forms.ts`
-- **Types:** `shared/types.ts` — `CampaignStatus`, `FundraiserStatus`
-- **Columns:** `admin/columns/fundraiserColumns.ts` — shared for embedded + standalone list
+- **Composables:** `shared/composables/useCampaigns.ts` (CRUD), `useForm.ts` (single form ops), `useCampaignTypes.ts` (`getCampaignEditPath`), `useCampaignFormatters.ts`
+- **Store:** `shared/stores/campaignConfig.ts` (snapshot, NOT reactive to useCampaigns)
+- **Capabilities:** `shared/utils/campaignCapabilities.ts` — `getCampaignCapabilities(type)`, `getFormType(type)`
+- **Types:** `shared/types.ts` — `CampaignType`, `CampaignStatus`, `FundraiserStatus`
+
+## Sub-features (in `features/`)
+
+- **crowdfunding/** — goal + progress bar, `CrowdfundingPage.vue` (preview + live), donor components
+- **matched-giving/** — match periods, `MatchPeriodsList.vue` (componentField), `useMatchedGiving.ts`
+- **p2p/** — fundraiser pages, templates, onboarding wizard, `useFundraisers.ts`, `fundraiserColumns.ts`
+- **sharing/** — social share dialog, `useCampaignShare.ts`
 
 ## Patterns
 
-- **Campaign types**: `standard` (basic), `crowdfunding` (goal + progress), `p2p` (fundraiser pages with templates)
-- **Status model**: Campaigns: `draft|active|completed|ended`. P2P templates: `draft|active` only. Fundraisers: `active|completed|ended` only.
-- **Crowdfunding page**: `donor/components/CrowdfundingPage.vue` serves as both preview and live — admin renders real component
-- **P2P onboarding**: wizard at `[org_slug]/p2p-onboard/[campaignId]` creates fundraiser pages from templates
+- **Campaign types**: `standard`, `p2p`, `p2p-fundraiser`, `event` — capabilities determined by `getCampaignCapabilities()`
+- **Form types**: campaigns use either `donation` or `registration` forms via `getFormType(campaignType)`
+- **Status model**: Campaigns: `draft|active|completed|ended`. P2P templates: `draft|active`. Fundraisers: `active|completed|ended`.
+- **Crowdfunding page**: `features/crowdfunding/donor/components/CrowdfundingPage.vue` — both admin preview and live
 - **configStore snapshot**: `campaignConfig.fundraisers` initialized once; always sync after `updateCampaign()` when `configStore.id === campaign.id`

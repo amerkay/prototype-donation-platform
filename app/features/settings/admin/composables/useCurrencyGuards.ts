@@ -1,5 +1,4 @@
 import type { Campaign } from '~/features/campaigns/shared/types'
-import type { useFormsStore } from '~/features/campaigns/shared/stores/forms'
 
 export interface AffectedForm {
   campaignName: string
@@ -10,7 +9,7 @@ export interface AffectedForm {
 export interface CurrencyGuardResult {
   defaultBlocked: AffectedForm[]
   enabledOnly: AffectedForm[]
-  enabledOnlyIds: Array<{ campaignId: string; formId: string }>
+  enabledOnlyIds: Array<{ campaignId: string }>
 }
 
 /**
@@ -22,39 +21,38 @@ export interface CurrencyGuardResult {
  */
 export function findFormsUsingCurrencies(
   removedCurrencies: Set<string>,
-  campaigns: Campaign[],
-  formsStore: ReturnType<typeof useFormsStore>
+  campaigns: Campaign[]
 ): CurrencyGuardResult {
   const defaultBlocked: AffectedForm[] = []
   const enabledOnly: AffectedForm[] = []
-  const enabledOnlyIds: Array<{ campaignId: string; formId: string }> = []
+  const enabledOnlyIds: Array<{ campaignId: string }> = []
 
   for (const campaign of campaigns) {
     // Skip fundraiser campaigns — they inherit from parent templates
-    if (campaign.type === 'fundraiser') continue
+    if (campaign.type === 'p2p-fundraiser') continue
 
-    const forms = formsStore.getForms(campaign.id)
-    for (const form of forms) {
-      const da = form.config?.donationAmounts
-      if (!da) continue
+    const form = campaign.form
+    if (!form) continue
 
-      const isDefault = removedCurrencies.has(da.baseDefaultCurrency)
-      const isEnabled = (da.enabledCurrencies ?? []).some((c) => removedCurrencies.has(c))
+    const da = form.config?.donationAmounts
+    if (!da) continue
 
-      if (isDefault) {
-        defaultBlocked.push({
-          campaignName: campaign.name,
-          formName: form.name,
-          href: `/admin/campaigns/${campaign.id}/forms/${form.id}/edit#baseDefaultCurrency`
-        })
-      } else if (isEnabled) {
-        enabledOnly.push({
-          campaignName: campaign.name,
-          formName: form.name,
-          href: `/admin/campaigns/${campaign.id}/forms/${form.id}/edit#baseDefaultCurrency`
-        })
-        enabledOnlyIds.push({ campaignId: campaign.id, formId: form.id })
-      }
+    const isDefault = removedCurrencies.has(da.baseDefaultCurrency)
+    const isEnabled = (da.enabledCurrencies ?? []).some((c) => removedCurrencies.has(c))
+
+    if (isDefault) {
+      defaultBlocked.push({
+        campaignName: campaign.name,
+        formName: form.name,
+        href: `/admin/campaigns/${campaign.id}/forms/${form.id}/edit#baseDefaultCurrency`
+      })
+    } else if (isEnabled) {
+      enabledOnly.push({
+        campaignName: campaign.name,
+        formName: form.name,
+        href: `/admin/campaigns/${campaign.id}/forms/${form.id}/edit#baseDefaultCurrency`
+      })
+      enabledOnlyIds.push({ campaignId: campaign.id })
     }
   }
 
@@ -62,24 +60,22 @@ export function findFormsUsingCurrencies(
 }
 
 /**
- * Strip currencies from enabledCurrencies on affected forms.
+ * Strip currencies from enabledCurrencies on affected campaign forms.
  * // SUPABASE_MIGRATION: batch update via API
  */
 export function stripCurrenciesFromForms(
   currencies: string[],
-  formIds: Array<{ campaignId: string; formId: string }>,
-  formsStore: ReturnType<typeof useFormsStore>
+  formIds: Array<{ campaignId: string }>,
+  campaigns: Campaign[]
 ): void {
   const currencySet = new Set(currencies)
-  for (const { campaignId, formId } of formIds) {
-    const forms = formsStore.getForms(campaignId)
-    const form = forms.find((f) => f.id === formId)
+  for (const { campaignId } of formIds) {
+    const campaign = campaigns.find((c) => c.id === campaignId)
+    const form = campaign?.form
     if (!form?.config?.donationAmounts) continue
 
     form.config.donationAmounts.enabledCurrencies = (
       form.config.donationAmounts.enabledCurrencies ?? []
     ).filter((c) => !currencySet.has(c))
-
-    formsStore.updateFormConfig(campaignId, formId, form.config, form.products)
   }
 }

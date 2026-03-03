@@ -57,7 +57,43 @@ app/features/[feature-name]/
 **`_admin/`**: Admin-specific UI — sidebar, list pages, detail cards, config panels, quick find.
 **`_shared/`**: Cross-boundary infrastructure — BreadcrumbBar, DataTable, EditLayout, useEditState, useEntityDataService, NavUser, column/filter utils.
 
-Use glob/grep to discover files, stores, composables, and pages — they are not enumerated here.
+<!-- regenerate with /update-project-summary -->
+
+## Project Summary
+
+### Features
+
+| Feature | Path | Purpose |
+|---------|------|---------|
+| `_admin` | `features/_admin/` | Admin shell: sidebar, card grids, config panels, quick find |
+| `_library` | `features/_library/` | Domain-agnostic: `form-builder`, `custom-fields` |
+| `_shared` | `features/_shared/` | Cross-boundary: EditLayout, DataTable, useEditState, useEntityDataService |
+| `campaigns` | `features/campaigns/` | Campaign CRUD + config. Sub-features: crowdfunding, matched-giving, p2p, sharing |
+| `donation-form` | `features/donation-form/` | Form builder + donor checkout. 13 sub-features (impact-cart, cover-costs, gift-aid, tribute…) |
+| `donations` | `features/donations/` | Admin donation list, filters, refund actions |
+| `donor-portal` | `features/donor-portal/` | Donor self-service: donations, subscriptions, fundraisers, my-data |
+| `donors` | `features/donors/` | Admin donor list and filters |
+| `products` | `features/products/` | Product/impact item CRUD |
+| `settings` | `features/settings/` | Org settings (branding, currency, payments, team, billing, social, 10 pages total) |
+| `subscriptions` | `features/subscriptions/` | Recurring subscription management |
+| `templates` | `features/templates/` | Email, receipt, certificate template editing with live preview |
+
+### Key Stores & Composables
+
+Stores follow `defineEditableStore` (CRUD) or `defineSettingsStore` (settings pages). Each entity has a Pinia edit store (`campaignConfig`, `formConfig`, `product`, `emailTemplate`, etc.) + a singleton list composable (`useCampaigns`, `useDonations`, `useDonors`, etc.).
+
+Notable: `campaignCapabilities.ts` — single source of truth for feature-gating by campaign type (18 capability flags). `useMatchedGiving` — provide/inject for donor-side match display.
+
+### Layouts & Pages
+
+Layouts: `admin`, `admin-preview`, `default`, `donor`, `portal`, `print`
+
+- **Admin** `/admin/` — dashboard, campaigns, donations, donors, products, subscriptions, p2p, settings (10 pages), templates
+- **Donor** `/[org_slug]/` — crowdfunding page, donation form, P2P templates + onboarding
+- **Portal** `/portal/` — donation history, subscriptions, fundraisers, my-data
+- **Other** — print views, terms, design system preview
+
+<!-- end project summary -->
 
 ## Code Standards
 
@@ -93,6 +129,7 @@ Use glob/grep to discover files, stores, composables, and pages — they are not
 20. Test commands: `pnpm test:nuxt -- <path>` for nuxt tests (not `pnpm test:run --`); `pnpm test:run` runs all projects
 21. `BaseDialogOrDrawer` uses teleport — stub it in tests to render slots inline (Dialog content is invisible to `wrapper.text()`)
 22. `visibleWhen` closures in `defineForm` read Pinia stores at call time (not at module init) — call `form.setup(ctx)` directly to unit-test visibility logic against store state
+23. `pnpm` piped through `| tail` can produce empty output due to buffering — use `| tee $TMPDIR/out.txt` instead
 
 <!-- end continuous learning notes -->
 

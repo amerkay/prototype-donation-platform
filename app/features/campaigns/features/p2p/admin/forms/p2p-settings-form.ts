@@ -1,7 +1,7 @@
 import * as z from 'zod'
 import { defineForm, toggleField, componentField } from '~/features/_library/form-builder/api'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
-import FundraisersList from '~/features/campaigns/admin/components/FundraisersList.vue'
+import FundraisersList from '~/features/campaigns/features/p2p/admin/components/FundraisersList.vue'
 
 /**
  * Peer-to-Peer (P2P) settings form

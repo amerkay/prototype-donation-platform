@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ShareContent from '~/features/campaigns/donor/components/ShareContent.vue'
+import ShareContent from '~/features/campaigns/features/sharing/donor/components/ShareContent.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ICON_SHARE } from '~/lib/icons'
 </script>

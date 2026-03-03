@@ -140,7 +140,7 @@ const maxCampaignRevenue = computed(() =>
 // Top campaigns by total raised
 const topCampaigns = computed(() =>
   [...campaigns.value]
-    .filter((c) => c.type !== 'fundraiser')
+    .filter((c) => c.type !== 'p2p-fundraiser')
     .sort((a, b) => b.stats.totalRaised - a.stats.totalRaised)
     .slice(0, 5)
 )

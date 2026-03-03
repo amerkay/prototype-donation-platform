@@ -1,35 +1,15 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
-import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
+import { describe, it, expect } from 'vitest'
 import {
   findFormsUsingCurrencies,
   stripCurrenciesFromForms
 } from '~/features/settings/admin/composables/useCurrencyGuards'
-import type { Campaign } from '~/features/campaigns/shared/types'
+import type { Campaign, CampaignForm } from '~/features/campaigns/shared/types'
 import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
 
 let testCounter = 0
 
 function uniqueId(prefix: string) {
   return `${prefix}-${++testCounter}`
-}
-
-function makeCampaign(id: string, name: string, type: Campaign['type'] = 'standard'): Campaign {
-  return {
-    id,
-    name,
-    type,
-    status: 'active',
-    isArchived: false,
-    createdAt: '',
-    updatedAt: '',
-    stats: {} as Campaign['stats'],
-    crowdfunding: {} as Campaign['crowdfunding'],
-    peerToPeer: {} as Campaign['peerToPeer'],
-    fundraisers: [],
-    recentDonations: [],
-    forms: []
-  }
 }
 
 function makeConfig(opts: {
@@ -46,26 +26,46 @@ function makeConfig(opts: {
   } as FullFormConfig
 }
 
-function seedForm(
-  store: ReturnType<typeof useFormsStore>,
-  campaignId: string,
-  formId: string,
+function makeForm(id: string, name: string, config: FullFormConfig): CampaignForm {
+  return {
+    id,
+    campaignId: '',
+    name,
+    isDefault: true,
+    config,
+    products: [],
+    createdAt: '',
+    updatedAt: ''
+  }
+}
+
+function makeCampaign(
+  id: string,
   name: string,
-  config: FullFormConfig
-) {
-  store.addForm(campaignId, formId, name, config, [])
+  form: CampaignForm | null = null,
+  type: Campaign['type'] = 'standard'
+): Campaign {
+  return {
+    id,
+    name,
+    type,
+    status: 'active',
+    isArchived: false,
+    createdAt: '',
+    updatedAt: '',
+    stats: {} as Campaign['stats'],
+    crowdfunding: {} as Campaign['crowdfunding'],
+    peerToPeer: {} as Campaign['peerToPeer'],
+    fundraisers: [],
+    recentDonations: [],
+    matchedGiving: { periods: [] },
+    form
+  }
 }
 
 describe('findFormsUsingCurrencies', () => {
-  let formsStore: ReturnType<typeof useFormsStore>
-
-  beforeEach(() => {
-    setActivePinia(createPinia())
-    formsStore = useFormsStore()
-  })
-
   it('returns empty arrays when no currencies removed', () => {
-    const result = findFormsUsingCurrencies(new Set(), [], formsStore)
+    const result = findFormsUsingCurrencies(new Set(), [])
     expect(result.defaultBlocked).toEqual([])
     expect(result.enabledOnly).toEqual([])
     expect(result.enabledOnlyIds).toEqual([])
@@ -73,75 +73,87 @@ describe('findFormsUsingCurrencies', () => {
 
   it('returns empty arrays when removed currency not used by any form', () => {
     const cid = uniqueId('camp')
-    const campaign = makeCampaign(cid, 'Campaign 1')
-    seedForm(formsStore, cid, 'f1', 'Form 1', makeConfig({ enabledCurrencies: ['GBP', 'USD'] }))
+    const form = makeForm('f1', 'Form 1', makeConfig({ enabledCurrencies: ['GBP', 'USD'] }))
+    const campaign = makeCampaign(cid, 'Campaign 1', form)
 
-    const result = findFormsUsingCurrencies(new Set(['CAD']), [campaign], formsStore)
+    const result = findFormsUsingCurrencies(new Set(['CAD']), [campaign])
     expect(result.defaultBlocked).toEqual([])
     expect(result.enabledOnly).toEqual([])
   })
 
   it('blocks when removed currency is baseDefaultCurrency on a form', () => {
     const cid = uniqueId('camp')
-    const campaign = makeCampaign(cid, 'Camp A')
-    seedForm(formsStore, cid, 'f1', 'Main Form', makeConfig({ baseDefaultCurrency: 'USD' }))
+    const form = makeForm('f1', 'Main Form', makeConfig({ baseDefaultCurrency: 'USD' }))
+    const campaign = makeCampaign(cid, 'Camp A', form)
 
-    const result = findFormsUsingCurrencies(new Set(['USD']), [campaign], formsStore)
+    const result = findFormsUsingCurrencies(new Set(['USD']), [campaign])
     expect(result.defaultBlocked).toHaveLength(1)
     expect(result.defaultBlocked[0]!.campaignName).toBe('Camp A')
     expect(result.defaultBlocked[0]!.formName).toBe('Main Form')
     expect(result.enabledOnly).toEqual([])
   })
 
-  it('blocks multiple forms when currency is baseDefault on each', () => {
+  it('blocks multiple campaigns when currency is baseDefault on each', () => {
     const cid1 = uniqueId('camp')
     const cid2 = uniqueId('camp')
-    const campaigns = [makeCampaign(cid1, 'Camp 1'), makeCampaign(cid2, 'Camp 2')]
-    seedForm(formsStore, cid1, 'f1', 'Form A', makeConfig({ baseDefaultCurrency: 'EUR' }))
-    seedForm(formsStore, cid1, 'f2', 'Form B', makeConfig({ baseDefaultCurrency: 'EUR' }))
-    seedForm(formsStore, cid2, 'f3', 'Form C', makeConfig({ baseDefaultCurrency: 'EUR' }))
+    const campaigns = [
+      makeCampaign(
+        cid1,
+        'Camp 1',
+        makeForm('f1', 'Form A', makeConfig({ baseDefaultCurrency: 'EUR' }))
+      ),
+      makeCampaign(
+        cid2,
+        'Camp 2',
+        makeForm('f2', 'Form B', makeConfig({ baseDefaultCurrency: 'EUR' }))
+      )
+    ]
 
-    const result = findFormsUsingCurrencies(new Set(['EUR']), campaigns, formsStore)
-    expect(result.defaultBlocked).toHaveLength(3)
+    const result = findFormsUsingCurrencies(new Set(['EUR']), campaigns)
+    expect(result.defaultBlocked).toHaveLength(2)
   })
 
   it('returns enabledOnly when currency only in enabledCurrencies', () => {
     const cid = uniqueId('camp')
-    const campaign = makeCampaign(cid, 'Camp')
-    seedForm(
-      formsStore,
-      cid,
+    const form = makeForm(
       'f1',
       'Form 1',
       makeConfig({ baseDefaultCurrency: 'GBP', enabledCurrencies: ['GBP', 'USD', 'EUR'] })
     )
+    const campaign = makeCampaign(cid, 'Camp', form)
 
-    const result = findFormsUsingCurrencies(new Set(['EUR']), [campaign], formsStore)
+    const result = findFormsUsingCurrencies(new Set(['EUR']), [campaign])
     expect(result.defaultBlocked).toEqual([])
     expect(result.enabledOnly).toHaveLength(1)
     expect(result.enabledOnlyIds).toHaveLength(1)
-    expect(result.enabledOnlyIds[0]).toEqual({ campaignId: cid, formId: 'f1' })
+    expect(result.enabledOnlyIds[0]).toEqual({ campaignId: cid })
   })
 
-  it('separates default-blocked from enabled-only in mixed scenario', () => {
-    const cid = uniqueId('camp')
-    const campaign = makeCampaign(cid, 'Mixed')
-    seedForm(
-      formsStore,
-      cid,
-      'f1',
-      'Default USD',
-      makeConfig({ baseDefaultCurrency: 'USD', enabledCurrencies: ['USD', 'EUR'] })
-    )
-    seedForm(
-      formsStore,
-      cid,
-      'f2',
-      'Enabled USD',
-      makeConfig({ baseDefaultCurrency: 'GBP', enabledCurrencies: ['GBP', 'USD'] })
-    )
+  it('separates default-blocked from enabled-only across campaigns', () => {
+    const cid1 = uniqueId('camp')
+    const cid2 = uniqueId('camp')
+    const campaigns = [
+      makeCampaign(
+        cid1,
+        'Default USD',
+        makeForm(
+          'f1',
+          'Default USD',
+          makeConfig({ baseDefaultCurrency: 'USD', enabledCurrencies: ['USD', 'EUR'] })
+        )
+      ),
+      makeCampaign(
+        cid2,
+        'Enabled USD',
+        makeForm(
+          'f2',
+          'Enabled USD',
+          makeConfig({ baseDefaultCurrency: 'GBP', enabledCurrencies: ['GBP', 'USD'] })
+        )
+      )
+    ]
 
-    const result = findFormsUsingCurrencies(new Set(['USD']), [campaign], formsStore)
+    const result = findFormsUsingCurrencies(new Set(['USD']), campaigns)
     expect(result.defaultBlocked).toHaveLength(1)
     expect(result.defaultBlocked[0]!.formName).toBe('Default USD')
     expect(result.enabledOnly).toHaveLength(1)
@@ -152,46 +164,69 @@ describe('findFormsUsingCurrencies', () => {
     const cid1 = uniqueId('camp')
     const cid2 = uniqueId('camp')
     const campaigns = [
-      makeCampaign(cid1, 'Standard', 'standard'),
-      makeCampaign(cid2, 'Fundraiser', 'fundraiser')
+      makeCampaign(
+        cid1,
+        'Standard',
+        makeForm('f1', 'Std Form', makeConfig({ baseDefaultCurrency: 'USD' })),
+        'standard'
+      ),
+      makeCampaign(
+        cid2,
+        'Fundraiser',
+        makeForm('f2', 'FR Form', makeConfig({ baseDefaultCurrency: 'USD' })),
+        'p2p-fundraiser'
+      )
     ]
-    seedForm(formsStore, cid1, 'f1', 'Std Form', makeConfig({ baseDefaultCurrency: 'USD' }))
-    seedForm(formsStore, cid2, 'f2', 'FR Form', makeConfig({ baseDefaultCurrency: 'USD' }))
 
-    const result = findFormsUsingCurrencies(new Set(['USD']), campaigns, formsStore)
+    const result = findFormsUsingCurrencies(new Set(['USD']), campaigns)
     expect(result.defaultBlocked).toHaveLength(1)
     expect(result.defaultBlocked[0]!.campaignName).toBe('Standard')
   })
 
+  it('skips campaigns without a form', () => {
+    const cid = uniqueId('camp')
+    const campaign = makeCampaign(cid, 'Camp', null)
+
+    const result = findFormsUsingCurrencies(new Set(['GBP']), [campaign])
+    expect(result.defaultBlocked).toEqual([])
+    expect(result.enabledOnly).toEqual([])
+  })
+
   it('skips forms without donationAmounts config', () => {
     const cid = uniqueId('camp')
-    const campaign = makeCampaign(cid, 'Camp')
-    seedForm(formsStore, cid, 'f1', 'No DA', makeConfig({ noDA: true }))
+    const form = makeForm('f1', 'No DA', makeConfig({ noDA: true }))
+    const campaign = makeCampaign(cid, 'Camp', form)
 
-    const result = findFormsUsingCurrencies(new Set(['GBP']), [campaign], formsStore)
+    const result = findFormsUsingCurrencies(new Set(['GBP']), [campaign])
     expect(result.defaultBlocked).toEqual([])
     expect(result.enabledOnly).toEqual([])
   })
 
   it('handles multiple currencies removed simultaneously', () => {
-    const cid = uniqueId('camp')
-    const campaign = makeCampaign(cid, 'Camp')
-    seedForm(
-      formsStore,
-      cid,
-      'f1',
-      'Enabled Only',
-      makeConfig({ baseDefaultCurrency: 'GBP', enabledCurrencies: ['GBP', 'USD', 'EUR', 'CAD'] })
-    )
-    seedForm(
-      formsStore,
-      cid,
-      'f2',
-      'Default USD',
-      makeConfig({ baseDefaultCurrency: 'USD', enabledCurrencies: ['USD', 'EUR'] })
-    )
+    const cid1 = uniqueId('camp')
+    const cid2 = uniqueId('camp')
+    const campaigns = [
+      makeCampaign(
+        cid1,
+        'Camp 1',
+        makeForm(
+          'f1',
+          'Enabled Only',
+          makeConfig({ baseDefaultCurrency: 'GBP', enabledCurrencies: ['GBP', 'USD', 'EUR'] })
+        )
+      ),
+      makeCampaign(
+        cid2,
+        'Camp 2',
+        makeForm(
+          'f2',
+          'Default USD',
+          makeConfig({ baseDefaultCurrency: 'USD', enabledCurrencies: ['USD', 'EUR'] })
+        )
+      )
+    ]
 
-    const result = findFormsUsingCurrencies(new Set(['USD', 'EUR']), [campaign], formsStore)
+    const result = findFormsUsingCurrencies(new Set(['USD', 'EUR']), campaigns)
     expect(result.defaultBlocked).toHaveLength(1)
     expect(result.defaultBlocked[0]!.formName).toBe('Default USD')
     expect(result.enabledOnly).toHaveLength(1)
@@ -200,77 +235,71 @@ describe('findFormsUsingCurrencies', () => {
 })
 
 describe('stripCurrenciesFromForms', () => {
-  let formsStore: ReturnType<typeof useFormsStore>
-
-  beforeEach(() => {
-    setActivePinia(createPinia())
-    formsStore = useFormsStore()
-  })
-
   it('removes currency from enabledCurrencies', () => {
     const cid = uniqueId('camp')
-    seedForm(
-      formsStore,
-      cid,
+    const form = makeForm(
       'f1',
       'Form',
       makeConfig({ baseDefaultCurrency: 'GBP', enabledCurrencies: ['GBP', 'USD', 'EUR'] })
     )
+    const campaigns = [makeCampaign(cid, 'Camp', form)]
 
-    stripCurrenciesFromForms(['EUR'], [{ campaignId: cid, formId: 'f1' }], formsStore)
+    stripCurrenciesFromForms(['EUR'], [{ campaignId: cid }], campaigns)
 
-    const form = formsStore.getForms(cid).find((f) => f.id === 'f1')
-    expect(form!.config.donationAmounts!.enabledCurrencies).toEqual(['GBP', 'USD'])
+    expect(campaigns[0]!.form!.config.donationAmounts!.enabledCurrencies).toEqual(['GBP', 'USD'])
   })
 
   it('does not touch baseDefaultCurrency', () => {
     const cid = uniqueId('camp')
-    seedForm(
-      formsStore,
-      cid,
+    const form = makeForm(
       'f1',
       'Form',
       makeConfig({ baseDefaultCurrency: 'GBP', enabledCurrencies: ['GBP', 'USD'] })
     )
+    const campaigns = [makeCampaign(cid, 'Camp', form)]
 
-    stripCurrenciesFromForms(['USD'], [{ campaignId: cid, formId: 'f1' }], formsStore)
+    stripCurrenciesFromForms(['USD'], [{ campaignId: cid }], campaigns)
 
-    const form = formsStore.getForms(cid).find((f) => f.id === 'f1')
-    expect(form!.config.donationAmounts!.baseDefaultCurrency).toBe('GBP')
+    expect(campaigns[0]!.form!.config.donationAmounts!.baseDefaultCurrency).toBe('GBP')
   })
 
   it('handles form with empty enabledCurrencies', () => {
     const cid = uniqueId('camp')
-    seedForm(
-      formsStore,
-      cid,
+    const form = makeForm(
       'f1',
       'Form',
       makeConfig({ baseDefaultCurrency: 'GBP', enabledCurrencies: [] })
     )
+    const campaigns = [makeCampaign(cid, 'Camp', form)]
 
-    stripCurrenciesFromForms(['USD'], [{ campaignId: cid, formId: 'f1' }], formsStore)
+    stripCurrenciesFromForms(['USD'], [{ campaignId: cid }], campaigns)
 
-    const form = formsStore.getForms(cid).find((f) => f.id === 'f1')
-    expect(form!.config.donationAmounts!.enabledCurrencies).toEqual([])
+    expect(campaigns[0]!.form!.config.donationAmounts!.enabledCurrencies).toEqual([])
   })
 
-  it('calls updateFormConfig for each affected form', () => {
-    const cid = uniqueId('camp')
-    seedForm(formsStore, cid, 'f1', 'Form 1', makeConfig({ enabledCurrencies: ['GBP', 'USD'] }))
-    seedForm(formsStore, cid, 'f2', 'Form 2', makeConfig({ enabledCurrencies: ['GBP', 'EUR'] }))
-
-    const spy = vi.spyOn(formsStore, 'updateFormConfig')
+  it('strips currencies from multiple campaigns', () => {
+    const cid1 = uniqueId('camp')
+    const cid2 = uniqueId('camp')
+    const campaigns = [
+      makeCampaign(
+        cid1,
+        'Camp 1',
+        makeForm('f1', 'Form 1', makeConfig({ enabledCurrencies: ['GBP', 'USD'] }))
+      ),
+      makeCampaign(
+        cid2,
+        'Camp 2',
+        makeForm('f2', 'Form 2', makeConfig({ enabledCurrencies: ['GBP', 'EUR'] }))
+      )
+    ]
 
     stripCurrenciesFromForms(
       ['USD', 'EUR'],
-      [
-        { campaignId: cid, formId: 'f1' },
-        { campaignId: cid, formId: 'f2' }
-      ],
-      formsStore
+      [{ campaignId: cid1 }, { campaignId: cid2 }],
+      campaigns
     )
 
-    expect(spy).toHaveBeenCalledTimes(2)
+    expect(campaigns[0]!.form!.config.donationAmounts!.enabledCurrencies).toEqual(['GBP'])
+    expect(campaigns[1]!.form!.config.donationAmounts!.enabledCurrencies).toEqual(['GBP'])
   })
 })

@@ -6,9 +6,9 @@ import {
   BRANDING_STYLE_KEY
 } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { useSocialSharingSettingsStore } from '~/features/settings/admin/stores/socialSharingSettings'
-import { useCampaignShare } from '~/features/campaigns/shared/composables/useCampaignShare'
-import ShareDialog from './ShareDialog.vue'
-import DonateDialog from './DonateDialog.vue'
+import { useCampaignShare } from '~/features/campaigns/features/sharing/shared/composables/useCampaignShare'
+import ShareDialog from '~/features/campaigns/features/sharing/donor/components/ShareDialog.vue'
+import DonateDialog from '~/features/campaigns/donor/components/DonateDialog.vue'
 import CampaignProgress from './CampaignProgress.vue'
 import CampaignActions from './CampaignActions.vue'
 import CampaignStorySection from './CampaignStorySection.vue'
@@ -123,6 +123,7 @@ const hasSocialSharing = computed(() => {
                 :stats="campaign.stats"
                 :goal-amount="campaign.crowdfunding.goalAmount"
                 :end-date="campaign.crowdfunding.endDate"
+                :matched-giving="campaign.matchedGiving"
               />
               <CampaignActions
                 :show-share="hasSocialSharing"
@@ -234,6 +235,7 @@ const hasSocialSharing = computed(() => {
                   :stats="campaign.stats"
                   :goal-amount="campaign.crowdfunding.goalAmount"
                   :end-date="campaign.crowdfunding.endDate"
+                  :matched-giving="campaign.matchedGiving"
                 />
                 <CampaignActions
                   :show-share="hasSocialSharing"

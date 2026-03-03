@@ -4,7 +4,11 @@ import { useInjectedBrandingStyle } from '~/features/settings/admin/composables/
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
-import { useForms } from '~/features/campaigns/shared/composables/useForms'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
+import {
+  MATCHED_GIVING_KEY,
+  DONATION_FREQUENCY_KEY
+} from '~/features/campaigns/features/matched-giving/donor/composables/useMatchedGiving'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
@@ -20,26 +24,29 @@ const emit = defineEmits<{
 const formConfigStore = useFormConfigStore()
 const donationStore = useDonationFormStore()
 const cartStore = useImpactCartStore()
-const { defaultForm } = useForms(props.campaignId)
+const { campaigns } = useCampaigns()
+const campaign = computed(() => campaigns.value.find((c) => c.id === props.campaignId))
+const form = computed(() => campaign.value?.form ?? null)
 const brandingStyle = useInjectedBrandingStyle()
+
+// Provide matched giving context for deep child components (AmountSelector)
+const matchedGiving = computed(() => campaign.value?.matchedGiving)
+provide(MATCHED_GIVING_KEY, matchedGiving)
+
+// Provide current frequency so match messaging hides on recurring tabs
+const donationFrequency = computed(
+  () => donationStore.currentFrequency as 'once' | 'monthly' | 'yearly'
+)
+provide(DONATION_FREQUENCY_KEY, donationFrequency)
 
 // Initialize form config when dialog opens
 watch(
   () => props.open,
   (isOpen) => {
-    if (isOpen && defaultForm.value) {
-      // Initialize form config store with default form's config, products, and ID
-      formConfigStore.initialize(
-        defaultForm.value.config,
-        defaultForm.value.products,
-        defaultForm.value.id
-      )
-      // Initialize donation form and cart for this form
-      donationStore.initialize(
-        defaultForm.value.id,
-        defaultForm.value.config.donationAmounts.baseDefaultCurrency
-      )
-      cartStore.initialize(defaultForm.value.id)
+    if (isOpen && form.value) {
+      formConfigStore.initialize(form.value.config, form.value.products, form.value.id)
+      donationStore.initialize(form.value.id, form.value.config.donationAmounts.baseDefaultCurrency)
+      cartStore.initialize(form.value.id)
     }
   },
   { immediate: true }

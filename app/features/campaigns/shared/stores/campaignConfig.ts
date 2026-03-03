@@ -7,12 +7,15 @@ import type {
   CampaignStats,
   CrowdfundingSettings,
   PeerToPeerSettings,
+  MatchedGivingSettings,
+  MatchPeriod,
   CampaignDonation,
   CampaignFundraiser,
+  CampaignForm,
   CampaignStatus
 } from '~/features/campaigns/shared/types'
 import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
-import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
+import { getActivePeriod } from '~/features/campaigns/shared/utils/campaignCapabilities'
 
 /**
  * Campaign configuration store (Pinia)
@@ -47,16 +50,42 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
   const stats = ref<CampaignStats | null>(null)
   const crowdfunding = ref<CrowdfundingSettings | null>(null)
   const peerToPeer = ref<PeerToPeerSettings | null>(null)
+  const matchedGiving = ref<MatchedGivingSettings>({ periods: [] })
+  const form = ref<CampaignForm | null>(null)
   const fundraisers = ref<CampaignFundraiser[]>([])
   const recentDonations = ref<CampaignDonation[]>([])
   const createdAt = ref('')
   const updatedAt = ref('')
-  const pendingFormDeletes = ref<Set<string>>(new Set())
 
   // Getters
   const isP2P = computed(() => type.value === 'p2p')
-  const isFundraiser = computed(() => type.value === 'fundraiser')
-  const maxFormsAllowed = computed(() => (isP2P.value ? 1 : Infinity))
+  const isFundraiser = computed(() => type.value === 'p2p-fundraiser')
+  const isEvent = computed(() => type.value === 'event')
+
+  /** Whether this campaign has matched giving enabled (periods exist) */
+  const hasMatchedGiving = computed(() => matchedGiving.value.periods.length > 0)
+
+  /** Currently active match period (first with status 'active'), or null */
+  const activePeriod = computed((): MatchPeriod | null => {
+    if (!hasMatchedGiving.value) return null
+    return getActivePeriod(matchedGiving.value.periods)
+  })
+
+  /** Total pool committed across all match periods */
+  const totalPoolCommitted = computed((): number =>
+    matchedGiving.value.periods.reduce((sum, p) => sum + p.poolAmount, 0)
+  )
+
+  /** Total pool drawn across all match periods */
+  const totalPoolDrawn = computed((): number =>
+    matchedGiving.value.periods.reduce((sum, p) => sum + p.poolDrawn, 0)
+  )
+
+  /** Total matched amount (sum of poolDrawn across all periods) — represents actual match funds disbursed */
+  const matchedTotal = computed((): number => {
+    if (!hasMatchedGiving.value || !stats.value) return 0
+    return stats.value.totalRaised + totalPoolDrawn.value
+  })
 
   /** Campaign currency (from crowdfunding settings, immutable after creation) */
   const currency = computed({
@@ -119,9 +148,10 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
       stats: stats.value,
       crowdfunding: crowdfunding.value,
       peerToPeer: peerToPeer.value,
+      matchedGiving: matchedGiving.value,
       fundraisers: fundraisers.value,
       recentDonations: recentDonations.value,
-      forms: []
+      form: form.value
     }
   })
 
@@ -138,11 +168,12 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     stats.value = { ...campaign.stats }
     crowdfunding.value = { ...campaign.crowdfunding }
     peerToPeer.value = { ...campaign.peerToPeer }
+    matchedGiving.value = { ...campaign.matchedGiving }
+    form.value = campaign.form ? { ...campaign.form } : null
     fundraisers.value = [...campaign.fundraisers]
     recentDonations.value = [...campaign.recentDonations]
     createdAt.value = campaign.createdAt
     updatedAt.value = campaign.updatedAt
-    pendingFormDeletes.value = new Set()
     markClean()
   }
 
@@ -157,25 +188,13 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     stats.value = null
     crowdfunding.value = null
     peerToPeer.value = null
+    matchedGiving.value = { periods: [] }
+    form.value = null
     fundraisers.value = []
     recentDonations.value = []
     createdAt.value = ''
     updatedAt.value = ''
-    pendingFormDeletes.value = new Set()
     markClean()
-  }
-
-  function addPendingFormDelete(formId: string) {
-    pendingFormDeletes.value = new Set([...pendingFormDeletes.value, formId])
-    markDirty()
-  }
-
-  function commitFormDeletes(campaignId: string) {
-    const formsStore = useFormsStore()
-    for (const formId of pendingFormDeletes.value) {
-      formsStore.deleteForm(campaignId, formId)
-    }
-    pendingFormDeletes.value = new Set()
   }
 
   return {
@@ -190,18 +209,24 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     stats,
     crowdfunding,
     peerToPeer,
+    matchedGiving,
+    form,
     fundraisers,
     recentDonations,
     createdAt,
     updatedAt,
-    pendingFormDeletes,
     isDirty,
     isSaving,
     // Getters
     currency,
     isP2P,
     isFundraiser,
-    maxFormsAllowed,
+    hasMatchedGiving,
+    isEvent,
+    activePeriod,
+    totalPoolCommitted,
+    totalPoolDrawn,
+    matchedTotal,
     progressPercentage,
     remainingAmount,
     donationsByRecent,
@@ -212,8 +237,6 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     initialize,
     reset,
     markDirty,
-    markClean,
-    addPendingFormDelete,
-    commitFormDeletes
+    markClean
   }
 })

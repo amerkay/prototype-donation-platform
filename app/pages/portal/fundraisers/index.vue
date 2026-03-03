@@ -22,7 +22,7 @@ definePageMeta({
 })
 
 const { currentUserFundraisers } = useDonorPortal()
-const { campaigns } = useCampaigns()
+const { campaigns, getCampaignById } = useCampaigns()
 const charityStore = useCharitySettingsStore()
 
 /** Get the fundraiser metadata status from the parent P2P template */
@@ -32,7 +32,12 @@ function getFundraiserMetaStatus(fundraiserCampaign: Campaign) {
   return parent.fundraisers.find((f) => f.campaignId === fundraiserCampaign.id)?.status
 }
 
-const visibleFundraisers = computed(() => currentUserFundraisers.value)
+// Use getCampaignById to auto-merge parent fields (matchedGiving, form, etc.)
+const visibleFundraisers = computed(() =>
+  currentUserFundraisers.value
+    .map((f) => getCampaignById(f.id))
+    .filter((f): f is Campaign => f != null)
+)
 
 /** Whether a fundraiser is in a terminal state (completed or ended) */
 function isTerminal(f: Campaign) {

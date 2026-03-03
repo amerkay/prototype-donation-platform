@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPortal'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
+import type { Campaign } from '~/features/campaigns/shared/types'
 import DataTable from '~/features/_shared/components/DataTable.vue'
 import { transactionColumnsCompact } from '~/features/donor-portal/columns/transactionColumns'
 import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
@@ -36,7 +38,22 @@ const totalDonatedLabel = computed(() => {
   return hasMultiCurrencyDonations.value ? `≈ ${formatted}` : formatted
 })
 
+const { getCampaignById } = useCampaigns()
+
 const recentTransactions = computed(() => transactions.value.slice(0, 5))
+
+// Merge parent template fields (matchedGiving, form, etc.) into fundraiser campaigns
+const mergedFundraisers = computed(() =>
+  activeFundraisers.value
+    .map((f) => getCampaignById(f.id))
+    .filter((f): f is Campaign => f != null)
+)
+
+/** Include matched giving poolDrawn in the raised amount (mirrors CampaignProgress logic) */
+function getEffectiveRaised(f: Campaign) {
+  const poolDrawn = (f.matchedGiving?.periods ?? []).reduce((sum, p) => sum + p.poolDrawn, 0)
+  return f.stats.totalRaised + poolDrawn
+}
 </script>
 
 <template>
@@ -58,7 +75,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
           label="Subscriptions"
           :value="activeSubscriptions.length"
         />
-        <StatsCard :icon="ICON_CAMPAIGN" label="Fundraisers" :value="activeFundraisers.length" />
+        <StatsCard :icon="ICON_CAMPAIGN" label="Fundraisers" :value="mergedFundraisers.length" />
       </div>
 
       <div class="grid gap-6 md:grid-cols-2">
@@ -145,14 +162,14 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
               <CardTitle class="text-base font-semibold">
                 My Fundraisers
                 <span class="text-muted-foreground font-normal"
-                  >({{ activeFundraisers.length }} active)</span
+                  >({{ mergedFundraisers.length }} active)</span
                 >
               </CardTitle>
             </div>
           </CardHeader>
           <CardContent class="pt-0 space-y-2">
             <NuxtLink
-              v-for="f in activeFundraisers.slice(0, 3)"
+              v-for="f in mergedFundraisers.slice(0, 3)"
               :key="f.id"
               :to="`/portal/fundraisers/${f.id}`"
               class="block"
@@ -167,19 +184,19 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
                 <div v-if="f.crowdfunding.goalAmount" class="space-y-1">
                   <Progress
                     :model-value="
-                      getProgressPercentage(f.stats.totalRaised, f.crowdfunding.goalAmount)
+                      getProgressPercentage(getEffectiveRaised(f), f.crowdfunding.goalAmount)
                     "
                     class="h-1.5"
                   />
                   <div class="flex justify-between text-xs text-muted-foreground">
-                    <span>{{ formatAmount(f.stats.totalRaised, f.stats.currency) }}</span>
+                    <span>{{ formatAmount(getEffectiveRaised(f), f.stats.currency) }}</span>
                     <span>{{ formatAmount(f.crowdfunding.goalAmount) }}</span>
                   </div>
                 </div>
               </div>
             </NuxtLink>
             <p
-              v-if="activeFundraisers.length === 0"
+              v-if="mergedFundraisers.length === 0"
               class="py-4 text-center text-sm text-muted-foreground"
             >
               No active fundraisers.

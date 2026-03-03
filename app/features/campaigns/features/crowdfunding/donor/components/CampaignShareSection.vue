@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SocialSharingSettings } from '~/features/settings/admin/stores/socialSharingSettings'
-import SocialShareButtons from './SocialShareButtons.vue'
+import SocialShareButtons from '~/features/campaigns/features/sharing/donor/components/SocialShareButtons.vue'
 
 defineProps<{
   settings: (SocialSharingSettings & { copyLink: boolean }) | null

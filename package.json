@@ -34,7 +34,8 @@
     "minTokens": 50,
     "ignore": [
       "**/.nuxt/**",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "**/sample-api-responses/**"
     ],
     "reporters": [
       "console"

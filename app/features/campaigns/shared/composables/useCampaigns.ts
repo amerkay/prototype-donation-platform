@@ -3,7 +3,6 @@ import { toast } from 'vue-sonner'
 import type { Campaign, CampaignType } from '~/features/campaigns/shared/types'
 import type { DeleteProtection } from '~/features/_shared/composables/useEditState'
 import { campaigns as mockCampaigns } from '~/sample-api-responses/api-sample-response-campaigns'
-import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
 
 /**
  * Campaigns Composable (Singleton Pattern)
@@ -31,10 +30,42 @@ export function useCampaigns() {
   }
 
   /**
-   * Get campaign by ID
+   * Get raw campaign by ID (no parent merge — for internal write operations)
+   */
+  const getRawCampaignById = (id: string): Campaign | undefined => {
+    return campaigns.value.find((c) => c.id === id)
+  }
+
+  /**
+   * Get campaign by ID.
+   * For p2p-fundraiser campaigns, automatically merges parent template fields
+   * (form, matchedGiving, peerToPeer) so consumers always get the full view.
    */
   const getCampaignById = (id: string): Campaign | undefined => {
-    return campaigns.value.find((c) => c.id === id)
+    const campaign = getRawCampaignById(id)
+    if (!campaign) return undefined
+    if (campaign.type !== 'p2p-fundraiser' || !campaign.parentCampaignId) return campaign
+
+    const parent = getRawCampaignById(campaign.parentCampaignId)
+    if (!parent) return campaign
+
+    return {
+      ...parent,
+      // Fundraiser-specific overrides (what the fundraiser creator can edit)
+      id: campaign.id,
+      type: campaign.type,
+      parentCampaignId: campaign.parentCampaignId,
+      p2pPreset: campaign.p2pPreset,
+      name: campaign.name,
+      status: campaign.status,
+      isArchived: campaign.isArchived,
+      crowdfunding: campaign.crowdfunding,
+      stats: campaign.stats,
+      recentDonations: campaign.recentDonations,
+      fundraisers: campaign.fundraisers,
+      createdAt: campaign.createdAt,
+      updatedAt: campaign.updatedAt
+    }
   }
 
   /**
@@ -194,9 +225,10 @@ export function useCampaigns() {
       peerToPeer: campaignData.peerToPeer ?? {
         enabled: false
       },
+      matchedGiving: campaignData.matchedGiving ?? { periods: [] },
       fundraisers: [],
       recentDonations: [],
-      forms: [],
+      form: campaignData.form ?? null,
       ...campaignData
     }
 
@@ -229,10 +261,6 @@ export function useCampaigns() {
     if (index === -1) return
 
     campaigns.value.splice(index, 1)
-
-    // Clean up associated forms
-    const formsStore = useFormsStore()
-    formsStore.deleteCampaignForms(id)
 
     $persist()
     toast.success('Campaign deleted')

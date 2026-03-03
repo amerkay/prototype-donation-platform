@@ -3,6 +3,7 @@ import { ref, watch, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
+import { useMatchedGiving } from '~/features/campaigns/features/matched-giving/donor/composables/useMatchedGiving'
 import LogarithmicPriceSlider from '~/features/donation-form/donor/components/LogarithmicPriceSlider.vue'
 import type { PresetAmount } from '~/features/donation-form/shared/types'
 
@@ -32,6 +33,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { getCurrencySymbol } = useCurrency()
 const currencySymbol = computed(() => getCurrencySymbol(props.currency))
+const { isMatched, multiplier, activePeriod } = useMatchedGiving()
+const matchedAmount = computed(() => localAmount.value * multiplier.value)
 
 const emit = defineEmits<Emits>()
 
@@ -191,8 +194,23 @@ const backToPresets = () => {
       Custom Amount
     </Button>
 
+    <!-- Matched Giving Message -->
+    <div
+      v-if="isMatched && localAmount > 0"
+      class="rounded-lg bg-primary/5 border border-primary/20 p-3 text-center text-sm"
+    >
+      <p v-if="activePeriod?.displayMessage" class="text-muted-foreground">
+        {{ activePeriod.displayMessage }}
+      </p>
+      <p class="font-medium">
+        Your {{ currencySymbol }}{{ localAmount }} becomes
+        <span class="text-primary font-bold">{{ currencySymbol }}{{ matchedAmount }}</span>
+        with {{ multiplier }}x matching!
+      </p>
+    </div>
+
     <!-- Custom Amount Slider -->
-    <div v-else-if="showSlider" class="space-y-3">
+    <div v-if="showSlider" class="space-y-3">
       <!-- Selected Amount Display -->
       <div class="rounded-lg bg-muted p-4 text-center">
         <p class="text-sm text-muted-foreground">Your {{ frequencyLabel }}</p>

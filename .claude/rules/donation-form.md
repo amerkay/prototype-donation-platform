@@ -11,7 +11,8 @@ Multi-step donation wizard with 13 sub-features.
 
 - **Admin config store:** `shared/stores/formConfig.ts`
 - **Donor state store:** `donor/stores/donationForm.ts` (step, amounts, frequencies, donor info)
-- **Types:** `shared/types.ts` — FormSettings, FrequencySettings, DonationAmountsSettings, PresetAmount
+- **Types:** `shared/types.ts` — FormType (`donation`|`registration`), FormSettings, FormTypeLabels
+- **Form type labels:** `shared/composables/useFormTypeLabels.ts` — per-type terminology overrides
 - **Wizard entry:** `donor/DonationFlowWizard.vue`
 - **Reusable forms:** `shared/forms/address-form.ts` (country-specific), `shared/forms/optional-message-field.ts`
 

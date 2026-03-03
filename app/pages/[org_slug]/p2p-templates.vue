@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
-import P2PTemplateCard from '~/features/campaigns/donor/components/P2PTemplateCard.vue'
+import P2PTemplateCard from '~/features/campaigns/features/p2p/donor/components/P2PTemplateCard.vue'
 import { ICON_DONORS } from '~/lib/icons'
 
 definePageMeta({

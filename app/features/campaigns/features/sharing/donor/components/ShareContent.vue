@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useSocialSharingSettingsStore } from '~/features/settings/admin/stores/socialSharingSettings'
-import { useCampaignShare } from '~/features/campaigns/shared/composables/useCampaignShare'
+import { useCampaignShare } from '~/features/campaigns/features/sharing/shared/composables/useCampaignShare'
 import CampaignPreviewCard from '~/features/campaigns/admin/components/CampaignPreviewCard.vue'
 import SocialShareButtons from './SocialShareButtons.vue'
 import { Button } from '@/components/ui/button'

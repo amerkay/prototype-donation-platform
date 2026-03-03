@@ -15,10 +15,10 @@ import InlineEditableText from '~/features/_admin/components/InlineEditableText.
 import AdminResourceHeader from '~/features/_admin/components/AdminResourceHeader.vue'
 import AdminStatusSelect from '~/features/_admin/components/AdminStatusSelect.vue'
 import AdminDeleteButton from '~/features/_admin/components/AdminDeleteButton.vue'
-import EndFundraiserButton from '~/features/campaigns/admin/components/EndFundraiserButton.vue'
+import EndFundraiserButton from '~/features/campaigns/features/p2p/admin/components/EndFundraiserButton.vue'
+import CampaignProgress from '~/features/campaigns/features/crowdfunding/donor/components/CampaignProgress.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
 import { ICON_ARCHIVE, ICON_RESTORE } from '~/lib/icons'
 
 const store = useCampaignConfigStore()
@@ -48,7 +48,7 @@ const typeBadgeVariant = computed(() => getCampaignTypeBadgeVariant(store.type))
 
 const showProgress = computed(() => !store.isP2P && store.crowdfunding?.goalAmount)
 
-const isFundraiser = computed(() => store.type === 'fundraiser')
+const isFundraiser = computed(() => store.type === 'p2p-fundraiser')
 
 /** Admin gets all statuses including terminal; portal gets only active */
 const ALL_CAMPAIGN_STATUSES: { value: string; label: string }[] = [
@@ -177,9 +177,16 @@ const disabledOptions = computed(() => {
       </div>
       <Badge
         :variant="typeBadgeVariant"
-        class="h-6 shrink-0 px-2 py-0 inline-flex items-center text-xs"
+        class="h-6 shrink-0 px-2 py-0 inline-flex items-center text-xs gap-1"
       >
         {{ campaignTypeLabel }}
+      </Badge>
+      <Badge
+        v-if="store.hasMatchedGiving && store.activePeriod"
+        variant="secondary"
+        class="h-6 shrink-0 px-2 py-0 inline-flex items-center text-xs gap-1"
+      >
+        {{ store.activePeriod.multiplier }}x Match
       </Badge>
       <AdminStatusSelect
         :model-value="store.status"
@@ -207,26 +214,36 @@ const disabledOptions = computed(() => {
         </span>
       </div>
 
-      <!-- Standard campaigns: progress chip -->
+      <!-- Standard + matched campaigns: progress chip -->
       <div
         v-else-if="showProgress"
         class="flex h-7 items-center gap-3 px-3 bg-background rounded-full border"
       >
-        <div class="w-14 sm:w-18 md:w-28">
-          <Progress :model-value="store.progressPercentage" class="h-2" />
-        </div>
-        <span class="text-sm font-medium whitespace-nowrap">
-          {{ formatAmount(store.stats.totalRaised, store.stats.currency) }}
-          <span class="text-muted-foreground font-normal">
-            / {{ formatAmount(store.crowdfunding?.goalAmount ?? 0, store.stats.currency) }}
-          </span>
-        </span>
-        <span
-          v-if="formatTimeRemainingShort(store.crowdfunding?.endDate)"
-          class="text-xs text-muted-foreground whitespace-nowrap"
+        <CampaignProgress
+          :stats="store.stats"
+          :goal-amount="store.crowdfunding?.goalAmount ?? 0"
+          :end-date="store.crowdfunding?.endDate"
+          :matched-giving="store.matchedGiving"
+          compact
         >
-          {{ formatTimeRemainingShort(store.crowdfunding?.endDate) }} left
-        </span>
+          <span class="text-sm font-medium whitespace-nowrap">
+            {{
+              formatAmount(
+                store.hasMatchedGiving ? store.matchedTotal : store.stats.totalRaised,
+                store.stats.currency
+              )
+            }}
+            <span class="text-muted-foreground font-normal">
+              / {{ formatAmount(store.crowdfunding?.goalAmount ?? 0, store.stats.currency) }}
+            </span>
+          </span>
+          <span
+            v-if="formatTimeRemainingShort(store.crowdfunding?.endDate)"
+            class="text-xs text-muted-foreground whitespace-nowrap"
+          >
+            {{ formatTimeRemainingShort(store.crowdfunding?.endDate) }} left
+          </span>
+        </CampaignProgress>
       </div>
     </template>
 

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import DonationFormPreview from '~/features/donation-form/admin/components/DonationFormPreview.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
-import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 
@@ -11,13 +10,11 @@ definePageMeta({
 
 const route = useRoute()
 const { getCampaignById } = useCampaigns()
-const { getForm } = useForms(route.params.id as string)
 
 const campaignId = route.params.id as string
-const formId = route.params.formId as string
 
 const campaign = computed(() => getCampaignById(campaignId))
-const form = computed(() => getForm(formId))
+const form = computed(() => campaign.value?.form ?? null)
 
 const { brandingStyle } = useBrandingCssVars()
 

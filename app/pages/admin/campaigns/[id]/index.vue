@@ -2,11 +2,10 @@
 import EditLayout from '~/features/_shared/components/EditLayout.vue'
 import CampaignHeader from '~/features/campaigns/admin/components/CampaignHeader.vue'
 import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/CampaignMasterConfigPanel.vue'
-import CrowdfundingPagePreview from '~/features/campaigns/admin/components/CrowdfundingPagePreview.vue'
+import CrowdfundingPagePreview from '~/features/campaigns/features/crowdfunding/admin/components/CrowdfundingPagePreview.vue'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { ICON_HIDE } from '~/lib/icons'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
-import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import type { CampaignStatus } from '~/features/campaigns/shared/types'
 import { getCampaignTypeBreadcrumb } from '~/features/campaigns/shared/composables/useCampaignTypes'
@@ -73,12 +72,9 @@ const campaignForStore = computed(() => store.fullCampaign)
 // Form ref for validation
 const formRef = ref()
 
-// Activation guard: requires valid settings + at least one form
-const { forms } = useForms(store.id!)
-const formsCount = computed(
-  () => forms.value.filter((f) => !store.pendingFormDeletes.has(f.id)).length
-)
-const canActivate = computed(() => (formRef.value?.isValid ?? false) && formsCount.value > 0)
+// Activation guard: requires valid settings + a form
+const hasForm = computed(() => store.form !== null)
+const canActivate = computed(() => (formRef.value?.isValid ?? false) && hasForm.value)
 
 const isTerminal = computed(() => store.status === 'completed' || store.status === 'ended')
 const crowdfundingEnabled = computed(() => store.crowdfunding?.enabled !== false)
@@ -93,13 +89,13 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBasel
     originalData: campaignForStore,
     onSave: async () => {
       if (!store.id) return
-      store.commitFormDeletes(store.id)
       await updateCampaign(store.id, {
         name: store.name,
         status: store.status,
         stats: store.stats!,
         crowdfunding: store.crowdfunding!,
-        peerToPeer: store.peerToPeer!
+        peerToPeer: store.peerToPeer!,
+        matchedGiving: store.matchedGiving
       })
     }
   })
@@ -107,7 +103,7 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBasel
 // Breadcrumbs
 const breadcrumbs = computed(() => {
   const typeBreadcrumb = getCampaignTypeBreadcrumb({ type: store.type })
-  const isP2PType = store.type === 'p2p' || store.type === 'fundraiser'
+  const isP2PType = store.type === 'p2p' || store.type === 'p2p-fundraiser'
   return [
     { label: 'Dashboard', href: '/admin/dashboard' },
     // P2P types need a category crumb ("Peer to Peer > P2P Templates / Fundraiser Pages")

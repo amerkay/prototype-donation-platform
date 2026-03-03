@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Card, CardContent } from '@/components/ui/card'
-import SocialShareButtons from '~/features/campaigns/donor/components/SocialShareButtons.vue'
+import SocialShareButtons from '~/features/campaigns/features/sharing/donor/components/SocialShareButtons.vue'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useSocialSharingSettingsStore } from '~/features/settings/admin/stores/socialSharingSettings'
-import { useCampaignShare } from '~/features/campaigns/shared/composables/useCampaignShare'
+import { useCampaignShare } from '~/features/campaigns/features/sharing/shared/composables/useCampaignShare'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useAfterSaleSettingsStore } from '~/features/settings/admin/stores/afterSaleSettings'
 import { formatCurrency } from '~/lib/formatCurrency'

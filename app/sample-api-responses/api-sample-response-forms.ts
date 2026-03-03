@@ -10,13 +10,12 @@ import {
 
 /**
  * Sample forms for campaigns
- * Each campaign can have multiple forms with different configurations
+ * Each campaign has a single form (1:1 campaign:form)
  */
 
 // Full-featured form configuration
 const fullFeaturedConfigOrangutan = {
-  ...fullFormConfig,
-  campaignId: 'adopt-orangutan'
+  ...fullFormConfig
 }
 
 // Full-featured form configuration for P2P template
@@ -26,8 +25,7 @@ const fullFeaturedConfigBirthday = {
     ...fullFormConfig.form,
     title: 'Make a Birthday Donation',
     subtitle: 'Help make a difference this birthday'
-  },
-  campaignId: 'birthday-p2p-template'
+  }
 }
 
 // Full-featured form configuration for Tribute P2P template
@@ -37,8 +35,7 @@ const fullFeaturedConfigTribute = {
     ...fullFormConfig.form,
     title: 'Make a Tribute Donation',
     subtitle: 'Honour a loved one with a meaningful gift'
-  },
-  campaignId: 'tribute-p2p-template'
+  }
 }
 
 // Full-featured form configuration for Challenge P2P template
@@ -48,8 +45,7 @@ const fullFeaturedConfigChallenge = {
     ...fullFormConfig.form,
     title: 'Sponsor a Challenge',
     subtitle: 'Support a fundraiser taking on a personal challenge'
-  },
-  campaignId: 'challenge-p2p-template'
+  }
 }
 
 // Full-featured form configuration for Wedding P2P template
@@ -59,8 +55,7 @@ const fullFeaturedConfigWedding = {
     ...fullFormConfig.form,
     title: 'Make a Wedding Donation',
     subtitle: 'Celebrate love by giving back'
-  },
-  campaignId: 'wedding-p2p-template'
+  }
 }
 
 // Full-featured form configuration for Wild Amer's fundraiser 1
@@ -70,8 +65,7 @@ const fullFeaturedConfigWildAmer1 = {
     ...fullFormConfig.form,
     title: "Support Wild's Birthday Fundraiser",
     subtitle: 'Help Wild reach their goal'
-  },
-  campaignId: 'wild-amer-birthday-fundraiser'
+  }
 }
 
 // Full-featured form configuration for Wild Amer's fundraiser 2
@@ -81,8 +75,17 @@ const fullFeaturedConfigWildAmer2 = {
     ...fullFormConfig.form,
     title: "Support Wild's Mini Campaign",
     subtitle: 'Every donation counts'
-  },
-  campaignId: 'wild-amer-birthday-2-fundraiser'
+  }
+}
+
+// Full-featured form configuration for Matched Giving
+const fullFeaturedConfigMatchedGiving = {
+  ...fullFormConfig,
+  form: {
+    ...fullFormConfig.form,
+    title: 'Double Your Impact',
+    subtitle: 'Every pound matched by The Wilkinson Foundation'
+  }
 }
 
 // --- Non-donation form configurations ---
@@ -137,11 +140,9 @@ const minimalDonationAmounts = {
 
 const stallBookingFormConfig = {
   version: '1.0',
-  campaignId: 'summer-fete-stalls',
   form: {
     title: 'Book a Stall',
-    subtitle: 'Reserve your stall for the Summer Fete 2026',
-    formType: 'registration' as const
+    subtitle: 'Reserve your stall for the Summer Fete 2026'
   },
   donationAmounts: minimalDonationAmounts,
   features: {
@@ -190,17 +191,23 @@ const stallBookingFormConfig = {
         { type: 'checkbox' as const, id: 'power_required', label: 'Mains power supply needed' }
       ]
     },
+    contactConsent: {
+      enabled: true,
+      settings: {
+        label: 'Keep me updated about future events',
+        description: "We'll send occasional updates about upcoming fetes and community events."
+      }
+    },
+    terms: { enabled: true },
     ...disabledDonationFeatures
   }
 }
 
 const dogShowFormConfig = {
   version: '1.0',
-  campaignId: 'annual-dog-show',
   form: {
     title: 'Enter the Dog Show',
-    subtitle: 'Pick your categories — £2.50 per entry',
-    formType: 'registration' as const
+    subtitle: 'Pick your categories — £2.50 per entry'
   },
   donationAmounts: minimalDonationAmounts,
   features: {
@@ -246,17 +253,23 @@ const dogShowFormConfig = {
         }
       ]
     },
+    contactConsent: {
+      enabled: true,
+      settings: {
+        label: 'Keep me updated about future shows',
+        description: "We'll let you know about upcoming dog shows and events."
+      }
+    },
+    terms: { enabled: false },
     ...disabledDonationFeatures
   }
 }
 
 const classicCarFormConfig = {
   version: '1.0',
-  campaignId: 'classic-car-show',
   form: {
     title: 'Register Your Classic Car',
-    subtitle: 'Free entry — all classic cars welcome',
-    formType: 'registration' as const
+    subtitle: 'Free entry — all classic cars welcome'
   },
   donationAmounts: minimalDonationAmounts,
   features: {
@@ -270,225 +283,137 @@ const classicCarFormConfig = {
       }
     },
     entryFields: { enabled: false, mode: 'shared' as const, fields: [] },
+    contactConsent: {
+      enabled: true,
+      settings: {
+        label: 'Keep me updated about classic car events',
+        description: 'Occasional updates about shows and meetups in your area.'
+      }
+    },
+    terms: { enabled: false },
     ...disabledDonationFeatures
   }
 }
 
-// --- Campaign form arrays ---
+// --- Single form exports (1:1 campaign:form) ---
 
-/**
- * Forms for "Adopt an Orangutan" campaign
- */
-export const adoptOrangutanForms: CampaignForm[] = [
-  {
-    id: 'form-orangutan-full',
-    campaignId: 'adopt-orangutan',
-    name: 'Full Experience Form',
-    isDefault: true,
-    config: fullFeaturedConfigOrangutan as unknown as FullFormConfig,
-    products: fullProducts,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-12-15T14:30:00Z'
-  }
-]
-
-/**
- * Forms for "Birthday P2P Template" campaign
- */
-export const birthdayP2PForms: CampaignForm[] = [
-  {
-    id: 'form-birthday-full',
-    campaignId: 'birthday-p2p-template',
-    name: 'Full Experience Form',
-    isDefault: true,
-    config: fullFeaturedConfigBirthday as unknown as FullFormConfig,
-    products: fullProducts,
-    createdAt: '2025-11-01T10:00:00Z',
-    updatedAt: '2026-01-10T14:30:00Z'
-  }
-]
-
-/**
- * Forms for "Tribute P2P Template" campaign
- */
-export const tributeP2PForms: CampaignForm[] = [
-  {
-    id: 'form-tribute-full',
-    campaignId: 'tribute-p2p-template',
-    name: 'Full Experience Form',
-    isDefault: true,
-    config: fullFeaturedConfigTribute as unknown as FullFormConfig,
-    products: fullProducts,
-    createdAt: '2025-10-01T10:00:00Z',
-    updatedAt: '2026-01-12T14:30:00Z'
-  }
-]
-
-/**
- * Forms for "Challenge P2P Template" campaign
- */
-export const challengeP2PForms: CampaignForm[] = [
-  {
-    id: 'form-challenge-full',
-    campaignId: 'challenge-p2p-template',
-    name: 'Full Experience Form',
-    isDefault: true,
-    config: fullFeaturedConfigChallenge as unknown as FullFormConfig,
-    products: fullProducts,
-    createdAt: '2025-09-15T10:00:00Z',
-    updatedAt: '2026-01-08T14:30:00Z'
-  }
-]
-
-/**
- * Forms for "Wedding P2P Template" campaign
- */
-export const weddingP2PForms: CampaignForm[] = [
-  {
-    id: 'form-wedding-full',
-    campaignId: 'wedding-p2p-template',
-    name: 'Full Experience Form',
-    isDefault: true,
-    config: fullFeaturedConfigWedding as unknown as FullFormConfig,
-    products: fullProducts,
-    createdAt: '2025-08-01T10:00:00Z',
-    updatedAt: '2026-01-05T14:30:00Z'
-  }
-]
-
-/**
- * Forms for Wild Amer's first fundraiser campaign
- */
-export const wildAmer1FundraiserForms: CampaignForm[] = [
-  {
-    id: 'form-wild-amer-1-full',
-    campaignId: 'wild-amer-birthday-fundraiser',
-    name: 'Full Experience Form',
-    isDefault: true,
-    config: fullFeaturedConfigWildAmer1 as unknown as FullFormConfig,
-    products: fullProducts,
-    createdAt: '2025-11-15T10:00:00Z',
-    updatedAt: '2026-01-15T14:30:00Z'
-  }
-]
-
-/**
- * Forms for Wild Amer's second fundraiser campaign
- */
-export const wildAmer2FundraiserForms: CampaignForm[] = [
-  {
-    id: 'form-wild-amer-2-full',
-    campaignId: 'wild-amer-birthday-2-fundraiser',
-    name: 'Full Experience Form',
-    isDefault: true,
-    config: fullFeaturedConfigWildAmer2 as unknown as FullFormConfig,
-    products: fullProducts,
-    createdAt: '2025-12-20T10:00:00Z',
-    updatedAt: '2026-01-10T14:30:00Z'
-  }
-]
-
-/**
- * Forms for "Summer Fete Stall Booking" campaign (registration)
- */
-export const stallBookingForms: CampaignForm[] = [
-  {
-    id: 'form-stall-booking',
-    campaignId: 'summer-fete-stalls',
-    name: 'Stall Booking Form',
-    isDefault: true,
-    config: stallBookingFormConfig as unknown as FullFormConfig,
-    products: stallBookingProducts,
-    createdAt: '2026-01-05T09:00:00Z',
-    updatedAt: '2026-02-01T11:00:00Z'
-  }
-]
-
-/**
- * Forms for "Annual Dog Show" campaign (registration)
- */
-export const dogShowForms: CampaignForm[] = [
-  {
-    id: 'form-dog-show',
-    campaignId: 'annual-dog-show',
-    name: 'Dog Show Entry Form',
-    isDefault: true,
-    config: dogShowFormConfig as unknown as FullFormConfig,
-    products: dogShowProducts,
-    createdAt: '2026-01-10T09:00:00Z',
-    updatedAt: '2026-02-05T11:00:00Z'
-  }
-]
-
-/**
- * Forms for "Classic Car Show" campaign (registration)
- */
-export const classicCarForms: CampaignForm[] = [
-  {
-    id: 'form-classic-car',
-    campaignId: 'classic-car-show',
-    name: 'Classic Car Registration',
-    isDefault: true,
-    config: classicCarFormConfig as unknown as FullFormConfig,
-    products: classicCarProducts,
-    createdAt: '2026-01-12T09:00:00Z',
-    updatedAt: '2026-02-08T11:00:00Z'
-  }
-]
-
-/**
- * Get all forms for a specific campaign
- */
-export function getFormsByCampaignId(campaignId: string): CampaignForm[] {
-  switch (campaignId) {
-    case 'adopt-orangutan':
-      return adoptOrangutanForms
-    case 'birthday-p2p-template':
-      return birthdayP2PForms
-    case 'tribute-p2p-template':
-      return tributeP2PForms
-    case 'challenge-p2p-template':
-      return challengeP2PForms
-    case 'wedding-p2p-template':
-      return weddingP2PForms
-    case 'wild-amer-birthday-fundraiser':
-      return wildAmer1FundraiserForms
-    case 'wild-amer-birthday-2-fundraiser':
-      return wildAmer2FundraiserForms
-    case 'summer-fete-stalls':
-      return stallBookingForms
-    case 'annual-dog-show':
-      return dogShowForms
-    case 'classic-car-show':
-      return classicCarForms
-    default:
-      return []
-  }
+export const adoptOrangutanForm: CampaignForm = {
+  id: 'form-orangutan-full',
+  campaignId: 'adopt-orangutan',
+  name: 'Full Experience Form',
+  isDefault: true,
+  config: fullFeaturedConfigOrangutan as unknown as FullFormConfig,
+  products: fullProducts,
+  createdAt: '2024-01-15T10:00:00Z',
+  updatedAt: '2024-12-15T14:30:00Z'
 }
 
-/**
- * Get default form for a campaign
- */
-export function getDefaultForm(campaignId: string): CampaignForm | undefined {
-  const forms = getFormsByCampaignId(campaignId)
-  return forms.find((form) => form.isDefault) || forms[0]
+export const birthdayP2PForm: CampaignForm = {
+  id: 'form-birthday-full',
+  campaignId: 'birthday-p2p-template',
+  name: 'Full Experience Form',
+  isDefault: true,
+  config: fullFeaturedConfigBirthday as unknown as FullFormConfig,
+  products: fullProducts,
+  createdAt: '2025-11-01T10:00:00Z',
+  updatedAt: '2026-01-10T14:30:00Z'
 }
 
-/**
- * Get specific form by ID
- */
-export function getFormById(formId: string): CampaignForm | undefined {
-  const allForms = [
-    ...adoptOrangutanForms,
-    ...birthdayP2PForms,
-    ...tributeP2PForms,
-    ...challengeP2PForms,
-    ...weddingP2PForms,
-    ...wildAmer1FundraiserForms,
-    ...wildAmer2FundraiserForms,
-    ...stallBookingForms,
-    ...dogShowForms,
-    ...classicCarForms
-  ]
-  return allForms.find((form) => form.id === formId)
+export const tributeP2PForm: CampaignForm = {
+  id: 'form-tribute-full',
+  campaignId: 'tribute-p2p-template',
+  name: 'Full Experience Form',
+  isDefault: true,
+  config: fullFeaturedConfigTribute as unknown as FullFormConfig,
+  products: fullProducts,
+  createdAt: '2025-10-01T10:00:00Z',
+  updatedAt: '2026-01-12T14:30:00Z'
+}
+
+export const challengeP2PForm: CampaignForm = {
+  id: 'form-challenge-full',
+  campaignId: 'challenge-p2p-template',
+  name: 'Full Experience Form',
+  isDefault: true,
+  config: fullFeaturedConfigChallenge as unknown as FullFormConfig,
+  products: fullProducts,
+  createdAt: '2025-09-15T10:00:00Z',
+  updatedAt: '2026-01-08T14:30:00Z'
+}
+
+export const weddingP2PForm: CampaignForm = {
+  id: 'form-wedding-full',
+  campaignId: 'wedding-p2p-template',
+  name: 'Full Experience Form',
+  isDefault: true,
+  config: fullFeaturedConfigWedding as unknown as FullFormConfig,
+  products: fullProducts,
+  createdAt: '2025-08-01T10:00:00Z',
+  updatedAt: '2026-01-05T14:30:00Z'
+}
+
+export const wildAmer1FundraiserForm: CampaignForm = {
+  id: 'form-wild-amer-1-full',
+  campaignId: 'wild-amer-birthday-fundraiser',
+  name: 'Full Experience Form',
+  isDefault: true,
+  config: fullFeaturedConfigWildAmer1 as unknown as FullFormConfig,
+  products: fullProducts,
+  createdAt: '2025-11-15T10:00:00Z',
+  updatedAt: '2026-01-15T14:30:00Z'
+}
+
+export const wildAmer2FundraiserForm: CampaignForm = {
+  id: 'form-wild-amer-2-full',
+  campaignId: 'wild-amer-birthday-2-fundraiser',
+  name: 'Full Experience Form',
+  isDefault: true,
+  config: fullFeaturedConfigWildAmer2 as unknown as FullFormConfig,
+  products: fullProducts,
+  createdAt: '2025-12-20T10:00:00Z',
+  updatedAt: '2026-01-10T14:30:00Z'
+}
+
+export const matchedGivingForm: CampaignForm = {
+  id: 'form-matched-giving',
+  campaignId: 'matched-giving-spring',
+  name: 'Matched Giving Form',
+  isDefault: true,
+  config: fullFeaturedConfigMatchedGiving as unknown as FullFormConfig,
+  products: fullProducts,
+  createdAt: '2026-02-01T10:00:00Z',
+  updatedAt: '2026-02-15T14:30:00Z'
+}
+
+export const stallBookingForm: CampaignForm = {
+  id: 'form-stall-booking',
+  campaignId: 'summer-fete-stalls',
+  name: 'Stall Booking Form',
+  isDefault: true,
+  config: stallBookingFormConfig as unknown as FullFormConfig,
+  products: stallBookingProducts,
+  createdAt: '2026-01-05T09:00:00Z',
+  updatedAt: '2026-02-01T11:00:00Z'
+}
+
+export const dogShowForm: CampaignForm = {
+  id: 'form-dog-show',
+  campaignId: 'annual-dog-show',
+  name: 'Dog Show Entry Form',
+  isDefault: true,
+  config: dogShowFormConfig as unknown as FullFormConfig,
+  products: dogShowProducts,
+  createdAt: '2026-01-10T09:00:00Z',
+  updatedAt: '2026-02-05T11:00:00Z'
+}
+
+export const classicCarForm: CampaignForm = {
+  id: 'form-classic-car',
+  campaignId: 'classic-car-show',
+  name: 'Classic Car Registration',
+  isDefault: true,
+  config: classicCarFormConfig as unknown as FullFormConfig,
+  products: classicCarProducts,
+  createdAt: '2026-01-12T09:00:00Z',
+  updatedAt: '2026-02-08T11:00:00Z'
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import CrowdfundingPagePreview from '~/features/campaigns/admin/components/CrowdfundingPagePreview.vue'
+import CrowdfundingPagePreview from '~/features/campaigns/features/crowdfunding/admin/components/CrowdfundingPagePreview.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'

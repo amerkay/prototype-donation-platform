@@ -34,9 +34,21 @@
       "Bash(echo .worktrees:*)",
       "Bash(tail:*)",
       "Bash(pnpm analyze:dead:*)",
-      "Bash(pnpm analyze:circular:*)"
+      "Bash(pnpm analyze:circular:*)",
+      "WebFetch(domain:registry.npmjs.org)"
     ]
   },
   "outputStyle": "Explanatory",
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": false,
+    "network": {
+      "allowedDomains": [
+        "registry.npmjs.org",
+        "*.npmjs.org"
+      ]
+    }
+  },
   "prefersReducedMotion": false
 }

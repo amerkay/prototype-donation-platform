@@ -43,9 +43,10 @@ function makeCampaign(overrides: Partial<Campaign> = {}): Campaign {
     stats: defaultStats,
     crowdfunding: defaultCrowdfunding,
     peerToPeer: defaultP2P,
+    matchedGiving: { periods: [] },
     fundraisers: [],
     recentDonations: [],
-    forms: [],
+    form: null,
     ...overrides
   } as Campaign
 }
@@ -95,9 +96,9 @@ describe('Campaign Config Store', () => {
       expect(store.currency).toBe('GBP')
     })
 
-    it.each<CampaignType>(['standard', 'p2p', 'fundraiser'])(
+    it.each<CampaignType>(['standard', 'p2p', 'p2p-fundraiser'])(
       'immutability applies to %s campaigns',
-      (campaignType) => {
+      (campaignType: CampaignType) => {
         const store = useCampaignConfigStore()
         store.initialize(makeCampaign({ type: campaignType, id: 'camp-1' }))
 
@@ -129,6 +130,68 @@ describe('Campaign Config Store', () => {
       store.reset()
       expect(store.crowdfunding).toBeNull()
       expect(store.currency).toBe('')
+    })
+  })
+
+  describe('hasMatchedGiving', () => {
+    it('returns false when no match periods exist', () => {
+      const store = useCampaignConfigStore()
+      store.initialize(makeCampaign())
+      expect(store.hasMatchedGiving).toBe(false)
+    })
+
+    it('returns true when match periods exist (regardless of campaign type)', () => {
+      const store = useCampaignConfigStore()
+      store.initialize(
+        makeCampaign({
+          type: 'standard',
+          matchedGiving: {
+            periods: [
+              {
+                id: 'mp-1',
+                name: 'Test Match',
+                multiplier: 2,
+                poolAmount: 10000,
+                poolDrawn: 0,
+                startDate: '2026-01-01T00:00:00Z',
+                endDate: '2026-12-31T00:00:00Z'
+              }
+            ]
+          }
+        })
+      )
+      expect(store.hasMatchedGiving).toBe(true)
+    })
+
+    it('matchedTotal includes pool drawn when matching is active', () => {
+      const store = useCampaignConfigStore()
+      store.initialize(
+        makeCampaign({
+          type: 'standard',
+          stats: {
+            totalRaised: 5000,
+            totalDonations: 50,
+            totalDonors: 40,
+            averageDonation: 100,
+            topDonation: 500,
+            currency: 'GBP'
+          },
+          matchedGiving: {
+            periods: [
+              {
+                id: 'mp-1',
+                name: 'Test Match',
+                multiplier: 2,
+                poolAmount: 10000,
+                poolDrawn: 3000,
+                startDate: '2026-01-01T00:00:00Z',
+                endDate: '2026-12-31T00:00:00Z'
+              }
+            ]
+          }
+        })
+      )
+      expect(store.matchedTotal).toBe(8000) // 5000 raised + 3000 matched
     })
   })
 

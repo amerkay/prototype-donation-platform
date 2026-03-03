@@ -3,7 +3,8 @@ import EditLayout from '~/features/_shared/components/EditLayout.vue'
 import AdminDonationFormConfig from '~/features/donation-form/admin/components/AdminDonationFormConfig.vue'
 import DonationFormPreview from '~/features/donation-form/admin/components/DonationFormPreview.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
-import { useForms } from '~/features/campaigns/shared/composables/useForms'
+import { useForm } from '~/features/campaigns/shared/composables/useForm'
+import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useEditState } from '~/features/_shared/composables/useEditState'
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
@@ -16,12 +17,16 @@ const route = useRoute()
 const { getCampaignById } = useCampaigns()
 
 const campaignId = route.params.id as string
-const formId = route.params.formId as string
-
-const { getForm, updateForm, renameForm } = useForms(campaignId)
 
 const campaign = computed(() => getCampaignById(campaignId))
-const form = computed(() => getForm(formId))
+
+// Initialize campaign config store so useForm() can read store.form
+const campaignConfigStore = useCampaignConfigStore()
+if (campaign.value) {
+  campaignConfigStore.initialize(campaign.value)
+}
+
+const { form, updateForm, renameForm } = useForm()
 
 // Initialize store synchronously so child components have store data during setup
 const store = useFormConfigStore()
@@ -62,8 +67,8 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useEdit
   formRef: formConfigRef,
   originalData,
   onSave: async () => {
-    if (!store.formId || !store.fullConfig) return
-    await updateForm(store.formId, store.fullConfig, store.products)
+    if (!store.fullConfig) return
+    await updateForm(store.fullConfig, store.products)
   }
 })
 
@@ -77,6 +82,7 @@ const breadcrumbs = computed(() => [
 
 // Preview handler
 const handlePreview = () => {
+  const formId = form.value?.id
   window.open(`/admin/campaigns/${campaignId}/forms/${formId}/preview`, '_blank')
 }
 </script>
@@ -95,7 +101,7 @@ const handlePreview = () => {
     @update:editable="editableMode = $event"
     @update:show-discard-dialog="showDiscardDialog = $event"
     @confirm-discard="confirmDiscard"
-    @update:last-item-label="renameForm(formId, $event)"
+    @update:last-item-label="renameForm($event)"
   >
     <!-- Main content -->
     <template #content>

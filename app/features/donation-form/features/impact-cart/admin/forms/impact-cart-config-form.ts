@@ -8,11 +8,12 @@ import {
   alertField
 } from '~/features/_library/form-builder/api'
 import FormProductList from '~/features/donation-form/admin/components/FormProductList.vue'
-import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
+import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
 
 function isRegistration() {
-  const store = useFormConfigStore()
-  return (store.form?.formType ?? 'donation') === 'registration'
+  const campaignStore = useCampaignConfigStore()
+  return getCampaignCapabilities(campaignStore.type).formType === 'registration'
 }
 
 /**

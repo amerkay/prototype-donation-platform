@@ -2,19 +2,17 @@
 import type { Campaign, CampaignFundraiser } from '~/features/campaigns/shared/types'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
-import { getPresetById } from '~/features/campaigns/admin/templates'
+import { getPresetById } from '~/features/campaigns/features/p2p/admin/templates'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
-import { useForms } from '~/features/campaigns/shared/composables/useForms'
 import {
   useP2PDetailsForm,
   createP2PCustomiseForm
-} from '~/features/campaigns/donor/forms/p2p-onboarding-form'
+} from '~/features/campaigns/features/p2p/donor/forms/p2p-onboarding-form'
 import { extractDefaultValues } from '~/features/_library/form-builder/utils/defaults'
 import {
   getCurrencyOptionsForSelect,
   getCurrencySymbol
 } from '~/features/donation-form/shared/composables/useCurrency'
-import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { generateEntityId } from '~/lib/generateEntityId'
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
@@ -40,13 +38,12 @@ const props = defineProps<{
 const { createCampaign, getCampaignById, updateCampaign } = useCampaigns()
 const charityStore = useCharitySettingsStore()
 const currencyStore = useCurrencySettingsStore()
-const formsStore = useFormsStore()
-const { forms: parentForms, defaultForm: parentDefaultForm } = useForms(props.campaign.id)
+// 1:1 campaign:form — parent's form is directly on the campaign
+const parentForm = computed(() => props.campaign.form)
 
 // Currency options from parent's form enabledCurrencies or org supported
 const currencyOptions = computed(() => {
-  const parentForm = parentForms.value[0]
-  const enabled = parentForm?.config.donationAmounts.enabledCurrencies
+  const enabled = parentForm.value?.config.donationAmounts.enabledCurrencies
   if (enabled?.length) return getCurrencyOptionsForSelect(enabled)
   return getCurrencyOptionsForSelect(currencyStore.supportedCurrencies)
 })
@@ -157,7 +154,7 @@ const createdCampaignId = ref<string>()
 
 const handleLaunch = () => {
   const id = createCampaign({
-    type: 'fundraiser',
+    type: 'p2p-fundraiser',
     parentCampaignId: props.campaign.id,
     p2pPreset: props.campaign.p2pPreset,
     name: `${firstName.value}'s Fundraiser`,
@@ -177,20 +174,19 @@ const handleLaunch = () => {
     peerToPeer: { enabled: false }
   })
 
-  // Copy-on-create: deep-copy parent's default form into the new fundraiser
-  const sourceForm = parentDefaultForm.value
+  // Copy-on-create: deep-copy parent's form into the new fundraiser campaign
+  const sourceForm = parentForm.value
   if (sourceForm) {
-    const newFormId = generateEntityId('form')
-    const copiedConfig = JSON.parse(JSON.stringify(sourceForm.config))
+    const copiedForm = JSON.parse(JSON.stringify(sourceForm))
     // Apply the fundraiser's selected currency as baseDefaultCurrency
-    copiedConfig.donationAmounts.baseDefaultCurrency = selectedCurrency.value
-    formsStore.addForm(
-      id,
-      newFormId,
-      sourceForm.name,
-      copiedConfig,
-      JSON.parse(JSON.stringify(sourceForm.products))
-    )
+    copiedForm.config.donationAmounts.baseDefaultCurrency = selectedCurrency.value
+    updateCampaign(id, {
+      form: {
+        ...copiedForm,
+        id: generateEntityId('form'),
+        campaignId: id
+      }
+    })
   }
 
   // Register fundraiser metadata on parent so portal can find it

@@ -270,7 +270,7 @@ CREATE TABLE campaigns (
   name TEXT NOT NULL,
   slug TEXT NOT NULL,
   type TEXT NOT NULL DEFAULT 'standard'
-    CHECK (type IN ('standard', 'p2p', 'fundraiser')),
+    CHECK (type IN ('standard', 'p2p', 'p2p-fundraiser', 'event')),
   status TEXT NOT NULL DEFAULT 'draft'
     CHECK (status IN ('draft', 'active', 'completed', 'ended')),
   is_archived BOOLEAN NOT NULL DEFAULT false,
@@ -293,6 +293,20 @@ CREATE TABLE campaigns (
   --   enabled, allowIndividuals, allowTeams,
   --   fundraiserGoalDefault, customMessage
   -- }
+
+  -- Matched giving settings (any campaign type can enable matching)
+  matched_giving JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- {
+  --   periods: [{
+  --     id, name, multiplier, poolAmount, poolDrawn,
+  --     startDate, endDate, matcherName?, matcherLogo?, displayMessage?
+  --   }]
+  -- }
+
+  -- Event-specific settings (future: venue, capacity, sessions, check-in)
+  event_settings JSONB NOT NULL DEFAULT '{}'::JSONB,
+  -- Reserved for future ticketing features:
+  -- { venue, eventDate, eventTime, capacity, checkInEnabled, sessions[], ticketTypes[] }
 
   -- Charity information override (was campaign_charity table)
   charity JSONB NOT NULL DEFAULT '{}'::JSONB,
@@ -388,9 +402,12 @@ CREATE INDEX idx_fundraisers_slug ON campaign_fundraisers(parent_campaign_id, sl
 -- ============================================
 -- CAMPAIGN FORMS (with merged config JSONB columns)
 -- ============================================
+-- 1:1 relationship: each campaign has exactly one form.
+-- Kept as separate table (not inlined JSONB) because forms have many columns and
+-- are independently queryable (by form_type, currency, etc.)
 CREATE TABLE campaign_forms (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  campaign_id UUID NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+  campaign_id UUID NOT NULL UNIQUE REFERENCES campaigns(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   is_default BOOLEAN NOT NULL DEFAULT false,
 
@@ -715,6 +732,11 @@ CREATE TABLE transactions (
   receipt_pdf_url TEXT,
   -- Supabase Storage path to immutable receipt PDF generated at donation time
 
+  -- Match tracking (set when donation is matched against a campaign's match period)
+  matched_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+  match_period_id TEXT,
+  -- references period.id within parent campaign's matched_giving JSONB
+
   -- Denormalized custom field values (set by application on insert)
   custom_fields JSONB,
   -- { "text_company_name": "Acme Inc", "select_category": "corporate" }
@@ -731,6 +753,8 @@ CREATE INDEX idx_transactions_donor_user ON transactions(donor_user_id)
 CREATE INDEX idx_transactions_status ON transactions(status);
 CREATE INDEX idx_transactions_created ON transactions(created_at DESC);
 CREATE INDEX idx_transactions_amount ON transactions(total_amount DESC);
+CREATE INDEX idx_transactions_match_period ON transactions(match_period_id)
+  WHERE match_period_id IS NOT NULL;
 -- Composite index for campaign_donations_view
 CREATE INDEX idx_transactions_campaign_donations
   ON transactions(campaign_id, status, created_at DESC)

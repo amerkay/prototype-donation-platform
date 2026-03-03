@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
 import { ICON_MENU, ICON_CLOSE } from '~/lib/icons'
-import { useForms } from '~/features/campaigns/shared/composables/useForms'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 
 const route = useRoute()
 const orgSlug = computed(() => (route.params.org_slug as string) || 'bosf')
 const campaignSlug = computed(() => (route.params.campaign_slug as string) || 'adopt-orangutan')
 
-// Get default form for the current campaign
-const { defaultForm } = useForms(campaignSlug.value)
+// 1:1 campaign:form — get form directly from campaign
+const { getCampaignById } = useCampaigns()
+const campaign = computed(() => getCampaignById(campaignSlug.value))
+const defaultForm = computed(() => campaign.value?.form ?? null)
 
 const navLinks = computed(() => [
   { label: 'Campaign', to: `/${orgSlug.value}/${campaignSlug.value}` },

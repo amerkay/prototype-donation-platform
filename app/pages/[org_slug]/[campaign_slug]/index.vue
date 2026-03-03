@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import CrowdfundingPage from '~/features/campaigns/donor/components/CrowdfundingPage.vue'
+import CrowdfundingPage from '~/features/campaigns/features/crowdfunding/donor/components/CrowdfundingPage.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { ICON_WARNING } from '~/lib/icons'
 import { Card, CardContent } from '@/components/ui/card'

@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { P2P_PRESET_REGISTRY, type P2PCampaignPreset } from '~/features/campaigns/admin/templates'
+import {
+  P2P_PRESET_REGISTRY,
+  type P2PCampaignPreset
+} from '~/features/campaigns/features/p2p/admin/templates'
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'

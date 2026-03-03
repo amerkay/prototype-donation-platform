@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
-import P2POnboardingWizard from '~/features/campaigns/donor/components/P2POnboardingWizard.vue'
+import P2POnboardingWizard from '~/features/campaigns/features/p2p/donor/components/P2POnboardingWizard.vue'
 import { ICON_WARNING } from '~/lib/icons'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'

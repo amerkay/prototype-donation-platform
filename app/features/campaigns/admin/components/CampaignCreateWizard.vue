@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { DonationFormTemplate } from '~/features/donation-form/admin/templates'
+import type { CampaignType, P2PPreset } from '~/features/campaigns/shared/types'
 import { useCampaignCreateWizardForm } from '~/features/campaigns/admin/forms/campaign-create-wizard-form'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCreateFormFromTemplate } from '~/features/donation-form/admin/composables/useCreateFormFromTemplate'
-import { useFormsStore } from '~/features/campaigns/shared/stores/forms'
+import { getPresetById } from '~/features/campaigns/features/p2p/admin/templates'
 import { extractDefaultValues } from '~/features/_library/form-builder/utils/defaults'
+import { getCampaignEditPath } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import DonationFormTemplateGrid from '~/features/donation-form/admin/components/DonationFormTemplateGrid.vue'
@@ -22,7 +24,6 @@ const emit = defineEmits<{
 
 const { createCampaign } = useCampaigns()
 const { createFormFromTemplate } = useCreateFormFromTemplate()
-const formsStore = useFormsStore()
 
 // Step state
 const currentStep = ref(1)
@@ -58,7 +59,7 @@ const headerTitle = computed(() =>
 const headerDescription = computed(() =>
   currentStep.value === 1
     ? 'Set up your campaign details and currency'
-    : 'Select a donation form template for your campaign'
+    : 'Select a form template for your campaign'
 )
 
 // Step 1 validated → store data, advance
@@ -75,36 +76,65 @@ const tryNext = () => {
 const handleTemplateSelect = (template: DonationFormTemplate) => {
   const title = step1Data.value.title as string
   const currency = step1Data.value.currency as string
+  const campaignType = (step1Data.value.campaignType as CampaignType) || 'standard'
+  const p2pPreset = step1Data.value.p2pPreset as P2PPreset | undefined
+
+  // Apply P2P preset defaults if applicable
+  const presetDefaults =
+    campaignType === 'p2p' && p2pPreset ? getPresetById(p2pPreset)?.factory() : undefined
 
   const campaignId = createCampaign({
-    type: 'standard',
+    type: campaignType,
+    ...(p2pPreset && campaignType === 'p2p' ? { p2pPreset } : {}),
     name: title,
     crowdfunding: {
       enabled: true,
       currency,
-      title,
-      shortDescription: step1Data.value.shortDescription as string,
+      title: presetDefaults?.crowdfunding?.title ?? title,
+      shortDescription:
+        presetDefaults?.crowdfunding?.shortDescription ??
+        (step1Data.value.shortDescription as string),
+      story: presetDefaults?.crowdfunding?.story,
       goalAmount: (step1Data.value.goalAmount as number) || undefined,
+      endDate: (step1Data.value.endDate as string) || undefined,
       showProgressBar: true,
       showRecentDonations: true,
       defaultDonationsView: 'recent',
       numberOfDonationsToShow: 5,
       enableSocialSharing: true
     },
-    peerToPeer: { enabled: false }
+    peerToPeer: {
+      enabled: campaignType === 'p2p',
+      ...(presetDefaults?.peerToPeer ?? {})
+    },
+    matchedGiving: { periods: [] }
   })
 
-  // Create form from selected template, using campaign currency for smart conversion
+  // Create form from selected template (1:1 — set directly on campaign)
   const { formId, formName, config, products } = createFormFromTemplate(
     campaignId,
     template,
     [],
     currency
   )
-  formsStore.addForm(campaignId, formId, formName, config, products)
+
+  // Update campaign with the form
+  const { updateCampaign } = useCampaigns()
+  updateCampaign(campaignId, {
+    form: {
+      id: formId,
+      campaignId,
+      name: formName,
+      isDefault: true,
+      config,
+      products,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  })
 
   emit('update:open', false)
-  navigateTo(`/admin/campaigns/${campaignId}`)
+  navigateTo(getCampaignEditPath(campaignType, campaignId))
 }
 </script>
 
@@ -124,7 +154,7 @@ const handleTemplateSelect = (template: DonationFormTemplate) => {
     </template>
 
     <template #content>
-      <!-- Step 1: Campaign Info + Currency -->
+      <!-- Step 1: Campaign Info + Type + Currency -->
       <div v-if="currentStep === 1" class="py-4">
         <FormRenderer
           ref="formRef"

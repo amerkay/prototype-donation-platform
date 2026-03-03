@@ -4,7 +4,7 @@ import {
   alertField,
   toggleField
 } from '~/features/_library/form-builder/api'
-import type { FieldContext, FormContext } from '~/features/_library/form-builder/types'
+import type { FormContext } from '~/features/_library/form-builder/types'
 import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 import { useDonationFormBasicForm } from '~/features/donation-form/admin/forms/donation-form-basic-form'
 import { useDonationFormDonationAmountsForm } from '~/features/donation-form/admin/forms/donation-form-donation-amounts-form'
@@ -21,34 +21,22 @@ import type { ContextSchemaInput } from '~/features/_library/custom-fields/forms
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
-import { FEATURE_FORM_TYPE_SUPPORT, type FormType } from '~/features/donation-form/shared/types'
-
-/** Check if a feature is supported for the current form type from root form values */
-function isDonationFormType(ctx: FieldContext): boolean {
-  const formType = (
-    (ctx.root?.formSettings as Record<string, unknown>)?.form as Record<string, unknown>
-  )?.formType as FormType | undefined
-  return (formType ?? 'donation') === 'donation'
-}
-
-function isFeatureSupportedForFormType(featureKey: string, ctx: FieldContext): boolean {
-  const formType = (
-    (ctx.root?.formSettings as Record<string, unknown>)?.form as Record<string, unknown>
-  )?.formType as FormType | undefined
-  const supported = FEATURE_FORM_TYPE_SUPPORT[featureKey]
-  if (!supported) return true
-  return supported.includes(formType ?? 'donation')
-}
+import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
 
 /**
  * Master admin form that consolidates all donation form configuration sections
  * Each section is wrapped in a collapsible field-group with card styling
+ *
+ * Feature visibility is driven by getCampaignCapabilities() — the single source of truth.
  */
 export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput) {
   return defineForm('donationFormAdmin', (ctx: FormContext) => {
     const currencyStore = useCurrencySettingsStore()
     const formConfigStore = useFormConfigStore()
     const campaignStore = useCampaignConfigStore()
+
+    /** Campaign capabilities — determines which features are available */
+    const caps = () => getCampaignCapabilities(campaignStore.type)
 
     // Provide accordion group for single-open behavior
     provideAccordionGroup()
@@ -134,7 +122,8 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
       }
     })
 
-    // Donation Amounts - non-collapsible and always open for fundraisers
+    // Donation Amounts - visible only when campaign type supports donation amounts
+    // Non-collapsible and always open for fundraisers
     const donationAmounts = fieldGroup('donationAmounts', {
       label: 'Donation Amounts',
       description: campaignStore.isFundraiser
@@ -143,14 +132,14 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
       collapsible: !campaignStore.isFundraiser,
       collapsibleDefaultOpen: campaignStore.isFundraiser,
       wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      visibleWhen: (ctx: FieldContext) => isDonationFormType(ctx),
+      visibleWhen: () => caps().allowsDonationAmounts,
       fields: frequencyFields,
       $storePath: {
         frequencies: 'donationAmounts.frequencies'
       }
     })
 
-    // Features - hidden for fundraisers
+    // Features - hidden for fundraisers; each sub-feature gated by campaign capabilities
     const features = fieldGroup('features', {
       label: 'Features',
       description:
@@ -161,26 +150,23 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
       visibleWhen: () => !campaignStore.isFundraiser,
       fields: {
         impactBoost: fieldGroup('impactBoost', {
-          // label: 'Impact Boost',
           wrapperClass: 'p-4 bg-background rounded-lg border',
-          visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('impactBoost', ctx),
+          visibleWhen: () => caps().allowsImpactBoost !== false,
           fields: impactBoostFields
         }),
         impactCart: fieldGroup('impactCart', {
-          // label: 'Impact Cart',
           wrapperClass: 'p-4 bg-background rounded-lg border',
+          visibleWhen: () => caps().allowsImpactCart,
           fields: impactCartFields
         }),
         productSelector: fieldGroup('productSelector', {
-          // label: 'Product Selector',
           wrapperClass: 'p-4 bg-background rounded-lg border',
-          visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('productSelector', ctx),
+          visibleWhen: () => caps().allowsProductSelector,
           fields: productSelectorFields
         }),
         coverCosts: fieldGroup('coverCosts', {
-          // label: 'Cover Costs',
           wrapperClass: 'p-4 bg-background rounded-lg border',
-          visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('coverCosts', ctx),
+          visibleWhen: () => caps().allowsCoverCosts,
           fields: {
             ...coverCostsFields,
             charityCostsInfo: alertField('charityCostsInfo', {
@@ -196,30 +182,26 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
           }
         }),
         giftAid: fieldGroup('giftAid', {
-          // label: 'Gift Aid',
           wrapperClass: 'p-4 bg-background rounded-lg border',
-          visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('giftAid', ctx),
+          visibleWhen: () => caps().allowsGiftAid,
           fields: giftAidFields
         }),
         tribute: fieldGroup('tribute', {
-          // label: 'Tribute Settings',
           wrapperClass: 'p-4 bg-background rounded-lg border',
-          visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('tribute', ctx),
+          visibleWhen: () => caps().allowsTribute,
           fields: tributeFields
         }),
         entryFields: fieldGroup('entryFields', {
           wrapperClass: 'p-4 bg-background rounded-lg border',
-          visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('entryFields', ctx),
+          visibleWhen: () => caps().allowsEntryFields,
           fields: entryFieldsFields
         }),
         contactConsent: fieldGroup('contactConsent', {
           wrapperClass: 'p-4 bg-background rounded-lg border',
-          visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('contactConsent', ctx),
           fields: contactConsentFields
         }),
         terms: fieldGroup('terms', {
           wrapperClass: 'p-4 bg-background rounded-lg border',
-          visibleWhen: (ctx: FieldContext) => isFeatureSupportedForFormType('terms', ctx),
           fields: {
             enabled: toggleField('enabled', {
               label: 'Enable Terms & Conditions',

@@ -2,7 +2,8 @@
 import { computed } from 'vue'
 import { useProducts } from '~/features/products/admin/composables/useProducts'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
-import { FEATURE_FORM_TYPE_SUPPORT } from '~/features/donation-form/shared/types'
+import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
 import ProductPickerList from '~/features/products/admin/components/ProductPickerList.vue'
 import {
   NumberField,
@@ -20,11 +21,8 @@ const formProducts = computed(() => store.products)
 const formProductIds = computed(() => new Set(formProducts.value.map((p) => p.id)))
 const available = computed(() => allProducts.value.filter((p) => !formProductIds.value.has(p.id)))
 
-const showQuantity = computed(() => {
-  const formType = store.form?.formType ?? 'donation'
-  const entryTypes = FEATURE_FORM_TYPE_SUPPORT['entryFields']
-  return !!entryTypes && entryTypes.includes(formType)
-})
+const campaignStore = useCampaignConfigStore()
+const showQuantity = computed(() => getCampaignCapabilities(campaignStore.type).allowsEntryFields)
 
 function handleAdd(productIds: string[]) {
   const toAdd = allProducts.value.filter((p) => productIds.includes(p.id))

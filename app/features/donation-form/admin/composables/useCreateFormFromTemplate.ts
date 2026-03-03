@@ -10,7 +10,7 @@ import { useProducts } from '~/features/products/admin/composables/useProducts'
 
 /**
  * Extracts form-from-template creation logic for reuse across
- * FormsList (campaign edit) and CampaignCreateWizard.
+ * FormCard (campaign edit) and CampaignCreateWizard.
  */
 export function useCreateFormFromTemplate() {
   const currencySettings = useCurrencySettingsStore()

@@ -1,10 +1,8 @@
 export const formConfig = {
   version: '1.0',
-  campaignId: 'adopt-orangutan',
   form: {
     title: 'Make a Donation',
-    subtitle: 'Choose your donation amount',
-    formType: 'donation' as const
+    subtitle: 'Choose your donation amount'
   },
   donationAmounts: {
     baseDefaultCurrency: 'GBP',
@@ -138,6 +136,14 @@ export const formConfig = {
       }
     },
     entryFields: { enabled: false, mode: 'shared' as const, fields: [] },
+    contactConsent: {
+      enabled: true,
+      settings: {
+        label: 'Join our email list',
+        description: 'Get updates on our impact and latest news. Unsubscribe anytime.'
+      }
+    },
+    terms: { enabled: true },
     customFields: {
       customFieldsTabs: {
         //   step2: {

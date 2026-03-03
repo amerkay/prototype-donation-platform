@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import EditLayout from '~/features/_shared/components/EditLayout.vue'
 import AdminDetailRow from '~/features/_admin/components/AdminDetailRow.vue'
-import CrowdfundingPagePreview from '~/features/campaigns/admin/components/CrowdfundingPagePreview.vue'
-import { useFundraisers } from '~/features/campaigns/admin/composables/useFundraisers'
+import CrowdfundingPagePreview from '~/features/campaigns/features/crowdfunding/admin/components/CrowdfundingPagePreview.vue'
+import { useFundraisers } from '~/features/campaigns/features/p2p/admin/composables/useFundraisers'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
@@ -12,7 +12,7 @@ import { formatDate } from '~/lib/formatDate'
 import StatusBadge from '~/components/StatusBadge.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
+import CampaignProgress from '~/features/campaigns/features/crowdfunding/donor/components/CampaignProgress.vue'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,14 +41,14 @@ const {
   reactivateFundraiser
 } = useFundraisers()
 const { getCampaignById } = useCampaigns()
-const { formatAmount, getProgressPercentage } = useCampaignFormatters()
+const { formatAmount } = useCampaignFormatters()
 const charityStore = useCharitySettingsStore()
 const store = useCampaignConfigStore()
 const { brandingStyle } = useBrandingCssVars()
 
 const fundraiser = computed(() => getFundraiserById(route.params.id as string))
 
-// The fundraiser's actual Campaign object (for preview)
+// The fundraiser's Campaign object (auto-merged with parent template via getCampaignById)
 const fundraiserCampaign = computed(() =>
   fundraiser.value ? getCampaignById(fundraiser.value.campaignId) : undefined
 )
@@ -187,28 +187,16 @@ const handlePreview = () => {
           </Card>
         </div>
 
-        <!-- Progress -->
-        <Card v-if="fundraiser.goal">
+        <!-- Progress (with matched giving from parent campaign) -->
+        <Card v-if="fundraiser.goal && fundraiserCampaign">
           <CardContent class="pt-0">
-            <div class="space-y-3">
-              <div class="flex items-baseline justify-between gap-4">
-                <div>
-                  <p class="text-2xl font-bold">
-                    {{ formatAmount(fundraiser.raisedAmount, fundraiser.currency) }}
-                  </p>
-                  <p class="text-sm text-muted-foreground">
-                    of {{ formatAmount(fundraiser.goal, fundraiser.currency) }} goal
-                  </p>
-                </div>
-                <p class="text-xl font-bold text-muted-foreground">
-                  {{ Math.round(getProgressPercentage(fundraiser.raisedAmount, fundraiser.goal)) }}%
-                </p>
-              </div>
-              <Progress
-                :model-value="getProgressPercentage(fundraiser.raisedAmount, fundraiser.goal)"
-                class="h-2.5"
-              />
-            </div>
+            <CampaignProgress
+              :stats="fundraiserCampaign.stats"
+              :goal-amount="fundraiser.goal"
+              :end-date="fundraiserCampaign.crowdfunding.endDate"
+              :matched-giving="fundraiserCampaign.matchedGiving"
+              hide-footer
+            />
           </CardContent>
         </Card>
       </div>

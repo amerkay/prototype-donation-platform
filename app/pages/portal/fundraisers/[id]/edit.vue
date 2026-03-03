@@ -2,13 +2,13 @@
 import EditLayout from '~/features/_shared/components/EditLayout.vue'
 import CampaignHeader from '~/features/campaigns/admin/components/CampaignHeader.vue'
 import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/CampaignMasterConfigPanel.vue'
-import CrowdfundingPagePreview from '~/features/campaigns/admin/components/CrowdfundingPagePreview.vue'
+import CrowdfundingPagePreview from '~/features/campaigns/features/crowdfunding/admin/components/CrowdfundingPagePreview.vue'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ICON_HIDE } from '~/lib/icons'
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
-import { useForms } from '~/features/campaigns/shared/composables/useForms'
+import { useForm } from '~/features/campaigns/shared/composables/useForm'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
@@ -26,10 +26,9 @@ const charityStore = useCharitySettingsStore()
 const store = useCampaignConfigStore()
 const formConfigStore = useFormConfigStore()
 
-// Get campaign data
+// Get campaign data (fundraisers auto-merge parent template fields via getCampaignById)
 const campaign = computed(() => getCampaignById(route.params.id as string))
-const campaignId = route.params.id as string
-const { defaultForm, updateForm } = useForms(campaignId)
+const { form: defaultForm, updateForm } = useForm()
 
 // Reset accordion state before child components mount
 openAccordionId.value = undefined
@@ -95,17 +94,17 @@ const {
   originalData: campaignForStore,
   onSave: async () => {
     if (!store.id) return
-    store.commitFormDeletes(store.id)
     await updateCampaign(store.id, {
       name: store.name,
       status: store.status,
       stats: store.stats!,
       crowdfunding: store.crowdfunding!,
-      peerToPeer: store.peerToPeer!
+      peerToPeer: store.peerToPeer!,
+      matchedGiving: store.matchedGiving
     })
     // Also save form config if dirty
     if (formConfigStore.isDirty && formConfigStore.formId && formConfigStore.fullConfig) {
-      await updateForm(formConfigStore.formId, formConfigStore.fullConfig, formConfigStore.products)
+      await updateForm(formConfigStore.fullConfig, formConfigStore.products)
     }
   }
 })

@@ -1,30 +1,48 @@
 import { computed } from 'vue'
 import {
   FORM_TYPE_DEFAULTS,
-  FEATURE_FORM_TYPE_SUPPORT,
   type FormType,
   type FormTypeLabels
 } from '~/features/donation-form/shared/types'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
+import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
 
 /**
  * Provides form-type-aware labels and feature support checks.
- * Single source of truth for all form-type-dependent rendering.
+ * Derives form type from campaign type via getCampaignCapabilities().
  */
 export function useFormTypeLabels() {
   const configStore = useFormConfigStore()
+  const campaignStore = useCampaignConfigStore()
 
-  const formType = computed<FormType>(() => configStore.form?.formType ?? 'donation')
+  const formType = computed<FormType>(() => {
+    // Prefer campaign-derived form type; fall back to legacy formType on FormSettings
+    if (campaignStore.type) {
+      return getCampaignCapabilities(campaignStore.type).formType
+    }
+    return configStore.form?.formType ?? 'donation'
+  })
 
   const labels = computed<FormTypeLabels>(() => FORM_TYPE_DEFAULTS[formType.value])
 
   const isDonation = computed(() => formType.value === 'donation')
 
+  /** Check if a feature is supported for the current campaign type */
   function isFeatureSupported(featureKey: string): boolean {
-    const supportedTypes = FEATURE_FORM_TYPE_SUPPORT[featureKey]
-    // If feature isn't listed, it's supported by all types
-    if (!supportedTypes) return true
-    return supportedTypes.includes(formType.value)
+    const caps = getCampaignCapabilities(campaignStore.type)
+    const capMap: Record<string, boolean> = {
+      donationAmounts: caps.allowsDonationAmounts,
+      productSelector: caps.allowsProductSelector,
+      impactBoost: caps.allowsImpactBoost !== false,
+      tribute: caps.allowsTribute,
+      entryFields: caps.allowsEntryFields,
+      coverCosts: caps.allowsCoverCosts,
+      giftAid: caps.allowsGiftAid,
+      contactConsent: true,
+      terms: true
+    }
+    return capMap[featureKey] ?? false
   }
 
   return { formType, labels, isDonation, isFeatureSupported }

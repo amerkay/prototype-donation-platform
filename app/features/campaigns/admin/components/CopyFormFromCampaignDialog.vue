@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
-import { useForms } from '~/features/campaigns/shared/composables/useForms'
-import { getCampaignTypeShortLabel } from '~/features/campaigns/shared/composables/useCampaignTypes'
+import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import {
+  getCampaignTypeShortLabel,
+  getCampaignTypeBadgeVariant
+} from '~/features/campaigns/shared/composables/useCampaignTypes'
+import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
 import type { Campaign, CampaignForm } from '~/features/campaigns/shared/types'
 import {
   Dialog,
@@ -13,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
-import { ICON_BACK, ICON_FORM, ICON_CONFIRM } from '~/lib/icons'
+import { ICON_FORM } from '~/lib/icons'
 
 interface Props {
   open: boolean
@@ -29,138 +33,64 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const { campaigns } = useCampaigns()
+const store = useCampaignConfigStore()
 
-// Two-step selection: campaign → form
-const selectedCampaign = ref<Campaign | null>(null)
+// Filter: same form type (donation/registration), exclude current, exclude fundraisers, must have a form
+const currentFormType = computed(() => getCampaignCapabilities(store.type).formType)
 
-// Get campaigns with forms (excluding current campaign and fundraisers)
 const availableCampaigns = computed(() => {
   return campaigns.value.filter((c) => {
     if (c.id === props.currentCampaignId) return false
-    // Exclude fundraisers (they only have pointer refs to parent template forms)
-    if (c.type === 'fundraiser') return false
-    const { forms } = useForms(c.id)
-    return forms.value.length > 0
+    if (c.type === 'p2p-fundraiser') return false
+    if (!c.form) return false
+    // Same form type only (donation ↔ donation, registration ↔ registration)
+    return getCampaignCapabilities(c.type).formType === currentFormType.value
   })
 })
 
-// Get forms from selected campaign
-const selectedCampaignForms = computed(() => {
-  if (!selectedCampaign.value) return []
-  const { forms } = useForms(selectedCampaign.value.id)
-  return forms.value
-})
-
-const handleCampaignSelect = (campaign: Campaign) => {
-  selectedCampaign.value = campaign
-}
-
-const handleFormSelect = (form: CampaignForm) => {
-  if (!selectedCampaign.value) return
-  emit('select', form, selectedCampaign.value.id)
+const handleSelect = (campaign: Campaign) => {
+  if (!campaign.form) return
+  emit('select', campaign.form, campaign.id)
   emit('update:open', false)
-  // Reset state for next time
-  selectedCampaign.value = null
-}
-
-const handleBack = () => {
-  selectedCampaign.value = null
-}
-
-const handleOpenChange = (open: boolean) => {
-  emit('update:open', open)
-  if (!open) {
-    selectedCampaign.value = null
-  }
 }
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="handleOpenChange">
-    <DialogContent class="max-w-2xl">
+  <Dialog :open="props.open" @update:open="emit('update:open', $event)">
+    <DialogContent class="max-w-md">
       <DialogHeader>
-        <DialogTitle>
-          <div class="flex items-center gap-2">
-            <Button
-              v-if="selectedCampaign"
-              variant="ghost"
-              size="icon"
-              class="h-6 w-6 -ml-1"
-              @click="handleBack"
-            >
-              <ICON_BACK class="h-4 w-4" />
-            </Button>
-            <span>{{ selectedCampaign ? 'Select Form' : 'Select Campaign' }}</span>
-          </div>
-        </DialogTitle>
+        <DialogTitle>Copy Form from Campaign</DialogTitle>
         <DialogDescription>
-          {{
-            selectedCampaign
-              ? `Copy a form from "${selectedCampaign.name}"`
-              : 'Choose a campaign to copy a form from'
-          }}
+          Select a campaign to copy its form configuration and products.
         </DialogDescription>
       </DialogHeader>
 
-      <!-- Step 1: Campaign Selection -->
-      <ScrollArea v-if="!selectedCampaign" class="h-[400px] pr-4">
-        <div v-if="availableCampaigns.length === 0" class="text-center py-12 text-muted-foreground">
-          <ICON_FORM class="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p class="text-sm">No other campaigns with forms found</p>
+      <ScrollArea class="max-h-[60vh]">
+        <div v-if="availableCampaigns.length === 0" class="py-8 text-center text-muted-foreground">
+          No campaigns with compatible forms found.
         </div>
-        <div v-else class="grid gap-3">
-          <button
+
+        <div v-else class="space-y-1">
+          <Button
             v-for="campaign in availableCampaigns"
             :key="campaign.id"
-            class="flex items-start gap-3 p-4 rounded-lg border bg-card hover:bg-accent hover:text-accent-foreground transition-colors text-left"
-            @click="handleCampaignSelect(campaign)"
+            variant="ghost"
+            class="w-full justify-start h-auto py-3 px-3"
+            @click="handleSelect(campaign)"
           >
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 mb-1">
-                <p class="font-medium truncate">{{ campaign.name }}</p>
-                <Badge variant="outline" class="text-xs shrink-0">
-                  {{ getCampaignTypeShortLabel(campaign) }}
-                </Badge>
-              </div>
-              <p class="text-xs text-muted-foreground">
-                {{ useForms(campaign.id).forms.value.length }} form{{
-                  useForms(campaign.id).forms.value.length !== 1 ? 's' : ''
-                }}
-              </p>
-            </div>
-          </button>
-        </div>
-      </ScrollArea>
-
-      <!-- Step 2: Form Selection -->
-      <ScrollArea v-else class="h-[400px] pr-4">
-        <div
-          v-if="selectedCampaignForms.length === 0"
-          class="text-center py-12 text-muted-foreground"
-        >
-          <ICON_FORM class="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p class="text-sm">No forms found in this campaign</p>
-        </div>
-        <div v-else class="grid gap-3">
-          <button
-            v-for="form in selectedCampaignForms"
-            :key="form.id"
-            class="flex items-center justify-between gap-3 p-4 rounded-lg border bg-card hover:bg-accent hover:text-accent-foreground transition-colors text-left"
-            @click="handleFormSelect(form)"
-          >
-            <div class="flex items-center gap-3 flex-1 min-w-0">
+            <div class="flex items-center gap-3 w-full">
               <ICON_FORM class="w-4 h-4 text-muted-foreground shrink-0" />
-              <div class="flex-1 min-w-0">
-                <p class="font-medium truncate">{{ form.name }}</p>
-                <div class="flex items-center gap-2 mt-1">
-                  <Badge v-if="form.isDefault" variant="default" class="text-xs gap-1">
-                    <ICON_CONFIRM class="w-3 h-3" />
-                    Default
-                  </Badge>
+              <div class="flex-1 text-left min-w-0">
+                <div class="font-medium text-sm truncate">{{ campaign.name }}</div>
+                <div class="text-xs text-muted-foreground truncate">
+                  {{ campaign.form?.name }}
                 </div>
               </div>
+              <Badge :variant="getCampaignTypeBadgeVariant(campaign.type)" class="text-xs shrink-0">
+                {{ getCampaignTypeShortLabel(campaign) }}
+              </Badge>
             </div>
-          </button>
+          </Button>
         </div>
       </ScrollArea>
     </DialogContent>

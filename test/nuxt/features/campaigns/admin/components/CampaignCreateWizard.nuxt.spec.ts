@@ -32,14 +32,6 @@ vi.mock('~/features/donation-form/admin/composables/useCreateFormFromTemplate', 
   })
 }))
 
-// Mock useFormsStore addForm
-const mockAddForm = vi.fn()
-vi.mock('~/features/campaigns/shared/stores/forms', () => ({
-  useFormsStore: () => ({
-    addForm: mockAddForm
-  })
-}))
-
 // Stub BaseDialogOrDrawer to render slots directly (avoids teleport/dialog rendering issues)
 const BaseDialogOrDrawerStub = defineComponent({
   name: 'BaseDialogOrDrawer',

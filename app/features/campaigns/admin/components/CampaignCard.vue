@@ -10,8 +10,8 @@ import { useCampaignFormatters } from '~/features/campaigns/shared/composables/u
 import AdminEntityCard from '~/features/_admin/components/AdminEntityCard.vue'
 import AdminEntityCardPlaceholder from '~/features/_admin/components/AdminEntityCardPlaceholder.vue'
 import AdminDeleteButton from '~/features/_admin/components/AdminDeleteButton.vue'
+import CampaignProgress from '~/features/campaigns/features/crowdfunding/donor/components/CampaignProgress.vue'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import {
   ICON_TIME_REMAINING,
@@ -32,20 +32,13 @@ defineEmits<{
   delete: []
 }>()
 
-const { formatAmount, getProgressPercentage, formatTimeRemaining } = useCampaignFormatters()
+const { formatAmount, formatTimeRemaining } = useCampaignFormatters()
 const { getCampaignById, getDeleteProtection } = useCampaigns()
 
 const deleteProtection = computed(() => getDeleteProtection(props.campaign.id))
 
-const progressPercentage = computed(() =>
-  getProgressPercentage(
-    props.campaign.stats.totalRaised,
-    props.campaign.crowdfunding.goalAmount || 0
-  )
-)
-
 const isP2P = computed(() => props.campaign.type === 'p2p')
-const isFundraiser = computed(() => props.campaign.type === 'fundraiser')
+const isFundraiser = computed(() => props.campaign.type === 'p2p-fundraiser')
 
 const campaignTypeLabel = computed(() => getCampaignTypeShortLabel(props.campaign))
 const typeBadgeVariant = computed(() => getCampaignTypeBadgeVariant(props.campaign.type))
@@ -88,6 +81,9 @@ const editUrl = computed(
         {{ campaignTypeLabel }}
       </Badge>
       <StatusBadge :status="campaign.status" />
+      <Badge v-if="campaign.matchedGiving?.periods?.length" variant="secondary" class="text-xs">
+        Matched
+      </Badge>
       <Badge v-if="campaign.isArchived" variant="secondary" class="text-xs"> Archived </Badge>
     </template>
 
@@ -102,19 +98,15 @@ const editUrl = computed(
         </div>
       </div>
 
-      <!-- Standard Campaign: Progress bar with goal -->
-      <div v-else-if="campaign.crowdfunding.goalAmount" class="space-y-2">
-        <div class="flex items-baseline justify-between text-sm">
-          <span class="font-semibold">{{
-            formatAmount(campaign.stats.totalRaised, campaign.stats.currency, 0)
-          }}</span>
-          <span class="text-muted-foreground text-xs">
-            of {{ formatAmount(campaign.crowdfunding.goalAmount, campaign.stats.currency, 0) }}
-          </span>
-        </div>
-        <Progress :model-value="progressPercentage" class="h-2" />
-        <p class="text-xs text-muted-foreground">{{ Math.round(progressPercentage) }}% funded</p>
-      </div>
+      <!-- Standard/Event Campaign: Progress with matched giving support -->
+      <CampaignProgress
+        v-else-if="campaign.crowdfunding.goalAmount"
+        :stats="campaign.stats"
+        :goal-amount="campaign.crowdfunding.goalAmount"
+        :end-date="campaign.crowdfunding.endDate"
+        :matched-giving="campaign.matchedGiving"
+        hide-footer
+      />
 
       <!-- Stats Grid -->
       <div class="flex justify-between pt-2">

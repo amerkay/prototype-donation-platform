@@ -2,7 +2,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ICON_FORWARD } from '~/lib/icons'
 import DonationFlowWizard from '~/features/donation-form/donor/DonationFlowWizard.vue'
-import CrowdfundingPage from '~/features/campaigns/donor/components/CrowdfundingPage.vue'
+import CrowdfundingPage from '~/features/campaigns/features/crowdfunding/donor/components/CrowdfundingPage.vue'
 import ReceiptPreview from '~/features/templates/admin/components/ReceiptPreview.vue'
 import CertificatePreview from '~/features/templates/admin/components/CertificatePreview.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'

@@ -20,7 +20,7 @@ import {
   getCurrencySymbol
 } from '~/features/donation-form/shared/composables/useCurrency'
 import type { FieldContext } from '~/features/_library/form-builder/types'
-import { useForms } from '~/features/campaigns/shared/composables/useForms'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 
 /**
  * Crowdfunding page settings form
@@ -46,9 +46,9 @@ export const useCrowdfundingSettingsForm = defineForm('crowdfunding', (_ctx) => 
   const currencyStore = useCurrencySettingsStore()
   const currencyOptions = computed(() => {
     if (store.isFundraiser && store.parentCampaignId) {
-      const { forms } = useForms(store.parentCampaignId)
-      const parentForm = forms.value[0]
-      const enabled = parentForm?.config.donationAmounts.enabledCurrencies
+      const { getCampaignById } = useCampaigns()
+      const parentCampaign = getCampaignById(store.parentCampaignId)
+      const enabled = parentCampaign?.form?.config.donationAmounts.enabledCurrencies
       if (enabled?.length) return getCurrencyOptionsForSelect(enabled)
     }
     return getCurrencyOptionsForSelect(currencyStore.supportedCurrencies)
