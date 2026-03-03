@@ -33,7 +33,9 @@ export function useMatchedGiving() {
 
   /** Match is active only for one-time donations with an active period */
   const isMatched = computed(() => activePeriod.value != null && frequency.value === 'once')
-  const multiplier = computed(() => activePeriod.value?.multiplier ?? 1)
+
+  /** Match multiplier for display: 2 = "2× match" (same number admin entered) */
+  const multiplier = computed(() => activePeriod.value?.matchMultiplier ?? 1)
 
   return { matchedGiving, activePeriod, isMatched, multiplier }
 }

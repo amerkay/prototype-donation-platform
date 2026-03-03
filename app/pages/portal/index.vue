@@ -44,9 +44,7 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
 
 // Merge parent template fields (matchedGiving, form, etc.) into fundraiser campaigns
 const mergedFundraisers = computed(() =>
-  activeFundraisers.value
-    .map((f) => getCampaignById(f.id))
-    .filter((f): f is Campaign => f != null)
+  activeFundraisers.value.map((f) => getCampaignById(f.id)).filter((f): f is Campaign => f != null)
 )
 
 /** Include matched giving poolDrawn in the raised amount (mirrors CampaignProgress logic) */

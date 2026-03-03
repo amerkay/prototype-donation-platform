@@ -25,7 +25,7 @@ const activePeriod = computed(() => {
 })
 
 const isMatched = computed(() => activePeriod.value != null)
-const multiplier = computed(() => activePeriod.value?.multiplier ?? 1)
+const multiplier = computed(() => activePeriod.value?.matchMultiplier ?? 1)
 
 const actualRaised = computed(() => props.stats.totalRaised)
 

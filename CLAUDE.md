@@ -63,20 +63,20 @@ app/features/[feature-name]/
 
 ### Features
 
-| Feature | Path | Purpose |
-|---------|------|---------|
-| `_admin` | `features/_admin/` | Admin shell: sidebar, card grids, config panels, quick find |
-| `_library` | `features/_library/` | Domain-agnostic: `form-builder`, `custom-fields` |
-| `_shared` | `features/_shared/` | Cross-boundary: EditLayout, DataTable, useEditState, useEntityDataService |
-| `campaigns` | `features/campaigns/` | Campaign CRUD + config. Sub-features: crowdfunding, matched-giving, p2p, sharing |
+| Feature         | Path                      | Purpose                                                                                       |
+| --------------- | ------------------------- | --------------------------------------------------------------------------------------------- |
+| `_admin`        | `features/_admin/`        | Admin shell: sidebar, card grids, config panels, quick find                                   |
+| `_library`      | `features/_library/`      | Domain-agnostic: `form-builder`, `custom-fields`                                              |
+| `_shared`       | `features/_shared/`       | Cross-boundary: EditLayout, DataTable, useEditState, useEntityDataService                     |
+| `campaigns`     | `features/campaigns/`     | Campaign CRUD + config. Sub-features: crowdfunding, matched-giving, p2p, sharing              |
 | `donation-form` | `features/donation-form/` | Form builder + donor checkout. 13 sub-features (impact-cart, cover-costs, gift-aid, tribute…) |
-| `donations` | `features/donations/` | Admin donation list, filters, refund actions |
-| `donor-portal` | `features/donor-portal/` | Donor self-service: donations, subscriptions, fundraisers, my-data |
-| `donors` | `features/donors/` | Admin donor list and filters |
-| `products` | `features/products/` | Product/impact item CRUD |
-| `settings` | `features/settings/` | Org settings (branding, currency, payments, team, billing, social, 10 pages total) |
-| `subscriptions` | `features/subscriptions/` | Recurring subscription management |
-| `templates` | `features/templates/` | Email, receipt, certificate template editing with live preview |
+| `donations`     | `features/donations/`     | Admin donation list, filters, refund actions                                                  |
+| `donor-portal`  | `features/donor-portal/`  | Donor self-service: donations, subscriptions, fundraisers, my-data                            |
+| `donors`        | `features/donors/`        | Admin donor list and filters                                                                  |
+| `products`      | `features/products/`      | Product/impact item CRUD                                                                      |
+| `settings`      | `features/settings/`      | Org settings (branding, currency, payments, team, billing, social, 10 pages total)            |
+| `subscriptions` | `features/subscriptions/` | Recurring subscription management                                                             |
+| `templates`     | `features/templates/`     | Email, receipt, certificate template editing with live preview                                |
 
 ### Key Stores & Composables
 
@@ -140,7 +140,7 @@ Layouts: `admin`, `admin-preview`, `default`, `donor`, `portal`, `print`
 3. **FORM-BUILDER FOR ALL FORMS**: Use `defineForm()`, field constructors, `FormRenderer`. Read README first. NON-NEGOTIABLE.
 4. **`_library/` IS SACRED**: No donation logic in form-builder or custom-fields.
 5. **TESTS UNCOVER BUGS**: If a test fails on sensible assertions, STOP and report — don't change test to match broken behavior.
-6. **DEFER FORMATTING**: Batch at end: `pnpm format:fix; pnpm lint:fix; pnpm typecheck` (up to 60s).
+6. **DEFER FORMATTING**: Batch at end — run all four checks **in parallel** (separate Bash tool calls in one message): `pnpm typecheck`, `pnpm test:run`, `pnpm format:fix`, `pnpm lint:fix`.
 7. **SUMMARIES + MEMORY**: Brief updates after each answer. End with conventional commit message. After tasks: check if structure changed (→ `/update-project-summary`), if learned something durable (→ update CL), if data models changed (→ update Supabase docs). Keep CL bullets ≤1 line, never duplicate — merge or clarify.
 8. **COMMITS**: Short conventional commits. Check `git --no-pager diff --staged` first. No "Authored by Anthropic" line.
 

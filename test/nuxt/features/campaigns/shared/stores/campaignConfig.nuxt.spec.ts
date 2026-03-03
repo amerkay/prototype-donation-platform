@@ -150,7 +150,7 @@ describe('Campaign Config Store', () => {
               {
                 id: 'mp-1',
                 name: 'Test Match',
-                multiplier: 2,
+                matchMultiplier: 2,
                 poolAmount: 10000,
                 poolDrawn: 0,
                 startDate: '2026-01-01T00:00:00Z',
@@ -181,7 +181,7 @@ describe('Campaign Config Store', () => {
               {
                 id: 'mp-1',
                 name: 'Test Match',
-                multiplier: 2,
+                matchMultiplier: 2,
                 poolAmount: 10000,
                 poolDrawn: 3000,
                 startDate: '2026-01-01T00:00:00Z',

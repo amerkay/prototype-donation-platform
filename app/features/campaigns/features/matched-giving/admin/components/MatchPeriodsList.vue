@@ -76,7 +76,7 @@ function canDelete(period: MatchPeriod) {
 
 function openAddDialog() {
   editingPeriod.value = null
-  periodFormData.value = { multiplier: 2 }
+  periodFormData.value = { matchMultiplier: 2 }
   periodFormKey.value++
   showEditDialog.value = true
 }
@@ -85,7 +85,7 @@ function openEditDialog(period: MatchPeriod) {
   editingPeriod.value = period
   periodFormData.value = {
     name: period.name,
-    multiplier: period.multiplier,
+    matchMultiplier: period.matchMultiplier,
     poolAmount: period.poolAmount,
     startDate: period.startDate.slice(0, 10),
     endDate: period.endDate.slice(0, 10),
@@ -112,7 +112,7 @@ function savePeriod() {
   const periodData: MatchPeriod = {
     id: editingPeriod.value?.id ?? `mp-${Date.now()}`,
     name: (d.name as string) || '',
-    multiplier: (d.multiplier as number) || 2,
+    matchMultiplier: (d.matchMultiplier as number) || 2,
     poolAmount: (d.poolAmount as number) || 0,
     poolDrawn: editingPeriod.value?.poolDrawn ?? 0,
     startDate: new Date(d.startDate as string).toISOString(),
@@ -208,7 +208,7 @@ function deletePeriod() {
                 </Badge>
               </div>
               <p class="text-xs text-muted-foreground mt-0.5">
-                {{ period.multiplier }}x
+                {{ period.matchMultiplier }}x
                 <template v-if="period.matcherName"> · {{ period.matcherName }}</template>
               </p>
               <p class="text-xs text-muted-foreground">

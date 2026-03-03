@@ -186,7 +186,7 @@ const disabledOptions = computed(() => {
         variant="secondary"
         class="h-6 shrink-0 px-2 py-0 inline-flex items-center text-xs gap-1"
       >
-        {{ store.activePeriod.multiplier }}x Match
+        {{ store.activePeriod.matchMultiplier }}x Match
       </Badge>
       <AdminStatusSelect
         :model-value="store.status"

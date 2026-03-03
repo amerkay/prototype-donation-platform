@@ -92,7 +92,7 @@ export const campaigns: Campaign[] = [
         {
           id: 'mp-p2p-1',
           name: 'Birthday Month Match',
-          multiplier: 2,
+          matchMultiplier: 2,
           poolAmount: 10000,
           poolDrawn: 180,
           startDate: '2026-03-01T00:00:00Z',
@@ -338,7 +338,7 @@ export const campaigns: Campaign[] = [
         {
           id: 'mp-1',
           name: 'Launch Week Double Match',
-          multiplier: 2,
+          matchMultiplier: 2,
           poolAmount: 30000,
           poolDrawn: 5200,
           startDate: '2026-03-01T00:00:00Z',
@@ -350,7 +350,7 @@ export const campaigns: Campaign[] = [
         {
           id: 'mp-2',
           name: 'Spring Triple Match',
-          multiplier: 3,
+          matchMultiplier: 3,
           poolAmount: 20000,
           poolDrawn: 0,
           startDate: '2026-03-16T00:00:00Z',

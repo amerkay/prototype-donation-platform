@@ -101,6 +101,10 @@ const {
 const sectionId = resolvedSection.value.id
 provide('sectionId', sectionId)
 
+// Reset scoped form values so nested FormRenderers (e.g., dialog forms)
+// don't inherit parent container's scopedFormValues via provide/inject
+provide('scopedFormValues', null)
+
 // Provide hash target for URL deep-linking (e.g. /settings#currencies.currencyMultipliers)
 // Pass form values getter so canResolveHashTarget can evaluate visibleWhen conditions
 provideHashTarget(resolvedSection.value.fields, () => {

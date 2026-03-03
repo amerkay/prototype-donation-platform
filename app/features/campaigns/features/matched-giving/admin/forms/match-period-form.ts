@@ -37,11 +37,11 @@ export function createMatchPeriodForm(
         rules: z.string().min(1, 'Name is required')
       })
 
-      const multiplier = sliderField('multiplier', {
+      const matchMultiplier = sliderField('matchMultiplier', {
         label: 'Match Multiplier',
         description: (ctx) => {
-          const m = (ctx.values.multiplier as number) || 2
-          return `A ${m}x match means a £10 donation becomes £${10 * m}`
+          const m = (ctx.values.matchMultiplier as number) || 2
+          return `A £10 donation becomes £${10 * m}`
         },
         min: 2,
         max: 10,
@@ -92,7 +92,7 @@ export function createMatchPeriodForm(
 
       return {
         name,
-        multiplier,
+        matchMultiplier,
         poolAmount,
         startDate,
         endDate,
@@ -114,7 +114,7 @@ function createMatchPeriodSchema(existingPeriods: MatchPeriod[], editingPeriodId
   return z
     .object({
       name: z.string(),
-      multiplier: z.number(),
+      matchMultiplier: z.number(),
       poolAmount: z.number(),
       startDate: z.string(),
       endDate: z.string(),

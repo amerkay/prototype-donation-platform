@@ -15,7 +15,7 @@ definePageMeta({
 const route = useRoute()
 const orgSlug = computed(() => route.params.org_slug as string)
 const campaignSlug = computed(() => route.params.campaign_slug as string)
-const formSlug = computed(() => route.params.form_slug as string)
+const _formSlug = computed(() => route.params.form_slug as string)
 
 const formConfigStore = useFormConfigStore()
 const donationStore = useDonationFormStore()

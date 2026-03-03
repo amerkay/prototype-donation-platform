@@ -38,7 +38,7 @@ export function calculateMatch(
   const active = getActivePeriod(periods, now)
   if (!active) return { matchedAmount: 0 }
 
-  const matchPortion = donationAmount * (active.multiplier - 1)
+  const matchPortion = donationAmount * (active.matchMultiplier - 1)
   const poolRemaining = active.poolAmount - active.poolDrawn
   const actualMatch = Math.min(matchPortion, poolRemaining)
 

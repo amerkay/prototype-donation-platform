@@ -294,14 +294,7 @@ CREATE TABLE campaigns (
   --   fundraiserGoalDefault, customMessage
   -- }
 
-  -- Matched giving settings (any campaign type can enable matching)
-  matched_giving JSONB NOT NULL DEFAULT '{}'::JSONB,
-  -- {
-  --   periods: [{
-  --     id, name, multiplier, poolAmount, poolDrawn,
-  --     startDate, endDate, matcherName?, matcherLogo?, displayMessage?
-  --   }]
-  -- }
+  -- Matched giving: periods are now in the dedicated match_periods table
 
   -- Event-specific settings (future: venue, capacity, sessions, check-in)
   event_settings JSONB NOT NULL DEFAULT '{}'::JSONB,
@@ -355,6 +348,90 @@ CREATE TABLE campaign_stats (
   currency TEXT NOT NULL DEFAULT 'GBP',
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+```
+
+### Match Periods
+
+```sql
+-- ============================================
+-- MATCH PERIODS (normalized from campaigns.matched_giving JSONB)
+-- ============================================
+
+-- Each match period belongs to a campaign and has its own matcher, ratio, and depleting pool.
+-- pool_drawn is trigger-maintained from transactions — never written by the app directly.
+CREATE TABLE match_periods (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  campaign_id UUID NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  -- Match multiplier: 2 = "2× match" (donor's £10 becomes £20, pool draws £10)
+  match_multiplier NUMERIC(4,2) NOT NULL,
+  -- Total pool committed by the matcher (campaign currency)
+  pool_amount NUMERIC(12,2) NOT NULL,
+  -- Trigger-maintained: SUM of matched_amount from linked transactions
+  pool_drawn NUMERIC(12,2) NOT NULL DEFAULT 0,
+  start_date TIMESTAMPTZ NOT NULL,
+  end_date TIMESTAMPTZ NOT NULL,
+  matcher_name TEXT,
+  matcher_logo TEXT,
+  -- Custom donor-facing message (max 120 chars, enforced by app)
+  display_message TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  CHECK (match_multiplier >= 2 AND match_multiplier <= 10),
+  CHECK (pool_drawn >= 0 AND pool_drawn <= pool_amount),
+  CHECK (end_date > start_date)
+);
+
+CREATE INDEX idx_match_periods_campaign ON match_periods(campaign_id);
+
+-- Trigger: maintain pool_drawn on match_periods when transactions are inserted/updated/deleted.
+-- Also enforces pool limits — raises exception if pool would be over-drawn.
+CREATE OR REPLACE FUNCTION update_match_period_pool_drawn()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- On INSERT: increment pool_drawn
+  IF TG_OP = 'INSERT' AND NEW.match_period_id IS NOT NULL THEN
+    UPDATE match_periods
+      SET pool_drawn = pool_drawn + NEW.matched_amount
+      WHERE id = NEW.match_period_id;
+
+  -- On UPDATE: adjust pool_drawn by difference
+  ELSIF TG_OP = 'UPDATE' THEN
+    IF OLD.match_period_id IS NOT NULL AND OLD.match_period_id = NEW.match_period_id THEN
+      UPDATE match_periods
+        SET pool_drawn = pool_drawn + (NEW.matched_amount - OLD.matched_amount)
+        WHERE id = NEW.match_period_id;
+    ELSE
+      -- Period changed: decrement old, increment new
+      IF OLD.match_period_id IS NOT NULL THEN
+        UPDATE match_periods
+          SET pool_drawn = pool_drawn - OLD.matched_amount
+          WHERE id = OLD.match_period_id;
+      END IF;
+      IF NEW.match_period_id IS NOT NULL THEN
+        UPDATE match_periods
+          SET pool_drawn = pool_drawn + NEW.matched_amount
+          WHERE id = NEW.match_period_id;
+      END IF;
+    END IF;
+
+  -- On DELETE: decrement pool_drawn
+  ELSIF TG_OP = 'DELETE' AND OLD.match_period_id IS NOT NULL THEN
+    UPDATE match_periods
+      SET pool_drawn = pool_drawn - OLD.matched_amount
+      WHERE id = OLD.match_period_id;
+  END IF;
+
+  -- CHECK constraint on match_periods enforces pool_drawn <= pool_amount
+  -- If violated, Postgres raises an exception automatically
+  RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_update_match_period_pool_drawn
+  AFTER INSERT OR UPDATE OR DELETE ON transactions
+  FOR EACH ROW
+  EXECUTE FUNCTION update_match_period_pool_drawn();
 ```
 
 ### Campaign Transactional Data
@@ -734,8 +811,8 @@ CREATE TABLE transactions (
 
   -- Match tracking (set when donation is matched against a campaign's match period)
   matched_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
-  match_period_id TEXT,
-  -- references period.id within parent campaign's matched_giving JSONB
+  match_period_id UUID REFERENCES match_periods(id) ON DELETE RESTRICT,
+  -- proper FK to match_periods table; RESTRICT prevents deleting periods with transactions
 
   -- Denormalized custom field values (set by application on insert)
   custom_fields JSONB,
