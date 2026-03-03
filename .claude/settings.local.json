@@ -40,8 +40,8 @@
   },
   "outputStyle": "Explanatory",
   "sandbox": {
-    "enabled": true,
-    "autoAllowBashIfSandboxed": true,
+    "enabled": false,
+    "autoAllowBashIfSandboxed": false,
     "allowUnsandboxedCommands": false,
     "network": {
       "allowedDomains": [
