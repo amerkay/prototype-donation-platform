@@ -77,17 +77,8 @@ export const useProductForm = defineForm('product', () => {
     collapsible: true,
     collapsibleDefaultOpen: false,
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: {
-      certificateTemplateId,
-      certificateTemplateAlert,
-      certificateTitle,
-      certificateText
-    },
-    $storePath: {
-      certificateTemplateId: 'certificateTemplateId',
-      certificateTitle: 'certificateTitle',
-      certificateText: 'certificateText'
-    }
+    fields: { certificateTemplateId, certificateTitle, certificateText, certificateTemplateAlert },
+    $storePath: 'flatten'
   })
 
   const frequency = selectField('frequency', {
@@ -132,11 +123,7 @@ export const useProductForm = defineForm('product', () => {
     collapsibleDefaultOpen: false,
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
     fields: { title, description, image },
-    $storePath: {
-      title: 'title',
-      description: 'description',
-      image: 'image'
-    }
+    $storePath: 'flatten'
   })
 
   const pricing = fieldGroup('pricing', {
@@ -146,12 +133,7 @@ export const useProductForm = defineForm('product', () => {
     collapsibleDefaultOpen: false,
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
     fields: { frequency, price, minPrice, default: defaultPrice },
-    $storePath: {
-      frequency: 'frequency',
-      price: 'price',
-      minPrice: 'minPrice',
-      default: 'default'
-    }
+    $storePath: 'flatten'
   })
 
   const shipping = fieldGroup('shipping', {
@@ -161,9 +143,7 @@ export const useProductForm = defineForm('product', () => {
     collapsibleDefaultOpen: false,
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
     fields: { isShippingRequired },
-    $storePath: {
-      isShippingRequired: 'isShippingRequired'
-    }
+    $storePath: 'flatten'
   })
 
   return { basic, certificateSettings, pricing, shipping }

@@ -61,6 +61,16 @@ export function generateStoreMapping(form: ComposableForm): StoreMapping {
         if (group.$storePath === null) {
           // Exclude from mapping (component field wrapper, preview, etc.)
           excluded.add(formPath)
+        } else if (group.$storePath === 'flatten') {
+          // Identity-map each store-bound field (exclude display-only types)
+          const DISPLAY_ONLY_TYPES = new Set(['alert', 'readonly', 'card', 'component'])
+          if (group.fields) {
+            for (const [fieldName, fieldDef] of Object.entries(group.fields)) {
+              if (DISPLAY_ONLY_TYPES.has(fieldDef.type)) continue
+              const fieldPath = `${formPath}.${fieldName}`
+              paths.set(fieldPath, fieldName)
+            }
+          }
         } else if (group.$storePath && typeof group.$storePath === 'string') {
           // Use explicit path for entire group
           // NOTE: Don't add the group itself to paths - only process nested fields

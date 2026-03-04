@@ -8,6 +8,9 @@ import {
 import { getEffectiveRaised } from '~/features/campaigns/features/matched-giving/shared/utils/matchPeriodUtils'
 import { Progress } from '@/components/ui/progress'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
+import { CAMPAIGN_FIELD_TARGETS as CT } from '~/features/campaigns/admin/forms/campaign-config-master'
+
+defineOptions({ inheritAttrs: false })
 
 const props = defineProps<{
   stats: CampaignStats
@@ -62,6 +65,7 @@ const poolRemaining = computed(() => {
     <!-- Active matcher badge — live pool with remaining funds -->
     <div
       v-if="displayMode === 'active' && displayPeriod?.matcherName"
+      :data-field="CT.matchedGiving"
       class="flex items-center gap-3 rounded-lg bg-primary/5 border border-primary/15 px-3 py-2.5"
     >
       <Avatar v-if="displayPeriod.matcherLogo" class="h-8 w-8 shrink-0">
@@ -90,6 +94,7 @@ const poolRemaining = computed(() => {
     <!-- Historical matcher badge — matching ended, muted summary -->
     <div
       v-else-if="displayMode === 'historical' && displayPeriod?.matcherName"
+      :data-field="CT.matchedGiving"
       class="flex items-center gap-3 rounded-lg bg-muted/50 border border-muted px-3 py-2.5"
     >
       <Avatar v-if="displayPeriod.matcherLogo" class="h-8 w-8 shrink-0 opacity-70">
@@ -104,47 +109,50 @@ const poolRemaining = computed(() => {
       </div>
     </div>
 
-    <!-- Progress bar (single bar for both standard and matched) -->
-    <Progress :model-value="progress" class="h-3" />
+    <!-- Progress section — receives parent's data-field (goalAmount) via $attrs -->
+    <div v-bind="$attrs" class="space-y-2">
+      <!-- Progress bar (single bar for both standard and matched) -->
+      <Progress :model-value="progress" class="h-3" />
 
-    <!-- Matched: total impact headline + breakdown -->
-    <template v-if="displayMode !== 'hidden'">
-      <div class="flex justify-between items-baseline text-sm">
-        <div>
-          <span class="font-bold text-lg">
-            {{ formatAmount(matchedTotal, stats.currency, 0) }}
-          </span>
-          <span class="text-muted-foreground"> total impact</span>
+      <!-- Matched: total impact headline + breakdown -->
+      <template v-if="displayMode !== 'hidden'">
+        <div class="flex justify-between items-baseline text-sm">
+          <div>
+            <span class="font-bold text-lg">
+              {{ formatAmount(matchedTotal, stats.currency, 0) }}
+            </span>
+            <span class="text-muted-foreground"> total impact</span>
+          </div>
+          <div class="text-muted-foreground text-sm">
+            {{ formatAmount(goalAmount, stats.currency, 0) }} goal
+          </div>
         </div>
-        <div class="text-muted-foreground text-sm">
-          {{ formatAmount(goalAmount, stats.currency, 0) }} goal
+        <div class="text-[11px] text-muted-foreground">
+          {{ formatAmount(actualRaised, stats.currency, 0) }} donated +
+          {{ formatAmount(totalMatched, stats.currency, 0) }} matched
         </div>
-      </div>
-      <div class="text-[11px] text-muted-foreground">
-        {{ formatAmount(actualRaised, stats.currency, 0) }} donated +
-        {{ formatAmount(totalMatched, stats.currency, 0) }} matched
-      </div>
-    </template>
+      </template>
 
-    <!-- Standard: simple raised / goal -->
-    <template v-else>
-      <div class="flex justify-between items-baseline text-sm">
-        <div>
-          <span class="font-bold text-lg">
-            {{ formatAmount(actualRaised, stats.currency, 0) }}
-          </span>
-          <span class="text-muted-foreground"> raised</span>
+      <!-- Standard: simple raised / goal -->
+      <template v-else>
+        <div class="flex justify-between items-baseline text-sm">
+          <div>
+            <span class="font-bold text-lg">
+              {{ formatAmount(actualRaised, stats.currency, 0) }}
+            </span>
+            <span class="text-muted-foreground"> raised</span>
+          </div>
+          <div class="text-muted-foreground text-sm">
+            {{ formatAmount(goalAmount, stats.currency, 0) }} goal
+          </div>
         </div>
-        <div class="text-muted-foreground text-sm">
-          {{ formatAmount(goalAmount, stats.currency, 0) }} goal
-        </div>
-      </div>
-    </template>
+      </template>
 
-    <!-- Supporters + time remaining -->
-    <div v-if="!hideFooter" class="flex justify-between text-xs text-muted-foreground">
-      <span>{{ stats.totalDonors }} supporters</span>
-      <span v-if="formatTimeRemaining(endDate)">{{ formatTimeRemaining(endDate) }} left</span>
+      <!-- Supporters + time remaining -->
+      <div v-if="!hideFooter" class="flex justify-between text-xs text-muted-foreground">
+        <span>{{ stats.totalDonors }} supporters</span>
+        <span v-if="formatTimeRemaining(endDate)">{{ formatTimeRemaining(endDate) }} left</span>
+      </div>
     </div>
   </div>
 

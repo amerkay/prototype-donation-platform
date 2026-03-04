@@ -60,11 +60,7 @@ export const useEmailTemplateForm = defineForm('emailTemplate', () => {
     description: 'Configure subject, content, and display options.',
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
     fields: { subject, imageUrl, bodyHtml, signatureNotice, senderAddressNotice },
-    $storePath: {
-      subject: 'subject',
-      imageUrl: 'imageUrl',
-      bodyHtml: 'bodyHtml'
-    }
+    $storePath: 'flatten'
   })
 
   return { email: emailSettings }

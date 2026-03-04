@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import FieldHelpText from '~/features/_library/form-builder/internal/FieldHelpText.vue'
 import { Field, FieldLegend, FieldDescription } from '@/components/ui/field'
 import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
 import type { TabsFieldDef, TabDefinitionConfig } from '~/features/_library/form-builder/types'
 import {
   useResolvedFieldMeta,
@@ -15,6 +14,7 @@ import { useContainerFieldSetup } from '~/features/_library/form-builder/composa
 import { useCombinedErrors } from '~/features/_library/form-builder/composables/useCombinedErrors'
 import { useContainerValidation } from '~/features/_library/form-builder/composables/useContainerValidation'
 import { useHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
+import { FORM_SEARCH_KEY } from '~/features/_library/form-builder/composables/useFormSearch'
 import FormFieldGroup from './FormFieldGroup.vue'
 
 interface Props {
@@ -34,6 +34,24 @@ const {
 // Active tab state - initialize from defaultValue or first tab
 const activeTab = ref(props.meta.defaultValue || props.meta.tabs[0]?.value || '')
 
+// Resolve tab visibility (undefined = visible)
+const isTabVisible = (tab: (typeof props.meta.tabs)[number]) => {
+  const vw = tab.visibleWhen
+  if (vw === undefined) return true
+  if (typeof vw === 'function') return vw(scopedFormValues.value)
+  return vw.value
+}
+
+// Filtered visible tabs — template loops use this instead of meta.tabs
+const visibleTabs = computed(() => props.meta.tabs.filter(isTabVisible))
+
+// Auto-switch when active tab becomes hidden
+watch(visibleTabs, (tabs) => {
+  if (tabs.length > 0 && !tabs.some((t) => t.value === activeTab.value)) {
+    activeTab.value = tabs[0]!.value
+  }
+})
+
 // Auto-switch tab when hash target is inside this tabs container
 const {
   hashTargetChildSegment,
@@ -43,7 +61,7 @@ const {
 watch(
   hashTargetChildSegment,
   (tabValue) => {
-    if (tabValue && props.meta.tabs.some((t) => t.value === tabValue)) {
+    if (tabValue && visibleTabs.value.some((t) => t.value === tabValue)) {
       activeTab.value = tabValue
     }
   },
@@ -54,6 +72,20 @@ watch(
 watch(activeTab, (value) => {
   props.meta.onTabChange?.(value)
 })
+
+// Form search: auto-switch to tab containing first match
+const formSearch = inject(FORM_SEARCH_KEY, null)
+if (formSearch) {
+  watch(
+    () => (formSearch.isSearchActive.value ? formSearch.activeTabOverride.value : undefined),
+    (tabValue) => {
+      if (tabValue && visibleTabs.value.some((t) => t.value === tabValue)) {
+        activeTab.value = tabValue
+      }
+    },
+    { immediate: true }
+  )
+}
 
 // Compute combined errors for each tab using lightweight composable
 const tabErrorTrackers = Object.fromEntries(
@@ -131,8 +163,8 @@ const resolveTabTooltip = (tab: (typeof props.meta.tabs)[number]) => {
       </FieldDescription>
 
       <Tabs v-model="activeTab" :unmount-on-hide="true">
-        <TabsList :class="cn('w-full', meta.tabsListClass)">
-          <template v-for="tab in meta.tabs" :key="tab.value">
+        <TabsList v-if="visibleTabs.length > 1" :class="cn('w-full', meta.tabsListClass)">
+          <template v-for="tab in visibleTabs" :key="tab.value">
             <TabsTrigger :value="tab.value" :disabled="isTabDisabled(tab)" class="gap-2">
               <FieldHelpText
                 v-if="isTabDisabled(tab) && resolveTabTooltip(tab)"
@@ -152,7 +184,18 @@ const resolveTabTooltip = (tab: (typeof props.meta.tabs)[number]) => {
                 <Icon name="lucide:alert-circle" />
               </Badge>
 
-              <!-- Custom badge shown when no errors -->
+              <!-- Search match count badge during active search -->
+              <Badge
+                v-else-if="
+                  formSearch?.isSearchActive.value && formSearch.tabMatchCounts.value.get(tab.value)
+                "
+                variant="outline"
+                class="ml-1 h-5 px-1.5 text-xs"
+              >
+                {{ formSearch.tabMatchCounts.value.get(tab.value) }}
+              </Badge>
+
+              <!-- Custom badge shown when no errors and no search -->
               <Badge
                 v-else-if="resolveTabBadge(tab)"
                 :variant="tab.badgeVariant || 'secondary'"
@@ -164,13 +207,19 @@ const resolveTabTooltip = (tab: (typeof props.meta.tabs)[number]) => {
           </template>
         </TabsList>
 
-        <TabsContent v-for="tab in meta.tabs" :key="tab.value" :value="tab.value">
-          <Card class="px-4 bg-muted/50">
+        <TabsContent v-for="tab in visibleTabs" :key="tab.value" :value="tab.value">
+          <div
+            :class="
+              tab.contentClass !== undefined
+                ? tab.contentClass
+                : 'rounded-xl border bg-muted/50 px-4 py-4'
+            "
+          >
             <FormFieldGroup
               :name="tab.value"
               :meta="{ type: 'field-group', name: tab.value, fields: tab.fields }"
             />
-          </Card>
+          </div>
         </TabsContent>
       </Tabs>
 

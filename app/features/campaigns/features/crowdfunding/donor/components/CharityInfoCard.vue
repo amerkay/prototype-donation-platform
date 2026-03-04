@@ -2,6 +2,7 @@
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { ICON_EXTERNAL_LINK } from '~/lib/icons'
+import { CAMPAIGN_FIELD_TARGETS as CT } from '~/features/campaigns/admin/forms/campaign-config-master'
 
 defineProps<{
   /** Charity field targets for click-to-edit in admin preview context */
@@ -19,7 +20,7 @@ const charityInfo = computed(() => ({
 </script>
 
 <template>
-  <Card data-field="crowdfunding.charityNotice" class="gap-2">
+  <Card :data-field="CT.crowdfunding.charityNotice" class="gap-2">
     <CardHeader class="pb-0 px-5">
       <h3 class="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
         About the Charity

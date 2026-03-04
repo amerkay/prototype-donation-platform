@@ -88,7 +88,7 @@ const handleNext = () => {
     />
 
     <!-- Shipping Address Form (conditional) -->
-    <div v-if="needsShipping" data-field="features.shippingNotice">
+    <div v-if="needsShipping">
       <ShippingNotice :requires-shipping="true" :cart-count="shippingCounts.cartCount" />
       <FormRenderer
         ref="shippingFormRef"

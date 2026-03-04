@@ -2,10 +2,10 @@ import {
   defineForm,
   fieldGroup,
   alertField,
-  toggleField
+  toggleField,
+  tabsField
 } from '~/features/_library/form-builder/api'
-import type { FormContext } from '~/features/_library/form-builder/types'
-import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
+import type { FormContext, FieldContext } from '~/features/_library/form-builder/types'
 import { useDonationFormBasicForm } from '~/features/donation-form/admin/forms/donation-form-basic-form'
 import { useDonationFormDonationAmountsForm } from '~/features/donation-form/admin/forms/donation-form-donation-amounts-form'
 import { useMultipleProductsConfigSection } from '~/features/donation-form/features/impact-cart/admin/forms/impact-cart-config-form'
@@ -23,9 +23,42 @@ import { useFormConfigStore } from '~/features/donation-form/shared/stores/formC
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
 
+// Tab value constants — shared between tab definition and targets
+const TAB_FORM_SETTINGS = 'formSettings' as const
+const TAB_AMOUNTS = 'amounts' as const
+const TAB_FEATURES = 'features' as const
+const TAB_CUSTOM_FIELDS = 'customFields' as const
+const GROUP_FORM = 'form' as const
+
+/** Type-safe field targets for donor components' data-field attributes.
+ *  Keys mirror the form field tree; values are suffix paths
+ *  that resolve via useHashTarget's suffix matching. */
+export const DONATION_FORM_FIELD_TARGETS = {
+  form: {
+    title: `${TAB_FORM_SETTINGS}.${GROUP_FORM}.title`,
+    subtitle: `${TAB_FORM_SETTINGS}.${GROUP_FORM}.subtitle`
+  },
+  amounts: {
+    enabledCurrencies: `${TAB_AMOUNTS}.enabledCurrencies`,
+    frequencies: `${TAB_AMOUNTS}.frequencies`
+  },
+  features: {
+    impactBoost: `${TAB_FEATURES}.impactBoost`,
+    impactCart: `${TAB_FEATURES}.impactCart`,
+    productSelector: `${TAB_FEATURES}.productSelector`,
+    coverCosts: `${TAB_FEATURES}.coverCosts`,
+    giftAid: `${TAB_FEATURES}.giftAid`,
+    tribute: `${TAB_FEATURES}.tribute`,
+    entryFields: `${TAB_FEATURES}.entryFields`,
+    contactConsent: `${TAB_FEATURES}.contactConsent`,
+    terms: `${TAB_FEATURES}.terms`
+  },
+  customFields: TAB_CUSTOM_FIELDS
+} as const
+
 /**
- * Master admin form that consolidates all donation form configuration sections
- * Each section is wrapped in a collapsible field-group with card styling
+ * Master admin form that consolidates all donation form configuration sections.
+ * Uses top-level tabs for navigation (Form Settings, Currency, Amounts, Features, Custom Fields).
  *
  * Feature visibility is driven by getCampaignCapabilities() — the single source of truth.
  */
@@ -37,9 +70,6 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
 
     /** Campaign capabilities — determines which features are available */
     const caps = () => getCampaignCapabilities(campaignStore.type)
-
-    // Provide accordion group for single-open behavior
-    provideAccordionGroup()
 
     // Extract fields from each sub-form by calling their setup functions
     const formBasicFields = useDonationFormBasicForm.setup(ctx)
@@ -57,7 +87,7 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
     ).setup(ctx)
     const customFieldsFields = createDonationCustomFieldsConfigSection(contextSchema).setup(ctx)
 
-    // Currency settings info - display organization's currency config
+    // Currency settings info alert
     const currencyInfo = alertField('currencyInfo', {
       variant: 'info',
       label: 'Organization currency settings',
@@ -81,178 +111,229 @@ export function createAdminDonationFormMaster(contextSchema: ContextSchemaInput)
       }
     })
 
-    // Form Settings - hidden for fundraisers
-    const formSettings = fieldGroup('formSettings', {
-      label: 'Form Settings',
-      description: 'Configure basic form settings.',
-      collapsible: true,
-      collapsibleDefaultOpen: true,
-      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      visibleWhen: () => !campaignStore.isFundraiser,
-      fields: formBasicFields,
-      // Flatten structure: form.formSettings.form → store.form
-      $storePath: {
-        form: 'form'
-      }
-    })
-
-    // Currency Settings - always visible (registration forms need this too)
+    // Split donation amounts fields into currency vs frequency
     const {
       baseDefaultCurrency: baseDefaultCurrencyField,
       enabledCurrencies: enabledCurrenciesField,
       ...frequencyFields
     } = formDonationAmountsFields
 
-    // Currency Settings - hidden for fundraisers
-    const currencySettings = fieldGroup('currencySettings', {
-      label: 'Currency Settings',
-      description: 'Configure which currencies donors can use on this form.',
-      collapsible: true,
-      collapsibleDefaultOpen: false,
-      visibleWhen: () => !campaignStore.isFundraiser,
-      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: {
-        currencyInfo,
-        baseDefaultCurrency: baseDefaultCurrencyField!,
-        enabledCurrencies: enabledCurrenciesField!
-      },
-      $storePath: {
-        baseDefaultCurrency: 'donationAmounts.baseDefaultCurrency',
-        enabledCurrencies: 'donationAmounts.enabledCurrencies'
+    // Count enabled features for badge
+    const featuresBadge = (fCtx: FieldContext) => {
+      const sections = fCtx.root.config as Record<string, unknown> | undefined
+      const tabs = sections?.sections as Record<string, unknown> | undefined
+      const features = tabs?.features as Record<string, unknown> | undefined
+      if (!features) return ''
+      const featureKeys = [
+        'impactBoost',
+        'impactCart',
+        'productSelector',
+        'coverCosts',
+        'giftAid',
+        'tribute',
+        'entryFields',
+        'contactConsent',
+        'terms'
+      ]
+      let count = 0
+      for (const key of featureKeys) {
+        const group = features[key] as Record<string, unknown> | undefined
+        if (group?.enabled === true) count++
       }
-    })
-
-    // Donation Amounts - visible only when campaign type supports donation amounts
-    // Non-collapsible and always open for fundraisers
-    const donationAmounts = fieldGroup('donationAmounts', {
-      label: 'Donation Amounts',
-      description: campaignStore.isFundraiser
-        ? 'Customise the preset donation amounts on your form.'
-        : 'Configure donation amounts and frequency options.',
-      collapsible: !campaignStore.isFundraiser,
-      collapsibleDefaultOpen: campaignStore.isFundraiser,
-      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      visibleWhen: () => caps().allowsDonationAmounts,
-      fields: frequencyFields,
-      $storePath: {
-        frequencies: 'donationAmounts.frequencies'
-      }
-    })
-
-    // Features - hidden for fundraisers; each sub-feature gated by campaign capabilities
-    const features = fieldGroup('features', {
-      label: 'Features',
-      description:
-        'Configure impact messaging, cart behavior, product selection, cost coverage, Gift Aid, and tribute options.',
-      collapsible: true,
-      collapsibleDefaultOpen: false,
-      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      visibleWhen: () => !campaignStore.isFundraiser,
-      fields: {
-        impactBoost: fieldGroup('impactBoost', {
-          wrapperClass: 'p-4 bg-background rounded-lg border',
-          visibleWhen: () => caps().allowsImpactBoost !== false,
-          fields: impactBoostFields
-        }),
-        impactCart: fieldGroup('impactCart', {
-          wrapperClass: 'p-4 bg-background rounded-lg border',
-          visibleWhen: () => caps().allowsImpactCart,
-          fields: impactCartFields
-        }),
-        productSelector: fieldGroup('productSelector', {
-          wrapperClass: 'p-4 bg-background rounded-lg border',
-          visibleWhen: () => caps().allowsProductSelector,
-          fields: productSelectorFields
-        }),
-        coverCosts: fieldGroup('coverCosts', {
-          wrapperClass: 'p-4 bg-background rounded-lg border',
-          visibleWhen: () => caps().allowsCoverCosts,
-          fields: {
-            ...coverCostsFields,
-            charityCostsInfo: alertField('charityCostsInfo', {
-              variant: 'info',
-              description:
-                'The cost breakdown shown in the cover costs modal is configured at the organization level.',
-              cta: {
-                label: 'Edit charity costs',
-                to: '/admin/settings/charity#charityCosts',
-                inline: true
-              }
-            })
-          }
-        }),
-        giftAid: fieldGroup('giftAid', {
-          wrapperClass: 'p-4 bg-background rounded-lg border',
-          visibleWhen: () => caps().allowsGiftAid,
-          fields: giftAidFields
-        }),
-        tribute: fieldGroup('tribute', {
-          wrapperClass: 'p-4 bg-background rounded-lg border',
-          visibleWhen: () => caps().allowsTribute,
-          fields: tributeFields
-        }),
-        entryFields: fieldGroup('entryFields', {
-          wrapperClass: 'p-4 bg-background rounded-lg border',
-          visibleWhen: () => caps().allowsEntryFields,
-          fields: entryFieldsFields
-        }),
-        contactConsent: fieldGroup('contactConsent', {
-          wrapperClass: 'p-4 bg-background rounded-lg border',
-          fields: contactConsentFields
-        }),
-        terms: fieldGroup('terms', {
-          wrapperClass: 'p-4 bg-background rounded-lg border',
-          fields: {
-            enabled: toggleField('enabled', {
-              label: 'Enable Terms & Conditions',
-              description: 'Require donors to accept terms before completing',
-              labelClass: 'font-bold',
-              showSeparatorAfter: true
-            }),
-            termsSettingsInfo: alertField('termsSettingsInfo', {
-              variant: 'info',
-              description:
-                'Terms content, mode, and label are configured at the organization level.',
-              cta: {
-                label: 'Edit terms settings',
-                to: '/admin/settings/charity#terms',
-                inline: true
-              }
-            })
-          }
-        })
-      },
-      // Flatten nested structure: form.features.impactBoost → store.impactBoost
-      $storePath: {
-        impactBoost: 'impactBoost',
-        impactCart: 'impactCart',
-        productSelector: 'productSelector',
-        coverCosts: 'coverCosts',
-        giftAid: 'giftAid',
-        tribute: 'tribute',
-        entryFields: 'entryFields',
-        contactConsent: 'contactConsent',
-        terms: 'terms'
-      }
-    })
-
-    // Custom Fields - hidden for fundraisers
-    const customFields = fieldGroup('customFields', {
-      label: 'Custom Fields',
-      description: 'Add custom form fields with flexible field types and conditional logic.',
-      collapsible: true,
-      collapsibleDefaultOpen: false,
-      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      visibleWhen: () => !campaignStore.isFundraiser,
-      fields: customFieldsFields
-    })
-
-    return {
-      formSettings,
-      currencySettings,
-      donationAmounts,
-      features,
-      customFields
+      return count > 0 ? `${count} active` : ''
     }
+
+    // Top-level tabs for form navigation
+    const sections = tabsField('sections', {
+      tabsListClass: 'w-full',
+      defaultValue: campaignStore.isFundraiser ? TAB_AMOUNTS : TAB_FORM_SETTINGS,
+      tabs: [
+        {
+          value: TAB_FORM_SETTINGS,
+          label: 'Form Settings',
+          visibleWhen: () => !campaignStore.isFundraiser,
+          fields: formBasicFields
+        },
+        {
+          value: TAB_AMOUNTS,
+          label: 'Donation Amounts',
+          visibleWhen: () => caps().allowsDonationAmounts,
+          fields: {
+            currencyInfo,
+            baseDefaultCurrency: baseDefaultCurrencyField!,
+            enabledCurrencies: enabledCurrenciesField!,
+            ...frequencyFields
+          }
+        },
+        {
+          value: TAB_FEATURES,
+          label: 'Features',
+          badgeLabel: featuresBadge,
+          badgeVariant: 'secondary' as const,
+          visibleWhen: () => !campaignStore.isFundraiser,
+          fields: {
+            impactBoost: fieldGroup('impactBoost', {
+              label: 'Impact Boost',
+              description: 'Suggest higher donation amounts with impact messaging',
+              wrapperClass: 'p-4 bg-background rounded-lg border',
+              collapsible: true,
+              collapsibleDefaultOpen: false,
+              badgeLabel: (fCtx) => (fCtx.values.enabled ? 'Enabled' : 'Disabled'),
+              badgeVariant: (fCtx) => (fCtx.values.enabled ? 'default' : 'outline'),
+              visibleWhen: () => caps().allowsImpactBoost !== false,
+              fields: impactBoostFields
+            }),
+            impactCart: fieldGroup('impactCart', {
+              label: 'Impact Cart',
+              description: 'Let donors add multiple impact items to a cart',
+              wrapperClass: 'p-4 bg-background rounded-lg border',
+              collapsible: true,
+              collapsibleDefaultOpen: false,
+              badgeLabel: (fCtx) => (fCtx.values.enabled ? 'Enabled' : 'Disabled'),
+              badgeVariant: (fCtx) => (fCtx.values.enabled ? 'default' : 'outline'),
+              visibleWhen: () => caps().allowsImpactCart,
+              fields: impactCartFields
+            }),
+            productSelector: fieldGroup('productSelector', {
+              label: 'Product Selector',
+              description: 'Allow donors to choose a specific product or fund',
+              wrapperClass: 'p-4 bg-background rounded-lg border',
+              collapsible: true,
+              collapsibleDefaultOpen: false,
+              badgeLabel: (fCtx) => (fCtx.values.enabled ? 'Enabled' : 'Disabled'),
+              badgeVariant: (fCtx) => (fCtx.values.enabled ? 'default' : 'outline'),
+              visibleWhen: () => caps().allowsProductSelector,
+              fields: productSelectorFields
+            }),
+            coverCosts: fieldGroup('coverCosts', {
+              label: 'Cover Costs',
+              description: 'Offer donors the option to cover processing fees',
+              wrapperClass: 'p-4 bg-background rounded-lg border',
+              collapsible: true,
+              collapsibleDefaultOpen: false,
+              badgeLabel: (fCtx) => (fCtx.values.enabled ? 'Enabled' : 'Disabled'),
+              badgeVariant: (fCtx) => (fCtx.values.enabled ? 'default' : 'outline'),
+              visibleWhen: () => caps().allowsCoverCosts,
+              fields: {
+                ...coverCostsFields,
+                charityCostsInfo: alertField('charityCostsInfo', {
+                  variant: 'info',
+                  description:
+                    'The cost breakdown shown in the cover costs modal is configured at the organization level.',
+                  cta: {
+                    label: 'Edit charity costs',
+                    to: '/admin/settings/charity#charityCosts',
+                    inline: true
+                  }
+                })
+              }
+            }),
+            giftAid: fieldGroup('giftAid', {
+              label: 'Gift Aid',
+              description: 'Enable UK Gift Aid tax reclaim declarations',
+              wrapperClass: 'p-4 bg-background rounded-lg border',
+              collapsible: true,
+              collapsibleDefaultOpen: false,
+              badgeLabel: (fCtx) => (fCtx.values.enabled ? 'Enabled' : 'Disabled'),
+              badgeVariant: (fCtx) => (fCtx.values.enabled ? 'default' : 'outline'),
+              visibleWhen: () => caps().allowsGiftAid,
+              fields: giftAidFields
+            }),
+            tribute: fieldGroup('tribute', {
+              label: 'Tribute & Dedications',
+              description: 'Allow donations in honor or memory of someone',
+              wrapperClass: 'p-4 bg-background rounded-lg border',
+              collapsible: true,
+              collapsibleDefaultOpen: false,
+              badgeLabel: (fCtx) => (fCtx.values.enabled ? 'Enabled' : 'Disabled'),
+              badgeVariant: (fCtx) => (fCtx.values.enabled ? 'default' : 'outline'),
+              visibleWhen: () => caps().allowsTribute,
+              fields: tributeFields
+            }),
+            entryFields: fieldGroup('entryFields', {
+              label: 'Entry Fields',
+              description: 'Collect additional donor information at checkout',
+              wrapperClass: 'p-4 bg-background rounded-lg border',
+              collapsible: true,
+              collapsibleDefaultOpen: false,
+              badgeLabel: (fCtx) => (fCtx.values.enabled ? 'Enabled' : 'Disabled'),
+              badgeVariant: (fCtx) => (fCtx.values.enabled ? 'default' : 'outline'),
+              visibleWhen: () => caps().allowsEntryFields,
+              fields: entryFieldsFields
+            }),
+            contactConsent: fieldGroup('contactConsent', {
+              label: 'Contact Consent',
+              description: 'Ask donors for marketing communication consent',
+              wrapperClass: 'p-4 bg-background rounded-lg border',
+              collapsible: true,
+              collapsibleDefaultOpen: false,
+              badgeLabel: (fCtx) => (fCtx.values.enabled ? 'Enabled' : 'Disabled'),
+              badgeVariant: (fCtx) => (fCtx.values.enabled ? 'default' : 'outline'),
+              fields: contactConsentFields
+            }),
+            terms: fieldGroup('terms', {
+              label: 'Terms & Conditions',
+              description: 'Require donors to accept terms before completing',
+              wrapperClass: 'p-4 bg-background rounded-lg border',
+              collapsible: true,
+              collapsibleDefaultOpen: false,
+              badgeLabel: (fCtx) => (fCtx.values.enabled ? 'Enabled' : 'Disabled'),
+              badgeVariant: (fCtx) => (fCtx.values.enabled ? 'default' : 'outline'),
+              fields: {
+                enabled: toggleField('enabled', {
+                  label: 'Enable Terms & Conditions',
+                  description: 'Require donors to accept terms before completing',
+                  labelClass: 'font-bold',
+                  showSeparatorAfter: true
+                }),
+                termsSettingsInfo: alertField('termsSettingsInfo', {
+                  variant: 'info',
+                  description:
+                    'Terms content, mode, and label are configured at the organization level.',
+                  cta: {
+                    label: 'Edit terms settings',
+                    to: '/admin/settings/charity#terms',
+                    inline: true
+                  }
+                })
+              }
+            })
+          }
+        },
+        {
+          value: TAB_CUSTOM_FIELDS,
+          label: 'Custom Fields',
+          visibleWhen: () => !campaignStore.isFundraiser,
+          fields: customFieldsFields
+        }
+      ]
+    })
+
+    // Wrap in a fieldGroup with $storePath to flatten tab nesting to flat store paths
+    const config = fieldGroup('config', {
+      fields: { sections },
+      $storePath: {
+        // Tab "formSettings"
+        [`sections.${TAB_FORM_SETTINGS}.${GROUP_FORM}`]: GROUP_FORM,
+        // Tab "amounts" (includes currency + frequencies)
+        [`sections.${TAB_AMOUNTS}.baseDefaultCurrency`]: 'donationAmounts.baseDefaultCurrency',
+        [`sections.${TAB_AMOUNTS}.enabledCurrencies`]: 'donationAmounts.enabledCurrencies',
+        [`sections.${TAB_AMOUNTS}.frequencies`]: 'donationAmounts.frequencies',
+        // Tab "features" — each sub-feature flattened
+        [`sections.${TAB_FEATURES}.impactBoost`]: 'impactBoost',
+        [`sections.${TAB_FEATURES}.impactCart`]: 'impactCart',
+        [`sections.${TAB_FEATURES}.productSelector`]: 'productSelector',
+        [`sections.${TAB_FEATURES}.coverCosts`]: 'coverCosts',
+        [`sections.${TAB_FEATURES}.giftAid`]: 'giftAid',
+        [`sections.${TAB_FEATURES}.tribute`]: 'tribute',
+        [`sections.${TAB_FEATURES}.entryFields`]: 'entryFields',
+        [`sections.${TAB_FEATURES}.contactConsent`]: 'contactConsent',
+        [`sections.${TAB_FEATURES}.terms`]: 'terms',
+        // Tab "customFields"
+        [`sections.${TAB_CUSTOM_FIELDS}`]: TAB_CUSTOM_FIELDS
+      }
+    })
+
+    return { config }
   })
 }

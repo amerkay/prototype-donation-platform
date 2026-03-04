@@ -9,21 +9,22 @@ import {
 } from '~/features/_library/form-builder/api'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
+import type { ReceiptTemplateTargets } from '~/features/templates/shared/types'
 
 export const RECEIPT_TEMPLATE_TARGETS = {
-  logo: 'settings.showLogo',
-  header: 'settings.headerText',
-  donorAddress: 'settings.showDonorAddress',
-  campaign: 'settings.showCampaignName',
-  payment: 'settings.showPaymentMethod',
-  taxStatement: 'settings.taxDeductibleStatement',
-  giftAid: 'settings.showGiftAid',
-  footer: 'settings.footerText',
-  charity: 'settings.charityNotice',
-  phone: 'settings.showPhone',
-  email: 'settings.showEmail',
-  website: 'settings.showWebsite'
-} as const
+  showLogo: 'settings.showLogo',
+  charityNotice: 'settings.charityNotice',
+  headerText: 'settings.headerText',
+  showDonorAddress: 'settings.showDonorAddress',
+  showCampaignName: 'settings.showCampaignName',
+  showPaymentMethod: 'settings.showPaymentMethod',
+  taxDeductibleStatement: 'settings.taxDeductibleStatement',
+  showGiftAid: 'settings.showGiftAid',
+  footerText: 'settings.footerText',
+  showPhone: 'settings.showPhone',
+  showEmail: 'settings.showEmail',
+  showWebsite: 'settings.showWebsite'
+} as const satisfies Record<keyof ReceiptTemplateTargets, string>
 
 export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
   const currencyStore = useCurrencySettingsStore()
@@ -135,11 +136,6 @@ export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
     fields: {
       showLogo,
-      noLogoAlert,
-      showPhone,
-      showEmail,
-      showWebsite,
-      charityNotice,
       headerText,
       showDonorAddress,
       showCampaignName,
@@ -147,21 +143,14 @@ export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
       taxDeductibleStatement,
       showGiftAid,
       footerText,
+      showPhone,
+      showEmail,
+      showWebsite,
+      noLogoAlert,
+      charityNotice,
       brandingNotice
     },
-    $storePath: {
-      showLogo: 'showLogo',
-      headerText: 'headerText',
-      showDonorAddress: 'showDonorAddress',
-      showCampaignName: 'showCampaignName',
-      showPaymentMethod: 'showPaymentMethod',
-      taxDeductibleStatement: 'taxDeductibleStatement',
-      showGiftAid: 'showGiftAid',
-      footerText: 'footerText',
-      showPhone: 'showPhone',
-      showEmail: 'showEmail',
-      showWebsite: 'showWebsite'
-    }
+    $storePath: 'flatten'
   })
 
   return { settings }

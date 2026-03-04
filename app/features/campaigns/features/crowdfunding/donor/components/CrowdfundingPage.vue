@@ -17,6 +17,7 @@ import DonationsPanel from './DonationsPanel.vue'
 import CampaignShareSection from './CampaignShareSection.vue'
 import { Separator } from '@/components/ui/separator'
 import { ICON_DONATION } from '~/lib/icons'
+import { CAMPAIGN_FIELD_TARGETS as CT } from '~/features/campaigns/admin/forms/campaign-config-master'
 
 const props = defineProps<{
   campaign: Campaign
@@ -85,7 +86,7 @@ const hasSocialSharing = computed(() => {
       <template v-if="hasImage">
         <!-- Mobile-only image (hidden on desktop — desktop image lives inside the left column) -->
         <div
-          data-field="crowdfunding.coverPhoto"
+          :data-field="CT.crowdfunding.coverPhoto"
           class="relative aspect-video @3xl:hidden bg-muted overflow-hidden"
         >
           <img
@@ -102,13 +103,13 @@ const hasSocialSharing = computed(() => {
             <!-- Campaign info -->
             <div class="px-4 pt-4 pb-3 space-y-3 @3xl:p-8 @3xl:space-y-4">
               <h2
-                data-field="crowdfunding.title"
+                :data-field="CT.crowdfunding.title"
                 class="text-xl @3xl:text-2xl font-bold leading-tight"
               >
                 {{ campaign.crowdfunding.title }}
               </h2>
               <p
-                data-field="crowdfunding.shortDescription"
+                :data-field="CT.crowdfunding.shortDescription"
                 class="text-sm @3xl:text-base text-muted-foreground leading-relaxed"
               >
                 {{ campaign.crowdfunding.shortDescription }}
@@ -119,7 +120,7 @@ const hasSocialSharing = computed(() => {
                   campaign.crowdfunding.goalAmount &&
                   campaign.stats
                 "
-                data-field="crowdfunding.goalAmount"
+                :data-field="CT.crowdfunding.goalAmount"
                 :stats="campaign.stats"
                 :goal-amount="campaign.crowdfunding.goalAmount"
                 :end-date="campaign.crowdfunding.endDate"
@@ -137,7 +138,7 @@ const hasSocialSharing = computed(() => {
             <div
               v-if="campaign.crowdfunding.showRecentDonations"
               class="px-4 pb-4 @3xl:px-8 @3xl:pb-8"
-              data-field="crowdfunding.showRecentDonations"
+              :data-field="CT.crowdfunding.showRecentDonations"
             >
               <Separator class="@3xl:hidden my-3" />
               <DonationsPanel
@@ -153,7 +154,7 @@ const hasSocialSharing = computed(() => {
           <div class="@3xl:order-1 @3xl:flex-1 @3xl:flex @3xl:flex-col">
             <!-- Desktop-only image (hidden on mobile — mobile uses the image above) -->
             <div
-              data-field="crowdfunding.coverPhoto"
+              :data-field="CT.crowdfunding.coverPhoto"
               class="hidden @3xl:flex @3xl:flex-1 bg-muted overflow-hidden"
             >
               <img
@@ -166,7 +167,7 @@ const hasSocialSharing = computed(() => {
             <!-- Story -->
             <div
               v-if="campaign.crowdfunding.story"
-              data-field="crowdfunding.story"
+              :data-field="CT.crowdfunding.story"
               class="px-4 pb-4 @3xl:px-8 @3xl:py-6 space-y-3"
             >
               <Separator class="@3xl:hidden my-3" />
@@ -185,7 +186,7 @@ const hasSocialSharing = computed(() => {
         <div
           v-if="hasSocialSharing"
           class="space-y-3 px-4 pb-4 @3xl:px-8 @3xl:pb-8 @3xl:pt-4"
-          data-field="crowdfunding.enableSocialSharing"
+          :data-field="CT.crowdfunding.enableSocialSharing"
         >
           <Separator class="@3xl:hidden my-3" />
           <CampaignShareSection
@@ -211,13 +212,13 @@ const hasSocialSharing = computed(() => {
               <!-- Left: title + description -->
               <div class="space-y-3 @3xl:flex-1">
                 <h2
-                  data-field="crowdfunding.title"
+                  :data-field="CT.crowdfunding.title"
                   class="text-xl @3xl:text-2xl font-bold leading-tight"
                 >
                   {{ campaign.crowdfunding.title }}
                 </h2>
                 <p
-                  data-field="crowdfunding.shortDescription"
+                  :data-field="CT.crowdfunding.shortDescription"
                   class="text-sm @3xl:text-base text-muted-foreground leading-relaxed"
                 >
                   {{ campaign.crowdfunding.shortDescription }}
@@ -232,7 +233,7 @@ const hasSocialSharing = computed(() => {
                     campaign.crowdfunding.goalAmount &&
                     campaign.stats
                   "
-                  data-field="crowdfunding.goalAmount"
+                  :data-field="CT.crowdfunding.goalAmount"
                   :stats="campaign.stats"
                   :goal-amount="campaign.crowdfunding.goalAmount"
                   :end-date="campaign.crowdfunding.endDate"
@@ -258,7 +259,7 @@ const hasSocialSharing = computed(() => {
               <div class="flex-1 space-y-4">
                 <div
                   v-if="campaign.crowdfunding.story"
-                  data-field="crowdfunding.story"
+                  :data-field="CT.crowdfunding.story"
                   class="space-y-3"
                 >
                   <CampaignStorySection :story="campaign.crowdfunding.story" />
@@ -270,7 +271,7 @@ const hasSocialSharing = computed(() => {
                 <div
                   v-if="campaign.crowdfunding.showRecentDonations"
                   class="@3xl:hidden"
-                  data-field="crowdfunding.showRecentDonations"
+                  :data-field="CT.crowdfunding.showRecentDonations"
                 >
                   <DonationsPanel
                     :donations="displayedDonations"
@@ -290,7 +291,7 @@ const hasSocialSharing = computed(() => {
               <aside
                 v-if="campaign.crowdfunding.showRecentDonations"
                 class="hidden @3xl:block @3xl:w-2/5 shrink-0"
-                data-field="crowdfunding.showRecentDonations"
+                :data-field="CT.crowdfunding.showRecentDonations"
               >
                 <div class="sticky top-6">
                   <DonationsPanel
@@ -306,7 +307,7 @@ const hasSocialSharing = computed(() => {
             <div
               v-if="hasSocialSharing"
               class="space-y-3 pt-4 pb-4 @3xl:pt-6 @3xl:pb-0"
-              data-field="crowdfunding.enableSocialSharing"
+              :data-field="CT.crowdfunding.enableSocialSharing"
             >
               <CampaignShareSection
                 :settings="effectiveSharing"

@@ -9,7 +9,6 @@ import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaig
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import type { CampaignStatus } from '~/features/campaigns/shared/types'
 import { getCampaignTypeBreadcrumb } from '~/features/campaigns/shared/composables/useCampaignTypes'
-import { openAccordionId } from '~/features/campaigns/admin/forms/campaign-config-master'
 import { useEditState } from '~/features/_shared/composables/useEditState'
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
@@ -35,9 +34,6 @@ const charityStore = useCharitySettingsStore()
 // Get campaign data
 const campaign = computed(() => getCampaignById(route.params.id as string))
 
-// Reset accordion state before child components mount (clears stale state from previous campaigns)
-openAccordionId.value = undefined
-
 // Initialize store synchronously so child components have store.id during setup
 if (campaign.value) {
   store.initialize(campaign.value)
@@ -49,16 +45,14 @@ onMounted(() => {
   }
 })
 
-// Clean up accordion state when leaving the page
 onUnmounted(() => {
-  openAccordionId.value = undefined
+  // cleanup if needed
 })
 
 // Watch for campaign ID changes (navigation between campaigns)
 watch(
   () => route.params.id,
   (newId) => {
-    openAccordionId.value = undefined
     const newCampaign = getCampaignById(newId as string)
     if (newCampaign) {
       store.initialize(newCampaign)
@@ -153,7 +147,7 @@ function clearPastEndDateIfNeeded(previousStatus: CampaignStatus): string | null
   if (endDate >= new Date(new Date().toDateString())) return null
   const previousEndDate = store.crowdfunding.endDate
   store.crowdfunding.endDate = null
-  formRef.value?.setFieldValue?.('crowdfunding.endDate', null)
+  formRef.value?.setFieldValue?.('config.sections.crowdfunding.endDate', null)
   return previousEndDate
 }
 
@@ -172,7 +166,7 @@ async function handleStatusUpdate(newStatus: CampaignStatus) {
     store.status = previousStatus
     if (clearedEndDate !== null && store.crowdfunding) {
       store.crowdfunding.endDate = clearedEndDate
-      formRef.value?.setFieldValue?.('crowdfunding.endDate', clearedEndDate)
+      formRef.value?.setFieldValue?.('config.sections.crowdfunding.endDate', clearedEndDate)
     }
     toast.error('Cannot change campaign status', {
       description: 'Please fix form errors before changing status.'
@@ -198,7 +192,7 @@ async function handleStatusUpdate(newStatus: CampaignStatus) {
       toast.info('End date cleared', {
         description: 'The past end date was removed. You can set a new one if needed.'
       })
-      router.replace({ hash: '#crowdfunding.endDate' })
+      router.replace({ hash: '#config.sections.crowdfunding.endDate' })
     }
   } catch {
     store.status = previousStatus

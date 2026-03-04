@@ -7,7 +7,7 @@ import { useCurrencySettingsStore } from '~/features/settings/admin/stores/curre
 import { RECEIPT_TEMPLATE_TARGETS } from '~/features/templates/admin/forms/receipt-template-form'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { getPageRenderGeometry } from '~/features/templates/admin/utils/page-geometry'
-import type { ReceiptModel } from '~/features/templates/shared/types'
+import type { ReceiptModel, ReceiptTemplateTargets } from '~/features/templates/shared/types'
 import ReceiptLayout from '~/features/templates/shared/components/receipt/ReceiptLayout.vue'
 import PreviewEditable from '~/features/_admin/components/PreviewEditable.vue'
 
@@ -16,7 +16,7 @@ const props = withDefaults(
     currency?: string
     editable?: boolean
     /** When provided, overrides RECEIPT_TEMPLATE_TARGETS and enables editable mode */
-    externalTargets?: Record<string, string>
+    externalTargets?: Partial<ReceiptTemplateTargets>
   }>(),
   { editable: false }
 )

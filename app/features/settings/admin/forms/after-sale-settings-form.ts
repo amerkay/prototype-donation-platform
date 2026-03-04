@@ -66,12 +66,7 @@ export const useAfterSaleSettingsForm = defineForm('afterSale', (_ctx) => {
       recurringUpsellHeadline,
       recurringUpsellBody
     },
-    $storePath: {
-      recurringUpsellEnabled: 'recurringUpsellEnabled',
-      recurringUpsellFraction: 'recurringUpsellFraction',
-      recurringUpsellHeadline: 'recurringUpsellHeadline',
-      recurringUpsellBody: 'recurringUpsellBody'
-    }
+    $storePath: 'flatten'
   })
 
   // ── Social Sharing ──
@@ -92,10 +87,7 @@ export const useAfterSaleSettingsForm = defineForm('afterSale', (_ctx) => {
     description: 'Let donors share their donation on social media after completing a gift.',
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
     fields: { socialSharingEnabled, socialSharingMessage },
-    $storePath: {
-      socialSharingEnabled: 'socialSharingEnabled',
-      socialSharingMessage: 'socialSharingMessage'
-    }
+    $storePath: 'flatten'
   })
 
   return { recurringUpsell, socialSharing }

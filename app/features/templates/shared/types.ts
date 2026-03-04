@@ -118,6 +118,22 @@ export interface CertificateTemplateTargets {
 // Receipt Types
 // ============================================================================
 
+/** Target field paths for receipt editable preview navigation */
+export interface ReceiptTemplateTargets {
+  showLogo: string
+  charityNotice: string
+  headerText: string
+  showDonorAddress: string
+  showCampaignName: string
+  showPaymentMethod: string
+  taxDeductibleStatement: string
+  showGiftAid: string
+  footerText: string
+  showPhone: string
+  showEmail: string
+  showWebsite: string
+}
+
 /** Branding information for receipt rendering */
 export interface ReceiptBranding {
   logoUrl: string

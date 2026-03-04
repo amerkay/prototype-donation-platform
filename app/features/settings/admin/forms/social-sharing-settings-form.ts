@@ -48,13 +48,7 @@ export const useSocialSharingSettingsForm = defineForm('socialSharing', (_ctx) =
     description: 'Configure which social platforms visitors can use to share campaigns.',
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
     fields: { platformsNotice, facebook, twitter, linkedin, whatsapp, email },
-    $storePath: {
-      facebook: 'facebook',
-      twitter: 'twitter',
-      linkedin: 'linkedin',
-      whatsapp: 'whatsapp',
-      email: 'email'
-    }
+    $storePath: 'flatten'
   })
 
   return { socialSharing }

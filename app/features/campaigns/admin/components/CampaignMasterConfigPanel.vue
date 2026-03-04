@@ -3,95 +3,88 @@ import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campa
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
 import StickyButtonGroup from '~/features/_admin/components/StickyButtonGroup.vue'
-import { createCampaignConfigMaster, openAccordionId } from '../forms/campaign-config-master'
-import { createAdminDonationFormMaster } from '~/features/donation-form/admin/forms/admin-donation-form-master'
+import { createCampaignConfigMaster } from '../forms/campaign-config-master'
+import { createFundraiserConfigMaster } from '../forms/fundraiser-config-master'
 import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
-import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 
 const store = useCampaignConfigStore()
 const formConfigStore = useFormConfigStore()
 
-// Provide accordion group with external state sync for preview components
-// This must be called in component setup(), not in form definition
-provideAccordionGroup(openAccordionId)
-
 // Form count for component field validation (1:1 campaign:form)
 const formsCount = computed(() => (store.form ? 1 : 0))
 
-// AUTO-MAPPING: No getData/setData needed! ✨
-// Form metadata ($storePath) handles all mapping automatically
-const { formRef, modelValue, form, expose } = useAdminConfigForm({
-  store,
-  form: createCampaignConfigMaster()
-})
-
-// Fundraiser: inline donation amounts from formConfigStore (reuses admin donation form master)
-const amountsFormRef = ref()
-const amountsSetup = store.isFundraiser
+// Fundraisers: unified single-form with manual two-store binding
+// Non-fundraisers: auto-mapped campaign config form
+const { formRef, modelValue, form, expose } = store.isFundraiser
   ? useAdminConfigForm({
-      store: formConfigStore,
-      form: createAdminDonationFormMaster(() => ({}))
+      store,
+      form: createFundraiserConfigMaster(),
+      autoMap: false,
+      getData: () => ({
+        sections: {
+          crowdfunding: store.crowdfunding,
+          amounts: formConfigStore.donationAmounts
+        }
+      }),
+      setData: (_s, data: Record<string, unknown>) => {
+        const sections = data.sections as Record<string, unknown>
+        if (sections.crowdfunding !== undefined) {
+          Object.assign(store.crowdfunding!, sections.crowdfunding as object)
+          store.markDirty()
+        }
+        if (sections.amounts !== undefined) {
+          Object.assign(formConfigStore.donationAmounts!, sections.amounts as object)
+          formConfigStore.markDirty()
+        }
+      }
     })
-  : null
+  : useAdminConfigForm({
+      store,
+      form: createCampaignConfigMaster()
+    })
 
 // Combined dirty state for StickyButtonGroup
 const isDirty = computed(() => store.isDirty || (store.isFundraiser && formConfigStore.isDirty))
 const isSaving = computed(() => store.isSaving || (store.isFundraiser && formConfigStore.isSaving))
-const isValid = computed(() => {
-  const campaignValid = formRef.value?.isValid ?? false
-  if (!store.isFundraiser) return campaignValid
-  const amountsValid = amountsFormRef.value?.isValid ?? false
-  return campaignValid && amountsValid
-})
+const isValid = computed(() => formRef.value?.isValid ?? false)
 
-// Manually inject formsCount for component field validation
+// Manually inject formsCount for component field validation (non-fundraiser only)
 // Component fields are excluded from auto-mapping but need validation data
-// donationForms may not exist in auto-mapped data (no mapped fields left), so create it
-watch(
-  formsCount,
-  (count) => {
-    if (!modelValue.value.donationForms) {
-      ;(modelValue.value as Record<string, unknown>).donationForms = {}
-    }
-    ;(modelValue.value.donationForms as Record<string, unknown>).formCard = {
-      formsCount: count
-    }
-    // Push into vee-validate's internal state so validation re-runs.
-    // FormRenderer clones modelValue on init, so direct mutation above only
-    // covers the initial snapshot — setFieldValue handles live updates.
-    formRef.value?.setFieldValue('donationForms.formCard', { formsCount: count })
-  },
-  { immediate: true }
-)
+// With tabs, donationForms is nested under config.sections
+if (!store.isFundraiser) {
+  watch(
+    formsCount,
+    (count) => {
+      const config = modelValue.value.config as Record<string, unknown> | undefined
+      const sections = config?.sections as Record<string, unknown> | undefined
+      if (sections) {
+        if (!sections.donationForms) {
+          sections.donationForms = {}
+        }
+        ;(sections.donationForms as Record<string, unknown>).formCard = {
+          formsCount: count
+        }
+      }
+      // Push into vee-validate's internal state so validation re-runs.
+      formRef.value?.setFieldValue('config.sections.donationForms.formCard', { formsCount: count })
+    },
+    { immediate: true }
+  )
+}
 
 defineEmits<{
   save: []
   discard: []
 }>()
-defineExpose({
-  ...expose,
-  // Expose amounts form ref for parent discard handling
-  amountsResetToSaved: amountsSetup?.expose.resetToSaved
-})
+defineExpose(expose)
 </script>
 
 <template>
   <div class="space-y-4">
-    <!-- Campaign Config Form -->
     <FormRenderer
       ref="formRef"
       v-model="modelValue"
       :section="form"
-      validate-on-mount
-      update-only-when-valid
-    />
-
-    <!-- Fundraiser: Inline Donation Amounts (from formConfigStore) -->
-    <FormRenderer
-      v-if="amountsSetup"
-      ref="amountsFormRef"
-      v-model="amountsSetup.modelValue.value"
-      :section="amountsSetup.form"
       validate-on-mount
       update-only-when-valid
     />

@@ -13,6 +13,7 @@ import type { TributeData } from '~/features/donation-form/features/tribute/dono
 import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
 import type { PresetAmount } from '~/features/donation-form/shared/types'
 import Separator from '~/components/ui/separator/Separator.vue'
+import { DONATION_FORM_FIELD_TARGETS as DT } from '~/features/donation-form/admin/forms/admin-donation-form-master'
 
 interface Props {
   frequency: 'once' | 'monthly' | 'yearly'
@@ -96,7 +97,7 @@ defineExpose({
   <div ref="formContainerRef" class="space-y-4">
     <!-- Donation Amount Selector -->
     <AmountSelector
-      data-field="donationAmounts.frequencies"
+      :data-field="DT.amounts.frequencies"
       :model-value="donationAmount"
       :amounts="availableAmounts"
       :currency="currency"
@@ -118,7 +119,7 @@ defineExpose({
     <!-- Product Selector -->
     <ProductSelectorButton
       ref="productSelectorRef"
-      data-field="features.productSelector"
+      :data-field="DT.features.productSelector"
       :frequency="frequency"
       :currency="currency"
       :base-currency="formConfig.donationAmounts.baseDefaultCurrency"
@@ -135,7 +136,7 @@ defineExpose({
     <!-- Gift or In Memory (only for recurring donations) -->
     <div
       v-if="formConfig.features.tribute.enabled && showTributeSection"
-      data-field="features.tribute"
+      :data-field="DT.features.tribute"
     >
       <TributeCard
         v-if="hasTribute"
@@ -154,7 +155,7 @@ defineExpose({
     <!-- Impact Boost -->
     <ImpactBoostCard
       v-if="formConfig.features.impactBoost.enabled"
-      data-field="features.impactBoost"
+      :data-field="DT.features.impactBoost"
       :frequency="frequency"
       :donation-amount="donationAmount"
       :currency="currency"

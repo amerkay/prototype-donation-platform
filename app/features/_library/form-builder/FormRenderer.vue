@@ -8,6 +8,8 @@ import { useScrollOnVisible } from './composables/useScrollOnVisible'
 import { checkFieldVisibility } from './composables/useFieldPath'
 import { validateFields } from './utils/validation'
 import { provideHashTarget } from './composables/useHashTarget'
+import { useFormSearch, FORM_SEARCH_KEY } from './composables/useFormSearch'
+import FormSearchInput from './internal/FormSearchInput.vue'
 
 interface Props {
   section: ComposableForm
@@ -58,6 +60,10 @@ const setupCtx = {
   description: undefined as string | undefined
 }
 const setupFields = props.section.setup(setupCtx)
+
+// Form search: auto-enabled for complex forms (12+ input fields)
+const formSearch = useFormSearch(setupFields, props.section._meta?.search)
+provide(FORM_SEARCH_KEY, formSearch)
 
 const resolvedSection = computed(() => ({
   id: props.section.id,
@@ -285,6 +291,8 @@ defineExpose({
         {{ resolvedSection.description }}
       </p>
     </div>
+
+    <FormSearchInput />
 
     <FormFieldList
       :fields="resolvedSection.fields"

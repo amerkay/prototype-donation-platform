@@ -15,7 +15,7 @@ paths:
 ## To add a new email card
 
 1. Create the card component in `app/emails/components/cards/`
-2. Use layout primitives from `components/cards/layouts/` (shell, action button, info panel, media)
+2. Use layout primitives from `components/cards/layouts/` (shell, action button, info panel, media row, media stack)
 3. Define the card's data interface in `components/cards/types.ts` (add to `EmailCardToken` and `EmailCardsPayload`)
 4. Register the component in `components/cards/registry.ts` card component map
 5. Card layouts use **inline styles and table-based layout** for email client compatibility — no Tailwind

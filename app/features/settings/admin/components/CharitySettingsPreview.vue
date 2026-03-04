@@ -42,12 +42,10 @@ const ACCORDION_IDS = {
 // --- Receipt targets (flat charity paths) ---
 
 const charityReceiptTargets = {
-  charity: 'charitySettings.charitySettings',
-  phone: 'charitySettings.charitySettings.phone',
-  website: 'charitySettings.charitySettings.website',
-  description: 'charitySettings.charitySettings.description',
-  emailSignature: 'charitySettings.charitySettings.emailSignature',
-  logo: 'branding.logo'
+  charityNotice: 'charitySettings.charitySettings',
+  showPhone: 'charitySettings.charitySettings.phone',
+  showWebsite: 'charitySettings.charitySettings.website',
+  showLogo: 'branding.logo'
 }
 
 // --- Costs targets ---
@@ -57,7 +55,7 @@ const costsTargets = {
   introText: 'charityCosts.introText',
   outroText: 'charityCosts.outroText',
   costs: 'charityCosts.costs'
-}
+} as const
 
 // --- Terms preview ---
 

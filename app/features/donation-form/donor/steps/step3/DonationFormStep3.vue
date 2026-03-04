@@ -14,6 +14,7 @@ import { useCharitySettingsStore } from '~/features/settings/admin/stores/charit
 import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
 import DonationCustomFields from '~/features/donation-form/features/custom-fields/donor/components/DonationCustomFields.vue'
 import type { FieldDef } from '~/features/_library/form-builder/types'
+import { DONATION_FORM_FIELD_TARGETS as DT } from '~/features/donation-form/admin/forms/admin-donation-form-master'
 
 // Get shared form config from store
 const configStore = useFormConfigStore()
@@ -174,7 +175,7 @@ const handleNext = () => {
     <!-- Cover Costs Field (donation type only) -->
     <div
       v-if="formConfig?.features.coverCosts.enabled && isFeatureSupported('coverCosts')"
-      data-field="features.coverCosts"
+      :data-field="DT.features.coverCosts"
     >
       <CoverCostsField :config="formConfig.features.coverCosts" />
     </div>
@@ -188,7 +189,7 @@ const handleNext = () => {
         isFeatureSupported('giftAid') &&
         store.selectedCurrency === 'GBP'
       "
-      data-field="features.giftAid"
+      :data-field="DT.features.giftAid"
     >
       <FormRenderer
         ref="giftAidFormRef"
@@ -210,14 +211,14 @@ const handleNext = () => {
     <DonationCustomFields
       ref="customFieldsRef"
       tab="step3"
-      data-field="customFields"
+      :data-field="DT.customFields"
       @submit="handleNext"
     />
 
     <!-- Email Opt-in -->
     <div
       v-if="formConfig?.features.contactConsent?.enabled !== false"
-      data-field="features.contactConsent"
+      :data-field="DT.features.contactConsent"
     >
       <FormRenderer
         ref="emailOptInFormRef"
@@ -228,7 +229,7 @@ const handleNext = () => {
     </div>
 
     <!-- Terms Acceptance (last item before navigation) -->
-    <div v-if="formConfig?.features.terms?.enabled !== false" data-field="features.terms">
+    <div v-if="formConfig?.features.terms?.enabled !== false" :data-field="DT.features.terms">
       <FormRenderer
         ref="termsFormRef"
         v-model="termsDataWithContext"

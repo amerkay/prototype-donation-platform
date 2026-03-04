@@ -1,4 +1,4 @@
-import { defineForm, fieldGroup } from '~/features/_library/form-builder/api'
+import { defineForm, fieldGroup, tabsField } from '~/features/_library/form-builder/api'
 import type { FormContext } from '~/features/_library/form-builder/types'
 import { useCampaignDonationFormsForm } from '~/features/campaigns/admin/forms/donation-forms-form'
 import { useCrowdfundingSettingsForm } from '~/features/campaigns/features/crowdfunding/admin/forms/crowdfunding-settings-form'
@@ -7,28 +7,45 @@ import { useMatchedGivingSettingsForm } from '~/features/campaigns/features/matc
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
 
-/**
- * Reactive state for currently open accordion
- * Exported for preview components to observe form state
- */
-export const openAccordionId = ref<string | undefined>('campaignConfigMaster.donationForms')
+// Tab value constants — shared between tab definition and targets
+const TAB_DONATION_FORMS = 'donationForms' as const
+const TAB_CROWDFUNDING = 'crowdfunding' as const
+const TAB_MATCHED_GIVING = 'matchedGiving' as const
+
+/** Type-safe field targets for donor components' data-field attributes.
+ *  Keys mirror the crowdfunding sub-form fields; values are suffix paths
+ *  that resolve via useHashTarget's suffix matching. */
+export const CAMPAIGN_FIELD_TARGETS = {
+  donationForms: TAB_DONATION_FORMS,
+  crowdfunding: {
+    coverPhoto: `${TAB_CROWDFUNDING}.coverPhoto`,
+    title: `${TAB_CROWDFUNDING}.title`,
+    shortDescription: `${TAB_CROWDFUNDING}.shortDescription`,
+    goalAmount: `${TAB_CROWDFUNDING}.goalAmount`,
+    showRecentDonations: `${TAB_CROWDFUNDING}.showRecentDonations`,
+    story: `${TAB_CROWDFUNDING}.story`,
+    charityNotice: `${TAB_CROWDFUNDING}.charityNotice`,
+    enableSocialSharing: `${TAB_CROWDFUNDING}.enableSocialSharing`
+  },
+  matchedGiving: TAB_MATCHED_GIVING
+} as const
 
 /**
- * Master admin form that consolidates all campaign configuration sections
- * Each section is wrapped in a collapsible field-group with card styling
+ * Master admin form that consolidates all campaign configuration sections.
+ * Uses top-level tabs for navigation (Donation Forms, Crowdfunding, Fundraisers, Matched Giving).
  *
  * Campaign type behavior:
  * - Standard: Donation Forms, Crowdfunding Page
  * - P2P Template: Donation Forms, Template Defaults, Fundraisers
- * - P2P Fundraiser: Crowdfunding Page only (non-collapsible, status in header)
- * - Standard/P2P/Event + Matching: shows Matched Giving section when caps().allowsMatchedGiving
+ * - P2P Fundraiser: Crowdfunding Page only (other tabs disabled)
+ * - Standard/P2P/Event + Matching: shows Matched Giving tab when caps().allowsMatchedGiving
  * - Event: Donation Forms, Crowdfunding Page
  */
 export function createCampaignConfigMaster() {
   return defineForm('campaignConfigMaster', (ctx: FormContext) => {
     const store = useCampaignConfigStore()
 
-    /** Campaign capabilities — determines which sections are visible */
+    /** Campaign capabilities — determines which tabs are visible */
     const caps = () => getCampaignCapabilities(store.type)
 
     // Extract fields from each sub-form by calling their setup functions
@@ -40,61 +57,59 @@ export function createCampaignConfigMaster() {
     // Lock all sections when campaign is in a terminal state
     const isStatusLocked = () => store.status === 'completed' || store.status === 'ended'
 
-    // "Donation Forms" section - hidden for fundraiser (uses inline donation amounts instead)
-    const donationForms = fieldGroup('donationForms', {
-      label: 'Donation Forms',
-      description: 'Configure donation form assignments for this campaign.',
-      collapsible: true,
-      collapsibleDefaultOpen: true,
-      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: donationFormsFields,
-      disabled: isStatusLocked,
-      visibleWhen: () => !store.isFundraiser
+    // Determine default tab based on campaign type
+    const defaultTab = store.isFundraiser ? TAB_CROWDFUNDING : TAB_DONATION_FORMS
+
+    const sections = tabsField('sections', {
+      tabsListClass: 'w-full',
+      defaultValue: defaultTab,
+      tabs: [
+        {
+          value: TAB_DONATION_FORMS,
+          label: 'Donation Forms',
+          contentClass: '',
+          visibleWhen: () => !store.isFundraiser,
+          disabled: isStatusLocked,
+          disabledTooltip: 'Campaign is in a terminal state',
+          fields: donationFormsFields
+        },
+        {
+          value: TAB_CROWDFUNDING,
+          label: () => (store.isP2P ? 'Template Defaults' : 'Crowdfunding Page'),
+          disabled: isStatusLocked,
+          disabledTooltip: 'Campaign is in a terminal state',
+          fields: crowdfundingFields
+        },
+        {
+          value: 'peerToPeer',
+          label: 'Fundraisers',
+          visibleWhen: () => caps().allowsP2P && !store.isFundraiser,
+          disabled: isStatusLocked,
+          disabledTooltip: 'Campaign is in a terminal state',
+          fields: peerToPeerFields
+        },
+        {
+          value: TAB_MATCHED_GIVING,
+          label: 'Matched Giving',
+          visibleWhen: () => caps().allowsMatchedGiving && !store.isFundraiser,
+          disabled: isStatusLocked,
+          disabledTooltip: 'Campaign is in a terminal state',
+          fields: matchedGivingFields
+        }
+      ]
     })
 
-    // Crowdfunding Page - non-collapsible for fundraiser (it's the only visible section)
-    const crowdfunding = fieldGroup('crowdfunding', {
-      label: store.isP2P ? 'Template Defaults' : 'Crowdfunding Page',
-      description: store.isP2P
-        ? 'Default settings inherited by all fundraisers created from this template.'
-        : 'Configure public page with title, story, cover photo, and progress tracking.',
-      collapsible: !store.isFundraiser,
-      collapsibleDefaultOpen: store.isFundraiser,
-      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: crowdfundingFields,
-      disabled: isStatusLocked
+    // Wrap in fieldGroup with $storePath to flatten tab nesting to store structure
+    const config = fieldGroup('config', {
+      fields: { sections },
+      $storePath: {
+        [`sections.${TAB_DONATION_FORMS}`]: TAB_DONATION_FORMS,
+        [`sections.${TAB_CROWDFUNDING}`]: TAB_CROWDFUNDING,
+        'sections.peerToPeer': 'peerToPeer',
+        [`sections.${TAB_MATCHED_GIVING}`]: TAB_MATCHED_GIVING
+      }
     })
 
-    // Fundraisers section - only for P2P campaigns
-    const peerToPeer = fieldGroup('peerToPeer', {
-      label: 'Fundraisers',
-      description: 'Enable individual and team fundraising pages with custom goals.',
-      collapsible: true,
-      collapsibleDefaultOpen: store.isP2P,
-      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: peerToPeerFields,
-      disabled: isStatusLocked,
-      visibleWhen: () => caps().allowsP2P
-    })
-
-    // Matched Giving section - available for standard, p2p, and event campaigns
-    const matchedGiving = fieldGroup('matchedGiving', {
-      label: 'Matched Giving',
-      description:
-        'Configure match periods with multipliers, depleting pools, and matcher details.',
-      collapsible: true,
-      collapsibleDefaultOpen: true,
-      wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-      fields: matchedGivingFields,
-      disabled: isStatusLocked,
-      visibleWhen: () => caps().allowsMatchedGiving
-    })
-
-    return {
-      donationForms,
-      crowdfunding,
-      peerToPeer,
-      matchedGiving
-    }
+    return { config }
   })
 }

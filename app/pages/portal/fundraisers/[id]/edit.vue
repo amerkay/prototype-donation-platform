@@ -13,7 +13,6 @@ import { useCharitySettingsStore } from '~/features/settings/admin/stores/charit
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import type { Campaign, CampaignStatus } from '~/features/campaigns/shared/types'
-import { openAccordionId } from '~/features/campaigns/admin/forms/campaign-config-master'
 import { useEditState } from '~/features/_shared/composables/useEditState'
 
 definePageMeta({
@@ -29,9 +28,6 @@ const formConfigStore = useFormConfigStore()
 // Get campaign data (fundraisers auto-merge parent template fields via getCampaignById)
 const campaign = computed(() => getCampaignById(route.params.id as string))
 const { form: defaultForm, updateForm } = useForm()
-
-// Reset accordion state before child components mount
-openAccordionId.value = undefined
 
 // Initialize both stores synchronously so child components have data during setup
 if (campaign.value) {
@@ -52,14 +48,13 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  openAccordionId.value = undefined
+  // cleanup if needed
 })
 
 // Watch for campaign ID changes (navigation between campaigns)
 watch(
   () => route.params.id,
   (newId) => {
-    openAccordionId.value = undefined
     const newCampaign = getCampaignById(newId as string)
     if (newCampaign) {
       store.initialize(newCampaign)
@@ -115,8 +110,6 @@ function handleSave() {
 
 function handleDiscard() {
   handleCampaignDiscard()
-  // Also reset donation amounts form
-  formRef.value?.amountsResetToSaved?.()
 }
 
 // Breadcrumbs — portal context

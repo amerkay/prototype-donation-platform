@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
 import { ICON_DONATION, ICON_SHARE } from '~/lib/icons'
+import { CAMPAIGN_FIELD_TARGETS as CT } from '~/features/campaigns/admin/forms/campaign-config-master'
 
 defineProps<{
   /** Show share button */
@@ -18,7 +19,7 @@ const emit = defineEmits<{
     <Button
       class="flex-1 @3xl:flex-auto @3xl:w-full"
       size="lg"
-      data-field="donationForms"
+      :data-field="CT.donationForms"
       @click="emit('donate')"
     >
       <ICON_DONATION class="w-4 h-4 mr-2" />
@@ -29,7 +30,7 @@ const emit = defineEmits<{
       variant="outline"
       class="@3xl:w-full"
       size="lg"
-      data-field="crowdfunding.enableSocialSharing"
+      :data-field="CT.crowdfunding.enableSocialSharing"
       @click="emit('share')"
     >
       <ICON_SHARE class="w-4 h-4 @3xl:mr-2" />

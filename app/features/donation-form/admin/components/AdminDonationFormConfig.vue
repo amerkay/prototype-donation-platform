@@ -35,7 +35,10 @@ const adminContextSchemaResolver = (rootValues: Record<string, unknown>): Contex
   const products = store.products.map((p) => ({ id: p.id, name: p.title }))
   const schema = buildBaseContextSchema(currencies, products)
 
-  const featuresData = rootValues.features as Record<string, unknown> | undefined
+  // With tabbed form, entry fields are nested under config.sections.features
+  const configData = rootValues.config as Record<string, unknown> | undefined
+  const sectionsData = configData?.sections as Record<string, unknown> | undefined
+  const featuresData = sectionsData?.features as Record<string, unknown> | undefined
   const entryFieldsData = featuresData?.entryFields as Record<string, unknown> | undefined
   const entryFieldsList = entryFieldsData?.fields
 
@@ -74,8 +77,14 @@ const savedBaseDefaultCurrency = store.donationAmounts?.baseDefaultCurrency ?? '
 let amountsCurrency = savedBaseDefaultCurrency
 
 // Find a sample amount from preset amounts for the breakdown preview
+function getDonationAmountsFromModel(): Record<string, unknown> | undefined {
+  const config = modelValue.value?.config as Record<string, unknown> | undefined
+  const sections = config?.sections as Record<string, unknown> | undefined
+  return sections?.amounts as Record<string, unknown> | undefined
+}
+
 function findSampleAmount(): number {
-  const da = modelValue.value?.donationAmounts as Record<string, unknown> | undefined
+  const da = getDonationAmountsFromModel()
   if (!da?.frequencies) return 30
   const freqs = da.frequencies as Record<
     string,
@@ -91,7 +100,7 @@ function findSampleAmount(): number {
 
 const presetExamples = computed(() => {
   if (!pendingOldCurrency.value || !pendingNewCurrency.value) return []
-  const da = modelValue.value?.donationAmounts as Record<string, unknown> | undefined
+  const da = getDonationAmountsFromModel()
   if (!da?.frequencies) return []
   const freqs = da.frequencies as Record<
     string,
@@ -116,8 +125,11 @@ const presetExamples = computed(() => {
 
 watch(
   () => {
-    const cs = modelValue.value?.currencySettings as Record<string, unknown> | undefined
-    return cs?.baseDefaultCurrency as string | undefined
+    // With tabbed form, currency fields are merged into the amounts tab
+    const config = modelValue.value?.config as Record<string, unknown> | undefined
+    const sections = config?.sections as Record<string, unknown> | undefined
+    const amounts = sections?.amounts as Record<string, unknown> | undefined
+    return amounts?.baseDefaultCurrency as string | undefined
   },
   (newVal, oldVal) => {
     if (!newVal || !oldVal || newVal === oldVal) return
@@ -137,7 +149,7 @@ function handleConvertAmounts() {
   const toCurrency = pendingNewCurrency.value
 
   // Read current frequencies from form, deep clone, convert, write back
-  const da = modelValue.value?.donationAmounts as Record<string, unknown> | undefined
+  const da = getDonationAmountsFromModel()
   if (!da?.frequencies) return
 
   const frequencies = JSON.parse(JSON.stringify(da.frequencies)) as Record<
@@ -146,8 +158,8 @@ function handleConvertAmounts() {
   >
   convertFrequencyAmounts(frequencies, fromCurrency, toCurrency, convertPrice)
 
-  // Write converted frequencies back via setFieldValue
-  formRef.value?.setFieldValue('donationAmounts.frequencies', frequencies)
+  // Write converted frequencies back via setFieldValue (tabbed path)
+  formRef.value?.setFieldValue('config.sections.amounts.frequencies', frequencies)
   amountsCurrency = toCurrency
 
   // Navigate to preset amounts so the user can see the converted values
@@ -173,7 +185,7 @@ defineExpose(expose)
 
 <template>
   <div class="w-full mx-auto space-y-6">
-    <!-- Single FormRenderer with all sections as collapsible groups -->
+    <!-- Single FormRenderer with tabbed sections -->
     <FormRenderer
       ref="formRef"
       v-model="modelValue"

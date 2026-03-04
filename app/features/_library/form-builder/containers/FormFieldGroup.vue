@@ -22,6 +22,7 @@ import {
   provideAccordionGroup
 } from '~/features/_library/form-builder/composables/useAccordionGroup'
 import { useHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
+import { FORM_SEARCH_KEY } from '~/features/_library/form-builder/composables/useFormSearch'
 
 interface Props {
   meta: FieldGroupDef
@@ -121,6 +122,21 @@ if (props.meta.collapsible) {
   )
 }
 
+// Form search: force-expand when search matches are inside this group
+const formSearch = inject(FORM_SEARCH_KEY, null)
+if (props.meta.collapsible && formSearch) {
+  watch(
+    () =>
+      formSearch.isSearchActive.value && formSearch.expandedGroupPaths.value.has(fullPath.value),
+    (shouldForceOpen) => {
+      if (shouldForceOpen) {
+        accordionValue.value = accordionId
+      }
+    },
+    { immediate: true }
+  )
+}
+
 // Extract resolvedDisabled from useFieldWrapper for standard disabled support
 const { resolvedDisabled, resolvedClass } = useFieldWrapper(props.meta, props.name, () => [])
 
@@ -161,6 +177,14 @@ if (props.meta.collapsible && typeof props.meta.collapsibleDefaultOpen === 'func
 }
 
 const resolvedLabel = computed(() => resolveText(props.meta.label, scopedFormValues.value))
+const resolvedBadgeLabel = computed(() =>
+  resolveText(props.meta.badgeLabel, scopedFormValues.value)
+)
+const resolvedBadgeVariant = computed(() => {
+  const v = props.meta.badgeVariant
+  if (typeof v === 'function') return v(scopedFormValues.value)
+  return v || 'secondary'
+})
 
 // Setup scroll tracking for collapsible
 const { setElementRef, scrollToElement } = useScrollOnVisible(
@@ -221,12 +245,8 @@ if (props.meta.collapsible) {
               >
                 {{ meta.legend || resolvedLabel }}
               </h3>
-              <Badge
-                v-if="meta.badgeLabel"
-                :variant="meta.badgeVariant || 'secondary'"
-                class="text-xs"
-              >
-                {{ meta.badgeLabel }}
+              <Badge v-if="resolvedBadgeLabel" :variant="resolvedBadgeVariant" class="text-xs">
+                {{ resolvedBadgeLabel }}
               </Badge>
               <Badge
                 v-if="hasChildErrors || containerErrors.length > 0"

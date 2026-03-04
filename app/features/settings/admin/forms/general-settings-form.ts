@@ -32,10 +32,7 @@ export const useGeneralSettingsForm = defineForm('generalSettings', () => {
     description: 'Configure organization-wide defaults.',
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
     fields: { timezone, dateFormat },
-    $storePath: {
-      timezone: 'timezone',
-      dateFormat: 'dateFormat'
-    }
+    $storePath: 'flatten'
   })
 
   return { general }

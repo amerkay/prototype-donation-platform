@@ -15,6 +15,7 @@ import type { FullFormConfig } from '~/features/donation-form/shared/stores/form
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
 import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
+import { DONATION_FORM_FIELD_TARGETS as DT } from '~/features/donation-form/admin/forms/admin-donation-form-master'
 import { formConfig as defaultConfig } from '~/sample-api-responses/api-sample-response-form-config'
 
 // Get products from store
@@ -302,14 +303,14 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
     <!-- Header with Currency Selector -->
     <div class="flex items-start justify-between gap-2">
       <div>
-        <h2 class="text-xl font-semibold" data-field="formSettings.form.title">
+        <h2 class="text-xl font-semibold" :data-field="DT.form.title">
           {{ formConfig.form.title }}
         </h2>
-        <p class="text-sm text-muted-foreground" data-field="formSettings.form.subtitle">
+        <p class="text-sm text-muted-foreground" :data-field="DT.form.subtitle">
           {{ formConfig.form.subtitle }}
         </p>
       </div>
-      <div v-if="showCurrencySelector" data-field="enabledCurrencies">
+      <div v-if="showCurrencySelector" :data-field="DT.amounts.enabledCurrencies">
         <select
           id="currency"
           v-model="selectedCurrency"
@@ -345,7 +346,7 @@ watch(selectedFrequency, (newFreq, oldFreq) => {
           'grid-cols-3': frequencies.length === 3,
           'grid-cols-4': frequencies.length === 4
         }"
-        data-field="donationAmounts.frequencies"
+        :data-field="DT.amounts.frequencies"
       >
         <TabsTrigger
           v-for="freq in frequencies"

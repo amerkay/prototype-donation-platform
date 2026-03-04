@@ -76,7 +76,11 @@ function isFieldVisibleInTree(
         const tab = typedField.tabs.find((t) => t.value === nextSegment)
         if (tab) {
           currentFields = tab.fields
-          currentValues = (currentValues[segment] as Record<string, unknown>) || {}
+          // Descend through both the tabs container AND the specific tab value
+          // e.g. for path `sections.crowdfunding.title`, values must narrow to
+          // formValues.sections.crowdfunding (not just formValues.sections)
+          const tabsValues = (currentValues[segment] as Record<string, unknown>) || {}
+          currentValues = (tabsValues[nextSegment] as Record<string, unknown>) || {}
           i++ // Skip the tab segment
         }
       }
@@ -123,8 +127,46 @@ function matchesArrayIndexPath(hash: string, fullPath: string): string | null {
 }
 
 /**
+ * Collect all full paths from the field tree (including tab paths).
+ * Used for suffix matching when exact and name-only resolution both fail.
+ */
+function collectFieldPaths(fields: Record<string, FieldDef>, prefix = ''): string[] {
+  const paths: string[] = []
+  for (const [key, field] of Object.entries(fields)) {
+    const fullPath = prefix ? `${prefix}.${key}` : key
+    paths.push(fullPath)
+
+    if (field.type === 'field-group' && 'fields' in field && field.fields) {
+      paths.push(...collectFieldPaths(field.fields, fullPath))
+    }
+
+    if (field.type === 'tabs' && 'tabs' in field) {
+      for (const tab of (
+        field as { tabs: Array<{ value: string; fields: Record<string, FieldDef> }> }
+      ).tabs) {
+        const tabPath = `${fullPath}.${tab.value}`
+        paths.push(tabPath)
+        paths.push(...collectFieldPaths(tab.fields, tabPath))
+      }
+    }
+  }
+  return paths
+}
+
+/**
+ * Resolve hash by suffix matching: find the first full path that ends with `.${hash}`.
+ * E.g. hash `crowdfunding.title` matches `config.sections.crowdfunding.title`.
+ */
+function resolveHashBySuffix(hash: string, fields: Record<string, FieldDef>): string | null {
+  if (!hash.includes('.')) return null // Single-segment hashes are handled by name-only pass
+  const suffix = `.${hash}`
+  const allPaths = collectFieldPaths(fields)
+  return allPaths.find((p) => p.endsWith(suffix)) ?? null
+}
+
+/**
  * Walk field tree to resolve URL hash to full field path.
- * Two-pass: exact path match first, then field-name-only fallback.
+ * Three-pass: exact path match first, suffix match second, then field-name-only fallback.
  */
 function resolveHashToFieldPath(
   hash: string,
@@ -160,7 +202,9 @@ function resolveHash(hash: string, fields: Record<string, FieldDef>): string | n
   if (!hash) return null
   const cleanHash = decodeURIComponent(hash.startsWith('#') ? hash.slice(1) : hash)
   return (
-    resolveHashToFieldPath(cleanHash, fields) ?? resolveHashToFieldPath(cleanHash, fields, '', true)
+    resolveHashToFieldPath(cleanHash, fields) ??
+    resolveHashBySuffix(cleanHash, fields) ??
+    resolveHashToFieldPath(cleanHash, fields, '', true)
   )
 }
 

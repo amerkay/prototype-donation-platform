@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { ReceiptModel } from '~/features/templates/shared/types'
+import type { ReceiptModel, ReceiptTemplateTargets } from '~/features/templates/shared/types'
 import { sanitizeRichText } from '~/features/_library/form-builder/utils/sanitize-html'
 import { computed } from 'vue'
 
 const props = defineProps<{
   model: ReceiptModel
   /** Target field paths for editable preview navigation */
-  targets?: Record<string, string>
+  targets?: Partial<ReceiptTemplateTargets>
 }>()
 
 const sanitizedTaxStatement = computed(() =>
@@ -32,9 +32,9 @@ const showGiftAidSection = computed(
           :src="model.branding.logoUrl"
           alt="Logo"
           class="h-14 w-auto object-contain shrink-0 mt-1.5"
-          :data-field="targets?.logo"
+          :data-field="targets?.showLogo"
         />
-        <div class="min-w-0" :data-field="targets?.charity">
+        <div class="min-w-0" :data-field="targets?.charityNotice">
           <div class="font-semibold text-xl leading-tight">{{ model.charity.name }}</div>
           <div class="text-sm text-gray-400 mt-1">
             Reg. No. {{ model.charity.registrationNumber }}
@@ -58,7 +58,11 @@ const showGiftAidSection = computed(
       </div>
 
       <!-- Header text -->
-      <p v-if="model.headerText" class="text-gray-500 text-base mb-8" :data-field="targets?.header">
+      <p
+        v-if="model.headerText"
+        class="text-gray-500 text-base mb-8"
+        :data-field="targets?.headerText"
+      >
         {{ model.headerText }}
       </p>
 
@@ -79,7 +83,7 @@ const showGiftAidSection = computed(
         <div
           v-if="model.showDonorAddress && model.donation.donorAddress"
           class="flex justify-between py-2.5 border-b border-gray-100"
-          :data-field="targets?.donorAddress"
+          :data-field="targets?.showDonorAddress"
         >
           <span class="text-gray-400 text-sm">Address</span>
           <span class="font-medium text-sm text-right whitespace-pre-line">{{
@@ -89,7 +93,7 @@ const showGiftAidSection = computed(
         <div
           v-if="model.showCampaignName && model.donation.campaign"
           class="flex justify-between py-2.5 border-b border-gray-100"
-          :data-field="targets?.campaign"
+          :data-field="targets?.showCampaignName"
         >
           <span class="text-gray-400 text-sm">Campaign</span>
           <span class="font-medium text-sm">{{ model.donation.campaign }}</span>
@@ -97,7 +101,7 @@ const showGiftAidSection = computed(
         <div
           v-if="model.showPaymentMethod && model.donation.paymentMethod"
           class="flex justify-between py-2.5 border-b border-gray-100"
-          :data-field="targets?.payment"
+          :data-field="targets?.showPaymentMethod"
         >
           <span class="text-gray-400 text-sm">Payment</span>
           <span class="font-medium text-sm">{{ model.donation.paymentMethod }}</span>
@@ -118,7 +122,7 @@ const showGiftAidSection = computed(
       <div
         v-if="sanitizedTaxStatement"
         class="text-sm text-gray-600 mb-6 prose prose-sm max-w-none"
-        :data-field="targets?.taxStatement"
+        :data-field="targets?.taxDeductibleStatement"
         v-html="sanitizedTaxStatement"
       />
       <!-- eslint-enable vue/no-v-html -->
@@ -127,7 +131,7 @@ const showGiftAidSection = computed(
       <div
         v-if="showGiftAidSection"
         class="p-4 border border-dashed border-gray-300 rounded-lg text-sm text-gray-600 mb-6"
-        :data-field="targets?.giftAid"
+        :data-field="targets?.showGiftAid"
       >
         <span class="font-medium text-black">Gift Aid Declaration:</span> This donation qualifies
         for Gift Aid, increasing its value by 25% at no extra cost to you.
@@ -140,7 +144,7 @@ const showGiftAidSection = computed(
       <p
         v-if="model.footerText"
         class="text-center text-gray-400 text-xs"
-        :data-field="targets?.footer"
+        :data-field="targets?.footerText"
       >
         {{ model.footerText }}
       </p>

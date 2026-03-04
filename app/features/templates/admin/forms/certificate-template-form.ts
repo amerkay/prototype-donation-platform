@@ -15,6 +15,7 @@ import FontFamilySelector from '@/components/FontFamilySelector.vue'
 import CertificateProductAssignment from '~/features/templates/admin/components/CertificateProductAssignment.vue'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
 import { SIGNATURE_FONT_OPTIONS } from '~/features/settings/admin/utils/fonts'
+import type { CertificateTemplateTargets } from '~/features/templates/shared/types'
 
 const CERTIFICATE_TEMPLATE_VARIABLES = [
   { value: 'DONOR_NAME', label: 'Donor Name' },
@@ -23,17 +24,17 @@ const CERTIFICATE_TEMPLATE_VARIABLES = [
 ] as const
 
 export const CERTIFICATE_TEMPLATE_TARGETS = {
-  showLogo: 'certificate.logo.showLogo',
-  titleLine1: 'certificate.title.titleLine1',
-  titleLine2: 'certificate.title.titleLine2',
   logo: 'certificate.logo',
   title: 'certificate.title',
   award: 'certificate.award',
   body: 'certificate.body',
   product: 'certificate.product',
   footer: 'certificate.footer',
-  page: 'certificate.page'
-} as const
+  page: 'certificate.page',
+  showLogo: 'certificate.logo.showLogo',
+  titleLine1: 'certificate.title.titleLine1',
+  titleLine2: 'certificate.title.titleLine2'
+} as const satisfies { [K in keyof CertificateTemplateTargets]: string }
 
 export const certificateOpenAccordionId = ref<string | undefined>(undefined)
 export const certificatePreviewProductId = ref<string | undefined>(undefined)
@@ -295,12 +296,8 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     description: 'Organization logo display and positioning.',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: { showLogo, noLogoAlert, logoSize, logoPosition },
-    $storePath: {
-      showLogo: 'showLogo',
-      logoSize: 'logoSize',
-      logoPosition: 'logoPosition'
-    },
+    fields: { showLogo, logoSize, logoPosition, noLogoAlert },
+    $storePath: 'flatten',
     showSeparatorAfter: true
   })
 
@@ -310,11 +307,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     collapsible: true,
     collapsibleDefaultOpen: false,
     fields: { titleLine1, titleLine2, titleTextColor },
-    $storePath: {
-      titleLine1: 'titleLine1',
-      titleLine2: 'titleLine2',
-      titleTextColor: 'titleTextColor'
-    },
+    $storePath: 'flatten',
     showSeparatorAfter: true
   })
 
@@ -324,11 +317,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     collapsible: true,
     collapsibleDefaultOpen: false,
     fields: { showAwardSection, awardTextLine1, donorNameFontFamily },
-    $storePath: {
-      showAwardSection: 'showAwardSection',
-      awardTextLine1: 'awardTextLine1',
-      donorNameFontFamily: 'donorNameFontFamily'
-    },
+    $storePath: 'flatten',
     showSeparatorAfter: true
   })
 
@@ -338,9 +327,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     collapsible: true,
     collapsibleDefaultOpen: false,
     fields: { bodyText, tributeNotice },
-    $storePath: {
-      bodyText: 'bodyText'
-    },
+    $storePath: 'flatten',
     showSeparatorAfter: true
   })
 
@@ -349,11 +336,8 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     description: 'Show adopted product badge with image and details.',
     collapsible: true,
     collapsibleDefaultOpen: false,
-    fields: { showProduct, productInfoNotice, productImageShape, linkedProducts },
-    $storePath: {
-      showProduct: 'showProduct',
-      productImageShape: 'productImageShape'
-    },
+    fields: { showProduct, productImageShape, productInfoNotice, linkedProducts },
+    $storePath: 'flatten',
     showSeparatorAfter: true
   })
 
@@ -370,14 +354,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
       signatureTitle,
       signatureFontFamily
     },
-    $storePath: {
-      showDate: 'showDate',
-      footerText: 'footerText',
-      showSignature: 'showSignature',
-      signatureName: 'signatureName',
-      signatureTitle: 'signatureTitle',
-      signatureFontFamily: 'signatureFontFamily'
-    },
+    $storePath: 'flatten',
     showSeparatorAfter: true
   })
 
@@ -387,22 +364,15 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
     collapsible: true,
     collapsibleDefaultOpen: false,
     fields: {
-      brandingNotice,
       layout,
       backgroundType,
       backgroundImage,
       pageBorderStyle,
       pageBorderThickness,
-      separatorsAndBordersColor
+      separatorsAndBordersColor,
+      brandingNotice
     },
-    $storePath: {
-      layout: 'layout',
-      backgroundType: 'backgroundType',
-      backgroundImage: 'backgroundImage',
-      pageBorderStyle: 'pageBorderStyle',
-      pageBorderThickness: 'pageBorderThickness',
-      separatorsAndBordersColor: 'separatorsAndBordersColor'
-    },
+    $storePath: 'flatten',
     showSeparatorAfter: true
   })
 

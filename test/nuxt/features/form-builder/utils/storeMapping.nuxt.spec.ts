@@ -8,7 +8,8 @@ import {
   defineForm,
   fieldGroup,
   textField,
-  componentField
+  componentField,
+  alertField
 } from '~/features/_library/form-builder/api'
 
 describe('storeMapping', () => {
@@ -151,6 +152,67 @@ describe('storeMapping', () => {
       // Nested groups mapped to flat store
       expect(mapping.paths.get('features.impactCart')).toBe('impactCart')
       expect(mapping.paths.get('features.coverCosts')).toBe('coverCosts')
+    })
+
+    it('creates identity mapping for regular fields with $storePath: flatten', () => {
+      const form = defineForm('test', () => ({
+        settings: fieldGroup('settings', {
+          fields: {
+            showLogo: textField('showLogo', { label: 'Show Logo' }),
+            headerText: textField('headerText', { label: 'Header' })
+          },
+          $storePath: 'flatten'
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+
+      expect(mapping.paths.get('settings.showLogo')).toBe('showLogo')
+      expect(mapping.paths.get('settings.headerText')).toBe('headerText')
+    })
+
+    it('auto-excludes display-only fields with $storePath: flatten', () => {
+      const form = defineForm('test', () => ({
+        settings: fieldGroup('settings', {
+          fields: {
+            showLogo: textField('showLogo', { label: 'Show Logo' }),
+            notice: alertField('notice', { variant: 'info', description: 'Info' }),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            preview: componentField('preview', { component: {} as any })
+          },
+          $storePath: 'flatten'
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+
+      // Regular field is mapped
+      expect(mapping.paths.get('settings.showLogo')).toBe('showLogo')
+      // Display-only fields are excluded
+      expect(mapping.paths.has('settings.notice')).toBe(false)
+      expect(mapping.paths.has('settings.preview')).toBe(false)
+    })
+
+    it('supports flatten alongside manual $storePath: Record', () => {
+      const form = defineForm('test', () => ({
+        flat: fieldGroup('flat', {
+          fields: {
+            name: textField('name', { label: 'Name' })
+          },
+          $storePath: 'flatten'
+        }),
+        manual: fieldGroup('manual', {
+          fields: {
+            status: textField('status', { label: 'Status' })
+          },
+          $storePath: { status: 'topLevel.status' }
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+
+      expect(mapping.paths.get('flat.name')).toBe('name')
+      expect(mapping.paths.get('manual.status')).toBe('topLevel.status')
     })
   })
 

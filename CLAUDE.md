@@ -18,7 +18,26 @@ pnpm dlx shadcn-vue@latest add [component]  # Add shadcn-vue component
 python3 scripts/extract-prompts.py [N]     # Last N sessions' prompts & Q&A (default: 3, --all for all)
 ```
 
-Do NOT run `pnpm dev` — no browser access.
+## Dev Server (Docker VM)
+
+Start the dev server in the background with `--host 0.0.0.0` so it's accessible outside the container:
+
+```bash
+pnpm dev --host 0.0.0.0  # run in background via Bash tool
+```
+
+After startup, check the output for the actual `Network:` URL (the IP changes between sessions — e.g. `172.17.0.2`, `172.17.0.3`). Always output the **actual** address from the log, not a hardcoded one.
+
+## Playwright
+
+Playwright + Chromium is installed (via npx). Use `npx playwright` to run tests. Example:
+
+```bash
+npx playwright test                     # Run all Playwright tests
+npx playwright test tests/e2e/foo.spec.ts  # Single test file
+```
+
+The dev server must be running before Playwright tests (see above).
 
 ## Critical Patterns
 
@@ -98,6 +117,7 @@ app/features/[feature-name]/
 - `_admin/composables/useQuickFind.ts` — global admin search
 - `_shared/composables/useEditState.ts` — dirty detection + save/discard for edit pages
 - `_shared/composables/useEntityDataService.ts` — cross-entity filtering for list pages
+- `_shared/composables/useCompliance.ts` — GDPR/legal compliance utilities
 - `campaigns/shared/composables/useCampaigns.ts` — campaign list singleton
 - `campaigns/shared/utils/campaignCapabilities.ts` — feature-gating by campaign type (15 flags)
 - `campaigns/features/matched-giving/donor/composables/useMatchedGiving.ts` — provide/inject for match display
@@ -108,8 +128,11 @@ app/features/[feature-name]/
 - `donations/admin/composables/useDonations.ts` — donation list singleton
 - `donors/admin/composables/useDonors.ts` — donor list singleton
 - `donor-portal/composables/useDonorPortal.ts` — portal data + navigation
+- `donor-portal/composables/useActionEligibility.ts` — donor action eligibility checks
 - `subscriptions/admin/composables/useAdminSubscriptions.ts` — subscription list singleton
+- `subscriptions/shared/composables/useSubscriptionActions.ts` — subscription lifecycle actions
 - `templates/admin/composables/useEmailTemplates.ts` — email template list singleton
+- `templates/admin/composables/useCertificateTemplates.ts` — certificate template list singleton
 
 ### Layouts
 
@@ -117,7 +140,7 @@ app/features/[feature-name]/
 
 ### Pages
 
-- **Admin** `/admin/` — dashboard, campaigns (list + edit + form edit/preview), donations, donors, products, subscriptions, p2p (templates + fundraisers), settings (11 pages), templates (emails)
+- **Admin** `/admin/` — dashboard, campaigns (list + edit + form edit/preview), donations, donors, products, subscriptions, p2p (templates + fundraisers), settings (11 pages + payments/connect), templates (emails, receipts, certificates)
 - **Donor** `/[org_slug]/` — crowdfunding page, donation form, P2P templates + onboarding
 - **Portal** `/portal/` — donation history, subscriptions, fundraisers (list + detail + edit), my-data
 - **Other** — print (receipt, certificate), terms, design system preview
@@ -159,6 +182,8 @@ app/features/[feature-name]/
 21. `BaseDialogOrDrawer` uses teleport — stub it in tests to render slots inline (Dialog content is invisible to `wrapper.text()`)
 22. `visibleWhen` closures in `defineForm` read Pinia stores at call time (not at module init) — call `form.setup(ctx)` directly to unit-test visibility logic against store state
 23. Derived/computed data must have ONE source of truth — never duplicate the same calculation in multiple components/pages. Centralize in composables and consume from there
+24. `data-field` paths must match form field TREE (not $storePath). Use plain `as const satisfies Record<keyof T, string>` for TARGETS objects — validate against typed interfaces from `shared/types.ts`. Tab/group names → shared `as const` constants used in both tab definition and targets
+25. Use `$storePath: 'flatten'` for identity store mappings; auto-excludes display-only fields (alert, readonly, card, component)
 
 <!-- end continuous learning notes -->
 

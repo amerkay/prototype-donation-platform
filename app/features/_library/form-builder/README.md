@@ -608,9 +608,10 @@ const { formRef, modelValue, expose } = useAdminConfigForm({
 
 ```typescript
 // Flatten: form.basicSettings.name → store.name (not store.basicSettings.name)
+// Auto-excludes display-only fields (alert, readonly, card, component)
 const basicSettings = fieldGroup('basicSettings', {
-  fields: { name, status, formsList },
-  $storePath: { name: 'name', status: 'status' } // formsList excluded (component field)
+  fields: { name, status, formsList, brandingNotice },
+  $storePath: 'flatten' // formsList (component) + brandingNotice (alert) auto-excluded
 })
 
 // Map nested paths: form.amounts.frequencies → store.donationAmounts.frequencies

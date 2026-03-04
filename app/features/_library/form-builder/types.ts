@@ -135,6 +135,11 @@ export interface ComposableForm<T extends z.ZodTypeAny = z.ZodTypeAny> {
   _meta?: {
     title?: string
     description?: string
+    /** Search/filter options for complex forms */
+    search?: {
+      disableSearch?: boolean
+      searchThreshold?: number
+    }
   }
 }
 
@@ -346,8 +351,13 @@ export interface FieldGroupConfig extends BaseFieldConfig {
   collapsibleDefaultOpen?: boolean | ComputedRef<boolean> | ((ctx: FieldContext) => boolean)
   /** External ref to sync accordion state - enables reactive access from outside form */
   collapsibleStateRef?: Ref<string | undefined>
-  badgeLabel?: string | ComputedRef<string>
-  badgeVariant?: 'default' | 'outline' | 'secondary' | 'destructive'
+  badgeLabel?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
+  badgeVariant?:
+    | 'default'
+    | 'outline'
+    | 'secondary'
+    | 'destructive'
+    | ((ctx: FieldContext) => 'default' | 'outline' | 'secondary' | 'destructive')
   extractDefaultsWhen?: boolean
   /** CSS classes for the wrapper element (Accordion/FieldSet container) */
   wrapperClass?: string
@@ -356,6 +366,8 @@ export interface FieldGroupConfig extends BaseFieldConfig {
    * Store mapping metadata for auto-mapping in admin config forms
    *
    * Controls how this field group maps to store properties:
+   * - `'flatten'`: Identity-map each store-bound field key to itself, auto-excluding
+   *   display-only types (alert, readonly, card, component)
    * - `string`: Map to specific store path (e.g., 'customPath' → store.customPath)
    * - `null`: Exclude from store mapping (component fields, computed values)
    * - `Record<string, string>`: Granular per-field mapping (e.g., { name: 'basicInfo.name' })
@@ -363,6 +375,12 @@ export interface FieldGroupConfig extends BaseFieldConfig {
    *
    * @example
    * ```ts
+   * // Flatten - each field maps to its own key (display-only fields auto-excluded)
+   * fieldGroup('settings', {
+   *   fields: { showLogo, headerText, noLogoAlert },
+   *   $storePath: 'flatten'
+   * })
+   *
    * // Convention (default) - form.settings → store.settings
    * fieldGroup('settings', { fields: {...} })
    *
@@ -388,8 +406,12 @@ export interface TabDefinitionConfig {
   fields: Record<string, FieldDef>
   badgeLabel?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   badgeVariant?: 'default' | 'outline' | 'secondary' | 'destructive'
+  /** Hide this tab entirely when condition is false (tab bar auto-hides when only 1 tab visible) */
+  visibleWhen?: VisibilityFn
   disabled?: boolean | ComputedRef<boolean> | ((ctx: FieldContext) => boolean)
   disabledTooltip?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
+  /** CSS classes for the tab content wrapper. Set to '' to remove the default well styling. */
+  contentClass?: string
 }
 
 export interface TabsFieldConfig extends BaseFieldConfig {

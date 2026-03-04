@@ -308,6 +308,11 @@ describe('Error Visibility - All Nested Levels (Regression Prevention)', () => {
                       })
                     })
                   }
+                },
+                {
+                  value: 'monthly',
+                  label: 'Monthly',
+                  fields: {}
                 }
               ]
             })

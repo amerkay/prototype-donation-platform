@@ -18,6 +18,7 @@ import {
 import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
+import { DONATION_FORM_FIELD_TARGETS as DT } from '~/features/donation-form/admin/forms/admin-donation-form-master'
 
 const cartStore = useImpactCartStore()
 const donationStore = useDonationFormStore()
@@ -194,7 +195,7 @@ defineExpose({
     <!-- ImpactCart Component -->
     <ImpactCart
       ref="cartRef"
-      data-field="features.impactCart"
+      :data-field="DT.features.impactCart"
       :items="cartStore.multipleCart"
       :currency="currency"
       :base-currency="formConfig.donationAmounts.baseDefaultCurrency"
@@ -217,13 +218,13 @@ defineExpose({
       v-if="showSharedEntryFields"
       ref="sharedEntryFieldsRef"
       :config="entryFieldsConfig!"
-      data-field="features.entryFields"
+      :data-field="DT.features.entryFields"
     />
 
     <!-- Impact Boost (donation type only) -->
     <ImpactBoostCard
       v-if="formConfig.features.impactBoost.enabled && isFeatureSupported('impactBoost')"
-      data-field="features.impactBoost"
+      :data-field="DT.features.impactBoost"
       frequency="multiple"
       :donation-amount="cartStore.recurringTotal"
       :currency="currency"

@@ -35,7 +35,8 @@
       "Bash(tail:*)",
       "Bash(pnpm analyze:dead:*)",
       "Bash(pnpm analyze:circular:*)",
-      "WebFetch(domain:registry.npmjs.org)"
+      "WebFetch(domain:registry.npmjs.org)",
+      "Bash(npx playwright:*)"
     ]
   },
   "outputStyle": "Explanatory",

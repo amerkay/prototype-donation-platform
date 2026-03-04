@@ -141,4 +141,21 @@ const showErrors = computed(() => props.errors && props.errors.length > 0)
 .hash-highlight-flash {
   animation: hash-highlight-pulse 500ms ease-in-out 3;
 }
+
+/* Search match highlight — subtle left border accent via data attribute */
+[data-search-match] {
+  border-left: 2px solid var(--color-primary);
+  padding-left: 0.75rem;
+  animation: search-fade-in 300ms ease-out;
+}
+@keyframes search-fade-in {
+  from {
+    opacity: 0.5;
+    border-left-color: transparent;
+  }
+  to {
+    opacity: 1;
+    border-left-color: var(--color-primary);
+  }
+}
 </style>

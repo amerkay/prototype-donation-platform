@@ -30,4 +30,4 @@ Use `processTemplateRichText()` from `~/features/templates/admin/utils/template-
 
 ## Template admin components
 
-Card UI components live in `admin/components/cards/` (tokenized card admin components, separate from the email renderer cards).
+Config/preview components live in `admin/components/` (e.g., `EmailTemplateConfig`, `CertificatePreview`, `ReceiptPreview`).

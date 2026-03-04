@@ -26,7 +26,7 @@ paths:
 
 Sub-features live in `features/` subdirectories. Each follows the standard admin/donor split:
 
-- **crowdfunding/** — goal + progress bar, `CrowdfundingPage.vue` (used for both admin preview and live donor view)
+- **crowdfunding/** — goal + progress bar, `CrowdfundingPage.vue` (donor view) + `CrowdfundingPagePreview.vue` (admin preview)
 - **matched-giving/** — match periods via `MatchPeriodsList.vue` (a `componentField`), `useMatchedGiving.ts` (provide/inject for donor-side)
 - **p2p/** — fundraiser pages, templates, onboarding wizard, `useFundraisers.ts`, `fundraiserColumns.ts`
 - **sharing/** — social share dialog via `useCampaignShare.ts`
