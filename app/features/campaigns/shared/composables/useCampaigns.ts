@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { toast } from 'vue-sonner'
-import type { Campaign, CampaignType } from '~/features/campaigns/shared/types'
+import type { Campaign, CampaignType, FundraiserStatus } from '~/features/campaigns/shared/types'
 import type { DeleteProtection } from '~/features/_shared/composables/useEditState'
 import { campaigns as mockCampaigns } from '~/sample-api-responses/api-sample-response-campaigns'
 import { useSessionStorageSingleton } from '~/features/_admin/composables/useSessionStorageSingleton'
@@ -170,7 +170,10 @@ export function useCampaigns() {
         const fIdx = parent.fundraisers.findIndex((f) => f.campaignId === id)
         if (fIdx !== -1) {
           const updatedFundraisers = [...parent.fundraisers]
-          updatedFundraisers[fIdx] = { ...updatedFundraisers[fIdx]!, status: updates.status as any }
+          updatedFundraisers[fIdx] = {
+            ...updatedFundraisers[fIdx]!,
+            status: updates.status as FundraiserStatus
+          }
           campaigns.value[parentIdx] = { ...parent, fundraisers: updatedFundraisers }
         }
       }

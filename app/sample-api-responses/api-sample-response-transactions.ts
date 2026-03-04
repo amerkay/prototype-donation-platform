@@ -131,30 +131,145 @@ const ADDRESSES = [
   { line1: '34 Birch Lane', city: 'Bath', postcode: 'BA1 1AA', country: 'GB' }
 ]
 
+interface TxRates {
+  failRate: number
+  refundRate: number
+  anonRate: number
+  crossRate: number
+  tributeRate: number
+  coverRate: number
+  multiItemRate: number
+}
+
+type RandFn = () => number
+type PickFn = <T>(arr: T[]) => T
+
+function buildRates(config: CampaignTransactionConfig): TxRates {
+  return {
+    failRate: config.failRate ?? 0.02,
+    refundRate: config.refundRate ?? 0.03,
+    anonRate: config.anonymousRate ?? 0.12,
+    crossRate: config.crossCurrencyRate ?? 0.08,
+    tributeRate: config.tributeRate ?? 0.05,
+    coverRate: config.coverCostsRate ?? 0.35,
+    multiItemRate: config.multiItemRate ?? 0.15
+  }
+}
+
+function rollStatus(rand: RandFn, rates: TxRates): TransactionStatus {
+  const roll = rand()
+  if (roll < rates.failRate) return 'failed'
+  if (roll < rates.failRate + rates.refundRate) return 'refunded'
+  return 'succeeded'
+}
+
+function rollCurrency(rand: RandFn, pick: PickFn, isCross: boolean, baseCurrency: string) {
+  const crossCurr = isCross ? pick(CROSS_CURRENCIES) : null
+  return {
+    currency: crossCurr?.currency ?? baseCurrency,
+    exchangeRate: crossCurr?.rate ?? 1
+  }
+}
+
+function rollPaymentMethod(rand: RandFn, pick: PickFn, donor: (typeof DONOR_POOL)[number]) {
+  const processor: PaymentProcessor = rand() < 0.15 ? 'paypal' : 'stripe'
+  const paymentMethod: { type: PaymentMethodType; last4?: string; brand?: string; email?: string } =
+    processor === 'paypal'
+      ? { type: 'paypal', email: donor.email }
+      : {
+          type: rand() < 0.05 ? 'bank_transfer' : 'card',
+          last4: pick(CARD_LAST4S),
+          brand: pick([...CARD_BRANDS])
+        }
+  return { processor, paymentMethod }
+}
+
+function rollLineItems(
+  rand: RandFn,
+  pick: PickFn,
+  config: CampaignTransactionConfig,
+  rates: TxRates,
+  rangeAmount: (avg: number) => number
+) {
+  const isMultiItem = rand() < rates.multiItemRate && config.products.length > 1
+  const selectedProducts = isMultiItem
+    ? config.products.filter(() => rand() < 0.5).slice(0, 3)
+    : [pick(config.products)]
+  const products = selectedProducts.length > 0 ? selectedProducts : [pick(config.products)]
+
+  const lineItems = products.map((p) => {
+    const qty = rand() < 0.1 ? Math.ceil(rand() * 5) : 1
+    return {
+      productId: p.id,
+      productTitle: p.title,
+      quantity: qty,
+      unitPrice: rangeAmount(p.unitPrice),
+      frequency: 'once' as const
+    }
+  })
+
+  const subtotal = lineItems.reduce((sum, li) => sum + li.unitPrice * li.quantity, 0)
+  const coverCosts = rand() < rates.coverRate
+  const coverCostsAmount = coverCosts ? Math.round(subtotal * 0.03 * 100) / 100 : 0
+  const totalAmount = Math.round((subtotal + coverCostsAmount) * 100) / 100
+
+  return { lineItems, subtotal, coverCostsAmount, totalAmount }
+}
+
+function rollMatchedAmount(
+  status: TransactionStatus,
+  createdAt: string,
+  totalAmount: number,
+  exchangeRate: number,
+  matchPeriods: CampaignTransactionConfig['matchPeriods'],
+  poolRemaining: Map<string, number>
+) {
+  let matchedAmount = 0
+  let matchPeriodId: string | undefined
+  if (status !== 'succeeded' || !matchPeriods) return { matchedAmount, matchPeriodId }
+
+  const txDate = new Date(createdAt).getTime()
+  for (const mp of matchPeriods) {
+    const mpStart = new Date(mp.startDate).getTime()
+    const mpEnd = new Date(mp.endDate).getTime()
+    if (txDate >= mpStart && txDate <= mpEnd) {
+      const remaining = poolRemaining.get(mp.id) ?? 0
+      if (remaining > 0) {
+        const matchable = totalAmount * exchangeRate * (mp.multiplier - 1)
+        matchedAmount = Math.round(Math.min(matchable, remaining) * 100) / 100
+        matchPeriodId = mp.id
+        poolRemaining.set(mp.id, remaining - matchedAmount)
+      }
+      break
+    }
+  }
+  return { matchedAmount, matchPeriodId }
+}
+
+function rollDonorExtras(rand: RandFn, pick: PickFn, rates: TxRates, isCross: boolean) {
+  const hasTribute = rand() < rates.tributeRate
+  const tribute = hasTribute
+    ? {
+        type: (rand() < 0.5 ? 'gift' : 'memorial') as 'gift' | 'memorial',
+        honoreeName: pick(TRIBUTE_NAMES)
+      }
+    : undefined
+  const hasGiftAid = !isCross && rand() < 0.3
+  const address = hasGiftAid ? pick(ADDRESSES) : rand() < 0.15 ? pick(ADDRESSES) : undefined
+  const message = rand() < 0.25 ? pick(MESSAGES) : undefined
+  return { tribute, hasGiftAid, address, message }
+}
+
 function buildCampaignTransactions(config: CampaignTransactionConfig): Transaction[] {
   const rand = mulberry32(config.seed)
-  const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)]!
-  const rangeAmount = (avg: number) => {
-    // Generate amounts from 0.3x to 2.5x the average, rounded to nearest penny
-    const raw = avg * (0.3 + rand() * 2.2)
-    return Math.round(raw * 100) / 100
-  }
+  const pick: PickFn = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)]!
+  const rangeAmount = (avg: number) => Math.round(avg * (0.3 + rand() * 2.2) * 100) / 100
 
   const startMs = new Date(config.dateRange[0]).getTime()
-  // Cap end date at "now" — no future-dated transactions (a scheduled match period
-  // shouldn't have pool drawn because no transactions exist in its window yet)
   const nowMs = Date.now()
   const endMs = Math.min(new Date(config.dateRange[1]).getTime(), nowMs)
+  const rates = buildRates(config)
 
-  const failRate = config.failRate ?? 0.02
-  const refundRate = config.refundRate ?? 0.03
-  const anonRate = config.anonymousRate ?? 0.12
-  const crossRate = config.crossCurrencyRate ?? 0.08
-  const tributeRate = config.tributeRate ?? 0.05
-  const coverRate = config.coverCostsRate ?? 0.35
-  const multiItemRate = config.multiItemRate ?? 0.15
-
-  // Track pool remaining per match period
   const poolRemaining = new Map<string, number>()
   for (const mp of config.matchPeriods ?? []) {
     poolRemaining.set(mp.id, mp.poolAmount)
@@ -165,109 +280,46 @@ function buildCampaignTransactions(config: CampaignTransactionConfig): Transacti
   for (let i = 0; i < config.count; i++) {
     const id = `gen-${config.campaignId}-${String(i).padStart(4, '0')}`
     const createdAt = new Date(startMs + rand() * (endMs - startMs)).toISOString()
-
-    // Determine status
-    let status: TransactionStatus = 'succeeded'
-    const statusRoll = rand()
-    if (statusRoll < failRate) status = 'failed'
-    else if (statusRoll < failRate + refundRate) status = 'refunded'
-
-    // Pick donor
-    const isAnonymous = rand() < anonRate
+    const status = rollStatus(rand, rates)
+    const isAnonymous = rand() < rates.anonRate
     const donor = pick(DONOR_POOL)
+    const { currency, exchangeRate } = rollCurrency(
+      rand,
+      pick,
+      rand() < rates.crossRate,
+      config.currency
+    )
+    const { processor, paymentMethod } = rollPaymentMethod(rand, pick, donor)
+    const { lineItems, subtotal, coverCostsAmount, totalAmount } = rollLineItems(
+      rand,
+      pick,
+      config,
+      rates,
+      rangeAmount
+    )
 
-    // Cross-currency?
-    const isCross = rand() < crossRate
-    const crossCurr = isCross ? pick(CROSS_CURRENCIES) : null
-    const currency = crossCurr?.currency ?? config.currency
-    const exchangeRate = crossCurr?.rate ?? 1
+    const { tribute, hasGiftAid, address, message } = rollDonorExtras(
+      rand,
+      pick,
+      rates,
+      currency !== config.currency
+    )
 
-    // Processor
-    const processor: PaymentProcessor = rand() < 0.15 ? 'paypal' : 'stripe'
-    const paymentMethod: {
-      type: PaymentMethodType
-      last4?: string
-      brand?: string
-      email?: string
-    } =
-      processor === 'paypal'
-        ? { type: 'paypal', email: donor.email }
-        : {
-            type: rand() < 0.05 ? 'bank_transfer' : 'card',
-            last4: pick(CARD_LAST4S),
-            brand: pick([...CARD_BRANDS])
-          }
+    const { matchedAmount, matchPeriodId } = rollMatchedAmount(
+      status,
+      createdAt,
+      totalAmount,
+      exchangeRate,
+      config.matchPeriods,
+      poolRemaining
+    )
 
-    // Products / line items
-    const isMultiItem = rand() < multiItemRate && config.products.length > 1
-    const selectedProducts = isMultiItem
-      ? config.products.filter(() => rand() < 0.5).slice(0, 3)
-      : [pick(config.products)]
-    // Ensure at least one product
-    const products = selectedProducts.length > 0 ? selectedProducts : [pick(config.products)]
-
-    const lineItems = products.map((p) => {
-      const qty = rand() < 0.1 ? Math.ceil(rand() * 5) : 1
-      const unitPrice = rangeAmount(p.unitPrice)
-      return {
-        productId: p.id,
-        productTitle: p.title,
-        quantity: qty,
-        unitPrice,
-        frequency: 'once' as const
-      }
-    })
-
-    const subtotal = lineItems.reduce((sum, li) => sum + li.unitPrice * li.quantity, 0)
-    const coverCosts = rand() < coverRate
-    const coverCostsAmount = coverCosts ? Math.round(subtotal * 0.03 * 100) / 100 : 0
-    const totalAmount = Math.round((subtotal + coverCostsAmount) * 100) / 100
-
-    // Tribute
-    const hasTribute = rand() < tributeRate
-    const tribute = hasTribute
-      ? {
-          type: (rand() < 0.5 ? 'gift' : 'memorial') as 'gift' | 'memorial',
-          honoreeName: pick(TRIBUTE_NAMES)
-        }
-      : undefined
-
-    // Gift Aid (only UK donors with address, ~30%)
-    const hasGiftAid = !isCross && rand() < 0.3
-    const address = hasGiftAid ? pick(ADDRESSES) : rand() < 0.15 ? pick(ADDRESSES) : undefined
-
-    // Message
-    const message = rand() < 0.25 ? pick(MESSAGES) : undefined
-
-    // Match period check
-    let matchedAmount = 0
-    let matchPeriodId: string | undefined
-    if (status === 'succeeded' && config.matchPeriods) {
-      const txDate = new Date(createdAt).getTime()
-      for (const mp of config.matchPeriods) {
-        const mpStart = new Date(mp.startDate).getTime()
-        const mpEnd = new Date(mp.endDate).getTime()
-        if (txDate >= mpStart && txDate <= mpEnd) {
-          const remaining = poolRemaining.get(mp.id) ?? 0
-          if (remaining > 0) {
-            // Match amount = totalAmount * (multiplier - 1) in campaign currency
-            const matchable = totalAmount * exchangeRate * (mp.multiplier - 1)
-            matchedAmount = Math.round(Math.min(matchable, remaining) * 100) / 100
-            matchPeriodId = mp.id
-            poolRemaining.set(mp.id, remaining - matchedAmount)
-          }
-          break
-        }
-      }
-    }
-
-    // Processor transaction ID
     const processorTxId =
       processor === 'paypal'
         ? `PAYID-${id.slice(-8).toUpperCase()}`
         : `pi_${id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20)}`
 
-    const txn: Transaction = {
+    results.push({
       id,
       organizationId: 'org-001',
       processor,
@@ -301,9 +353,7 @@ function buildCampaignTransactions(config: CampaignTransactionConfig): Transacti
       legalBasis: 'contractual_necessity',
       createdAt,
       receiptUrl: status !== 'failed' ? '#' : undefined
-    }
-
-    results.push(txn)
+    })
   }
 
   return results
