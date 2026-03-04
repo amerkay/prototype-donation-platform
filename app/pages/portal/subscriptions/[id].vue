@@ -22,11 +22,13 @@ import {
   ICON_CLOSE,
   ICON_MONEY
 } from '~/lib/icons'
+import { paymentMethodLabel as formatPaymentMethod } from '~/lib/formatPaymentMethod'
+import { getAvgPayment } from '~/features/subscriptions/shared/utils'
 
 definePageMeta({ layout: 'portal' })
 
 const route = useRoute()
-const { subscriptions, transactions, donorValueByOrg } = useDonorPortal()
+const { subscriptions, transactions, getDonorValueForOrg } = useDonorPortal()
 const { formatAmount, formatDate } = useCampaignFormatters()
 const { checkEligibility } = useActionEligibility()
 const { campaigns } = useCampaigns()
@@ -55,13 +57,10 @@ const breadcrumbs = computed(() => [
   { label: sub.value?.campaignName ?? 'Not Found' }
 ])
 
-const avgPayment = computed(() => {
-  if (!sub.value || sub.value.paymentCount === 0) return 0
-  return sub.value.totalPaid / sub.value.paymentCount
-})
+const avgPayment = computed(() => (sub.value ? getAvgPayment(sub.value) : 0))
 
 const donorValueLastYear = computed(() =>
-  sub.value ? (donorValueByOrg.value.get(sub.value.charityName) ?? 0) : 0
+  sub.value ? getDonorValueForOrg(sub.value.charityName) : 0
 )
 
 const eligibility = computed(() => {
@@ -73,14 +72,9 @@ const eligibility = computed(() => {
   })
 })
 
-const paymentMethodLabel = computed(() => {
-  if (!sub.value) return ''
-  const pm = sub.value.paymentMethod
-  if (pm.type === 'card' && pm.brand && pm.last4) return `${pm.brand} ****${pm.last4}`
-  if (pm.type === 'paypal') return 'PayPal'
-  if (pm.type === 'bank_transfer') return 'Bank Transfer'
-  return pm.type
-})
+const paymentMethodLabel = computed(() =>
+  sub.value ? formatPaymentMethod(sub.value.paymentMethod) : ''
+)
 
 const {
   showPauseDialog,

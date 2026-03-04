@@ -5,6 +5,7 @@ import {
   getMatchDisplayMode,
   getDisplayPeriod
 } from '~/features/campaigns/shared/utils/campaignCapabilities'
+import { getEffectiveRaised } from '~/features/campaigns/features/matched-giving/shared/utils/matchPeriodUtils'
 import { Progress } from '@/components/ui/progress'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 
@@ -40,7 +41,7 @@ const actualRaised = computed(() => props.stats.totalRaised)
 
 // Total matched from this campaign's own transaction data
 const totalMatched = computed(() => props.stats.totalMatched ?? 0)
-const matchedTotal = computed(() => actualRaised.value + totalMatched.value)
+const matchedTotal = computed(() => getEffectiveRaised(props.stats))
 
 // Progress percentage: for matched campaigns use total impact, otherwise raw raised
 const progress = computed(() => {

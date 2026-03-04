@@ -67,6 +67,14 @@ export function getDisplayPeriod(
 }
 
 /**
+ * Effective raised amount including matched funds.
+ * Uses stats.totalMatched (per-campaign transaction data) — NOT sum(poolDrawn) which is shared.
+ */
+export function getEffectiveRaised(stats: { totalRaised: number; totalMatched?: number }): number {
+  return stats.totalRaised + (stats.totalMatched ?? 0)
+}
+
+/**
  * Calculate the match for a donation against the active period.
  * Returns the actual match amount (capped by remaining pool) and the period ID.
  * Only one-time donations are eligible for matching — recurring donations return 0.

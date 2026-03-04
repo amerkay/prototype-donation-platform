@@ -11,12 +11,13 @@ import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import RefundConfirmationDialog from '~/features/donations/shared/components/RefundConfirmationDialog.vue'
 import { ICON_CLIPBOARD_LIST, ICON_SUBSCRIPTION } from '~/lib/icons'
+import { paymentMethodLabel as formatPaymentMethod } from '~/lib/formatPaymentMethod'
 
 definePageMeta({ layout: 'portal' })
 
 const route = useRoute()
 const router = useRouter()
-const { transactions, subscriptions, addTransaction, donorValueByOrg } = useDonorPortal()
+const { transactions, subscriptions, addTransaction, getDonorValueForOrg } = useDonorPortal()
 const { formatAmount, formatDate } = useCampaignFormatters()
 const { checkEligibility } = useActionEligibility()
 
@@ -37,7 +38,7 @@ const {
 })
 
 const donorValueLastYear = computed(() =>
-  transaction.value ? (donorValueByOrg.value.get(transaction.value.charityName) ?? 0) : 0
+  transaction.value ? getDonorValueForOrg(transaction.value.charityName) : 0
 )
 
 const eligibility = computed(() => {
@@ -57,14 +58,9 @@ const typeLabel = computed(() => {
   return map[transaction.value.type] ?? transaction.value.type
 })
 
-const paymentMethodLabel = computed(() => {
-  if (!transaction.value) return ''
-  const pm = transaction.value.paymentMethod
-  if (pm.type === 'card' && pm.brand && pm.last4) return `${pm.brand} ****${pm.last4}`
-  if (pm.type === 'paypal') return 'PayPal'
-  if (pm.type === 'bank_transfer') return 'Bank Transfer'
-  return pm.type
-})
+const paymentMethodLabel = computed(() =>
+  transaction.value ? formatPaymentMethod(transaction.value.paymentMethod) : ''
+)
 
 const breadcrumbs = computed(() => [
   { label: 'Dashboard', href: '/portal' },

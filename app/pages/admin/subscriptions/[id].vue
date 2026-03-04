@@ -12,6 +12,8 @@ import { formatCurrency } from '~/lib/formatCurrency'
 import { formatDate } from '~/lib/formatDate'
 import StatusBadge from '~/components/StatusBadge.vue'
 import { paymentMethodLabel } from '~/lib/formatPaymentMethod'
+import { getAvgPayment } from '~/features/subscriptions/shared/utils'
+import { aggregateCustomFields } from '~/features/_shared/utils/aggregateCustomFields'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -42,10 +44,7 @@ const breadcrumbs = computed(() => [
   }
 ])
 
-const avgPayment = computed(() => {
-  if (!sub.value || sub.value.paymentCount === 0) return 0
-  return sub.value.totalPaid / sub.value.paymentCount
-})
+const avgPayment = computed(() => (sub.value ? getAvgPayment(sub.value) : 0))
 
 const totalCoverCosts = computed(() =>
   payments.value.reduce((sum, p) => sum + (p.coverCostsAmount ?? 0), 0)
@@ -53,15 +52,7 @@ const totalCoverCosts = computed(() =>
 
 const totalSubtotal = computed(() => payments.value.reduce((sum, p) => sum + p.subtotal, 0))
 
-const aggregatedCustomFields = computed(() => {
-  const fields: Record<string, string> = {}
-  for (const payment of payments.value) {
-    if (payment.customFields) {
-      Object.assign(fields, payment.customFields)
-    }
-  }
-  return fields
-})
+const aggregatedCustomFields = computed(() => aggregateCustomFields(payments.value))
 
 const {
   showPauseDialog,

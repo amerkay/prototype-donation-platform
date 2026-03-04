@@ -75,6 +75,9 @@ export function useDonorPortal() {
 
   const totalTransactions = computed(() => succeededTransactions.value.length)
 
+  /** Lookup donor value for a specific org (0 if none) */
+  const getDonorValueForOrg = (charityName: string) => donorValueByOrg.value.get(charityName) ?? 0
+
   return {
     transactions,
     subscriptions,
@@ -85,6 +88,7 @@ export function useDonorPortal() {
     totalDonated,
     hasMultiCurrencyDonations,
     donorValueByOrg,
+    getDonorValueForOrg,
     totalTransactions,
     addTransaction
   }

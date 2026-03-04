@@ -12,6 +12,7 @@ import { subscriptionColumns } from '~/features/subscriptions/admin/columns/subs
 import { createViewActionColumn } from '~/features/_shared/utils/actionColumn'
 import type { EnrichedSubscription } from '~/features/_shared/utils/enrichSubscriptions'
 import { useCompliance } from '~/features/_shared/composables/useCompliance'
+import { aggregateCustomFields } from '~/features/_shared/utils/aggregateCustomFields'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
@@ -31,15 +32,7 @@ const donorSubscriptions = computed(() =>
   allSubscriptions.value.filter((s) => s.donorId === donorId.value)
 )
 
-const aggregatedCustomFields = computed(() => {
-  const fields: Record<string, string> = {}
-  for (const txn of donorTransactions.value) {
-    if (txn.customFields) {
-      Object.assign(fields, txn.customFields)
-    }
-  }
-  return fields
-})
+const aggregatedCustomFields = computed(() => aggregateCustomFields(donorTransactions.value))
 
 const breadcrumbs = computed(() => [
   { label: 'Dashboard', href: '/admin/dashboard' },

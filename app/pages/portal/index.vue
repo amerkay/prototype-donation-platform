@@ -3,6 +3,7 @@ import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPort
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import type { Campaign } from '~/features/campaigns/shared/types'
+import { getEffectiveRaised } from '~/features/campaigns/features/matched-giving/shared/utils/matchPeriodUtils'
 import DataTable from '~/features/_shared/components/DataTable.vue'
 import { transactionColumnsCompact } from '~/features/donor-portal/columns/transactionColumns'
 import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
@@ -46,12 +47,6 @@ const recentTransactions = computed(() => transactions.value.slice(0, 5))
 const mergedFundraisers = computed(() =>
   activeFundraisers.value.map((f) => getCampaignById(f.id)).filter((f): f is Campaign => f != null)
 )
-
-/** Include matched giving poolDrawn in the raised amount (mirrors CampaignProgress logic) */
-function getEffectiveRaised(f: Campaign) {
-  const poolDrawn = (f.matchedGiving?.periods ?? []).reduce((sum, p) => sum + p.poolDrawn, 0)
-  return f.stats.totalRaised + poolDrawn
-}
 </script>
 
 <template>
@@ -182,12 +177,12 @@ function getEffectiveRaised(f: Campaign) {
                 <div v-if="f.crowdfunding.goalAmount" class="space-y-1">
                   <Progress
                     :model-value="
-                      getProgressPercentage(getEffectiveRaised(f), f.crowdfunding.goalAmount)
+                      getProgressPercentage(getEffectiveRaised(f.stats), f.crowdfunding.goalAmount)
                     "
                     class="h-1.5"
                   />
                   <div class="flex justify-between text-xs text-muted-foreground">
-                    <span>{{ formatAmount(getEffectiveRaised(f), f.stats.currency) }}</span>
+                    <span>{{ formatAmount(getEffectiveRaised(f.stats), f.stats.currency) }}</span>
                     <span>{{ formatAmount(f.crowdfunding.goalAmount) }}</span>
                   </div>
                 </div>
