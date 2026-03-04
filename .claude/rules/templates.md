@@ -25,7 +25,7 @@ Use `processTemplateRichText()` from `~/features/templates/admin/utils/template-
 ## To edit template stores
 
 - Certificates: `admin/stores/certificateTemplate.ts`, list via `useCertificateTemplates.ts`
-- Emails: `admin/stores/emailTemplate.ts`, list via `useEmailTemplates.ts` (8 editable donor templates + eCard)
+- Emails: `admin/stores/emailTemplate.ts`, list via `useEmailTemplates.ts` (6 donor + 2 eCard = 8 total)
 - Receipts: `admin/stores/receiptTemplate.ts` (uses `defineSettingsStore`)
 
 ## Template admin components

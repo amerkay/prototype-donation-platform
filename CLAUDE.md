@@ -68,30 +68,59 @@ app/features/[feature-name]/
 | `_admin`        | `features/_admin/`        | Admin shell: sidebar, card grids, config panels, quick find                                   |
 | `_library`      | `features/_library/`      | Domain-agnostic: `form-builder`, `custom-fields`                                              |
 | `_shared`       | `features/_shared/`       | Cross-boundary: EditLayout, DataTable, useEditState, useEntityDataService                     |
-| `campaigns`     | `features/campaigns/`     | Campaign CRUD + config. Sub-features: crowdfunding, matched-giving, p2p, sharing              |
+| `campaigns`     | `features/campaigns/`     | Campaign CRUD + create wizard. 4 sub-features: crowdfunding, matched-giving, p2p, sharing     |
 | `donation-form` | `features/donation-form/` | Form builder + donor checkout. 13 sub-features (impact-cart, cover-costs, gift-aid, tribute…) |
 | `donations`     | `features/donations/`     | Admin donation list, filters, refund actions                                                  |
 | `donor-portal`  | `features/donor-portal/`  | Donor self-service: donations, subscriptions, fundraisers, my-data                            |
 | `donors`        | `features/donors/`        | Admin donor list and filters                                                                  |
 | `products`      | `features/products/`      | Product/impact item CRUD                                                                      |
-| `settings`      | `features/settings/`      | Org settings (branding, currency, payments, team, billing, social, 10 pages total)            |
-| `subscriptions` | `features/subscriptions/` | Recurring subscription management                                                             |
+| `settings`      | `features/settings/`      | Org settings: branding, currency, payments, team, billing, social, after-sale, API (11 pages) |
+| `subscriptions` | `features/subscriptions/` | Recurring subscription management (totalAmount = subtotal + coverCostsAmount)                 |
 | `templates`     | `features/templates/`     | Email, receipt, certificate template editing with live preview                                |
 
-### Key Stores & Composables
+### Key Stores
 
-Stores follow `defineEditableStore` (CRUD) or `defineSettingsStore` (settings pages). Each entity has a Pinia edit store (`campaignConfig`, `formConfig`, `product`, `emailTemplate`, etc.) + a singleton list composable (`useCampaigns`, `useDonations`, `useDonors`, etc.).
+- `campaigns/shared/stores/campaignConfig.ts` — campaign edit store (CRUD)
+- `donation-form/shared/stores/formConfig.ts` — donation form config edit store
+- `donation-form/donor/stores/donationForm.ts` — donor-side form runtime state
+- `donation-form/features/impact-cart/donor/stores/impactCart.ts` — cart state for impact items
+- `products/admin/stores/product.ts` — product edit store
+- `templates/admin/stores/emailTemplate.ts` — email template edit store
+- `templates/admin/stores/receiptTemplate.ts` — receipt template edit store
+- `templates/admin/stores/certificateTemplate.ts` — certificate template edit store
+- `settings/admin/stores/` — 11 settings stores (one per settings page)
 
-Notable: `campaignCapabilities.ts` — single source of truth for feature-gating by campaign type (18 capability flags). `useMatchedGiving` — provide/inject for donor-side match display.
+### Key Composables
 
-### Layouts & Pages
+- `_admin/composables/defineEditableStore.ts` — factory for CRUD entity stores
+- `_admin/composables/defineSettingsStore.ts` — factory for settings page stores
+- `_admin/composables/useSessionStorageSingleton.ts` — singleton list data with session caching
+- `_admin/composables/useQuickFind.ts` — global admin search
+- `_shared/composables/useEditState.ts` — dirty detection + save/discard for edit pages
+- `_shared/composables/useEntityDataService.ts` — cross-entity filtering for list pages
+- `campaigns/shared/composables/useCampaigns.ts` — campaign list singleton
+- `campaigns/shared/utils/campaignCapabilities.ts` — feature-gating by campaign type (15 flags)
+- `campaigns/features/matched-giving/donor/composables/useMatchedGiving.ts` — provide/inject for match display
+- `campaigns/features/p2p/admin/composables/useFundraisers.ts` — P2P fundraiser list
+- `donation-form/donor/composables/useDonationFormContext.ts` — donor checkout context
+- `donation-form/donor/composables/useBuildTransaction.ts` — transaction assembly
+- `donation-form/shared/composables/useCurrency.ts` — currency formatting
+- `donations/admin/composables/useDonations.ts` — donation list singleton
+- `donors/admin/composables/useDonors.ts` — donor list singleton
+- `donor-portal/composables/useDonorPortal.ts` — portal data + navigation
+- `subscriptions/admin/composables/useAdminSubscriptions.ts` — subscription list singleton
+- `templates/admin/composables/useEmailTemplates.ts` — email template list singleton
 
-Layouts: `admin`, `admin-preview`, `default`, `donor`, `portal`, `print`
+### Layouts
 
-- **Admin** `/admin/` — dashboard, campaigns, donations, donors, products, subscriptions, p2p, settings (10 pages), templates
+`admin`, `admin-preview`, `default`, `donor`, `portal`, `print`
+
+### Pages
+
+- **Admin** `/admin/` — dashboard, campaigns (list + edit + form edit/preview), donations, donors, products, subscriptions, p2p (templates + fundraisers), settings (11 pages), templates (emails)
 - **Donor** `/[org_slug]/` — crowdfunding page, donation form, P2P templates + onboarding
-- **Portal** `/portal/` — donation history, subscriptions, fundraisers, my-data
-- **Other** — print views, terms, design system preview
+- **Portal** `/portal/` — donation history, subscriptions, fundraisers (list + detail + edit), my-data
+- **Other** — print (receipt, certificate), terms, design system preview
 
 <!-- end project summary -->
 
@@ -129,8 +158,7 @@ Layouts: `admin`, `admin-preview`, `default`, `donor`, `portal`, `print`
 20. Test commands: `pnpm test:nuxt -- <path>` for nuxt tests (not `pnpm test:run --`); `pnpm test:run` runs all projects
 21. `BaseDialogOrDrawer` uses teleport — stub it in tests to render slots inline (Dialog content is invisible to `wrapper.text()`)
 22. `visibleWhen` closures in `defineForm` read Pinia stores at call time (not at module init) — call `form.setup(ctx)` directly to unit-test visibility logic against store state
-23. `pnpm` piped through `| tail` can produce empty output due to buffering — use `| tee $TMPDIR/out.txt` instead
-24. Derived/computed data must have ONE source of truth — never duplicate the same calculation in multiple components/pages. Centralize in composables and consume from there
+23. Derived/computed data must have ONE source of truth — never duplicate the same calculation in multiple components/pages. Centralize in composables and consume from there
 
 <!-- end continuous learning notes -->
 

@@ -14,7 +14,7 @@ paths:
 3. All fields must support: `label`, `helpText`, `rules`, `visibleWhen`, `disabled`, `onChange`, `onVisibilityChange`
 4. Entry point for form definitions: `defineForm()` in `api/defineForm.ts`
 5. For help text UI: use `FieldHelpText` component (`internal/FieldHelpText.vue`) — supports `#trigger` slot
-6. Containers: `FormFieldArray` (repeating), `FormFieldGroup` (collapsible), `FormFieldTabs`
+6. Containers in `containers/`: `FormFieldArray` (repeating), `FormFieldGroup` (collapsible), `FormFieldTabs`
 7. Store auto-mapping: use `$storePath` metadata + `useAdminConfigForm()`
 8. No Pinia stores — state is managed via vee-validate + Vue Composition API
 

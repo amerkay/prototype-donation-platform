@@ -10,7 +10,7 @@ paths:
 
 ## To modify campaign capabilities or add a campaign type
 
-1. Edit `shared/utils/campaignCapabilities.ts` — single source of truth for `getCampaignCapabilities(type)` (18 flags) and `getFormType(type)`
+1. Edit `shared/utils/campaignCapabilities.ts` — single source of truth for `getCampaignCapabilities(type)` (15 flags) and `getFormType(type)`
 2. Current types: `standard`, `p2p`, `p2p-fundraiser`, `event`
 3. Form types: campaigns use either `donation` or `registration` forms — determined by `getFormType(campaignType)`
 

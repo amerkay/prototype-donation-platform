@@ -22,5 +22,5 @@ paths:
 ## To use cross-entity data in filters or lookups
 
 1. Use `useEntityDataService` for cross-entity lookup maps
-2. Build filter schemas with `buildCustomFieldSchema` + `buildCrossEntityEvaluators`
+2. Build filter schemas with `buildCustomFieldSchema` + `withCustomFieldEvaluators`
 3. For table columns: use `column-builders.ts` (supports `meta.thClass` for `<th>` styling) and `actionColumn.ts`
