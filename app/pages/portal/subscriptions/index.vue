@@ -13,19 +13,8 @@ definePageMeta({
   layout: 'portal'
 })
 
-const { subscriptions, succeededTransactions } = useDonorPortal()
+const { subscriptions, donorValueByOrg } = useDonorPortal()
 const { formatAmount } = useCampaignFormatters()
-
-/** Donor value per org (last 12 months), keyed by charityName */
-const donorValueByOrg = computed(() => {
-  const oneYearAgo = Date.now() - 365.25 * 24 * 60 * 60 * 1000
-  const map = new Map<string, number>()
-  for (const t of succeededTransactions.value) {
-    if (new Date(t.createdAt).getTime() < oneYearAgo) continue
-    map.set(t.charityName, (map.get(t.charityName) ?? 0) + t.totalAmount * t.exchangeRate)
-  }
-  return map
-})
 
 const statusFilters = [
   { value: 'active', label: 'Active' },

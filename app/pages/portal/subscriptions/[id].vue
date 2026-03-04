@@ -26,7 +26,7 @@ import {
 definePageMeta({ layout: 'portal' })
 
 const route = useRoute()
-const { subscriptions, transactions } = useDonorPortal()
+const { subscriptions, transactions, donorValueByOrg } = useDonorPortal()
 const { formatAmount, formatDate } = useCampaignFormatters()
 const { checkEligibility } = useActionEligibility()
 const { campaigns } = useCampaigns()
@@ -60,18 +60,9 @@ const avgPayment = computed(() => {
   return sub.value.totalPaid / sub.value.paymentCount
 })
 
-const donorValueLastYear = computed(() => {
-  if (!sub.value) return 0
-  const oneYearAgo = Date.now() - 365.25 * 24 * 60 * 60 * 1000
-  return transactions.value
-    .filter(
-      (t) =>
-        t.status === 'succeeded' &&
-        t.charityName === sub.value!.charityName &&
-        new Date(t.createdAt).getTime() >= oneYearAgo
-    )
-    .reduce((sum, t) => sum + t.totalAmount * t.exchangeRate, 0)
-})
+const donorValueLastYear = computed(() =>
+  sub.value ? (donorValueByOrg.value.get(sub.value.charityName) ?? 0) : 0
+)
 
 const eligibility = computed(() => {
   if (!sub.value)

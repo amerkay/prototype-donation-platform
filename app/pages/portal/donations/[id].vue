@@ -16,7 +16,7 @@ definePageMeta({ layout: 'portal' })
 
 const route = useRoute()
 const router = useRouter()
-const { transactions, subscriptions, addTransaction } = useDonorPortal()
+const { transactions, subscriptions, addTransaction, donorValueByOrg } = useDonorPortal()
 const { formatAmount, formatDate } = useCampaignFormatters()
 const { checkEligibility } = useActionEligibility()
 
@@ -36,19 +36,9 @@ const {
   onSuccess: () => router.push('/portal/donations')
 })
 
-const donorValueLastYear = computed(() => {
-  if (!transaction.value) return 0
-  const oneYearAgo = Date.now() - 365.25 * 24 * 60 * 60 * 1000
-  const orgName = transaction.value.charityName
-  return transactions.value
-    .filter(
-      (t) =>
-        t.status === 'succeeded' &&
-        t.charityName === orgName &&
-        new Date(t.createdAt).getTime() >= oneYearAgo
-    )
-    .reduce((sum, t) => sum + t.totalAmount * t.exchangeRate, 0)
-})
+const donorValueLastYear = computed(() =>
+  transaction.value ? (donorValueByOrg.value.get(transaction.value.charityName) ?? 0) : 0
+)
 
 const eligibility = computed(() => {
   if (!transaction.value)

@@ -37,7 +37,8 @@ import {
 
 const store = useCampaignConfigStore()
 const { formatAmount } = useCampaignFormatters()
-const { completeFundraiser, endFundraiser, reactivateFundraiser, getMatchContext } = useFundraisers()
+const { completeFundraiser, endFundraiser, reactivateFundraiser, getMatchContext } =
+  useFundraisers()
 
 // Invite sheet state
 const showInviteSheet = ref(false)
