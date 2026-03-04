@@ -11,9 +11,11 @@ vi.stubGlobal('navigateTo', mockNavigateTo)
 
 // Mock useCampaigns
 const mockCreateCampaign = vi.fn(() => 'new-camp-id')
+const mockUpdateCampaign = vi.fn()
 vi.mock('~/features/campaigns/shared/composables/useCampaigns', () => ({
   useCampaigns: () => ({
-    createCampaign: mockCreateCampaign
+    createCampaign: mockCreateCampaign,
+    updateCampaign: mockUpdateCampaign
   })
 }))
 
@@ -22,7 +24,7 @@ const mockCreateFormFromTemplate = vi.fn(() => ({
   formId: 'form-1',
   formName: 'Basic Form',
   config: {
-    donationAmounts: { baseDefaultCurrency: 'USD', frequencies: {} }
+    donationAmounts: { baseDefaultCurrency: 'GBP', frequencies: {} }
   },
   products: []
 }))
@@ -69,6 +71,7 @@ describe('CampaignCreateWizard', () => {
           BaseDialogOrDrawer: BaseDialogOrDrawerStub,
           DonationFormTemplateGrid: defineComponent({
             name: 'DonationFormTemplateGrid',
+            props: ['campaignType'],
             emits: ['select'],
             setup(_, { emit }) {
               return () =>
@@ -100,16 +103,10 @@ describe('CampaignCreateWizard', () => {
   it('renders Step 1 with form fields', async () => {
     const wrapper = await mountWizard()
 
-    expect(wrapper.text()).toContain('Step 1 of 2')
     expect(wrapper.text()).toContain('New Campaign')
 
     const titleInput = wrapper.find('[id="campaignCreate_title"]')
     expect(titleInput.exists()).toBe(true)
-  })
-
-  it('shows "Step 1 of 2" badge', async () => {
-    const wrapper = await mountWizard()
-    expect(wrapper.text()).toContain('Step 1 of 2')
   })
 
   it('Next button triggers form validation; invalid form stays on Step 1', async () => {
@@ -125,26 +122,26 @@ describe('CampaignCreateWizard', () => {
     await nextTick()
 
     // Should still show Step 1 since form is invalid
-    expect(wrapper.text()).toContain('Step 1 of 2')
+    expect(wrapper.text()).toContain('New Campaign')
+    expect(wrapper.text()).not.toContain('Template Grid')
   })
 
   it('valid Step 1 submission advances to Step 2', async () => {
     const wrapper = await mountWizard()
 
-    // Advance directly via internal state — validation is tested separately in the "invalid stays on Step 1" test
-    // The wizard advances when handleStep1Submit fires (emitted by FormRenderer @submit)
+    // Advance directly via internal state — validation is tested separately
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const vm = wrapper.vm as Record<string, any>
     vm.step1Data = {
       title: 'Save the Orangutans Campaign',
-      shortDescription: 'A wonderful campaign to save the orangutans',
       currency: 'GBP',
+      campaignType: 'standard',
       goalAmount: undefined
     }
     vm.currentStep = 2
     await nextTick()
 
-    expect(wrapper.text()).toContain('Step 2 of 2')
+    expect(wrapper.text()).toContain('Choose a Form Template')
   })
 
   it('Step 2 shows Back button that returns to Step 1', async () => {
@@ -155,7 +152,7 @@ describe('CampaignCreateWizard', () => {
     ;(wrapper.vm as Record<string, any>).currentStep = 2
     await nextTick()
 
-    expect(wrapper.text()).toContain('Step 2 of 2')
+    expect(wrapper.text()).toContain('Choose a Form Template')
 
     // Click Back
     const backBtn = wrapper.findAll('button').find((b) => b.text().includes('Back'))
@@ -163,7 +160,7 @@ describe('CampaignCreateWizard', () => {
     await backBtn!.trigger('click')
     await nextTick()
 
-    expect(wrapper.text()).toContain('Step 1 of 2')
+    expect(wrapper.text()).toContain('New Campaign')
   })
 
   it('dialog resets on re-open: step resets to 1', async () => {
@@ -173,7 +170,7 @@ describe('CampaignCreateWizard', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(wrapper.vm as Record<string, any>).currentStep = 2
     await nextTick()
-    expect(wrapper.text()).toContain('Step 2 of 2')
+    expect(wrapper.text()).toContain('Choose a Form Template')
 
     // Close + re-open
     await wrapper.setProps({ open: false })
@@ -182,6 +179,6 @@ describe('CampaignCreateWizard', () => {
     await nextTick()
     await nextTick()
 
-    expect(wrapper.text()).toContain('Step 1 of 2')
+    expect(wrapper.text()).toContain('New Campaign')
   })
 })

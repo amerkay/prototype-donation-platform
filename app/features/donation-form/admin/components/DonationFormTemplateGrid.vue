@@ -3,10 +3,17 @@ import {
   TEMPLATE_REGISTRY,
   type DonationFormTemplate
 } from '~/features/donation-form/admin/templates'
+import type { CampaignType } from '~/features/campaigns/shared/types'
+import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
+
+const props = defineProps<{
+  /** Filter templates based on campaign type (e.g. hide registration for P2P) */
+  campaignType?: CampaignType
+}>()
 
 const emit = defineEmits<{
   select: [template: DonationFormTemplate]
@@ -28,12 +35,24 @@ const CATEGORIES = [
   }
 ]
 
+const expectedFormType = computed(() =>
+  props.campaignType ? getCampaignCapabilities(props.campaignType).formType : undefined
+)
+
 const donationTemplates = computed(() =>
   TEMPLATE_REGISTRY.filter((t) => !t.metadata.formType || t.metadata.formType === 'donation')
 )
 
 const registrationTemplates = computed(() =>
   TEMPLATE_REGISTRY.filter((t) => t.metadata.formType === 'registration')
+)
+
+const showRegistration = computed(
+  () => !expectedFormType.value || expectedFormType.value === 'registration'
+)
+
+const showDonation = computed(
+  () => !expectedFormType.value || expectedFormType.value === 'donation'
 )
 
 function byCategory(templates: DonationFormTemplate[], category: string) {
@@ -44,7 +63,7 @@ function byCategory(templates: DonationFormTemplate[], category: string) {
 <template>
   <div class="py-4 space-y-8">
     <!-- Donation section -->
-    <div class="space-y-6">
+    <div v-if="showDonation" class="space-y-6">
       <h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Donation</h2>
       <template v-for="cat in CATEGORIES" :key="cat.key">
         <div v-if="byCategory(donationTemplates, cat.key).length" class="space-y-3">
@@ -85,10 +104,10 @@ function byCategory(templates: DonationFormTemplate[], category: string) {
       </template>
     </div>
 
-    <Separator />
+    <Separator v-if="showDonation && showRegistration" />
 
     <!-- Registration / Ticketing section -->
-    <div class="space-y-3">
+    <div v-if="showRegistration" class="space-y-3">
       <h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         Registration / Ticketing
       </h2>

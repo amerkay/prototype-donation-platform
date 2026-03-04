@@ -22,7 +22,7 @@ withDefaults(
         v-if="$slots.right"
         class="shrink-0 flex items-center gap-2"
         :class="{
-          'hidden sm:block': hideRightOnMobile,
+          'hidden sm:flex': hideRightOnMobile,
           'w-full sm:w-auto': !hideRightOnMobile,
           'sm:ml-auto': !$slots.center
         }"

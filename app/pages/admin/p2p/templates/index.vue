@@ -6,6 +6,8 @@ import FilterTabs from '~/components/FilterTabs.vue'
 import P2PPresetPickerDialog from '~/features/campaigns/features/p2p/admin/components/P2PPresetPickerDialog.vue'
 import type { P2PCampaignPreset } from '~/features/campaigns/features/p2p/admin/templates'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
+import { useCreateFormFromTemplate } from '~/features/donation-form/admin/composables/useCreateFormFromTemplate'
+import { TEMPLATE_REGISTRY } from '~/features/donation-form/admin/templates'
 import { Button } from '@/components/ui/button'
 import { ICON_CREATE } from '~/lib/icons'
 
@@ -13,7 +15,8 @@ definePageMeta({
   layout: 'admin'
 })
 
-const { campaigns, createCampaign } = useCampaigns()
+const { campaigns, createCampaign, updateCampaign } = useCampaigns()
+const { createFormFromTemplate } = useCreateFormFromTemplate()
 
 const p2pCampaigns = computed(() => campaigns.value.filter((c) => c.type === 'p2p'))
 
@@ -87,6 +90,30 @@ const showP2PPresetDialog = ref(false)
 const handleP2PPresetSelect = (preset: P2PCampaignPreset) => {
   const presetData = preset.factory()
   const campaignId = createCampaign(presetData)
+
+  // Auto-create a Basic donation form with recurring disabled for P2P
+  const basicTemplate = TEMPLATE_REGISTRY.find((t) => t.metadata.id === 'basic')!
+  const currency = presetData.crowdfunding?.currency || 'GBP'
+  const { formId, formName, config, products } = createFormFromTemplate(
+    campaignId,
+    basicTemplate,
+    [],
+    currency,
+    'p2p'
+  )
+  updateCampaign(campaignId, {
+    form: {
+      id: formId,
+      campaignId,
+      name: formName,
+      isDefault: true,
+      config,
+      products,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  })
+
   navigateTo(`/admin/p2p/templates/${campaignId}`)
 }
 </script>

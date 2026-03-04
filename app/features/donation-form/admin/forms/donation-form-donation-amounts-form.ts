@@ -16,6 +16,7 @@ import {
 } from '~/features/donation-form/shared/composables/useCurrency'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { createPresetAmountsField } from './preset-amounts-field'
 
@@ -100,16 +101,20 @@ function createFrequencyTabFields(
   placeholder: string,
   maxPlaceholder: string,
   description: string,
-  isFundraiser: boolean
+  isFundraiser: boolean,
+  /** When true, this is the only frequency — hide the toggle and force enabled */
+  isSoleFrequency = false
 ): Record<string, FieldDef> {
-  const isEnabled = ({ values }: FieldContext) => !!(values?.enabled as boolean | undefined)
+  const isEnabled = ({ values }: FieldContext) =>
+    isSoleFrequency || !!(values?.enabled as boolean | undefined)
   const isEnabledAndNotFundraiser = (ctx: FieldContext) => isEnabled(ctx) && !isFundraiser
 
   return {
     enabled: toggleField('enabled', {
       label: 'Enabled',
       description,
-      visibleWhen: () => !isFundraiser,
+      visibleWhen: () => !isFundraiser && !isSoleFrequency,
+      defaultValue: isSoleFrequency ? true : undefined,
       rules: z.boolean()
     }),
     label: textField('label', {
@@ -217,6 +222,20 @@ export const useDonationFormDonationAmountsForm = defineForm('formDonationAmount
   })
 
   // Build tabs — fundraisers only see frequencies enabled in their copied form
+  const caps = getCampaignCapabilities(campaignStore.type)
+  const enabledFreqs = formConfigStore.donationAmounts?.frequencies as
+    | Record<string, { enabled?: boolean }>
+    | undefined
+
+  // Determine which frequencies will be shown so we can detect sole-frequency case
+  const allFreqKeys: string[] = ['once', 'monthly', 'yearly']
+  const visibleFrequencies: string[] = isFundraiser
+    ? allFreqKeys.filter((f) => enabledFreqs?.[f]?.enabled)
+    : !caps.allowsRecurring
+      ? ['once']
+      : allFreqKeys
+  const isSoleFrequency = visibleFrequencies.length === 1
+
   const allTabs = [
     {
       value: 'once',
@@ -225,7 +244,8 @@ export const useDonationFormDonationAmountsForm = defineForm('formDonationAmount
         'One-time',
         '1000000',
         'Show One-time as an option on the donation form',
-        isFundraiser
+        isFundraiser,
+        isSoleFrequency && visibleFrequencies.includes('once')
       )
     },
     {
@@ -235,7 +255,8 @@ export const useDonationFormDonationAmountsForm = defineForm('formDonationAmount
         'Monthly',
         '1000000',
         'Show Monthly as an option on the donation form',
-        isFundraiser
+        isFundraiser,
+        isSoleFrequency && visibleFrequencies.includes('monthly')
       )
     },
     {
@@ -245,15 +266,17 @@ export const useDonationFormDonationAmountsForm = defineForm('formDonationAmount
         'Yearly',
         '50000',
         'Show Yearly as an option on the donation form',
-        isFundraiser
+        isFundraiser,
+        isSoleFrequency && visibleFrequencies.includes('yearly')
       )
     }
   ]
 
-  const enabledFreqs = formConfigStore.donationAmounts?.frequencies as
-    | Record<string, { enabled?: boolean }>
-    | undefined
-  const tabs = isFundraiser ? allTabs.filter((t) => enabledFreqs?.[t.value]?.enabled) : allTabs
+  const tabs = isFundraiser
+    ? allTabs.filter((t) => enabledFreqs?.[t.value]?.enabled)
+    : !caps.allowsRecurring
+      ? allTabs.filter((t) => t.value === 'once')
+      : allTabs
 
   const frequencies = tabsField('frequencies', {
     tabsListClass: 'w-full',

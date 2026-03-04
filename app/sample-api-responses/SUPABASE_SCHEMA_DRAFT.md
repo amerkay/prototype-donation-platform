@@ -560,6 +560,11 @@ CREATE TABLE campaign_forms (
   entry_fields JSONB NOT NULL DEFAULT '{}'::JSONB,
   -- Form-type-specific entry configuration
 
+  -- Recurring frequency constraint: P2P and event campaigns must not enable monthly/yearly
+  -- Enforced via trigger that JOINs campaigns to check type before INSERT/UPDATE
+  -- CHECK: IF campaign.type IN ('p2p', 'p2p-fundraiser', 'event')
+  --   THEN donation_amounts->'frequencies' must have monthly.enabled=false AND yearly.enabled=false
+
   -- Audit
   created_by UUID REFERENCES auth.users(id),
   updated_by UUID REFERENCES auth.users(id),

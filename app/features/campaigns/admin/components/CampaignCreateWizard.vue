@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import type { DonationFormTemplate } from '~/features/donation-form/admin/templates'
-import type { CampaignType, P2PPreset } from '~/features/campaigns/shared/types'
+import type { CampaignType } from '~/features/campaigns/shared/types'
 import { useCampaignCreateWizardForm } from '~/features/campaigns/admin/forms/campaign-create-wizard-form'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCreateFormFromTemplate } from '~/features/donation-form/admin/composables/useCreateFormFromTemplate'
-import { getPresetById } from '~/features/campaigns/features/p2p/admin/templates'
 import { extractDefaultValues } from '~/features/_library/form-builder/utils/defaults'
 import { getCampaignEditPath } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import FormRenderer from '~/features/_library/form-builder/FormRenderer.vue'
 import DonationFormTemplateGrid from '~/features/donation-form/admin/components/DonationFormTemplateGrid.vue'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { ICON_FORWARD, ICON_BACK } from '~/lib/icons'
 
 const props = defineProps<{
@@ -72,29 +71,25 @@ const tryNext = () => {
   formRef.value?.onSubmit()
 }
 
+/** Auto-generate a short description from title and type */
+function generateShortDescription(title: string, type: CampaignType): string {
+  return type === 'event' ? `Join ${title}` : `Support ${title}`
+}
+
 // Step 2: template selected → create campaign + form → navigate
 const handleTemplateSelect = (template: DonationFormTemplate) => {
   const title = step1Data.value.title as string
   const currency = step1Data.value.currency as string
   const campaignType = (step1Data.value.campaignType as CampaignType) || 'standard'
-  const p2pPreset = step1Data.value.p2pPreset as P2PPreset | undefined
-
-  // Apply P2P preset defaults if applicable
-  const presetDefaults =
-    campaignType === 'p2p' && p2pPreset ? getPresetById(p2pPreset)?.factory() : undefined
 
   const campaignId = createCampaign({
     type: campaignType,
-    ...(p2pPreset && campaignType === 'p2p' ? { p2pPreset } : {}),
     name: title,
     crowdfunding: {
       enabled: true,
       currency,
-      title: presetDefaults?.crowdfunding?.title ?? title,
-      shortDescription:
-        presetDefaults?.crowdfunding?.shortDescription ??
-        (step1Data.value.shortDescription as string),
-      story: presetDefaults?.crowdfunding?.story,
+      title,
+      shortDescription: generateShortDescription(title, campaignType),
       goalAmount: (step1Data.value.goalAmount as number) || undefined,
       endDate: (step1Data.value.endDate as string) || undefined,
       showProgressBar: true,
@@ -102,10 +97,6 @@ const handleTemplateSelect = (template: DonationFormTemplate) => {
       defaultDonationsView: 'recent',
       numberOfDonationsToShow: 5,
       enableSocialSharing: true
-    },
-    peerToPeer: {
-      enabled: campaignType === 'p2p',
-      ...(presetDefaults?.peerToPeer ?? {})
     },
     matchedGiving: { periods: [] }
   })
@@ -115,7 +106,8 @@ const handleTemplateSelect = (template: DonationFormTemplate) => {
     campaignId,
     template,
     [],
-    currency
+    currency,
+    campaignType
   )
 
   // Update campaign with the form
@@ -136,6 +128,12 @@ const handleTemplateSelect = (template: DonationFormTemplate) => {
   emit('update:open', false)
   navigateTo(getCampaignEditPath(campaignType, campaignId))
 }
+
+const isFormValid = computed(() => formRef.value?.isValid ?? true)
+
+const selectedCampaignType = computed(
+  () => (formData.value.campaignType as CampaignType) || 'standard'
+)
 </script>
 
 <template>
@@ -147,10 +145,7 @@ const handleTemplateSelect = (template: DonationFormTemplate) => {
     @update:open="emit('update:open', $event)"
   >
     <template #header>
-      <div class="flex items-center gap-2">
-        <span>{{ headerTitle }}</span>
-        <Badge variant="outline" class="text-xs"> Step {{ currentStep }} of 2 </Badge>
-      </div>
+      {{ headerTitle }}
     </template>
 
     <template #content>
@@ -166,7 +161,10 @@ const handleTemplateSelect = (template: DonationFormTemplate) => {
 
       <!-- Step 2: Form Template Selection -->
       <div v-else>
-        <DonationFormTemplateGrid @select="handleTemplateSelect" />
+        <DonationFormTemplateGrid
+          :campaign-type="selectedCampaignType"
+          @select="handleTemplateSelect"
+        />
       </div>
     </template>
 
@@ -176,7 +174,11 @@ const handleTemplateSelect = (template: DonationFormTemplate) => {
           <ICON_BACK class="w-4 h-4 mr-1" />
           Back
         </Button>
-        <Button v-if="currentStep === 1" class="ml-auto" @click="tryNext">
+        <Button
+          v-if="currentStep === 1"
+          :class="cn('ml-auto', !isFormValid && 'opacity-50')"
+          @click="tryNext"
+        >
           Next: Choose Template
           <ICON_FORWARD class="w-4 h-4 ml-1" />
         </Button>

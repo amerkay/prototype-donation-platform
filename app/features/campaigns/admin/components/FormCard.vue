@@ -3,13 +3,16 @@ import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campa
 import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import { useForm } from '~/features/campaigns/shared/composables/useForm'
+import { useCreateFormFromTemplate } from '~/features/donation-form/admin/composables/useCreateFormFromTemplate'
+import type { DonationFormTemplate } from '~/features/donation-form/admin/templates'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import AdminDeleteDialog from '~/features/_admin/components/AdminDeleteDialog.vue'
 import CopyFormFromCampaignDialog from './CopyFormFromCampaignDialog.vue'
-import { ICON_EDIT, ICON_VIEW, ICON_COPY } from '~/lib/icons'
+import DonationFormTemplatesDialog from '~/features/donation-form/admin/components/DonationFormTemplatesDialog.vue'
+import { ICON_EDIT, ICON_VIEW, ICON_COPY, ICON_SPARKLES } from '~/lib/icons'
 import type { CampaignForm } from '~/features/campaigns/shared/types'
 
 defineProps<{
@@ -19,6 +22,7 @@ defineProps<{
 const store = useCampaignConfigStore()
 const { formatDate } = useCampaignFormatters()
 const { setForm } = useForm()
+const { createFormFromTemplate } = useCreateFormFromTemplate()
 const form = computed(() => store.form)
 const caps = computed(() => getCampaignCapabilities(store.type))
 
@@ -57,6 +61,50 @@ const handleCopyConfirm = () => {
     pendingCopyForm.value = null
   }
   showCopyConfirm.value = false
+}
+
+// Replace with template flow
+const showTemplateDialog = ref(false)
+const showTemplateConfirm = ref(false)
+const pendingTemplate = ref<DonationFormTemplate | null>(null)
+
+const handleTemplateSelect = (template: DonationFormTemplate) => {
+  if (form.value) {
+    pendingTemplate.value = template
+    showTemplateConfirm.value = true
+  } else {
+    applyTemplate(template)
+  }
+}
+
+const applyTemplate = (template: DonationFormTemplate) => {
+  const campaignId = store.id ?? ''
+  const currency = store.crowdfunding?.currency || 'GBP'
+  const { formId, formName, config, products } = createFormFromTemplate(
+    campaignId,
+    template,
+    [],
+    currency,
+    store.type
+  )
+  setForm({
+    id: formId,
+    campaignId,
+    name: formName,
+    isDefault: true,
+    config,
+    products,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  })
+}
+
+const handleTemplateConfirm = () => {
+  if (pendingTemplate.value) {
+    applyTemplate(pendingTemplate.value)
+    pendingTemplate.value = null
+  }
+  showTemplateConfirm.value = false
 }
 </script>
 
@@ -115,6 +163,16 @@ const handleCopyConfirm = () => {
             <ICON_COPY class="w-4 h-4 mr-1" />
             Copy from
           </Button>
+          <Button
+            v-if="!store.isFundraiser"
+            variant="outline"
+            size="sm"
+            :disabled="disabled"
+            @click="showTemplateDialog = true"
+          >
+            <ICON_SPARKLES class="w-4 h-4 mr-1" />
+            Replace with template
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -124,12 +182,18 @@ const handleCopyConfirm = () => {
   <div v-else class="space-y-3">
     <div class="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
       <p>No form configured yet.</p>
-      <p class="mt-1">Create this campaign to add a form from a template.</p>
+      <p class="mt-1">Create a form from a template or copy from another campaign.</p>
     </div>
-    <Button v-if="!store.isFundraiser" variant="outline" size="sm" @click="showCopyDialog = true">
-      <ICON_COPY class="w-4 h-4 mr-1" />
-      Copy from another campaign
-    </Button>
+    <div v-if="!store.isFundraiser" class="flex gap-2 flex-wrap">
+      <Button variant="outline" size="sm" @click="showTemplateDialog = true">
+        <ICON_SPARKLES class="w-4 h-4 mr-1" />
+        Create from template
+      </Button>
+      <Button variant="outline" size="sm" @click="showCopyDialog = true">
+        <ICON_COPY class="w-4 h-4 mr-1" />
+        Copy from another campaign
+      </Button>
+    </div>
   </div>
 
   <!-- Fundraiser notice -->
@@ -145,7 +209,16 @@ const handleCopyConfirm = () => {
     @select="handleCopySelect"
   />
 
-  <!-- Confirmation dialog for replacing existing form -->
+  <!-- Replace with template dialog -->
+  <DonationFormTemplatesDialog
+    :open="showTemplateDialog"
+    :campaign-id="store.id ?? ''"
+    :campaign-type="store.type"
+    @update:open="showTemplateDialog = $event"
+    @select="handleTemplateSelect"
+  />
+
+  <!-- Confirmation dialog for replacing existing form (copy) -->
   <AdminDeleteDialog
     :open="showCopyConfirm"
     title="Replace current form?"
@@ -153,5 +226,15 @@ const handleCopyConfirm = () => {
     confirm-label="Replace Form"
     @update:open="showCopyConfirm = $event"
     @confirm="handleCopyConfirm"
+  />
+
+  <!-- Confirmation dialog for replacing with template -->
+  <AdminDeleteDialog
+    :open="showTemplateConfirm"
+    title="Replace with template?"
+    description="This will replace the current form configuration and products with the selected template. This action cannot be undone."
+    confirm-label="Replace Form"
+    @update:open="showTemplateConfirm = $event"
+    @confirm="handleTemplateConfirm"
   />
 </template>

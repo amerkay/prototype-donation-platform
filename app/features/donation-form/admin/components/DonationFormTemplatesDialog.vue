@@ -3,9 +3,12 @@ import type { DonationFormTemplate } from '~/features/donation-form/admin/templa
 import BaseDialogOrDrawer from '~/components/BaseDialogOrDrawer.vue'
 import DonationFormTemplateGrid from '~/features/donation-form/admin/components/DonationFormTemplateGrid.vue'
 
-defineProps<{
+import type { CampaignType } from '~/features/campaigns/shared/types'
+
+const props = defineProps<{
   open: boolean
   campaignId: string
+  campaignType?: CampaignType
 }>()
 
 const emit = defineEmits<{
@@ -32,7 +35,10 @@ const handleTemplateSelect = (template: DonationFormTemplate) => {
     </template>
 
     <template #content>
-      <DonationFormTemplateGrid @select="handleTemplateSelect" />
+      <DonationFormTemplateGrid
+        :campaign-type="props.campaignType"
+        @select="handleTemplateSelect"
+      />
     </template>
   </BaseDialogOrDrawer>
 </template>
