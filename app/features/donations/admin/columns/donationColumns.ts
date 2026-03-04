@@ -10,6 +10,7 @@ import {
   createPaymentMethodColumn,
   createStatusColumn
 } from '~/features/_shared/utils/column-builders'
+import { formatCurrency } from '~/lib/formatCurrency'
 
 export const donationColumns: ColumnDef<Transaction>[] = [
   createDateColumn<Transaction>({
@@ -54,6 +55,15 @@ export const donationColumns: ColumnDef<Transaction>[] = [
       ])
   },
   createPaymentMethodColumn<Transaction>(),
-  createAmountColumn<Transaction>(),
+  createAmountColumn<Transaction>({
+    renderSubtext: (row) =>
+      row.matchedAmount > 0
+        ? h(
+            'span',
+            { class: 'text-xs text-green-600' },
+            `+ ${formatCurrency(row.matchedAmount, row.currency)} matched`
+          )
+        : null
+  }),
   createStatusColumn<Transaction>()
 ]

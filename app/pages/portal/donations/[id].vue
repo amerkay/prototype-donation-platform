@@ -183,6 +183,13 @@ const breadcrumbs = computed(() => [
                   <span>Total</span>
                   <span>{{ formatAmount(transaction.totalAmount, transaction.currency) }}</span>
                 </div>
+                <div
+                  v-if="transaction.matchedAmount > 0"
+                  class="flex justify-between text-green-600"
+                >
+                  <span>Matched</span>
+                  <span>+ {{ formatAmount(transaction.matchedAmount, transaction.currency) }}</span>
+                </div>
               </div>
 
               <Separator />

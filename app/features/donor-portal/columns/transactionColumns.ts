@@ -9,6 +9,7 @@ import {
   createPaymentMethodColumn,
   createStatusColumn
 } from '~/features/_shared/utils/column-builders'
+import { formatCurrency } from '~/lib/formatCurrency'
 import { createViewActionColumn } from '~/features/_shared/utils/actionColumn'
 
 export const transactionColumns: ColumnDef<Transaction>[] = [
@@ -39,7 +40,18 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
       ])
   },
   createPaymentMethodColumn<Transaction>(),
-  createAmountColumn<Transaction>({ buttonClass: '-mr-4', showBaseTooltip: false }),
+  createAmountColumn<Transaction>({
+    buttonClass: '-mr-4',
+    showBaseTooltip: false,
+    renderSubtext: (row) =>
+      row.matchedAmount > 0
+        ? h(
+            'span',
+            { class: 'text-xs text-green-600' },
+            `+ ${formatCurrency(row.matchedAmount, row.currency)} matched`
+          )
+        : null
+  }),
   createStatusColumn<Transaction>(),
   createViewActionColumn<Transaction>((r) => `/portal/donations/${r.id}`)
 ]
@@ -76,7 +88,15 @@ export const transactionColumnsCompact: ColumnDef<Transaction>[] = [
   createAmountColumn<Transaction>({
     sortable: false,
     cellClass: 'text-right font-medium text-sm',
-    showBaseTooltip: false
+    showBaseTooltip: false,
+    renderSubtext: (row) =>
+      row.matchedAmount > 0
+        ? h(
+            'span',
+            { class: 'text-xs text-green-600' },
+            `+ ${formatCurrency(row.matchedAmount, row.currency)} matched`
+          )
+        : null
   }),
   createStatusColumn<Transaction>(),
   createViewActionColumn<Transaction>((r) => `/portal/donations/${r.id}`)

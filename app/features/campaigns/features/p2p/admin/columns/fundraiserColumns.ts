@@ -38,6 +38,7 @@ function createFundraiserColumn(options?: {
     header: 'Fundraiser',
     cell: ({ row }) => {
       const matchCtx = getMatchContext?.(row.original)
+      // Data layer (getCampaignById) strips matchedGiving for terminal+zero-matched fundraisers
       const hasActivePeriod =
         matchCtx && getActivePeriod(matchCtx.matchedGiving.periods ?? []) != null
       // Show badge when match is live (opportunity) or fundraiser has matched funds (history)

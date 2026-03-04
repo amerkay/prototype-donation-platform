@@ -54,6 +54,12 @@ export function useCampaigns() {
     // Fundraiser metadata (in parent's fundraisers[]) is the source of truth for status —
     // it's what reactivate/complete/end actions update. The raw Campaign.status may be stale.
     const fundraiserMeta = parent.fundraisers.find((f) => f.campaignId === campaign.id)
+    const resolvedStatus = fundraiserMeta?.status ?? campaign.status
+
+    // Terminal fundraisers with no matched donations should not inherit matchedGiving —
+    // they can't receive new donations, so an active match period is irrelevant.
+    const isTerminal = resolvedStatus === 'completed' || resolvedStatus === 'ended'
+    const stripMatchedGiving = isTerminal && (campaign.stats?.totalMatched ?? 0) === 0
 
     return {
       ...parent,
@@ -63,8 +69,10 @@ export function useCampaigns() {
       parentCampaignId: campaign.parentCampaignId,
       p2pPreset: campaign.p2pPreset,
       name: campaign.name,
-      status: fundraiserMeta?.status ?? campaign.status,
+      status: resolvedStatus,
       isArchived: campaign.isArchived,
+      // Strip inherited matchedGiving when terminal with no matched donations
+      ...(stripMatchedGiving && { matchedGiving: undefined }),
       crowdfunding: campaign.crowdfunding,
       stats: campaign.stats,
       recentDonations: campaign.recentDonations,
@@ -151,7 +159,11 @@ export function useCampaigns() {
 
     // For p2p-fundraiser campaigns: sync status to the fundraiser metadata in the parent's
     // fundraisers[] array, which is the source of truth for getCampaignById merges.
-    if (updates.status && originalCampaign.type === 'p2p-fundraiser' && originalCampaign.parentCampaignId) {
+    if (
+      updates.status &&
+      originalCampaign.type === 'p2p-fundraiser' &&
+      originalCampaign.parentCampaignId
+    ) {
       const parentIdx = campaigns.value.findIndex((c) => c.id === originalCampaign.parentCampaignId)
       if (parentIdx !== -1) {
         const parent = campaigns.value[parentIdx]!

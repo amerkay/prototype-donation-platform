@@ -4,14 +4,10 @@ import type { ColumnDef } from '@tanstack/vue-table'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import { useFundraisers } from '~/features/campaigns/features/p2p/admin/composables/useFundraisers'
-import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useClipboard } from '@vueuse/core'
 import type { CampaignFundraiser } from '~/features/campaigns/shared/types'
 import DataTable from '~/features/_shared/components/DataTable.vue'
-import {
-  embeddedFundraiserColumns,
-  type FundraiserMatchContext
-} from '~/features/campaigns/features/p2p/admin/columns/fundraiserColumns'
+import { embeddedFundraiserColumns } from '~/features/campaigns/features/p2p/admin/columns/fundraiserColumns'
 import BaseDialogOrDrawer from '@/components/BaseDialogOrDrawer.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -41,8 +37,7 @@ import {
 
 const store = useCampaignConfigStore()
 const { formatAmount } = useCampaignFormatters()
-const { completeFundraiser, endFundraiser, reactivateFundraiser } = useFundraisers()
-const { getCampaignById } = useCampaigns()
+const { completeFundraiser, endFundraiser, reactivateFundraiser, getMatchContext } = useFundraisers()
 
 // Invite sheet state
 const showInviteSheet = ref(false)
@@ -125,14 +120,6 @@ function createActionColumn(): ColumnDef<CampaignFundraiser> {
       ])
     }
   }
-}
-
-const getMatchContext = (f: CampaignFundraiser): FundraiserMatchContext | null => {
-  if (!store.matchedGiving?.periods?.length) return null
-  // Use each fundraiser's own campaign stats for totalMatched
-  const fundraiserCampaign = getCampaignById(f.campaignId)
-  const totalMatched = fundraiserCampaign?.stats.totalMatched ?? 0
-  return { matchedGiving: store.matchedGiving, totalMatched }
 }
 
 const columns = computed(() => [

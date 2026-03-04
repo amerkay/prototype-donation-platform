@@ -217,7 +217,10 @@ export function useEmailPreviewContext(
       date: formatDate(txn.createdAt),
       frequency: formatFrequency(txn.lineItems[0]?.frequency),
       campaignName: txn.campaignName,
-      reference: txn.id.toUpperCase()
+      reference: txn.id.toUpperCase(),
+      ...(txn.matchedAmount > 0 && {
+        matchedAmount: formatMoney(txn.matchedAmount, txn.currency)
+      })
     }
   }
 

@@ -27,9 +27,17 @@ const displayName = computed(() =>
         <span class="font-medium text-sm @3xl:text-base truncate">
           {{ displayName }}
         </span>
-        <span class="text-sm @3xl:text-base font-semibold text-primary shrink-0">
-          {{ formatAmount(donation.amount, donation.currency) }}
-        </span>
+        <div class="text-right shrink-0">
+          <span class="text-sm @3xl:text-base font-semibold text-primary">
+            {{ formatAmount(donation.amount, donation.currency) }}
+          </span>
+          <div
+            v-if="donation.matchedAmount && donation.matchedAmount > 0"
+            class="text-xs text-green-600"
+          >
+            + {{ formatAmount(donation.matchedAmount, donation.currency) }} matched
+          </div>
+        </div>
       </div>
       <p
         v-if="donation.message"

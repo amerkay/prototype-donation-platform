@@ -7,6 +7,7 @@ interface Props {
   frequency?: string
   campaignName?: string
   reference?: string
+  matchedAmount?: string
 }
 
 defineProps<Props>()
@@ -16,6 +17,7 @@ defineProps<Props>()
   <EmailCardInfoPanel title="Donation summary">
     <div>
       <strong>Amount:</strong> {{ amount }}<br />
+      <template v-if="matchedAmount"><strong>Matched:</strong> +{{ matchedAmount }}<br /></template>
       <strong>Date:</strong> {{ date }}<br />
       <template v-if="frequency"><strong>Frequency:</strong> {{ frequency }}<br /></template>
       <template v-if="campaignName"><strong>Fund:</strong> {{ campaignName }}<br /></template>

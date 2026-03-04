@@ -6,10 +6,7 @@ import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaig
 import { useFundraiserFilters } from '~/features/campaigns/features/p2p/admin/composables/useFundraiserFilters'
 import { useExport } from '~/features/_admin/composables/useExport'
 import { useQuickFind } from '~/features/_admin/composables/useQuickFind'
-import {
-  fundraiserColumns,
-  type FundraiserMatchContext
-} from '~/features/campaigns/features/p2p/admin/columns/fundraiserColumns'
+import { fundraiserColumns } from '~/features/campaigns/features/p2p/admin/columns/fundraiserColumns'
 import { createViewActionColumn } from '~/features/_shared/utils/actionColumn'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { formatDate } from '~/lib/formatDate'
@@ -17,19 +14,9 @@ import type { CampaignFundraiser } from '~/features/campaigns/shared/types'
 
 definePageMeta({ layout: 'admin' })
 
-const { allFundraisers, getParentName, stats } = useFundraisers()
+const { allFundraisers, getParentName, getMatchContext, stats } = useFundraisers()
 const { getCampaignById } = useCampaigns()
 const getCampaignPageTitle = (id: string) => getCampaignById(id)?.crowdfunding.title ?? 'Unknown'
-
-/** Resolve matched giving context from parent P2P campaign, with per-fundraiser totalMatched */
-const getMatchContext = (f: CampaignFundraiser): FundraiserMatchContext | null => {
-  const parent = getCampaignById(f.parentCampaignId)
-  if (!parent?.matchedGiving?.periods?.length) return null
-  // Use the fundraiser's own campaign stats for totalMatched (not the parent's poolDrawn)
-  const fundraiserCampaign = getCampaignById(f.campaignId)
-  const totalMatched = fundraiserCampaign?.stats.totalMatched ?? 0
-  return { matchedGiving: parent.matchedGiving, totalMatched }
-}
 const {
   form: filterForm,
   filterValues,

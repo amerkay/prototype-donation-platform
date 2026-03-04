@@ -16,12 +16,22 @@ import { Separator } from '@/components/ui/separator'
 import RefundConfirmationDialog from '~/features/donations/shared/components/RefundConfirmationDialog.vue'
 import { ICON_DONATION, ICON_SUBSCRIPTION, ICON_RECURRING } from '~/lib/icons'
 import { useAdminSubscriptions } from '~/features/subscriptions/admin/composables/useAdminSubscriptions'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 
 definePageMeta({ layout: 'admin' })
 
 const route = useRoute()
 const { getTransactionById, rawTransactions, addTransaction } = useDonations()
 const { subscriptions } = useAdminSubscriptions()
+const { getCampaignById } = useCampaigns()
+
+/** Link to the matched giving config — follows parentCampaignId for p2p fundraisers */
+const matchedGivingLink = computed(() => {
+  if (!txn.value || txn.value.matchedAmount <= 0) return null
+  const campaign = getCampaignById(txn.value.campaignId)
+  const targetId = campaign?.parentCampaignId ?? txn.value.campaignId
+  return `/admin/campaigns/${targetId}#matchedGiving`
+})
 
 const txn = computed(() => getTransactionById(route.params.id as string))
 
@@ -133,6 +143,19 @@ const breadcrumbs = computed(() => [
                     (≈ {{ formatCurrency(txn.totalAmount * txn.exchangeRate, txn.baseCurrency) }})
                   </span>
                 </span>
+              </div>
+              <div v-if="txn.matchedAmount > 0" class="flex justify-between text-green-600">
+                <span>
+                  Matched
+                  <NuxtLink
+                    v-if="matchedGivingLink"
+                    :to="matchedGivingLink"
+                    class="text-xs text-primary hover:underline ml-2"
+                  >
+                    View on Campaign
+                  </NuxtLink>
+                </span>
+                <span>+ {{ formatCurrency(txn.matchedAmount, txn.currency) }}</span>
               </div>
               <div v-if="txn.subscriptionId" class="flex items-center gap-2 pt-1">
                 <ICON_RECURRING class="h-4 w-4 text-muted-foreground" />

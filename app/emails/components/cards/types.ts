@@ -22,6 +22,7 @@ export interface EmailDonationSummaryCardData {
   frequency?: string
   campaignName?: string
   reference?: string
+  matchedAmount?: string
 }
 
 export interface EmailSubscriptionStatusCardData {

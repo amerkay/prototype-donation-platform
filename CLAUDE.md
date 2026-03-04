@@ -130,6 +130,7 @@ Layouts: `admin`, `admin-preview`, `default`, `donor`, `portal`, `print`
 21. `BaseDialogOrDrawer` uses teleport — stub it in tests to render slots inline (Dialog content is invisible to `wrapper.text()`)
 22. `visibleWhen` closures in `defineForm` read Pinia stores at call time (not at module init) — call `form.setup(ctx)` directly to unit-test visibility logic against store state
 23. `pnpm` piped through `| tail` can produce empty output due to buffering — use `| tee $TMPDIR/out.txt` instead
+24. Derived/computed data must have ONE source of truth — never duplicate the same calculation in multiple components/pages. Centralize in composables and consume from there
 
 <!-- end continuous learning notes -->
 

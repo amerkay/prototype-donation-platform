@@ -354,10 +354,10 @@ const campaignConfigs: CampaignTransactionConfig[] = [
     campaignId: 'wild-amer-birthday-fundraiser',
     campaignName: "Wild Amer's Birthday Fundraiser",
     charityName: 'Borneo Orangutan Survival',
-    count: 8,
-    avgAmount: 22.5,
+    count: 10,
+    avgAmount: 12.5,
     currency: 'GBP',
-    dateRange: ['2026-02-01', '2026-03-15'],
+    dateRange: ['2026-02-26', '2026-03-15'],
     products: BIRTHDAY_PRODUCTS,
     matchPeriods: [
       {

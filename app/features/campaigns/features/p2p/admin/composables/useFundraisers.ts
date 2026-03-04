@@ -4,6 +4,7 @@ import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaig
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useAdminDateRangeStore } from '~/features/_admin/stores/adminDateRange'
 import type { CampaignFundraiser, FundraiserStatus } from '~/features/campaigns/shared/types'
+import type { FundraiserMatchContext } from '~/features/campaigns/features/p2p/admin/columns/fundraiserColumns'
 import { formatCurrency } from '~/lib/formatCurrency'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 
@@ -77,9 +78,18 @@ export function useFundraisers() {
   const endFundraiser = (id: string) => updateFundraiserStatus(id, 'ended')
   const reactivateFundraiser = (id: string) => updateFundraiserStatus(id, 'active')
 
+  /** Resolve matched giving context for a fundraiser via getCampaignById (data-layer aware) */
+  const getMatchContext = (f: CampaignFundraiser): FundraiserMatchContext | null => {
+    const fundraiserCampaign = getCampaignById(f.campaignId)
+    if (!fundraiserCampaign?.matchedGiving?.periods?.length) return null
+    const totalMatched = fundraiserCampaign.stats.totalMatched ?? 0
+    return { matchedGiving: fundraiserCampaign.matchedGiving, totalMatched }
+  }
+
   return {
     allFundraisers,
     getFundraiserById,
+    getMatchContext,
     getParentName,
     stats,
     completeFundraiser,
