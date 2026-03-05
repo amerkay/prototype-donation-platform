@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
-import { useFormConfigStore, type FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
+import {
+  useFormConfigStore,
+  type FullFormConfig
+} from '~/features/donation-form/shared/stores/formConfig'
 import type {
   Campaign,
   CampaignForm,
@@ -326,7 +329,9 @@ describe('Campaign Config Store', () => {
       const campaign = makeCampaign({
         type: 'p2p-fundraiser',
         matchedGiving: {
-          periods: [{ id: 'p1', multiplier: 2, startDate: '2025-01-01', poolAmount: 1000, poolDrawn: 0 }]
+          periods: [
+            { id: 'p1', multiplier: 2, startDate: '2025-01-01', poolAmount: 1000, poolDrawn: 0 }
+          ]
         } as unknown as Campaign['matchedGiving']
       })
 
@@ -335,7 +340,11 @@ describe('Campaign Config Store', () => {
 
       // Mutate a nested property on the store
       store.matchedGiving!.periods.push({
-        id: 'p2', multiplier: 3, startDate: '2025-06-01', poolAmount: 500, poolDrawn: 0
+        id: 'p2',
+        multiplier: 3,
+        startDate: '2025-06-01',
+        poolAmount: 500,
+        poolDrawn: 0
       } as unknown as Campaign['matchedGiving']['periods'][number])
 
       // Source campaign MUST still have only 1 period
@@ -488,7 +497,11 @@ describe('FormConfig Store', () => {
       store.initialize(config, [], 'form-1', 'p2p-fundraiser')
 
       const amounts = store.donationAmounts as unknown as {
-        frequencies: { once: { enabled: boolean }; monthly: { enabled: boolean }; yearly: { enabled: boolean } }
+        frequencies: {
+          once: { enabled: boolean }
+          monthly: { enabled: boolean }
+          yearly: { enabled: boolean }
+        }
       }
       expect(amounts.frequencies.once.enabled).toBe(true)
       expect(amounts.frequencies.monthly.enabled).toBe(false)

@@ -390,6 +390,5 @@ describe('useEditState', () => {
       expect(primaryStore.isDirty).toBe(false)
       expect(additionalStore.isDirty).toBe(false)
     })
-
-})
+  })
 })

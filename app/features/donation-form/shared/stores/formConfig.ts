@@ -102,7 +102,12 @@ export const useFormConfigStore = defineStore('formConfig', () => {
     return JSON.parse(JSON.stringify([fullConfig.value, products.value, formId.value]))
   }
 
-  function initialize(config: FullFormConfig, productList: Product[], id?: string, campaignType?: CampaignType) {
+  function initialize(
+    config: FullFormConfig,
+    productList: Product[],
+    id?: string,
+    campaignType?: CampaignType
+  ) {
     // Deep clone to prevent shared references with source data (useCampaigns).
     // Without this, Object.assign in setData mutates both the store AND the source,
     // making discard unable to restore the original values.
@@ -111,8 +116,10 @@ export const useFormConfigStore = defineStore('formConfig', () => {
 
     // Enforce frequency constraints based on campaign type (safety net for P2P)
     if (campaignType && !getCampaignCapabilities(campaignType).allowsRecurring) {
-      if (c.donationAmounts?.frequencies?.monthly) c.donationAmounts.frequencies.monthly.enabled = false
-      if (c.donationAmounts?.frequencies?.yearly) c.donationAmounts.frequencies.yearly.enabled = false
+      if (c.donationAmounts?.frequencies?.monthly)
+        c.donationAmounts.frequencies.monthly.enabled = false
+      if (c.donationAmounts?.frequencies?.yearly)
+        c.donationAmounts.frequencies.yearly.enabled = false
     }
 
     formId.value = id ?? null

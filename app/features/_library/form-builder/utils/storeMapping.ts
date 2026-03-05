@@ -14,6 +14,41 @@ export interface StoreMapping {
   excluded: Set<string>
 }
 
+/** Map flattened group fields to their identity store paths */
+function mapFlattenedFields(
+  fields: Record<string, FieldDef>,
+  formPath: string,
+  displayOnlyTypes: ReadonlySet<string>,
+  paths: Map<string, string>
+) {
+  for (const [fieldName, fieldDef] of Object.entries(fields)) {
+    if (displayOnlyTypes.has(fieldDef.type)) continue
+    paths.set(`${formPath}.${fieldName}`, fieldName)
+  }
+}
+
+/** Strip keys from value that don't exist in oldValue (prevents display-only defaults leaking into store) */
+function filterToExistingKeys(value: unknown, oldValue: unknown): unknown {
+  if (
+    value == null ||
+    typeof value !== 'object' ||
+    Array.isArray(value) ||
+    oldValue == null ||
+    typeof oldValue !== 'object' ||
+    Array.isArray(oldValue)
+  ) {
+    return value
+  }
+  const oldKeys = Object.keys(oldValue as Record<string, unknown>)
+  const filtered: Record<string, unknown> = {}
+  for (const k of oldKeys) {
+    if (k in (value as Record<string, unknown>)) {
+      filtered[k] = (value as Record<string, unknown>)[k]
+    }
+  }
+  return filtered
+}
+
 /**
  * Generate store mapping from form definition
  *
@@ -50,7 +85,12 @@ export function generateStoreMapping(form: ComposableForm): StoreMapping {
   const fields = form.setup(ctx)
 
   // Display-only field types that should never map to store
-  const DISPLAY_ONLY_TYPES = new Set(['alert', 'readonly', 'card', 'component'])
+  const DISPLAY_ONLY_TYPES: ReadonlySet<string> = new Set([
+    'alert',
+    'readonly',
+    'card',
+    'component'
+  ])
 
   // Recursively traverse fields to build mapping
   function traverse(fields: Record<string, FieldDef>, prefix = '') {
@@ -67,11 +107,7 @@ export function generateStoreMapping(form: ComposableForm): StoreMapping {
         } else if (group.$storePath === 'flatten') {
           // Identity-map each store-bound field (exclude display-only types)
           if (group.fields) {
-            for (const [fieldName, fieldDef] of Object.entries(group.fields)) {
-              if (DISPLAY_ONLY_TYPES.has(fieldDef.type)) continue
-              const fieldPath = `${formPath}.${fieldName}`
-              paths.set(fieldPath, fieldName)
-            }
+            mapFlattenedFields(group.fields, formPath, DISPLAY_ONLY_TYPES, paths)
           }
         } else if (group.$storePath && typeof group.$storePath === 'string') {
           // Use explicit path for entire group
@@ -213,26 +249,9 @@ export function generateSetData<TStore extends { markDirty: () => void }>(mappin
 
         const oldValue = target[lastSegment]
 
-        // When writing an object blob, strip keys that don't exist in the old value.
-        // This prevents display-only field defaults (e.g. readonlyField defaultValue)
-        // injected by vee-validate from leaking into the store and triggering false dirty.
-        if (
-          value != null &&
-          typeof value === 'object' &&
-          !Array.isArray(value) &&
-          oldValue != null &&
-          typeof oldValue === 'object' &&
-          !Array.isArray(oldValue)
-        ) {
-          const oldKeys = Object.keys(oldValue as Record<string, unknown>)
-          const filtered: Record<string, unknown> = {}
-          for (const k of oldKeys) {
-            if (k in (value as Record<string, unknown>)) {
-              filtered[k] = (value as Record<string, unknown>)[k]
-            }
-          }
-          value = filtered
-        }
+        // Strip keys that don't exist in the old value to prevent display-only
+        // field defaults from leaking into the store and triggering false dirty.
+        value = filterToExistingKeys(value, oldValue)
 
         // Check if value actually changed
         const valueChanged = JSON.stringify(oldValue) !== JSON.stringify(value)
