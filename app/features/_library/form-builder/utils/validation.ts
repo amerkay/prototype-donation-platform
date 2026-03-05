@@ -82,6 +82,14 @@ function validateTabs(
   if (!('tabs' in fieldDef)) return
   const tabsValue = (fieldValue as Record<string, unknown>) || {}
   for (const tab of fieldDef.tabs) {
+    // Skip hidden tabs — their fields shouldn't be validated
+    if (tab.visibleWhen) {
+      const visible =
+        typeof tab.visibleWhen === 'function'
+          ? tab.visibleWhen(fieldContext)
+          : unref(tab.visibleWhen)
+      if (!visible) continue
+    }
     const tabValues = (tabsValue[tab.value] as Record<string, unknown>) || {}
     const tabContext = buildNestedContext(fieldContext, tabValues)
     validateFields(tab.fields, tabValues, `${fullPath}.${tab.value}`, tabContext, errors)

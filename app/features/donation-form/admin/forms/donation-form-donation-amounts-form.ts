@@ -280,8 +280,10 @@ export const useDonationFormDonationAmountsForm = defineForm('formDonationAmount
 
   const frequencies = tabsField('frequencies', {
     tabsListClass: 'w-full',
-    label: 'Donation Frequencies',
-    description: 'Configure available donation frequencies and their preset amounts',
+    label: !caps.allowsRecurring ? 'Preset Amounts' : 'Donation Frequencies',
+    description: !caps.allowsRecurring
+      ? 'Configure preset donation amounts'
+      : 'Configure available donation frequencies and their preset amounts',
     defaultValue: tabs[0]?.value ?? 'once',
     tabs,
     rules: z
