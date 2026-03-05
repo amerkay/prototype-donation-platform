@@ -4,7 +4,7 @@
  * Core types for campaign management
  */
 
-import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
+import type { FullFormConfig } from '~/features/donation-form/shared/types'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 
 // Re-exported from crowdfunding sub-feature (canonical location)

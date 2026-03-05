@@ -8,11 +8,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ICON_HIDE } from '~/lib/icons'
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
-import { useForm } from '~/features/campaigns/shared/composables/useForm'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
-import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import type { Campaign, CampaignStatus } from '~/features/campaigns/shared/types'
+import { ACTIVE_CONFIG_TAB_KEY } from '~/features/campaigns/admin/composables/useActiveConfigTab'
+import DonationFormPreview from '~/features/donation-form/admin/components/DonationFormPreview.vue'
 import { useEditState } from '~/features/_shared/composables/useEditState'
 
 definePageMeta({
@@ -23,23 +23,13 @@ const route = useRoute()
 const { getCampaignById, updateCampaign } = useCampaigns()
 const charityStore = useCharitySettingsStore()
 const store = useCampaignConfigStore()
-const formConfigStore = useFormConfigStore()
 
 // Get campaign data (fundraisers auto-merge parent template fields via getCampaignById)
 const campaign = computed(() => getCampaignById(route.params.id as string))
-const { form: defaultForm, updateForm } = useForm()
 
-// Initialize both stores synchronously so child components have data during setup
+// Initialize store synchronously — formConfig is auto-populated from campaign.form
 if (campaign.value) {
   store.initialize(campaign.value)
-}
-if (defaultForm.value) {
-  formConfigStore.initialize(
-    defaultForm.value.config,
-    defaultForm.value.products,
-    defaultForm.value.id,
-    campaign.value?.type
-  )
 }
 
 onMounted(() => {
@@ -74,13 +64,12 @@ const editableMode = ref(!isTerminal.value)
 const crowdfundingEnabled = computed(() => store.crowdfunding?.enabled !== false)
 const { brandingStyle } = useBrandingCssVars()
 
-// Additional store: formConfigStore snapshot for useEditState lifecycle management
-const formConfigSnapshot = computed(() => {
-  if (!formConfigStore.fullConfig || !formConfigStore.formId) return undefined
-  return [formConfigStore.fullConfig, formConfigStore.products, formConfigStore.formId] as const
-})
+// Preview switching — provide active tab ref for config panel to write to
+const activeConfigTab = ref(store.isFundraiser ? 'crowdfunding' : 'donationForm')
+provide(ACTIVE_CONFIG_TAB_KEY, activeConfigTab)
+const isFormTabActive = computed(() => activeConfigTab.value === 'donationForm')
 
-// Reuse admin edit composable for save/discard logic
+// Single store — no additionalStores needed
 const {
   handleSave: handleCampaignSave,
   handleDiscard: handleCampaignDiscard,
@@ -91,12 +80,6 @@ const {
   store,
   formRef,
   originalData: campaignForStore,
-  additionalStores: [
-    {
-      store: formConfigStore,
-      originalData: formConfigSnapshot
-    }
-  ],
   onSave: async () => {
     if (!store.id) return
     await updateCampaign(store.id, {
@@ -105,12 +88,9 @@ const {
       stats: store.stats!,
       crowdfunding: store.crowdfunding!,
       peerToPeer: store.peerToPeer!,
-      matchedGiving: store.matchedGiving
+      matchedGiving: store.matchedGiving,
+      form: store.assembledForm ?? store.form
     })
-    // Also save form config if dirty
-    if (formConfigStore.isDirty && formConfigStore.formId && formConfigStore.fullConfig) {
-      await updateForm(formConfigStore.fullConfig, formConfigStore.products)
-    }
   }
 })
 
@@ -168,7 +148,7 @@ const handleDeleted = () => {
     :breadcrumbs="breadcrumbs"
     :is-dirty="isTerminal ? false : store.isDirty"
     :show-discard-dialog="showDiscardDialog"
-    :show-preview="crowdfundingEnabled"
+    :show-preview="crowdfundingEnabled || isFormTabActive"
     preview-label="Preview"
     :editable-last-item="!isTerminal"
     :max-length="75"
@@ -202,8 +182,14 @@ const handleDeleted = () => {
 
     <template #preview>
       <div :style="brandingStyle">
+        <!-- Form preview when Donation Form tab is active -->
+        <DonationFormPreview
+          v-if="isFormTabActive && store.fullFormConfig"
+          :editable="isTerminal ? false : editableMode"
+        />
+        <!-- Campaign preview for other tabs -->
         <CrowdfundingPagePreview
-          v-if="crowdfundingEnabled"
+          v-else-if="crowdfundingEnabled"
           :editable="isTerminal ? false : editableMode"
         />
         <Empty v-else class="border border-dashed">

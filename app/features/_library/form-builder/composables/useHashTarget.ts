@@ -43,6 +43,17 @@ export function activateHashTarget(target: string): boolean {
  * Returns false if any field along the path is hidden by its visibleWhen condition.
  * Fields inside collapsed accordions remain valid — only visibleWhen is checked.
  */
+type TabWithVisibility = {
+  value: string
+  fields: Record<string, FieldDef>
+  visibleWhen?: ((ctx: FieldContext) => boolean) | { value: boolean }
+}
+
+function isTabVisible(tab: TabWithVisibility, ctx: FieldContext): boolean {
+  if (tab.visibleWhen === undefined) return true
+  return typeof tab.visibleWhen === 'function' ? tab.visibleWhen(ctx) : tab.visibleWhen.value
+}
+
 function isFieldVisibleInTree(
   resolvedPath: string,
   fields: Record<string, FieldDef>,
@@ -66,25 +77,24 @@ function isFieldVisibleInTree(
     if (field.type === 'field-group' && 'fields' in field && field.fields) {
       currentFields = field.fields as Record<string, FieldDef>
       currentValues = (currentValues[segment] as Record<string, unknown>) || {}
-    } else if (field.type === 'tabs' && 'tabs' in field) {
-      // Next segment is the tab value — find matching tab and descend
-      const nextSegment = segments[i + 1]
-      if (nextSegment) {
-        const typedField = field as {
-          tabs: Array<{ value: string; fields: Record<string, FieldDef> }>
-        }
-        const tab = typedField.tabs.find((t) => t.value === nextSegment)
-        if (tab) {
-          currentFields = tab.fields
-          // Descend through both the tabs container AND the specific tab value
-          // e.g. for path `sections.crowdfunding.title`, values must narrow to
-          // formValues.sections.crowdfunding (not just formValues.sections)
-          const tabsValues = (currentValues[segment] as Record<string, unknown>) || {}
-          currentValues = (tabsValues[nextSegment] as Record<string, unknown>) || {}
-          i++ // Skip the tab segment
-        }
-      }
+      continue
     }
+
+    if (field.type !== 'tabs' || !('tabs' in field)) continue
+    // Next segment is the tab value — find matching tab and descend
+    const nextSegment = segments[i + 1]
+    if (!nextSegment) continue
+    const tab = (field as { tabs: TabWithVisibility[] }).tabs.find((t) => t.value === nextSegment)
+    if (!tab) continue
+    const tabCtx: FieldContext = { values: currentValues, root: formValues }
+    if (!isTabVisible(tab, tabCtx)) return false
+    currentFields = tab.fields
+    // Descend through both the tabs container AND the specific tab value
+    // e.g. for path `sections.crowdfunding.title`, values must narrow to
+    // formValues.sections.crowdfunding (not just formValues.sections)
+    const tabsValues = (currentValues[segment] as Record<string, unknown>) || {}
+    currentValues = (tabsValues[nextSegment] as Record<string, unknown>) || {}
+    i++ // Skip the tab segment
   }
   return true
 }

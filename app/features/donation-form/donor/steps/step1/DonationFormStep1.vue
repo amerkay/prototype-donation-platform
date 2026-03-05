@@ -11,11 +11,11 @@ import { useImpactCartStore } from '~/features/donation-form/features/impact-car
 import DonationFormSingle from './DonationFormSingle.vue'
 import DonationFormMultiple from './DonationFormMultiple.vue'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
-import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
+import type { FullFormConfig } from '~/features/donation-form/shared/types'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
 import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
-import { DONATION_FORM_FIELD_TARGETS as DT } from '~/features/donation-form/admin/forms/admin-donation-form-master'
+import { DONATION_FORM_FIELD_TARGETS as DT } from '~/features/campaigns/admin/forms/donation-form-tab'
 import { formConfig as defaultConfig } from '~/sample-api-responses/api-sample-response-form-config'
 
 // Get products from store

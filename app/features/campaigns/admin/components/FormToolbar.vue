@@ -1,43 +1,41 @@
 <script setup lang="ts">
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
-import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
 import { useForm } from '~/features/campaigns/shared/composables/useForm'
 import { useCreateFormFromTemplate } from '~/features/donation-form/admin/composables/useCreateFormFromTemplate'
 import type { DonationFormTemplate } from '~/features/donation-form/admin/templates'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import AdminDeleteDialog from '~/features/_admin/components/AdminDeleteDialog.vue'
 import CopyFormFromCampaignDialog from './CopyFormFromCampaignDialog.vue'
 import DonationFormTemplatesDialog from '~/features/donation-form/admin/components/DonationFormTemplatesDialog.vue'
-import { ICON_EDIT, ICON_VIEW, ICON_COPY, ICON_SPARKLES } from '~/lib/icons'
+import { ICON_COPY, ICON_SPARKLES } from '~/lib/icons'
 import type { CampaignForm } from '~/features/campaigns/shared/types'
 
-defineProps<{
-  disabled?: boolean
-}>()
-
 const store = useCampaignConfigStore()
-const { formatDate } = useCampaignFormatters()
 const { setForm } = useForm()
 const { createFormFromTemplate } = useCreateFormFromTemplate()
-const form = computed(() => store.form)
 const caps = computed(() => getCampaignCapabilities(store.type))
 
 // Count enabled features
 const enabledFeaturesCount = computed(() => {
-  if (!form.value) return 0
-  const features = form.value.config.features
-  return Object.values(features).filter((f: unknown) => {
-    const feat = f as { enabled?: boolean }
-    return feat?.enabled === true
-  }).length
+  const fc = store.formConfig
+  const features = [
+    fc.impactCart,
+    fc.productSelector,
+    fc.impactBoost,
+    fc.coverCosts,
+    fc.giftAid,
+    fc.tribute,
+    fc.entryFields,
+    fc.contactConsent,
+    fc.terms
+  ]
+  return features.filter((f) => (f as { enabled?: boolean } | null)?.enabled === true).length
 })
 
 // Count products
-const productCount = computed(() => form.value?.products.length ?? 0)
+const productCount = computed(() => store.formConfig.products.length)
 
 // Copy from campaign flow
 const showCopyDialog = ref(false)
@@ -45,12 +43,10 @@ const showCopyConfirm = ref(false)
 const pendingCopyForm = ref<CampaignForm | null>(null)
 
 const handleCopySelect = (selectedForm: CampaignForm, _sourceCampaignId: string) => {
-  if (form.value) {
-    // Existing form — show confirmation warning
+  if (store.formConfig.formId) {
     pendingCopyForm.value = selectedForm
     showCopyConfirm.value = true
   } else {
-    // No existing form — apply directly
     setForm(selectedForm)
   }
 }
@@ -69,7 +65,7 @@ const showTemplateConfirm = ref(false)
 const pendingTemplate = ref<DonationFormTemplate | null>(null)
 
 const handleTemplateSelect = (template: DonationFormTemplate) => {
-  if (form.value) {
+  if (store.formConfig.formId) {
     pendingTemplate.value = template
     showTemplateConfirm.value = true
   } else {
@@ -109,73 +105,28 @@ const handleTemplateConfirm = () => {
 </script>
 
 <template>
-  <div v-if="form" class="space-y-3">
-    <Card>
-      <CardHeader class="pb-3">
-        <div class="flex items-center justify-between">
-          <div class="space-y-1">
-            <CardTitle class="text-base">{{ form.name }}</CardTitle>
-            <CardDescription class="text-xs">
-              Updated {{ formatDate(form.updatedAt) }}
-            </CardDescription>
-          </div>
-          <Badge variant="outline" class="text-xs">
-            {{ caps.formType === 'registration' ? 'Registration' : 'Donation' }}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent class="space-y-3">
-        <!-- Config summary -->
-        <div class="flex gap-4 text-sm text-muted-foreground">
-          <span>{{ enabledFeaturesCount }} features enabled</span>
-          <span>{{ productCount }} product{{ productCount !== 1 ? 's' : '' }}</span>
-        </div>
-
-        <Separator />
-
-        <!-- Actions -->
-        <div class="flex gap-2 flex-wrap">
-          <Button
-            v-if="!store.isFundraiser"
-            variant="outline"
-            size="sm"
-            as-child
-            :disabled="disabled"
-          >
-            <NuxtLink :to="`/admin/campaigns/${store.id}/forms/${form.id}/edit`">
-              <ICON_EDIT class="w-4 h-4 mr-1" />
-              Edit Form
-            </NuxtLink>
-          </Button>
-          <Button variant="outline" size="sm" as-child>
-            <NuxtLink :to="`/admin/campaigns/${store.id}/forms/${form.id}/preview`" target="_blank">
-              <ICON_VIEW class="w-4 h-4 mr-1" />
-              Preview
-            </NuxtLink>
-          </Button>
-          <Button
-            v-if="!store.isFundraiser"
-            variant="outline"
-            size="sm"
-            :disabled="disabled"
-            @click="showCopyDialog = true"
-          >
-            <ICON_COPY class="w-4 h-4 mr-1" />
-            Copy from
-          </Button>
-          <Button
-            v-if="!store.isFundraiser"
-            variant="outline"
-            size="sm"
-            :disabled="disabled"
-            @click="showTemplateDialog = true"
-          >
-            <ICON_SPARKLES class="w-4 h-4 mr-1" />
-            Replace with template
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+  <div v-if="store.formConfig.formId" class="space-y-3">
+    <!-- Toolbar: summary + actions -->
+    <div class="flex items-center justify-between gap-3 flex-wrap">
+      <div class="flex items-center gap-2 text-sm text-muted-foreground">
+        <Badge variant="outline" class="text-xs">
+          {{ caps.formType === 'registration' ? 'Registration' : 'Donation' }}
+        </Badge>
+        <span>{{ enabledFeaturesCount }} features</span>
+        <span>&middot;</span>
+        <span>{{ productCount }} product{{ productCount !== 1 ? 's' : '' }}</span>
+      </div>
+      <div v-if="!store.isFundraiser" class="flex gap-2 flex-wrap">
+        <Button variant="outline" size="sm" @click="showCopyDialog = true">
+          <ICON_COPY class="w-4 h-4 mr-1" />
+          Copy from
+        </Button>
+        <Button variant="outline" size="sm" @click="showTemplateDialog = true">
+          <ICON_SPARKLES class="w-4 h-4 mr-1" />
+          Replace with template
+        </Button>
+      </div>
+    </div>
   </div>
 
   <!-- No form state -->
@@ -195,11 +146,6 @@ const handleTemplateConfirm = () => {
       </Button>
     </div>
   </div>
-
-  <!-- Fundraiser notice -->
-  <p v-if="store.isFundraiser && form" class="text-xs text-muted-foreground mt-2">
-    Fundraiser campaigns use a copy of the parent template's form. Configuration is read-only.
-  </p>
 
   <!-- Copy from campaign dialog -->
   <CopyFormFromCampaignDialog

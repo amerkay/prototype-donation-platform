@@ -220,7 +220,7 @@ describe('Campaign Config Store', () => {
       expect(store.fullCampaign?.form).toEqual(testForm)
     })
 
-    it('fullCampaign reflects form changes after setForm-like mutation', () => {
+    it('fullCampaign reflects form changes after initializeFormConfig', () => {
       const store = useCampaignConfigStore()
       store.initialize(
         makeCampaign({
@@ -237,21 +237,45 @@ describe('Campaign Config Store', () => {
         })
       )
 
-      // Simulate setForm (Replace with template / Copy from)
+      // Simulate setForm (Replace with template / Copy from) via initializeFormConfig
       const newForm = {
         id: 'new-form',
         campaignId: 'camp-1',
         name: 'New Template Form',
         isDefault: true,
-        config: { features: { giftAid: { enabled: true } } },
-        products: [{ id: 'p1', name: 'Product 1' }],
+        config: {
+          version: '1.0',
+          form: { title: 'Test', subtitle: '' },
+          donationAmounts: {
+            baseDefaultCurrency: 'GBP',
+            frequencies: {
+              once: { enabled: true, presetAmounts: [], customAmount: { min: 1, max: 1000 } },
+              monthly: { enabled: false, presetAmounts: [], customAmount: { min: 1, max: 1000 } },
+              yearly: { enabled: false, presetAmounts: [], customAmount: { min: 1, max: 1000 } }
+            }
+          },
+          features: {
+            impactCart: { enabled: false, settings: {} },
+            productSelector: { enabled: false },
+            impactBoost: { enabled: false },
+            coverCosts: { enabled: false },
+            giftAid: { enabled: true },
+            tribute: { enabled: false },
+            customFields: { customFieldsTabs: {} },
+            entryFields: { enabled: false, mode: 'shared', fields: [] },
+            contactConsent: { enabled: true, settings: { label: 'Join', description: 'Desc' } },
+            terms: { enabled: true }
+          }
+        },
+        products: [{ id: 'p1', title: 'Product 1' }],
         createdAt: '2025-02-01T00:00:00Z',
         updatedAt: '2025-02-01T00:00:00Z'
       }
+      store.initializeFormConfig(newForm as unknown as CampaignForm)
       store.form = newForm as unknown as CampaignForm
       store.markDirty()
 
-      // fullCampaign (used by onSave) MUST reflect the new form
+      // fullCampaign (used by onSave) MUST reflect the new form via assembledForm
       expect(store.fullCampaign?.form?.id).toBe('new-form')
       expect(store.fullCampaign?.form?.name).toBe('New Template Form')
     })

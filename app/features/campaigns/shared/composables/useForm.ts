@@ -1,40 +1,43 @@
 import { toast } from 'vue-sonner'
 import type { CampaignForm } from '~/features/campaigns/shared/types'
-import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
-import type { Product } from '~/features/donation-form/features/product/shared/types'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 /**
  * Single-form composable for 1:1 campaign:form relationship.
- * Reads/writes the campaign config store's `form` ref directly.
+ * Reads/writes the campaign config store's formConfig namespace.
  */
 export function useForm() {
   const store = useCampaignConfigStore()
   const { updateCampaign } = useCampaigns()
 
-  /** The campaign's single form (reactive) */
-  const form = computed(() => store.form)
+  /** The campaign's assembled form (reactive, computed from formConfig state) */
+  const form = computed(() => store.assembledForm)
 
   /** Whether a form exists */
-  const hasForm = computed(() => store.form !== null)
+  const hasForm = computed(() => store.formConfig.formId !== null)
 
   /** Count of features enabled in the form */
   const getEnabledFeaturesCount = (): number => {
-    if (!store.form) return 0
-    const features = store.form.config.features
-    return Object.values(features).filter((feature: unknown) => {
-      const f = feature as { enabled?: boolean }
-      return f?.enabled === true
-    }).length
+    const fc = store.formConfig
+    const features = [
+      fc.impactCart,
+      fc.productSelector,
+      fc.impactBoost,
+      fc.coverCosts,
+      fc.giftAid,
+      fc.tribute,
+      fc.entryFields,
+      fc.contactConsent,
+      fc.terms
+    ]
+    return features.filter((f) => (f as { enabled?: boolean } | null)?.enabled === true).length
   }
 
-  /** Update the form's config and products */
-  const updateForm = async (config: FullFormConfig, products: Product[]): Promise<void> => {
-    if (!store.form || !store.id) return
-    const updatedForm: CampaignForm = {
-      ...store.form,
-      config,
-      products,
+  /** Save the form config back to the campaign (reconstructs CampaignForm from formConfig state) */
+  const updateForm = async (): Promise<void> => {
+    if (!store.assembledForm || !store.id) return
+    const updatedForm = {
+      ...store.assembledForm,
       updatedAt: new Date().toISOString()
     }
     store.form = updatedForm
@@ -42,23 +45,28 @@ export function useForm() {
     await updateCampaign(store.id, { form: updatedForm })
   }
 
-  /** Set a new form (from template or copy) */
-  const setForm = async (form: CampaignForm): Promise<void> => {
+  /** Set a new form (from template or copy) — decomposes into formConfig state */
+  const setForm = async (newForm: CampaignForm): Promise<void> => {
     if (!store.id) return
     await new Promise((resolve) => setTimeout(resolve, 300))
-    store.form = { ...form, campaignId: store.id }
+    const formWithCampaign = { ...newForm, campaignId: store.id }
+    // Decompose into formConfig.* state
+    store.initializeFormConfig(formWithCampaign, store.type)
+    // Also keep the raw form ref updated for fullCampaign computed
+    store.form = formWithCampaign
     store.markDirty()
   }
 
   /** Rename the form */
   const renameForm = (newName: string): void => {
-    if (!store.form) return
-    store.form = { ...store.form, name: newName }
+    if (!store.formConfig.formId) return
+    store.formConfig.formName = newName
     toast.success('Form name updated')
   }
 
   /** Clear the form (set to null) */
   const clearForm = (): void => {
+    store.initializeFormConfig(null)
     store.form = null
     store.markDirty()
   }

@@ -10,10 +10,9 @@ import TributeModal from '~/features/donation-form/features/tribute/donor/compon
 import ProductSelectorButton from '~/features/donation-form/features/product-selector/donor/components/ProductSelectorButton.vue'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
-import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
-import type { PresetAmount } from '~/features/donation-form/shared/types'
+import type { FullFormConfig, PresetAmount } from '~/features/donation-form/shared/types'
 import Separator from '~/components/ui/separator/Separator.vue'
-import { DONATION_FORM_FIELD_TARGETS as DT } from '~/features/donation-form/admin/forms/admin-donation-form-master'
+import { DONATION_FORM_FIELD_TARGETS as DT } from '~/features/campaigns/admin/forms/donation-form-tab'
 
 interface Props {
   frequency: 'once' | 'monthly' | 'yearly'

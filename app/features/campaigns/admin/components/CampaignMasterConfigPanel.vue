@@ -1,85 +1,200 @@
 <script setup lang="ts">
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
-import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import FormRenderer from '@/features/_library/form-builder/FormRenderer.vue'
 import StickyButtonGroup from '~/features/_admin/components/StickyButtonGroup.vue'
+import CurrencyChangeDialog from '~/features/settings/admin/components/CurrencyChangeDialog.vue'
 import { createCampaignConfigMaster } from '../forms/campaign-config-master'
-import { createFundraiserConfigMaster } from '../forms/fundraiser-config-master'
 import { useAdminConfigForm } from '~/features/_admin/composables/useAdminConfigForm'
+import {
+  useDonationFormContext,
+  buildBaseContextSchema,
+  buildEntryFieldSchemaEntries
+} from '~/features/donation-form/donor/composables/useDonationFormContext'
+import { useDonationCurrencies } from '~/features/donation-form/shared/composables/useDonationCurrencies'
+import type { ContextSchema } from '~/features/_library/form-builder/conditions'
+import type { FrequencySettings } from '~/features/donation-form/shared/types'
+import {
+  useCurrency,
+  getCurrencySymbol,
+  type ConversionBreakdown
+} from '~/features/donation-form/shared/composables/useCurrency'
+import { convertFrequencyAmounts } from '~/features/settings/admin/composables/useCurrencyConversion'
+import { ACTIVE_CONFIG_TAB_KEY } from '~/features/campaigns/admin/composables/useActiveConfigTab'
 
+const router = useRouter()
 const store = useCampaignConfigStore()
-const formConfigStore = useFormConfigStore()
+const { effectiveCurrencies } = useDonationCurrencies()
+const { convertPrice, getConversionBreakdown } = useCurrency()
 
-// Form count for component field validation (1:1 campaign:form)
-const formsCount = computed(() => (store.form ? 1 : 0))
+// Donor-side schema (static, for FormRenderer contextSchema prop)
+const { contextSchema: donationContextSchema } = useDonationFormContext()
 
-// Fundraisers: unified single-form with manual two-store binding
-// Non-fundraisers: auto-mapped campaign config form
-const { formRef, modelValue, form, expose } = store.isFundraiser
-  ? useAdminConfigForm({
-      store,
-      form: createFundraiserConfigMaster(),
-      autoMap: false,
-      getData: () => ({
-        sections: {
-          crowdfunding: store.crowdfunding,
-          amounts: formConfigStore.donationAmounts
-        }
-      }),
-      setData: (_s, data: Record<string, unknown>) => {
-        const sections = data.sections as Record<string, unknown>
-        if (sections.crowdfunding !== undefined) {
-          const changed =
-            JSON.stringify(store.crowdfunding) !== JSON.stringify(sections.crowdfunding)
-          Object.assign(store.crowdfunding!, sections.crowdfunding as object)
-          if (changed) store.markDirty()
-        }
-        if (sections.amounts !== undefined) {
-          const changed =
-            JSON.stringify(formConfigStore.donationAmounts) !== JSON.stringify(sections.amounts)
-          Object.assign(formConfigStore.donationAmounts!, sections.amounts as object)
-          if (changed) formConfigStore.markDirty()
-        }
-      }
-    })
-  : useAdminConfigForm({
-      store,
-      form: createCampaignConfigMaster()
-    })
+// Admin-side resolver: reads entry fields from live form values for reactive conditions
+const adminContextSchemaResolver = (rootValues: Record<string, unknown>): ContextSchema => {
+  const currencies = effectiveCurrencies.value.supportedCurrencies
+  const products = store.formConfig.products.map((p) => ({ id: p.id, name: p.title }))
+  const schema = buildBaseContextSchema(currencies, products)
 
-// Combined dirty state for StickyButtonGroup
-const isDirty = computed(() => store.isDirty || (store.isFundraiser && formConfigStore.isDirty))
-const isSaving = computed(() => store.isSaving || (store.isFundraiser && formConfigStore.isSaving))
-const isValid = computed(() => formRef.value?.isValid ?? false)
+  // With nested tabs, entry fields are under config.sections.donationForm.formTabs.features
+  const configData = rootValues.config as Record<string, unknown> | undefined
+  const sectionsData = configData?.sections as Record<string, unknown> | undefined
+  const donationForm = sectionsData?.donationForm as Record<string, unknown> | undefined
+  const formTabs = donationForm?.formTabs as Record<string, unknown> | undefined
+  const featuresData = formTabs?.features as Record<string, unknown> | undefined
+  const entryFieldsData = featuresData?.entryFields as Record<string, unknown> | undefined
+  const entryFieldsList = entryFieldsData?.fields
 
-// Manually inject formsCount for component field validation (non-fundraiser only)
-// Component fields are excluded from auto-mapping but need validation data
-// With tabs, donationForms is nested under config.sections
-if (!store.isFundraiser) {
-  watch(
-    formsCount,
-    (count) => {
-      const config = modelValue.value.config as Record<string, unknown> | undefined
-      const sections = config?.sections as Record<string, unknown> | undefined
-      if (sections) {
-        if (!sections.donationForms) {
-          sections.donationForms = {}
-        }
-        ;(sections.donationForms as Record<string, unknown>).formCard = {
-          formsCount: count
-        }
-      }
-      // Push into vee-validate's internal state so validation re-runs.
-      formRef.value?.setFieldValue('config.sections.donationForms.formCard', { formsCount: count })
-    },
-    { immediate: true }
-  )
+  if (Array.isArray(entryFieldsList)) {
+    const fields = (entryFieldsList as Record<string, unknown>[])
+      .filter((f) => f.type && f.id && f.label)
+      .map((f) => ({
+        type: f.type as string,
+        id: f.id as string,
+        label: f.label as string,
+        options: Array.isArray(f.options) ? (f.options as string[]) : undefined
+      }))
+    Object.assign(schema, buildEntryFieldSchemaEntries(fields))
+  }
+
+  return schema
 }
 
-defineEmits<{
+// Track active top-level tab for preview switching (provided by parent page)
+const activeConfigTab = inject(
+  ACTIVE_CONFIG_TAB_KEY,
+  ref(store.isFundraiser ? 'crowdfunding' : 'donationForm')
+)
+
+// Single unified form — auto-mapped to the store (campaign + formConfig.*)
+const { formRef, modelValue, form, expose } = useAdminConfigForm({
+  store,
+  form: createCampaignConfigMaster(adminContextSchemaResolver, (tab) => {
+    activeConfigTab.value = tab
+  }),
+  contextSchema: donationContextSchema.value
+})
+
+// --- Base currency change: conversion dialog ---
+const showCurrencyConvertDialog = ref(false)
+const pendingOldCurrency = ref('')
+const pendingNewCurrency = ref('')
+const conversionBreakdown = ref<ConversionBreakdown | null>(null)
+
+// Tracks which currency the current amounts are denominated in.
+const savedBaseDefaultCurrency = store.formConfig.donationAmounts?.baseDefaultCurrency ?? ''
+let amountsCurrency = savedBaseDefaultCurrency
+
+// Find a sample amount from preset amounts for the breakdown preview
+function getDonationAmountsFromModel(): Record<string, unknown> | undefined {
+  const config = modelValue.value?.config as Record<string, unknown> | undefined
+  const sections = config?.sections as Record<string, unknown> | undefined
+  const donationForm = sections?.donationForm as Record<string, unknown> | undefined
+  const formTabs = donationForm?.formTabs as Record<string, unknown> | undefined
+  return formTabs?.amounts as Record<string, unknown> | undefined
+}
+
+function findSampleAmount(): number {
+  const da = getDonationAmountsFromModel()
+  if (!da?.frequencies) return 30
+  const freqs = da.frequencies as Record<
+    string,
+    { enabled?: boolean; presetAmounts?: { amount: number }[] }
+  >
+  for (const freq of Object.values(freqs)) {
+    if (freq.enabled && freq.presetAmounts?.length) {
+      return freq.presetAmounts[0]!.amount
+    }
+  }
+  return 30
+}
+
+const presetExamples = computed(() => {
+  if (!pendingOldCurrency.value || !pendingNewCurrency.value) return []
+  const da = getDonationAmountsFromModel()
+  if (!da?.frequencies) return []
+  const freqs = da.frequencies as Record<
+    string,
+    { enabled?: boolean; label?: string; presetAmounts?: { amount: number }[] }
+  >
+  const fromSym = getCurrencySymbol(pendingOldCurrency.value)
+  const toSym = getCurrencySymbol(pendingNewCurrency.value)
+  const examples: Array<{ label: string; from: string; to: string }> = []
+  for (const [, freq] of Object.entries(freqs)) {
+    if (!freq.enabled || !freq.presetAmounts?.length) continue
+    const amt = freq.presetAmounts[0]!.amount
+    const converted = convertPrice(amt, pendingNewCurrency.value, pendingOldCurrency.value)
+    examples.push({
+      label: `${freq.label ?? 'Preset'} preset`,
+      from: `${fromSym}${amt}`,
+      to: `${toSym}${converted}`
+    })
+    if (examples.length >= 3) break
+  }
+  return examples
+})
+
+watch(
+  () => {
+    // With nested tabs, currency is under donationForm.formTabs.amounts
+    const config = modelValue.value?.config as Record<string, unknown> | undefined
+    const sections = config?.sections as Record<string, unknown> | undefined
+    const donationForm = sections?.donationForm as Record<string, unknown> | undefined
+    const formTabs = donationForm?.formTabs as Record<string, unknown> | undefined
+    const amounts = formTabs?.amounts as Record<string, unknown> | undefined
+    return amounts?.baseDefaultCurrency as string | undefined
+  },
+  (newVal, oldVal) => {
+    if (!newVal || !oldVal || newVal === oldVal) return
+    if (oldVal === amountsCurrency && newVal !== oldVal) {
+      pendingOldCurrency.value = oldVal
+      pendingNewCurrency.value = newVal
+      conversionBreakdown.value = getConversionBreakdown(findSampleAmount(), newVal, oldVal)
+      showCurrencyConvertDialog.value = true
+    }
+  },
+  { flush: 'sync' }
+)
+
+function handleConvertAmounts() {
+  showCurrencyConvertDialog.value = false
+  const fromCurrency = pendingOldCurrency.value
+  const toCurrency = pendingNewCurrency.value
+
+  const da = getDonationAmountsFromModel()
+  if (!da?.frequencies) return
+
+  const frequencies = JSON.parse(JSON.stringify(da.frequencies)) as Record<
+    string,
+    FrequencySettings
+  >
+  convertFrequencyAmounts(frequencies, fromCurrency, toCurrency, convertPrice)
+
+  // Write converted frequencies back via setFieldValue (nested tab path)
+  formRef.value?.setFieldValue(
+    'config.sections.donationForm.formTabs.amounts.frequencies',
+    frequencies
+  )
+  amountsCurrency = toCurrency
+
+  // Navigate to preset amounts so the user can see the converted values
+  router.replace({ hash: '#presetAmounts' })
+}
+
+function handleSkipConvert() {
+  showCurrencyConvertDialog.value = false
+  amountsCurrency = pendingNewCurrency.value
+}
+
+const emit = defineEmits<{
   save: []
   discard: []
 }>()
+
+function handleDiscard() {
+  amountsCurrency = savedBaseDefaultCurrency
+  emit('discard')
+}
+
 defineExpose(expose)
 </script>
 
@@ -89,17 +204,33 @@ defineExpose(expose)
       ref="formRef"
       v-model="modelValue"
       :section="form"
+      :context-schema="donationContextSchema"
       validate-on-mount
       update-only-when-valid
     />
 
     <!-- Save Button -->
     <StickyButtonGroup
-      :is-dirty="isDirty"
-      :is-saving="isSaving"
-      :is-valid="isValid"
+      :is-dirty="store.isDirty"
+      :is-saving="store.isSaving"
+      :is-valid="formRef?.isValid ?? false"
       @save="$emit('save')"
-      @discard="$emit('discard')"
+      @discard="handleDiscard"
+    />
+
+    <!-- Base currency change: convert preset amounts dialog -->
+    <CurrencyChangeDialog
+      :open="showCurrencyConvertDialog"
+      title="Convert Preset Amounts?"
+      :description="`Base currency changed from **${pendingOldCurrency}** to **${pendingNewCurrency}**. All preset amounts and custom ranges can be automatically converted.`"
+      :from-currency="pendingOldCurrency"
+      :to-currency="pendingNewCurrency"
+      :breakdown="conversionBreakdown"
+      :examples="presetExamples"
+      confirm-label="Convert Amounts"
+      @update:open="showCurrencyConvertDialog = $event"
+      @confirm="handleConvertAmounts"
+      @skip="handleSkipConvert"
     />
   </div>
 </template>

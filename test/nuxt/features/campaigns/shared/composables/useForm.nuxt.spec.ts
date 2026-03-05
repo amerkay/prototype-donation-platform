@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
-import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
+import type { FullFormConfig } from '~/features/donation-form/shared/types'
 import type { Campaign, CampaignForm } from '~/features/campaigns/shared/types'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 
@@ -119,17 +119,16 @@ describe('useForm', () => {
 
     const { updateForm } = useForm()
 
-    // Simulate removing productB (user clicks X)
-    const updatedProducts = [productA]
-    const config = makeFormConfig()
+    // Simulate removing productB (user clicks X) — mutate formConfig directly
+    configStore.formConfig.products = [productA]
 
-    await updateForm(config, updatedProducts)
+    await updateForm()
 
     // updateCampaign MUST be called with the updated form (only 1 product)
     expect(mockUpdateCampaign).toHaveBeenCalledOnce()
     expect(mockUpdateCampaign).toHaveBeenCalledWith('camp-1', {
       form: expect.objectContaining({
-        products: updatedProducts
+        products: expect.arrayContaining([expect.objectContaining({ id: 'prod-a' })])
       })
     })
 
@@ -149,7 +148,7 @@ describe('useForm', () => {
     configStore.initialize(campaign)
 
     const { updateForm } = useForm()
-    await updateForm(makeFormConfig(), [])
+    await updateForm()
 
     expect(mockUpdateCampaign).not.toHaveBeenCalled()
   })

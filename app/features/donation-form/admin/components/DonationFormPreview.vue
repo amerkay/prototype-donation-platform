@@ -3,7 +3,7 @@ import { provide, watch } from 'vue'
 import DonationFlowWizard from '~/features/donation-form/donor/DonationFlowWizard.vue'
 import DevJsonPreview from '~/features/_admin/components/DevJsonPreview.vue'
 import PreviewEditable from '~/features/_admin/components/PreviewEditable.vue'
-import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
+import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { extractCustomFieldDefaults } from '~/features/_library/custom-fields/utils'
 import { HASH_TARGET_PASSIVE_KEY } from '~/features/_library/form-builder/composables/useHashTarget'
@@ -18,8 +18,8 @@ withDefaults(
 // Prevent preview FormRenderers from stealing the global hash target activator
 provide(HASH_TARGET_PASSIVE_KEY, true)
 
-// Get shared form config from store
-const store = useFormConfigStore()
+// Get form config from campaign store (unified source of truth)
+const store = useCampaignConfigStore()
 const donationStore = useDonationFormStore()
 
 // ==================== ADMIN PREVIEW SYNC ====================
@@ -27,7 +27,7 @@ const donationStore = useDonationFormStore()
 
 // 1. Sync currency changes
 watch(
-  () => store.donationAmounts?.baseDefaultCurrency,
+  () => store.formConfig.donationAmounts?.baseDefaultCurrency,
   (newCurrency) => {
     if (newCurrency) {
       donationStore.setCurrency(newCurrency)
@@ -38,7 +38,7 @@ watch(
 
 // 2. Sync custom fields changes (cleanup orphaned + update defaults)
 watch(
-  () => store.customFields,
+  () => store.formConfig.customFields,
   (config) => {
     if (!config) return
 
@@ -83,9 +83,9 @@ watch(
 </script>
 
 <template>
-  <div v-if="store.fullConfig" class="space-y-4">
+  <div v-if="store.fullFormConfig" class="space-y-4">
     <PreviewEditable :enabled="editable" class="bg-muted/50 rounded-xl w-full border">
-      <DonationFlowWizard :config="store.fullConfig" />
+      <DonationFlowWizard :config="store.fullFormConfig" />
     </PreviewEditable>
     <DevJsonPreview :data="donationStore.completeState" />
   </div>

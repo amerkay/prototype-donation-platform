@@ -1,167 +1,170 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import type {
-  FormSettings,
-  DonationAmountsSettings,
-  DonationCustomFieldsSettings,
-  EntryFieldsSettings
-} from '~/features/donation-form/shared/types'
-import type { ImpactCartSettings } from '~/features/donation-form/features/impact-cart/admin/types'
-import type { ProductSelectorSettings } from '~/features/donation-form/features/product-selector/admin/types'
-import type { ImpactBoostSettings } from '~/features/donation-form/features/impact-boost/admin/types'
-import type { CoverCostsSettings } from '~/features/donation-form/features/cover-costs/admin/types'
-import type { GiftAidSettings } from '~/features/donation-form/features/gift-aid/admin/types'
-import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
-import type { ContactConsentSettings } from '~/features/donation-form/features/contact-consent/admin/types'
+import { computed } from 'vue'
+import type { FullFormConfig } from '~/features/donation-form/shared/types'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 import type { CampaignType } from '~/features/campaigns/shared/types'
-import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
-import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
+import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 
 /**
- * Form configuration store (Pinia)
+ * Form configuration store — thin adapter over useCampaignConfigStore().formConfig
  *
- * Flat structure optimized for UI binding - each section is independently reactive.
- * Types are decomposed by feature for maintainability.
+ * Since campaigns have a 1:1 relationship with forms, all form config state
+ * lives in the campaign store's `formConfig` namespace. This store provides
+ * backward-compatible access for existing consumers.
  *
- * @example
- * ```vue
- * <script setup>
- * const store = useFormConfigStore()
- * </script>
- *
- * <template>
- *   <FormRenderer v-model="store.coverCosts" :section="coverCostsSection" />
- * </template>
- * ```
+ * @deprecated Import useCampaignConfigStore and access store.formConfig.* directly.
  */
 export const useFormConfigStore = defineStore('formConfig', () => {
-  // Editable state management
-  const { isDirty, isSaving, markDirty, markClean } = useEditableState()
+  const campaignStore = useCampaignConfigStore()
+  const fc = campaignStore.formConfig
 
-  // State
-  const formId = ref<string | null>(null)
-  const version = ref('1.0')
-  const form = ref<FormSettings | null>(null)
-  const donationAmounts = ref<DonationAmountsSettings | null>(null)
-  const impactCart = ref<ImpactCartSettings | null>(null)
-  const productSelector = ref<ProductSelectorSettings | null>(null)
-  const impactBoost = ref<ImpactBoostSettings | null>(null)
-  const coverCosts = ref<CoverCostsSettings | null>(null)
-  const giftAid = ref<GiftAidSettings | null>(null)
-  const tribute = ref<TributeSettings | null>(null)
-  const customFields = ref<DonationCustomFieldsSettings | null>(null)
-  const entryFields = ref<EntryFieldsSettings | null>(null)
-  const contactConsent = ref<ContactConsentSettings | null>(null)
-  const terms = ref<{ enabled: boolean } | null>(null)
-  const products = ref<Product[]>([])
-
-  // Product quantity limits — stored separately so auto-mapping for impactCart doesn't overwrite them
-  const quantityRemaining = ref<Record<string, number> | undefined>(undefined)
-
-  // Getters
-  const fullConfig = computed((): FullFormConfig | null => {
-    if (!form.value || !donationAmounts.value) {
-      return null
+  // Proxy state — all reads/writes go through campaignStore.formConfig
+  const formId = computed({
+    get: () => fc.formId,
+    set: (v) => {
+      fc.formId = v
     }
-
-    // Merge quantityRemaining back into impactCart.settings for serialization
-    const ic = impactCart.value!
-    const mergedImpactCart: ImpactCartSettings = {
-      ...ic,
-      settings: { ...ic.settings, quantityRemaining: quantityRemaining.value }
+  })
+  const version = computed({
+    get: () => fc.version,
+    set: (v) => {
+      fc.version = v
     }
-
-    return {
-      version: version.value,
-      form: form.value,
-      donationAmounts: donationAmounts.value,
-      features: {
-        impactCart: mergedImpactCart,
-        productSelector: productSelector.value!,
-        impactBoost: impactBoost.value!,
-        coverCosts: coverCosts.value!,
-        giftAid: giftAid.value!,
-        tribute: tribute.value!,
-        customFields: customFields.value!,
-        entryFields: entryFields.value!,
-        contactConsent: contactConsent.value!,
-        terms: terms.value!
-      }
+  })
+  const form = computed({
+    get: () => fc.form,
+    set: (v) => {
+      fc.form = v
+    }
+  })
+  const donationAmounts = computed({
+    get: () => fc.donationAmounts,
+    set: (v) => {
+      fc.donationAmounts = v
+    }
+  })
+  const impactCart = computed({
+    get: () => fc.impactCart,
+    set: (v) => {
+      fc.impactCart = v
+    }
+  })
+  const productSelector = computed({
+    get: () => fc.productSelector,
+    set: (v) => {
+      fc.productSelector = v
+    }
+  })
+  const impactBoost = computed({
+    get: () => fc.impactBoost,
+    set: (v) => {
+      fc.impactBoost = v
+    }
+  })
+  const coverCosts = computed({
+    get: () => fc.coverCosts,
+    set: (v) => {
+      fc.coverCosts = v
+    }
+  })
+  const giftAid = computed({
+    get: () => fc.giftAid,
+    set: (v) => {
+      fc.giftAid = v
+    }
+  })
+  const tribute = computed({
+    get: () => fc.tribute,
+    set: (v) => {
+      fc.tribute = v
+    }
+  })
+  const customFields = computed({
+    get: () => fc.customFields,
+    set: (v) => {
+      fc.customFields = v
+    }
+  })
+  const entryFields = computed({
+    get: () => fc.entryFields,
+    set: (v) => {
+      fc.entryFields = v
+    }
+  })
+  const contactConsent = computed({
+    get: () => fc.contactConsent,
+    set: (v) => {
+      fc.contactConsent = v
+    }
+  })
+  const terms = computed({
+    get: () => fc.terms,
+    set: (v) => {
+      fc.terms = v
+    }
+  })
+  const products = computed({
+    get: () => fc.products,
+    set: (v) => {
+      fc.products = v
+    }
+  })
+  const quantityRemaining = computed({
+    get: () => fc.quantityRemaining,
+    set: (v) => {
+      fc.quantityRemaining = v
     }
   })
 
-  // Actions
-  // TODO-SUPABASE: Persistence delegated to useForm().updateForm() — no direct DB calls here
-  /**
-   * Snapshot current state as a tuple for useAdminEdit comparison.
-   * Returns deep cloned data to prevent mutation of lastSavedData.
-   */
-  function toSnapshot(): [FullFormConfig, Product[], string | null] | undefined {
-    if (!fullConfig.value || !formId.value) return undefined
-    return JSON.parse(JSON.stringify([fullConfig.value, products.value, formId.value]))
-  }
+  // Getters
+  const fullConfig = computed(() => campaignStore.fullFormConfig)
 
+  // Dirty state proxied from campaign store
+  const isDirty = computed(() => campaignStore.isDirty)
+  const isSaving = computed(() => campaignStore.isSaving)
+
+  /**
+   * Initialize form config via campaign store.
+   * Backward-compatible signature: (config, products, id?, campaignType?)
+   */
   function initialize(
     config: FullFormConfig,
     productList: Product[],
     id?: string,
     campaignType?: CampaignType
   ) {
-    // Deep clone to prevent shared references with source data (useCampaigns).
-    // Without this, Object.assign in setData mutates both the store AND the source,
-    // making discard unable to restore the original values.
-    const c = JSON.parse(JSON.stringify(config)) as FullFormConfig
-    const p = JSON.parse(JSON.stringify(productList)) as Product[]
+    // Build a minimal CampaignForm shape for initializeFormConfig
+    campaignStore.initializeFormConfig(
+      {
+        id: id ?? '',
+        campaignId: campaignStore.id ?? '',
+        name: campaignStore.formConfig.formName || 'Donation Form',
+        isDefault: true,
+        config,
+        products: productList,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      campaignType ?? campaignStore.type
+    )
+    campaignStore.markClean()
+  }
 
-    // Enforce frequency constraints based on campaign type (safety net for P2P)
-    if (campaignType && !getCampaignCapabilities(campaignType).allowsRecurring) {
-      if (c.donationAmounts?.frequencies?.monthly)
-        c.donationAmounts.frequencies.monthly.enabled = false
-      if (c.donationAmounts?.frequencies?.yearly)
-        c.donationAmounts.frequencies.yearly.enabled = false
-    }
+  function toSnapshot(): [FullFormConfig, Product[], string | null] | undefined {
+    if (!fullConfig.value || !fc.formId) return undefined
+    return JSON.parse(JSON.stringify([fullConfig.value, fc.products, fc.formId]))
+  }
 
-    formId.value = id ?? null
-    version.value = c.version
-    form.value = c.form
-    donationAmounts.value = c.donationAmounts
-    impactCart.value = c.features.impactCart
-    quantityRemaining.value = c.features.impactCart?.settings?.quantityRemaining
-    productSelector.value = c.features.productSelector
-    impactBoost.value = c.features.impactBoost
-    coverCosts.value = c.features.coverCosts
-    giftAid.value = c.features.giftAid
-    tribute.value = c.features.tribute
-    // Pre-populate all tab slots so useFieldArray doesn't write [] on mount and false-trigger dirty
-    const cf = c.features.customFields ?? { customFieldsTabs: {} }
-    const tabs = cf.customFieldsTabs ?? {}
-    customFields.value = {
-      customFieldsTabs: {
-        step2: { enabled: false, fields: [], ...tabs.step2 },
-        step3: { enabled: false, fields: [], ...tabs.step3 },
-        hidden: { enabled: false, fields: [], ...tabs.hidden }
-      }
-    }
-    entryFields.value = c.features.entryFields ?? {
-      enabled: false,
-      mode: 'shared',
-      fields: []
-    }
-    contactConsent.value = c.features.contactConsent ?? {
-      enabled: true,
-      settings: {
-        label: 'Join our email list',
-        description: 'Get updates on our impact and latest news. Unsubscribe anytime.'
-      }
-    }
-    terms.value = c.features.terms ?? { enabled: true }
-    products.value = p
-    markClean()
+  function markDirty() {
+    campaignStore.markDirty()
+  }
+
+  function markClean() {
+    campaignStore.markClean()
   }
 
   return {
-    // State
+    // State (proxied)
     formId,
     version,
     form,
@@ -190,24 +193,5 @@ export const useFormConfigStore = defineStore('formConfig', () => {
   }
 })
 
-/**
- * Full form configuration type (API response shape)
- * Composed from individual feature types
- */
-export interface FullFormConfig {
-  version: string
-  form: FormSettings
-  donationAmounts: DonationAmountsSettings
-  features: {
-    impactCart: ImpactCartSettings
-    productSelector: ProductSelectorSettings
-    impactBoost: ImpactBoostSettings
-    coverCosts: CoverCostsSettings
-    giftAid: GiftAidSettings
-    tribute: TributeSettings
-    customFields: DonationCustomFieldsSettings
-    entryFields: EntryFieldsSettings
-    contactConsent: ContactConsentSettings
-    terms: { enabled: boolean }
-  }
-}
+// Re-export FullFormConfig from canonical location for backward compatibility
+export type { FullFormConfig } from '~/features/donation-form/shared/types'

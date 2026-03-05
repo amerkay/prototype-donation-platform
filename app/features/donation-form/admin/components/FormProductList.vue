@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useProducts } from '~/features/products/admin/composables/useProducts'
-import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
 import ProductPickerList from '~/features/products/admin/components/ProductPickerList.vue'
@@ -14,43 +13,43 @@ import {
 } from '@/components/ui/number-field'
 
 const { products: allProducts } = useProducts()
-const store = useFormConfigStore()
+const store = useCampaignConfigStore()
+const fc = store.formConfig
 
-const formProducts = computed(() => store.products)
+const formProducts = computed(() => fc.products)
 
 const formProductIds = computed(() => new Set(formProducts.value.map((p) => p.id)))
 const available = computed(() => allProducts.value.filter((p) => !formProductIds.value.has(p.id)))
 
-const campaignStore = useCampaignConfigStore()
-const showQuantity = computed(() => getCampaignCapabilities(campaignStore.type).allowsEntryFields)
+const showQuantity = computed(() => getCampaignCapabilities(store.type).allowsEntryFields)
 
 function handleAdd(productIds: string[]) {
   const toAdd = allProducts.value.filter((p) => productIds.includes(p.id))
-  store.products = [...store.products, ...toAdd]
+  fc.products = [...fc.products, ...toAdd]
   store.markDirty()
 }
 
 function handleRemove(productId: string) {
-  store.products = store.products.filter((p) => p.id !== productId)
-  const qty = store.quantityRemaining
+  fc.products = fc.products.filter((p) => p.id !== productId)
+  const qty = fc.quantityRemaining
   if (qty && productId in qty) {
     const { [productId]: _, ...rest } = qty
-    store.quantityRemaining = Object.keys(rest).length > 0 ? rest : undefined
+    fc.quantityRemaining = Object.keys(rest).length > 0 ? rest : undefined
   }
   store.markDirty()
 }
 
 function getQty(productId: string): number | undefined {
-  return store.quantityRemaining?.[productId]
+  return fc.quantityRemaining?.[productId]
 }
 
 function setQty(productId: string, value: number | undefined) {
-  const current = store.quantityRemaining ?? {}
+  const current = fc.quantityRemaining ?? {}
   if (value === undefined || value < 0) {
     const { [productId]: _, ...rest } = current
-    store.quantityRemaining = Object.keys(rest).length > 0 ? rest : undefined
+    fc.quantityRemaining = Object.keys(rest).length > 0 ? rest : undefined
   } else {
-    store.quantityRemaining = { ...current, [productId]: value }
+    fc.quantityRemaining = { ...current, [productId]: value }
   }
   store.markDirty()
 }

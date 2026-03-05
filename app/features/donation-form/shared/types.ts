@@ -1,5 +1,15 @@
 import type { CustomFieldDefinition } from '~/features/_library/custom-fields/types'
 
+// ==================== Full Form Config ====================
+
+import type { ImpactCartSettings } from '~/features/donation-form/features/impact-cart/admin/types'
+import type { ProductSelectorSettings } from '~/features/donation-form/features/product-selector/admin/types'
+import type { ImpactBoostSettings } from '~/features/donation-form/features/impact-boost/admin/types'
+import type { CoverCostsSettings } from '~/features/donation-form/features/cover-costs/admin/types'
+import type { GiftAidSettings } from '~/features/donation-form/features/gift-aid/admin/types'
+import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
+import type { ContactConsentSettings } from '~/features/donation-form/features/contact-consent/admin/types'
+
 /**
  * Core donation form configuration types
  * These types define the main form settings, localization, and pricing structure
@@ -123,5 +133,27 @@ export interface DonationCustomFieldsSettings {
       enabled: boolean
       fields: CustomFieldDefinition[]
     }
+  }
+}
+
+/**
+ * Full form configuration type (API response shape)
+ * Composed from individual feature types
+ */
+export interface FullFormConfig {
+  version: string
+  form: FormSettings
+  donationAmounts: DonationAmountsSettings
+  features: {
+    impactCart: ImpactCartSettings
+    productSelector: ProductSelectorSettings
+    impactBoost: ImpactBoostSettings
+    coverCosts: CoverCostsSettings
+    giftAid: GiftAidSettings
+    tribute: TributeSettings
+    customFields: DonationCustomFieldsSettings
+    entryFields: EntryFieldsSettings
+    contactConsent: ContactConsentSettings
+    terms: { enabled: boolean }
   }
 }

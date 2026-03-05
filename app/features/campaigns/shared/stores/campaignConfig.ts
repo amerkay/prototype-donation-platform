@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import type {
   Campaign,
   CampaignType,
@@ -14,32 +14,77 @@ import type {
   CampaignForm,
   CampaignStatus
 } from '~/features/campaigns/shared/types'
+import type {
+  FormSettings,
+  DonationAmountsSettings,
+  DonationCustomFieldsSettings,
+  EntryFieldsSettings,
+  FullFormConfig
+} from '~/features/donation-form/shared/types'
+import type { ImpactCartSettings } from '~/features/donation-form/features/impact-cart/admin/types'
+import type { ProductSelectorSettings } from '~/features/donation-form/features/product-selector/admin/types'
+import type { ImpactBoostSettings } from '~/features/donation-form/features/impact-boost/admin/types'
+import type { CoverCostsSettings } from '~/features/donation-form/features/cover-costs/admin/types'
+import type { GiftAidSettings } from '~/features/donation-form/features/gift-aid/admin/types'
+import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
+import type { ContactConsentSettings } from '~/features/donation-form/features/contact-consent/admin/types'
+import type { Product } from '~/features/donation-form/features/product/shared/types'
 import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
-import { getActivePeriod } from '~/features/campaigns/shared/utils/campaignCapabilities'
+import {
+  getActivePeriod,
+  getCampaignCapabilities
+} from '~/features/campaigns/shared/utils/campaignCapabilities'
+
+/**
+ * Default form config state — used for reset and pre-population
+ */
+function createDefaultFormConfig() {
+  return {
+    formId: null as string | null,
+    formName: '',
+    formIsDefault: true,
+    version: '1.0',
+    form: null as FormSettings | null,
+    donationAmounts: null as DonationAmountsSettings | null,
+    impactCart: null as ImpactCartSettings | null,
+    productSelector: null as ProductSelectorSettings | null,
+    impactBoost: null as ImpactBoostSettings | null,
+    coverCosts: null as CoverCostsSettings | null,
+    giftAid: null as GiftAidSettings | null,
+    tribute: null as TributeSettings | null,
+    customFields: null as DonationCustomFieldsSettings | null,
+    entryFields: null as EntryFieldsSettings | null,
+    contactConsent: null as ContactConsentSettings | null,
+    terms: null as { enabled: boolean } | null,
+    products: [] as Product[],
+    quantityRemaining: undefined as Record<string, number> | undefined
+  }
+}
 
 /**
  * Campaign configuration store (Pinia)
  *
- * Flat structure optimized for UI binding - each section is independently reactive.
+ * Unified store for campaign + donation form configuration.
+ * Campaign fields live at the top level; form config lives under `formConfig.*`.
  * Used by the split-screen campaign editor for live preview updates.
  *
  * @example
  * ```vue
  * <script setup>
  * const store = useCampaignConfigStore()
+ * // Campaign data
+ * store.crowdfunding.title
+ * // Form config data
+ * store.formConfig.donationAmounts
+ * store.formConfig.products
  * </script>
- *
- * <template>
- *   <FormRenderer v-model="store.crowdfunding" :section="crowdfundingForm" />
- *   <CrowdfundingPagePreview />
- * </template>
  * ```
  */
 export const useCampaignConfigStore = defineStore('campaignConfig', () => {
   // Editable state management
   const { isDirty, isSaving, markDirty, markClean } = useEditableState()
 
-  // State
+  // ==================== Campaign State ====================
   const id = ref<string | null>(null)
   const type = ref<CampaignType>('standard')
   const p2pPreset = ref<P2PPreset | null>(null)
@@ -57,7 +102,11 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
   const createdAt = ref('')
   const updatedAt = ref('')
 
-  // Getters
+  // ==================== Form Config State ====================
+  // Reactive namespace for donation form configuration (decomposed from CampaignForm.config)
+  const formConfig = reactive(createDefaultFormConfig())
+
+  // ==================== Campaign Getters ====================
   const isP2P = computed(() => type.value === 'p2p')
   const isFundraiser = computed(() => type.value === 'p2p-fundraiser')
   const isEvent = computed(() => type.value === 'event')
@@ -130,6 +179,57 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     return sorted.slice(0, limit)
   })
 
+  // ==================== Form Config Getters ====================
+
+  /** Assembled FullFormConfig from decomposed formConfig state */
+  const fullFormConfig = computed((): FullFormConfig | null => {
+    if (!formConfig.form || !formConfig.donationAmounts) {
+      return null
+    }
+
+    // Merge quantityRemaining back into impactCart.settings for serialization
+    const ic = formConfig.impactCart!
+    const mergedImpactCart: ImpactCartSettings = {
+      ...ic,
+      settings: { ...ic.settings, quantityRemaining: formConfig.quantityRemaining }
+    }
+
+    return {
+      version: formConfig.version,
+      form: formConfig.form,
+      donationAmounts: formConfig.donationAmounts,
+      features: {
+        impactCart: mergedImpactCart,
+        productSelector: formConfig.productSelector!,
+        impactBoost: formConfig.impactBoost!,
+        coverCosts: formConfig.coverCosts!,
+        giftAid: formConfig.giftAid!,
+        tribute: formConfig.tribute!,
+        customFields: formConfig.customFields!,
+        entryFields: formConfig.entryFields!,
+        contactConsent: formConfig.contactConsent!,
+        terms: formConfig.terms!
+      }
+    }
+  })
+
+  /** Reconstructed CampaignForm from formConfig state (for saving) */
+  const assembledForm = computed((): CampaignForm | null => {
+    if (!formConfig.formId || !fullFormConfig.value) return null
+    return {
+      id: formConfig.formId,
+      campaignId: id.value ?? '',
+      name: formConfig.formName,
+      isDefault: formConfig.formIsDefault,
+      config: fullFormConfig.value,
+      products: formConfig.products,
+      createdAt: form.value?.createdAt ?? new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  })
+
+  // ==================== Combined Getters ====================
+
   const fullCampaign = computed((): Campaign | null => {
     if (!id.value || !stats.value || !crowdfunding.value || !peerToPeer.value) {
       return null
@@ -151,16 +251,78 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
       matchedGiving: matchedGiving.value,
       fundraisers: fundraisers.value,
       recentDonations: recentDonations.value,
-      form: form.value
+      form: assembledForm.value ?? form.value
     }
   })
 
-  // Actions
+  // ==================== Actions ====================
   // TODO-SUPABASE: Persistence delegated to useCampaigns().updateCampaign() — no direct DB calls here
+
+  /**
+   * Initialize form config from a CampaignForm (decompose into flat reactive state).
+   * Deep-clones to prevent shared references with source data.
+   */
+  function initializeFormConfig(campaignForm: CampaignForm | null, campaignType?: CampaignType) {
+    if (!campaignForm) {
+      // Reset form config to defaults
+      Object.assign(formConfig, createDefaultFormConfig())
+      return
+    }
+
+    // Deep clone to prevent shared references
+    const cf = JSON.parse(JSON.stringify(campaignForm)) as CampaignForm
+    const config = cf.config
+
+    // Enforce frequency constraints based on campaign type (safety net for P2P)
+    if (campaignType && !getCampaignCapabilities(campaignType).allowsRecurring) {
+      if (config.donationAmounts?.frequencies?.monthly)
+        config.donationAmounts.frequencies.monthly.enabled = false
+      if (config.donationAmounts?.frequencies?.yearly)
+        config.donationAmounts.frequencies.yearly.enabled = false
+    }
+
+    formConfig.formId = cf.id
+    formConfig.formName = cf.name
+    formConfig.formIsDefault = cf.isDefault
+    formConfig.version = config.version
+    formConfig.form = config.form
+    formConfig.donationAmounts = config.donationAmounts
+    formConfig.impactCart = config.features.impactCart
+    formConfig.quantityRemaining = config.features.impactCart?.settings?.quantityRemaining
+    formConfig.productSelector = config.features.productSelector
+    formConfig.impactBoost = config.features.impactBoost
+    formConfig.coverCosts = config.features.coverCosts
+    formConfig.giftAid = config.features.giftAid
+    formConfig.tribute = config.features.tribute
+
+    // Pre-populate all tab slots so useFieldArray doesn't write [] on mount and false-trigger dirty
+    const customFieldsConfig = config.features.customFields ?? { customFieldsTabs: {} }
+    const tabs = customFieldsConfig.customFieldsTabs ?? {}
+    formConfig.customFields = {
+      customFieldsTabs: {
+        step2: { enabled: false, fields: [], ...tabs.step2 },
+        step3: { enabled: false, fields: [], ...tabs.step3 },
+        hidden: { enabled: false, fields: [], ...tabs.hidden }
+      }
+    }
+    formConfig.entryFields = config.features.entryFields ?? {
+      enabled: false,
+      mode: 'shared',
+      fields: []
+    }
+    formConfig.contactConsent = config.features.contactConsent ?? {
+      enabled: true,
+      settings: {
+        label: 'Join our email list',
+        description: 'Get updates on our impact and latest news. Unsubscribe anytime.'
+      }
+    }
+    formConfig.terms = config.features.terms ?? { enabled: true }
+    formConfig.products = JSON.parse(JSON.stringify(cf.products)) as Product[]
+  }
+
   function initialize(campaign: Campaign) {
     // Deep clone to prevent shared references with source data (useCampaigns).
-    // Without this, Object.assign in setData mutates both the store AND the source,
-    // making discard unable to restore the original values.
     const c = JSON.parse(JSON.stringify(campaign)) as Campaign
 
     id.value = c.id
@@ -179,6 +341,10 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     recentDonations.value = c.recentDonations
     createdAt.value = c.createdAt
     updatedAt.value = c.updatedAt
+
+    // Initialize form config from the campaign's embedded form
+    initializeFormConfig(c.form, c.type)
+
     markClean()
   }
 
@@ -199,11 +365,12 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     recentDonations.value = []
     createdAt.value = ''
     updatedAt.value = ''
+    Object.assign(formConfig, createDefaultFormConfig())
     markClean()
   }
 
   return {
-    // State
+    // Campaign State
     id,
     type,
     p2pPreset,
@@ -222,7 +389,9 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     updatedAt,
     isDirty,
     isSaving,
-    // Getters
+    // Form Config State (reactive namespace)
+    formConfig,
+    // Campaign Getters
     currency,
     isP2P,
     isFundraiser,
@@ -238,8 +407,12 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     donationsByAmount,
     displayDonations,
     fullCampaign,
+    // Form Config Getters
+    fullFormConfig,
+    assembledForm,
     // Actions
     initialize,
+    initializeFormConfig,
     reset,
     markDirty,
     markClean

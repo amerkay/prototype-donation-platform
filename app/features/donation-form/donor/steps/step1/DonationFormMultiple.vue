@@ -8,7 +8,7 @@ import ShippingNotice from '~/features/donation-form/features/shipping-notice/do
 import ProductOptionsModal from '~/features/donation-form/features/product/donor/components/ProductOptionsModal.vue'
 import SharedEntryFields from '~/features/donation-form/features/entry-fields/donor/components/SharedEntryFields.vue'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
-import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
+import type { FullFormConfig } from '~/features/donation-form/shared/types'
 import type { CartItem } from '~/features/donation-form/features/impact-cart/donor/types'
 import type { TributeData } from '~/features/donation-form/features/tribute/donor/types'
 import {
@@ -18,7 +18,7 @@ import {
 import { useImpactCartStore } from '~/features/donation-form/features/impact-cart/donor/stores/impactCart'
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
-import { DONATION_FORM_FIELD_TARGETS as DT } from '~/features/donation-form/admin/forms/admin-donation-form-master'
+import { DONATION_FORM_FIELD_TARGETS as DT } from '~/features/campaigns/admin/forms/donation-form-tab'
 
 const cartStore = useImpactCartStore()
 const donationStore = useDonationFormStore()

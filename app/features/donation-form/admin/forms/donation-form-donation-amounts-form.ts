@@ -17,7 +17,6 @@ import {
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
-import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { createPresetAmountsField } from './preset-amounts-field'
 
 // Zod schema for frequency validation
@@ -170,7 +169,6 @@ export const useDonationFormDonationAmountsForm = defineForm('formDonationAmount
   // Get currency options from store — reactive computed so options update when org settings change
   const currencyStore = useCurrencySettingsStore()
   const campaignStore = useCampaignConfigStore()
-  const formConfigStore = useFormConfigStore()
   const isFundraiser = campaignStore.isFundraiser
 
   const supportedOptions = computed(() =>
@@ -223,7 +221,7 @@ export const useDonationFormDonationAmountsForm = defineForm('formDonationAmount
 
   // Build tabs — fundraisers only see frequencies enabled in their copied form
   const caps = getCampaignCapabilities(campaignStore.type)
-  const enabledFreqs = formConfigStore.donationAmounts?.frequencies as
+  const enabledFreqs = campaignStore.formConfig.donationAmounts?.frequencies as
     | Record<string, { enabled?: boolean }>
     | undefined
 

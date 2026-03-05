@@ -19,7 +19,7 @@ const emit = defineEmits<{
     <Button
       class="flex-1 @3xl:flex-auto @3xl:w-full"
       size="lg"
-      :data-field="CT.donationForms"
+      :data-field="CT.donationForm"
       @click="emit('donate')"
     >
       <ICON_DONATION class="w-4 h-4 mr-2" />

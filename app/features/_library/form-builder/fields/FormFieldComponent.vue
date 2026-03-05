@@ -50,7 +50,7 @@ const component = computed(() => props.meta.component as Component)
 <template>
   <FormFieldWrapper v-bind="wrapperProps" :class="props.class">
     <!-- Render the custom component with v-model binding -->
-    <div :class="cn('mt-2', resolvedClass)">
+    <div :class="cn('', resolvedClass)">
       <component
         :is="component"
         :model-value="props.modelValue"

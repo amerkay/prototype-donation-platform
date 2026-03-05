@@ -14,7 +14,7 @@ import { useCharitySettingsStore } from '~/features/settings/admin/stores/charit
 import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
 import DonationCustomFields from '~/features/donation-form/features/custom-fields/donor/components/DonationCustomFields.vue'
 import type { FieldDef } from '~/features/_library/form-builder/types'
-import { DONATION_FORM_FIELD_TARGETS as DT } from '~/features/donation-form/admin/forms/admin-donation-form-master'
+import { DONATION_FORM_FIELD_TARGETS as DT } from '~/features/campaigns/admin/forms/donation-form-tab'
 
 // Get shared form config from store
 const configStore = useFormConfigStore()
