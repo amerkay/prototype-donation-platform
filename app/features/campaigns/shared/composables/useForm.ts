@@ -3,12 +3,14 @@ import type { CampaignForm } from '~/features/campaigns/shared/types'
 import type { FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 /**
  * Single-form composable for 1:1 campaign:form relationship.
  * Reads/writes the campaign config store's `form` ref directly.
  */
 export function useForm() {
   const store = useCampaignConfigStore()
+  const { updateCampaign } = useCampaigns()
 
   /** The campaign's single form (reactive) */
   const form = computed(() => store.form)
@@ -29,14 +31,15 @@ export function useForm() {
   /** Update the form's config and products */
   const updateForm = async (config: FullFormConfig, products: Product[]): Promise<void> => {
     if (!store.form || !store.id) return
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 300))
-    store.form = {
+    const updatedForm: CampaignForm = {
       ...store.form,
       config,
       products,
       updatedAt: new Date().toISOString()
     }
+    store.form = updatedForm
+    // Sync back to campaigns singleton so changes survive navigation
+    await updateCampaign(store.id, { form: updatedForm })
   }
 
   /** Set a new form (from template or copy) */
