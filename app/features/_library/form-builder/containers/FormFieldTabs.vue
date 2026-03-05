@@ -31,6 +31,9 @@ const {
   scopedFormValues
 } = useContainerFieldSetup(props.name, props.meta.visibleWhen)
 
+// Form search: inject early — needed by visibleTabs and tab auto-switching
+const formSearch = inject(FORM_SEARCH_KEY, null)
+
 // Active tab state - initialize from defaultValue or first tab
 const activeTab = ref(props.meta.defaultValue || props.meta.tabs[0]?.value || '')
 
@@ -43,7 +46,18 @@ const isTabVisible = (tab: (typeof props.meta.tabs)[number]) => {
 }
 
 // Filtered visible tabs — template loops use this instead of meta.tabs
-const visibleTabs = computed(() => props.meta.tabs.filter(isTabVisible))
+// During active search, also hide tabs with zero matches (using path-based check
+// so nested tab structures work — ancestor paths are in matchedPaths when descendants match)
+const visibleTabs = computed(() => {
+  const tabs = props.meta.tabs.filter(isTabVisible)
+  if (!formSearch?.isSearchActive.value) return tabs
+  const tabsPath = fullTabsPath.value
+  const sectionPrefix = tabsPath.split('.')[0] + '.'
+  const searchBase = tabsPath.startsWith(sectionPrefix)
+    ? tabsPath.slice(sectionPrefix.length)
+    : tabsPath
+  return tabs.filter((t) => formSearch.isFieldVisibleBySearch(`${searchBase}.${t.value}`))
+})
 
 // Auto-switch when active tab becomes hidden
 watch(visibleTabs, (tabs) => {
@@ -73,8 +87,7 @@ watch(activeTab, (value) => {
   props.meta.onTabChange?.(value)
 })
 
-// Form search: auto-switch to tab containing first match
-const formSearch = inject(FORM_SEARCH_KEY, null)
+// Form search: auto-switch to tab with best match
 if (formSearch) {
   watch(
     () => (formSearch.isSearchActive.value ? formSearch.activeTabOverride.value : undefined),

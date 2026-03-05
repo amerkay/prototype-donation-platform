@@ -11,6 +11,7 @@ import CopyFormFromCampaignDialog from './CopyFormFromCampaignDialog.vue'
 import DonationFormTemplatesDialog from '~/features/donation-form/admin/components/DonationFormTemplatesDialog.vue'
 import { ICON_COPY, ICON_SPARKLES } from '~/lib/icons'
 import type { CampaignForm } from '~/features/campaigns/shared/types'
+defineOptions({ inheritAttrs: false })
 
 const store = useCampaignConfigStore()
 const { setForm } = useForm()

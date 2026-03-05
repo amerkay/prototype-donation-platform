@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import { cn } from '@/lib/utils'
 import {
   Field,
@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/field'
 import FieldHelpText from './FieldHelpText.vue'
 import { useHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
+import { FORM_SEARCH_KEY } from '~/features/_library/form-builder/composables/useFormSearch'
+import { highlightSearchMatch } from '~/features/_library/form-builder/utils/sanitize-html'
 
 interface Props {
   name?: string
@@ -47,8 +49,20 @@ const {
 
 const fieldId = computed(() => fieldIdFromHash.value || undefined)
 const showErrors = computed(() => props.errors && props.errors.length > 0)
+
+// Search term highlighting for labels and descriptions
+const formSearch = inject(FORM_SEARCH_KEY, null)
+const highlightedLabel = computed(() => {
+  if (!formSearch?.isSearchActive.value || !props.label) return undefined
+  return highlightSearchMatch(props.label, formSearch.searchTerm.value.trim())
+})
+const highlightedDescription = computed(() => {
+  if (!formSearch?.isSearchActive.value || !props.description) return undefined
+  return highlightSearchMatch(props.description, formSearch.searchTerm.value.trim())
+})
 </script>
 
+<!-- eslint-disable vue/no-v-html -- highlightSearchMatch() escapes via escapeHtml() -->
 <template>
   <!-- Fieldset variant (for radio groups, etc.) -->
   <FieldSet
@@ -59,13 +73,15 @@ const showErrors = computed(() => props.errors && props.errors.length > 0)
     :class="cn(hashHighlightClass, props.class)"
   >
     <FieldLegend v-if="props.label" :class="props.labelClass">
-      {{ props.label }}
+      <span v-if="highlightedLabel" v-html="highlightedLabel" />
+      <template v-else>{{ props.label }}</template>
       <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
       <FieldHelpText v-if="props.helpText">{{ props.helpText }}</FieldHelpText>
     </FieldLegend>
 
     <FieldDescription v-if="props.description" :class="props.descriptionClass">
-      {{ props.description }}
+      <span v-if="highlightedDescription" v-html="highlightedDescription" />
+      <template v-else>{{ props.description }}</template>
     </FieldDescription>
 
     <slot />
@@ -87,13 +103,15 @@ const showErrors = computed(() => props.errors && props.errors.length > 0)
           :for="props.disableLabelFor ? undefined : props.name"
           :class="cn('mb-0', props.labelClass)"
         >
-          {{ props.label }}
+          <span v-if="highlightedLabel" v-html="highlightedLabel" />
+          <template v-else>{{ props.label }}</template>
           <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
           <FieldHelpText v-if="props.helpText">{{ props.helpText }}</FieldHelpText>
         </FieldLabel>
 
         <FieldDescription v-if="props.description" :class="props.descriptionClass">
-          {{ props.description }}
+          <span v-if="highlightedDescription" v-html="highlightedDescription" />
+          <template v-else>{{ props.description }}</template>
         </FieldDescription>
       </FieldContent>
 
@@ -117,13 +135,15 @@ const showErrors = computed(() => props.errors && props.errors.length > 0)
       :for="props.disableLabelFor ? undefined : props.name"
       :class="cn('mb-0', props.labelClass)"
     >
-      {{ props.label }}
+      <span v-if="highlightedLabel" v-html="highlightedLabel" />
+      <template v-else>{{ props.label }}</template>
       <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
       <FieldHelpText v-if="props.helpText">{{ props.helpText }}</FieldHelpText>
     </FieldLabel>
 
     <FieldDescription v-if="props.description" :class="props.descriptionClass">
-      {{ props.description }}
+      <span v-if="highlightedDescription" v-html="highlightedDescription" />
+      <template v-else>{{ props.description }}</template>
     </FieldDescription>
 
     <slot />
@@ -140,6 +160,14 @@ const showErrors = computed(() => props.errors && props.errors.length > 0)
 }
 .hash-highlight-flash {
   animation: hash-highlight-pulse 500ms ease-in-out 3;
+}
+
+/* Search match highlight — highlighted substring in labels/descriptions */
+.search-highlight {
+  background-color: color-mix(in srgb, var(--color-primary) 25%, transparent);
+  color: var(--color-foreground);
+  border-radius: 2px;
+  padding-inline: 1px;
 }
 
 /* Search match highlight — subtle left border accent via data attribute */

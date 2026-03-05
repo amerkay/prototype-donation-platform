@@ -14,8 +14,8 @@ interface SearchableEntry {
   description: string
   /** Labels of ancestor groups/tabs for context display */
   parentLabels: string[]
-  /** If inside a tab, the tab value (for auto-switching) */
-  tabValue?: string
+  /** All ancestor tab values (innermost last), for counting matches at every nesting level */
+  tabValues: string[]
   /** Paths of ancestor fieldGroups (for force-expanding) */
   groupPaths: string[]
 }
@@ -51,6 +51,10 @@ export const FORM_SEARCH_KEY: InjectionKey<FormSearchState> = Symbol('formSearch
 
 // Display-only field types that don't count toward complexity
 const DISPLAY_ONLY_TYPES = new Set(['alert', 'card', 'component', 'hidden', 'readonly'])
+
+// Types excluded from search indexing — same as DISPLAY_ONLY_TYPES but allows 'component'
+// so componentField labels/descriptions are searchable
+const NON_INDEXABLE_TYPES = new Set(['alert', 'card', 'hidden', 'readonly'])
 
 // ============================================================================
 // FIELD COUNTING
@@ -94,7 +98,7 @@ function buildSearchIndex(
   fields: Record<string, FieldDef>,
   parentPath: string,
   parentLabels: string[],
-  currentTabValue?: string,
+  ancestorTabValues: string[] = [],
   ancestorGroupPaths: string[] = []
 ): SearchableEntry[] {
   const entries: SearchableEntry[] = []
@@ -116,7 +120,7 @@ function buildSearchIndex(
           label: groupLabel,
           description: typeof group.description === 'string' ? group.description : '',
           parentLabels,
-          tabValue: currentTabValue,
+          tabValues: ancestorTabValues,
           groupPaths: ancestorGroupPaths
         })
       }
@@ -127,7 +131,7 @@ function buildSearchIndex(
             group.fields,
             fieldPath,
             newParentLabels,
-            currentTabValue,
+            ancestorTabValues,
             newGroupPaths
           )
         )
@@ -140,10 +144,16 @@ function buildSearchIndex(
         const tabPath = `${fieldPath}.${tab.value}`
 
         entries.push(
-          ...buildSearchIndex(tab.fields, tabPath, newParentLabels, tab.value, ancestorGroupPaths)
+          ...buildSearchIndex(
+            tab.fields,
+            tabPath,
+            newParentLabels,
+            [...ancestorTabValues, tab.value],
+            ancestorGroupPaths
+          )
         )
       }
-    } else if (!DISPLAY_ONLY_TYPES.has(field.type)) {
+    } else if (!NON_INDEXABLE_TYPES.has(field.type)) {
       // Regular input field — index it
       const label = resolveLabel(field.label, emptyCtx)
       entries.push({
@@ -151,7 +161,7 @@ function buildSearchIndex(
         label: label || key,
         description: typeof field.description === 'string' ? field.description : '',
         parentLabels,
-        tabValue: currentTabValue,
+        tabValues: ancestorTabValues,
         groupPaths: ancestorGroupPaths
       })
     }
@@ -214,7 +224,6 @@ export function useFormSearch(
     const matchedPaths = new Set<string>()
     const matchedGroupPaths = new Set<string>()
     const tabCounts = new Map<string, number>()
-    let firstTabValue: string | undefined
     let leafMatches = 0
 
     for (const entry of searchIndex) {
@@ -235,22 +244,27 @@ export function useFormSearch(
           matchedGroupPaths.add(gp)
         }
 
-        // Track per-tab match counts
-        if (entry.tabValue) {
-          tabCounts.set(entry.tabValue, (tabCounts.get(entry.tabValue) || 0) + 1)
+        // Track per-tab match counts (count for ALL ancestor tabs, not just innermost)
+        for (const tv of entry.tabValues) {
+          tabCounts.set(tv, (tabCounts.get(tv) || 0) + 1)
         }
+      }
+    }
 
-        // Track first matching tab
-        if (entry.tabValue && !firstTabValue) {
-          firstTabValue = entry.tabValue
-        }
+    // Pick the tab with the most matches (best-match, not first-match)
+    let bestTabValue: string | undefined
+    let bestTabCount = 0
+    for (const [tabValue, count] of tabCounts) {
+      if (count > bestTabCount) {
+        bestTabCount = count
+        bestTabValue = tabValue
       }
     }
 
     return {
       paths: matchedPaths,
       groupPaths: matchedGroupPaths,
-      tabValue: firstTabValue,
+      tabValue: bestTabValue,
       matchCount: leafMatches,
       tabMatchCounts: tabCounts
     }
