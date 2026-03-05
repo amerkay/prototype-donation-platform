@@ -14,6 +14,8 @@ import type { GiftAidSettings } from '~/features/donation-form/features/gift-aid
 import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
 import type { ContactConsentSettings } from '~/features/donation-form/features/contact-consent/admin/types'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
+import type { CampaignType } from '~/features/campaigns/shared/types'
+import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
 import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
 
 /**
@@ -100,20 +102,32 @@ export const useFormConfigStore = defineStore('formConfig', () => {
     return JSON.parse(JSON.stringify([fullConfig.value, products.value, formId.value]))
   }
 
-  function initialize(config: FullFormConfig, productList: Product[], id?: string) {
+  function initialize(config: FullFormConfig, productList: Product[], id?: string, campaignType?: CampaignType) {
+    // Deep clone to prevent shared references with source data (useCampaigns).
+    // Without this, Object.assign in setData mutates both the store AND the source,
+    // making discard unable to restore the original values.
+    const c = JSON.parse(JSON.stringify(config)) as FullFormConfig
+    const p = JSON.parse(JSON.stringify(productList)) as Product[]
+
+    // Enforce frequency constraints based on campaign type (safety net for P2P)
+    if (campaignType && !getCampaignCapabilities(campaignType).allowsRecurring) {
+      if (c.donationAmounts?.frequencies?.monthly) c.donationAmounts.frequencies.monthly.enabled = false
+      if (c.donationAmounts?.frequencies?.yearly) c.donationAmounts.frequencies.yearly.enabled = false
+    }
+
     formId.value = id ?? null
-    version.value = config.version
-    form.value = config.form
-    donationAmounts.value = config.donationAmounts
-    impactCart.value = config.features.impactCart
-    quantityRemaining.value = config.features.impactCart?.settings?.quantityRemaining
-    productSelector.value = config.features.productSelector
-    impactBoost.value = config.features.impactBoost
-    coverCosts.value = config.features.coverCosts
-    giftAid.value = config.features.giftAid
-    tribute.value = config.features.tribute
+    version.value = c.version
+    form.value = c.form
+    donationAmounts.value = c.donationAmounts
+    impactCart.value = c.features.impactCart
+    quantityRemaining.value = c.features.impactCart?.settings?.quantityRemaining
+    productSelector.value = c.features.productSelector
+    impactBoost.value = c.features.impactBoost
+    coverCosts.value = c.features.coverCosts
+    giftAid.value = c.features.giftAid
+    tribute.value = c.features.tribute
     // Pre-populate all tab slots so useFieldArray doesn't write [] on mount and false-trigger dirty
-    const cf = config.features.customFields ?? { customFieldsTabs: {} }
+    const cf = c.features.customFields ?? { customFieldsTabs: {} }
     const tabs = cf.customFieldsTabs ?? {}
     customFields.value = {
       customFieldsTabs: {
@@ -122,20 +136,20 @@ export const useFormConfigStore = defineStore('formConfig', () => {
         hidden: { enabled: false, fields: [], ...tabs.hidden }
       }
     }
-    entryFields.value = config.features.entryFields ?? {
+    entryFields.value = c.features.entryFields ?? {
       enabled: false,
       mode: 'shared',
       fields: []
     }
-    contactConsent.value = config.features.contactConsent ?? {
+    contactConsent.value = c.features.contactConsent ?? {
       enabled: true,
       settings: {
         label: 'Join our email list',
         description: 'Get updates on our impact and latest news. Unsubscribe anytime.'
       }
     }
-    terms.value = config.features.terms ?? { enabled: true }
-    products.value = productList
+    terms.value = c.features.terms ?? { enabled: true }
+    products.value = p
     markClean()
   }
 

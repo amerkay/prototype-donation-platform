@@ -29,12 +29,16 @@ const { formRef, modelValue, form, expose } = store.isFundraiser
       setData: (_s, data: Record<string, unknown>) => {
         const sections = data.sections as Record<string, unknown>
         if (sections.crowdfunding !== undefined) {
+          const changed =
+            JSON.stringify(store.crowdfunding) !== JSON.stringify(sections.crowdfunding)
           Object.assign(store.crowdfunding!, sections.crowdfunding as object)
-          store.markDirty()
+          if (changed) store.markDirty()
         }
         if (sections.amounts !== undefined) {
+          const changed =
+            JSON.stringify(formConfigStore.donationAmounts) !== JSON.stringify(sections.amounts)
           Object.assign(formConfigStore.donationAmounts!, sections.amounts as object)
-          formConfigStore.markDirty()
+          if (changed) formConfigStore.markDirty()
         }
       }
     })

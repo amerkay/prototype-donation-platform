@@ -77,6 +77,7 @@ export function useCampaigns() {
       stats: campaign.stats,
       recentDonations: campaign.recentDonations,
       fundraisers: campaign.fundraisers,
+      form: campaign.form,
       createdAt: campaign.createdAt,
       updatedAt: campaign.updatedAt
     }

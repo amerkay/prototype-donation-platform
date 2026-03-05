@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { useFormConfigStore, type FullFormConfig } from '~/features/donation-form/shared/stores/formConfig'
 import type {
   Campaign,
+  CampaignForm,
   CampaignType,
   CampaignStats,
   CrowdfundingSettings,
@@ -197,6 +199,61 @@ describe('Campaign Config Store', () => {
     })
   })
 
+  describe('fullCampaign includes form', () => {
+    it('fullCampaign snapshot includes the current form value', () => {
+      const store = useCampaignConfigStore()
+      const testForm = {
+        id: 'form-1',
+        campaignId: 'camp-1',
+        name: 'Test Form',
+        isDefault: true,
+        config: { features: {} },
+        products: [],
+        createdAt: '2025-01-01T00:00:00Z',
+        updatedAt: '2025-01-01T00:00:00Z'
+      }
+      store.initialize(makeCampaign({ form: testForm as unknown as CampaignForm }))
+
+      expect(store.fullCampaign?.form).toEqual(testForm)
+    })
+
+    it('fullCampaign reflects form changes after setForm-like mutation', () => {
+      const store = useCampaignConfigStore()
+      store.initialize(
+        makeCampaign({
+          form: {
+            id: 'old-form',
+            campaignId: 'camp-1',
+            name: 'Old Form',
+            isDefault: true,
+            config: { features: {} },
+            products: [],
+            createdAt: '2025-01-01T00:00:00Z',
+            updatedAt: '2025-01-01T00:00:00Z'
+          } as unknown as CampaignForm
+        })
+      )
+
+      // Simulate setForm (Replace with template / Copy from)
+      const newForm = {
+        id: 'new-form',
+        campaignId: 'camp-1',
+        name: 'New Template Form',
+        isDefault: true,
+        config: { features: { giftAid: { enabled: true } } },
+        products: [{ id: 'p1', name: 'Product 1' }],
+        createdAt: '2025-02-01T00:00:00Z',
+        updatedAt: '2025-02-01T00:00:00Z'
+      }
+      store.form = newForm as unknown as CampaignForm
+      store.markDirty()
+
+      // fullCampaign (used by onSave) MUST reflect the new form
+      expect(store.fullCampaign?.form?.id).toBe('new-form')
+      expect(store.fullCampaign?.form?.name).toBe('New Template Form')
+    })
+  })
+
   describe('progressPercentage', () => {
     it('computes correctly (totalRaised / goalAmount × 100, capped at 100)', () => {
       const store = useCampaignConfigStore()
@@ -261,6 +318,47 @@ describe('Campaign Config Store', () => {
     })
   })
 
+  describe('initialize: reference isolation', () => {
+    it('mutating nested store data must NOT mutate the original campaign object', () => {
+      // If initialize only does shallow spread, nested objects like
+      // matchedGiving.periods share references with the source.
+      // Pushing to the store array then corrupts the source, breaking discard.
+      const campaign = makeCampaign({
+        type: 'p2p-fundraiser',
+        matchedGiving: {
+          periods: [{ id: 'p1', multiplier: 2, startDate: '2025-01-01', poolAmount: 1000, poolDrawn: 0 }]
+        } as unknown as Campaign['matchedGiving']
+      })
+
+      const store = useCampaignConfigStore()
+      store.initialize(campaign)
+
+      // Mutate a nested property on the store
+      store.matchedGiving!.periods.push({
+        id: 'p2', multiplier: 3, startDate: '2025-06-01', poolAmount: 500, poolDrawn: 0
+      } as unknown as Campaign['matchedGiving']['periods'][number])
+
+      // Source campaign MUST still have only 1 period
+      expect(campaign.matchedGiving.periods).toHaveLength(1)
+    })
+
+    it('markDirty stays false when Object.assign writes identical crowdfunding data', () => {
+      const store = useCampaignConfigStore()
+      store.initialize(makeCampaign({ type: 'p2p-fundraiser' }))
+      store.markClean()
+
+      // Simulate CampaignMasterConfigPanel setData with identical values
+      const currentCrowdfunding = JSON.parse(JSON.stringify(store.crowdfunding))
+      const changed = JSON.stringify(store.crowdfunding) !== JSON.stringify(currentCrowdfunding)
+      Object.assign(store.crowdfunding!, currentCrowdfunding)
+      if (changed) store.markDirty()
+
+      // Without compare-before-write, markDirty would unconditionally set isDirty=true
+      // With it, identical data should NOT trigger dirty
+      expect(store.isDirty).toBe(false)
+    })
+  })
+
   describe('remainingAmount', () => {
     it('equals goalAmount - totalRaised, floored at 0', () => {
       const store = useCampaignConfigStore()
@@ -322,6 +420,118 @@ describe('Campaign Config Store', () => {
       )
 
       expect(store.remainingAmount).toBe(0)
+    })
+  })
+})
+
+describe('FormConfig Store', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  /** Minimal form config for testing */
+  function makeFormConfig(overrides: Partial<FullFormConfig> = {}): FullFormConfig {
+    return {
+      version: '1.0',
+      form: { type: 'donation' } as unknown as FullFormConfig['form'],
+      donationAmounts: {
+        baseDefaultCurrency: 'GBP',
+        frequencies: {
+          once: { enabled: true, presets: [5, 10, 25, 50] },
+          monthly: { enabled: true, presets: [5, 10, 25] },
+          yearly: { enabled: true, presets: [10, 25, 50] }
+        }
+      } as unknown as FullFormConfig['donationAmounts'],
+      features: {
+        impactCart: { enabled: false, settings: {} },
+        productSelector: { enabled: false },
+        impactBoost: { enabled: false },
+        coverCosts: { enabled: false },
+        giftAid: { enabled: false },
+        tribute: { enabled: false },
+        customFields: { customFieldsTabs: {} },
+        entryFields: { enabled: false, mode: 'shared', fields: [] },
+        contactConsent: { enabled: true, settings: { label: 'Join', description: 'Desc' } },
+        terms: { enabled: true }
+      } as unknown as FullFormConfig['features'],
+      ...overrides
+    }
+  }
+
+  describe('reference isolation', () => {
+    it('Object.assign on store.donationAmounts must NOT mutate the original config', () => {
+      const sourceConfig = makeFormConfig()
+      const originalFrequencies = JSON.parse(JSON.stringify(sourceConfig.donationAmounts))
+
+      const store = useFormConfigStore()
+      store.initialize(sourceConfig, [], 'form-1')
+
+      // Simulate CampaignMasterConfigPanel setData mutating store in-place
+      Object.assign(store.donationAmounts!, {
+        frequencies: {
+          once: { enabled: true, presets: [51, 10, 25, 50] },
+          monthly: { enabled: true, presets: [5, 10, 25] },
+          yearly: { enabled: true, presets: [10, 25, 50] }
+        }
+      })
+
+      // Source config MUST be unchanged — if this fails, discard can't restore
+      expect(sourceConfig.donationAmounts).toEqual(originalFrequencies)
+    })
+  })
+
+  describe('frequency enforcement by campaign type', () => {
+    it('disables monthly and yearly for p2p-fundraiser campaigns', () => {
+      const config = makeFormConfig()
+      const store = useFormConfigStore()
+
+      store.initialize(config, [], 'form-1', 'p2p-fundraiser')
+
+      const amounts = store.donationAmounts as unknown as {
+        frequencies: { once: { enabled: boolean }; monthly: { enabled: boolean }; yearly: { enabled: boolean } }
+      }
+      expect(amounts.frequencies.once.enabled).toBe(true)
+      expect(amounts.frequencies.monthly.enabled).toBe(false)
+      expect(amounts.frequencies.yearly.enabled).toBe(false)
+    })
+
+    it('disables monthly and yearly for p2p campaigns', () => {
+      const config = makeFormConfig()
+      const store = useFormConfigStore()
+
+      store.initialize(config, [], 'form-1', 'p2p')
+
+      const amounts = store.donationAmounts as unknown as {
+        frequencies: { monthly: { enabled: boolean }; yearly: { enabled: boolean } }
+      }
+      expect(amounts.frequencies.monthly.enabled).toBe(false)
+      expect(amounts.frequencies.yearly.enabled).toBe(false)
+    })
+
+    it('preserves monthly and yearly for standard campaigns', () => {
+      const config = makeFormConfig()
+      const store = useFormConfigStore()
+
+      store.initialize(config, [], 'form-1', 'standard')
+
+      const amounts = store.donationAmounts as unknown as {
+        frequencies: { monthly: { enabled: boolean }; yearly: { enabled: boolean } }
+      }
+      expect(amounts.frequencies.monthly.enabled).toBe(true)
+      expect(amounts.frequencies.yearly.enabled).toBe(true)
+    })
+
+    it('preserves all frequencies when no campaignType is provided', () => {
+      const config = makeFormConfig()
+      const store = useFormConfigStore()
+
+      store.initialize(config, [], 'form-1')
+
+      const amounts = store.donationAmounts as unknown as {
+        frequencies: { monthly: { enabled: boolean }; yearly: { enabled: boolean } }
+      }
+      expect(amounts.frequencies.monthly.enabled).toBe(true)
+      expect(amounts.frequencies.yearly.enabled).toBe(true)
     })
   })
 })

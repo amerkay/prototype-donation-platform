@@ -184,6 +184,11 @@ app/features/[feature-name]/
 23. Derived/computed data must have ONE source of truth — never duplicate the same calculation in multiple components/pages. Centralize in composables and consume from there
 24. `data-field` paths must match form field TREE (not $storePath). Use plain `as const satisfies Record<keyof T, string>` for TARGETS objects — validate against typed interfaces from `shared/types.ts`. Tab/group names → shared `as const` constants used in both tab definition and targets
 25. Use `$storePath: 'flatten'` for identity store mappings; auto-excludes display-only fields (alert, readonly, card, component)
+26. Store `initialize()` must deep-clone inputs (`JSON.parse(JSON.stringify(...))`) — shallow spread/assign shares nested refs with source, corrupting discard
+27. Spread-then-override merges (`{ ...parent, id, name }`) silently drop unlisted fields — audit every field when adding to merge objects
+28. Singleton Pinia stores shared by multiple components: guard re-initialization with ID check (`if (store.formId !== newId)`) to avoid clobbering live edits
+29. Bug-fix tests MUST be mutation-tested: revert the fix, confirm the test fails, then restore. Tests that pass without the fix are worthless
+30. Test data integrity with REAL stores (not mocks) — mock stores can't reproduce shared-reference bugs that only manifest through actual `ref()` assignment
 
 <!-- end continuous learning notes -->
 
@@ -194,6 +199,7 @@ app/features/[feature-name]/
 3. **FORM-BUILDER FOR ALL FORMS**: Use `defineForm()`, field constructors, `FormRenderer`. Read README first. NON-NEGOTIABLE.
 4. **`_library/` IS SACRED**: No donation logic in form-builder or custom-fields.
 5. **TESTS UNCOVER BUGS**: If a test fails on sensible assertions, STOP and report — don't change test to match broken behavior.
+5b. **BUG FIX = TEST + MUTATION VERIFY**: Every bug fix MUST include a regression test. Verify by commenting out/reverting the fix and confirming the test fails. If the test passes without the fix, the test is worthless — fix it. Only restore the fix after the test is proven to catch the regression.
 6. **DEFER FORMATTING**: Batch at end — run all four checks **in parallel** (separate Bash tool calls in one message): `pnpm typecheck`, `pnpm test:run`, `pnpm format:fix`, `pnpm lint:fix`.
 7. **SUMMARIES + MEMORY**: Brief updates after each answer. End with conventional commit message. After tasks: check if structure changed (→ `/update-project-summary`), if learned something durable (→ update CL), if data models changed (→ update Supabase docs). Keep CL bullets ≤1 line, never duplicate — merge or clarify.
 8. **COMMITS**: Short conventional commits. Check `git --no-pager diff --staged` first. No "Authored by Anthropic" line.

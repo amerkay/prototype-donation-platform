@@ -9,7 +9,8 @@ import {
   fieldGroup,
   textField,
   componentField,
-  alertField
+  alertField,
+  readonlyField
 } from '~/features/_library/form-builder/api'
 
 describe('storeMapping', () => {
@@ -68,14 +69,21 @@ describe('storeMapping', () => {
       expect(mapping.paths.get('donationForms.status')).toBe('topLevelStatus')
     })
 
-    it('excludes component fields automatically', () => {
+    it('excludes all display-only field types (component, alert, readonly)', () => {
       const form = defineForm('test', () => ({
         group: fieldGroup('group', {
           fields: {
             myComponent: componentField('myComponent', {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               component: {} as any
-            })
+            }),
+            myAlert: alertField('myAlert', { variant: 'info', description: 'Info' }),
+            myReadonly: readonlyField('myReadonly', {
+              label: 'Type',
+              defaultValue: 'donation'
+            }),
+            // Regular field should still be mapped
+            name: textField('name', { label: 'Name' })
           }
         })
       }))
@@ -83,7 +91,13 @@ describe('storeMapping', () => {
       const mapping = generateStoreMapping(form)
 
       expect(mapping.excluded.has('group.myComponent')).toBe(true)
+      expect(mapping.excluded.has('group.myAlert')).toBe(true)
+      expect(mapping.excluded.has('group.myReadonly')).toBe(true)
       expect(mapping.paths.has('group.myComponent')).toBe(false)
+      expect(mapping.paths.has('group.myAlert')).toBe(false)
+      expect(mapping.paths.has('group.myReadonly')).toBe(false)
+      // Regular field still mapped
+      expect(mapping.paths.get('group.name')).toBe('group.name')
     })
 
     it('excludes fieldGroups with $storePath: null', () => {
@@ -516,6 +530,130 @@ describe('storeMapping', () => {
       // Value should remain unchanged
       expect(store.settings.name).toBe('Original')
       // markDirty should NOT be called since no values actually changed
+      expect(store.markDirty).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('generateSetData - false positive prevention', () => {
+    it('does not mark dirty when form data contains unmapped extra properties', () => {
+      // Regression: granular $storePath like { 'sections.donationForms': 'donationForms' }
+      // maps the entire tab as a blob. If the tab only has componentFields (excluded),
+      // the store has no 'donationForms' property. When vee-validate emits form values
+      // containing { donationForms: { formCard: { formsCount: 1 } } }, setData should
+      // NOT write this to the store and trigger a false dirty flag.
+      const form = defineForm('test', () => ({
+        config: fieldGroup('config', {
+          fields: {
+            crowdfunding: fieldGroup('crowdfunding', {
+              fields: {
+                title: textField('title', { label: 'Title' })
+              }
+            }),
+            donationForms: fieldGroup('donationForms', {
+              fields: {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                formCard: componentField('formCard', { component: {} as any })
+              }
+            })
+          },
+          $storePath: {
+            crowdfunding: 'crowdfunding',
+            donationForms: 'donationForms'
+          }
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+      const setData = generateSetData(mapping)
+
+      // Store does NOT have 'donationForms' (it's a componentField-only tab)
+      const markDirty = vi.fn()
+      const store = {
+        crowdfunding: { title: 'My Campaign' },
+        markDirty
+      }
+
+      // Form emits values including componentField data injected by watcher
+      setData(store, {
+        config: {
+          crowdfunding: { title: 'My Campaign' },
+          donationForms: { formCard: { formsCount: 1 } }
+        }
+      })
+
+      // Should NOT mark dirty (crowdfunding unchanged, donationForms is unmapped blob)
+      expect(markDirty).not.toHaveBeenCalled()
+      // Should NOT create donationForms on store
+      expect((store as Record<string, unknown>).donationForms).toBeUndefined()
+    })
+
+    it('does not mark dirty when readonlyField default adds extra property to blob-mapped group', () => {
+      // Regression: granular $storePath maps 'sections.form' → 'form' as a blob.
+      // The group contains readonlyField('formType', { defaultValue: 'donation' }).
+      // Store has { title, subtitle } (no formType). vee-validate fills formType
+      // from defaultValue. setData must strip extra keys when writing blobs.
+      const form = defineForm('test', () => ({
+        config: fieldGroup('config', {
+          fields: {
+            form: fieldGroup('form', {
+              fields: {
+                formType: readonlyField('formType', {
+                  label: 'Type',
+                  defaultValue: 'donation'
+                }),
+                title: textField('title', { label: 'Title' }),
+                subtitle: textField('subtitle', { label: 'Subtitle' })
+              }
+            })
+          },
+          $storePath: {
+            form: 'form'
+          }
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+      const setData = generateSetData(mapping)
+
+      const store = {
+        form: { title: 'My Form', subtitle: 'Sub' },
+        markDirty: vi.fn()
+      }
+
+      // vee-validate emits blob with extra formType from readonlyField default
+      setData(store, {
+        config: {
+          form: { title: 'My Form', subtitle: 'Sub', formType: 'donation' }
+        }
+      })
+
+      // Extra key must be stripped — no dirty, no formType on store
+      expect(store.markDirty).not.toHaveBeenCalled()
+      expect((store.form as Record<string, unknown>).formType).toBeUndefined()
+    })
+
+    it('does not mark dirty when getData round-trips unchanged data', () => {
+      const form = defineForm('test', () => ({
+        settings: fieldGroup('settings', {
+          fields: {
+            name: textField('name', { label: 'Name' })
+          }
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+      const getData = generateGetData(mapping)
+      const setData = generateSetData(mapping)
+
+      const store = {
+        settings: { name: 'Original' },
+        markDirty: vi.fn()
+      }
+
+      // Round-trip: getData → setData with same values
+      const formData = getData(store)
+      setData(store, formData)
+
       expect(store.markDirty).not.toHaveBeenCalled()
     })
   })

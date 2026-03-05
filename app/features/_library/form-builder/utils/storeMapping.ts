@@ -49,6 +49,9 @@ export function generateStoreMapping(form: ComposableForm): StoreMapping {
   }
   const fields = form.setup(ctx)
 
+  // Display-only field types that should never map to store
+  const DISPLAY_ONLY_TYPES = new Set(['alert', 'readonly', 'card', 'component'])
+
   // Recursively traverse fields to build mapping
   function traverse(fields: Record<string, FieldDef>, prefix = '') {
     for (const [key, field] of Object.entries(fields)) {
@@ -63,7 +66,6 @@ export function generateStoreMapping(form: ComposableForm): StoreMapping {
           excluded.add(formPath)
         } else if (group.$storePath === 'flatten') {
           // Identity-map each store-bound field (exclude display-only types)
-          const DISPLAY_ONLY_TYPES = new Set(['alert', 'readonly', 'card', 'component'])
           if (group.fields) {
             for (const [fieldName, fieldDef] of Object.entries(group.fields)) {
               if (DISPLAY_ONLY_TYPES.has(fieldDef.type)) continue
@@ -93,8 +95,8 @@ export function generateStoreMapping(form: ComposableForm): StoreMapping {
             traverse(group.fields, formPath)
           }
         }
-      } else if (field.type === 'component') {
-        // Component fields never map to store by default
+      } else if (DISPLAY_ONLY_TYPES.has(field.type)) {
+        // Display-only fields never map to store
         excluded.add(formPath)
       } else {
         // Regular field (leaf node) - use convention (inherit parent path)
@@ -204,7 +206,33 @@ export function generateSetData<TStore extends { markDirty: () => void }>(mappin
 
         // Get old value from store for comparison
         const lastSegment = storeSegments[storeSegments.length - 1]!
+
+        // Skip if property doesn't exist on store — never create new store properties
+        // (e.g. componentField-only tabs that have no store backing)
+        if (!(lastSegment in target)) continue
+
         const oldValue = target[lastSegment]
+
+        // When writing an object blob, strip keys that don't exist in the old value.
+        // This prevents display-only field defaults (e.g. readonlyField defaultValue)
+        // injected by vee-validate from leaking into the store and triggering false dirty.
+        if (
+          value != null &&
+          typeof value === 'object' &&
+          !Array.isArray(value) &&
+          oldValue != null &&
+          typeof oldValue === 'object' &&
+          !Array.isArray(oldValue)
+        ) {
+          const oldKeys = Object.keys(oldValue as Record<string, unknown>)
+          const filtered: Record<string, unknown> = {}
+          for (const k of oldKeys) {
+            if (k in (value as Record<string, unknown>)) {
+              filtered[k] = (value as Record<string, unknown>)[k]
+            }
+          }
+          value = filtered
+        }
 
         // Check if value actually changed
         const valueChanged = JSON.stringify(oldValue) !== JSON.stringify(value)

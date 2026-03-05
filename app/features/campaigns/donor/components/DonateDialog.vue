@@ -44,7 +44,10 @@ watch(
   () => props.open,
   (isOpen) => {
     if (isOpen && form.value) {
-      formConfigStore.initialize(form.value.config, form.value.products, form.value.id)
+      // Only re-initialize if switching to a different form — preserve live edits from edit pages
+      if (formConfigStore.formId !== form.value.id) {
+        formConfigStore.initialize(form.value.config, form.value.products, form.value.id)
+      }
       donationStore.initialize(form.value.id, form.value.config.donationAmounts.baseDefaultCurrency)
       cartStore.initialize(form.value.id)
     }

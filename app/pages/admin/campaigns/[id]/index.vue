@@ -6,7 +6,9 @@ import CrowdfundingPagePreview from '~/features/campaigns/features/crowdfunding/
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { ICON_HIDE } from '~/lib/icons'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
+import { useForm } from '~/features/campaigns/shared/composables/useForm'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
+import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import type { CampaignStatus } from '~/features/campaigns/shared/types'
 import { getCampaignTypeBreadcrumb } from '~/features/campaigns/shared/composables/useCampaignTypes'
 import { useEditState } from '~/features/_shared/composables/useEditState'
@@ -29,7 +31,9 @@ const {
   unarchiveCampaign
 } = useCampaigns()
 const store = useCampaignConfigStore()
+const formConfigStore = useFormConfigStore()
 const charityStore = useCharitySettingsStore()
+const { updateForm } = useForm()
 
 // Get campaign data
 const campaign = computed(() => getCampaignById(route.params.id as string))
@@ -37,6 +41,10 @@ const campaign = computed(() => getCampaignById(route.params.id as string))
 // Initialize store synchronously so child components have store.id during setup
 if (campaign.value) {
   store.initialize(campaign.value)
+  // Fundraisers: also initialize formConfigStore from the campaign's embedded form
+  if (store.isFundraiser && store.form) {
+    formConfigStore.initialize(store.form.config, store.form.products, store.form.id, store.type)
+  }
 }
 
 onMounted(() => {
@@ -75,12 +83,21 @@ const crowdfundingEnabled = computed(() => store.crowdfunding?.enabled !== false
 const { brandingStyle } = useBrandingCssVars()
 const editableMode = ref(!isTerminal.value)
 
+// Additional store for fundraisers: formConfigStore snapshot for useEditState lifecycle
+const formConfigSnapshot = computed(() => {
+  if (!formConfigStore.fullConfig || !formConfigStore.formId) return undefined
+  return [formConfigStore.fullConfig, formConfigStore.products, formConfigStore.formId] as const
+})
+
 // Use admin edit composable for save/discard logic
 const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBaseline } =
   useEditState({
     store,
     formRef,
     originalData: campaignForStore,
+    additionalStores: store.isFundraiser
+      ? [{ store: formConfigStore, originalData: formConfigSnapshot }]
+      : undefined,
     onSave: async () => {
       if (!store.id) return
       await updateCampaign(store.id, {
@@ -89,8 +106,18 @@ const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBasel
         stats: store.stats!,
         crowdfunding: store.crowdfunding!,
         peerToPeer: store.peerToPeer!,
-        matchedGiving: store.matchedGiving
+        matchedGiving: store.matchedGiving,
+        form: store.form
       })
+      // Fundraisers: also save form config if dirty
+      if (
+        store.isFundraiser &&
+        formConfigStore.isDirty &&
+        formConfigStore.formId &&
+        formConfigStore.fullConfig
+      ) {
+        await updateForm(formConfigStore.fullConfig, formConfigStore.products)
+      }
     }
   })
 

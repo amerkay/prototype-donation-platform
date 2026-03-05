@@ -158,22 +158,27 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
   // Actions
   // TODO-SUPABASE: Persistence delegated to useCampaigns().updateCampaign() — no direct DB calls here
   function initialize(campaign: Campaign) {
-    id.value = campaign.id
-    type.value = campaign.type
-    p2pPreset.value = campaign.p2pPreset ?? null
-    parentCampaignId.value = campaign.parentCampaignId ?? null
-    name.value = campaign.name
-    status.value = campaign.status
-    isArchived.value = campaign.isArchived ?? false
-    stats.value = { ...campaign.stats }
-    crowdfunding.value = { ...campaign.crowdfunding }
-    peerToPeer.value = { ...campaign.peerToPeer }
-    matchedGiving.value = { ...campaign.matchedGiving }
-    form.value = campaign.form ? { ...campaign.form } : null
-    fundraisers.value = [...campaign.fundraisers]
-    recentDonations.value = [...campaign.recentDonations]
-    createdAt.value = campaign.createdAt
-    updatedAt.value = campaign.updatedAt
+    // Deep clone to prevent shared references with source data (useCampaigns).
+    // Without this, Object.assign in setData mutates both the store AND the source,
+    // making discard unable to restore the original values.
+    const c = JSON.parse(JSON.stringify(campaign)) as Campaign
+
+    id.value = c.id
+    type.value = c.type
+    p2pPreset.value = c.p2pPreset ?? null
+    parentCampaignId.value = c.parentCampaignId ?? null
+    name.value = c.name
+    status.value = c.status
+    isArchived.value = c.isArchived ?? false
+    stats.value = c.stats
+    crowdfunding.value = c.crowdfunding
+    peerToPeer.value = c.peerToPeer
+    matchedGiving.value = c.matchedGiving
+    form.value = c.form ?? null
+    fundraisers.value = c.fundraisers
+    recentDonations.value = c.recentDonations
+    createdAt.value = c.createdAt
+    updatedAt.value = c.updatedAt
     markClean()
   }
 

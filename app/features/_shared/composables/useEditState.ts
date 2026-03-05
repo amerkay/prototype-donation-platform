@@ -23,6 +23,16 @@ export interface EditableStore {
 }
 
 /**
+ * Secondary store managed alongside the primary store in useEditState.
+ * Receives the same lifecycle management: snapshot, smart markDirty, discard restore, save clean.
+ */
+export interface AdditionalStoreEntry {
+  store: EditableStore
+  /** Reactive snapshot of current store state for comparison. Return undefined when not ready. */
+  originalData: ComputedRef<unknown>
+}
+
+/**
  * Options for useEditState composable
  */
 export interface UseEditStateOptions<TStore extends EditableStore, TOriginalData> {
@@ -36,6 +46,8 @@ export interface UseEditStateOptions<TStore extends EditableStore, TOriginalData
   onSave: () => Promise<void>
   /** Optional function to restore original data. Defaults to store.initialize(data) */
   onDiscard?: (data: TOriginalData) => void
+  /** Secondary stores managed alongside the primary store */
+  additionalStores?: AdditionalStoreEntry[]
 }
 
 /** Inject key for leave guard state shared with AdminEditLayout */
@@ -92,23 +104,58 @@ export function useEditState<TStore extends EditableStore, TOriginalData>({
   formRef,
   originalData,
   onSave,
-  onDiscard
+  onDiscard,
+  additionalStores
 }: UseEditStateOptions<TStore, TOriginalData>) {
   // Track last saved state - single source of truth for discard baseline
   const lastSavedData = ref<TOriginalData>()
+
+  // Track last saved state for additional stores
+  const additionalSnapshots = ref<unknown[]>([])
 
   // Initialize once on mount, then manage independently
   onMounted(() => {
     if (originalData.value) {
       lastSavedData.value = deepClone(originalData.value)
     }
+    if (additionalStores) {
+      additionalSnapshots.value = additionalStores.map((s) =>
+        s.originalData.value != null ? deepClone(s.originalData.value) : undefined
+      )
+    }
   })
 
   // Smart dirty detection: auto-clear isDirty when store returns to last-saved state.
   // Patch markDirty so that setData's explicit call is a no-op when values match saved state.
-  const hasChanges = computed(() => {
+  // Combined: primary isDirty reflects changes in ANY managed store.
+  const primaryHasChanges = computed(() => {
     if (!lastSavedData.value || !originalData.value) return false
     return JSON.stringify(originalData.value) !== JSON.stringify(lastSavedData.value)
+  })
+
+  // Smart dirty detection for additional stores
+  const additionalHasChanges: ComputedRef<boolean>[] = []
+  if (additionalStores) {
+    for (let i = 0; i < additionalStores.length; i++) {
+      const { store: additionalStore, originalData: additionalOriginal } = additionalStores[i]!
+      const changed = computed(() => {
+        const snapshot = additionalSnapshots.value[i]
+        if (snapshot == null || additionalOriginal.value == null) return false
+        return JSON.stringify(additionalOriginal.value) !== JSON.stringify(snapshot)
+      })
+      additionalHasChanges.push(changed)
+      // When additional store's markDirty fires, also sync the primary store's isDirty
+      // so the leave guard (which checks store.isDirty) sees the combined state
+      additionalStore.markDirty = () => {
+        additionalStore.isDirty = changed.value
+        store.isDirty = primaryHasChanges.value || additionalHasChanges.some((c) => c.value)
+      }
+    }
+  }
+
+  const hasChanges = computed(() => {
+    if (primaryHasChanges.value) return true
+    return additionalHasChanges.some((c) => c.value)
   })
 
   store.markDirty = () => {
@@ -139,6 +186,17 @@ export function useEditState<TStore extends EditableStore, TOriginalData>({
       // originalData is reactive to store, so it reflects the just-saved state
       if (originalData.value) {
         lastSavedData.value = deepClone(originalData.value)
+      }
+
+      // Snapshot and clean additional stores
+      if (additionalStores) {
+        for (let i = 0; i < additionalStores.length; i++) {
+          const entry = additionalStores[i]!
+          if (entry.originalData.value != null) {
+            additionalSnapshots.value[i] = deepClone(entry.originalData.value)
+          }
+          entry.store.markClean()
+        }
       }
 
       store.markClean()
@@ -176,6 +234,23 @@ export function useEditState<TStore extends EditableStore, TOriginalData>({
       }
     }
     store.markClean()
+
+    // Restore additional stores
+    if (additionalStores) {
+      for (let i = 0; i < additionalStores.length; i++) {
+        const entry = additionalStores[i]!
+        const snapshot = additionalSnapshots.value[i]
+        if (snapshot != null) {
+          const data = deepClone(snapshot)
+          if (Array.isArray(data)) {
+            entry.store.initialize(...data)
+          } else {
+            entry.store.initialize(data)
+          }
+        }
+        entry.store.markClean()
+      }
+    }
   }
 
   /**
@@ -195,11 +270,17 @@ export function useEditState<TStore extends EditableStore, TOriginalData>({
     // resetToSaved() triggers FormRenderer watchers which may call setData and mark dirty
     await nextTick()
     store.markClean()
+    if (additionalStores) {
+      for (const entry of additionalStores) entry.store.markClean()
+    }
 
     // FormRenderer's watcher uses { flush: 'post' } which can fire after nextTick
     // Use setTimeout to ensure we mark clean after ALL async updates complete
     setTimeout(() => {
       store.markClean()
+      if (additionalStores) {
+        for (const entry of additionalStores) entry.store.markClean()
+      }
     }, 0)
 
     toast.success('Changes discarded')

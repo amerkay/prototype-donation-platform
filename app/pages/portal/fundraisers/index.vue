@@ -59,57 +59,59 @@ function isTerminal(f: Campaign) {
         <p class="text-sm text-muted-foreground">Campaigns you've started and how they're doing.</p>
       </div>
 
-      <Empty v-if="visibleFundraisers.length === 0">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <ICON_CAMPAIGN />
-          </EmptyMedia>
-          <EmptyTitle>No fundraisers yet</EmptyTitle>
-          <EmptyDescription>
-            When you create a fundraising page, it'll appear here so you can track donations and
-            share it.
-          </EmptyDescription>
-        </EmptyHeader>
-        <EmptyContent>
-          <NuxtLink :to="`/${charityStore.slug}/p2p-templates`">
-            <Button>Browse P2P Templates</Button>
-          </NuxtLink>
-        </EmptyContent>
-      </Empty>
+      <ClientOnly>
+        <Empty v-if="visibleFundraisers.length === 0">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <ICON_CAMPAIGN />
+            </EmptyMedia>
+            <EmptyTitle>No fundraisers yet</EmptyTitle>
+            <EmptyDescription>
+              When you create a fundraising page, it'll appear here so you can track donations and
+              share it.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <NuxtLink :to="`/${charityStore.slug}/p2p-templates`">
+              <Button>Browse P2P Templates</Button>
+            </NuxtLink>
+          </EmptyContent>
+        </Empty>
 
-      <div v-else class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <CampaignCard
-          v-for="f in visibleFundraisers"
-          :key="f.id"
-          :campaign="f"
-          :href="`/portal/fundraisers/${f.id}`"
-        >
-          <template #actions>
-            <div class="flex gap-2">
-              <NuxtLink
-                v-if="!isTerminal(f)"
-                :to="`/portal/fundraisers/${f.id}/edit`"
-                class="flex-1"
-              >
-                <Button variant="default" size="sm" class="w-full" as="span">
-                  <ICON_EDIT class="w-3.5 h-3.5 mr-1" />
-                  Edit Campaign
-                </Button>
-              </NuxtLink>
-              <StatusBadge
-                v-else
-                :status="getFundraiserMetaStatus(f) ?? f.status"
-                class="self-center"
-              />
-              <NuxtLink :to="`/portal/fundraisers/${f.id}`">
-                <Button variant="outline" size="sm" as="span">
-                  Donations <ICON_FORWARD class="w-3.5 h-3.5 ml-1" />
-                </Button>
-              </NuxtLink>
-            </div>
-          </template>
-        </CampaignCard>
-      </div>
+        <div v-else class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <CampaignCard
+            v-for="f in visibleFundraisers"
+            :key="f.id"
+            :campaign="f"
+            :href="`/portal/fundraisers/${f.id}`"
+          >
+            <template #actions>
+              <div class="flex gap-2">
+                <NuxtLink
+                  v-if="!isTerminal(f)"
+                  :to="`/portal/fundraisers/${f.id}/edit`"
+                  class="flex-1"
+                >
+                  <Button variant="default" size="sm" class="w-full" as="span">
+                    <ICON_EDIT class="w-3.5 h-3.5 mr-1" />
+                    Edit Campaign
+                  </Button>
+                </NuxtLink>
+                <StatusBadge
+                  v-else
+                  :status="getFundraiserMetaStatus(f) ?? f.status"
+                  class="self-center"
+                />
+                <NuxtLink :to="`/portal/fundraisers/${f.id}`">
+                  <Button variant="outline" size="sm" as="span">
+                    Donations <ICON_FORWARD class="w-3.5 h-3.5 ml-1" />
+                  </Button>
+                </NuxtLink>
+              </div>
+            </template>
+          </CampaignCard>
+        </div>
+      </ClientOnly>
     </div>
   </div>
 </template>

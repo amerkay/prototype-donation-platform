@@ -37,7 +37,8 @@ if (defaultForm.value) {
   formConfigStore.initialize(
     defaultForm.value.config,
     defaultForm.value.products,
-    defaultForm.value.id
+    defaultForm.value.id,
+    campaign.value?.type
   )
 }
 
@@ -73,8 +74,11 @@ const editableMode = ref(!isTerminal.value)
 const crowdfundingEnabled = computed(() => store.crowdfunding?.enabled !== false)
 const { brandingStyle } = useBrandingCssVars()
 
-// Combined dirty state (campaign config + form config)
-const isDirtyComputed = computed(() => store.isDirty || formConfigStore.isDirty)
+// Additional store: formConfigStore snapshot for useEditState lifecycle management
+const formConfigSnapshot = computed(() => {
+  if (!formConfigStore.fullConfig || !formConfigStore.formId) return undefined
+  return [formConfigStore.fullConfig, formConfigStore.products, formConfigStore.formId] as const
+})
 
 // Reuse admin edit composable for save/discard logic
 const {
@@ -87,6 +91,12 @@ const {
   store,
   formRef,
   originalData: campaignForStore,
+  additionalStores: [
+    {
+      store: formConfigStore,
+      originalData: formConfigSnapshot
+    }
+  ],
   onSave: async () => {
     if (!store.id) return
     await updateCampaign(store.id, {
@@ -142,7 +152,7 @@ function handleStatusUpdate(newStatus: CampaignStatus) {
 
 // Preview opens the donor-facing campaign page
 const handlePreview = () => {
-  window.open(`/${charityStore.slug}/campaign/${store.id}`, '_blank')
+  window.open(`/${charityStore.slug}/${store.id}`, '_blank')
 }
 
 // After fundraiser is deleted, navigate back to fundraisers list
@@ -156,7 +166,7 @@ const handleDeleted = () => {
     v-if="campaign"
     :editable="isTerminal ? undefined : editableMode"
     :breadcrumbs="breadcrumbs"
-    :is-dirty="isTerminal ? false : isDirtyComputed"
+    :is-dirty="isTerminal ? false : store.isDirty"
     :show-discard-dialog="showDiscardDialog"
     :show-preview="crowdfundingEnabled"
     preview-label="Preview"
