@@ -1,5 +1,7 @@
 import { ref, computed, type Ref, type ComputedRef, type InjectionKey } from 'vue'
-import type { FieldDef, FieldContext, TabsFieldDef, FieldGroupDef } from '../types'
+import type { FieldDef, FieldContext, TabsFieldDef, FieldGroupDef, VisibilityFn } from '../types'
+import type { ConditionGroup } from '../conditions'
+import { checkFieldVisibility } from './useFieldPath'
 
 // ============================================================================
 // TYPES
@@ -18,6 +20,8 @@ interface SearchableEntry {
   tabValues: string[]
   /** Paths of ancestor fieldGroups (for force-expanding) */
   groupPaths: string[]
+  /** Visibility conditions from this entry and all ancestors (all must pass for entry to be visible) */
+  visibilityChecks: Array<{ visibleWhen: VisibilityFn | ConditionGroup }>
 }
 
 export interface FormSearchState {
@@ -106,13 +110,19 @@ function buildSearchIndex(
   parentPath: string,
   parentLabels: string[],
   ancestorTabValues: string[] = [],
-  ancestorGroupPaths: string[] = []
+  ancestorGroupPaths: string[] = [],
+  ancestorVisibilityChecks: Array<{ visibleWhen: VisibilityFn | ConditionGroup }> = []
 ): SearchableEntry[] {
   const entries: SearchableEntry[] = []
   const emptyCtx: FieldContext = { values: {}, root: {} }
 
   for (const [key, field] of Object.entries(fields)) {
     const fieldPath = parentPath ? `${parentPath}.${key}` : key
+
+    // Accumulate visibility checks from this field + ancestors
+    const fieldChecks = field.visibleWhen
+      ? [...ancestorVisibilityChecks, { visibleWhen: field.visibleWhen }]
+      : ancestorVisibilityChecks
 
     if (field.type === 'field-group') {
       const group = field as FieldGroupDef
@@ -128,7 +138,8 @@ function buildSearchIndex(
           description: typeof group.description === 'string' ? group.description : '',
           parentLabels,
           tabValues: ancestorTabValues,
-          groupPaths: ancestorGroupPaths
+          groupPaths: ancestorGroupPaths,
+          visibilityChecks: fieldChecks
         })
       }
 
@@ -139,7 +150,8 @@ function buildSearchIndex(
             fieldPath,
             newParentLabels,
             ancestorTabValues,
-            newGroupPaths
+            newGroupPaths,
+            fieldChecks
           )
         )
       }
@@ -150,13 +162,19 @@ function buildSearchIndex(
         const newParentLabels = tabLabel ? [...parentLabels, tabLabel] : parentLabels
         const tabPath = `${fieldPath}.${tab.value}`
 
+        // Tabs can have their own visibleWhen — accumulate it
+        const tabChecks = tab.visibleWhen
+          ? [...fieldChecks, { visibleWhen: tab.visibleWhen }]
+          : fieldChecks
+
         entries.push(
           ...buildSearchIndex(
             tab.fields,
             tabPath,
             newParentLabels,
             [...ancestorTabValues, tab.value],
-            ancestorGroupPaths
+            ancestorGroupPaths,
+            tabChecks
           )
         )
       }
@@ -169,7 +187,8 @@ function buildSearchIndex(
         description: typeof field.description === 'string' ? field.description : '',
         parentLabels,
         tabValues: ancestorTabValues,
-        groupPaths: ancestorGroupPaths
+        groupPaths: ancestorGroupPaths,
+        visibilityChecks: fieldChecks
       })
     }
   }
@@ -205,7 +224,8 @@ function resolveLabel(
  */
 export function useFormSearch(
   fields: Record<string, FieldDef>,
-  options?: FormSearchOptions
+  options?: FormSearchOptions,
+  fieldContext?: () => FieldContext
 ): FormSearchState {
   const threshold = options?.searchThreshold ?? 12
   const isSearchEnabled = !options?.disableSearch && countInputFields(fields) >= threshold
@@ -215,6 +235,20 @@ export function useFormSearch(
 
   // Build index once (labels are resolved with empty context — good enough for search)
   const searchIndex = buildSearchIndex(fields, '', [])
+
+  // Check if an entry is visible based on its accumulated visibility checks
+  const isEntryVisible = (entry: SearchableEntry, ctx: FieldContext): boolean => {
+    for (const check of entry.visibilityChecks) {
+      if (
+        !checkFieldVisibility({ visibleWhen: check.visibleWhen }, ctx, {
+          skipContainerValidation: true
+        })
+      ) {
+        return false
+      }
+    }
+    return true
+  }
 
   // Compute matched paths when search term changes
   const matchResult = computed(() => {
@@ -228,12 +262,20 @@ export function useFormSearch(
         tabMatchCounts: new Map<string, number>()
       }
 
+    // Resolve current field context for visibility filtering
+    const ctx = fieldContext?.()
+
     const matchedPaths = new Set<string>()
     const matchedGroupPaths = new Set<string>()
     const tabCounts = new Map<string, number>()
     let leafMatches = 0
 
     for (const entry of searchIndex) {
+      // Skip entries that are currently hidden by visibleWhen
+      if (ctx && entry.visibilityChecks.length > 0 && !isEntryVisible(entry, ctx)) {
+        continue
+      }
+
       const haystack =
         `${entry.label} ${entry.description} ${entry.parentLabels.join(' ')}`.toLowerCase()
       if (haystack.includes(term)) {

@@ -53,6 +53,8 @@ The dev server must be running before Playwright tests (see above).
 
 **v-html sanitization**: ALL `v-html` → `sanitizeRichText()` from `~/features/_library/form-builder/utils/sanitize-html.ts`. Templates with variables → `processTemplateRichText()` from `~/features/templates/admin/utils/template-rich-text.ts`.
 
+**Empty states**: ALL empty/no-results UI MUST use `Empty` + `EmptyHeader`/`EmptyTitle`/`EmptyDescription`/`EmptyMedia` from `@/components/ui/empty/`. Never hand-roll empty state markup.
+
 **Save/discard**: ALL admin/portal settings pages MUST use `StickyButtonGroup` from `~/features/_admin/components/StickyButtonGroup.vue`. Never custom button bars.
 
 **AlertDialogs**: Must be separate components — never inline. Reuse `AdminDeleteDialog` for simple confirmations.
@@ -189,12 +191,14 @@ app/features/[feature-name]/
 28. Singleton Pinia stores shared by multiple components: guard re-initialization with ID check (`if (store.formId !== newId)`) to avoid clobbering live edits
 29. Bug-fix tests MUST be mutation-tested: revert the fix, confirm the test fails, then restore. Tests that pass without the fix are worthless
 30. Test data integrity with REAL stores (not mocks) — mock stores can't reproduce shared-reference bugs that only manifest through actual `ref()` assignment
+31. shadcn-vue components (e.g. `Empty`, `Input`) need explicit imports — they are NOT Nuxt auto-imported
+32. `useFormSearch` filters hidden fields reactively via `visibilityChecks` stored in the search index — pass `FieldContext` getter as 3rd arg
 
 <!-- end continuous learning notes -->
 
 ## Code Rules
 
-1. **PLAN FIRST**: Present 3+ options with 1-line desc + star rating (★) during planning. Questions only during planning, never mid-implementation.
+1. **PLAN FIRST**: Present 3+ options with 1-line desc + star rating (★) during planning. Questions only during planning, never mid-implementation. ALWAYS use the `AskUserQuestion` tool for questions — never inline questions in text output.
 2. **INVESTIGATE + FOLLOW PATTERNS**: Search codebase for similar patterns before writing code. Match conventions exactly.
 3. **FORM-BUILDER FOR ALL FORMS**: Use `defineForm()`, field constructors, `FormRenderer`. Read README first. NON-NEGOTIABLE.
 4. **`_library/` IS SACRED**: No donation logic in form-builder or custom-fields.

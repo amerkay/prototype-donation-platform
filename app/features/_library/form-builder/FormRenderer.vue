@@ -62,7 +62,12 @@ const setupCtx = {
 const setupFields = props.section.setup(setupCtx)
 
 // Form search: auto-enabled for complex forms (12+ input fields)
-const formSearch = useFormSearch(setupFields, props.section._meta?.search)
+// fieldContext getter is used lazily (after sectionFieldContext is defined below)
+const formSearch = useFormSearch(
+  setupFields,
+  props.section._meta?.search,
+  () => sectionFieldContext.value
+)
 provide(FORM_SEARCH_KEY, formSearch)
 
 const resolvedSection = computed(() => ({

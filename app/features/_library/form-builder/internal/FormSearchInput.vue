@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { inject } from 'vue'
 import { FORM_SEARCH_KEY } from '../composables/useFormSearch'
+import { Empty, EmptyContent, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Input } from '@/components/ui/input'
 
 const formSearch = inject(FORM_SEARCH_KEY)!
@@ -37,24 +38,28 @@ const formSearch = inject(FORM_SEARCH_KEY)!
       {{ formSearch.matchCount.value === 1 ? 'match' : 'matches' }} found
     </p>
     <!-- No results -->
-    <div
+    <Empty
       v-if="formSearch.isSearchActive.value && formSearch.matchCount.value === 0"
-      class="flex flex-col items-center gap-2 py-8 text-muted-foreground"
+      class="border border-dashed py-6"
     >
-      <Icon name="lucide:search-x" class="size-8 opacity-50" />
-      <p class="text-sm">
-        No fields match "<span class="font-medium text-foreground">{{
-          formSearch.searchTerm.value
-        }}</span
-        >"
-      </p>
-      <button
-        type="button"
-        class="text-xs text-primary hover:underline"
-        @click="formSearch.searchTerm.value = ''"
-      >
-        Clear search
-      </button>
-    </div>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Icon name="lucide:search-x" />
+        </EmptyMedia>
+        <EmptyTitle>
+          No fields match "<span class="font-medium">{{ formSearch.searchTerm.value }}</span
+          >"
+        </EmptyTitle>
+      </EmptyHeader>
+      <EmptyContent>
+        <button
+          type="button"
+          class="text-xs text-primary hover:underline"
+          @click="formSearch.searchTerm.value = ''"
+        >
+          Clear search
+        </button>
+      </EmptyContent>
+    </Empty>
   </div>
 </template>
