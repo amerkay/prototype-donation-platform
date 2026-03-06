@@ -87,6 +87,55 @@ export function countInputFields(fields: Record<string, FieldDef>): number {
 // SEARCH INDEX
 // ============================================================================
 
+type VisibilityCheck = { visibleWhen: VisibilityFn | ConditionGroup; valuesPath: string }
+
+/** Index a tabs container and all its tab children */
+function indexTabs(
+  tabs: TabsFieldDef,
+  fieldPath: string,
+  parentPath: string,
+  parentLabels: string[],
+  fieldChecks: VisibilityCheck[],
+  emptyCtx: FieldContext
+): SearchableEntry[] {
+  const entries: SearchableEntry[] = []
+  const tabsLabel = resolveLabel(tabs.label, emptyCtx)
+  const tabsParentLabels = tabsLabel ? [...parentLabels, tabsLabel] : parentLabels
+
+  if (tabsLabel) {
+    entries.push({
+      path: fieldPath,
+      label: tabsLabel,
+      description: typeof tabs.description === 'string' ? tabs.description : '',
+      parentLabels,
+      visibilityChecks: fieldChecks
+    })
+  }
+
+  for (const tab of tabs.tabs) {
+    const tabLabel = resolveLabel(tab.label, emptyCtx)
+    const newParentLabels = tabLabel ? [...tabsParentLabels, tabLabel] : tabsParentLabels
+    const tabPath = `${fieldPath}.${tab.value}`
+    const tabChecks = tab.visibleWhen
+      ? [...fieldChecks, { visibleWhen: tab.visibleWhen, valuesPath: parentPath }]
+      : fieldChecks
+
+    if (tabLabel) {
+      entries.push({
+        path: tabPath,
+        label: tabLabel,
+        description: '',
+        parentLabels: tabsParentLabels,
+        visibilityChecks: tabChecks
+      })
+    }
+
+    entries.push(...buildSearchIndex(tab.fields, tabPath, newParentLabels, tabChecks))
+  }
+
+  return entries
+}
+
 /**
  * Recursively walk the field tree and build a flat searchable index.
  * Labels that are functions are called with an empty context (best-effort).
@@ -95,10 +144,7 @@ function buildSearchIndex(
   fields: Record<string, FieldDef>,
   parentPath: string,
   parentLabels: string[],
-  ancestorVisibilityChecks: Array<{
-    visibleWhen: VisibilityFn | ConditionGroup
-    valuesPath: string
-  }> = []
+  ancestorVisibilityChecks: VisibilityCheck[] = []
 ): SearchableEntry[] {
   const entries: SearchableEntry[] = []
   const emptyCtx: FieldContext = { values: {}, root: {} }
@@ -117,7 +163,6 @@ function buildSearchIndex(
       const groupLabel = resolveLabel(group.label, emptyCtx)
       const newParentLabels = groupLabel ? [...parentLabels, groupLabel] : parentLabels
 
-      // Index the group itself (so searching for group name shows it)
       if (groupLabel) {
         entries.push({
           path: fieldPath,
@@ -132,46 +177,17 @@ function buildSearchIndex(
         entries.push(...buildSearchIndex(group.fields, fieldPath, newParentLabels, fieldChecks))
       }
     } else if (field.type === 'tabs') {
-      const tabs = field as TabsFieldDef
-      const tabsLabel = resolveLabel(tabs.label, emptyCtx)
-      const tabsParentLabels = tabsLabel ? [...parentLabels, tabsLabel] : parentLabels
-
-      // Index the tabs container itself (e.g. "Donation Frequencies")
-      if (tabsLabel) {
-        entries.push({
-          path: fieldPath,
-          label: tabsLabel,
-          description: typeof tabs.description === 'string' ? tabs.description : '',
+      entries.push(
+        ...indexTabs(
+          field as TabsFieldDef,
+          fieldPath,
+          parentPath,
           parentLabels,
-          visibilityChecks: fieldChecks
-        })
-      }
-
-      for (const tab of tabs.tabs) {
-        const tabLabel = resolveLabel(tab.label, emptyCtx)
-        const newParentLabels = tabLabel ? [...tabsParentLabels, tabLabel] : tabsParentLabels
-        const tabPath = `${fieldPath}.${tab.value}`
-
-        // Tabs can have their own visibleWhen — accumulate it
-        const tabChecks = tab.visibleWhen
-          ? [...fieldChecks, { visibleWhen: tab.visibleWhen, valuesPath: parentPath }]
-          : fieldChecks
-
-        // Index the tab trigger itself (so searching for tab name shows it)
-        if (tabLabel) {
-          entries.push({
-            path: tabPath,
-            label: tabLabel,
-            description: '',
-            parentLabels: tabsParentLabels,
-            visibilityChecks: tabChecks
-          })
-        }
-
-        entries.push(...buildSearchIndex(tab.fields, tabPath, newParentLabels, tabChecks))
-      }
+          fieldChecks,
+          emptyCtx
+        )
+      )
     } else if (!NON_INDEXABLE_TYPES.has(field.type)) {
-      // Regular input field — index it
       const label = resolveLabel(field.label, emptyCtx)
       entries.push({
         path: fieldPath,

@@ -63,12 +63,18 @@ const donorValueLastYear = computed(() =>
   sub.value ? getDonorValueForOrg(sub.value.charityName) : 0
 )
 
+const campaign = computed(() =>
+  sub.value ? campaigns.value.find((c) => c.id === sub.value!.campaignId) : undefined
+)
+
 const eligibility = computed(() => {
   if (!sub.value)
     return { canPause: false, canCancel: false, canRefund: false, canChangeAmount: false }
   return checkEligibility({
     subscription: sub.value,
-    donorValueLastYear: donorValueLastYear.value
+    donorValueLastYear: donorValueLastYear.value,
+    campaignType: campaign.value?.type,
+    campaignStatus: campaign.value?.status
   })
 })
 

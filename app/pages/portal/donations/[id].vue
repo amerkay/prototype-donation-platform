@@ -3,6 +3,7 @@ import { useDonorPortal } from '~/features/donor-portal/composables/useDonorPort
 import { useActionEligibility } from '~/features/donor-portal/composables/useActionEligibility'
 import { useRefundAction } from '~/features/donations/shared/composables/useRefundAction'
 import { useCampaignFormatters } from '~/features/campaigns/shared/composables/useCampaignFormatters'
+import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import BreadcrumbBar from '~/features/_shared/components/BreadcrumbBar.vue'
 import PortalLineItemsCard from '~/features/donor-portal/components/PortalLineItemsCard.vue'
 import PortalDetailRow from '~/features/donor-portal/components/PortalDetailRow.vue'
@@ -20,6 +21,7 @@ const router = useRouter()
 const { transactions, subscriptions, addTransaction, getDonorValueForOrg } = useDonorPortal()
 const { formatAmount, formatDate } = useCampaignFormatters()
 const { checkEligibility } = useActionEligibility()
+const { campaigns } = useCampaigns()
 
 const transaction = computed(() => transactions.value.find((t) => t.id === route.params.id))
 
@@ -41,12 +43,21 @@ const donorValueLastYear = computed(() =>
   transaction.value ? getDonorValueForOrg(transaction.value.charityName) : 0
 )
 
+const campaign = computed(() =>
+  transaction.value
+    ? campaigns.value.find((c) => c.id === transaction.value!.campaignId)
+    : undefined
+)
+
 const eligibility = computed(() => {
   if (!transaction.value)
     return { canPause: false, canCancel: false, canRefund: false, canChangeAmount: false }
   return checkEligibility({
     transaction: transaction.value,
-    donorValueLastYear: donorValueLastYear.value
+    donorValueLastYear: donorValueLastYear.value,
+    campaignType: campaign.value?.type,
+    isMatchedDonation: transaction.value.matchedAmount > 0,
+    campaignStatus: campaign.value?.status
   })
 })
 

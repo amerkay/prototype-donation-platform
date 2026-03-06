@@ -8,13 +8,28 @@ export interface ActionGateConfig {
 
 export interface RefundGateConfig extends ActionGateConfig {
   windowDays: 30 | 60 | 90 | 180
+  disableWhenCampaignEnded: boolean
+}
+
+export interface P2PRefundGateConfig {
+  enabled: boolean
+  windowDays: 30 | 60 | 90 | 180
+  disableWhenCampaignEnded: boolean
+}
+
+export interface MatchedRefundGateConfig {
+  enabled: boolean
+  windowDays: 30 | 60 | 90 | 180
+  disableWhenCampaignEnded: boolean
 }
 
 export interface DonorPortalSettings {
   pauseSubscription: ActionGateConfig
   cancelSubscription: ActionGateConfig
-  refund: RefundGateConfig
   changeAmount: ActionGateConfig
+  refundStandard: RefundGateConfig
+  refundP2P: P2PRefundGateConfig
+  refundMatchedGiving: MatchedRefundGateConfig
 }
 
 const DEFAULT_ACTION: ActionGateConfig = {
@@ -23,11 +38,19 @@ const DEFAULT_ACTION: ActionGateConfig = {
   minDonorValueLastYear: 0
 }
 
+const DEFAULT_REFUND_BASE = {
+  enabled: true,
+  windowDays: 30 as const,
+  disableWhenCampaignEnded: false
+}
+
 const DEFAULTS: DonorPortalSettings = {
   pauseSubscription: { ...DEFAULT_ACTION },
   cancelSubscription: { ...DEFAULT_ACTION },
-  refund: { ...DEFAULT_ACTION, windowDays: 30 },
-  changeAmount: { ...DEFAULT_ACTION }
+  changeAmount: { ...DEFAULT_ACTION },
+  refundStandard: { ...DEFAULT_ACTION, ...DEFAULT_REFUND_BASE },
+  refundP2P: { ...DEFAULT_REFUND_BASE },
+  refundMatchedGiving: { ...DEFAULT_REFUND_BASE }
 }
 
 export const useDonorPortalSettingsStore = defineSettingsStore<DonorPortalSettings>(

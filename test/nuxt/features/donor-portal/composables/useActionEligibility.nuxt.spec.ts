@@ -81,11 +81,17 @@ describe('useActionEligibility', () => {
     vi.useRealTimers()
   })
 
-  describe('refund window', () => {
+  describe('refund window (standard)', () => {
     it('grants canRefund when transaction is within the refund window', () => {
       const store = useDonorPortalSettingsStore()
       store.$patch({
-        refund: { enabled: true, windowDays: 30, minDurationMonths: 0, minDonorValueLastYear: 0 }
+        refundStandard: {
+          enabled: true,
+          windowDays: 30,
+          minDurationMonths: 0,
+          minDonorValueLastYear: 0,
+          disableWhenCampaignEnded: false
+        }
       })
 
       const { checkEligibility } = useActionEligibility()
@@ -100,7 +106,13 @@ describe('useActionEligibility', () => {
     it('denies canRefund when transaction is outside the refund window', () => {
       const store = useDonorPortalSettingsStore()
       store.$patch({
-        refund: { enabled: true, windowDays: 30, minDurationMonths: 0, minDonorValueLastYear: 0 }
+        refundStandard: {
+          enabled: true,
+          windowDays: 30,
+          minDurationMonths: 0,
+          minDonorValueLastYear: 0,
+          disableWhenCampaignEnded: false
+        }
       })
 
       const { checkEligibility } = useActionEligibility()
@@ -115,7 +127,13 @@ describe('useActionEligibility', () => {
     it('grants canRefund at the exact window boundary (≤ not <)', () => {
       const store = useDonorPortalSettingsStore()
       store.$patch({
-        refund: { enabled: true, windowDays: 30, minDurationMonths: 0, minDonorValueLastYear: 0 }
+        refundStandard: {
+          enabled: true,
+          windowDays: 30,
+          minDurationMonths: 0,
+          minDonorValueLastYear: 0,
+          disableWhenCampaignEnded: false
+        }
       })
 
       const { checkEligibility } = useActionEligibility()
@@ -130,7 +148,13 @@ describe('useActionEligibility', () => {
     it('denies canRefund when the refund gate is disabled', () => {
       const store = useDonorPortalSettingsStore()
       store.$patch({
-        refund: { enabled: false, windowDays: 30, minDurationMonths: 0, minDonorValueLastYear: 0 }
+        refundStandard: {
+          enabled: false,
+          windowDays: 30,
+          minDurationMonths: 0,
+          minDonorValueLastYear: 0,
+          disableWhenCampaignEnded: false
+        }
       })
 
       const { checkEligibility } = useActionEligibility()
@@ -147,7 +171,13 @@ describe('useActionEligibility', () => {
     it('denies canRefund when subscription is younger than minDurationMonths', () => {
       const store = useDonorPortalSettingsStore()
       store.$patch({
-        refund: { enabled: true, windowDays: 30, minDurationMonths: 3, minDonorValueLastYear: 0 }
+        refundStandard: {
+          enabled: true,
+          windowDays: 30,
+          minDurationMonths: 3,
+          minDonorValueLastYear: 0,
+          disableWhenCampaignEnded: false
+        }
       })
 
       const { checkEligibility } = useActionEligibility()
@@ -163,7 +193,13 @@ describe('useActionEligibility', () => {
     it('grants canRefund when subscription meets minDurationMonths', () => {
       const store = useDonorPortalSettingsStore()
       store.$patch({
-        refund: { enabled: true, windowDays: 30, minDurationMonths: 3, minDonorValueLastYear: 0 }
+        refundStandard: {
+          enabled: true,
+          windowDays: 30,
+          minDurationMonths: 3,
+          minDonorValueLastYear: 0,
+          disableWhenCampaignEnded: false
+        }
       })
 
       const { checkEligibility } = useActionEligibility()
@@ -178,9 +214,14 @@ describe('useActionEligibility', () => {
 
     it('skips duration check for one-time transactions', () => {
       const store = useDonorPortalSettingsStore()
-      // minDurationMonths = 6, but transaction is one-time → duration irrelevant
       store.$patch({
-        refund: { enabled: true, windowDays: 30, minDurationMonths: 6, minDonorValueLastYear: 0 }
+        refundStandard: {
+          enabled: true,
+          windowDays: 30,
+          minDurationMonths: 6,
+          minDonorValueLastYear: 0,
+          disableWhenCampaignEnded: false
+        }
       })
 
       const { checkEligibility } = useActionEligibility()
@@ -197,7 +238,13 @@ describe('useActionEligibility', () => {
     it('denies canRefund when donor value is below the minimum', () => {
       const store = useDonorPortalSettingsStore()
       store.$patch({
-        refund: { enabled: true, windowDays: 30, minDurationMonths: 0, minDonorValueLastYear: 100 }
+        refundStandard: {
+          enabled: true,
+          windowDays: 30,
+          minDurationMonths: 0,
+          minDonorValueLastYear: 100,
+          disableWhenCampaignEnded: false
+        }
       })
 
       const { checkEligibility } = useActionEligibility()
@@ -212,7 +259,13 @@ describe('useActionEligibility', () => {
     it('grants canRefund when donor value exactly meets the minimum', () => {
       const store = useDonorPortalSettingsStore()
       store.$patch({
-        refund: { enabled: true, windowDays: 30, minDurationMonths: 0, minDonorValueLastYear: 100 }
+        refundStandard: {
+          enabled: true,
+          windowDays: 30,
+          minDurationMonths: 0,
+          minDonorValueLastYear: 100,
+          disableWhenCampaignEnded: false
+        }
       })
 
       const { checkEligibility } = useActionEligibility()
@@ -229,7 +282,13 @@ describe('useActionEligibility', () => {
     it('grants canRefund when all gates are at zero (open)', () => {
       const store = useDonorPortalSettingsStore()
       store.$patch({
-        refund: { enabled: true, windowDays: 30, minDurationMonths: 0, minDonorValueLastYear: 0 }
+        refundStandard: {
+          enabled: true,
+          windowDays: 30,
+          minDurationMonths: 0,
+          minDonorValueLastYear: 0,
+          disableWhenCampaignEnded: false
+        }
       })
 
       const { checkEligibility } = useActionEligibility()
@@ -296,6 +355,210 @@ describe('useActionEligibility', () => {
       })
 
       expect(result.canChangeAmount).toBe(false)
+    })
+  })
+
+  describe('campaign-type-aware refund config resolution', () => {
+    it('uses refundP2P config for p2p campaign type', () => {
+      const store = useDonorPortalSettingsStore()
+      store.$patch({
+        refundStandard: {
+          enabled: false,
+          windowDays: 30,
+          minDurationMonths: 0,
+          minDonorValueLastYear: 0,
+          disableWhenCampaignEnded: false
+        },
+        refundP2P: { enabled: true, windowDays: 60, disableWhenCampaignEnded: false }
+      })
+
+      const { checkEligibility } = useActionEligibility()
+      const result = checkEligibility({
+        transaction: makeTxn({ createdAt: daysAgo(5) }),
+        donorValueLastYear: 0,
+        campaignType: 'p2p'
+      })
+
+      // Standard is disabled but P2P is enabled → should use P2P
+      expect(result.canRefund).toBe(true)
+    })
+
+    it('uses refundP2P config for event campaign type', () => {
+      const store = useDonorPortalSettingsStore()
+      store.$patch({
+        refundStandard: {
+          enabled: false,
+          windowDays: 30,
+          minDurationMonths: 0,
+          minDonorValueLastYear: 0,
+          disableWhenCampaignEnded: false
+        },
+        refundP2P: { enabled: true, windowDays: 60, disableWhenCampaignEnded: false }
+      })
+
+      const { checkEligibility } = useActionEligibility()
+      const result = checkEligibility({
+        transaction: makeTxn({ createdAt: daysAgo(5) }),
+        donorValueLastYear: 0,
+        campaignType: 'event'
+      })
+
+      expect(result.canRefund).toBe(true)
+    })
+
+    it('uses refundMatchedGiving config when isMatchedDonation is true (overrides P2P)', () => {
+      const store = useDonorPortalSettingsStore()
+      store.$patch({
+        refundP2P: { enabled: true, windowDays: 60, disableWhenCampaignEnded: false },
+        refundMatchedGiving: { enabled: false, windowDays: 30, disableWhenCampaignEnded: false }
+      })
+
+      const { checkEligibility } = useActionEligibility()
+      const result = checkEligibility({
+        transaction: makeTxn({ createdAt: daysAgo(5), matchedAmount: 100 }),
+        donorValueLastYear: 0,
+        campaignType: 'p2p',
+        isMatchedDonation: true
+      })
+
+      // Matched giving override: disabled → canRefund false even though P2P is enabled
+      expect(result.canRefund).toBe(false)
+    })
+
+    it('falls back to refundStandard when no campaign type specified', () => {
+      const store = useDonorPortalSettingsStore()
+      store.$patch({
+        refundStandard: {
+          enabled: true,
+          windowDays: 90,
+          minDurationMonths: 0,
+          minDonorValueLastYear: 0,
+          disableWhenCampaignEnded: false
+        }
+      })
+
+      const { checkEligibility } = useActionEligibility()
+      const result = checkEligibility({
+        transaction: makeTxn({ createdAt: daysAgo(5) }),
+        donorValueLastYear: 0
+      })
+
+      expect(result.canRefund).toBe(true)
+    })
+  })
+
+  describe('disableWhenCampaignEnded', () => {
+    it('blocks refund when campaign is completed and disableWhenCampaignEnded is true', () => {
+      const store = useDonorPortalSettingsStore()
+      store.$patch({
+        refundStandard: {
+          enabled: true,
+          windowDays: 30,
+          minDurationMonths: 0,
+          minDonorValueLastYear: 0,
+          disableWhenCampaignEnded: true
+        }
+      })
+
+      const { checkEligibility } = useActionEligibility()
+      const result = checkEligibility({
+        transaction: makeTxn({ createdAt: daysAgo(5) }),
+        donorValueLastYear: 0,
+        campaignStatus: 'completed'
+      })
+
+      expect(result.canRefund).toBe(false)
+    })
+
+    it('blocks refund when campaign is ended and disableWhenCampaignEnded is true', () => {
+      const store = useDonorPortalSettingsStore()
+      store.$patch({
+        refundStandard: {
+          enabled: true,
+          windowDays: 30,
+          minDurationMonths: 0,
+          minDonorValueLastYear: 0,
+          disableWhenCampaignEnded: true
+        }
+      })
+
+      const { checkEligibility } = useActionEligibility()
+      const result = checkEligibility({
+        transaction: makeTxn({ createdAt: daysAgo(5) }),
+        donorValueLastYear: 0,
+        campaignStatus: 'ended'
+      })
+
+      expect(result.canRefund).toBe(false)
+    })
+
+    it('allows refund when campaign is active even with disableWhenCampaignEnded true', () => {
+      const store = useDonorPortalSettingsStore()
+      store.$patch({
+        refundStandard: {
+          enabled: true,
+          windowDays: 30,
+          minDurationMonths: 0,
+          minDonorValueLastYear: 0,
+          disableWhenCampaignEnded: true
+        }
+      })
+
+      const { checkEligibility } = useActionEligibility()
+      const result = checkEligibility({
+        transaction: makeTxn({ createdAt: daysAgo(5) }),
+        donorValueLastYear: 0,
+        campaignStatus: 'active'
+      })
+
+      expect(result.canRefund).toBe(true)
+    })
+
+    it('allows refund for ended campaign when disableWhenCampaignEnded is false', () => {
+      const store = useDonorPortalSettingsStore()
+      store.$patch({
+        refundStandard: {
+          enabled: true,
+          windowDays: 30,
+          minDurationMonths: 0,
+          minDonorValueLastYear: 0,
+          disableWhenCampaignEnded: false
+        }
+      })
+
+      const { checkEligibility } = useActionEligibility()
+      const result = checkEligibility({
+        transaction: makeTxn({ createdAt: daysAgo(5) }),
+        donorValueLastYear: 0,
+        campaignStatus: 'ended'
+      })
+
+      expect(result.canRefund).toBe(true)
+    })
+
+    it('preserves canChangeAmount when campaign ended blocks refund', () => {
+      const store = useDonorPortalSettingsStore()
+      store.$patch({
+        refundStandard: {
+          enabled: true,
+          windowDays: 30,
+          minDurationMonths: 0,
+          minDonorValueLastYear: 0,
+          disableWhenCampaignEnded: true
+        },
+        changeAmount: { enabled: true, minDurationMonths: 0, minDonorValueLastYear: 0 }
+      })
+
+      const { checkEligibility } = useActionEligibility()
+      const result = checkEligibility({
+        transaction: makeTxn({ createdAt: daysAgo(5) }),
+        subscription: makeSub(),
+        donorValueLastYear: 0,
+        campaignStatus: 'completed'
+      })
+
+      expect(result.canRefund).toBe(false)
+      expect(result.canChangeAmount).toBe(true)
     })
   })
 })

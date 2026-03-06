@@ -207,6 +207,7 @@ app/features/[feature-name]/
 6. **DEFER FORMATTING**: Batch at end — run all four checks **in parallel** (separate Bash tool calls in one message): `pnpm typecheck`, `pnpm test:run`, `pnpm format:fix`, `pnpm lint:fix`.
 7. **SUMMARIES + MEMORY**: Brief updates after each answer. End with conventional commit message. After tasks: check if structure changed (→ `/update-project-summary`), if learned something durable (→ update CL), if data models changed (→ update Supabase docs). Keep CL bullets ≤1 line, never duplicate — merge or clarify.
 8. **COMMITS**: Short conventional commits. Check `git --no-pager diff --staged` first. No "Authored by Anthropic" line.
+9. **TODO LISTS**: When implementing multi-step plans or complex tasks, use the `TaskCreate` tool to build a task list. Update tasks to `in_progress` before starting and `completed` when done. This keeps progress visible in the Claude Code UI and ensures nothing is missed.
 
 ## Superpowers Overrides
 
