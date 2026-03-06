@@ -31,11 +31,7 @@ const previewSection = defineForm('giftAidPreview', () => {
     <div class="space-y-4">
       <p class="text-xs text-muted-foreground">Gift Aid section shown on donation form</p>
       <div class="border rounded-lg p-6">
-        <FormRenderer
-          v-model="previewData"
-          :section="previewSection"
-          :validate-on-mount="false"
-        />
+        <FormRenderer v-model="previewData" :section="previewSection" :validate-on-mount="false" />
       </div>
     </div>
   </div>

@@ -8,8 +8,7 @@ import {
 export const useGiftAidSettingsForm = defineForm('giftAidSettings', () => {
   const enabled = toggleField('enabled', {
     label: 'Enable Gift Aid',
-    description:
-      'Show Gift Aid consent for UK donors on all donation forms (GBP currency only).',
+    description: 'Show Gift Aid consent for UK donors on all donation forms (GBP currency only).',
     labelClass: 'font-bold',
     showSeparatorAfter: true
   })

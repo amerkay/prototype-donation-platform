@@ -48,8 +48,8 @@ definePageMeta({ layout: 'admin' })
       </div>
     </template>
 
-      <template #preview>
-        <GiftAidSettingsPreview />
-      </template>
+    <template #preview>
+      <GiftAidSettingsPreview />
+    </template>
   </EditLayout>
 </template>

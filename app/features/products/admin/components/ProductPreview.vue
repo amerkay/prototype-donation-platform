@@ -11,6 +11,7 @@ import ProductOptionsContent from '~/features/donation-form/features/product/sha
 import PreviewEditable from '~/features/_admin/components/PreviewEditable.vue'
 import { CERTIFICATE_TEMPLATE_TARGETS } from '~/features/templates/admin/forms/certificate-template-form'
 import { productOpenAccordionId } from '~/features/products/admin/forms/product-form'
+import { usePreviewSync } from '~/features/_shared/composables/usePreviewSync'
 import type { CertificateTemplateTargets } from '~/features/templates/shared/types'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
 
@@ -29,7 +30,15 @@ const currencyStore = useCurrencySettingsStore()
 const { getTemplateById } = useCertificateTemplates()
 const certStore = useCertificateTemplateStore()
 
-const activeTab = ref('card')
+const { activePreviewTab: activeTab, syncToAccordion } = usePreviewSync({
+  accordionId: productOpenAccordionId,
+  mapping: {
+    'product.basic': 'card',
+    'product.pricing': 'donation',
+    'product.certificateSettings': 'certificate'
+  },
+  defaultTab: 'card'
+})
 
 const previewProduct = computed<Product>(() => ({
   id: store.id ?? '',
@@ -85,20 +94,12 @@ watch(
     }
   }
 )
-
-// Sync preview tab with open accordion section
-watch(productOpenAccordionId, (id) => {
-  if (id === 'product.basic') activeTab.value = 'card'
-  else if (id === 'product.pricing') activeTab.value = 'donation'
-  else if (id === 'product.certificateSettings' && store.certificateTemplateId)
-    activeTab.value = 'certificate'
-})
 </script>
 
 <template>
   <PreviewEditable :enabled="editable">
     <div class="space-y-3">
-      <Tabs v-model="activeTab">
+      <Tabs :model-value="activeTab" @update:model-value="syncToAccordion">
         <TabsList class="w-full overflow-x-auto" data-preview-nav>
           <TabsTrigger v-for="tab in tabs" :key="tab.value" :value="tab.value" class="text-xs">
             {{ tab.label }}

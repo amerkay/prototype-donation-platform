@@ -3,6 +3,7 @@ import EditLayout from '~/features/_shared/components/EditLayout.vue'
 import CampaignHeader from '~/features/campaigns/admin/components/CampaignHeader.vue'
 import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/CampaignMasterConfigPanel.vue'
 import { ACTIVE_CONFIG_TAB_KEY } from '~/features/campaigns/admin/composables/useActiveConfigTab'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import CrowdfundingPagePreview from '~/features/campaigns/features/crowdfunding/admin/components/CrowdfundingPagePreview.vue'
 import DonationFormPreview from '~/features/donation-form/admin/components/DonationFormPreview.vue'
 import PreviewNotAvailable from '~/features/_admin/components/PreviewNotAvailable.vue'
@@ -79,7 +80,13 @@ const editableMode = ref(!isTerminal.value)
 // Preview switching — provide active tab ref for config panel to write to
 const activeConfigTab = ref(store.isFundraiser ? 'crowdfunding' : 'donationForm')
 provide(ACTIVE_CONFIG_TAB_KEY, activeConfigTab)
-const isFormTabActive = computed(() => activeConfigTab.value === 'donationForm')
+// Map config tabs to preview tabs (many-to-one: p2p/matchedGiving → crowdfunding)
+const activePreviewTab = computed(() =>
+  activeConfigTab.value === 'donationForm' ? 'donationForm' : 'crowdfunding'
+)
+function onPreviewTabChange(tab: string | number) {
+  activeConfigTab.value = String(tab)
+}
 
 // Use admin edit composable for save/discard logic (single store — no additionalStores needed)
 const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog, patchBaseline } =
@@ -226,7 +233,7 @@ const handleDeleted = () => {
     :breadcrumbs="breadcrumbs"
     :is-dirty="isTerminal ? false : store.isDirty"
     :show-discard-dialog="showDiscardDialog"
-    :show-preview="crowdfundingEnabled || isFormTabActive"
+    :show-preview="crowdfundingEnabled || !!store.fullFormConfig"
     preview-label="Preview"
     :editable-last-item="!isTerminal"
     :max-length="75"
@@ -254,19 +261,28 @@ const handleDeleted = () => {
 
     <template #preview>
       <div :style="brandingStyle">
-        <!-- Form preview when Donation Form tab is active -->
-        <DonationFormPreview
-          v-if="isFormTabActive && store.fullFormConfig"
-          :editable="isTerminal ? false : editableMode"
-        />
-        <!-- Campaign preview for other tabs -->
-        <CrowdfundingPagePreview
-          v-else-if="crowdfundingEnabled"
-          :editable="isTerminal ? false : editableMode"
-        />
+        <Tabs :model-value="activePreviewTab" @update:model-value="onPreviewTabChange">
+          <TabsList class="w-full overflow-x-auto" data-preview-nav>
+            <TabsTrigger v-if="store.fullFormConfig" value="donationForm" class="text-xs">
+              Donation Form
+            </TabsTrigger>
+            <TabsTrigger v-if="crowdfundingEnabled" value="crowdfunding" class="text-xs">
+              Crowdfunding Page
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent v-if="store.fullFormConfig" value="donationForm">
+            <DonationFormPreview :editable="isTerminal ? false : editableMode" />
+          </TabsContent>
+
+          <TabsContent v-if="crowdfundingEnabled" value="crowdfunding">
+            <CrowdfundingPagePreview :editable="isTerminal ? false : editableMode" />
+          </TabsContent>
+        </Tabs>
+
         <PreviewNotAvailable
-          v-else
-          description="Crowdfunding Page is currently disabled. Enable it in the settings to see the preview."
+          v-if="!store.fullFormConfig && !crowdfundingEnabled"
+          description="No preview available. Link a donation form or enable the crowdfunding page."
         />
       </div>
     </template>

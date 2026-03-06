@@ -352,6 +352,8 @@ export interface FieldGroupConfig extends BaseFieldConfig {
   collapsibleDefaultOpen?: boolean | ComputedRef<boolean> | ((ctx: FieldContext) => boolean)
   /** External ref to sync accordion state - enables reactive access from outside form */
   collapsibleStateRef?: Ref<string | undefined>
+  /** Callback fired when this collapsible accordion is toggled */
+  onAccordionToggle?: (accordionId: string, isOpen: boolean) => void
   badgeLabel?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   badgeVariant?:
     | 'default'

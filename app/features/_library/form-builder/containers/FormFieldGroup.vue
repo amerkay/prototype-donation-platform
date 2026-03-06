@@ -90,6 +90,11 @@ if (props.meta.collapsible) {
     })
   }
 
+  // Notify consumer of accordion toggle
+  watch(isOpen, (open) => {
+    props.meta.onAccordionToggle?.(accordionId, open)
+  })
+
   // Provide isolated accordion group context for children to prevent cross-level interference
   provideAccordionGroup()
 } else {

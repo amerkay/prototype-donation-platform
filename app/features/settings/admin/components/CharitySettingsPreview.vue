@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, provide } from 'vue'
+import { ref, computed, provide } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ICON_FORWARD } from '~/lib/icons'
 import ReceiptPreview from '~/features/templates/admin/components/ReceiptPreview.vue'
@@ -12,10 +12,8 @@ import { createTermsAcceptanceField } from '~/features/donation-form/features/te
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { charityOpenAccordionId } from '~/features/settings/admin/forms/charity-settings-form'
-import {
-  activateHashTarget,
-  HASH_TARGET_PASSIVE_KEY
-} from '~/features/_library/form-builder/composables/useHashTarget'
+import { HASH_TARGET_PASSIVE_KEY } from '~/features/_library/form-builder/composables/useHashTarget'
+import { usePreviewSync } from '~/features/_shared/composables/usePreviewSync'
 
 withDefaults(
   defineProps<{
@@ -30,14 +28,15 @@ provide(HASH_TARGET_PASSIVE_KEY, true)
 const { brandingStyle } = useBrandingCssVars()
 const charityStore = useCharitySettingsStore()
 
-const activeTab = ref('receipt')
-
-// Accordion IDs match form section prefix + field name
-const ACCORDION_IDS = {
-  charityDetails: 'charitySettings.charitySettings',
-  costs: 'charitySettings.charityCosts',
-  terms: 'charitySettings.terms'
-} as const
+const { activePreviewTab: activeTab, syncToAccordion } = usePreviewSync({
+  accordionId: charityOpenAccordionId,
+  mapping: {
+    'charitySettings.charitySettings': 'receipt',
+    'charitySettings.charityCosts': 'costs',
+    'charitySettings.terms': 'terms'
+  },
+  defaultTab: 'receipt'
+})
 
 // --- Receipt targets (flat charity paths) ---
 
@@ -71,37 +70,12 @@ const termsPreviewKey = computed(
     `${termsSettings.value?.label}-${termsSettings.value?.description}-${termsSettings.value?.mode}`
 )
 
-// --- Accordion ↔ preview tab sync ---
-
-let suppressAccordionToTab = false
-
-// Accordion open → switch preview tab
-watch(charityOpenAccordionId, (id) => {
-  if (suppressAccordionToTab) return
-  if (id === ACCORDION_IDS.charityDetails) activeTab.value = 'receipt'
-  else if (id === ACCORDION_IDS.costs) activeTab.value = 'costs'
-  else if (id === ACCORDION_IDS.terms) activeTab.value = 'terms'
-})
-
-// Preview tab → open corresponding accordion on form side
-watch(activeTab, (tab) => {
-  suppressAccordionToTab = true
-  if (tab === 'receipt') {
-    charityOpenAccordionId.value = ACCORDION_IDS.charityDetails
-    nextTick(() => activateHashTarget(ACCORDION_IDS.charityDetails))
-  } else if (tab === 'costs') charityOpenAccordionId.value = ACCORDION_IDS.costs
-  else if (tab === 'terms') charityOpenAccordionId.value = ACCORDION_IDS.terms
-  nextTick(() => {
-    suppressAccordionToTab = false
-  })
-})
-
 defineExpose({ activeTab })
 </script>
 
 <template>
   <PreviewEditable :enabled="editable">
-    <Tabs v-model="activeTab">
+    <Tabs :model-value="activeTab" @update:model-value="syncToAccordion">
       <TabsList class="w-full overflow-x-auto" data-preview-nav>
         <TabsTrigger value="receipt" class="text-xs">Receipt</TabsTrigger>
         <TabsTrigger value="costs" class="text-xs">Costs</TabsTrigger>
