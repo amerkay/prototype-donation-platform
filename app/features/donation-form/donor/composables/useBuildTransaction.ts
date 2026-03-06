@@ -124,7 +124,7 @@ export function useBuildTransaction() {
       donorEmail,
       isAnonymous: false,
       giftAid,
-      ...(giftAid && { giftAidAmount: Math.round(subtotal * 25) / 100 }),
+      ...(giftAid && { giftAidAmount: Math.round(store.totalAmount * 25) / 100 }),
       ...(donorAddress && { donorAddress }),
       ...(Object.keys(store.formSections.customFields || {}).length > 0 && {
         customFields: store.formSections.customFields as Record<string, string>
