@@ -173,6 +173,10 @@ const navMain = computed(() => [
         url: '/admin/settings/donor-portal'
       },
       {
+        title: 'Gift Aid',
+        url: '/admin/settings/gift-aid'
+      },
+      {
         title: 'Payment Processors',
         url: '/admin/settings/payments'
       },

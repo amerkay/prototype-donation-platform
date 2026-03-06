@@ -36,8 +36,6 @@ export interface CampaignCapabilities {
   allowsImpactBoost: 'full' | 'increase-only' | false
   /** Can enable cover-costs feature */
   allowsCoverCosts: boolean
-  /** Can enable Gift Aid */
-  allowsGiftAid: boolean
   /** Can enable tribute/memorial giving */
   allowsTribute: boolean
   /** Can enable entry fields (registration-style per-item fields) */
@@ -63,7 +61,6 @@ const CAPABILITIES: Record<CampaignType, CampaignCapabilities> = {
     allowsImpactCart: true,
     allowsImpactBoost: 'full',
     allowsCoverCosts: true,
-    allowsGiftAid: true,
     allowsTribute: true,
     allowsEntryFields: false,
     allowsCustomFields: true,
@@ -80,7 +77,6 @@ const CAPABILITIES: Record<CampaignType, CampaignCapabilities> = {
     allowsImpactCart: true,
     allowsImpactBoost: 'increase-only',
     allowsCoverCosts: true,
-    allowsGiftAid: true,
     allowsTribute: true,
     allowsEntryFields: false,
     allowsCustomFields: true,
@@ -97,7 +93,6 @@ const CAPABILITIES: Record<CampaignType, CampaignCapabilities> = {
     allowsImpactCart: true,
     allowsImpactBoost: 'increase-only',
     allowsCoverCosts: true,
-    allowsGiftAid: true,
     allowsTribute: true,
     allowsEntryFields: false,
     allowsCustomFields: true,
@@ -114,7 +109,6 @@ const CAPABILITIES: Record<CampaignType, CampaignCapabilities> = {
     allowsImpactCart: true,
     allowsImpactBoost: false,
     allowsCoverCosts: true,
-    allowsGiftAid: true,
     allowsTribute: false,
     allowsEntryFields: true,
     allowsCustomFields: true,

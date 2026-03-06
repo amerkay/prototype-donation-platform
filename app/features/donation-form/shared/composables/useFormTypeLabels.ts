@@ -38,7 +38,7 @@ export function useFormTypeLabels() {
       tribute: caps.allowsTribute,
       entryFields: caps.allowsEntryFields,
       coverCosts: caps.allowsCoverCosts,
-      giftAid: caps.allowsGiftAid,
+      giftAid: true,
       contactConsent: true,
       terms: true
     }

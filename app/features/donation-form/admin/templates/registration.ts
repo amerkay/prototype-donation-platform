@@ -72,7 +72,6 @@ export function createRegistrationTemplate(
             defaultPercentage: 0
           }
         },
-        giftAid: { enabled: false },
         tribute: {
           enabled: false,
           showForOnceFrequency: false,

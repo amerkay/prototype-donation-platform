@@ -92,9 +92,6 @@ export function createMultipleProductsTemplate(
             defaultPercentage: 10
           }
         },
-        giftAid: {
-          enabled: true
-        },
         tribute: {
           enabled: false,
           showForOnceFrequency: false,

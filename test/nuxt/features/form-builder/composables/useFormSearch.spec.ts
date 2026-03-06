@@ -218,9 +218,7 @@ describe('useFormSearch', () => {
       const search = useFormSearch(fields)
 
       // The child field's parentLabels should include the tabs container label
-      const amountEntry = search.searchIndex.find(
-        (e) => e.path === 'frequencies.once.amount'
-      )
+      const amountEntry = search.searchIndex.find((e) => e.path === 'frequencies.once.amount')
       expect(amountEntry).toBeDefined()
       expect(amountEntry!.parentLabels).toContain('Donation Frequencies')
       expect(amountEntry!.parentLabels).toContain('One-time')

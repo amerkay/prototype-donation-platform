@@ -92,9 +92,6 @@ export function createRecurringAdoptionsTemplate(
             defaultPercentage: 10
           }
         },
-        giftAid: {
-          enabled: true
-        },
         tribute: {
           enabled: true,
           showForOnceFrequency: false,

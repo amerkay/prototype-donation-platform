@@ -5,8 +5,7 @@ import CampaignMasterConfigPanel from '~/features/campaigns/admin/components/Cam
 import { ACTIVE_CONFIG_TAB_KEY } from '~/features/campaigns/admin/composables/useActiveConfigTab'
 import CrowdfundingPagePreview from '~/features/campaigns/features/crowdfunding/admin/components/CrowdfundingPagePreview.vue'
 import DonationFormPreview from '~/features/donation-form/admin/components/DonationFormPreview.vue'
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
-import { ICON_HIDE } from '~/lib/icons'
+import PreviewNotAvailable from '~/features/_admin/components/PreviewNotAvailable.vue'
 import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaigns'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import type { CampaignStatus } from '~/features/campaigns/shared/types'
@@ -265,15 +264,10 @@ const handleDeleted = () => {
           v-else-if="crowdfundingEnabled"
           :editable="isTerminal ? false : editableMode"
         />
-        <Empty v-else class="border border-dashed">
-          <EmptyHeader>
-            <EmptyMedia variant="icon"><ICON_HIDE /></EmptyMedia>
-            <EmptyTitle>Preview Unavailable</EmptyTitle>
-            <EmptyDescription>
-              Crowdfunding Page is currently disabled. Enable it in the settings to see the preview.
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
+        <PreviewNotAvailable
+          v-else
+          description="Crowdfunding Page is currently disabled. Enable it in the settings to see the preview."
+        />
       </div>
     </template>
   </EditLayout>

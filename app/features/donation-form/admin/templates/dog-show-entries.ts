@@ -90,7 +90,6 @@ export function createDogShowEntriesTemplate(
           enabled: false,
           settings: { heading: '', description: '', defaultPercentage: 0 }
         },
-        giftAid: { enabled: false },
         tribute: {
           enabled: false,
           showForOnceFrequency: false,

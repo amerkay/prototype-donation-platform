@@ -29,7 +29,6 @@ function makeFormConfig(): FullFormConfig {
       productSelector: { enabled: false },
       impactBoost: { enabled: false },
       coverCosts: { enabled: false },
-      giftAid: { enabled: false },
       tribute: { enabled: false },
       customFields: { customFieldsTabs: {} },
       entryFields: { enabled: false, mode: 'shared', fields: [] },

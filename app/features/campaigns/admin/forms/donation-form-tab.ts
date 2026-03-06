@@ -13,7 +13,6 @@ import { useMultipleProductsConfigSection } from '~/features/donation-form/featu
 import { useProductSelectorConfigSection } from '~/features/donation-form/features/product-selector/admin/forms/product-selector-config-form'
 import { useImpactBoostConfigSection } from '~/features/donation-form/features/impact-boost/admin/forms/impact-boost-config-form'
 import { useCoverCostsConfigSection } from '~/features/donation-form/features/cover-costs/admin/forms/cover-costs-config-form'
-import { useGiftAidConfigSection } from '~/features/donation-form/features/gift-aid/admin/forms/gift-aid-config-form'
 import { useTributeConfigSection } from '~/features/donation-form/features/tribute/admin/forms/tribute-config-form'
 import { useContactConsentConfigSection } from '~/features/donation-form/features/contact-consent/admin/forms/contact-consent-config-form'
 import { createDonationCustomFieldsConfigSection } from '~/features/donation-form/features/custom-fields/admin/forms/donation-custom-fields-config-form'
@@ -48,7 +47,6 @@ export const DONATION_FORM_FIELD_TARGETS = {
     impactCart: `${TAB_FEATURES}.impactCart`,
     productSelector: `${TAB_FEATURES}.productSelector`,
     coverCosts: `${TAB_FEATURES}.coverCosts`,
-    giftAid: `${TAB_FEATURES}.giftAid`,
     tribute: `${TAB_FEATURES}.tribute`,
     entryFields: `${TAB_FEATURES}.entryFields`,
     contactConsent: `${TAB_FEATURES}.contactConsent`,
@@ -78,7 +76,6 @@ export function createDonationFormTabFields(ctx: FormContext, contextSchema: Con
   const impactCartFields = useMultipleProductsConfigSection.setup(ctx)
   const productSelectorFields = useProductSelectorConfigSection.setup(ctx)
   const coverCostsFields = useCoverCostsConfigSection.setup(ctx)
-  const giftAidFields = useGiftAidConfigSection.setup(ctx)
   const tributeFields = useTributeConfigSection.setup(ctx)
   const contactConsentFields = useContactConsentConfigSection.setup(ctx)
   const entryFieldsFields = createEntryFieldsConfigSection(
@@ -129,7 +126,6 @@ export function createDonationFormTabFields(ctx: FormContext, contextSchema: Con
       'impactCart',
       'productSelector',
       'coverCosts',
-      'giftAid',
       'tribute',
       'entryFields',
       'contactConsent',
@@ -244,7 +240,7 @@ export function createDonationFormTabFields(ctx: FormContext, contextSchema: Con
           }),
           howTheyPayHeading: sectionHeadingField('howTheyPayHeading', {
             label: 'How They Pay',
-            visibleWhen: () => caps().allowsCoverCosts || caps().allowsGiftAid
+            visibleWhen: () => caps().allowsCoverCosts
           }),
           coverCosts: fieldGroup('coverCosts', {
             label: 'Cover Costs',
@@ -268,17 +264,6 @@ export function createDonationFormTabFields(ctx: FormContext, contextSchema: Con
                 }
               })
             }
-          }),
-          giftAid: fieldGroup('giftAid', {
-            label: 'Gift Aid',
-            description: 'Enable UK Gift Aid tax reclaim declarations',
-            wrapperClass: 'p-4 bg-background rounded-lg border',
-            collapsible: true,
-            collapsibleDefaultOpen: false,
-            badgeLabel: (fCtx) => (fCtx.values.enabled ? 'Enabled' : 'Disabled'),
-            badgeVariant: (fCtx) => (fCtx.values.enabled ? 'default' : 'outline'),
-            visibleWhen: () => caps().allowsGiftAid,
-            fields: giftAidFields
           }),
           consentLegalHeading: sectionHeadingField('consentLegalHeading', {
             label: 'Consent & Legal'

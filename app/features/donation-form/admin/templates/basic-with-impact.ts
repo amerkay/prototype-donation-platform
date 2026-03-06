@@ -141,9 +141,6 @@ export function createBasicWithImpactTemplate(
             defaultPercentage: 0
           }
         },
-        giftAid: {
-          enabled: true
-        },
         tribute: {
           enabled: false,
           showForOnceFrequency: false,

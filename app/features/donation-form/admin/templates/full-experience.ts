@@ -102,9 +102,6 @@ export function createFullExperienceTemplate(
             defaultPercentage: 10
           }
         },
-        giftAid: {
-          enabled: true
-        },
         tribute: {
           enabled: true,
           showForOnceFrequency: true,

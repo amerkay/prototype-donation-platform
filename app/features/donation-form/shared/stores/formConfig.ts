@@ -67,12 +67,6 @@ export const useFormConfigStore = defineStore('formConfig', () => {
       fc.coverCosts = v
     }
   })
-  const giftAid = computed({
-    get: () => fc.giftAid,
-    set: (v) => {
-      fc.giftAid = v
-    }
-  })
   const tribute = computed({
     get: () => fc.tribute,
     set: (v) => {
@@ -173,7 +167,6 @@ export const useFormConfigStore = defineStore('formConfig', () => {
     productSelector,
     impactBoost,
     coverCosts,
-    giftAid,
     tribute,
     customFields,
     entryFields,

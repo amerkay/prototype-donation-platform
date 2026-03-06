@@ -26,7 +26,6 @@ const enabledFeaturesCount = computed(() => {
     fc.productSelector,
     fc.impactBoost,
     fc.coverCosts,
-    fc.giftAid,
     fc.tribute,
     fc.entryFields,
     fc.contactConsent,

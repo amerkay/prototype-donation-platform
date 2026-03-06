@@ -6,7 +6,8 @@ import type {
   PaymentProcessorSettings,
   TeamSettings,
   BillingSettings,
-  ApiSettings
+  ApiSettings,
+  GiftAidOrgSettings
 } from '~/features/settings/admin/types'
 
 export const currencySettings: CurrencySettings = {
@@ -230,6 +231,10 @@ export const billingSettings: BillingSettings = {
       status: 'pending'
     }
   ]
+}
+
+export const giftAidSettings: GiftAidOrgSettings = {
+  enabled: true
 }
 
 export const apiSettings: ApiSettings = {

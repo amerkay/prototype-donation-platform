@@ -6,7 +6,6 @@ import type { ImpactCartSettings } from '~/features/donation-form/features/impac
 import type { ProductSelectorSettings } from '~/features/donation-form/features/product-selector/admin/types'
 import type { ImpactBoostSettings } from '~/features/donation-form/features/impact-boost/admin/types'
 import type { CoverCostsSettings } from '~/features/donation-form/features/cover-costs/admin/types'
-import type { GiftAidSettings } from '~/features/donation-form/features/gift-aid/admin/types'
 import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
 import type { ContactConsentSettings } from '~/features/donation-form/features/contact-consent/admin/types'
 
@@ -149,7 +148,6 @@ export interface FullFormConfig {
     productSelector: ProductSelectorSettings
     impactBoost: ImpactBoostSettings
     coverCosts: CoverCostsSettings
-    giftAid: GiftAidSettings
     tribute: TributeSettings
     customFields: DonationCustomFieldsSettings
     entryFields: EntryFieldsSettings

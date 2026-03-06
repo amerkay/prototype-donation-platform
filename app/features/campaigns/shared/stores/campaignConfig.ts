@@ -25,7 +25,6 @@ import type { ImpactCartSettings } from '~/features/donation-form/features/impac
 import type { ProductSelectorSettings } from '~/features/donation-form/features/product-selector/admin/types'
 import type { ImpactBoostSettings } from '~/features/donation-form/features/impact-boost/admin/types'
 import type { CoverCostsSettings } from '~/features/donation-form/features/cover-costs/admin/types'
-import type { GiftAidSettings } from '~/features/donation-form/features/gift-aid/admin/types'
 import type { TributeSettings } from '~/features/donation-form/features/tribute/admin/types'
 import type { ContactConsentSettings } from '~/features/donation-form/features/contact-consent/admin/types'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
@@ -50,7 +49,6 @@ function createDefaultFormConfig() {
     productSelector: null as ProductSelectorSettings | null,
     impactBoost: null as ImpactBoostSettings | null,
     coverCosts: null as CoverCostsSettings | null,
-    giftAid: null as GiftAidSettings | null,
     tribute: null as TributeSettings | null,
     customFields: null as DonationCustomFieldsSettings | null,
     entryFields: null as EntryFieldsSettings | null,
@@ -203,7 +201,6 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
         productSelector: formConfig.productSelector!,
         impactBoost: formConfig.impactBoost!,
         coverCosts: formConfig.coverCosts!,
-        giftAid: formConfig.giftAid!,
         tribute: formConfig.tribute!,
         customFields: formConfig.customFields!,
         entryFields: formConfig.entryFields!,
@@ -292,7 +289,6 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     formConfig.productSelector = config.features.productSelector
     formConfig.impactBoost = config.features.impactBoost
     formConfig.coverCosts = config.features.coverCosts
-    formConfig.giftAid = config.features.giftAid
     formConfig.tribute = config.features.tribute
 
     // Pre-populate all tab slots so useFieldArray doesn't write [] on mount and false-trigger dirty

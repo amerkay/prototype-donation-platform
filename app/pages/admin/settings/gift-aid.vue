@@ -1,0 +1,55 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import EditLayout from '~/features/_shared/components/EditLayout.vue'
+import GiftAidSettingsConfig from '~/features/settings/admin/components/GiftAidSettingsConfig.vue'
+import GiftAidSettingsPreview from '~/features/settings/admin/components/GiftAidSettingsPreview.vue'
+import { useGiftAidSettingsStore } from '~/features/settings/admin/stores/giftAidSettings'
+import { useEditState } from '~/features/_shared/composables/useEditState'
+
+const store = useGiftAidSettingsStore()
+
+const originalData = computed(() => ({
+  enabled: store.enabled
+}))
+
+const formConfigRef = ref()
+
+const { handleSave, handleDiscard, confirmDiscard, showDiscardDialog } = useEditState({
+  store,
+  formRef: formConfigRef,
+  originalData,
+  onSave: async () => {
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    store.save()
+  }
+})
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: '/admin/dashboard' },
+  { label: 'Settings', href: '#' },
+  { label: 'Gift Aid' }
+]
+
+definePageMeta({ layout: 'admin' })
+</script>
+
+<template>
+  <EditLayout
+    :breadcrumbs="breadcrumbs"
+    :is-dirty="store.isDirty"
+    :show-discard-dialog="showDiscardDialog"
+    :show-preview="false"
+    @update:show-discard-dialog="showDiscardDialog = $event"
+    @confirm-discard="confirmDiscard"
+  >
+    <template #content>
+      <div class="space-y-6">
+        <GiftAidSettingsConfig ref="formConfigRef" @save="handleSave" @discard="handleDiscard" />
+      </div>
+    </template>
+
+      <template #preview>
+        <GiftAidSettingsPreview />
+      </template>
+  </EditLayout>
+</template>

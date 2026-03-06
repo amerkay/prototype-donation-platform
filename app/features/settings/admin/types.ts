@@ -176,6 +176,13 @@ export interface BillingSettings {
 }
 
 /**
+ * Gift Aid settings (UK tax reclaim — org-level)
+ */
+export interface GiftAidOrgSettings {
+  enabled: boolean
+}
+
+/**
  * API & Webhook settings
  */
 export interface ApiSettings {

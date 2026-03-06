@@ -12,6 +12,7 @@ import Separator from '~/components/ui/separator/Separator.vue'
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useFormTypeLabels } from '~/features/donation-form/shared/composables/useFormTypeLabels'
+import { useGiftAidSettingsStore } from '~/features/settings/admin/stores/giftAidSettings'
 import DonationCustomFields from '~/features/donation-form/features/custom-fields/donor/components/DonationCustomFields.vue'
 import type { FieldDef } from '~/features/_library/form-builder/types'
 import { DONATION_FORM_FIELD_TARGETS as DT } from '~/features/campaigns/admin/forms/donation-form-tab'
@@ -21,16 +22,13 @@ const configStore = useFormConfigStore()
 const formConfig = computed(() => configStore.fullConfig)
 const charityStore = useCharitySettingsStore()
 const { isFeatureSupported } = useFormTypeLabels()
+const giftAidStore = useGiftAidSettingsStore()
 
-// Gift Aid form section (dynamically enabled from config)
+// Gift Aid form section (enabled from global Gift Aid settings)
 const giftAidFormSection = computed(() =>
   defineForm(
     'gift-aid',
-    () =>
-      createGiftAidFields(formConfig.value?.features.giftAid.enabled ?? true) as Record<
-        string,
-        FieldDef
-      >
+    () => createGiftAidFields(giftAidStore.enabled) as Record<string, FieldDef>
   )
 )
 
@@ -182,14 +180,11 @@ const handleNext = () => {
 
     <Separator v-if="formConfig?.features.coverCosts.enabled && isFeatureSupported('coverCosts')" />
 
-    <!-- Gift Aid Form (donation type only) -->
+    <!-- Gift Aid Form (donation type only, from global settings) -->
     <div
       v-if="
-        formConfig?.features.giftAid.enabled &&
-        isFeatureSupported('giftAid') &&
-        store.selectedCurrency === 'GBP'
+        giftAidStore.enabled && isFeatureSupported('giftAid') && store.selectedCurrency === 'GBP'
       "
-      :data-field="DT.features.giftAid"
     >
       <FormRenderer
         ref="giftAidFormRef"
@@ -201,9 +196,7 @@ const handleNext = () => {
 
     <Separator
       v-if="
-        formConfig?.features.giftAid.enabled &&
-        isFeatureSupported('giftAid') &&
-        store.selectedCurrency === 'GBP'
+        giftAidStore.enabled && isFeatureSupported('giftAid') && store.selectedCurrency === 'GBP'
       "
     />
 
