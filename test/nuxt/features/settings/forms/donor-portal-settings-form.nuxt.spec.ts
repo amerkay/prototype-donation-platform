@@ -126,6 +126,46 @@ describe('donor-portal-settings-form descriptions', () => {
     })
   })
 
+  describe('matched giving refund toggle description', () => {
+    function getMatchedRefundDescription() {
+      const fields = setupForm()
+      const matchedGroup = getSection(fields, 'refunds', 'refundsGrid', 'matchedGiving')
+      const enabled = matchedGroup.fields.matchEnabled as ToggleFieldDef
+      return enabled.description as (ctx: FieldContext) => string
+    }
+
+    it('shows disabled message when matched giving refund is off', () => {
+      const desc = getMatchedRefundDescription()
+      expect(desc(makeCtx({ matchEnabled: false }))).toBe('Disabled for all donors.')
+    })
+
+    it('shows window-only message when matched giving refund is enabled', () => {
+      const desc = getMatchedRefundDescription()
+      const result = desc(makeCtx({ matchEnabled: true, matchWindowDays: 90 }))
+      expect(result).toBe('Refund enabled if within 90 days of payment.')
+    })
+  })
+
+  describe('campaignEnded toggle fields', () => {
+    it('standard refund has stdCampaignEnded field', () => {
+      const fields = setupForm()
+      const stdGroup = getSection(fields, 'refunds', 'refundsGrid', 'standard')
+      expect(stdGroup.fields).toHaveProperty('stdCampaignEnded')
+    })
+
+    it('p2p refund has p2pCampaignEnded field', () => {
+      const fields = setupForm()
+      const p2pGroup = getSection(fields, 'refunds', 'refundsGrid', 'p2p')
+      expect(p2pGroup.fields).toHaveProperty('p2pCampaignEnded')
+    })
+
+    it('matched giving has matchCampaignEnded field', () => {
+      const fields = setupForm()
+      const matchedGroup = getSection(fields, 'refunds', 'refundsGrid', 'matchedGiving')
+      expect(matchedGroup.fields).toHaveProperty('matchCampaignEnded')
+    })
+  })
+
   describe('form structure', () => {
     it('has two top-level tabs: Subscriptions and Refunds', () => {
       const fields = setupForm()
@@ -164,6 +204,13 @@ describe('donor-portal-settings-form descriptions', () => {
       const p2pGroup = getSection(fields, 'refunds', 'refundsGrid', 'p2p')
       expect(p2pGroup.fields).not.toHaveProperty('p2pDuration')
       expect(p2pGroup.fields).not.toHaveProperty('p2pMinValue')
+    })
+
+    it('matched giving refund does NOT have duration or minValue fields', () => {
+      const fields = setupForm()
+      const matchedGroup = getSection(fields, 'refunds', 'refundsGrid', 'matchedGiving')
+      expect(matchedGroup.fields).not.toHaveProperty('matchDuration')
+      expect(matchedGroup.fields).not.toHaveProperty('matchMinValue')
     })
 
     it('matched giving refund has alert field', () => {
