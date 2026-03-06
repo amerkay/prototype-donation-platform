@@ -21,7 +21,7 @@ interface SearchableEntry {
   /** Paths of ancestor fieldGroups (for force-expanding) */
   groupPaths: string[]
   /** Visibility conditions from this entry and all ancestors (all must pass for entry to be visible) */
-  visibilityChecks: Array<{ visibleWhen: VisibilityFn | ConditionGroup }>
+  visibilityChecks: Array<{ visibleWhen: VisibilityFn | ConditionGroup; valuesPath: string }>
 }
 
 export interface FormSearchState {
@@ -120,8 +120,9 @@ function buildSearchIndex(
     const fieldPath = parentPath ? `${parentPath}.${key}` : key
 
     // Accumulate visibility checks from this field + ancestors
+    // valuesPath = parentPath so the visibleWhen fn receives local-scope values
     const fieldChecks = field.visibleWhen
-      ? [...ancestorVisibilityChecks, { visibleWhen: field.visibleWhen }]
+      ? [...ancestorVisibilityChecks, { visibleWhen: field.visibleWhen, valuesPath: parentPath }]
       : ancestorVisibilityChecks
 
     if (field.type === 'field-group') {
@@ -164,7 +165,7 @@ function buildSearchIndex(
 
         // Tabs can have their own visibleWhen — accumulate it
         const tabChecks = tab.visibleWhen
-          ? [...fieldChecks, { visibleWhen: tab.visibleWhen }]
+          ? [...fieldChecks, { visibleWhen: tab.visibleWhen, valuesPath: parentPath }]
           : fieldChecks
 
         entries.push(
@@ -215,6 +216,22 @@ function resolveLabel(
 }
 
 // ============================================================================
+// SCOPED CONTEXT
+// ============================================================================
+
+/** Extract nested values at a dot-path to build a local-scope FieldContext */
+function buildScopedContext(ctx: FieldContext, valuesPath: string): FieldContext {
+  if (!valuesPath) return ctx
+  let values: Record<string, unknown> = ctx.values as Record<string, unknown>
+  for (const segment of valuesPath.split('.')) {
+    const next = values?.[segment]
+    if (next == null || typeof next !== 'object') return { values: {}, root: ctx.root }
+    values = next as Record<string, unknown>
+  }
+  return { values, root: ctx.root }
+}
+
+// ============================================================================
 // COMPOSABLE
 // ============================================================================
 
@@ -239,8 +256,11 @@ export function useFormSearch(
   // Check if an entry is visible based on its accumulated visibility checks
   const isEntryVisible = (entry: SearchableEntry, ctx: FieldContext): boolean => {
     for (const check of entry.visibilityChecks) {
+      // Build a scoped context: visibleWhen functions expect local-scope values
+      // (sibling fields), not root values. Extract nested values at valuesPath.
+      const scopedCtx = check.valuesPath ? buildScopedContext(ctx, check.valuesPath) : ctx
       if (
-        !checkFieldVisibility({ visibleWhen: check.visibleWhen }, ctx, {
+        !checkFieldVisibility({ visibleWhen: check.visibleWhen }, scopedCtx, {
           skipContainerValidation: true
         })
       ) {

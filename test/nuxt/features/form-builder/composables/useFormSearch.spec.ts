@@ -130,5 +130,48 @@ describe('useFormSearch', () => {
       expect(search.matchCount.value).toBe(2)
       expect(search.tabMatchCounts.value.get('hidden-tab')).toBe(1)
     })
+
+    it('evaluates nested visibleWhen with local-scope values, not root values', () => {
+      // Reproduces: tribute form has a "modal" group inside a "tribute" group.
+      // The inner group's visibleWhen reads `values.enabled` (local sibling),
+      // but search was passing root-level values where `enabled` doesn't exist.
+      const fields: Record<string, FieldDef> = {}
+      for (let i = 0; i < 12; i++) {
+        fields[`field${i}`] = text(`Field ${i}`)
+      }
+      // Outer group wrapping inner fields that depend on a sibling toggle
+      fields.tribute = group(
+        'Tribute',
+        {
+          enabled: text('Enabled Toggle'),
+          modal: group(
+            'Modal Settings',
+            { title: text('Modal Title') },
+            {
+              // This visibleWhen reads LOCAL values.enabled (sibling in tribute group)
+              visibleWhen: (ctx: FieldContext) => ctx.values.enabled === true
+            } as Partial<FieldDef>
+          )
+        }
+      )
+
+      // Root values: `enabled` lives at tribute.enabled, NOT at root
+      const values = ref<Record<string, unknown>>({
+        tribute: { enabled: true, modal: { title: '' } }
+      })
+      const fieldContext = () => ({ values: values.value, root: values.value })
+
+      const search = useFormSearch(fields, undefined, fieldContext)
+      search.searchTerm.value = 'modal'
+
+      // "Modal Settings" and "Modal Title" should both match
+      expect(search.matchCount.value).toBeGreaterThanOrEqual(1)
+      expect(search.isFieldVisibleBySearch('tribute.modal')).toBe(true)
+      expect(search.isFieldVisibleBySearch('tribute.modal.title')).toBe(true)
+
+      // When tribute.enabled is false, modal group should be hidden from search
+      values.value = { tribute: { enabled: false, modal: { title: '' } } }
+      expect(search.matchCount.value).toBe(0)
+    })
   })
 })
