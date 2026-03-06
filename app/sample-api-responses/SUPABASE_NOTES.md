@@ -180,6 +180,30 @@ Apr 2024  Renewal comes in
 
 ---
 
+## Matched Giving & Recurring Subscriptions
+
+**Policy: First installment only.** For recurring donations (monthly/yearly), only the first payment is eligible for matching. Subsequent renewal payments are not matched, regardless of whether a match period is still active.
+
+### Webhook pattern (`subscription.invoice.payment_succeeded`)
+
+```
+1. Look up subscription by processor_subscription_id
+2. Look up campaign's active match periods
+3. IF subscription.first_payment_matched = false AND active period exists:
+   a. Calculate match: subtotal × (multiplier - 1), capped by pool remaining
+   b. Create transaction with matched_amount and match_period_id
+   c. UPDATE subscriptions SET first_payment_matched = true WHERE id = subscription.id
+   d. Trigger auto-updates match_periods.pool_drawn
+4. ELSE (first_payment_matched = true OR no active period):
+   a. Create transaction with matched_amount = 0, match_period_id = NULL
+```
+
+**Why first-only?** Sponsor budgets are finite pools. Matching every recurring installment would drain pools unpredictably and make sponsor liability hard to forecast. First-installment matching incentivizes recurring sign-ups while keeping sponsor exposure bounded.
+
+<!-- TODO-SUPABASE: Stripe webhook must check subscriptions.first_payment_matched before applying match on subscription renewals -->
+
+---
+
 ## Campaign Status & Completion
 
 ### Campaign Status Model
@@ -248,3 +272,4 @@ Transactions store `campaign_currency` and `campaign_exchange_rate` at creation 
 - [ ] Data export endpoint (`/api/donor-data-export`) for GDPR data portability
 - [ ] Gift Aid HMRC claims tracking (future consideration): `gift_aid_claims` + `gift_aid_claim_items` tables
 - [ ] Stripe webhook (`subscription.invoice.payment_succeeded`) must call `get_active_gift_aid_declaration()` — never inherit Gift Aid from subscription record (see "Gift Aid Drift" section above)
+- [ ] Stripe webhook (`subscription.invoice.payment_succeeded`) must check `subscriptions.first_payment_matched` before applying match — only first payment is matched (see "Matched Giving & Recurring Subscriptions" section above)

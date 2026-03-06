@@ -104,9 +104,8 @@ describe('usePreviewSync', () => {
   })
 
   it('calls activateHashTarget on reverse sync', async () => {
-    const { activateHashTarget } = await import(
-      '~/features/_library/form-builder/composables/useHashTarget'
-    )
+    const { activateHashTarget } =
+      await import('~/features/_library/form-builder/composables/useHashTarget')
     const { sync } = await setup()
 
     sync.syncToAccordion('certificate')

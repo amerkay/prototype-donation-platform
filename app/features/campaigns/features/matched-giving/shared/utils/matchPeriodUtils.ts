@@ -77,15 +77,14 @@ export function getEffectiveRaised(stats: { totalRaised: number; totalMatched?: 
 /**
  * Calculate the match for a donation against the active period.
  * Returns the actual match amount (capped by remaining pool) and the period ID.
- * Only one-time donations are eligible for matching — recurring donations return 0.
+ * For recurring donations, only the first installment is matched (enforced at transaction time).
  */
 export function calculateMatch(
   donationAmount: number,
   periods: MatchPeriod[],
-  frequency: DonationFrequency = 'once',
+  _frequency: DonationFrequency = 'once',
   now: Date = new Date()
 ): { matchedAmount: number; periodId?: string } {
-  if (frequency !== 'once') return { matchedAmount: 0 }
   const active = getActivePeriod(periods, now)
   if (!active) return { matchedAmount: 0 }
 

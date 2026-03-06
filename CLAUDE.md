@@ -198,7 +198,7 @@ app/features/[feature-name]/
 
 ## Code Rules
 
-1. **PLAN FIRST**: Present 3+ options with 1-line desc + star rating (★) during planning. Questions only during planning, never mid-implementation. ALWAYS use the `AskUserQuestion` tool for questions — never inline questions in text output.
+1. **PLAN FIRST**: Present 3+ options with 1-line desc + star rating (★) during planning. Questions only during planning, never mid-implementation. ALWAYS use the `AskUserQuestion` tool for questions — never inline questions in text output. Every question option MUST include pros/cons and a star rating (★–★★★★★) in the description or preview so the user can make informed decisions at a glance.
 2. **INVESTIGATE + FOLLOW PATTERNS**: Search codebase for similar patterns before writing code. Match conventions exactly.
 3. **FORM-BUILDER FOR ALL FORMS**: Use `defineForm()`, field constructors, `FormRenderer`. Read README first. NON-NEGOTIABLE.
 4. **`_library/` IS SACRED**: No donation logic in form-builder or custom-fields.

@@ -7,6 +7,8 @@ interface Props {
   items: EmailOrderBreakdownItem[]
   total?: string
   frequency?: string
+  matchedAmount?: string
+  matcherName?: string
 }
 
 const props = defineProps<Props>()
@@ -32,6 +34,10 @@ const remainingCount = computed(() => Math.max(props.items.length - 1, 0))
       <template v-if="remainingCount"> and {{ remainingCount }} more</template>
       <template v-if="total"><br /><strong>Total:</strong> {{ total }}</template>
       <template v-if="frequency"><br /><strong>Frequency:</strong> {{ frequency }}</template>
+      <template v-if="matchedAmount">
+        <br /><strong>Matched:</strong> +{{ matchedAmount
+        }}<template v-if="matcherName"> by {{ matcherName }}</template>
+      </template>
     </div>
   </EmailCardMediaRow>
 </template>

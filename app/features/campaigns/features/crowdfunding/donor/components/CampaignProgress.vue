@@ -7,7 +7,7 @@ import {
 } from '~/features/campaigns/shared/utils/campaignCapabilities'
 import { getEffectiveRaised } from '~/features/campaigns/features/matched-giving/shared/utils/matchPeriodUtils'
 import { Progress } from '@/components/ui/progress'
-import { Avatar, AvatarImage } from '@/components/ui/avatar'
+import MatchedGivingCallout from '~/features/campaigns/features/matched-giving/donor/components/MatchedGivingCallout.vue'
 import { CAMPAIGN_FIELD_TARGETS as CT } from '~/features/campaigns/admin/forms/campaign-config-master'
 
 defineOptions({ inheritAttrs: false })
@@ -63,51 +63,43 @@ const poolRemaining = computed(() => {
 <template>
   <div v-if="!compact" class="space-y-2">
     <!-- Active matcher badge — live pool with remaining funds -->
-    <div
+    <MatchedGivingCallout
       v-if="displayMode === 'active' && displayPeriod?.matcherName"
+      :active-period="displayPeriod"
+      :multiplier="multiplier"
       :data-field="CT.matchedGiving"
-      class="flex items-center gap-3 rounded-lg bg-primary/5 border border-primary/15 px-3 py-2.5"
     >
-      <Avatar v-if="displayPeriod.matcherLogo" class="h-8 w-8 shrink-0">
-        <AvatarImage :src="displayPeriod.matcherLogo" />
-      </Avatar>
-      <div class="min-w-0 flex-1">
-        <p class="text-sm font-semibold leading-tight truncate">
-          Matched {{ multiplier }}x by {{ displayPeriod.matcherName }}
-        </p>
-        <p
-          v-if="displayPeriod.displayMessage"
-          class="text-xs text-muted-foreground leading-snug line-clamp-2 mt-0.5"
-        >
-          {{ displayPeriod.displayMessage }}
-        </p>
-        <p class="text-xs text-muted-foreground/80 leading-tight mt-0.5">
-          <span class="font-medium text-muted-foreground">
-            {{ formatAmount(poolRemaining, stats.currency, 0) }}
-          </span>
-          of {{ formatAmount(displayPeriod.poolAmount, stats.currency, 0) }} match remaining
-        </p>
-      </div>
-      <span class="ml-auto shrink-0 text-lg font-bold text-primary">{{ multiplier }}x</span>
-    </div>
+      <p class="text-sm font-semibold leading-tight line-clamp-2">
+        Matched {{ multiplier }}x by {{ displayPeriod.matcherName }}
+      </p>
+      <p
+        v-if="displayPeriod.displayMessage"
+        class="text-xs text-muted-foreground leading-snug line-clamp-2 mt-0.5"
+      >
+        {{ displayPeriod.displayMessage }}
+      </p>
+      <p class="text-xs text-muted-foreground/80 leading-tight mt-0.5">
+        <span class="font-medium text-muted-foreground">
+          {{ formatAmount(poolRemaining, stats.currency, 0) }}
+        </span>
+        of {{ formatAmount(displayPeriod.poolAmount, stats.currency, 0) }} match remaining
+      </p>
+    </MatchedGivingCallout>
 
     <!-- Historical matcher badge — matching ended, muted summary -->
-    <div
+    <MatchedGivingCallout
       v-else-if="displayMode === 'historical' && displayPeriod?.matcherName"
+      :active-period="displayPeriod"
+      :multiplier="multiplier"
+      variant="historical"
       :data-field="CT.matchedGiving"
-      class="flex items-center gap-3 rounded-lg bg-muted/50 border border-muted px-3 py-2.5"
     >
-      <Avatar v-if="displayPeriod.matcherLogo" class="h-8 w-8 shrink-0 opacity-70">
-        <AvatarImage :src="displayPeriod.matcherLogo" />
-      </Avatar>
-      <div class="min-w-0 flex-1">
-        <p class="text-sm font-medium leading-tight truncate text-muted-foreground">
-          Matching ended &mdash;
-          {{ formatAmount(totalMatched, stats.currency, 0) }} matched by
-          {{ displayPeriod.matcherName }}
-        </p>
-      </div>
-    </div>
+      <p class="text-sm font-medium leading-tight line-clamp-2 text-muted-foreground">
+        Matching ended &mdash;
+        {{ formatAmount(totalMatched, stats.currency, 0) }} matched by
+        {{ displayPeriod.matcherName }}
+      </p>
+    </MatchedGivingCallout>
 
     <!-- Progress section — receives parent's data-field (goalAmount) via $attrs -->
     <div v-bind="$attrs" class="space-y-2">

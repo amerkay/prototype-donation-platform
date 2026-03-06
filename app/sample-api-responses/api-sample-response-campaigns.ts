@@ -318,7 +318,7 @@ export const campaigns: Campaign[] = [
           endDate: '2026-03-15T00:00:00Z',
           matcherName: 'The Wilkinson Foundation',
           matcherLogo: '/imgs/BOS-USA-logo-green.webp',
-          displayMessage: 'Every pound you donate is matched pound for pound!'
+          displayMessage: undefined
         },
         {
           id: 'mp-2',

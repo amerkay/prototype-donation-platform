@@ -5,6 +5,7 @@ import { useCampaigns } from '~/features/campaigns/shared/composables/useCampaig
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { getExchangeRatesForBase } from '~/sample-api-responses/api-sample-response-exchange-rates'
 import { generateEntityId } from '~/lib/generateEntityId'
+import { calculateMatch } from '~/features/campaigns/features/matched-giving/shared/utils/matchPeriodUtils'
 
 type DonationStore = ReturnType<typeof useDonationFormStore>
 
@@ -88,6 +89,7 @@ export function useBuildTransaction() {
     const donorCurrency = store.selectedCurrency
     const baseCurrency = currencySettings.defaultCurrency
     const exchangeRate = computeExchangeRate(donorCurrency, baseCurrency)
+    const frequency = store.activeTab === 'multiple' ? 'once' : store.activeTab
     const lineItems = buildLineItems(store, formConfig.form?.title)
     const { donorName, donorEmail } = buildDonorInfo(donorInfo)
     const donorAddress = buildDonorAddress(shippingInfo)
@@ -127,7 +129,11 @@ export function useBuildTransaction() {
       ...(Object.keys(store.formSections.customFields || {}).length > 0 && {
         customFields: store.formSections.customFields as Record<string, string>
       }),
-      matchedAmount: 0,
+      matchedAmount: calculateMatch(
+        subtotal,
+        campaign?.matchedGiving?.periods ?? [],
+        frequency as 'once' | 'monthly' | 'yearly'
+      ).matchedAmount,
       legalBasis: 'contractual_necessity',
       createdAt: now,
       receiptUrl: '#'

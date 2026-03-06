@@ -723,6 +723,9 @@ CREATE TABLE subscriptions (
   cancelled_at TIMESTAMPTZ,
   paused_at TIMESTAMPTZ,
 
+  -- Whether the first payment of this subscription was matched (prevents re-matching on renewals)
+  first_payment_matched BOOLEAN NOT NULL DEFAULT FALSE,
+
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   -- NOTE: total_paid and payment_count are computed from linked transactions
   -- (SUM/COUNT of transactions WHERE subscription_id = id AND type = 'subscription_payment')

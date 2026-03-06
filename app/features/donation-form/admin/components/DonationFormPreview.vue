@@ -7,6 +7,11 @@ import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campa
 import { useDonationFormStore } from '~/features/donation-form/donor/stores/donationForm'
 import { extractCustomFieldDefaults } from '~/features/_library/custom-fields/utils'
 import { HASH_TARGET_PASSIVE_KEY } from '~/features/_library/form-builder/composables/useHashTarget'
+import {
+  MATCHED_GIVING_KEY,
+  DONATION_FREQUENCY_KEY
+} from '~/features/campaigns/features/matched-giving/donor/composables/useMatchedGiving'
+import type { DonationFrequency } from '~/features/campaigns/features/matched-giving/shared/utils/matchPeriodUtils'
 
 withDefaults(
   defineProps<{
@@ -17,6 +22,15 @@ withDefaults(
 
 // Prevent preview FormRenderers from stealing the global hash target activator
 provide(HASH_TARGET_PASSIVE_KEY, true)
+
+// Provide matched giving context so the preview shows match messaging
+const matchedGiving = computed(() => store.matchedGiving)
+provide(MATCHED_GIVING_KEY, matchedGiving)
+const donationFrequency = computed(
+  () =>
+    (donationStore.activeTab === 'multiple' ? 'once' : donationStore.activeTab) as DonationFrequency
+)
+provide(DONATION_FREQUENCY_KEY, donationFrequency)
 
 // Get form config from campaign store (unified source of truth)
 const store = useCampaignConfigStore()

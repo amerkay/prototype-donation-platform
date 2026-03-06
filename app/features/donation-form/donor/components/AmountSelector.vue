@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useCurrency } from '~/features/donation-form/shared/composables/useCurrency'
 import { useMatchedGiving } from '~/features/campaigns/features/matched-giving/donor/composables/useMatchedGiving'
+import MatchedGivingCallout from '~/features/campaigns/features/matched-giving/donor/components/MatchedGivingCallout.vue'
 import LogarithmicPriceSlider from '~/features/donation-form/donor/components/LogarithmicPriceSlider.vue'
 import type { PresetAmount } from '~/features/donation-form/shared/types'
 
@@ -33,7 +34,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { getCurrencySymbol } = useCurrency()
 const currencySymbol = computed(() => getCurrencySymbol(props.currency))
-const { isMatched, multiplier, activePeriod } = useMatchedGiving()
+const { isMatched, isFirstInstallmentOnly, multiplier, activePeriod } = useMatchedGiving()
 const matchedAmount = computed(() => localAmount.value * multiplier.value)
 
 const emit = defineEmits<Emits>()
@@ -195,19 +196,37 @@ const backToPresets = () => {
     </Button>
 
     <!-- Matched Giving Message -->
-    <div
-      v-if="isMatched && localAmount > 0"
-      class="rounded-lg bg-primary/5 border border-primary/20 p-3 text-center text-sm"
-    >
-      <p v-if="activePeriod?.displayMessage" class="text-muted-foreground">
-        {{ activePeriod.displayMessage }}
-      </p>
-      <p class="font-medium">
-        Your {{ currencySymbol }}{{ localAmount }} becomes
-        <span class="text-primary font-bold">{{ currencySymbol }}{{ matchedAmount }}</span>
-        with {{ multiplier }}x matching!
-      </p>
-    </div>
+    <MatchedGivingCallout v-if="isMatched" :active-period="activePeriod" :multiplier="multiplier">
+      <!-- Before amount selected: show encouragement -->
+      <template v-if="localAmount <= 0">
+        <p class="text-sm font-semibold leading-tight">
+          Every {{ currencySymbol }} is matched {{ multiplier }}x<template
+            v-if="activePeriod?.matcherName"
+          >
+            by {{ activePeriod.matcherName }}</template
+          >!
+        </p>
+        <p
+          v-if="activePeriod?.displayMessage"
+          class="text-xs text-muted-foreground leading-snug mt-0.5"
+        >
+          {{ activePeriod.displayMessage }}
+        </p>
+      </template>
+      <!-- After amount selected: show specific impact -->
+      <template v-else-if="!isFirstInstallmentOnly">
+        <p class="text-sm font-semibold leading-tight">
+          Your {{ currencySymbol }}{{ localAmount }} becomes
+          <span class="text-primary font-bold">{{ currencySymbol }}{{ matchedAmount }}</span>
+        </p>
+      </template>
+      <template v-else>
+        <p class="text-sm font-semibold leading-tight">
+          First payment matched &mdash; {{ currencySymbol }}{{ localAmount }} becomes
+          <span class="text-primary font-bold">{{ currencySymbol }}{{ matchedAmount }}</span>
+        </p>
+      </template>
+    </MatchedGivingCallout>
 
     <!-- Custom Amount Slider -->
     <div v-if="showSlider" class="space-y-3">

@@ -8,6 +8,7 @@ import { useAdminSubscriptions } from '~/features/subscriptions/admin/composable
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
 import type { EmailCardsPayload } from '~/emails/components/cards/types'
+import { getDisplayPeriod } from '~/features/campaigns/features/matched-giving/shared/utils/matchPeriodUtils'
 
 function toAbsoluteUrl(url: string | null | undefined, siteUrl?: string): string | undefined {
   if (!url) return undefined
@@ -236,16 +237,28 @@ export function useEmailPreviewContext(
     }
   }
 
-  const buildOrderBreakdownCard = () => ({
-    items:
-      orderLineItems.value.length > 0
-        ? orderLineItems.value
-        : [{ name: 'General donation', quantity: 1, amount: donationAmount.value }],
-    total: donationAmount.value || subscriptionAmount.value,
-    frequency: formatFrequency(
-      latestSubscription.value?.frequency || latestSucceededDonation.value?.lineItems[0]?.frequency
-    )
-  })
+  const buildOrderBreakdownCard = () => {
+    const txn = latestSucceededDonation.value
+    const campaign = latestCampaign.value
+    const displayPeriod = campaign?.matchedGiving?.periods?.length
+      ? getDisplayPeriod(campaign.matchedGiving.periods)
+      : null
+    return {
+      items:
+        orderLineItems.value.length > 0
+          ? orderLineItems.value
+          : [{ name: 'General donation', quantity: 1, amount: donationAmount.value }],
+      total: donationAmount.value || subscriptionAmount.value,
+      frequency: formatFrequency(
+        latestSubscription.value?.frequency || txn?.lineItems[0]?.frequency
+      ),
+      ...(txn?.matchedAmount &&
+        txn.matchedAmount > 0 && {
+          matchedAmount: formatMoney(txn.matchedAmount, txn.currency),
+          matcherName: displayPeriod?.matcherName
+        })
+    }
+  }
 
   const buildPaymentRetryCard = () => ({
     amount: formatMoney(

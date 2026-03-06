@@ -84,7 +84,7 @@ const fullFeaturedConfigMatchedGiving = {
   form: {
     ...fullFormConfig.form,
     title: 'Double Your Impact',
-    subtitle: 'Every pound matched by The Wilkinson Foundation'
+    subtitle: 'Help us protect orangutan habitats this spring'
   }
 }
 

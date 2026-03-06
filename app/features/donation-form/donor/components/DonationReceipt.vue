@@ -6,6 +6,8 @@ import { useDonationFormStore } from '~/features/donation-form/donor/stores/dona
 import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 import { useReceiptTemplateStore } from '~/features/templates/admin/stores/receiptTemplate'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
+import { useMatchedGiving } from '~/features/campaigns/features/matched-giving/donor/composables/useMatchedGiving'
+import MatchedGivingCallout from '~/features/campaigns/features/matched-giving/donor/components/MatchedGivingCallout.vue'
 import { formatCurrency } from '~/lib/formatCurrency'
 
 const store = useDonationFormStore()
@@ -50,6 +52,18 @@ const hasGiftAid = computed(() => giftAid.value?.claimGiftAid === true)
 const receiptId = computed(() => store.receiptId)
 
 const formTitle = computed(() => configStore.form?.title ?? 'Donation')
+const {
+  isMatched,
+  isFirstInstallmentOnly,
+  multiplier,
+  activePeriod,
+  formattedMatchedAmount,
+  formattedTotalImpact
+} = useMatchedGiving(
+  () => store.totalDonationAmount,
+  () => store.totalAmount,
+  () => store.selectedCurrency
+)
 </script>
 
 <template>
@@ -97,6 +111,36 @@ const formTitle = computed(() => configStore.form?.title ?? 'Donation')
         <span>Total charged</span>
         <span>{{ formattedTotal }}</span>
       </div>
+
+      <!-- Matched Giving -->
+      <template v-if="isMatched && store.totalDonationAmount > 0">
+        <MatchedGivingCallout
+          :active-period="activePeriod"
+          :multiplier="multiplier"
+          class="text-sm"
+        >
+          <p class="text-sm font-semibold leading-tight text-muted-foreground">
+            <template v-if="isFirstInstallmentOnly">First payment matched</template>
+            <template v-else>Matched</template>
+            {{ multiplier }}x
+            <template v-if="activePeriod?.matcherName">
+              by {{ activePeriod.matcherName }}
+            </template>
+          </p>
+          <template #trailing>
+            <span class="ml-auto shrink-0 font-medium text-primary"
+              >+{{ formattedMatchedAmount }}</span
+            >
+          </template>
+        </MatchedGivingCallout>
+        <div class="flex justify-between font-semibold">
+          <span>
+            <template v-if="isFirstInstallmentOnly">First month impact</template>
+            <template v-else>Total impact</template>
+          </span>
+          <span class="text-primary">{{ formattedTotalImpact }}</span>
+        </div>
+      </template>
 
       <Separator />
 

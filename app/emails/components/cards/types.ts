@@ -44,6 +44,8 @@ export interface EmailOrderBreakdownCardData {
   items: EmailOrderBreakdownItem[]
   total?: string
   frequency?: string
+  matchedAmount?: string
+  matcherName?: string
 }
 
 export interface EmailPaymentRetryCardData {
