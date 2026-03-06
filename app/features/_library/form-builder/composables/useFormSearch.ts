@@ -50,11 +50,18 @@ export interface FormSearchOptions {
 export const FORM_SEARCH_KEY: InjectionKey<FormSearchState> = Symbol('formSearch')
 
 // Display-only field types that don't count toward complexity
-const DISPLAY_ONLY_TYPES = new Set(['alert', 'card', 'component', 'hidden', 'readonly'])
+const DISPLAY_ONLY_TYPES = new Set([
+  'alert',
+  'card',
+  'component',
+  'hidden',
+  'readonly',
+  'section-heading'
+])
 
 // Types excluded from search indexing — same as DISPLAY_ONLY_TYPES but allows 'component'
 // so componentField labels/descriptions are searchable
-const NON_INDEXABLE_TYPES = new Set(['alert', 'card', 'hidden', 'readonly'])
+const NON_INDEXABLE_TYPES = new Set(['alert', 'card', 'hidden', 'readonly', 'section-heading'])
 
 // ============================================================================
 // FIELD COUNTING

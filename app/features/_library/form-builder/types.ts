@@ -84,6 +84,7 @@ export type FieldType =
   | 'rich-text'
   | 'readonly'
   | 'component'
+  | 'section-heading'
 
 /**
  * Function type for setting field values with relative paths
@@ -442,6 +443,8 @@ export interface AlertFieldConfig extends BaseFieldConfig {
   }
 }
 
+export type SectionHeadingFieldConfig = BaseFieldConfig
+
 export interface ReadonlyFieldConfig extends BaseFieldConfig {
   /** Display variant: 'badge' renders as Badge, 'text' renders as plain text (default: 'text') */
   variant?: 'badge' | 'text'
@@ -496,6 +499,7 @@ export interface FieldRegistry {
   tabs: TabsFieldConfig
   card: CardFieldConfig
   alert: AlertFieldConfig
+  'section-heading': SectionHeadingFieldConfig
   readonly: ReadonlyFieldConfig
   component: ComponentFieldConfig<Record<string, unknown>>
 }
@@ -525,6 +529,7 @@ export type FieldGroupDef = Field<'field-group', FieldGroupConfig>
 export type TabsFieldDef = Field<'tabs', TabsFieldConfig>
 export type CardFieldDef = Field<'card', CardFieldConfig>
 export type AlertFieldDef = Field<'alert', AlertFieldConfig>
+export type SectionHeadingFieldDef = Field<'section-heading', SectionHeadingFieldConfig>
 export type ReadonlyFieldDef = Field<'readonly', ReadonlyFieldConfig>
 export type ComponentFieldDef<TProps = Record<string, unknown>> = Field<
   'component',
@@ -573,6 +578,8 @@ export const isFieldGroup = (field: FieldDef): field is FieldGroupDef =>
 export const isTabsField = (field: FieldDef): field is TabsFieldDef => field.type === 'tabs'
 export const isCardField = (field: FieldDef): field is CardFieldDef => field.type === 'card'
 export const isAlertField = (field: FieldDef): field is AlertFieldDef => field.type === 'alert'
+export const isSectionHeadingField = (field: FieldDef): field is SectionHeadingFieldDef =>
+  field.type === 'section-heading'
 export const isReadonlyField = (field: FieldDef): field is ReadonlyFieldDef =>
   field.type === 'readonly'
 export const isComponentField = (field: FieldDef): field is ComponentFieldDef =>

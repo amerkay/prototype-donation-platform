@@ -47,6 +47,8 @@ import type {
   CardFieldDef,
   AlertFieldConfig,
   AlertFieldDef,
+  SectionHeadingFieldConfig,
+  SectionHeadingFieldDef,
   ReadonlyFieldConfig,
   ReadonlyFieldDef,
   ComponentFieldConfig,
@@ -348,6 +350,20 @@ export function cardField(name: string, config: CardFieldConfig = {}): CardField
 export function alertField(name: string, config: AlertFieldConfig = {}): AlertFieldDef {
   return {
     type: 'alert',
+    name,
+    ...config
+  }
+}
+
+/**
+ * Create a section heading field (display only — renders an uppercase label)
+ */
+export function sectionHeadingField(
+  name: string,
+  config: SectionHeadingFieldConfig = {}
+): SectionHeadingFieldDef {
+  return {
+    type: 'section-heading',
     name,
     ...config
   }

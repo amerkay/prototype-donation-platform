@@ -1,6 +1,7 @@
 import {
   fieldGroup,
   alertField,
+  sectionHeadingField,
   toggleField,
   tabsField,
   componentField
@@ -177,6 +178,15 @@ export function createDonationFormTabFields(ctx: FormContext, contextSchema: Con
         badgeVariant: 'secondary' as const,
         visibleWhen: () => !store.isFundraiser,
         fields: {
+          givingExperienceHeading: sectionHeadingField('givingExperienceHeading', {
+            label: 'Giving Experience',
+            visibleWhen: () =>
+              caps().allowsImpactBoost !== false ||
+              caps().allowsImpactCart ||
+              caps().allowsProductSelector ||
+              caps().allowsTribute ||
+              caps().allowsEntryFields
+          }),
           impactBoost: fieldGroup('impactBoost', {
             label: 'Impact Boost',
             description: 'Suggest higher donation amounts with impact messaging',
@@ -209,6 +219,32 @@ export function createDonationFormTabFields(ctx: FormContext, contextSchema: Con
             badgeVariant: (fCtx) => (fCtx.values.enabled ? 'default' : 'outline'),
             visibleWhen: () => caps().allowsProductSelector,
             fields: productSelectorFields
+          }),
+          tribute: fieldGroup('tribute', {
+            label: 'Tribute & Dedications',
+            description: 'Allow donations in honor or memory of someone',
+            wrapperClass: 'p-4 bg-background rounded-lg border',
+            collapsible: true,
+            collapsibleDefaultOpen: false,
+            badgeLabel: (fCtx) => (fCtx.values.enabled ? 'Enabled' : 'Disabled'),
+            badgeVariant: (fCtx) => (fCtx.values.enabled ? 'default' : 'outline'),
+            visibleWhen: () => caps().allowsTribute,
+            fields: tributeFields
+          }),
+          entryFields: fieldGroup('entryFields', {
+            label: 'Entry Fields',
+            description: 'Collect additional donor information at checkout',
+            wrapperClass: 'p-4 bg-background rounded-lg border',
+            collapsible: true,
+            collapsibleDefaultOpen: false,
+            badgeLabel: (fCtx) => (fCtx.values.enabled ? 'Enabled' : 'Disabled'),
+            badgeVariant: (fCtx) => (fCtx.values.enabled ? 'default' : 'outline'),
+            visibleWhen: () => caps().allowsEntryFields,
+            fields: entryFieldsFields
+          }),
+          howTheyPayHeading: sectionHeadingField('howTheyPayHeading', {
+            label: 'How They Pay',
+            visibleWhen: () => caps().allowsCoverCosts || caps().allowsGiftAid
           }),
           coverCosts: fieldGroup('coverCosts', {
             label: 'Cover Costs',
@@ -244,27 +280,8 @@ export function createDonationFormTabFields(ctx: FormContext, contextSchema: Con
             visibleWhen: () => caps().allowsGiftAid,
             fields: giftAidFields
           }),
-          tribute: fieldGroup('tribute', {
-            label: 'Tribute & Dedications',
-            description: 'Allow donations in honor or memory of someone',
-            wrapperClass: 'p-4 bg-background rounded-lg border',
-            collapsible: true,
-            collapsibleDefaultOpen: false,
-            badgeLabel: (fCtx) => (fCtx.values.enabled ? 'Enabled' : 'Disabled'),
-            badgeVariant: (fCtx) => (fCtx.values.enabled ? 'default' : 'outline'),
-            visibleWhen: () => caps().allowsTribute,
-            fields: tributeFields
-          }),
-          entryFields: fieldGroup('entryFields', {
-            label: 'Entry Fields',
-            description: 'Collect additional donor information at checkout',
-            wrapperClass: 'p-4 bg-background rounded-lg border',
-            collapsible: true,
-            collapsibleDefaultOpen: false,
-            badgeLabel: (fCtx) => (fCtx.values.enabled ? 'Enabled' : 'Disabled'),
-            badgeVariant: (fCtx) => (fCtx.values.enabled ? 'default' : 'outline'),
-            visibleWhen: () => caps().allowsEntryFields,
-            fields: entryFieldsFields
+          consentLegalHeading: sectionHeadingField('consentLegalHeading', {
+            label: 'Consent & Legal'
           }),
           contactConsent: fieldGroup('contactConsent', {
             label: 'Contact Consent',

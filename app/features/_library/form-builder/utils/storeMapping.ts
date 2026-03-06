@@ -89,7 +89,8 @@ export function generateStoreMapping(form: ComposableForm): StoreMapping {
     'alert',
     'readonly',
     'card',
-    'component'
+    'component',
+    'section-heading'
   ])
 
   // Recursively traverse fields to build mapping

@@ -308,6 +308,12 @@ const formSettings = fieldGroup('formSettings', {
 })
 // wrapperClass styles the Accordion/FieldSet container, 'class' styles content
 
+// Section heading — standalone uppercase label for visually grouping fields
+const heading = sectionHeadingField('givingExperience', {
+  label: 'Giving Experience', // Renders "GIVING EXPERIENCE"
+  visibleWhen: () => someCondition // Independent visibility from fields below
+})
+
 // Group with external state sync
 const openSectionId = ref<string | undefined>('address')
 const shippingAddress = fieldGroup('shippingAddress', {

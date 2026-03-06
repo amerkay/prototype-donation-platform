@@ -36,6 +36,7 @@ import FormFieldGroup from './containers/FormFieldGroup.vue'
 import FormFieldTabs from './containers/FormFieldTabs.vue'
 import FormFieldCard from './layout/FormFieldCard.vue'
 import FormFieldAlert from './layout/FormFieldAlert.vue'
+import FormFieldSectionHeading from './layout/FormFieldSectionHeading.vue'
 
 interface Props {
   name: string
@@ -68,6 +69,7 @@ const FIELD_COMPONENTS: Record<string, Component> = {
   component: FormFieldComponent,
   card: FormFieldCard,
   alert: FormFieldAlert,
+  'section-heading': FormFieldSectionHeading,
   'field-group': FormFieldGroup,
   array: FormFieldArray,
   tabs: FormFieldTabs
@@ -182,7 +184,9 @@ const fieldRules = computed(() => {
 
 // Container fields don't need field binding (they manage children)
 const isContainerField = computed(() => {
-  return ['field-group', 'tabs', 'card', 'alert'].includes(resolvedFieldType.value)
+  return ['field-group', 'tabs', 'card', 'alert', 'section-heading'].includes(
+    resolvedFieldType.value
+  )
 })
 
 // Use vee-validate's useField composition API for non-container fields
