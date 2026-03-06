@@ -28,6 +28,33 @@ const tabs = (
   opts: Partial<FieldDef> = {}
 ): FieldDef => ({ type: 'tabs', tabs: tabDefs, ...opts }) as unknown as FieldDef
 
+// Helper: count visible entries matching a term
+function countVisibleMatches(search: ReturnType<typeof useFormSearch>, term: string): number {
+  const lowerTerm = term.toLowerCase()
+  return search.searchIndex.filter((entry) => {
+    if (!search.isEntryVisible(entry)) return false
+    const haystack =
+      `${entry.label} ${entry.description} ${entry.parentLabels.join(' ')}`.toLowerCase()
+    return haystack.includes(lowerTerm)
+  }).length
+}
+
+// Helper: check if a specific path is in visible matches
+function isPathVisible(
+  search: ReturnType<typeof useFormSearch>,
+  term: string,
+  path: string
+): boolean {
+  const lowerTerm = term.toLowerCase()
+  return search.searchIndex.some((entry) => {
+    if (entry.path !== path) return false
+    if (!search.isEntryVisible(entry)) return false
+    const haystack =
+      `${entry.label} ${entry.description} ${entry.parentLabels.join(' ')}`.toLowerCase()
+    return haystack.includes(lowerTerm)
+  })
+}
+
 describe('useFormSearch', () => {
   describe('countInputFields', () => {
     it('counts only input fields, not display-only types', () => {
@@ -41,40 +68,35 @@ describe('useFormSearch', () => {
   })
 
   describe('visibility filtering', () => {
-    it('excludes hidden fields from match count', () => {
-      // Build a form with 12+ fields to trigger search, some hidden
+    it('excludes hidden fields from visible entries', () => {
       const fields: Record<string, FieldDef> = {}
       for (let i = 0; i < 12; i++) {
         fields[`field${i}`] = text(`Field ${i}`)
       }
-      // Add a hidden field that matches search term "secret"
       fields.hiddenField = text('Secret Title', {
         visibleWhen: (ctx: FieldContext) => ctx.values.showSecret === true
       } as Partial<FieldDef>)
 
-      // Context where showSecret is false
       const values = ref<Record<string, unknown>>({ showSecret: false })
       const fieldContext = () => ({ values: values.value, root: values.value })
 
       const search = useFormSearch(fields, undefined, fieldContext)
-      search.searchTerm.value = 'secret'
 
-      // Hidden field should NOT match
-      expect(search.matchCount.value).toBe(0)
-      expect(search.isFieldVisibleBySearch('hiddenField')).toBe(false)
+      // Hidden field should NOT be visible
+      expect(countVisibleMatches(search, 'secret')).toBe(0)
+      expect(isPathVisible(search, 'secret', 'hiddenField')).toBe(false)
 
       // Now make it visible
       values.value = { showSecret: true }
-      expect(search.matchCount.value).toBe(1)
-      expect(search.isFieldVisibleBySearch('hiddenField')).toBe(true)
+      expect(countVisibleMatches(search, 'secret')).toBe(1)
+      expect(isPathVisible(search, 'secret', 'hiddenField')).toBe(true)
     })
 
-    it('excludes children of hidden groups from match count', () => {
+    it('excludes children of hidden groups from visible entries', () => {
       const fields: Record<string, FieldDef> = {}
       for (let i = 0; i < 12; i++) {
         fields[`field${i}`] = text(`Field ${i}`)
       }
-      // Group with visibleWhen that hides it
       fields.secretGroup = group(
         'Secret Group',
         {
@@ -89,13 +111,11 @@ describe('useFormSearch', () => {
       const fieldContext = () => ({ values: values.value, root: values.value })
 
       const search = useFormSearch(fields, undefined, fieldContext)
-      search.searchTerm.value = 'secret'
 
-      // Both the group and its child should be hidden
-      expect(search.matchCount.value).toBe(0)
+      expect(countVisibleMatches(search, 'secret')).toBe(0)
     })
 
-    it('excludes children of hidden tabs from match count and tab counts', () => {
+    it('excludes children of hidden tabs from visible entries', () => {
       const fields: Record<string, FieldDef> = {}
       for (let i = 0; i < 10; i++) {
         fields[`field${i}`] = text(`Field ${i}`)
@@ -118,60 +138,121 @@ describe('useFormSearch', () => {
       const fieldContext = () => ({ values: values.value, root: values.value })
 
       const search = useFormSearch(fields, undefined, fieldContext)
-      search.searchTerm.value = 'title'
 
       // Only the visible tab's field should match
-      expect(search.matchCount.value).toBe(1)
-      expect(search.tabMatchCounts.value.get('visible-tab')).toBe(1)
-      expect(search.tabMatchCounts.value.get('hidden-tab')).toBeUndefined()
+      expect(countVisibleMatches(search, 'title')).toBe(1)
 
       // Show the tab — now both should match
       values.value = { showTab: true }
-      expect(search.matchCount.value).toBe(2)
-      expect(search.tabMatchCounts.value.get('hidden-tab')).toBe(1)
+      expect(countVisibleMatches(search, 'title')).toBe(2)
     })
 
-    it('evaluates nested visibleWhen with local-scope values, not root values', () => {
-      // Reproduces: tribute form has a "modal" group inside a "tribute" group.
-      // The inner group's visibleWhen reads `values.enabled` (local sibling),
-      // but search was passing root-level values where `enabled` doesn't exist.
+    it('indexes tabs container label so searching by container name matches', () => {
       const fields: Record<string, FieldDef> = {}
       for (let i = 0; i < 12; i++) {
         fields[`field${i}`] = text(`Field ${i}`)
       }
-      // Outer group wrapping inner fields that depend on a sibling toggle
-      fields.tribute = group(
-        'Tribute',
-        {
-          enabled: text('Enabled Toggle'),
-          modal: group(
-            'Modal Settings',
-            { title: text('Modal Title') },
-            {
-              // This visibleWhen reads LOCAL values.enabled (sibling in tribute group)
-              visibleWhen: (ctx: FieldContext) => ctx.values.enabled === true
-            } as Partial<FieldDef>
-          )
-        }
+      fields.frequencies = tabs(
+        [
+          {
+            value: 'once',
+            label: 'One-time',
+            fields: { amount: text('Amount') }
+          },
+          {
+            value: 'monthly',
+            label: 'Monthly',
+            fields: { amount: text('Amount') }
+          }
+        ],
+        { label: 'Donation Frequencies' } as Partial<FieldDef>
       )
 
-      // Root values: `enabled` lives at tribute.enabled, NOT at root
+      const search = useFormSearch(fields)
+
+      // The tabs container label should be indexed
+      expect(isPathVisible(search, 'donation frequencies', 'frequencies')).toBe(true)
+    })
+
+    it('indexes individual tab trigger labels', () => {
+      const fields: Record<string, FieldDef> = {}
+      for (let i = 0; i < 12; i++) {
+        fields[`field${i}`] = text(`Field ${i}`)
+      }
+      fields.myTabs = tabs([
+        {
+          value: 'general',
+          label: 'General Settings',
+          fields: { name: text('Name') }
+        },
+        {
+          value: 'advanced',
+          label: 'Advanced Options',
+          fields: { debug: text('Debug') }
+        }
+      ])
+
+      const search = useFormSearch(fields)
+
+      // Individual tab labels should be searchable
+      expect(isPathVisible(search, 'general settings', 'myTabs.general')).toBe(true)
+      expect(isPathVisible(search, 'advanced options', 'myTabs.advanced')).toBe(true)
+    })
+
+    it('includes tabs container label in child parentLabels for breadcrumb display', () => {
+      const fields: Record<string, FieldDef> = {}
+      for (let i = 0; i < 12; i++) {
+        fields[`field${i}`] = text(`Field ${i}`)
+      }
+      fields.frequencies = tabs(
+        [
+          {
+            value: 'once',
+            label: 'One-time',
+            fields: { amount: text('Amount') }
+          }
+        ],
+        { label: 'Donation Frequencies' } as Partial<FieldDef>
+      )
+
+      const search = useFormSearch(fields)
+
+      // The child field's parentLabels should include the tabs container label
+      const amountEntry = search.searchIndex.find(
+        (e) => e.path === 'frequencies.once.amount'
+      )
+      expect(amountEntry).toBeDefined()
+      expect(amountEntry!.parentLabels).toContain('Donation Frequencies')
+      expect(amountEntry!.parentLabels).toContain('One-time')
+    })
+
+    it('evaluates nested visibleWhen with local-scope values, not root values', () => {
+      const fields: Record<string, FieldDef> = {}
+      for (let i = 0; i < 12; i++) {
+        fields[`field${i}`] = text(`Field ${i}`)
+      }
+      fields.tribute = group('Tribute', {
+        enabled: text('Enabled Toggle'),
+        modal: group('Modal Settings', { title: text('Modal Title') }, {
+          visibleWhen: (ctx: FieldContext) => ctx.values.enabled === true
+        } as Partial<FieldDef>)
+      })
+
       const values = ref<Record<string, unknown>>({
         tribute: { enabled: true, modal: { title: '' } }
       })
       const fieldContext = () => ({ values: values.value, root: values.value })
 
       const search = useFormSearch(fields, undefined, fieldContext)
-      search.searchTerm.value = 'modal'
 
-      // "Modal Settings" and "Modal Title" should both match
-      expect(search.matchCount.value).toBeGreaterThanOrEqual(1)
-      expect(search.isFieldVisibleBySearch('tribute.modal')).toBe(true)
-      expect(search.isFieldVisibleBySearch('tribute.modal.title')).toBe(true)
+      // "Modal Settings" and "Modal Title" should both be visible
+      expect(countVisibleMatches(search, 'modal')).toBeGreaterThanOrEqual(1)
+      expect(isPathVisible(search, 'modal', 'tribute.modal')).toBe(true)
+      expect(isPathVisible(search, 'modal', 'tribute.modal.title')).toBe(true)
 
       // When tribute.enabled is false, modal group should be hidden from search
       values.value = { tribute: { enabled: false, modal: { title: '' } } }
-      expect(search.matchCount.value).toBe(0)
+      expect(countVisibleMatches(search, 'modal')).toBe(0)
     })
   })
 })

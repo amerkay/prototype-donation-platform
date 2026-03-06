@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { computed, inject, type HTMLAttributes } from 'vue'
+import { computed, type HTMLAttributes } from 'vue'
 import { FieldSeparator } from '@/components/ui/field'
 import { checkFieldVisibility } from '~/features/_library/form-builder/composables/useFieldPath'
 import type { FieldDef, FieldContext } from '~/features/_library/form-builder/types'
-import { FORM_SEARCH_KEY } from '~/features/_library/form-builder/composables/useFormSearch'
 import FormField from '../FormField.vue'
 import { cn } from '@/lib/utils'
 
@@ -20,49 +19,29 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Inject form search state (optional — may not exist if search disabled)
-const formSearch = inject(FORM_SEARCH_KEY, null)
-
 // All fields for iteration
 const allFields = computed(() => Object.entries(props.fields))
 
-// Check if a field is visible in the UI (not just for validation)
-// Combines visibleWhen check with search filter
-const isFieldVisible = (fieldDef: FieldDef, fieldKey?: string) => {
-  const baseVisible = checkFieldVisibility(fieldDef, props.fieldContext, {
+// Check if a field is visible in the UI
+const isFieldVisible = (fieldDef: FieldDef) => {
+  return checkFieldVisibility(fieldDef, props.fieldContext, {
     skipContainerValidation: true
   })
-  if (!baseVisible) return false
-
-  // Apply search filter if active
-  if (formSearch?.isSearchActive.value && fieldKey) {
-    const path = props.namePrefix ? `${props.namePrefix}.${fieldKey}` : fieldKey
-    // Strip the section ID prefix for search matching (search index uses paths without section prefix)
-    const sectionPrefix = path.split('.')[0] + '.'
-    const searchPath = path.startsWith(sectionPrefix) ? path.slice(sectionPrefix.length) : path
-    return formSearch.isFieldVisibleBySearch(searchPath)
-  }
-
-  return true
 }
 
 // Check if separator should be shown after a field
-const shouldShowSeparatorAfter = (
-  currentIndex: number,
-  currentFieldDef: FieldDef,
-  currentKey: string
-) => {
+const shouldShowSeparatorAfter = (currentIndex: number, currentFieldDef: FieldDef) => {
   // Only show separator if current field is visible and has the flag
   const sep = currentFieldDef.showSeparatorAfter
   const hasSeparator = typeof sep === 'function' ? sep(props.fieldContext) : sep
-  if (!isFieldVisible(currentFieldDef, currentKey) || !hasSeparator) {
+  if (!isFieldVisible(currentFieldDef) || !hasSeparator) {
     return false
   }
 
   // Check if there's any visible field after this one
   const hasVisibleFieldAfter = allFields.value
     .slice(currentIndex + 1)
-    .some(([key, fieldDef]) => isFieldVisible(fieldDef, key))
+    .some(([, fieldDef]) => isFieldVisible(fieldDef))
 
   return hasVisibleFieldAfter
 }
@@ -82,7 +61,7 @@ const getFieldName = (fieldKey: string) => {
         :meta="fieldDef"
         :data-field-key="fieldKey"
       />
-      <FieldSeparator v-if="shouldShowSeparatorAfter(index, fieldDef, String(fieldKey))" />
+      <FieldSeparator v-if="shouldShowSeparatorAfter(index, fieldDef)" />
     </template>
   </div>
 </template>

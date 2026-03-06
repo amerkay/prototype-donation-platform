@@ -14,7 +14,6 @@ import { useContainerFieldSetup } from '~/features/_library/form-builder/composa
 import { useCombinedErrors } from '~/features/_library/form-builder/composables/useCombinedErrors'
 import { useContainerValidation } from '~/features/_library/form-builder/composables/useContainerValidation'
 import { useHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
-import { FORM_SEARCH_KEY } from '~/features/_library/form-builder/composables/useFormSearch'
 import FormFieldGroup from './FormFieldGroup.vue'
 
 interface Props {
@@ -31,9 +30,6 @@ const {
   scopedFormValues
 } = useContainerFieldSetup(props.name, props.meta.visibleWhen)
 
-// Form search: inject early — needed by visibleTabs and tab auto-switching
-const formSearch = inject(FORM_SEARCH_KEY, null)
-
 // Active tab state - initialize from defaultValue or first tab
 const activeTab = ref(props.meta.defaultValue || props.meta.tabs[0]?.value || '')
 
@@ -46,18 +42,7 @@ const isTabVisible = (tab: (typeof props.meta.tabs)[number]) => {
 }
 
 // Filtered visible tabs — template loops use this instead of meta.tabs
-// During active search, also hide tabs with zero matches (using path-based check
-// so nested tab structures work — ancestor paths are in matchedPaths when descendants match)
-const visibleTabs = computed(() => {
-  const tabs = props.meta.tabs.filter(isTabVisible)
-  if (!formSearch?.isSearchActive.value) return tabs
-  const tabsPath = fullTabsPath.value
-  const sectionPrefix = tabsPath.split('.')[0] + '.'
-  const searchBase = tabsPath.startsWith(sectionPrefix)
-    ? tabsPath.slice(sectionPrefix.length)
-    : tabsPath
-  return tabs.filter((t) => formSearch.isFieldVisibleBySearch(`${searchBase}.${t.value}`))
-})
+const visibleTabs = computed(() => props.meta.tabs.filter(isTabVisible))
 
 // Auto-switch when active tab becomes hidden
 watch(visibleTabs, (tabs) => {
@@ -86,19 +71,6 @@ watch(
 watch(activeTab, (value) => {
   props.meta.onTabChange?.(value)
 })
-
-// Form search: auto-switch to tab with best match
-if (formSearch) {
-  watch(
-    () => (formSearch.isSearchActive.value ? formSearch.activeTabOverride.value : undefined),
-    (tabValue) => {
-      if (tabValue && visibleTabs.value.some((t) => t.value === tabValue)) {
-        activeTab.value = tabValue
-      }
-    },
-    { immediate: true }
-  )
-}
 
 // Compute combined errors for each tab using lightweight composable
 const tabErrorTrackers = Object.fromEntries(
@@ -197,18 +169,7 @@ const resolveTabTooltip = (tab: (typeof props.meta.tabs)[number]) => {
                 <Icon name="lucide:alert-circle" />
               </Badge>
 
-              <!-- Search match count badge during active search -->
-              <Badge
-                v-else-if="
-                  formSearch?.isSearchActive.value && formSearch.tabMatchCounts.value.get(tab.value)
-                "
-                variant="outline"
-                class="ml-1 h-5 px-1.5 text-xs"
-              >
-                {{ formSearch.tabMatchCounts.value.get(tab.value) }}
-              </Badge>
-
-              <!-- Custom badge shown when no errors and no search -->
+              <!-- Custom badge -->
               <Badge
                 v-else-if="resolveTabBadge(tab)"
                 :variant="tab.badgeVariant || 'secondary'"

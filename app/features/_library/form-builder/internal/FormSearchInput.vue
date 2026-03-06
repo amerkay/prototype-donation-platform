@@ -1,65 +1,80 @@
 <script setup lang="ts">
-import { inject } from 'vue'
+import { computed, inject, ref } from 'vue'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList
+} from '@/components/ui/command'
 import { FORM_SEARCH_KEY } from '../composables/useFormSearch'
-import { Empty, EmptyContent, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
-import { Input } from '@/components/ui/input'
+import { activateHashTarget } from '../composables/useHashTarget'
 
 const formSearch = inject(FORM_SEARCH_KEY)!
+
+// Track search term locally via input events (Command's filterState is internal)
+const searchTerm = ref('')
+const hasSearch = computed(() => searchTerm.value.trim().length > 0)
+
+// Group entries by first parentLabel (top-level tab/section) and filter out hidden entries
+const groupedEntries = computed(() => {
+  const groups = new Map<string, Array<{ path: string; label: string; breadcrumb: string }>>()
+
+  for (const entry of formSearch.searchIndex) {
+    if (!formSearch.isEntryVisible(entry)) continue
+
+    const groupName = entry.parentLabels[0] || 'Fields'
+    if (!groups.has(groupName)) {
+      groups.set(groupName, [])
+    }
+
+    const breadcrumb = entry.parentLabels.length > 1 ? entry.parentLabels.slice(1).join(' › ') : ''
+
+    groups.get(groupName)!.push({
+      path: entry.path,
+      label: entry.label,
+      breadcrumb
+    })
+  }
+
+  return groups
+})
+
+function handleSelect(path: string) {
+  searchTerm.value = ''
+  activateHashTarget(path)
+}
+
+function onInput(e: Event) {
+  searchTerm.value = (e.target as HTMLInputElement).value
+}
 </script>
 
 <template>
-  <div v-if="formSearch.isSearchEnabled" class="mb-4 space-y-2">
-    <div class="relative">
-      <Icon
-        name="lucide:search"
-        class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
-      />
-      <Input
-        v-model="formSearch.searchTerm.value"
-        type="text"
-        placeholder="Search fields..."
-        class="pl-9 pr-9"
-      />
-      <button
-        v-if="formSearch.searchTerm.value"
-        type="button"
-        class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-        @click="formSearch.searchTerm.value = ''"
-      >
-        <Icon name="lucide:x" class="size-4" />
-      </button>
-    </div>
-    <!-- Match count -->
-    <p
-      v-if="formSearch.isSearchActive.value && formSearch.matchCount.value > 0"
-      class="text-xs text-muted-foreground"
-    >
-      {{ formSearch.matchCount.value }}
-      {{ formSearch.matchCount.value === 1 ? 'match' : 'matches' }} found
-    </p>
-    <!-- No results -->
-    <Empty
-      v-if="formSearch.isSearchActive.value && formSearch.matchCount.value === 0"
-      class="border border-dashed py-6"
-    >
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <Icon name="lucide:search-x" />
-        </EmptyMedia>
-        <EmptyTitle>
-          No fields match "<span class="font-medium">{{ formSearch.searchTerm.value }}</span
-          >"
-        </EmptyTitle>
-      </EmptyHeader>
-      <EmptyContent>
-        <button
-          type="button"
-          class="text-xs text-primary hover:underline"
-          @click="formSearch.searchTerm.value = ''"
+  <div v-if="formSearch.isSearchEnabled" class="mb-4">
+    <Command class="rounded-lg border" :class="{ 'shadow-md': hasSearch }">
+      <CommandInput placeholder="Search fields..." @input="onInput" />
+      <CommandList v-show="hasSearch" class="max-h-64">
+        <CommandEmpty>No fields found.</CommandEmpty>
+        <CommandGroup
+          v-for="[groupName, entries] in groupedEntries"
+          :key="groupName"
+          :heading="groupName"
         >
-          Clear search
-        </button>
-      </EmptyContent>
-    </Empty>
+          <CommandItem
+            v-for="entry in entries"
+            :key="entry.path"
+            :value="entry.path"
+            @select="handleSelect(entry.path)"
+          >
+            <span>{{ entry.label }}</span>
+            <span v-if="entry.breadcrumb" class="ml-auto text-xs text-muted-foreground truncate">
+              {{ entry.breadcrumb }}
+            </span>
+          </CommandItem>
+        </CommandGroup>
+      </CommandList>
+    </Command>
   </div>
 </template>

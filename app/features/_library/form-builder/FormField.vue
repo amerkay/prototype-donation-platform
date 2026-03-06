@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, inject, defineAsyncComponent, type Component } from 'vue'
+import { computed, watch, defineAsyncComponent, type Component } from 'vue'
 import { useField, useFormErrors } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
@@ -12,7 +12,6 @@ import {
 } from '~/features/_library/form-builder/composables/useFieldPath'
 import { useFormBuilderContext } from '~/features/_library/form-builder/composables/useFormBuilderContext'
 import { extractDefaultValues } from '~/features/_library/form-builder/utils/defaults'
-import { FORM_SEARCH_KEY } from '~/features/_library/form-builder/composables/useFormSearch'
 import FormFieldText from './fields/FormFieldText.vue'
 import FormFieldTextarea from './fields/FormFieldTextarea.vue'
 import FormFieldNumber from './fields/FormFieldNumber.vue'
@@ -129,24 +128,6 @@ const isVisible = computed(() => {
   return checkFieldVisibility(props.meta, fieldContext.value, {
     parentVisible: parentGroupVisible()
   })
-})
-
-// Search filtering — visual only, does NOT affect validation or onVisibilityChange
-const formSearch = inject(FORM_SEARCH_KEY, null)
-const isSearchVisible = computed(() => {
-  if (!formSearch?.isSearchActive.value) return true
-  // Compute path relative to form root (strip sectionId prefix)
-  const path = fieldPrefix ? `${fieldPrefix}.${props.name}` : props.name
-  const searchPath =
-    sectionId && path.startsWith(`${sectionId}.`) ? path.slice(sectionId.length + 1) : path
-  return formSearch.isFieldVisibleBySearch(searchPath)
-})
-
-// Whether this field is a direct search match (for highlighting)
-const isSearchMatch = computed(() => {
-  if (!formSearch?.isSearchActive.value || !isSearchVisible.value) return false
-  // Container fields (groups/tabs) are not "matches" — only leaf fields
-  return !isContainerField.value
 })
 
 // Convert Zod rules to typed schema for vee-validate
@@ -361,12 +342,11 @@ watch(
   >
     <component
       :is="fieldComponent"
-      v-if="fieldComponent && isVisible && isSearchVisible"
+      v-if="fieldComponent && isVisible"
       v-bind="fieldProps"
-      :data-search-match="isSearchMatch || undefined"
       @update:model-value="fieldValue = $event"
     />
-    <div v-else-if="isVisible && isSearchVisible" class="text-destructive text-sm">
+    <div v-else-if="isVisible" class="text-destructive text-sm">
       Unknown field type: {{ resolvedFieldType }}
     </div>
   </Transition>

@@ -22,7 +22,6 @@ import {
   provideAccordionGroup
 } from '~/features/_library/form-builder/composables/useAccordionGroup'
 import { useHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
-import { FORM_SEARCH_KEY } from '~/features/_library/form-builder/composables/useFormSearch'
 
 interface Props {
   meta: FieldGroupDef
@@ -122,65 +121,6 @@ if (props.meta.collapsible) {
   )
 }
 
-// Form search: force-expand when search matches are inside this group,
-// and restore previous state when search is cleared or term changes
-const formSearch = inject(FORM_SEARCH_KEY, null)
-// Suppress scroll during search-driven accordion open/close transitions
-// Always suppress while search is active; add a grace period after clearing
-// so restore-accordion transitions don't trigger scroll either
-const suppressScroll = ref(false)
-let suppressTimer: ReturnType<typeof setTimeout> | undefined
-if (props.meta.collapsible && formSearch) {
-  watch(
-    () => formSearch.isSearchActive.value,
-    (active) => {
-      clearTimeout(suppressTimer)
-      if (active) {
-        suppressScroll.value = true
-      } else {
-        // Keep suppressed briefly after search clears (accordion restore transitions)
-        suppressTimer = setTimeout(() => (suppressScroll.value = false), 500)
-      }
-    }
-  )
-  // Also suppress on search term changes while active (accordion reshuffling)
-  watch(
-    () => formSearch.searchTerm.value,
-    () => {
-      if (formSearch.isSearchActive.value) {
-        suppressScroll.value = true
-      }
-    }
-  )
-
-  // Strip section prefix from fullPath to match search index paths
-  const searchGroupPath = computed(() => {
-    const path = fullPath.value
-    const sectionPrefix = path.split('.')[0] + '.'
-    return path.startsWith(sectionPrefix) ? path.slice(sectionPrefix.length) : path
-  })
-
-  let savedAccordionValue: string | undefined
-  let wasForceOpened = false
-
-  watch(
-    () =>
-      formSearch.isSearchActive.value &&
-      formSearch.expandedGroupPaths.value.has(searchGroupPath.value),
-    (shouldForceOpen) => {
-      if (shouldForceOpen && !wasForceOpened) {
-        savedAccordionValue = accordionValue.value
-        wasForceOpened = true
-        accordionValue.value = accordionId
-      } else if (!shouldForceOpen && wasForceOpened) {
-        accordionValue.value = savedAccordionValue
-        wasForceOpened = false
-      }
-    },
-    { immediate: true }
-  )
-}
-
 // Extract resolvedDisabled from useFieldWrapper for standard disabled support
 const { resolvedDisabled, resolvedClass } = useFieldWrapper(props.meta, props.name, () => [])
 
@@ -230,19 +170,19 @@ const resolvedBadgeVariant = computed(() => {
   return v || 'secondary'
 })
 
-// Setup scroll tracking for collapsible (suppress during search-driven open/close)
+// Setup scroll tracking for collapsible
 const { setElementRef, scrollToElement } = useScrollOnVisible(
-  computed(() => (isOpen.value && !suppressScroll.value ? [props.name] : [])),
+  computed(() => (isOpen.value ? [props.name] : [])),
   {
     isVisible: () => true,
     getKey: (key) => key
   }
 )
 
-// Watch accordion state to scroll when opened (suppress during search-driven transitions)
+// Watch accordion state to scroll when opened
 if (props.meta.collapsible) {
   watch(isOpen, (newIsOpen) => {
-    if (newIsOpen && !suppressScroll.value) {
+    if (newIsOpen) {
       scrollToElement(props.name)
     }
   })

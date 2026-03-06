@@ -72,21 +72,3 @@ export function escapeHtml(str: string): string {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
 }
-
-/**
- * Highlight search term matches in plain text for safe v-html rendering.
- * HTML-escapes the input first, then wraps matched substrings in `<mark>`.
- * Returns undefined if no match found (caller can skip v-html).
- */
-export function highlightSearchMatch(text: string, term: string): string | undefined {
-  if (!text || !term) return undefined
-  const lowerText = text.toLowerCase()
-  const lowerTerm = term.toLowerCase()
-  const idx = lowerText.indexOf(lowerTerm)
-  if (idx === -1) return undefined
-
-  const before = escapeHtml(text.slice(0, idx))
-  const match = escapeHtml(text.slice(idx, idx + term.length))
-  const after = escapeHtml(text.slice(idx + term.length))
-  return `${before}<mark class="search-highlight">${match}</mark>${after}`
-}

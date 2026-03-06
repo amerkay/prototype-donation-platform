@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed } from 'vue'
 import { cn } from '@/lib/utils'
 import {
   Field,
@@ -12,8 +12,6 @@ import {
 } from '@/components/ui/field'
 import FieldHelpText from './FieldHelpText.vue'
 import { useHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
-import { FORM_SEARCH_KEY } from '~/features/_library/form-builder/composables/useFormSearch'
-import { highlightSearchMatch } from '~/features/_library/form-builder/utils/sanitize-html'
 
 interface Props {
   name?: string
@@ -49,20 +47,8 @@ const {
 
 const fieldId = computed(() => fieldIdFromHash.value || undefined)
 const showErrors = computed(() => props.errors && props.errors.length > 0)
-
-// Search term highlighting for labels and descriptions
-const formSearch = inject(FORM_SEARCH_KEY, null)
-const highlightedLabel = computed(() => {
-  if (!formSearch?.isSearchActive.value || !props.label) return undefined
-  return highlightSearchMatch(props.label, formSearch.searchTerm.value.trim())
-})
-const highlightedDescription = computed(() => {
-  if (!formSearch?.isSearchActive.value || !props.description) return undefined
-  return highlightSearchMatch(props.description, formSearch.searchTerm.value.trim())
-})
 </script>
 
-<!-- eslint-disable vue/no-v-html -- highlightSearchMatch() escapes via escapeHtml() -->
 <template>
   <!-- Fieldset variant (for radio groups, etc.) -->
   <FieldSet
@@ -73,15 +59,13 @@ const highlightedDescription = computed(() => {
     :class="cn(hashHighlightClass, props.class)"
   >
     <FieldLegend v-if="props.label" :class="props.labelClass">
-      <span v-if="highlightedLabel" v-html="highlightedLabel" />
-      <template v-else>{{ props.label }}</template>
+      {{ props.label }}
       <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
       <FieldHelpText v-if="props.helpText">{{ props.helpText }}</FieldHelpText>
     </FieldLegend>
 
     <FieldDescription v-if="props.description" :class="props.descriptionClass">
-      <span v-if="highlightedDescription" v-html="highlightedDescription" />
-      <template v-else>{{ props.description }}</template>
+      {{ props.description }}
     </FieldDescription>
 
     <slot />
@@ -103,15 +87,13 @@ const highlightedDescription = computed(() => {
           :for="props.disableLabelFor ? undefined : props.name"
           :class="cn('mb-0', props.labelClass)"
         >
-          <span v-if="highlightedLabel" v-html="highlightedLabel" />
-          <template v-else>{{ props.label }}</template>
+          {{ props.label }}
           <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
           <FieldHelpText v-if="props.helpText">{{ props.helpText }}</FieldHelpText>
         </FieldLabel>
 
         <FieldDescription v-if="props.description" :class="props.descriptionClass">
-          <span v-if="highlightedDescription" v-html="highlightedDescription" />
-          <template v-else>{{ props.description }}</template>
+          {{ props.description }}
         </FieldDescription>
       </FieldContent>
 
@@ -135,15 +117,13 @@ const highlightedDescription = computed(() => {
       :for="props.disableLabelFor ? undefined : props.name"
       :class="cn('mb-0', props.labelClass)"
     >
-      <span v-if="highlightedLabel" v-html="highlightedLabel" />
-      <template v-else>{{ props.label }}</template>
+      {{ props.label }}
       <span v-if="props.optional" class="text-muted-foreground font-normal">(optional)</span>
       <FieldHelpText v-if="props.helpText">{{ props.helpText }}</FieldHelpText>
     </FieldLabel>
 
     <FieldDescription v-if="props.description" :class="props.descriptionClass">
-      <span v-if="highlightedDescription" v-html="highlightedDescription" />
-      <template v-else>{{ props.description }}</template>
+      {{ props.description }}
     </FieldDescription>
 
     <slot />
@@ -160,30 +140,5 @@ const highlightedDescription = computed(() => {
 }
 .hash-highlight-flash {
   animation: hash-highlight-pulse 500ms ease-in-out 3;
-}
-
-/* Search match highlight — highlighted substring in labels/descriptions */
-.search-highlight {
-  background-color: color-mix(in srgb, var(--color-primary) 25%, transparent);
-  color: var(--color-foreground);
-  border-radius: 2px;
-  padding-inline: 1px;
-}
-
-/* Search match highlight — subtle left border accent via data attribute */
-[data-search-match] {
-  border-left: 2px solid var(--color-primary);
-  padding-left: 0.75rem;
-  animation: search-fade-in 300ms ease-out;
-}
-@keyframes search-fade-in {
-  from {
-    opacity: 0.5;
-    border-left-color: transparent;
-  }
-  to {
-    opacity: 1;
-    border-left-color: var(--color-primary);
-  }
 }
 </style>
