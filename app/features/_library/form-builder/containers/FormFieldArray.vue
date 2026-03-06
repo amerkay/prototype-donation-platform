@@ -19,6 +19,7 @@ import { resolveVeeFieldPath } from '~/features/_library/form-builder/composable
 import { extractDefaultValues } from '~/features/_library/form-builder/utils/defaults'
 import { resolveFieldRules } from '~/features/_library/form-builder/utils/validation'
 import { useAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
+import { scrollToElement } from '~/features/_library/form-builder/composables/useScrollOnVisible'
 
 function getValueAtVeePath(root: unknown, veePath: string): unknown {
   // Convert bracket notation (foo[0].bar) into dot notation (foo.0.bar)
@@ -109,21 +110,36 @@ const hashFullPath = computed(() => {
     : veeName
 })
 
-// Scroll to a specific array item when it's targeted via deep link (e.g. costs.0)
-const { hashTargetChildSegment } = useHashTarget(hashFullPath)
-watch(hashTargetChildSegment, (segment) => {
-  if (!segment || !/^\d+$/.test(segment)) return
-  const index = parseInt(segment, 10)
+// Highlight a specific array item when targeted via deep link (e.g. costs.0)
+const { hashTargetChildSegment, cleared } = useHashTarget(hashFullPath)
+const highlightedIndex = computed(() => {
+  const segment = hashTargetChildSegment.value
+  if (!segment || cleared.value || !/^\d+$/.test(segment)) return -1
+  return parseInt(segment, 10)
+})
+const isItemFlashing = ref(false)
+
+function itemHighlightClass(veeIndex: number) {
+  if (highlightedIndex.value !== veeIndex) return ''
+  const base = 'relative z-10 ring-offset-card ring-offset-4 rounded-lg'
+  return isItemFlashing.value
+    ? `${base} ring-2 ring-primary hash-highlight-flash`
+    : `${base} ring-1 ring-primary/50`
+}
+
+// Scroll to the highlighted item and drive the flash → persistent transition
+watch(highlightedIndex, (index) => {
+  if (index < 0) {
+    isItemFlashing.value = false
+    return
+  }
+  isItemFlashing.value = true
+  setTimeout(() => (isItemFlashing.value = false), 1500)
   nextTick(() => {
     const el = arrayContainer.value?.querySelector(
       `[data-vee-index="${index}"]`
     ) as HTMLElement | null
-    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    el?.classList.add('ring-2', 'ring-primary', 'ring-offset-2', 'rounded-lg')
-    setTimeout(
-      () => el?.classList.remove('ring-2', 'ring-primary', 'ring-offset-2', 'rounded-lg'),
-      1500
-    )
+    if (el) setTimeout(() => scrollToElement(el), 350)
   })
 })
 
@@ -505,7 +521,8 @@ function removeItem(index: number) {
               'relative flex items-start rounded-lg border bg-card transition-colors',
               isSortable ? 'px-0 pr-9' : 'pr-10',
               !isSortable && getItemFieldMeta(item.veeIndex).type === 'field-group' && 'pl-3',
-              draggedIndex === item.veeIndex && 'opacity-40 scale-95'
+              draggedIndex === item.veeIndex && 'opacity-40 scale-95',
+              itemHighlightClass(item.veeIndex)
             )
           "
           @dragover="onDragOver($event, item.veeIndex)"
