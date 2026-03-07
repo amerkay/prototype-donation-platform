@@ -141,6 +141,10 @@ export interface ComposableForm<T extends z.ZodTypeAny = z.ZodTypeAny> {
       disableSearch?: boolean
       searchThreshold?: number
     }
+    /** Sidebar navigation options */
+    sidebar?: {
+      disableSidebar?: boolean
+    }
   }
 }
 
@@ -349,6 +353,8 @@ export interface FieldGroupConfig extends BaseFieldConfig {
   fields: Record<string, FieldDef>
   legend?: string
   collapsible?: boolean
+  /** When true, this group appears as a sidebar navigation item even if not collapsible */
+  sidebar?: boolean
   collapsibleDefaultOpen?: boolean | ComputedRef<boolean> | ((ctx: FieldContext) => boolean)
   /** External ref to sync accordion state - enables reactive access from outside form */
   collapsibleStateRef?: Ref<string | undefined>

@@ -9,7 +9,9 @@ import { checkFieldVisibility } from './composables/useFieldPath'
 import { validateFields } from './utils/validation'
 import { provideHashTarget } from './composables/useHashTarget'
 import { useFormSearch, FORM_SEARCH_KEY } from './composables/useFormSearch'
+import { useFormSidebar, formHasTabs, FORM_SIDEBAR_KEY } from './composables/useFormSidebar'
 import FormSearchInput from './internal/FormSearchInput.vue'
+import FormSidebarNav from './internal/FormSidebarNav.vue'
 
 interface Props {
   section: ComposableForm
@@ -69,6 +71,9 @@ const formSearch = useFormSearch(
   () => sectionFieldContext.value
 )
 provide(FORM_SEARCH_KEY, formSearch)
+
+// Form sidebar: auto-enabled for forms with tabs (unless disableSidebar is set)
+const hasSidebar = !props.section._meta?.sidebar?.disableSidebar && formHasTabs(setupFields)
 
 const resolvedSection = computed(() => ({
   id: props.section.id,
@@ -177,6 +182,12 @@ const sectionFieldContext = computed(() => ({
   values: sectionValues.value,
   root: sectionValues.value
 }))
+
+// Initialize sidebar (needs sectionFieldContext)
+const formSidebar = hasSidebar ? useFormSidebar(setupFields, () => sectionFieldContext.value) : null
+if (formSidebar) {
+  provide(FORM_SIDEBAR_KEY, formSidebar)
+}
 
 // Form element ref for DOM-query-based scroll fallback
 const formRef = ref<HTMLFormElement | null>(null)
@@ -287,24 +298,43 @@ defineExpose({
 </script>
 
 <template>
-  <form ref="formRef" @submit.prevent="onSubmit">
-    <div v-if="resolvedSection.title || resolvedSection.description" class="mb-6">
-      <h2 v-if="resolvedSection.title" class="text-sm font-semibold">
-        {{ resolvedSection.title }}
-      </h2>
-      <p v-if="resolvedSection.description" class="text-muted-foreground text-sm mt-1">
-        {{ resolvedSection.description }}
-      </p>
-    </div>
+  <div :class="hasSidebar && 'lg:flex lg:gap-6'" :data-has-sidebar="hasSidebar || undefined">
+    <FormSidebarNav v-if="hasSidebar" />
+    <form ref="formRef" class="min-w-0 flex-1" @submit.prevent="onSubmit">
+      <div v-if="resolvedSection.title || resolvedSection.description" class="mb-6">
+        <h2 v-if="resolvedSection.title" class="text-sm font-semibold">
+          {{ resolvedSection.title }}
+        </h2>
+        <p v-if="resolvedSection.description" class="text-muted-foreground text-sm mt-1">
+          {{ resolvedSection.description }}
+        </p>
+      </div>
 
-    <FormSearchInput />
+      <!-- Search: sidebar has its own popover search, show inline on mobile or when no sidebar -->
+      <FormSearchInput v-if="hasSidebar" class="lg:hidden" />
+      <FormSearchInput v-if="!hasSidebar" />
 
-    <FormFieldList
-      :fields="resolvedSection.fields"
-      :field-context="sectionFieldContext"
-      :name-prefix="resolvedSection.id"
-      :set-element-ref="setElementRef"
-      :class="props.class"
-    />
-  </form>
+      <FormFieldList
+        :fields="resolvedSection.fields"
+        :field-context="sectionFieldContext"
+        :name-prefix="resolvedSection.id"
+        :set-element-ref="setElementRef"
+        :class="props.class"
+      />
+    </form>
+  </div>
 </template>
+
+<style>
+/* Hide top-level tab bars on desktop when sidebar provides navigation.
+   Keep nested tabs (inside 2+ tabpanels) visible — e.g. frequency tabs, custom field step tabs. */
+@media (min-width: 1024px) {
+  [data-has-sidebar] [role='tablist'] {
+    display: none;
+  }
+
+  [data-has-sidebar] [role='tabpanel'] [role='tabpanel'] [role='tablist'] {
+    display: inline-flex;
+  }
+}
+</style>

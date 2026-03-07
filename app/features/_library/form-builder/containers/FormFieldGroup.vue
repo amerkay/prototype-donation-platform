@@ -21,7 +21,10 @@ import {
   useAccordionGroup,
   provideAccordionGroup
 } from '~/features/_library/form-builder/composables/useAccordionGroup'
-import { useHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
+import {
+  useHashTarget,
+  lastActivatedTarget
+} from '~/features/_library/form-builder/composables/useHashTarget'
 
 interface Props {
   meta: FieldGroupDef
@@ -184,11 +187,15 @@ const { setElementRef, scrollToElement } = useScrollOnVisible(
   }
 )
 
-// Watch accordion state to scroll when opened
+// Watch accordion state to scroll when opened + sync sidebar
 if (props.meta.collapsible) {
   watch(isOpen, (newIsOpen) => {
     if (newIsOpen) {
       scrollToElement(props.name)
+      // Notify sidebar of the active section. Uses lastActivatedTarget directly
+      // (not activateHashTarget) to avoid overwriting the hash target path —
+      // which would break deep navigation like #config.sections.advanced.apiKey.
+      lastActivatedTarget.value = { target: props.name, ts: Date.now() }
     }
   })
 }

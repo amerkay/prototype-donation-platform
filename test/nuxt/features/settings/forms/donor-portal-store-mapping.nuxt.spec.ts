@@ -48,7 +48,10 @@ describe('donor portal settings store mapping', () => {
       for (const segment of segments) {
         value = (value as Record<string, unknown>)?.[segment]
       }
-      expect(value, `storePath "${storePath}" (from form "${formPath}") should exist`).not.toBeUndefined()
+      expect(
+        value,
+        `storePath "${storePath}" (from form "${formPath}") should exist`
+      ).not.toBeUndefined()
     }
   })
 
@@ -86,23 +89,23 @@ describe('donor portal settings store mapping', () => {
     }
 
     // Spot-check subscription fields
-    expect(getFormValue('portal.topTabs.subscriptions.subscriptionsGrid.pause.pauseEnabled')).toBe(false)
-    expect(getFormValue('portal.topTabs.subscriptions.subscriptionsGrid.pause.pauseDuration')).toBe(6)
-    expect(getFormValue('portal.topTabs.subscriptions.subscriptionsGrid.pause.pauseMinValue')).toBe(100)
-    expect(getFormValue('portal.topTabs.subscriptions.subscriptionsGrid.cancel.cancelEnabled')).toBe(false)
-    expect(getFormValue('portal.topTabs.subscriptions.subscriptionsGrid.changeAmount.changeAmountDuration')).toBe(12)
+    expect(getFormValue('portal.topTabs.subscriptions.pause.pauseEnabled')).toBe(false)
+    expect(getFormValue('portal.topTabs.subscriptions.pause.pauseDuration')).toBe(6)
+    expect(getFormValue('portal.topTabs.subscriptions.pause.pauseMinValue')).toBe(100)
+    expect(getFormValue('portal.topTabs.subscriptions.cancel.cancelEnabled')).toBe(false)
+    expect(getFormValue('portal.topTabs.subscriptions.changeAmount.changeAmountDuration')).toBe(12)
 
     // Spot-check refund fields
-    expect(getFormValue('portal.topTabs.refunds.refundsGrid.standard.stdEnabled')).toBe(false)
-    expect(getFormValue('portal.topTabs.refunds.refundsGrid.standard.stdWindowDays')).toBe(90)
-    expect(getFormValue('portal.topTabs.refunds.refundsGrid.standard.stdDuration')).toBe(6)
-    expect(getFormValue('portal.topTabs.refunds.refundsGrid.standard.stdCampaignEnded')).toBe(true)
-    expect(getFormValue('portal.topTabs.refunds.refundsGrid.p2p.p2pEnabled')).toBe(false)
-    expect(getFormValue('portal.topTabs.refunds.refundsGrid.p2p.p2pWindowDays')).toBe(60)
-    expect(getFormValue('portal.topTabs.refunds.refundsGrid.p2p.p2pCampaignEnded')).toBe(true)
-    expect(getFormValue('portal.topTabs.refunds.refundsGrid.matchedGiving.matchEnabled')).toBe(false)
-    expect(getFormValue('portal.topTabs.refunds.refundsGrid.matchedGiving.matchWindowDays')).toBe(180)
-    expect(getFormValue('portal.topTabs.refunds.refundsGrid.matchedGiving.matchCampaignEnded')).toBe(true)
+    expect(getFormValue('portal.topTabs.refunds.standard.stdEnabled')).toBe(false)
+    expect(getFormValue('portal.topTabs.refunds.standard.stdWindowDays')).toBe(90)
+    expect(getFormValue('portal.topTabs.refunds.standard.stdDuration')).toBe(6)
+    expect(getFormValue('portal.topTabs.refunds.standard.stdCampaignEnded')).toBe(true)
+    expect(getFormValue('portal.topTabs.refunds.p2p.p2pEnabled')).toBe(false)
+    expect(getFormValue('portal.topTabs.refunds.p2p.p2pWindowDays')).toBe(60)
+    expect(getFormValue('portal.topTabs.refunds.p2p.p2pCampaignEnded')).toBe(true)
+    expect(getFormValue('portal.topTabs.refunds.matchedGiving.matchEnabled')).toBe(false)
+    expect(getFormValue('portal.topTabs.refunds.matchedGiving.matchWindowDays')).toBe(180)
+    expect(getFormValue('portal.topTabs.refunds.matchedGiving.matchCampaignEnded')).toBe(true)
   })
 
   it('setData writes form values back to correct store properties', () => {
@@ -125,14 +128,14 @@ describe('donor portal settings store mapping', () => {
     }
 
     // Modify values via form paths
-    setFormValue('portal.topTabs.subscriptions.subscriptionsGrid.pause.pauseEnabled', false)
-    setFormValue('portal.topTabs.subscriptions.subscriptionsGrid.pause.pauseDuration', 9)
-    setFormValue('portal.topTabs.refunds.refundsGrid.standard.stdWindowDays', 180)
-    setFormValue('portal.topTabs.refunds.refundsGrid.standard.stdCampaignEnded', true)
-    setFormValue('portal.topTabs.refunds.refundsGrid.p2p.p2pEnabled', false)
-    setFormValue('portal.topTabs.refunds.refundsGrid.p2p.p2pWindowDays', 90)
-    setFormValue('portal.topTabs.refunds.refundsGrid.matchedGiving.matchWindowDays', 60)
-    setFormValue('portal.topTabs.refunds.refundsGrid.matchedGiving.matchCampaignEnded', true)
+    setFormValue('portal.topTabs.subscriptions.pause.pauseEnabled', false)
+    setFormValue('portal.topTabs.subscriptions.pause.pauseDuration', 9)
+    setFormValue('portal.topTabs.refunds.standard.stdWindowDays', 180)
+    setFormValue('portal.topTabs.refunds.standard.stdCampaignEnded', true)
+    setFormValue('portal.topTabs.refunds.p2p.p2pEnabled', false)
+    setFormValue('portal.topTabs.refunds.p2p.p2pWindowDays', 90)
+    setFormValue('portal.topTabs.refunds.matchedGiving.matchWindowDays', 60)
+    setFormValue('portal.topTabs.refunds.matchedGiving.matchCampaignEnded', true)
 
     // Write back to store (markDirty is already on the store)
     setData(store as unknown as { markDirty: () => void }, formData)

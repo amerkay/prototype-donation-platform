@@ -32,9 +32,17 @@ let activeHashTargetActivator: ((target: string) => void) | null = null
 let activeHashTargetFields: Record<string, FieldDef> | null = null
 let activeHashTargetGetValues: (() => Record<string, unknown>) | null = null
 
+/**
+ * Module-level ref that emits the target string every time activateHashTarget is called.
+ * Used by useFormSidebar to sync activePath without relying on URL hash changes.
+ */
+export const lastActivatedTarget = ref<{ target: string; ts: number } | null>(null)
+
 export function activateHashTarget(target: string): boolean {
   if (!target || !activeHashTargetActivator) return false
   activeHashTargetActivator(target)
+  // Notify sidebar (timestamp ensures reactivity even for repeated same-target activations)
+  lastActivatedTarget.value = { target, ts: Date.now() }
   return true
 }
 

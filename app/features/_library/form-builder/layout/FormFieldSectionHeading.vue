@@ -15,7 +15,7 @@ const { resolvedLabel } = useResolvedFieldMeta(props.meta)
 </script>
 
 <template>
-  <div v-show="isVisible" class="flex items-center px-1 pt-3 -mb-2">
+  <div v-show="isVisible" class="flex items-center px-1 pt-3 first:pt-0 -mb-2">
     <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
       {{ resolvedLabel }}
     </span>

@@ -185,16 +185,19 @@ export function createDonationCustomFieldsConfigSection(
         {
           value: 'step2',
           label: 'Step 2',
+          contentClass: 'rounded-xl border bg-muted/50 px-4 py-4',
           fields: { enabled: step2Enabled, fields: step2FieldsArrayConfig }
         },
         {
           value: 'step3',
           label: 'Step 3',
+          contentClass: 'rounded-xl border bg-muted/50 px-4 py-4',
           fields: { enabled: step3Enabled, fields: step3FieldsArrayConfig }
         },
         {
           value: 'hidden',
           label: 'Hidden Fields',
+          contentClass: 'rounded-xl border bg-muted/50 px-4 py-4',
           fields: { enabled: hiddenEnabled, fields: hiddenFieldsArrayConfig }
         }
       ]

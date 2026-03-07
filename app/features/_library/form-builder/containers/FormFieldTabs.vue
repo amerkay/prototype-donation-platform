@@ -13,7 +13,11 @@ import {
 import { useContainerFieldSetup } from '~/features/_library/form-builder/composables/useContainerFieldSetup'
 import { useCombinedErrors } from '~/features/_library/form-builder/composables/useCombinedErrors'
 import { useContainerValidation } from '~/features/_library/form-builder/composables/useContainerValidation'
-import { useHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
+import {
+  useHashTarget,
+  lastActivatedTarget
+} from '~/features/_library/form-builder/composables/useHashTarget'
+import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 import FormFieldGroup from './FormFieldGroup.vue'
 
 interface Props {
@@ -67,9 +71,10 @@ watch(
   { immediate: true }
 )
 
-// Notify consumer of tab changes
+// Notify consumer of tab changes + sync sidebar (without scroll/highlight)
 watch(activeTab, (value) => {
   props.meta.onTabChange?.(value)
+  lastActivatedTarget.value = { target: value, ts: Date.now() }
 })
 
 // Compute combined errors for each tab using lightweight composable
@@ -135,6 +140,33 @@ const isTabDisabled = (tab: (typeof props.meta.tabs)[number]) => {
 const resolveTabTooltip = (tab: (typeof props.meta.tabs)[number]) => {
   return resolveText(tab.disabledTooltip, scopedFormValues.value)
 }
+
+// Detect enabled toggle key per tab — cache once since field definitions are static
+// Checks 'enabled' first, then any key ending with 'Enabled' (e.g., 'pauseEnabled')
+const tabEnabledToggleKeyMap = Object.fromEntries(
+  props.meta.tabs.map((tab) => {
+    if ('enabled' in tab.fields && tab.fields.enabled?.type === 'toggle')
+      return [tab.value, 'enabled']
+    const key = Object.keys(tab.fields).find(
+      (k) => k.endsWith('Enabled') && tab.fields[k]?.type === 'toggle'
+    )
+    return [tab.value, key]
+  })
+)
+
+const tabHasEnabledToggle = (tabValue: string) => !!tabEnabledToggleKeyMap[tabValue]
+
+// Check if a tab's enabled toggle is currently on
+const isTabEnabled = (tab: (typeof props.meta.tabs)[number]) => {
+  const toggleKey = tabEnabledToggleKeyMap[tab.value]
+  if (!toggleKey) return false
+  const parentValues = scopedFormValues.value.values as Record<string, unknown> | undefined
+  const tabValues = parentValues?.[tab.value] as Record<string, unknown> | undefined
+  return tabValues?.[toggleKey] === true
+}
+
+// Provide accordion group so collapsible field-groups within each tab share single-open behavior
+provideAccordionGroup()
 </script>
 
 <template>
@@ -151,6 +183,13 @@ const resolveTabTooltip = (tab: (typeof props.meta.tabs)[number]) => {
         <TabsList v-if="visibleTabs.length > 1" :class="cn('w-full', meta.tabsListClass)">
           <template v-for="tab in visibleTabs" :key="tab.value">
             <TabsTrigger :value="tab.value" :disabled="isTabDisabled(tab)" class="gap-2">
+              <span
+                v-if="tabHasEnabledToggle(tab.value)"
+                :class="[
+                  'inline-block h-1.5 w-1.5 rounded-full shrink-0',
+                  isTabEnabled(tab) ? 'bg-emerald-500' : 'bg-muted-foreground/30'
+                ]"
+              />
               <FieldHelpText
                 v-if="isTabDisabled(tab) && resolveTabTooltip(tab)"
                 icon-class="size-3"
@@ -182,13 +221,7 @@ const resolveTabTooltip = (tab: (typeof props.meta.tabs)[number]) => {
         </TabsList>
 
         <TabsContent v-for="tab in visibleTabs" :key="tab.value" :value="tab.value">
-          <div
-            :class="
-              tab.contentClass !== undefined
-                ? tab.contentClass
-                : 'rounded-xl border bg-muted/50 px-4 py-4'
-            "
-          >
+          <div :class="tab.contentClass">
             <FormFieldGroup
               :name="tab.value"
               :meta="{ type: 'field-group', name: tab.value, fields: tab.fields }"

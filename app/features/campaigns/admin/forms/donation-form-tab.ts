@@ -140,9 +140,10 @@ export function createDonationFormTabFields(ctx: FormContext, contextSchema: Con
   }
 
   // Form toolbar (componentField — no store mapping, display only)
+  // Placed inside Form Settings tab so it's contextually clear these actions
+  // replace the entire form configuration (settings, amounts, features, custom fields)
   const formToolbar = componentField('formToolbar', {
-    component: FormToolbar,
-    visibleWhen: () => !store.isFundraiser
+    component: FormToolbar
   })
 
   // Inner tabs for form sections
@@ -154,17 +155,17 @@ export function createDonationFormTabFields(ctx: FormContext, contextSchema: Con
         value: TAB_FORM_SETTINGS,
         label: 'Form Settings',
         visibleWhen: () => !store.isFundraiser,
-        fields: formBasicFields
+        fields: { formToolbar, ...formBasicFields }
       },
       {
         value: TAB_AMOUNTS,
         label: 'Donation Amounts',
         visibleWhen: () => caps().allowsDonationAmounts,
         fields: {
-          currencyInfo,
           baseDefaultCurrency: baseDefaultCurrencyField!,
           enabledCurrencies: enabledCurrenciesField!,
-          ...frequencyFields
+          ...frequencyFields,
+          currencyInfo
         }
       },
       {
@@ -316,5 +317,5 @@ export function createDonationFormTabFields(ctx: FormContext, contextSchema: Con
     ]
   })
 
-  return { formToolbar, formTabs }
+  return { formTabs }
 }

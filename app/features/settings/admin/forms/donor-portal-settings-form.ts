@@ -64,7 +64,9 @@ function actionSection(key: string, label: string, description: string, storePat
   return fieldGroup(key, {
     label,
     description,
-    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    wrapperClass: 'p-4 bg-background rounded-lg border',
     fields: {
       [`${key}Enabled`]: enabled,
       [`${key}Duration`]: duration,
@@ -174,7 +176,9 @@ function refundSection(
   return fieldGroup(key, {
     label,
     description,
-    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
+    collapsible: true,
+    collapsibleDefaultOpen: false,
+    wrapperClass: 'p-4 bg-background rounded-lg border',
     fields
   })
 }
@@ -229,16 +233,6 @@ export const useDonorPortalSettingsForm = defineForm('donorPortal', (_ctx) => {
     { showAlert: true }
   )
 
-  const subscriptionsGrid = fieldGroup('subscriptionsGrid', {
-    class: 'md:grid-cols-2 lg:grid-cols-3',
-    fields: { pause, cancel, changeAmount }
-  })
-
-  const refundsGrid = fieldGroup('refundsGrid', {
-    class: 'md:grid-cols-2 lg:grid-cols-3',
-    fields: { standard, p2p, matchedGiving }
-  })
-
   const topTabs = tabsField('topTabs', {
     defaultValue: 'subscriptions',
     tabsListClass: 'w-full',
@@ -246,14 +240,12 @@ export const useDonorPortalSettingsForm = defineForm('donorPortal', (_ctx) => {
       {
         value: 'subscriptions',
         label: 'Subscriptions',
-        contentClass: 'pt-4',
-        fields: { subscriptionsGrid }
+        fields: { pause, cancel, changeAmount }
       },
       {
         value: 'refunds',
         label: 'Refunds',
-        contentClass: 'pt-4',
-        fields: { refundsGrid }
+        fields: { standard, p2p, matchedGiving }
       }
     ]
   })
@@ -262,35 +254,28 @@ export const useDonorPortalSettingsForm = defineForm('donorPortal', (_ctx) => {
     fields: { topTabs },
     $storePath: {
       // Subscription sections → store
-      'topTabs.subscriptions.subscriptionsGrid.pause.pauseEnabled': 'pauseSubscription.enabled',
-      'topTabs.subscriptions.subscriptionsGrid.pause.pauseDuration':
-        'pauseSubscription.minDurationMonths',
-      'topTabs.subscriptions.subscriptionsGrid.pause.pauseMinValue':
-        'pauseSubscription.minDonorValueLastYear',
-      'topTabs.subscriptions.subscriptionsGrid.cancel.cancelEnabled': 'cancelSubscription.enabled',
-      'topTabs.subscriptions.subscriptionsGrid.cancel.cancelDuration':
-        'cancelSubscription.minDurationMonths',
-      'topTabs.subscriptions.subscriptionsGrid.cancel.cancelMinValue':
-        'cancelSubscription.minDonorValueLastYear',
-      'topTabs.subscriptions.subscriptionsGrid.changeAmount.changeAmountEnabled':
-        'changeAmount.enabled',
-      'topTabs.subscriptions.subscriptionsGrid.changeAmount.changeAmountDuration':
-        'changeAmount.minDurationMonths',
-      'topTabs.subscriptions.subscriptionsGrid.changeAmount.changeAmountMinValue':
+      'topTabs.subscriptions.pause.pauseEnabled': 'pauseSubscription.enabled',
+      'topTabs.subscriptions.pause.pauseDuration': 'pauseSubscription.minDurationMonths',
+      'topTabs.subscriptions.pause.pauseMinValue': 'pauseSubscription.minDonorValueLastYear',
+      'topTabs.subscriptions.cancel.cancelEnabled': 'cancelSubscription.enabled',
+      'topTabs.subscriptions.cancel.cancelDuration': 'cancelSubscription.minDurationMonths',
+      'topTabs.subscriptions.cancel.cancelMinValue': 'cancelSubscription.minDonorValueLastYear',
+      'topTabs.subscriptions.changeAmount.changeAmountEnabled': 'changeAmount.enabled',
+      'topTabs.subscriptions.changeAmount.changeAmountDuration': 'changeAmount.minDurationMonths',
+      'topTabs.subscriptions.changeAmount.changeAmountMinValue':
         'changeAmount.minDonorValueLastYear',
       // Refund sections → store
-      'topTabs.refunds.refundsGrid.standard.stdEnabled': 'refundStandard.enabled',
-      'topTabs.refunds.refundsGrid.standard.stdWindowDays': 'refundStandard.windowDays',
-      'topTabs.refunds.refundsGrid.standard.stdDuration': 'refundStandard.minDurationMonths',
-      'topTabs.refunds.refundsGrid.standard.stdMinValue': 'refundStandard.minDonorValueLastYear',
-      'topTabs.refunds.refundsGrid.standard.stdCampaignEnded':
-        'refundStandard.disableWhenCampaignEnded',
-      'topTabs.refunds.refundsGrid.p2p.p2pEnabled': 'refundP2P.enabled',
-      'topTabs.refunds.refundsGrid.p2p.p2pWindowDays': 'refundP2P.windowDays',
-      'topTabs.refunds.refundsGrid.p2p.p2pCampaignEnded': 'refundP2P.disableWhenCampaignEnded',
-      'topTabs.refunds.refundsGrid.matchedGiving.matchEnabled': 'refundMatchedGiving.enabled',
-      'topTabs.refunds.refundsGrid.matchedGiving.matchWindowDays': 'refundMatchedGiving.windowDays',
-      'topTabs.refunds.refundsGrid.matchedGiving.matchCampaignEnded':
+      'topTabs.refunds.standard.stdEnabled': 'refundStandard.enabled',
+      'topTabs.refunds.standard.stdWindowDays': 'refundStandard.windowDays',
+      'topTabs.refunds.standard.stdDuration': 'refundStandard.minDurationMonths',
+      'topTabs.refunds.standard.stdMinValue': 'refundStandard.minDonorValueLastYear',
+      'topTabs.refunds.standard.stdCampaignEnded': 'refundStandard.disableWhenCampaignEnded',
+      'topTabs.refunds.p2p.p2pEnabled': 'refundP2P.enabled',
+      'topTabs.refunds.p2p.p2pWindowDays': 'refundP2P.windowDays',
+      'topTabs.refunds.p2p.p2pCampaignEnded': 'refundP2P.disableWhenCampaignEnded',
+      'topTabs.refunds.matchedGiving.matchEnabled': 'refundMatchedGiving.enabled',
+      'topTabs.refunds.matchedGiving.matchWindowDays': 'refundMatchedGiving.windowDays',
+      'topTabs.refunds.matchedGiving.matchCampaignEnded':
         'refundMatchedGiving.disableWhenCampaignEnded'
     }
   })

@@ -127,6 +127,10 @@ const handleTemplateConfirm = () => {
         </Button>
       </div>
     </div>
+    <p class="text-xs text-muted-foreground">
+      These actions replace the entire form configuration including settings, amounts, features, and
+      custom fields.
+    </p>
   </div>
 
   <!-- No form state -->

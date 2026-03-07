@@ -238,6 +238,7 @@ export const useDonationFormDonationAmountsForm = defineForm('formDonationAmount
     {
       value: 'once',
       label: 'One-time',
+      contentClass: 'pt-4',
       fields: createFrequencyTabFields(
         'One-time',
         '1000000',
@@ -249,6 +250,7 @@ export const useDonationFormDonationAmountsForm = defineForm('formDonationAmount
     {
       value: 'monthly',
       label: 'Monthly',
+      contentClass: 'pt-4',
       fields: createFrequencyTabFields(
         'Monthly',
         '1000000',
@@ -260,6 +262,7 @@ export const useDonationFormDonationAmountsForm = defineForm('formDonationAmount
     {
       value: 'yearly',
       label: 'Yearly',
+      contentClass: 'pt-4',
       fields: createFrequencyTabFields(
         'Yearly',
         '50000',
