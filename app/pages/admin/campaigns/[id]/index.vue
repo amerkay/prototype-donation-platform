@@ -233,7 +233,7 @@ const handleDeleted = () => {
     :breadcrumbs="breadcrumbs"
     :is-dirty="isTerminal ? false : store.isDirty"
     :show-discard-dialog="showDiscardDialog"
-    :show-preview="crowdfundingEnabled || !!store.fullFormConfig"
+    :show-preview="true"
     preview-label="Preview"
     :editable-last-item="!isTerminal"
     :max-length="75"
@@ -266,24 +266,25 @@ const handleDeleted = () => {
             <TabsTrigger v-if="store.fullFormConfig" value="donationForm" class="text-xs">
               Donation Form
             </TabsTrigger>
-            <TabsTrigger v-if="crowdfundingEnabled" value="crowdfunding" class="text-xs">
-              Crowdfunding Page
-            </TabsTrigger>
+            <TabsTrigger value="crowdfunding" class="text-xs"> Crowdfunding Page </TabsTrigger>
           </TabsList>
 
           <TabsContent v-if="store.fullFormConfig" value="donationForm">
             <DonationFormPreview :editable="isTerminal ? false : editableMode" />
           </TabsContent>
 
-          <TabsContent v-if="crowdfundingEnabled" value="crowdfunding">
-            <CrowdfundingPagePreview :editable="isTerminal ? false : editableMode" />
+          <TabsContent value="crowdfunding">
+            <CrowdfundingPagePreview
+              v-if="crowdfundingEnabled"
+              :editable="isTerminal ? false : editableMode"
+            />
+            <PreviewNotAvailable
+              v-else
+              title="Crowdfunding Page Disabled"
+              description="Enable the crowdfunding page to preview it."
+            />
           </TabsContent>
         </Tabs>
-
-        <PreviewNotAvailable
-          v-if="!store.fullFormConfig && !crowdfundingEnabled"
-          description="No preview available. Link a donation form or enable the crowdfunding page."
-        />
       </div>
     </template>
   </EditLayout>

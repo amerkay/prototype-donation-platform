@@ -1,5 +1,5 @@
 import { computed, ref, watch, type ComputedRef, type InjectionKey, type Ref } from 'vue'
-import { useRoute, useRouter } from '#imports'
+import { useRoute } from '#imports'
 import type {
   FieldDef,
   FieldContext,
@@ -22,7 +22,7 @@ export interface SidebarNode {
   id: string
   /** Display label */
   label: string
-  /** Dot-path for hash navigation (suffix-matched by useHashTarget) */
+  /** Dot-path for internal navigation (suffix-matched by useHashTarget) */
   path: string
   children?: SidebarNode[]
   /** Auto-detected: the field key of the enabled toggle (e.g., 'enabled', 'pauseEnabled') */
@@ -295,7 +295,6 @@ export function useFormSidebar(
   options?: { disabled?: boolean }
 ): FormSidebarState {
   const route = useRoute()
-  const router = useRouter()
   const emptyCtx: FieldContext = { values: {}, root: {} }
 
   // Build the raw tree once from field definitions
@@ -364,8 +363,6 @@ export function useFormSidebar(
 
   function navigateTo(path: string) {
     activePath.value = path
-    router.replace({ hash: `#${path}` })
-    // Also activate hash target for scroll/flash behavior
     activateHashTarget(path)
   }
 

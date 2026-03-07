@@ -135,7 +135,7 @@ const showErrors = computed(() => props.errors && props.errors.length > 0)
 <style>
 @keyframes hash-highlight-pulse {
   50% {
-    --tw-ring-color: transparent;
+    outline-color: transparent;
   }
 }
 .hash-highlight-flash {

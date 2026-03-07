@@ -22,6 +22,17 @@ const FLASH_DURATION_MS = 1500 // 3 × 500ms CSS pulses
 const SCROLL_DELAY_MS = 350 // Wait for accordion/tab animation
 const CLEAR_LISTENER_DELAY_MS = 2000 // Don't clear on navigation click
 
+/**
+ * Build the outline highlight class string for a hash-targeted element.
+ * Canonical style: rounded corners, offset-8, 2px flash / 1px persistent.
+ * Override via cn() at the callsite if the container needs different rounding or offset.
+ */
+export function buildHighlightClass(flashing: boolean): string {
+  return flashing
+    ? 'rounded outline-offset-8 outline-2 outline-primary hash-highlight-flash'
+    : 'rounded outline-offset-8 outline-1 outline-primary/50'
+}
+
 interface HashTargetContext {
   targetPath: Ref<string | null>
   cleared: Ref<boolean>
@@ -374,13 +385,9 @@ export function useHashTarget(fullPath: ComputedRef<string>, options: { animate?
   const elementRef = ref<HTMLElement | null>(null)
   const isFlashing = ref(false)
 
-  const hashHighlightClass = computed(() => {
-    if (!isHashTarget.value) return ''
-    const base = 'ring-offset-card ring-offset-10 rounded'
-    return isFlashing.value
-      ? `${base} ring-2 ring-primary hash-highlight-flash`
-      : `${base} ring-1 ring-primary/50`
-  })
+  const hashHighlightClass = computed(() =>
+    isHashTarget.value ? buildHighlightClass(isFlashing.value) : ''
+  )
 
   watch(
     isHashTarget,

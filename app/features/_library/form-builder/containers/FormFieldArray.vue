@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, watch, nextTick, ref, provide } from 'vue'
-import { useHashTarget } from '~/features/_library/form-builder/composables/useHashTarget'
+import {
+  useHashTarget,
+  buildHighlightClass
+} from '~/features/_library/form-builder/composables/useHashTarget'
 import { useFieldArray, useFormValues, useValidateField } from 'vee-validate'
 import { vAutoAnimate } from '@formkit/auto-animate'
 import { Button } from '@/components/ui/button'
@@ -121,10 +124,7 @@ const isItemFlashing = ref(false)
 
 function itemHighlightClass(veeIndex: number) {
   if (highlightedIndex.value !== veeIndex) return ''
-  const base = 'relative z-10 ring-offset-card ring-offset-4 rounded-lg'
-  return isItemFlashing.value
-    ? `${base} ring-2 ring-primary hash-highlight-flash`
-    : `${base} ring-1 ring-primary/50`
+  return cn(buildHighlightClass(isItemFlashing.value), 'rounded outline-offset-0')
 }
 
 // Scroll to the highlighted item and drive the flash → persistent transition
