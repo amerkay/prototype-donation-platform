@@ -49,8 +49,13 @@ let activeHashTargetGetValues: (() => Record<string, unknown>) | null = null
  */
 export const lastActivatedTarget = ref<{ target: string; ts: number } | null>(null)
 
-export function activateHashTarget(target: string): boolean {
+/** Module-level flag: when true, the next activation skips visual highlight (outline + flash + scroll).
+ *  NOT reset synchronously — consumed by applyTarget so it survives nextTick deferrals. */
+let suppressNextHighlight = false
+
+export function activateHashTarget(target: string, options?: { noHighlight?: boolean }): boolean {
   if (!target || !activeHashTargetActivator) return false
+  suppressNextHighlight = options?.noHighlight ?? false
   activeHashTargetActivator(target)
   // Notify sidebar (timestamp ensures reactivity even for repeated same-target activations)
   lastActivatedTarget.value = { target, ts: Date.now() }
@@ -262,6 +267,16 @@ export function provideHashTarget(
   const applyTarget = (nextTarget: string | null) => {
     cleared.value = false
     targetPath.value = nextTarget
+
+    // When activated from sidebar navigation, skip visual highlight (outline + flash + scroll)
+    // but still set targetPath so isAncestorOfHashTarget triggers tab/accordion switching.
+    // Consume the flag here (not in activateHashTarget) so it survives nextTick deferrals.
+    if (suppressNextHighlight && nextTarget) {
+      suppressNextHighlight = false
+      cleared.value = true
+      return
+    }
+    suppressNextHighlight = false
 
     if (clearListenerTimeout) {
       clearTimeout(clearListenerTimeout)

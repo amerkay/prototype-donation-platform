@@ -363,7 +363,7 @@ export function useFormSidebar(
 
   function navigateTo(path: string) {
     activePath.value = path
-    activateHashTarget(path)
+    activateHashTarget(path, { noHighlight: true })
   }
 
   function isNodeActive(node: SidebarNode): boolean {
