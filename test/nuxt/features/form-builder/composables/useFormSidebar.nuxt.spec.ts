@@ -415,7 +415,7 @@ describe('useFormSidebar', () => {
         ])
       })
 
-      expect(sidebar.tree.value[0]!.badgeLabel!()).toBe('6 active')
+      expect(sidebar.tree.value[0]!.badgeLabel).toBe('6 active')
     })
 
     it('resolves function badgeLabel with field context', async () => {
@@ -436,7 +436,8 @@ describe('useFormSidebar', () => {
         { featureCount: 3 }
       )
 
-      expect(sidebar.tree.value[0]!.badgeLabel!()).toBe('3 active')
+      const badgeLabel = sidebar.tree.value[0]!.badgeLabel as (ctx: FieldContext) => string
+      expect(badgeLabel(sidebar.fieldContext())).toBe('3 active')
     })
 
     it('resolves badgeVariant from static string', async () => {
@@ -452,7 +453,7 @@ describe('useFormSidebar', () => {
         ])
       })
 
-      expect(sidebar.tree.value[0]!.badgeVariant!()).toBe('outline')
+      expect(sidebar.tree.value[0]!.badgeVariant).toBe('outline')
     })
 
     it('resolves badgeLabel on collapsible fieldGroups', async () => {
@@ -475,7 +476,7 @@ describe('useFormSidebar', () => {
         ])
       })
 
-      expect(sidebar.tree.value[0]!.children![0]!.badgeLabel!()).toBe('1 custom')
+      expect(sidebar.tree.value[0]!.children![0]!.badgeLabel).toBe('1 custom')
     })
 
     it('returns undefined badgeLabel when none configured', async () => {
@@ -533,7 +534,7 @@ describe('useFormSidebar', () => {
 
       const node = sidebar.tree.value[0]!
       expect(node.enabledToggleKey).toBeUndefined()
-      expect(node.badgeLabel!()).toBe('1 custom')
+      expect(node.badgeLabel).toBe('1 custom')
     })
   })
 

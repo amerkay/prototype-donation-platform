@@ -14,6 +14,7 @@ import {
   type SidebarNode,
   type FormSidebarState
 } from '../composables/useFormSidebar'
+import { resolveText } from '../composables/useResolvedFieldMeta'
 import FormSearchInput from './FormSearchInput.vue'
 
 const sidebar = inject<FormSidebarState>(FORM_SIDEBAR_KEY)!
@@ -22,11 +23,14 @@ function isLeafActive(node: SidebarNode): boolean {
   return node.path === sidebar.activePath.value
 }
 
+function resolvedLabel(node: SidebarNode): string {
+  return resolveText(node.label, sidebar.fieldContext()) ?? ''
+}
+
 function resolvedBadge(node: SidebarNode): string {
   // Nodes with enabled dot indicators don't need text badges (redundant)
   if (node.enabledToggleKey) return ''
-  if (!node.badgeLabel) return ''
-  return node.badgeLabel()
+  return resolveText(node.badgeLabel, sidebar.fieldContext()) ?? ''
 }
 </script>
 
@@ -50,7 +54,7 @@ function resolvedBadge(node: SidebarNode): string {
           <p
             class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-2 pt-1.5 pb-1 flex items-center gap-1.5"
           >
-            {{ node.label }}
+            {{ resolvedLabel(node) }}
             <span
               v-if="resolvedBadge(node)"
               class="normal-case tracking-normal font-medium text-muted-foreground"
@@ -69,7 +73,7 @@ function resolvedBadge(node: SidebarNode): string {
                   class="w-full translate-x-0"
                   @click="sidebar.navigateTo(child.path)"
                 >
-                  <span class="truncate">{{ child.label }}</span>
+                  <span class="truncate">{{ resolvedLabel(child) }}</span>
                   <span
                     v-if="resolvedBadge(child)"
                     class="ml-auto text-[10px] tabular-nums text-muted-foreground"
@@ -95,7 +99,7 @@ function resolvedBadge(node: SidebarNode): string {
                             : 'bg-muted-foreground/30'
                         ]"
                       />
-                      <span class="truncate">{{ grandchild.label }}</span>
+                      <span class="truncate">{{ resolvedLabel(grandchild) }}</span>
                       <span
                         v-if="resolvedBadge(grandchild)"
                         class="ml-auto text-[10px] tabular-nums text-muted-foreground"
@@ -122,7 +126,7 @@ function resolvedBadge(node: SidebarNode): string {
                       sidebar.isNodeEnabled(child) ? 'bg-emerald-500' : 'bg-muted-foreground/30'
                     ]"
                   />
-                  <span class="truncate">{{ child.label }}</span>
+                  <span class="truncate">{{ resolvedLabel(child) }}</span>
                   <span
                     v-if="resolvedBadge(child)"
                     class="ml-auto text-[10px] tabular-nums text-muted-foreground"
@@ -153,7 +157,7 @@ function resolvedBadge(node: SidebarNode): string {
                     sidebar.isNodeEnabled(node) ? 'bg-emerald-500' : 'bg-muted-foreground/30'
                   ]"
                 />
-                <span class="truncate font-medium text-xs">{{ node.label }}</span>
+                <span class="truncate font-medium text-xs">{{ resolvedLabel(node) }}</span>
               </SidebarMenuSubButton>
             </SidebarMenuItem>
           </SidebarMenu>

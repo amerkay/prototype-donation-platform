@@ -70,16 +70,25 @@ export const useCurrencySettingsForm = defineForm('currencySettings', () => {
     currencySliderMappings[`currencyTabs.multipliers.${currency}.slider`] =
       `currencyMultipliers.${currency}`
 
+    const readMultiplier = (root: Record<string, unknown>) => {
+      const currencies = root.currencies as Record<string, unknown> | undefined
+      const tabs = currencies?.currencyTabs as Record<string, unknown> | undefined
+      const multipliers = tabs?.multipliers as Record<string, unknown> | undefined
+      const currencyGroup = multipliers?.[currency] as Record<string, unknown> | undefined
+      return (currencyGroup?.slider as number) ?? 1.0
+    }
+
     currencyMultiplierFields[currency] = fieldGroup('', {
       label: ({ root }: FieldContext) => {
-        const currencies = root.currencies as Record<string, unknown> | undefined
-        const tabs = currencies?.currencyTabs as Record<string, unknown> | undefined
-        const multipliers = tabs?.multipliers as Record<string, unknown> | undefined
-        const currencyGroup = multipliers?.[currency] as Record<string, unknown> | undefined
-        const multiplier = (currencyGroup?.slider as number) ?? 1.0
+        const multiplier = readMultiplier(root)
         const desc = CURRENCY_DESCRIPTION_MAP.get(currency) ?? currency
         const suffix = multiplier === 1.0 ? ' (default)' : ''
         return `${desc} (${currency}) — ${multiplier.toFixed(2)}×${suffix}`
+      },
+      sidebarLabel: ({ root }: FieldContext) => {
+        const multiplier = readMultiplier(root)
+        const suffix = multiplier === 1.0 ? ' (default)' : ''
+        return `${currency} — ${multiplier.toFixed(2)}×${suffix}`
       },
       collapsible: true,
       collapsibleDefaultOpen: false,

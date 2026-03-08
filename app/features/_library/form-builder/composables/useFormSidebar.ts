@@ -1,17 +1,10 @@
 import { computed, ref, watch, type ComputedRef, type InjectionKey, type Ref } from 'vue'
 import { useRoute } from '#imports'
-import type {
-  FieldDef,
-  FieldContext,
-  TabsFieldDef,
-  TabDefinitionConfig,
-  FieldGroupDef,
-  FieldGroupConfig,
-  VisibilityFn
-} from '../types'
+import type { FieldDef, FieldContext, TabsFieldDef, FieldGroupDef, VisibilityFn } from '../types'
 import type { ConditionGroup } from '../conditions'
 import { checkFieldVisibility } from './useFieldPath'
 import { activateHashTarget, lastActivatedTarget } from './useHashTarget'
+import { resolveText, type ResolvableText } from './useResolvedFieldMeta'
 
 // ============================================================================
 // TYPES
@@ -20,17 +13,17 @@ import { activateHashTarget, lastActivatedTarget } from './useHashTarget'
 export interface SidebarNode {
   /** Unique key (tab value or group field name) */
   id: string
-  /** Display label */
-  label: string
+  /** Display label — resolved via resolveText() at render time */
+  label: ResolvableText
   /** Dot-path for internal navigation (suffix-matched by useHashTarget) */
   path: string
   children?: SidebarNode[]
   /** Auto-detected: the field key of the enabled toggle (e.g., 'enabled', 'pauseEnabled') */
   enabledToggleKey?: string
-  /** Badge label — reactive function returning display text */
-  badgeLabel?: () => string
-  /** Badge variant — reactive function returning variant string */
-  badgeVariant?: () => string
+  /** Badge label — resolved via resolveText() at render time */
+  badgeLabel?: ResolvableText
+  /** Badge variant — static string or dynamic via FieldContext */
+  badgeVariant?: string | ((ctx: FieldContext) => string)
   /** Visibility conditions accumulated from ancestors + this node */
   visibilityChecks?: Array<{ visibleWhen: VisibilityFn | ConditionGroup; valuesPath: string }>
 }
@@ -38,68 +31,13 @@ export interface SidebarNode {
 export interface FormSidebarState {
   tree: ComputedRef<SidebarNode[]>
   activePath: Ref<string>
+  fieldContext: () => FieldContext
   navigateTo: (path: string) => void
   isNodeActive: (node: SidebarNode) => boolean
   isNodeEnabled: (node: SidebarNode) => boolean
 }
 
 export const FORM_SIDEBAR_KEY: InjectionKey<FormSidebarState> = Symbol('formSidebar')
-
-// ============================================================================
-// LABEL RESOLUTION
-// ============================================================================
-
-function resolveLabel(
-  label: string | { value: string } | ((ctx: FieldContext) => string) | undefined,
-  ctx: FieldContext
-): string {
-  if (!label) return ''
-  if (typeof label === 'string') return label
-  if (typeof label === 'function') {
-    try {
-      return label(ctx)
-    } catch {
-      return ''
-    }
-  }
-  if ('value' in label) return label.value
-  return ''
-}
-
-// ============================================================================
-// BADGE RESOLUTION
-// ============================================================================
-
-type BadgeLabelSource = TabDefinitionConfig['badgeLabel'] | FieldGroupConfig['badgeLabel']
-type BadgeVariantSource = TabDefinitionConfig['badgeVariant'] | FieldGroupConfig['badgeVariant']
-
-/**
- * Create a reactive badge label function from a badgeLabel config value.
- * Wraps static strings, computed refs, and context functions into () => string.
- */
-function resolveBadgeLabel(
-  label: BadgeLabelSource,
-  fieldContext: () => FieldContext
-): (() => string) | undefined {
-  if (!label) return undefined
-  if (typeof label === 'string') return () => label
-  if (typeof label === 'function') return () => label(fieldContext())
-  if ('value' in label) return () => label.value
-  return undefined
-}
-
-/**
- * Create a reactive badge variant function from a badgeVariant config value.
- */
-function resolveBadgeVariantFn(
-  variant: BadgeVariantSource,
-  fieldContext: () => FieldContext
-): (() => string) | undefined {
-  if (!variant) return undefined
-  if (typeof variant === 'string') return () => variant
-  if (typeof variant === 'function') return () => variant(fieldContext()) || 'secondary'
-  return undefined
-}
 
 // ============================================================================
 // TREE BUILDING
@@ -143,12 +81,12 @@ function buildTabsNodes(
 
     const node: SidebarNode = {
       id: tab.value,
-      label: resolveLabel(tab.label, emptyCtx),
+      label: tab.label,
       path: tab.value, // Use short path for suffix matching
       children: children.length > 0 ? children : undefined,
       enabledToggleKey: tab.fields ? detectEnabledToggle(tab.fields) : undefined,
-      badgeLabel: resolveBadgeLabel(tab.badgeLabel, fieldContext),
-      badgeVariant: resolveBadgeVariantFn(tab.badgeVariant, fieldContext),
+      badgeLabel: tab.badgeLabel,
+      badgeVariant: tab.badgeVariant,
       visibilityChecks: tabChecks.length > 0 ? tabChecks : undefined
     }
 
@@ -185,17 +123,18 @@ function buildTreeFromFields(
       nodes.push(...tabNodes)
     } else if (field.type === 'field-group') {
       const group = field as FieldGroupDef
-      const groupLabel = resolveLabel(group.label, emptyCtx)
+      const sidebarLabel = group.sidebarLabel ?? group.label ?? ''
+      const groupLabel = resolveText(sidebarLabel, emptyCtx)
 
       // Show collapsible groups or groups with sidebar metadata as sidebar items
       if (groupLabel && (group.collapsible || group.sidebar)) {
         const node: SidebarNode = {
           id: key,
-          label: groupLabel,
+          label: sidebarLabel,
           path: key, // Short path for suffix matching
           enabledToggleKey: detectEnabledToggle(group.fields),
-          badgeLabel: resolveBadgeLabel(group.badgeLabel, fieldContext),
-          badgeVariant: resolveBadgeVariantFn(group.badgeVariant, fieldContext),
+          badgeLabel: group.badgeLabel,
+          badgeVariant: group.badgeVariant,
           visibilityChecks: fieldChecks.length > 0 ? fieldChecks : undefined
         }
         nodes.push(node)
@@ -387,6 +326,7 @@ export function useFormSidebar(
   return {
     tree,
     activePath,
+    fieldContext,
     navigateTo,
     isNodeActive,
     isNodeEnabled

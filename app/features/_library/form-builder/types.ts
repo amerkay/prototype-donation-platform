@@ -360,6 +360,8 @@ export interface FieldGroupConfig extends BaseFieldConfig {
   collapsibleStateRef?: Ref<string | undefined>
   /** Callback fired when this collapsible accordion is toggled */
   onAccordionToggle?: (accordionId: string, isOpen: boolean) => void
+  /** Override label shown in sidebar nav (defaults to `label`) */
+  sidebarLabel?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   badgeLabel?: string | ComputedRef<string> | ((ctx: FieldContext) => string)
   badgeVariant?:
     | 'default'
