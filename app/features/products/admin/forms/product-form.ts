@@ -100,6 +100,12 @@ export const useProductForm = defineForm('product', () => {
     visibleWhen: (ctx) => ctx.values.frequency !== 'once'
   })
 
+  const pricingNotice = alertField('pricingNotice', {
+    variant: 'info',
+    description:
+      'The donation amounts shown to donors are set in each campaign\'s donation form, not here. Min and default prices control how this product appears within those preset amounts.'
+  })
+
   const isShippingRequired = toggleField('isShippingRequired', {
     label: 'Requires Shipping',
     description: 'Product requires a shipping address'
@@ -129,7 +135,7 @@ export const useProductForm = defineForm('product', () => {
       {
         value: 'pricing',
         label: 'Pricing',
-        fields: { frequency, price, minPrice, default: defaultPrice }
+        fields: { frequency, price, minPrice, default: defaultPrice, pricingNotice }
       },
       {
         value: 'shipping',
