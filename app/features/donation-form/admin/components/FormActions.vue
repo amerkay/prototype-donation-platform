@@ -87,8 +87,9 @@ const handleTemplateConfirm = () => {
 </script>
 
 <template>
-  <!-- Actions when form exists -->
-  <div v-if="store.formConfig.formId" class="flex items-center gap-2 flex-wrap">
+  <div>
+    <!-- Actions when form exists -->
+    <div v-if="store.formConfig.formId" class="flex items-center gap-2 flex-wrap">
     <Button variant="outline" size="sm" @click="showCopyDialog = true">
       <ICON_COPY class="w-4 h-4 mr-1" />
       Copy Form from
@@ -154,4 +155,5 @@ const handleTemplateConfirm = () => {
     @update:open="showTemplateConfirm = $event"
     @confirm="handleTemplateConfirm"
   />
+  </div>
 </template>
