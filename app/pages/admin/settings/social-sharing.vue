@@ -8,13 +8,7 @@ import { useEditState } from '~/features/_shared/composables/useEditState'
 
 const store = useSocialSharingSettingsStore()
 
-const originalData = computed(() => ({
-  facebook: store.facebook,
-  twitter: store.twitter,
-  linkedin: store.linkedin,
-  whatsapp: store.whatsapp,
-  email: store.email
-}))
+const originalData = computed(() => store.toSnapshot())
 
 const formConfigRef = ref()
 

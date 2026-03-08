@@ -22,9 +22,9 @@ export const RECEIPT_TEMPLATE_TARGETS = {
   taxDeductibleStatement: 'settings.receiptTabs.content.taxDeductibleStatement',
   showGiftAid: 'settings.receiptTabs.content.showGiftAid',
   footerText: 'settings.receiptTabs.footer.footerText',
-  showPhone: 'settings.receiptTabs.footer.showPhone',
-  showEmail: 'settings.receiptTabs.footer.showEmail',
-  showWebsite: 'settings.receiptTabs.footer.showWebsite'
+  showPhone: 'settings.receiptTabs.header.showPhone',
+  showEmail: 'settings.receiptTabs.header.showEmail',
+  showWebsite: 'settings.receiptTabs.header.showWebsite'
 } as const satisfies Record<keyof ReceiptTemplateTargets, string>
 
 export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
@@ -141,7 +141,16 @@ export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
       {
         value: 'header',
         label: 'Header',
-        fields: { showLogo, noLogoAlert, headerText, charityNotice, brandingNotice }
+        fields: {
+          showLogo,
+          noLogoAlert,
+          headerText,
+          showPhone,
+          showEmail,
+          showWebsite,
+          charityNotice,
+          brandingNotice
+        }
       },
       {
         value: 'content',
@@ -157,7 +166,7 @@ export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
       {
         value: 'footer',
         label: 'Footer',
-        fields: { footerText, showPhone, showEmail, showWebsite }
+        fields: { footerText }
       }
     ]
   })

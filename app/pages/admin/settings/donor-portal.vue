@@ -7,14 +7,7 @@ import { useEditState } from '~/features/_shared/composables/useEditState'
 
 const store = useDonorPortalSettingsStore()
 
-const originalData = computed(() => ({
-  pauseSubscription: { ...store.pauseSubscription },
-  cancelSubscription: { ...store.cancelSubscription },
-  changeAmount: { ...store.changeAmount },
-  refundStandard: { ...store.refundStandard },
-  refundP2P: { ...store.refundP2P },
-  refundMatchedGiving: { ...store.refundMatchedGiving }
-}))
+const originalData = computed(() => store.toSnapshot())
 
 const formConfigRef = ref()
 

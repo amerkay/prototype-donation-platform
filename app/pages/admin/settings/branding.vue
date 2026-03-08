@@ -9,13 +9,7 @@ import { useEditState } from '~/features/_shared/composables/useEditState'
 
 const store = useBrandingSettingsStore()
 
-const originalData = computed(() => ({
-  logoUrl: store.logoUrl,
-  primaryColor: store.primaryColor,
-  secondaryColor: store.secondaryColor,
-  fontFamily: store.fontFamily,
-  customCss: store.customCss
-}))
+const originalData = computed(() => store.toSnapshot())
 
 const formConfigRef = ref()
 

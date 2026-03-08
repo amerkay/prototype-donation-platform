@@ -26,6 +26,7 @@ export const useEmailTemplateStore = defineStore('emailTemplate', () => {
 
   function toSnapshot() {
     return {
+      id: templateId.value,
       name: templateName.value,
       type: templateType.value,
       ...settings

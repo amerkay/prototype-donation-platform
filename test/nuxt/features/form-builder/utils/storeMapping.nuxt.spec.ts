@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
+import { defineStore, createPinia, setActivePinia } from 'pinia'
+import { reactive, ref, toRefs } from 'vue'
 import {
   generateStoreMapping,
   generateGetData,
@@ -9,6 +11,7 @@ import {
   fieldGroup,
   textField,
   tabsField,
+  toggleField,
   componentField,
   alertField,
   readonlyField
@@ -91,10 +94,11 @@ describe('storeMapping', () => {
 
       const mapping = generateStoreMapping(form)
 
-      expect(mapping.excluded.has('group.myComponent')).toBe(true)
+      // componentField is NOT excluded — setData's `in` guard skips non-store keys safely
+      expect(mapping.excluded.has('group.myComponent')).toBe(false)
+      expect(mapping.paths.has('group.myComponent')).toBe(true)
       expect(mapping.excluded.has('group.myAlert')).toBe(true)
       expect(mapping.excluded.has('group.myReadonly')).toBe(true)
-      expect(mapping.paths.has('group.myComponent')).toBe(false)
       expect(mapping.paths.has('group.myAlert')).toBe(false)
       expect(mapping.paths.has('group.myReadonly')).toBe(false)
       // Regular field still mapped
@@ -203,9 +207,9 @@ describe('storeMapping', () => {
 
       // Regular field is mapped
       expect(mapping.paths.get('settings.showLogo')).toBe('showLogo')
-      // Display-only fields are excluded
+      // Alert fields are excluded, componentFields are mapped (setData skips non-store keys)
       expect(mapping.paths.has('settings.notice')).toBe(false)
-      expect(mapping.paths.has('settings.preview')).toBe(false)
+      expect(mapping.paths.get('settings.preview')).toBe('preview')
     })
 
     it('recursively flattens fields inside tabs with $storePath: flatten', () => {
@@ -733,6 +737,92 @@ describe('storeMapping', () => {
     })
   })
 
+  describe('generateSetData - componentField handling', () => {
+    it('writes componentField values to store when store property exists', () => {
+      const form = defineForm('test', () => ({
+        certificate: fieldGroup('certificate', {
+          fields: {
+            certTabs: tabsField('certTabs', {
+              tabs: [
+                {
+                  value: 'footer',
+                  label: 'Footer',
+                  fields: {
+                    footerText: textField('footerText', { label: 'Footer' }),
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    signatureFont: componentField('signatureFont', { component: {} as any })
+                  }
+                }
+              ]
+            })
+          },
+          $storePath: 'flatten'
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+      const setData = generateSetData(mapping)
+
+      // Store HAS signatureFont (it's a real store property)
+      const store = {
+        footerText: 'Original',
+        signatureFont: 'Sacramento',
+        markDirty: vi.fn()
+      }
+
+      setData(store, {
+        certificate: {
+          certTabs: { footer: { footerText: 'Original', signatureFont: 'Pacifico' } }
+        }
+      })
+
+      expect(store.signatureFont).toBe('Pacifico')
+      expect(store.markDirty).toHaveBeenCalledOnce()
+    })
+
+    it('skips componentField values when store property does not exist', () => {
+      const form = defineForm('test', () => ({
+        certificate: fieldGroup('certificate', {
+          fields: {
+            certTabs: tabsField('certTabs', {
+              tabs: [
+                {
+                  value: 'product',
+                  label: 'Product',
+                  fields: {
+                    showProduct: toggleField('showProduct', { label: 'Show' }),
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    linkedProducts: componentField('linkedProducts', { component: {} as any })
+                  }
+                }
+              ]
+            })
+          },
+          $storePath: 'flatten'
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+      const setData = generateSetData(mapping)
+
+      // Store does NOT have linkedProducts (display-only component)
+      const store = {
+        showProduct: true,
+        markDirty: vi.fn()
+      }
+
+      setData(store, {
+        certificate: {
+          certTabs: { product: { showProduct: true, linkedProducts: ['prod-1'] } }
+        }
+      })
+
+      // linkedProducts skipped (not in store), showProduct unchanged → no dirty
+      expect((store as Record<string, unknown>).linkedProducts).toBeUndefined()
+      expect(store.markDirty).not.toHaveBeenCalled()
+    })
+  })
+
   describe('integration: full form flow', () => {
     it('round-trips data correctly with convention mapping', () => {
       const form = defineForm('test', () => ({
@@ -869,6 +959,214 @@ describe('storeMapping', () => {
       expect(store.showLogo).toBe(true)
       expect(store.logoSize).toBe('large')
       expect(store.footerText).toBe('Updated footer')
+      expect(store.markDirty).toHaveBeenCalledOnce()
+    })
+
+    it('marks dirty when toggling a boolean field inside tabs with flatten', () => {
+      const form = defineForm('test', () => ({
+        settings: fieldGroup('settings', {
+          fields: {
+            tabs: tabsField('tabs', {
+              tabs: [
+                {
+                  value: 'footer',
+                  label: 'Footer',
+                  fields: {
+                    showPhone: toggleField('showPhone', { label: 'Phone' }),
+                    showEmail: toggleField('showEmail', { label: 'Email' })
+                  }
+                }
+              ]
+            })
+          },
+          $storePath: 'flatten'
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+      const getData = generateGetData(mapping)
+      const setData = generateSetData(mapping)
+
+      const store = {
+        showPhone: true,
+        showEmail: true,
+        markDirty: vi.fn()
+      }
+
+      // Get initial data
+      const formData = getData(store)
+      expect(formData).toEqual({
+        settings: { tabs: { footer: { showPhone: true, showEmail: true } } }
+      })
+
+      // Toggle showPhone off
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(formData as any).settings.tabs.footer.showPhone = false
+
+      // Set data back — should detect change and mark dirty
+      setData(store, formData)
+
+      expect(store.showPhone).toBe(false)
+      expect(store.showEmail).toBe(true)
+      expect(store.markDirty).toHaveBeenCalledOnce()
+    })
+
+    it('toSnapshot must include id so discard does not break dirty detection', () => {
+      // Regression: toSnapshot() omitted id. After discard, restoreLastSaved() called
+      // store.initialize(snapshot), which set templateId = undefined. This made
+      // originalData (guarded by store.id) return undefined, permanently breaking isDirty.
+      setActivePinia(createPinia())
+
+      const useTestStore = defineStore('test-snapshot-id', () => {
+        const isDirty = ref(false)
+        const templateId = ref<string | undefined>(undefined)
+        const state = reactive({ showLogo: true, footerText: 'Original' })
+
+        function initialize(data: Record<string, unknown>) {
+          templateId.value = data.id as string | undefined
+          if (data.showLogo !== undefined) state.showLogo = data.showLogo as boolean
+          if (data.footerText !== undefined) state.footerText = data.footerText as string
+        }
+
+        function toSnapshot() {
+          return { id: templateId.value, ...state }
+        }
+
+        return {
+          ...toRefs(state),
+          id: templateId,
+          isDirty,
+          markDirty: () => {
+            isDirty.value = true
+          },
+          markClean: () => {
+            isDirty.value = false
+          },
+          initialize,
+          toSnapshot
+        }
+      })
+
+      const store = useTestStore()
+      store.initialize({ id: 'tmpl-1', showLogo: true, footerText: 'Original' })
+
+      // Simulate discard: restoreLastSaved calls initialize with toSnapshot data
+      const snapshot = JSON.parse(JSON.stringify(store.toSnapshot()))
+      store.initialize(snapshot)
+
+      // id must survive the round-trip
+      expect(store.id).toBe('tmpl-1')
+
+      // originalData guard (store.id ? toSnapshot() : undefined) must still work
+      const originalData = store.id ? store.toSnapshot() : undefined
+      expect(originalData).toBeDefined()
+    })
+
+    it('toSnapshot without id breaks dirty detection after discard', () => {
+      // Proves the bug: if toSnapshot omits id, discard kills dirty detection
+      setActivePinia(createPinia())
+
+      const useTestStore = defineStore('test-snapshot-no-id', () => {
+        const isDirty = ref(false)
+        const templateId = ref<string | undefined>(undefined)
+        const state = reactive({ showLogo: true })
+
+        function initialize(data: Record<string, unknown>) {
+          templateId.value = data.id as string | undefined
+          if (data.showLogo !== undefined) state.showLogo = data.showLogo as boolean
+        }
+
+        // BAD: omits id
+        function toSnapshotBroken() {
+          return { ...state }
+        }
+
+        return {
+          ...toRefs(state),
+          id: templateId,
+          isDirty,
+          markDirty: () => {
+            isDirty.value = true
+          },
+          markClean: () => {
+            isDirty.value = false
+          },
+          initialize,
+          toSnapshot: toSnapshotBroken
+        }
+      })
+
+      const store = useTestStore()
+      store.initialize({ id: 'tmpl-1', showLogo: true })
+
+      // Discard with broken snapshot
+      const snapshot = JSON.parse(JSON.stringify(store.toSnapshot()))
+      store.initialize(snapshot)
+
+      // id is now undefined — proves the bug
+      expect(store.id).toBeUndefined()
+      const originalData = store.id ? store.toSnapshot() : undefined
+      expect(originalData).toBeUndefined()
+    })
+
+    it('marks dirty with real Pinia store (toRefs) and flatten through tabs', () => {
+      setActivePinia(createPinia())
+
+      const useTestStore = defineStore('test-flatten-pinia', () => {
+        const isDirty = ref(false)
+        const state = reactive({ showPhone: true, showEmail: true, footerText: 'Original' })
+        const markDirty = () => {
+          isDirty.value = true
+        }
+        const markClean = () => {
+          isDirty.value = false
+        }
+        return { ...toRefs(state), isDirty, markDirty, markClean }
+      })
+
+      const form = defineForm('test', () => ({
+        settings: fieldGroup('settings', {
+          fields: {
+            tabs: tabsField('tabs', {
+              tabs: [
+                {
+                  value: 'footer',
+                  label: 'Footer',
+                  fields: {
+                    footerText: textField('footerText', { label: 'Footer' }),
+                    showPhone: toggleField('showPhone', { label: 'Phone' }),
+                    showEmail: toggleField('showEmail', { label: 'Email' })
+                  }
+                }
+              ]
+            })
+          },
+          $storePath: 'flatten'
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+      const getData = generateGetData(mapping)
+      const setData = generateSetData(mapping)
+
+      const store = useTestStore()
+
+      // Get initial data
+      const formData = getData(store)
+      expect(formData).toEqual({
+        settings: { tabs: { footer: { footerText: 'Original', showPhone: true, showEmail: true } } }
+      })
+
+      // Toggle showPhone off
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(formData as any).settings.tabs.footer.showPhone = false
+
+      // Set data back — should detect change and mark dirty
+      setData(store, formData)
+
+      expect(store.showPhone).toBe(false)
+      expect(store.showEmail).toBe(true)
+      expect(store.isDirty).toBe(true)
     })
   })
 })

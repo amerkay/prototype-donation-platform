@@ -8,9 +8,7 @@ import { useEditState } from '~/features/_shared/composables/useEditState'
 
 const store = useGiftAidSettingsStore()
 
-const originalData = computed(() => ({
-  enabled: store.enabled
-}))
+const originalData = computed(() => store.toSnapshot())
 
 const formConfigRef = ref()
 

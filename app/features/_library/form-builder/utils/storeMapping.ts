@@ -112,7 +112,6 @@ export function generateStoreMapping(form: ComposableForm): StoreMapping {
     'alert',
     'readonly',
     'card',
-    'component',
     'section-heading'
   ])
 

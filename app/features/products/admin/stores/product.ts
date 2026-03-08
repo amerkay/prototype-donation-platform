@@ -59,6 +59,7 @@ export const useProductStore = defineStore('product', () => {
 
   function toSnapshot() {
     return {
+      id: productId.value,
       name: productName.value,
       title: productTitle.value,
       status: productStatus.value,

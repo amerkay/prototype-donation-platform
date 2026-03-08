@@ -96,6 +96,7 @@ export const useCertificateTemplateStore = defineStore('certificateTemplate', ()
 
   function toSnapshot() {
     return {
+      id: templateId.value,
       name: templateName.value,
       status: templateStatus.value,
       ...settings,

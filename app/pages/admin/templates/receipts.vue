@@ -19,16 +19,7 @@ const currencyStore = useCurrencySettingsStore()
 const previewCurrency = ref(currencyStore.defaultCurrency)
 const editableMode = ref(true)
 
-const originalData = computed(() => ({
-  headerText: store.headerText,
-  footerText: store.footerText,
-  showGiftAid: store.showGiftAid,
-  showPaymentMethod: store.showPaymentMethod,
-  showCampaignName: store.showCampaignName,
-  showLogo: store.showLogo,
-  taxDeductibleStatement: store.taxDeductibleStatement,
-  showDonorAddress: store.showDonorAddress
-}))
+const originalData = computed(() => store.toSnapshot())
 
 const formConfigRef = ref()
 

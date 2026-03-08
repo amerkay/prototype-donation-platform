@@ -7,10 +7,7 @@ import { useEditState } from '~/features/_shared/composables/useEditState'
 
 const store = useGeneralSettingsStore()
 
-const originalData = computed(() => ({
-  timezone: store.timezone,
-  dateFormat: store.dateFormat
-}))
+const originalData = computed(() => store.toSnapshot())
 
 const formConfigRef = ref()
 

@@ -8,14 +8,7 @@ import { useEditState } from '~/features/_shared/composables/useEditState'
 
 const store = useAfterSaleSettingsStore()
 
-const originalData = computed(() => ({
-  recurringUpsellEnabled: store.recurringUpsellEnabled,
-  recurringUpsellFraction: store.recurringUpsellFraction,
-  recurringUpsellHeadline: store.recurringUpsellHeadline,
-  recurringUpsellBody: store.recurringUpsellBody,
-  socialSharingEnabled: store.socialSharingEnabled,
-  socialSharingMessage: store.socialSharingMessage
-}))
+const originalData = computed(() => store.toSnapshot())
 
 const formConfigRef = ref()
 

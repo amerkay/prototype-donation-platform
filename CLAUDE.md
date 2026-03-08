@@ -161,7 +161,7 @@ app/features/[feature-name]/
 
 ## Continuous Learning
 
-1. `componentField` excluded from autoMap; persist via `$storePath` or manual getData/setData
+1. `componentField` auto-mapped like regular fields; `setData`'s `in` guard safely skips non-store keys
 2. reka-ui combobox: avoid manual open/select handlers that fight internal state
 3. `$storePath` deep writes silently fail if intermediates missing; stores must pre-populate
 4. Cross-field validation in tabs: use dynamic `rules(ctx)` reading sibling `values`
