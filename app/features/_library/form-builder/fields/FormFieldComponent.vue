@@ -56,6 +56,7 @@ const component = computed(() => props.meta.component as Component)
         :model-value="props.modelValue"
         v-bind="resolvedProps"
         :disabled="resolvedDisabled"
+        :help-text="wrapperProps.helpText"
         @update:model-value="handleUpdate"
       />
     </div>

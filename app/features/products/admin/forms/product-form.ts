@@ -103,7 +103,7 @@ export const useProductForm = defineForm('product', () => {
   const pricingNotice = alertField('pricingNotice', {
     variant: 'info',
     description:
-      'The donation amounts shown to donors are set in each campaign\'s donation form, not here. Min and default prices control how this product appears within those preset amounts.'
+      "The donation amounts shown to donors are set in each campaign's donation form, not here. Min and default prices control how this product appears within those preset amounts."
   })
 
   const isShippingRequired = toggleField('isShippingRequired', {

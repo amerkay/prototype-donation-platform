@@ -112,6 +112,7 @@ export { PawPrint as ICON_PAW_PRINT } from 'lucide-vue-next' // animal / pet the
 export { Plug as ICON_INTEGRATIONS } from 'lucide-vue-next' // integrations / connections nav
 export { PoundSterling as ICON_CURRENCY_GBP } from 'lucide-vue-next' // donations / currency nav
 export { Receipt as ICON_RECEIPT } from 'lucide-vue-next'
+export { Replace as ICON_REPLACE } from 'lucide-vue-next' // replace form with template
 export { Settings as ICON_SETTINGS } from 'lucide-vue-next'
 export { Settings2 as ICON_SETTINGS_2 } from 'lucide-vue-next' // settings nav group
 export { ShoppingCart as ICON_CART } from 'lucide-vue-next'

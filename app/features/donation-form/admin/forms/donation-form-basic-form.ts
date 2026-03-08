@@ -4,8 +4,10 @@ import {
   textField,
   readonlyField,
   fieldGroup,
-  alertField
+  alertField,
+  componentField
 } from '~/features/_library/form-builder/api'
+import FormActions from '~/features/donation-form/admin/components/FormActions.vue'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
 
@@ -53,5 +55,11 @@ export const useDonationFormBasicForm = defineForm('formBasic', () => {
     }
   })
 
-  return { form, brandingNotice }
+  const formActions = componentField('formActions', {
+    component: FormActions,
+    helpText:
+      'These actions replace the entire form configuration including settings, amounts, features, and custom fields.'
+  })
+
+  return { formActions, form, brandingNotice }
 })

@@ -1,41 +1,23 @@
 <script setup lang="ts">
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
-import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
 import { useForm } from '~/features/campaigns/shared/composables/useForm'
 import { useCreateFormFromTemplate } from '~/features/donation-form/admin/composables/useCreateFormFromTemplate'
 import type { DonationFormTemplate } from '~/features/donation-form/admin/templates'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import AdminDeleteDialog from '~/features/_admin/components/AdminDeleteDialog.vue'
-import CopyFormFromCampaignDialog from './CopyFormFromCampaignDialog.vue'
+import CopyFormFromCampaignDialog from '~/features/campaigns/admin/components/CopyFormFromCampaignDialog.vue'
 import DonationFormTemplatesDialog from '~/features/donation-form/admin/components/DonationFormTemplatesDialog.vue'
-import { ICON_COPY, ICON_SPARKLES } from '~/lib/icons'
+import { ICON_COPY, ICON_REPLACE } from '~/lib/icons'
+import FieldHelpText from '~/features/_library/form-builder/internal/FieldHelpText.vue'
 import type { CampaignForm } from '~/features/campaigns/shared/types'
-defineOptions({ inheritAttrs: false })
+
+const props = defineProps<{
+  helpText?: string
+}>()
 
 const store = useCampaignConfigStore()
 const { setForm } = useForm()
 const { createFormFromTemplate } = useCreateFormFromTemplate()
-const caps = computed(() => getCampaignCapabilities(store.type))
-
-// Count enabled features
-const enabledFeaturesCount = computed(() => {
-  const fc = store.formConfig
-  const features = [
-    fc.impactCart,
-    fc.productSelector,
-    fc.impactBoost,
-    fc.coverCosts,
-    fc.tribute,
-    fc.entryFields,
-    fc.contactConsent,
-    fc.terms
-  ]
-  return features.filter((f) => (f as { enabled?: boolean } | null)?.enabled === true).length
-})
-
-// Count products
-const productCount = computed(() => store.formConfig.products.length)
 
 // Copy from campaign flow
 const showCopyDialog = ref(false)
@@ -105,48 +87,33 @@ const handleTemplateConfirm = () => {
 </script>
 
 <template>
-  <div v-if="store.formConfig.formId" class="space-y-3">
-    <!-- Toolbar: summary + actions -->
-    <div class="flex items-center justify-between gap-3 flex-wrap">
-      <div class="flex items-center gap-2 text-sm text-muted-foreground">
-        <Badge variant="outline" class="text-xs">
-          {{ caps.formType === 'registration' ? 'Registration' : 'Donation' }}
-        </Badge>
-        <span>{{ enabledFeaturesCount }} features</span>
-        <span>&middot;</span>
-        <span>{{ productCount }} product{{ productCount !== 1 ? 's' : '' }}</span>
-      </div>
-      <div v-if="!store.isFundraiser" class="flex gap-2 flex-wrap">
-        <Button variant="outline" size="sm" @click="showCopyDialog = true">
-          <ICON_COPY class="w-4 h-4 mr-1" />
-          Copy from
-        </Button>
-        <Button variant="outline" size="sm" @click="showTemplateDialog = true">
-          <ICON_SPARKLES class="w-4 h-4 mr-1" />
-          Replace with template
-        </Button>
-      </div>
-    </div>
-    <p class="text-xs text-muted-foreground">
-      These actions replace the entire form configuration including settings, amounts, features, and
-      custom fields.
-    </p>
+  <!-- Actions when form exists -->
+  <div v-if="store.formConfig.formId" class="flex items-center gap-2 flex-wrap">
+    <Button variant="outline" size="sm" @click="showCopyDialog = true">
+      <ICON_COPY class="w-4 h-4 mr-1" />
+      Copy Form from
+    </Button>
+    <Button variant="outline" size="sm" @click="showTemplateDialog = true">
+      <ICON_REPLACE class="w-4 h-4 mr-1" />
+      Replace Form with Template
+    </Button>
+    <FieldHelpText v-if="props.helpText" icon-class="size-4">{{ props.helpText }}</FieldHelpText>
   </div>
 
-  <!-- No form state -->
+  <!-- Empty state -->
   <div v-else class="space-y-3">
     <div class="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
       <p>No form configured yet.</p>
       <p class="mt-1">Create a form from a template or copy from another campaign.</p>
     </div>
-    <div v-if="!store.isFundraiser" class="flex gap-2 flex-wrap">
+    <div class="flex gap-2 flex-wrap">
       <Button variant="outline" size="sm" @click="showTemplateDialog = true">
-        <ICON_SPARKLES class="w-4 h-4 mr-1" />
-        Create from template
+        <ICON_REPLACE class="w-4 h-4 mr-1" />
+        Create from Template
       </Button>
       <Button variant="outline" size="sm" @click="showCopyDialog = true">
         <ICON_COPY class="w-4 h-4 mr-1" />
-        Copy from another campaign
+        Copy from Campaign
       </Button>
     </div>
   </div>

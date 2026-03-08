@@ -3,8 +3,7 @@ import {
   alertField,
   sectionHeadingField,
   toggleField,
-  tabsField,
-  componentField
+  tabsField
 } from '~/features/_library/form-builder/api'
 import type { FormContext, FieldContext } from '~/features/_library/form-builder/types'
 import { useDonationFormBasicForm } from '~/features/donation-form/admin/forms/donation-form-basic-form'
@@ -21,7 +20,6 @@ import type { ContextSchemaInput } from '~/features/_library/custom-fields/forms
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 import { getCampaignCapabilities } from '~/features/campaigns/shared/utils/campaignCapabilities'
-import FormToolbar from '~/features/campaigns/admin/components/FormToolbar.vue'
 
 // Tab value constants — shared between tab definition and targets
 export const TAB_FORM_SETTINGS = 'formSettings' as const
@@ -58,7 +56,6 @@ export const DONATION_FORM_FIELD_TARGETS = {
 /**
  * Create donation form tab fields for the unified campaign master form.
  * Returns the inner fields for the "Donation Form" tab, including:
- *  - FormToolbar (componentField)
  *  - Form Settings sub-tab
  *  - Donation Amounts sub-tab
  *  - Features sub-tab (accordion sections)
@@ -139,13 +136,6 @@ export function createDonationFormTabFields(ctx: FormContext, contextSchema: Con
     return count > 0 ? `${count} active` : ''
   }
 
-  // Form toolbar (componentField — no store mapping, display only)
-  // Placed inside Form Settings tab so it's contextually clear these actions
-  // replace the entire form configuration (settings, amounts, features, custom fields)
-  const formToolbar = componentField('formToolbar', {
-    component: FormToolbar
-  })
-
   // Inner tabs for form sections
   const formTabs = tabsField('formTabs', {
     tabsListClass: 'w-full',
@@ -155,7 +145,7 @@ export function createDonationFormTabFields(ctx: FormContext, contextSchema: Con
         value: TAB_FORM_SETTINGS,
         label: 'Form Settings',
         visibleWhen: () => !store.isFundraiser,
-        fields: { formToolbar, ...formBasicFields }
+        fields: { ...formBasicFields }
       },
       {
         value: TAB_AMOUNTS,
