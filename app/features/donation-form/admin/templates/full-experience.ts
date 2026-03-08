@@ -69,12 +69,14 @@ export function createFullExperienceTemplate(
       features: {
         impactCart: {
           enabled: true,
+          products: [],
           settings: {
             initialDisplay: 3
           }
         },
         productSelector: {
           enabled: true,
+          products: [],
           config: {
             icon: '🦧',
             entity: { singular: 'Orangutan', plural: 'Orangutans' },

@@ -32,7 +32,7 @@ const { contextSchema: donationContextSchema } = useDonationFormContext()
 // Admin-side resolver: reads entry fields from live form values for reactive conditions
 const adminContextSchemaResolver = (rootValues: Record<string, unknown>): ContextSchema => {
   const currencies = effectiveCurrencies.value.supportedCurrencies
-  const products = store.formConfig.products.map((p) => ({ id: p.id, name: p.title }))
+  const products = store.allProducts.map((p) => ({ id: p.id, name: p.title }))
   const schema = buildBaseContextSchema(currencies, products)
 
   // With nested tabs, entry fields are under config.sections.donationForm.formTabs.features

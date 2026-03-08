@@ -110,12 +110,14 @@ export function createBasicWithImpactTemplate(
       features: {
         impactCart: {
           enabled: false,
+          products: [],
           settings: {
             initialDisplay: 3
           }
         },
         productSelector: {
           enabled: false,
+          products: [],
           config: {
             icon: '🦧',
             entity: { singular: 'Orangutan', plural: 'Orangutans' },

@@ -118,8 +118,15 @@ describe('useForm', () => {
 
     const { updateForm } = useForm()
 
-    // Simulate removing productB (user clicks X) — mutate formConfig directly
-    configStore.formConfig.products = [productA]
+    // Simulate removing productB (user clicks X) — mutate both feature product lists
+    configStore.formConfig.impactCart = {
+      ...configStore.formConfig.impactCart!,
+      products: [productA]
+    }
+    configStore.formConfig.productSelector = {
+      ...configStore.formConfig.productSelector!,
+      products: [productA]
+    }
 
     await updateForm()
 

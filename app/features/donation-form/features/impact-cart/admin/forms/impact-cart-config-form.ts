@@ -34,13 +34,20 @@ export const useMultipleProductsConfigSection = defineForm('impactCart', (_ctx) 
     description: 'Allow donors to add multiple products to their cart',
     labelClass: 'font-bold',
     showSeparatorAfter: true,
-    visibleWhen: () => !isRegistration()
+    visibleWhen: () => !isRegistration(),
+    rules: () => {
+      const productCount = useCampaignConfigStore().formConfig.impactCart?.products?.length ?? 0
+      return z.boolean().refine((val) => !val || productCount >= 2, {
+        message: 'At least 2 products must be added to enable this feature'
+      })
+    }
   })
 
   const productList = componentField('productList', {
     label: 'Products Available',
     description: 'Products that donors can add to their cart.',
     component: FormProductList,
+    props: { featureKey: 'impactCart' as const },
     visibleWhen: ({ values }) => values.enabled === true,
     showSeparatorAfter: true
   })

@@ -47,10 +47,12 @@ export function createStallBookingTemplate(
       features: {
         impactCart: {
           enabled: true,
+          products: [],
           settings: { initialDisplay: 3 }
         },
         productSelector: {
           enabled: true,
+          products: [],
           config: {
             icon: '🏪',
             entity: { singular: 'Stall', plural: 'Stalls' },

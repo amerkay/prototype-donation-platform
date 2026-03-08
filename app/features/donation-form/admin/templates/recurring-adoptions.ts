@@ -60,12 +60,14 @@ export function createRecurringAdoptionsTemplate(
       features: {
         impactCart: {
           enabled: false,
+          products: [],
           settings: {
             initialDisplay: 3
           }
         },
         productSelector: {
           enabled: true,
+          products: [],
           config: {
             icon: '🦧',
             entity: { singular: 'Orangutan', plural: 'Orangutans' },

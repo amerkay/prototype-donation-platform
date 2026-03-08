@@ -511,6 +511,100 @@ describe('FormConfig Store', () => {
     })
   })
 
+  describe('per-feature product isolation', () => {
+    it('removing a product from impactCart does NOT affect productSelector products', () => {
+      const store = useFormConfigStore()
+      const products = [
+        {
+          id: 'p1',
+          name: 'P1',
+          title: 'Product 1',
+          description: '',
+          frequency: 'once' as const,
+          image: null
+        },
+        {
+          id: 'p2',
+          name: 'P2',
+          title: 'Product 2',
+          description: '',
+          frequency: 'once' as const,
+          image: null
+        },
+        {
+          id: 'p3',
+          name: 'P3',
+          title: 'Product 3',
+          description: '',
+          frequency: 'once' as const,
+          image: null
+        }
+      ]
+      const config = makeFormConfig({
+        features: {
+          impactCart: { enabled: true, settings: { initialDisplay: 3 } },
+          productSelector: {
+            enabled: true,
+            config: {
+              icon: '🎯',
+              entity: { singular: 'p', plural: 'ps' },
+              action: { verb: 'support', noun: 'p' }
+            }
+          },
+          impactBoost: { enabled: false },
+          coverCosts: { enabled: false },
+          tribute: { enabled: false },
+          customFields: { customFieldsTabs: {} },
+          entryFields: { enabled: false, mode: 'shared', fields: [] },
+          contactConsent: { enabled: true, settings: { label: 'Join', description: 'Desc' } },
+          terms: { enabled: true }
+        } as unknown as FullFormConfig['features']
+      })
+
+      store.initialize(config, products, 'form-1')
+
+      const campaignStore = useCampaignConfigStore()
+      // Both features should have received the shared products
+      expect(campaignStore.formConfig.impactCart?.products).toHaveLength(3)
+      expect(campaignStore.formConfig.productSelector?.products).toHaveLength(3)
+
+      // Remove p2 from impactCart only
+      campaignStore.formConfig.impactCart = {
+        ...campaignStore.formConfig.impactCart!,
+        products: campaignStore.formConfig.impactCart!.products.filter((p) => p.id !== 'p2')
+      }
+
+      // impactCart lost p2, productSelector must still have all 3
+      expect(campaignStore.formConfig.impactCart?.products).toHaveLength(2)
+      expect(campaignStore.formConfig.productSelector?.products).toHaveLength(3)
+
+      // allProducts (union) should have all 3 (p2 still in productSelector)
+      expect(campaignStore.allProducts).toHaveLength(3)
+    })
+
+    it('each feature gets independent copies (no shared references)', () => {
+      const store = useFormConfigStore()
+      const products = [
+        {
+          id: 'p1',
+          name: 'P1',
+          title: 'Product 1',
+          description: '',
+          frequency: 'once' as const,
+          image: null
+        }
+      ]
+      store.initialize(makeFormConfig(), products, 'form-1')
+
+      const campaignStore = useCampaignConfigStore()
+      const icProducts = campaignStore.formConfig.impactCart?.products
+      const psProducts = campaignStore.formConfig.productSelector?.products
+
+      // Must be separate arrays, not the same reference
+      expect(icProducts).not.toBe(psProducts)
+    })
+  })
+
   describe('frequency enforcement by campaign type', () => {
     it('disables monthly and yearly for p2p-fundraiser campaigns', () => {
       const config = makeFormConfig()

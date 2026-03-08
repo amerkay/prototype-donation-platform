@@ -76,7 +76,7 @@ export function createDonationFormTabFields(ctx: FormContext, contextSchema: Con
   const tributeFields = useTributeConfigSection.setup(ctx)
   const contactConsentFields = useContactConsentConfigSection.setup(ctx)
   const entryFieldsFields = createEntryFieldsConfigSection(
-    store.formConfig.products,
+    store.allProducts,
     currencyStore.supportedCurrencies
   ).setup(ctx)
   const customFieldsFields = createDonationCustomFieldsConfigSection(contextSchema).setup(ctx)

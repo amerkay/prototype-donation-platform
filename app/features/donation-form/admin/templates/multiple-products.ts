@@ -60,12 +60,14 @@ export function createMultipleProductsTemplate(
       features: {
         impactCart: {
           enabled: true,
+          products: [],
           settings: {
             initialDisplay: 3
           }
         },
         productSelector: {
           enabled: false,
+          products: [],
           config: {
             icon: '🦧',
             entity: { singular: 'Orangutan', plural: 'Orangutans' },

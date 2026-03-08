@@ -8,6 +8,7 @@ import {
   componentField
 } from '~/features/_library/form-builder/api'
 import FormProductList from '~/features/donation-form/admin/components/FormProductList.vue'
+import { useCampaignConfigStore } from '~/features/campaigns/shared/stores/campaignConfig'
 
 /**
  * Create product selector config section definition
@@ -21,13 +22,21 @@ export const useProductSelectorConfigSection = defineForm('productSelector', (_c
     label: 'Enable Product Selector',
     description: 'Show product selector interface to donors',
     labelClass: 'font-bold',
-    showSeparatorAfter: true
+    showSeparatorAfter: true,
+    rules: () => {
+      const productCount =
+        useCampaignConfigStore().formConfig.productSelector?.products?.length ?? 0
+      return z.boolean().refine((val) => !val || productCount >= 1, {
+        message: 'At least 1 product must be added to enable this feature'
+      })
+    }
   })
 
   const productList = componentField('productList', {
     label: 'Products Available',
     description: 'Products shown in the product selector.',
     component: FormProductList,
+    props: { featureKey: 'productSelector' as const },
     visibleWhen: ({ values }) => values.enabled === true,
     showSeparatorAfter: true
   })

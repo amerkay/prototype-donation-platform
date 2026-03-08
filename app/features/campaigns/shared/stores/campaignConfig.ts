@@ -53,9 +53,7 @@ function createDefaultFormConfig() {
     customFields: null as DonationCustomFieldsSettings | null,
     entryFields: null as EntryFieldsSettings | null,
     contactConsent: null as ContactConsentSettings | null,
-    terms: null as { enabled: boolean } | null,
-    products: [] as Product[],
-    quantityRemaining: undefined as Record<string, number> | undefined
+    terms: null as { enabled: boolean } | null
   }
 }
 
@@ -74,7 +72,7 @@ function createDefaultFormConfig() {
  * store.crowdfunding.title
  * // Form config data
  * store.formConfig.donationAmounts
- * store.formConfig.products
+ * store.allProducts (union of impactCart + productSelector products)
  * </script>
  * ```
  */
@@ -185,19 +183,12 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
       return null
     }
 
-    // Merge quantityRemaining back into impactCart.settings for serialization
-    const ic = formConfig.impactCart!
-    const mergedImpactCart: ImpactCartSettings = {
-      ...ic,
-      settings: { ...ic.settings, quantityRemaining: formConfig.quantityRemaining }
-    }
-
     return {
       version: formConfig.version,
       form: formConfig.form,
       donationAmounts: formConfig.donationAmounts,
       features: {
-        impactCart: mergedImpactCart,
+        impactCart: formConfig.impactCart!,
         productSelector: formConfig.productSelector!,
         impactBoost: formConfig.impactBoost!,
         coverCosts: formConfig.coverCosts!,
@@ -210,6 +201,21 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     }
   })
 
+  /** All products across both features (deduplicated union) */
+  const allProducts = computed((): Product[] => {
+    const icProducts = formConfig.impactCart?.products ?? []
+    const psProducts = formConfig.productSelector?.products ?? []
+    const seen = new Set<string>()
+    const result: Product[] = []
+    for (const p of [...icProducts, ...psProducts]) {
+      if (!seen.has(p.id)) {
+        seen.add(p.id)
+        result.push(p)
+      }
+    }
+    return result
+  })
+
   /** Reconstructed CampaignForm from formConfig state (for saving) */
   const assembledForm = computed((): CampaignForm | null => {
     if (!formConfig.formId || !fullFormConfig.value) return null
@@ -219,7 +225,7 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
       name: formConfig.formName,
       isDefault: formConfig.formIsDefault,
       config: fullFormConfig.value,
-      products: formConfig.products,
+      products: allProducts.value,
       createdAt: form.value?.createdAt ?? new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
@@ -284,9 +290,17 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     formConfig.version = config.version
     formConfig.form = config.form
     formConfig.donationAmounts = config.donationAmounts
-    formConfig.impactCart = config.features.impactCart
-    formConfig.quantityRemaining = config.features.impactCart?.settings?.quantityRemaining
-    formConfig.productSelector = config.features.productSelector
+    // Distribute products into per-feature arrays (independent clones)
+    // Legacy data has products at form level; new data has them per-feature
+    const cloneProducts = () => JSON.parse(JSON.stringify(cf.products ?? [])) as Product[]
+    formConfig.impactCart = {
+      ...config.features.impactCart,
+      products: config.features.impactCart?.products ?? cloneProducts()
+    }
+    formConfig.productSelector = {
+      ...config.features.productSelector,
+      products: config.features.productSelector?.products ?? cloneProducts()
+    }
     formConfig.impactBoost = config.features.impactBoost
     formConfig.coverCosts = config.features.coverCosts
     formConfig.tribute = config.features.tribute
@@ -314,7 +328,6 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
       }
     }
     formConfig.terms = config.features.terms ?? { enabled: true }
-    formConfig.products = JSON.parse(JSON.stringify(cf.products)) as Product[]
   }
 
   function initialize(campaign: Campaign) {
@@ -405,6 +418,7 @@ export const useCampaignConfigStore = defineStore('campaignConfig', () => {
     fullCampaign,
     // Form Config Getters
     fullFormConfig,
+    allProducts,
     assembledForm,
     // Actions
     initialize,

@@ -97,18 +97,8 @@ export const useFormConfigStore = defineStore('formConfig', () => {
       fc.terms = v
     }
   })
-  const products = computed({
-    get: () => fc.products,
-    set: (v) => {
-      fc.products = v
-    }
-  })
-  const quantityRemaining = computed({
-    get: () => fc.quantityRemaining,
-    set: (v) => {
-      fc.quantityRemaining = v
-    }
-  })
+  /** All products across both features (deduplicated) */
+  const products = computed(() => campaignStore.allProducts)
 
   // Getters
   const fullConfig = computed(() => campaignStore.fullFormConfig)
@@ -128,6 +118,7 @@ export const useFormConfigStore = defineStore('formConfig', () => {
     campaignType?: CampaignType
   ) {
     // Build a minimal CampaignForm shape for initializeFormConfig
+    // Products are distributed per-feature inside initializeFormConfig
     campaignStore.initializeFormConfig(
       {
         id: id ?? '',
@@ -146,7 +137,7 @@ export const useFormConfigStore = defineStore('formConfig', () => {
 
   function toSnapshot(): [FullFormConfig, Product[], string | null] | undefined {
     if (!fullConfig.value || !fc.formId) return undefined
-    return JSON.parse(JSON.stringify([fullConfig.value, fc.products, fc.formId]))
+    return JSON.parse(JSON.stringify([fullConfig.value, campaignStore.allProducts, fc.formId]))
   }
 
   function markDirty() {
@@ -173,7 +164,6 @@ export const useFormConfigStore = defineStore('formConfig', () => {
     contactConsent,
     terms,
     products,
-    quantityRemaining,
     isDirty,
     isSaving,
     // Getters

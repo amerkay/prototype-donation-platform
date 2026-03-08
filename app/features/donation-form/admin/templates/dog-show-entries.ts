@@ -47,10 +47,12 @@ export function createDogShowEntriesTemplate(
       features: {
         impactCart: {
           enabled: true,
+          products: [],
           settings: { initialDisplay: 6 }
         },
         productSelector: {
           enabled: true,
+          products: [],
           config: {
             icon: '🐕',
             entity: { singular: 'Category', plural: 'Categories' },
