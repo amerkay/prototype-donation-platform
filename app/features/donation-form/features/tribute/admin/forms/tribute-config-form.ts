@@ -6,6 +6,7 @@ import {
   textField,
   emojiField
 } from '~/features/_library/form-builder/api'
+import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 
 /**
  * Create tribute config section definition
@@ -19,7 +20,14 @@ export const useTributeConfigSection = defineForm('tribute', (_ctx) => {
     label: 'Enable Tribute Feature',
     description: 'Allow donors to dedicate donations as gifts or memorials',
     labelClass: 'font-bold',
-    showSeparatorAfter: true
+    showSeparatorAfter: true,
+    rules: () => {
+      const tribute = useFormConfigStore().tribute
+      const hasType = tribute?.types?.giftEnabled || tribute?.types?.memorialEnabled
+      return z.boolean().refine((val) => !val || hasType, {
+        message: 'At least one tribute type (Gift or Memorial) must be enabled'
+      })
+    }
   })
 
   const showForOnceFrequency = toggleField('showForOnceFrequency', {

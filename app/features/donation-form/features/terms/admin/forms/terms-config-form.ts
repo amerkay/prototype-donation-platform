@@ -7,6 +7,7 @@ import {
   selectField,
   richTextField
 } from '~/features/_library/form-builder/api'
+import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 
 /**
  * Admin config section for Terms & Conditions feature
@@ -16,7 +17,16 @@ export const useTermsConfigSection = defineForm('terms', (_ctx) => {
     label: 'Enable Terms & Conditions',
     description: 'Require donors to accept terms before completing',
     labelClass: 'font-bold',
-    showSeparatorAfter: true
+    showSeparatorAfter: true,
+    rules: () => {
+      const terms = useFormConfigStore().terms as Record<string, unknown>
+      const mode = terms?.mode
+      const hasContent =
+        mode === 'link' ? !!terms?.externalUrl : mode === 'content' ? !!terms?.richContent : false
+      return z.boolean().refine((val) => !val || hasContent, {
+        message: 'Terms URL or content must be provided before enabling'
+      })
+    }
   })
 
   const mode = selectField('mode', {

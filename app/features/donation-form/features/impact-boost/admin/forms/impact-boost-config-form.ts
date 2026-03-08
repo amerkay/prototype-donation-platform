@@ -5,6 +5,7 @@ import {
   fieldGroup,
   textareaField
 } from '~/features/_library/form-builder/api'
+import { useFormConfigStore } from '~/features/donation-form/shared/stores/formConfig'
 
 /**
  * Create impact boost config section definition
@@ -15,7 +16,14 @@ export const useImpactBoostConfigSection = defineForm('impactBoost', (_ctx) => {
     label: 'Enable Impact Boost',
     description: 'Show emotional upsell prompts to encourage recurring donations or higher amounts',
     labelClass: 'font-bold',
-    showSeparatorAfter: true
+    showSeparatorAfter: true,
+    rules: () => {
+      const boost = useFormConfigStore().impactBoost
+      const hasUpsell = boost?.upsells?.enableRecurringBoost || boost?.upsells?.enableIncreaseBoost
+      return z.boolean().refine((val) => !val || hasUpsell, {
+        message: 'At least one upsell option must be enabled'
+      })
+    }
   })
 
   const recurringBoostMessage = textareaField('recurringBoostMessage', {
