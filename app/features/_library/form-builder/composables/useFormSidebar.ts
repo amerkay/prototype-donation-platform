@@ -5,6 +5,7 @@ import type { ConditionGroup } from '../conditions'
 import { checkFieldVisibility } from './useFieldPath'
 import { activateHashTarget, lastActivatedTarget } from './useHashTarget'
 import { resolveText, type ResolvableText } from './useResolvedFieldMeta'
+import { useCombinedErrors } from './useCombinedErrors'
 
 // ============================================================================
 // TYPES
@@ -26,6 +27,10 @@ export interface SidebarNode {
   badgeVariant?: string | ((ctx: FieldContext) => string)
   /** Visibility conditions accumulated from ancestors + this node */
   visibilityChecks?: Array<{ visibleWhen: VisibilityFn | ConditionGroup; valuesPath: string }>
+  /** @internal Full dot-path for error tracking (e.g., 'sections.crowdfunding') */
+  _fullPath?: string
+  /** @internal Field definitions for schema-based error validation */
+  _fields?: Record<string, FieldDef>
 }
 
 export interface FormSidebarState {
@@ -35,6 +40,7 @@ export interface FormSidebarState {
   navigateTo: (path: string) => void
   isNodeActive: (node: SidebarNode) => boolean
   isNodeEnabled: (node: SidebarNode) => boolean
+  nodeHasErrors: (node: SidebarNode) => boolean
 }
 
 export const FORM_SIDEBAR_KEY: InjectionKey<FormSidebarState> = Symbol('formSidebar')
@@ -87,7 +93,9 @@ function buildTabsNodes(
       enabledToggleKey: tab.fields ? detectEnabledToggle(tab.fields) : undefined,
       badgeLabel: tab.badgeLabel,
       badgeVariant: tab.badgeVariant,
-      visibilityChecks: tabChecks.length > 0 ? tabChecks : undefined
+      visibilityChecks: tabChecks.length > 0 ? tabChecks : undefined,
+      _fullPath: tabPath,
+      _fields: tab.fields
     }
 
     nodes.push(node)
@@ -135,7 +143,9 @@ function buildTreeFromFields(
           enabledToggleKey: detectEnabledToggle(group.fields),
           badgeLabel: group.badgeLabel,
           badgeVariant: group.badgeVariant,
-          visibilityChecks: fieldChecks.length > 0 ? fieldChecks : undefined
+          visibilityChecks: fieldChecks.length > 0 ? fieldChecks : undefined,
+          _fullPath: fieldPath,
+          _fields: group.fields
         }
         nodes.push(node)
       } else if (group.fields) {
@@ -316,6 +326,41 @@ export function useFormSidebar(
     return node.children?.some((c) => c.path === activePath.value) ?? false
   }
 
+  // ── Error detection (useCombinedErrors per node) ──
+  // Mirrors FormFieldTabs pattern: create error trackers upfront for all nodes.
+  // Uses schema validation so errors are detected even for unmounted tabs/groups.
+  function collectAllNodes(nodes: SidebarNode[]): SidebarNode[] {
+    const result: SidebarNode[] = []
+    for (const node of nodes) {
+      result.push(node)
+      if (node.children) result.push(...collectAllNodes(node.children))
+    }
+    return result
+  }
+
+  const allNodes = collectAllNodes(rawTree)
+  const errorTrackers: Record<string, ComputedRef<boolean>> = {}
+
+  for (const node of allNodes) {
+    if (!node._fullPath || !node._fields) continue
+
+    const nodePath = computed(() => node._fullPath!)
+    const nodeScopedValues = computed(() => {
+      const ctx = fieldContext()
+      return buildScopedContext(ctx, node._fullPath!)
+    })
+
+    errorTrackers[node.id] = useCombinedErrors(nodePath, node._fields, nodeScopedValues)
+  }
+
+  function nodeHasErrors(node: SidebarNode): boolean {
+    if (errorTrackers[node.id]?.value) return true
+    if (node.children) {
+      return node.children.some((child) => nodeHasErrors(child))
+    }
+    return false
+  }
+
   function isNodeEnabled(node: SidebarNode): boolean {
     if (!node.enabledToggleKey) return false
     const ctx = fieldContext()
@@ -335,7 +380,8 @@ export function useFormSidebar(
     fieldContext,
     navigateTo,
     isNodeActive,
-    isNodeEnabled
+    isNodeEnabled,
+    nodeHasErrors
   }
 }
 

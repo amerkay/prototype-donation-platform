@@ -32,6 +32,10 @@ function resolvedBadge(node: SidebarNode): string {
   if (node.enabledToggleKey) return ''
   return resolveText(node.badgeLabel, sidebar.fieldContext()) ?? ''
 }
+
+function hasErrors(node: SidebarNode): boolean {
+  return sidebar.nodeHasErrors(node)
+}
 </script>
 
 <template>
@@ -55,8 +59,13 @@ function resolvedBadge(node: SidebarNode): string {
             class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-2 pt-1.5 pb-1 flex items-center gap-1.5"
           >
             {{ resolvedLabel(node) }}
+            <Icon
+              v-if="hasErrors(node)"
+              name="lucide:alert-circle"
+              class="size-3 text-destructive shrink-0"
+            />
             <span
-              v-if="resolvedBadge(node)"
+              v-else-if="resolvedBadge(node)"
               class="normal-case tracking-normal font-medium text-muted-foreground"
             >
               {{ resolvedBadge(node) }}
@@ -74,8 +83,13 @@ function resolvedBadge(node: SidebarNode): string {
                   @click="sidebar.navigateTo(child.path)"
                 >
                   <span class="truncate">{{ resolvedLabel(child) }}</span>
+                  <Icon
+                    v-if="hasErrors(child)"
+                    name="lucide:alert-circle"
+                    class="ml-auto size-3.5 text-destructive shrink-0"
+                  />
                   <span
-                    v-if="resolvedBadge(child)"
+                    v-else-if="resolvedBadge(child)"
                     class="ml-auto text-[10px] tabular-nums text-muted-foreground"
                   >
                     {{ resolvedBadge(child) }}
@@ -90,8 +104,13 @@ function resolvedBadge(node: SidebarNode): string {
                       class="w-full"
                       @click="sidebar.navigateTo(grandchild.path)"
                     >
+                      <Icon
+                        v-if="hasErrors(grandchild)"
+                        name="lucide:alert-circle"
+                        class="size-3.5 text-destructive shrink-0"
+                      />
                       <span
-                        v-if="grandchild.enabledToggleKey"
+                        v-else-if="grandchild.enabledToggleKey"
                         :class="[
                           'inline-block h-1.5 w-1.5 rounded-full shrink-0',
                           sidebar.isNodeEnabled(grandchild)
@@ -101,7 +120,7 @@ function resolvedBadge(node: SidebarNode): string {
                       />
                       <span class="truncate">{{ resolvedLabel(grandchild) }}</span>
                       <span
-                        v-if="resolvedBadge(grandchild)"
+                        v-if="!hasErrors(grandchild) && resolvedBadge(grandchild)"
                         class="ml-auto text-[10px] tabular-nums text-muted-foreground"
                       >
                         {{ resolvedBadge(grandchild) }}
@@ -119,8 +138,13 @@ function resolvedBadge(node: SidebarNode): string {
                   class="w-full translate-x-0"
                   @click="sidebar.navigateTo(child.path)"
                 >
+                  <Icon
+                    v-if="hasErrors(child)"
+                    name="lucide:alert-circle"
+                    class="size-3.5 text-destructive shrink-0"
+                  />
                   <span
-                    v-if="child.enabledToggleKey"
+                    v-else-if="child.enabledToggleKey"
                     :class="[
                       'inline-block h-1.5 w-1.5 rounded-full shrink-0',
                       sidebar.isNodeEnabled(child) ? 'bg-emerald-500' : 'bg-muted-foreground/30'
@@ -128,7 +152,7 @@ function resolvedBadge(node: SidebarNode): string {
                   />
                   <span class="truncate">{{ resolvedLabel(child) }}</span>
                   <span
-                    v-if="resolvedBadge(child)"
+                    v-if="!hasErrors(child) && resolvedBadge(child)"
                     class="ml-auto text-[10px] tabular-nums text-muted-foreground"
                   >
                     {{ resolvedBadge(child) }}
@@ -150,8 +174,13 @@ function resolvedBadge(node: SidebarNode): string {
                 class="w-full translate-x-0"
                 @click="sidebar.navigateTo(node.path)"
               >
+                <Icon
+                  v-if="hasErrors(node)"
+                  name="lucide:alert-circle"
+                  class="size-3.5 text-destructive shrink-0"
+                />
                 <span
-                  v-if="node.enabledToggleKey"
+                  v-else-if="node.enabledToggleKey"
                   :class="[
                     'inline-block h-1.5 w-1.5 rounded-full shrink-0',
                     sidebar.isNodeEnabled(node) ? 'bg-emerald-500' : 'bg-muted-foreground/30'
