@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest'
+import { computed } from 'vue'
 import { setActivePinia, createPinia } from 'pinia'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
+import {
+  currencyOpenAccordionId,
+  useCurrencySettingsForm
+} from '~/features/settings/admin/forms/currency-settings-form'
+import type { FieldGroupDef } from '~/features/_library/form-builder/types'
 
 describe('Currency Settings Store', () => {
   beforeEach(() => {
@@ -109,6 +115,64 @@ describe('Currency Settings Store', () => {
     expect(snapshot.supportedCurrencies).not.toBe(store.supportedCurrencies)
   })
 
+  describe('ensureMultiplierEntries', () => {
+    it('auto-populates missing multiplier entries for supported non-default currencies on initialize', () => {
+      const store = useCurrencySettingsStore()
+      store.initialize({
+        supportedCurrencies: ['GBP', 'USD', 'AUD'],
+        defaultCurrency: 'GBP',
+        currencyMultipliers: { USD: 2.0 }
+      })
+
+      // AUD was missing — should be auto-populated with 1.0
+      expect(store.currencyMultipliers).toEqual({ USD: 2.0, AUD: 1.0 })
+      // Should still be clean (ensureMultiplierEntries is part of initialize)
+      expect(store.isDirty).toBe(false)
+    })
+
+    it('auto-populates when supportedCurrencies is updated via ref (setData path)', () => {
+      const store = useCurrencySettingsStore()
+      store.initialize({
+        supportedCurrencies: ['GBP', 'USD'],
+        defaultCurrency: 'GBP',
+        currencyMultipliers: { USD: 1.5 }
+      })
+
+      // Simulate setData writing directly to the ref (as storeMapping does)
+      store.supportedCurrencies = ['GBP', 'USD', 'CAD']
+
+      // CAD should be auto-populated via the watch
+      expect(store.currencyMultipliers.CAD).toBe(1.0)
+      // USD should be untouched
+      expect(store.currencyMultipliers.USD).toBe(1.5)
+    })
+
+    it('does not add multiplier entry for default currency', () => {
+      const store = useCurrencySettingsStore()
+      store.initialize({
+        supportedCurrencies: ['GBP', 'USD'],
+        defaultCurrency: 'GBP',
+        currencyMultipliers: { USD: 1.0 }
+      })
+
+      expect(store.currencyMultipliers).toEqual({ USD: 1.0 })
+      expect('GBP' in store.currencyMultipliers).toBe(false)
+    })
+
+    it('does not overwrite existing multiplier values', () => {
+      const store = useCurrencySettingsStore()
+      store.initialize({
+        supportedCurrencies: ['GBP', 'USD', 'EUR'],
+        defaultCurrency: 'GBP',
+        currencyMultipliers: { USD: 2.0 }
+      })
+
+      // USD kept its value, EUR was auto-populated
+      expect(store.currencyMultipliers.USD).toBe(2.0)
+      expect(store.currencyMultipliers.EUR).toBe(1.0)
+    })
+  })
+
   it('initialize resets multipliers', () => {
     const store = useCurrencySettingsStore()
     store.initialize({
@@ -128,5 +192,37 @@ describe('Currency Settings Store', () => {
 
     expect(store.getMultiplier('EUR')).toBe(1.0)
     expect(store.getMultiplier('GBP')).toBe(1.0)
+  })
+})
+
+describe('Currency accordion ↔ preview sync', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    currencyOpenAccordionId.value = undefined
+  })
+
+  it('onAccordionToggle sets currencyOpenAccordionId to currency code when opened', () => {
+    const ctx = {
+      values: computed(() => ({})),
+      form: computed(() => ({})),
+      title: undefined,
+      description: undefined
+    }
+    const fields = useCurrencySettingsForm.setup(ctx)
+    // Navigate into currencies → currencyTabs → multipliers tab to find currency groups
+    const currencies = fields.currencies as FieldGroupDef
+    const currencyTabs = currencies.fields.currencyTabs as {
+      tabs: Array<{ value: string; fields: Record<string, unknown> }>
+    }
+    const multipliersTab = currencyTabs.tabs.find((t) => t.value === 'multipliers')!
+    const usdGroup = multipliersTab.fields.USD as FieldGroupDef
+
+    // Simulate accordion opening
+    usdGroup.onAccordionToggle!('any-id', true)
+    expect(currencyOpenAccordionId.value).toBe('USD')
+
+    // Simulate accordion closing
+    usdGroup.onAccordionToggle!('any-id', false)
+    expect(currencyOpenAccordionId.value).toBeUndefined()
   })
 })

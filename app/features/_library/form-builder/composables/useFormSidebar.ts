@@ -293,6 +293,12 @@ export function useFormSidebar(
     { immediate: true }
   )
 
+  // Default to first visible node when no hash sets the active path
+  if (!activePath.value && tree.value.length > 0) {
+    const first = tree.value[0]!
+    activePath.value = first.children?.[0]?.path ?? first.path
+  }
+
   // Sync from programmatic activateHashTarget calls (search, preview clicks)
   watch(lastActivatedTarget, (activated) => {
     if (!activated) return

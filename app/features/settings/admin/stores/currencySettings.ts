@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { CurrencySettings } from '~/features/settings/admin/types'
 import { currencySettings } from '~/sample-api-responses/api-sample-response-settings'
 import { useEditableState } from '~/features/_admin/composables/defineEditableStore'
@@ -55,7 +55,20 @@ export const useCurrencySettingsStore = defineStore('currencySettings', () => {
     supportedCurrencies.value = settings.supportedCurrencies
     defaultCurrency.value = settings.defaultCurrency
     currencyMultipliers.value = { ...settings.currencyMultipliers }
+    ensureMultiplierEntries()
     markClean()
+  }
+
+  /** Ensure all supported non-default currencies have a multiplier entry (default 1.0) */
+  function ensureMultiplierEntries() {
+    let added = false
+    for (const currency of supportedCurrencies.value) {
+      if (currency !== defaultCurrency.value && !(currency in currencyMultipliers.value)) {
+        currencyMultipliers.value[currency] = 1.0
+        added = true
+      }
+    }
+    return added
   }
 
   function updateSettings(settings: Partial<CurrencySettings>) {
@@ -68,6 +81,7 @@ export const useCurrencySettingsStore = defineStore('currencySettings', () => {
     if (settings.currencyMultipliers !== undefined) {
       currencyMultipliers.value = { ...settings.currencyMultipliers }
     }
+    ensureMultiplierEntries()
     markDirty()
   }
 
@@ -100,6 +114,10 @@ export const useCurrencySettingsStore = defineStore('currencySettings', () => {
       /* ignore */
     }
   }
+
+  // Auto-populate multiplier entries when supported currencies change
+  // (e.g., user adds AUD → store needs currencyMultipliers.AUD for setData to write to)
+  watch(supportedCurrencies, () => ensureMultiplierEntries(), { flush: 'sync' })
 
   // Hydrate immediately on client (before components render)
   if (import.meta.client) {

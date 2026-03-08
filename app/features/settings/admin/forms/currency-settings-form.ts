@@ -92,6 +92,9 @@ export const useCurrencySettingsForm = defineForm('currencySettings', () => {
       },
       collapsible: true,
       collapsibleDefaultOpen: false,
+      onAccordionToggle: (_id: string, isOpen: boolean) => {
+        currencyOpenAccordionId.value = isOpen ? currency : undefined
+      },
       wrapperClass: 'border rounded-lg p-4',
       visibleWhen: ({ root }: FieldContext) => {
         const currencies = root.currencies as Record<string, unknown> | undefined
