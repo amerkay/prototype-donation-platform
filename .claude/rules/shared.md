@@ -18,6 +18,7 @@ paths:
 
 1. Use `EditLayout` for the two-column layout with built-in discard/leave dialogs
 2. Wire up save/discard/dirty/nav guard via `useEditState` (exports `EditableStore`, `DeleteProtection`)
+3. For admin previews with hash-target highlighting: use `usePreviewSync` from `composables/usePreviewSync.ts`
 
 ## To use cross-entity data in filters or lookups
 

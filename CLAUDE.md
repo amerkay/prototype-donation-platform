@@ -87,8 +87,8 @@ app/features/[feature-name]/
 | Feature         | Path                      | Purpose                                                                                       |
 | --------------- | ------------------------- | --------------------------------------------------------------------------------------------- |
 | `_admin`        | `features/_admin/`        | Admin shell: sidebar, card grids, config panels, quick find                                   |
-| `_library`      | `features/_library/`      | Domain-agnostic: `form-builder`, `custom-fields`                                              |
-| `_shared`       | `features/_shared/`       | Cross-boundary: EditLayout, DataTable, useEditState, useEntityDataService                     |
+| `_library`      | `features/_library/`      | Domain-agnostic: `form-builder` (with auto-sidebar + search), `custom-fields`                 |
+| `_shared`       | `features/_shared/`       | Cross-boundary: EditLayout, DataTable, useEditState, useEntityDataService, usePreviewSync     |
 | `campaigns`     | `features/campaigns/`     | Campaign CRUD + create wizard. 4 sub-features: crowdfunding, matched-giving, p2p, sharing     |
 | `donation-form` | `features/donation-form/` | Form builder + donor checkout. 13 sub-features (impact-cart, cover-costs, gift-aid, tribute…) |
 | `donations`     | `features/donations/`     | Admin donation list, filters, refund actions                                                  |
@@ -109,16 +109,18 @@ app/features/[feature-name]/
 - `templates/admin/stores/emailTemplate.ts` — email template edit store
 - `templates/admin/stores/receiptTemplate.ts` — receipt template edit store
 - `templates/admin/stores/certificateTemplate.ts` — certificate template edit store
-- `settings/admin/stores/` — 11 settings stores (one per settings page)
+- `settings/admin/stores/` — 12 settings stores (one per settings page)
 
 ### Key Composables
 
 - `_admin/composables/defineEditableStore.ts` — factory for CRUD entity stores
 - `_admin/composables/defineSettingsStore.ts` — factory for settings page stores
 - `_admin/composables/useSessionStorageSingleton.ts` — singleton list data with session caching
+- `_admin/composables/useAdminConfigForm.ts` — wires defineForm to AdminConfigPanel with sidebar
 - `_admin/composables/useQuickFind.ts` — global admin search
 - `_shared/composables/useEditState.ts` — dirty detection + save/discard for edit pages
 - `_shared/composables/useEntityDataService.ts` — cross-entity filtering for list pages
+- `_shared/composables/usePreviewSync.ts` — reactive config→preview bridge for admin previews
 - `_shared/composables/useCompliance.ts` — GDPR/legal compliance utilities
 - `campaigns/shared/composables/useCampaigns.ts` — campaign list singleton
 - `campaigns/shared/utils/campaignCapabilities.ts` — feature-gating by campaign type (15 flags)
@@ -193,6 +195,7 @@ app/features/[feature-name]/
 30. Test data integrity with REAL stores (not mocks) — mock stores can't reproduce shared-reference bugs that only manifest through actual `ref()` assignment
 31. shadcn-vue components (e.g. `Empty`, `Input`) need explicit imports — they are NOT Nuxt auto-imported
 32. `useFormSearch` filters hidden fields reactively via `visibilityChecks` stored in the search index — pass `FieldContext` getter as 3rd arg
+33. `toSnapshot()` MUST include `id` — discard calls `store.initialize(snapshot)`, omitting `id` sets `templateId=undefined`, permanently breaking dirty detection
 
 <!-- end continuous learning notes -->
 

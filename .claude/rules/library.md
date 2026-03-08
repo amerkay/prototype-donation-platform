@@ -10,13 +10,14 @@ paths:
 ## To add a new form field type
 
 1. Read `form-builder/README.md` first
-2. Create a field constructor function following existing patterns in `api/` (e.g., `textField()`, `numberField()`, `selectField()`)
+2. Add a field constructor in `api/defineForm.ts`, export from `api/index.ts`. 24 field types exist (text, textarea, number, currency, hidden, toggle, checkbox, select, combobox, autocomplete, radioGroup, date, emoji, color, richText, slider, imageUpload, array, fieldGroup, tabs, card, alert, sectionHeading, readonly, component)
 3. All fields must support: `label`, `helpText`, `rules`, `visibleWhen`, `disabled`, `onChange`, `onVisibilityChange`
 4. Entry point for form definitions: `defineForm()` in `api/defineForm.ts`
 5. For help text UI: use `FieldHelpText` component (`internal/FieldHelpText.vue`) — supports `#trigger` slot
 6. Containers in `containers/`: `FormFieldArray` (repeating), `FormFieldGroup` (collapsible), `FormFieldTabs`
-7. Store auto-mapping: use `$storePath` metadata + `useAdminConfigForm()`
-8. No Pinia stores — state is managed via vee-validate + Vue Composition API
+7. Store auto-mapping: use `$storePath` metadata + `useAdminConfigForm()`. `$storePath: 'flatten'` recurses through tabs/groups for identity mappings
+8. Auto-sidebar: `useFormSidebar` + `FormSidebarNav` (internal). Search: `useFormSearch` + `FormSearchInput`
+9. No Pinia stores — state is managed via vee-validate + Vue Composition API
 
 ## To add a new custom field type
 
