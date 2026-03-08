@@ -201,6 +201,7 @@ defineExpose(expose)
 <template>
   <div class="space-y-4">
     <FormRenderer
+      :key="store.formConfig.formId"
       ref="formRef"
       v-model="modelValue"
       :section="form"

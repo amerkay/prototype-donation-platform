@@ -489,6 +489,155 @@ describe('FormConfig Store', () => {
     }
   }
 
+  describe('initializeFormConfig: template and copy scenarios', () => {
+    /** Full-experience form config with all features enabled */
+    function makeFullExperienceConfig(): FullFormConfig {
+      return {
+        version: '1.0',
+        form: { type: 'donation' } as unknown as FullFormConfig['form'],
+        donationAmounts: {
+          baseDefaultCurrency: 'GBP',
+          frequencies: {
+            once: { enabled: true, presets: [10, 25, 50, 100] },
+            monthly: { enabled: true, presets: [5, 10, 25] },
+            yearly: { enabled: true, presets: [25, 50, 100] }
+          }
+        } as unknown as FullFormConfig['donationAmounts'],
+        features: {
+          impactCart: { enabled: true, settings: { initialDisplay: 3 } },
+          productSelector: {
+            enabled: true,
+            config: {
+              icon: '🎯',
+              entity: { singular: 'p', plural: 'ps' },
+              action: { verb: 'support', noun: 'p' }
+            }
+          },
+          impactBoost: {
+            enabled: true,
+            messages: { recurringBoostMessage: 'Go monthly', increaseBoostMessage: 'Give more' },
+            upsells: { enableRecurringBoost: true, enableIncreaseBoost: true }
+          },
+          coverCosts: { enabled: true, percentage: 5 },
+          tribute: { enabled: true, settings: { allowDedicationType: true } },
+          customFields: { customFieldsTabs: {} },
+          entryFields: { enabled: true, mode: 'shared', fields: [] },
+          contactConsent: { enabled: true, settings: { label: 'Join', description: 'Desc' } },
+          terms: { enabled: true }
+        } as unknown as FullFormConfig['features']
+      }
+    }
+
+    it('full template replaces existing form — all feature properties preserved', () => {
+      const store = useFormConfigStore()
+      // Start with basic config (features disabled)
+      store.initialize(makeFormConfig(), [], 'form-1')
+      expect(store.impactBoost?.enabled).toBe(false)
+
+      // Apply full-experience template
+      const fullConfig = makeFullExperienceConfig()
+      const campaignForm: CampaignForm = {
+        id: 'form-2',
+        campaignId: 'camp-1',
+        name: 'Full Template',
+        isDefault: true,
+        config: fullConfig,
+        products: [{ id: 'p1', title: 'Product 1' }],
+        createdAt: '2025-01-01T00:00:00Z',
+        updatedAt: '2025-01-01T00:00:00Z'
+      } as unknown as CampaignForm
+
+      store.initializeFormConfig(campaignForm)
+
+      // ALL feature properties must be present
+      expect(store.impactBoost?.enabled).toBe(true)
+      expect(store.impactBoost?.upsells?.enableRecurringBoost).toBe(true)
+      expect(store.impactBoost?.upsells?.enableIncreaseBoost).toBe(true)
+      expect(store.impactCart?.enabled).toBe(true)
+      expect(store.productSelector?.enabled).toBe(true)
+      expect(store.coverCosts?.enabled).toBe(true)
+      expect(store.tribute?.enabled).toBe(true)
+    })
+
+    it('basic template disables features', () => {
+      const store = useFormConfigStore()
+      // Start with full config
+      store.initialize(makeFullExperienceConfig(), [], 'form-1')
+      expect(store.impactBoost?.enabled).toBe(true)
+
+      // Apply basic template (features disabled)
+      const basicForm: CampaignForm = {
+        id: 'form-3',
+        campaignId: 'camp-1',
+        name: 'Basic Template',
+        isDefault: true,
+        config: makeFormConfig(), // basic config
+        products: [],
+        createdAt: '2025-01-01T00:00:00Z',
+        updatedAt: '2025-01-01T00:00:00Z'
+      } as unknown as CampaignForm
+
+      store.initializeFormConfig(basicForm)
+
+      expect(store.impactBoost?.enabled).toBe(false)
+      expect(store.impactCart?.enabled).toBe(false)
+      expect(store.coverCosts?.enabled).toBe(false)
+      expect(store.tribute?.enabled).toBe(false)
+    })
+
+    it('campaign store forwards formConfigStore correctly', () => {
+      const formStore = useFormConfigStore()
+      const campaignStore = useCampaignConfigStore()
+
+      const fullConfig = makeFullExperienceConfig()
+      formStore.initialize(fullConfig, [], 'form-1')
+
+      // campaignStore.formConfig is the formConfigStore instance
+      expect(campaignStore.formConfig.impactBoost?.enabled).toBe(true)
+      expect(campaignStore.formConfig.impactBoost?.upsells?.enableRecurringBoost).toBe(true)
+      expect(campaignStore.formConfig.donationAmounts).toBe(formStore.donationAmounts)
+    })
+
+    it('re-initialization fully replaces old values (no bleeding)', () => {
+      const store = useFormConfigStore()
+
+      // Init form A with features enabled
+      store.initialize(makeFullExperienceConfig(), [], 'form-A')
+      expect(store.impactBoost?.enabled).toBe(true)
+      expect(store.formId).toBe('form-A')
+
+      // Init form B with features disabled
+      store.initialize(makeFormConfig(), [], 'form-B')
+      expect(store.impactBoost?.enabled).toBe(false)
+      expect(store.formId).toBe('form-B')
+
+      // No bleeding from form A
+      expect(store.impactCart?.enabled).toBe(false)
+      expect(store.coverCosts?.enabled).toBe(false)
+    })
+
+    it('allProducts and fullFormConfig forwarding reflects formConfigStore data', () => {
+      const formStore = useFormConfigStore()
+      const campaignStore = useCampaignConfigStore()
+
+      const products = [
+        {
+          id: 'p1',
+          name: 'P1',
+          title: 'Product 1',
+          description: '',
+          frequency: 'once' as const,
+          image: null
+        }
+      ]
+      formStore.initialize(makeFullExperienceConfig(), products, 'form-1')
+
+      expect(campaignStore.allProducts).toHaveLength(1)
+      expect(campaignStore.allProducts[0]!.id).toBe('p1')
+      expect(campaignStore.fullFormConfig?.features.impactBoost.enabled).toBe(true)
+    })
+  })
+
   describe('reference isolation', () => {
     it('Object.assign on store.donationAmounts must NOT mutate the original config', () => {
       const sourceConfig = makeFormConfig()

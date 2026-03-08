@@ -102,7 +102,7 @@ app/features/[feature-name]/
 ### Key Stores
 
 - `campaigns/shared/stores/campaignConfig.ts` — campaign edit store (CRUD)
-- `donation-form/shared/stores/formConfig.ts` — donation form config edit store
+- `donation-form/shared/stores/formConfig.ts` — donation form config state owner (reactive state, initialization, assembly)
 - `donation-form/donor/stores/donationForm.ts` — donor-side form runtime state
 - `donation-form/features/impact-cart/donor/stores/impactCart.ts` — cart state for impact items
 - `products/admin/stores/product.ts` — product edit store

@@ -65,9 +65,13 @@ function filterToExistingKeys(value: unknown, oldValue: unknown): unknown {
   const oldKeys = Object.keys(oldValue as Record<string, unknown>)
   const filtered: Record<string, unknown> = {}
   for (const k of oldKeys) {
-    if (k in (value as Record<string, unknown>)) {
-      filtered[k] = (value as Record<string, unknown>)[k]
-    }
+    // Prefer new value when present; preserve old value when form didn't emit the key
+    // (e.g. hidden/collapsed fieldGroup children). This prevents data loss while still
+    // stripping keys that only exist in the form value (display-only defaults).
+    filtered[k] =
+      k in (value as Record<string, unknown>)
+        ? (value as Record<string, unknown>)[k]
+        : (oldValue as Record<string, unknown>)[k]
   }
   return filtered
 }

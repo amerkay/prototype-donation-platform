@@ -823,6 +823,88 @@ describe('storeMapping', () => {
     })
   })
 
+  describe('filterToExistingKeys: data preservation', () => {
+    it('preserves store keys not emitted by form (hidden/collapsed fields)', () => {
+      const form = defineForm('test', () => ({
+        features: fieldGroup('features', {
+          fields: {
+            impactBoost: fieldGroup('impactBoost', {
+              fields: {
+                enabled: toggleField('enabled', { label: 'Enabled' })
+              }
+            })
+          },
+          $storePath: {
+            impactBoost: 'impactBoost'
+          }
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+      const setData = generateSetData(mapping)
+
+      // Store has full impactBoost with nested upsells
+      const store = {
+        impactBoost: {
+          enabled: true,
+          upsells: { enableRecurringBoost: true, enableOneTimeBoost: true }
+        },
+        markDirty: vi.fn()
+      }
+
+      // Form only emits { enabled: true } — upsells not rendered (collapsed/hidden)
+      setData(store, {
+        features: { impactBoost: { enabled: true } }
+      })
+
+      // upsells must be PRESERVED from old value, not dropped
+      expect(store.impactBoost.upsells).toEqual({
+        enableRecurringBoost: true,
+        enableOneTimeBoost: true
+      })
+      // No actual change → no dirty
+      expect(store.markDirty).not.toHaveBeenCalled()
+    })
+
+    it('still strips keys that exist in form value but not in store value', () => {
+      const form = defineForm('test', () => ({
+        config: fieldGroup('config', {
+          fields: {
+            form: fieldGroup('form', {
+              fields: {
+                formType: readonlyField('formType', {
+                  label: 'Type',
+                  defaultValue: 'donation'
+                }),
+                title: textField('title', { label: 'Title' })
+              }
+            })
+          },
+          $storePath: {
+            form: 'form'
+          }
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+      const setData = generateSetData(mapping)
+
+      const store = {
+        form: { title: 'My Form' },
+        markDirty: vi.fn()
+      }
+
+      // Form emits extra formType from readonlyField default
+      setData(store, {
+        config: { form: { title: 'My Form', formType: 'donation' } }
+      })
+
+      // Extra key still stripped (not in oldValue)
+      expect((store.form as Record<string, unknown>).formType).toBeUndefined()
+      expect(store.markDirty).not.toHaveBeenCalled()
+    })
+  })
+
   describe('integration: full form flow', () => {
     it('round-trips data correctly with convention mapping', () => {
       const form = defineForm('test', () => ({
