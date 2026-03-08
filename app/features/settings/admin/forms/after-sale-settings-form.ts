@@ -4,7 +4,8 @@ import {
   selectField,
   textField,
   richTextField,
-  fieldGroup
+  fieldGroup,
+  tabsField
 } from '~/features/_library/form-builder/api'
 
 const UPSELL_VARIABLES = [
@@ -56,19 +57,6 @@ export const useAfterSaleSettingsForm = defineForm('afterSale', (_ctx) => {
     visibleWhen: (ctx) => ctx.values.recurringUpsellEnabled === true
   })
 
-  const recurringUpsell = fieldGroup('recurringUpsell', {
-    label: 'Recurring Upsell',
-    description: 'Encourage one-time donors to convert to monthly giving on the confirmation page.',
-    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: {
-      recurringUpsellEnabled,
-      recurringUpsellFraction,
-      recurringUpsellHeadline,
-      recurringUpsellBody
-    },
-    $storePath: 'flatten'
-  })
-
   // ── Social Sharing ──
   const socialSharingEnabled = toggleField('socialSharingEnabled', {
     label: 'Enable social sharing',
@@ -82,13 +70,35 @@ export const useAfterSaleSettingsForm = defineForm('afterSale', (_ctx) => {
     visibleWhen: (ctx) => ctx.values.socialSharingEnabled === true
   })
 
-  const socialSharing = fieldGroup('socialSharing', {
-    label: 'Social Sharing',
-    description: 'Let donors share their donation on social media after completing a gift.',
+  // --- Tabbed layout ---
+  const afterSaleTabs = tabsField('afterSaleTabs', {
+    label: 'After Sale Configuration',
+    tabsListClass: 'w-full',
+    defaultValue: 'recurringUpsell',
+    tabs: [
+      {
+        value: 'recurringUpsell',
+        label: 'Recurring Upsell',
+        fields: {
+          recurringUpsellEnabled,
+          recurringUpsellFraction,
+          recurringUpsellHeadline,
+          recurringUpsellBody
+        }
+      },
+      {
+        value: 'socialSharing',
+        label: 'Social Sharing',
+        fields: { socialSharingEnabled, socialSharingMessage }
+      }
+    ]
+  })
+
+  const afterSale = fieldGroup('afterSale', {
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: { socialSharingEnabled, socialSharingMessage },
+    fields: { afterSaleTabs },
     $storePath: 'flatten'
   })
 
-  return { recurringUpsell, socialSharing }
+  return { afterSale }
 })

@@ -232,13 +232,31 @@ function resolveHashToFieldPath(
   return null
 }
 
+/**
+ * Resolve array index paths via suffix matching.
+ * E.g. hash `costs.costs.0` → strip `.0`, suffix-resolve `costs.costs` to
+ * `charitySettings.charityTabs.costs.costs`, then return `...costs.costs.0`.
+ */
+function resolveArrayBySuffix(hash: string, fields: Record<string, FieldDef>): string | null {
+  const match = hash.match(/^(.+)\.(\d+)$/)
+  if (!match) return null
+  const [, basePath, index] = match
+  const resolved =
+    resolveHashToFieldPath(basePath!, fields) ??
+    resolveHashBySuffix(basePath!, fields) ??
+    resolveHashToFieldPath(basePath!, fields, '', true)
+  return resolved ? `${resolved}.${index}` : null
+}
+
 function resolveHash(hash: string, fields: Record<string, FieldDef>): string | null {
   if (!hash) return null
   const cleanHash = decodeURIComponent(hash.startsWith('#') ? hash.slice(1) : hash)
+
   return (
     resolveHashToFieldPath(cleanHash, fields) ??
     resolveHashBySuffix(cleanHash, fields) ??
-    resolveHashToFieldPath(cleanHash, fields, '', true)
+    resolveHashToFieldPath(cleanHash, fields, '', true) ??
+    resolveArrayBySuffix(cleanHash, fields)
   )
 }
 

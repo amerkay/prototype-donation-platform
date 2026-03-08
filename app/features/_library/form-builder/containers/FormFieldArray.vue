@@ -105,13 +105,8 @@ const resolvedVeeName = computed(() => {
   })
 })
 
-// Hash path: strip sectionId prefix from vee-validate path for hash target matching
-const hashFullPath = computed(() => {
-  const veeName = resolvedVeeName.value
-  return sectionId && veeName.startsWith(`${sectionId}.`)
-    ? veeName.slice(sectionId.length + 1)
-    : veeName
-})
+// Hash path: pass full vee-validate path — useHashTarget handles sectionId stripping
+const hashFullPath = computed(() => resolvedVeeName.value)
 
 // Highlight a specific array item when targeted via deep link (e.g. costs.0)
 const { hashTargetChildSegment, cleared } = useHashTarget(hashFullPath)

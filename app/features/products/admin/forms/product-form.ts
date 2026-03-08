@@ -7,11 +7,10 @@ import {
   currencyField,
   toggleField,
   alertField,
-  fieldGroup
+  fieldGroup,
+  tabsField
 } from '~/features/_library/form-builder/api'
 import { useCertificateTemplates } from '~/features/templates/admin/composables/useCertificateTemplates'
-
-export const productOpenAccordionId = ref<string | undefined>(undefined)
 
 export const useProductForm = defineForm('product', () => {
   const { templateOptions } = useCertificateTemplates()
@@ -71,16 +70,6 @@ export const useProductForm = defineForm('product', () => {
     visibleWhen: (ctx) => !!ctx.values.certificateTemplateId
   })
 
-  const certificateSettings = fieldGroup('certificateSettings', {
-    label: 'Certificate Settings',
-    description: 'Customize how this product appears on donation certificates.',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: { certificateTemplateId, certificateTitle, certificateText, certificateTemplateAlert },
-    $storePath: 'flatten'
-  })
-
   const frequency = selectField('frequency', {
     label: 'Frequency',
     options: [
@@ -116,35 +105,45 @@ export const useProductForm = defineForm('product', () => {
     description: 'Product requires a shipping address'
   })
 
-  const basic = fieldGroup('basic', {
-    label: 'Basic',
-    description: 'Product image and short description shown to donors.',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
+  // --- Tabbed layout ---
+  const productTabs = tabsField('productTabs', {
+    label: 'Product Configuration',
+    tabsListClass: 'w-full',
+    defaultValue: 'basic',
+    tabs: [
+      {
+        value: 'basic',
+        label: 'Basic',
+        fields: { title, description, image }
+      },
+      {
+        value: 'certificateSettings',
+        label: 'Certificate',
+        fields: {
+          certificateTemplateId,
+          certificateTitle,
+          certificateText,
+          certificateTemplateAlert
+        }
+      },
+      {
+        value: 'pricing',
+        label: 'Pricing',
+        fields: { frequency, price, minPrice, default: defaultPrice }
+      },
+      {
+        value: 'shipping',
+        label: 'Shipping',
+        fields: { isShippingRequired }
+      }
+    ]
+  })
+
+  const product = fieldGroup('product', {
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: { title, description, image },
+    fields: { productTabs },
     $storePath: 'flatten'
   })
 
-  const pricing = fieldGroup('pricing', {
-    label: 'Pricing',
-    description: 'Set fixed or flexible pricing and donation frequency.',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: { frequency, price, minPrice, default: defaultPrice },
-    $storePath: 'flatten'
-  })
-
-  const shipping = fieldGroup('shipping', {
-    label: 'Shipping',
-    description: 'Require a shipping address for physical products.',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: { isShippingRequired },
-    $storePath: 'flatten'
-  })
-
-  return { basic, certificateSettings, pricing, shipping }
+  return { product }
 })

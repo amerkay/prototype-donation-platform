@@ -5,25 +5,26 @@ import {
   toggleField,
   richTextField,
   alertField,
-  fieldGroup
+  fieldGroup,
+  tabsField
 } from '~/features/_library/form-builder/api'
 import { useCurrencySettingsStore } from '~/features/settings/admin/stores/currencySettings'
 import { useBrandingSettingsStore } from '~/features/settings/admin/stores/brandingSettings'
 import type { ReceiptTemplateTargets } from '~/features/templates/shared/types'
 
 export const RECEIPT_TEMPLATE_TARGETS = {
-  showLogo: 'settings.showLogo',
-  charityNotice: 'settings.charityNotice',
-  headerText: 'settings.headerText',
-  showDonorAddress: 'settings.showDonorAddress',
-  showCampaignName: 'settings.showCampaignName',
-  showPaymentMethod: 'settings.showPaymentMethod',
-  taxDeductibleStatement: 'settings.taxDeductibleStatement',
-  showGiftAid: 'settings.showGiftAid',
-  footerText: 'settings.footerText',
-  showPhone: 'settings.showPhone',
-  showEmail: 'settings.showEmail',
-  showWebsite: 'settings.showWebsite'
+  showLogo: 'settings.receiptTabs.header.showLogo',
+  charityNotice: 'settings.receiptTabs.header.charityNotice',
+  headerText: 'settings.receiptTabs.header.headerText',
+  showDonorAddress: 'settings.receiptTabs.content.showDonorAddress',
+  showCampaignName: 'settings.receiptTabs.content.showCampaignName',
+  showPaymentMethod: 'settings.receiptTabs.content.showPaymentMethod',
+  taxDeductibleStatement: 'settings.receiptTabs.content.taxDeductibleStatement',
+  showGiftAid: 'settings.receiptTabs.content.showGiftAid',
+  footerText: 'settings.receiptTabs.footer.footerText',
+  showPhone: 'settings.receiptTabs.footer.showPhone',
+  showEmail: 'settings.receiptTabs.footer.showEmail',
+  showWebsite: 'settings.receiptTabs.footer.showWebsite'
 } as const satisfies Record<keyof ReceiptTemplateTargets, string>
 
 export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
@@ -50,8 +51,7 @@ export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
       label: 'Edit charity settings',
       to: '/admin/settings/charity',
       inline: true
-    },
-    showSeparatorAfter: true
+    }
   })
 
   const noLogoAlert = alertField('noLogoAlert', {
@@ -65,7 +65,7 @@ export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
     visibleWhen: () => !branding.logoUrl
   })
 
-  // --- Fields ordered by receipt layout (top → bottom) ---
+  // --- Header fields ---
 
   const showLogo = toggleField('showLogo', {
     label: 'Show Logo',
@@ -79,13 +79,42 @@ export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
   })
 
   const headerText = textField('headerText', {
-    label: 'Header Text',
-    showSeparatorAfter: true
+    label: 'Header Text'
   })
+
+  // --- Content fields ---
 
   const showDonorAddress = toggleField('showDonorAddress', {
     label: 'Show Donor Address',
     description: 'Display donor address on receipt (if available)'
+  })
+
+  const showCampaignName = toggleField('showCampaignName', {
+    label: 'Show Campaign Name',
+    description: 'Show which campaign the donation was for'
+  })
+
+  const showPaymentMethod = toggleField('showPaymentMethod', {
+    label: 'Show Payment Method',
+    description: 'Display payment method details'
+  })
+
+  const taxDeductibleStatement = richTextField('taxDeductibleStatement', {
+    label: 'Tax Deductible Statement',
+    description: 'Rich text displayed below the donation amount'
+  })
+
+  const showGiftAid = toggleField('showGiftAid', {
+    label: 'Show Gift Aid Declaration',
+    description: 'Include Gift Aid section on receipts (GBP only)',
+    visibleWhen: () => currencyStore.supportedCurrencies.includes('GBP')
+  })
+
+  // --- Footer fields ---
+
+  const footerText = textareaField('footerText', {
+    label: 'Footer Text',
+    rows: 2
   })
 
   const showPhone = toggleField('showPhone', {
@@ -103,53 +132,39 @@ export const useReceiptTemplateForm = defineForm('receiptTemplate', () => {
     description: 'Display charity website on receipt'
   })
 
-  const showCampaignName = toggleField('showCampaignName', {
-    label: 'Show Campaign Name',
-    description: 'Show which campaign the donation was for'
-  })
-
-  const showPaymentMethod = toggleField('showPaymentMethod', {
-    label: 'Show Payment Method',
-    description: 'Display payment method details',
-    showSeparatorAfter: true
-  })
-
-  const taxDeductibleStatement = richTextField('taxDeductibleStatement', {
-    label: 'Tax Deductible Statement',
-    description: 'Rich text displayed below the donation amount'
-  })
-
-  const showGiftAid = toggleField('showGiftAid', {
-    label: 'Show Gift Aid Declaration',
-    description: 'Include Gift Aid section on receipts (GBP only)',
-    visibleWhen: () => currencyStore.supportedCurrencies.includes('GBP')
-  })
-
-  const footerText = textareaField('footerText', {
-    label: 'Footer Text',
-    rows: 2,
-    showSeparatorAfter: true
+  // --- Tabbed layout ---
+  const receiptTabs = tabsField('receiptTabs', {
+    label: 'Receipt Settings',
+    tabsListClass: 'w-full',
+    defaultValue: 'header',
+    tabs: [
+      {
+        value: 'header',
+        label: 'Header',
+        fields: { showLogo, noLogoAlert, headerText, charityNotice, brandingNotice }
+      },
+      {
+        value: 'content',
+        label: 'Content',
+        fields: {
+          showDonorAddress,
+          showCampaignName,
+          showPaymentMethod,
+          taxDeductibleStatement,
+          showGiftAid
+        }
+      },
+      {
+        value: 'footer',
+        label: 'Footer',
+        fields: { footerText, showPhone, showEmail, showWebsite }
+      }
+    ]
   })
 
   const settings = fieldGroup('settings', {
-    label: 'Receipt Settings',
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: {
-      showLogo,
-      headerText,
-      showDonorAddress,
-      showCampaignName,
-      showPaymentMethod,
-      taxDeductibleStatement,
-      showGiftAid,
-      footerText,
-      showPhone,
-      showEmail,
-      showWebsite,
-      noLogoAlert,
-      charityNotice,
-      brandingNotice
-    },
+    fields: { receiptTabs },
     $storePath: 'flatten'
   })
 

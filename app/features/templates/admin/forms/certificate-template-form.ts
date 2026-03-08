@@ -8,7 +8,8 @@ import {
   imageUploadField,
   fieldGroup,
   componentField,
-  alertField
+  alertField,
+  tabsField
 } from '~/features/_library/form-builder/api'
 import ColorPresetSelector from '@/components/ColorPresetSelector.vue'
 import FontFamilySelector from '@/components/FontFamilySelector.vue'
@@ -24,19 +25,21 @@ const CERTIFICATE_TEMPLATE_VARIABLES = [
 ] as const
 
 export const CERTIFICATE_TEMPLATE_TARGETS = {
-  logo: 'certificate.logo',
-  title: 'certificate.title',
-  award: 'certificate.award',
-  body: 'certificate.body',
-  product: 'certificate.product',
-  footer: 'certificate.footer',
-  page: 'certificate.page',
-  showLogo: 'certificate.logo.showLogo',
-  titleLine1: 'certificate.title.titleLine1',
-  titleLine2: 'certificate.title.titleLine2'
+  logo: 'certificate.certificateTabs.logo',
+  title: 'certificate.certificateTabs.title',
+  award: 'certificate.certificateTabs.award',
+  body: 'certificate.certificateTabs.body',
+  product: 'certificate.certificateTabs.product',
+  footer: 'certificate.certificateTabs.footer',
+  footerShowDate: 'certificate.certificateTabs.footer.showDate',
+  footerShowSignature: 'certificate.certificateTabs.footer.showSignature',
+  footerText: 'certificate.certificateTabs.footer.footerText',
+  page: 'certificate.certificateTabs.page',
+  showLogo: 'certificate.certificateTabs.logo.showLogo',
+  titleLine1: 'certificate.certificateTabs.title.titleLine1',
+  titleLine2: 'certificate.certificateTabs.title.titleLine2'
 } as const satisfies { [K in keyof CertificateTemplateTargets]: string }
 
-export const certificateOpenAccordionId = ref<string | undefined>(undefined)
 export const certificatePreviewProductId = ref<string | undefined>(undefined)
 
 export const useCertificateTemplateForm = defineForm('certificateTemplate', () => {
@@ -227,8 +230,7 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
   const footerText = textField('footerText', {
     label: 'Footer Text',
     description: 'Optional text at bottom (e.g., website).',
-    maxLength: 100,
-    showSeparatorAfter: true
+    maxLength: 100
   })
 
   const linkedProducts = componentField('linkedProducts', {
@@ -291,104 +293,69 @@ export const useCertificateTemplateForm = defineForm('certificateTemplate', () =
       'When a donor includes a personal message with their tribute donation, it will replace this body text on the certificate.'
   })
 
-  const logo = fieldGroup('logo', {
-    label: 'Logo',
-    description: 'Organization logo display and positioning.',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    fields: { showLogo, logoSize, logoPosition, noLogoAlert },
-    $storePath: 'flatten',
-    showSeparatorAfter: true
-  })
-
-  const title = fieldGroup('title', {
-    label: 'Title',
-    description: 'Certificate heading text and color.',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    fields: { titleLine1, titleLine2, titleTextColor },
-    $storePath: 'flatten',
-    showSeparatorAfter: true
-  })
-
-  const award = fieldGroup('award', {
-    label: 'Award',
-    description: 'Award text and donor name styling.',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    fields: { showAwardSection, awardTextLine1, donorNameFontFamily },
-    $storePath: 'flatten',
-    showSeparatorAfter: true
-  })
-
-  const body = fieldGroup('body', {
-    label: 'Body',
-    description: 'Main message with support for donor name, amount, and date variables.',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    fields: { bodyText, tributeNotice },
-    $storePath: 'flatten',
-    showSeparatorAfter: true
-  })
-
-  const product = fieldGroup('product', {
-    label: 'Product',
-    description: 'Show adopted product badge with image and details.',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    fields: { showProduct, productImageShape, productInfoNotice, linkedProducts },
-    $storePath: 'flatten',
-    showSeparatorAfter: true
-  })
-
-  const footer = fieldGroup('footer', {
-    label: 'Footer',
-    description: 'Date, footer text, and signature section.',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    fields: {
-      showDate,
-      footerText,
-      showSignature,
-      signatureName,
-      signatureTitle,
-      signatureFontFamily
-    },
-    $storePath: 'flatten',
-    showSeparatorAfter: true
-  })
-
-  const page = fieldGroup('page', {
-    label: 'Page',
-    description: 'Layout, background, and border styling.',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    fields: {
-      layout,
-      backgroundType,
-      backgroundImage,
-      pageBorderStyle,
-      pageBorderThickness,
-      separatorsAndBordersColor,
-      brandingNotice
-    },
-    $storePath: 'flatten',
-    showSeparatorAfter: true
+  // --- Tabbed layout: each certificate section becomes a tab ---
+  const certificateTabs = tabsField('certificateTabs', {
+    label: 'Certificate Settings',
+    tabsListClass: 'w-full',
+    defaultValue: 'page',
+    tabs: [
+      {
+        value: 'page',
+        label: 'Page',
+        fields: {
+          layout,
+          backgroundType,
+          backgroundImage,
+          pageBorderStyle,
+          pageBorderThickness,
+          separatorsAndBordersColor,
+          brandingNotice
+        }
+      },
+      {
+        value: 'logo',
+        label: 'Logo',
+        fields: { showLogo, logoSize, logoPosition, noLogoAlert }
+      },
+      {
+        value: 'title',
+        label: 'Title',
+        fields: { titleLine1, titleLine2, titleTextColor }
+      },
+      {
+        value: 'award',
+        label: 'Award',
+        fields: { showAwardSection, awardTextLine1, donorNameFontFamily }
+      },
+      {
+        value: 'body',
+        label: 'Body',
+        fields: { bodyText, tributeNotice }
+      },
+      {
+        value: 'product',
+        label: 'Product',
+        fields: { showProduct, productImageShape, productInfoNotice, linkedProducts }
+      },
+      {
+        value: 'footer',
+        label: 'Footer',
+        fields: {
+          showDate,
+          footerText,
+          showSignature,
+          signatureName,
+          signatureTitle,
+          signatureFontFamily
+        }
+      }
+    ]
   })
 
   const certificateSettings = fieldGroup('certificate', {
-    label: 'Certificate Settings',
-    description: 'Configure content, design, product, and signature sections.',
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: {
-      page,
-      logo,
-      title,
-      award,
-      body,
-      product,
-      footer
-    }
+    fields: { certificateTabs },
+    $storePath: 'flatten'
   })
 
   return { certificate: certificateSettings }

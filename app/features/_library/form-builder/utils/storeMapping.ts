@@ -14,7 +14,7 @@ export interface StoreMapping {
   excluded: Set<string>
 }
 
-/** Map flattened group fields to their identity store paths */
+/** Map flattened group fields to their identity store paths (recursively walks tabs + nested groups) */
 function mapFlattenedFields(
   fields: Record<string, FieldDef>,
   formPath: string,
@@ -23,7 +23,30 @@ function mapFlattenedFields(
 ) {
   for (const [fieldName, fieldDef] of Object.entries(fields)) {
     if (displayOnlyTypes.has(fieldDef.type)) continue
-    paths.set(`${formPath}.${fieldName}`, fieldName)
+    const fieldFormPath = `${formPath}.${fieldName}`
+
+    if (fieldDef.type === 'tabs' && 'tabs' in fieldDef) {
+      // Recurse into each tab's fields — tab segments are path-only, not store-mapped
+      for (const tab of (
+        fieldDef as { tabs: Array<{ value: string; fields: Record<string, FieldDef> }> }
+      ).tabs) {
+        mapFlattenedFields(tab.fields, `${fieldFormPath}.${tab.value}`, displayOnlyTypes, paths)
+      }
+    } else if (
+      fieldDef.type === 'field-group' &&
+      'fields' in fieldDef &&
+      (fieldDef as FieldGroupConfig).fields
+    ) {
+      // Recurse into nested field groups
+      mapFlattenedFields(
+        (fieldDef as FieldGroupConfig).fields,
+        fieldFormPath,
+        displayOnlyTypes,
+        paths
+      )
+    } else {
+      paths.set(fieldFormPath, fieldName)
+    }
   }
 }
 

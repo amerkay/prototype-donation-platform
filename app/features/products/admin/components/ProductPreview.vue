@@ -10,7 +10,6 @@ import CertificatePreview from '~/features/templates/admin/components/Certificat
 import ProductOptionsContent from '~/features/donation-form/features/product/shared/components/ProductOptionsContent.vue'
 import PreviewEditable from '~/features/_admin/components/PreviewEditable.vue'
 import { CERTIFICATE_TEMPLATE_TARGETS } from '~/features/templates/admin/forms/certificate-template-form'
-import { productOpenAccordionId } from '~/features/products/admin/forms/product-form'
 import { usePreviewSync } from '~/features/_shared/composables/usePreviewSync'
 import type { CertificateTemplateTargets } from '~/features/templates/shared/types'
 import type { Product } from '~/features/donation-form/features/product/shared/types'
@@ -31,11 +30,11 @@ const { getTemplateById } = useCertificateTemplates()
 const certStore = useCertificateTemplateStore()
 
 const { activePreviewTab: activeTab, syncToAccordion } = usePreviewSync({
-  accordionId: productOpenAccordionId,
+  useHashTarget: true,
   mapping: {
-    'product.basic': 'card',
-    'product.pricing': 'donation',
-    'product.certificateSettings': 'certificate'
+    basic: 'card',
+    pricing: 'donation',
+    certificateSettings: 'certificate'
   },
   defaultTab: 'card'
 })

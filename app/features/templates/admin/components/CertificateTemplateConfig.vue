@@ -1,16 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import AdminConfigPanel from '~/features/_admin/components/AdminConfigPanel.vue'
-import {
-  useCertificateTemplateForm,
-  certificateOpenAccordionId
-} from '~/features/templates/admin/forms/certificate-template-form'
+import { useCertificateTemplateForm } from '~/features/templates/admin/forms/certificate-template-form'
 import { useCertificateTemplateStore } from '~/features/templates/admin/stores/certificateTemplate'
-import { provideAccordionGroup } from '~/features/_library/form-builder/composables/useAccordionGroup'
 
 const store = useCertificateTemplateStore()
-
-provideAccordionGroup(certificateOpenAccordionId)
 
 const configRef = ref<InstanceType<typeof AdminConfigPanel> | null>(null)
 

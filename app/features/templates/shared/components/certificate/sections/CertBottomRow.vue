@@ -17,6 +17,9 @@ const props = defineProps<{
   separatorThickness: string
   targets?: {
     footer: string
+    footerShowDate?: string
+    footerShowSignature?: string
+    footerText?: string
   }
 }>()
 
@@ -33,20 +36,24 @@ const hasFooter = computed(() => !!props.footer?.text)
     <!-- Both date and signature -->
     <div v-if="hasDate && hasSignature" class="grid grid-cols-2 w-full items-end gap-8">
       <div class="text-left">
-        <CertDate :date="date!.value" :data-field="targets?.footer" />
+        <CertDate :date="date!.value" :data-field="targets?.footerShowDate ?? targets?.footer" />
       </div>
       <div class="text-right">
         <CertSignature
           :name="signature!.name"
           :title="signature!.title"
           :font-family="signature!.fontFamily"
-          :data-field="targets?.footer"
+          :data-field="targets?.footerShowSignature ?? targets?.footer"
         />
       </div>
     </div>
 
     <!-- Only date -->
-    <CertDate v-else-if="hasDate" :date="date!.value" :data-field="targets?.footer" />
+    <CertDate
+      v-else-if="hasDate"
+      :date="date!.value"
+      :data-field="targets?.footerShowDate ?? targets?.footer"
+    />
 
     <!-- Only signature -->
     <CertSignature
@@ -54,9 +61,14 @@ const hasFooter = computed(() => !!props.footer?.text)
       :name="signature!.name"
       :title="signature!.title"
       :font-family="signature!.fontFamily"
-      :data-field="targets?.footer"
+      :data-field="targets?.footerShowSignature ?? targets?.footer"
     />
 
-    <CertFooter v-if="hasFooter" class="mt-4" :text="footer!.text" :data-field="targets?.footer" />
+    <CertFooter
+      v-if="hasFooter"
+      class="mt-4"
+      :text="footer!.text"
+      :data-field="targets?.footerText ?? targets?.footer"
+    />
   </div>
 </template>

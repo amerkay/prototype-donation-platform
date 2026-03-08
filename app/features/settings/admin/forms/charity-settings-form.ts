@@ -4,9 +4,10 @@ import {
   textField,
   textareaField,
   selectField,
-  fieldGroup
+  fieldGroup,
+  tabsField
 } from '~/features/_library/form-builder/api'
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
 import { useTeamSettingsStore } from '~/features/settings/admin/stores/teamSettings'
 import { useAddressFields } from '~/features/donation-form/shared/forms/address-form'
@@ -15,9 +16,6 @@ import { useTermsConfigSection } from '~/features/donation-form/features/terms/a
 import { formatCharityAddress } from '~/features/settings/admin/utils/formatCharityAddress'
 import type { CharityAddress } from '~/features/settings/admin/types'
 
-/** Single shared accordion state — passed to provideAccordionGroup() for single-open behavior */
-export const charityOpenAccordionId = ref<string | undefined>(undefined)
-
 function formatAddressSummary(a: Partial<CharityAddress> | undefined): string {
   if (!a) return ''
   return formatCharityAddress(a as CharityAddress)
@@ -25,7 +23,7 @@ function formatAddressSummary(a: Partial<CharityAddress> | undefined): string {
 
 /**
  * Charity settings form configuration
- * Single flat section — no per-currency tabs.
+ * Three tabs: Charity Details, Charity Costs, Terms & Conditions
  */
 export const useCharitySettingsForm = defineForm('charitySettings', (ctx) => {
   const charityStore = useCharitySettingsStore()
@@ -118,78 +116,76 @@ export const useCharitySettingsForm = defineForm('charitySettings', (ctx) => {
   const emailSignature = textareaField('emailSignature', {
     label: 'Email Signature',
     description: 'Appended to all outgoing emails as {{ SIGNATURE }}',
-    placeholder: 'With gratitude,\nYour Team',
-    showSeparatorAfter: true
-  })
-
-  const charitySettings = fieldGroup('charitySettings', {
-    label: 'Charity Details',
-    description: 'Identity, address, and email sender shown on receipts and donor communications.',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: {
-      name,
-      registrationNumber,
-      address,
-      phone,
-      website,
-      description,
-      supportEmail,
-      emailSignature
-    },
-    $storePath: {
-      name: 'charity.name',
-      registrationNumber: 'charity.registrationNumber',
-      phone: 'charity.phone',
-      website: 'charity.website',
-      description: 'charity.description',
-      supportEmail: 'charity.emailSenderId',
-      emailSignature: 'charity.emailSignature',
-      'address.address1': 'charity.address.address1',
-      'address.address2': 'charity.address.address2',
-      'address.city': 'charity.address.city',
-      'address.country': 'charity.address.country',
-      'address.group1.region': 'charity.address.region',
-      'address.group1.postcode': 'charity.address.postcode'
-    }
+    placeholder: 'With gratitude,\nYour Team'
   })
 
   // Charity Costs — org-level cost breakdown for cover costs modal
   const charityCostsFields = useCharityCostsForm.setup(ctx)
-  const charityCostsSection = fieldGroup('charityCosts', {
-    label: 'Charity Costs',
-    description:
-      'Configure the operational cost breakdown shown to donors in the cover costs modal.',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
-    wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: charityCostsFields,
-    $storePath: {
-      heading: 'charityCosts.heading',
-      introText: 'charityCosts.introText',
-      outroText: 'charityCosts.outroText',
-      costs: 'charityCosts.costs'
-    }
-  })
 
   // Terms & Conditions — org-level terms settings
   const { enabled: _te, settings: _ts, ...termsFields } = useTermsConfigSection.setup(ctx)
-  const termsSection = fieldGroup('terms', {
-    label: 'Terms & Conditions',
-    description: 'Configure the terms content shown to donors on all forms.',
-    collapsible: true,
-    collapsibleDefaultOpen: false,
+
+  // --- Tabbed layout ---
+  const charityTabs = tabsField('charityTabs', {
+    label: 'Charity Configuration',
+    tabsListClass: 'w-full',
+    defaultValue: 'details',
+    tabs: [
+      {
+        value: 'details',
+        label: 'Charity Details',
+        fields: {
+          name,
+          registrationNumber,
+          address,
+          phone,
+          website,
+          description,
+          supportEmail,
+          emailSignature
+        }
+      },
+      {
+        value: 'costs',
+        label: 'Charity Costs',
+        fields: charityCostsFields
+      },
+      {
+        value: 'terms',
+        label: 'Terms & Conditions',
+        fields: termsFields
+      }
+    ]
+  })
+
+  const charitySettings = fieldGroup('charitySettings', {
     wrapperClass: 'px-4 py-6 sm:px-6 bg-muted/50 rounded-xl border',
-    fields: termsFields,
+    fields: { charityTabs },
     $storePath: {
-      mode: 'terms.settings.mode',
-      externalUrl: 'terms.settings.externalUrl',
-      richContent: 'terms.settings.richContent',
-      label: 'terms.settings.label',
-      description: 'terms.settings.description'
+      'charityTabs.details.name': 'charity.name',
+      'charityTabs.details.registrationNumber': 'charity.registrationNumber',
+      'charityTabs.details.phone': 'charity.phone',
+      'charityTabs.details.website': 'charity.website',
+      'charityTabs.details.description': 'charity.description',
+      'charityTabs.details.supportEmail': 'charity.emailSenderId',
+      'charityTabs.details.emailSignature': 'charity.emailSignature',
+      'charityTabs.details.address.address1': 'charity.address.address1',
+      'charityTabs.details.address.address2': 'charity.address.address2',
+      'charityTabs.details.address.city': 'charity.address.city',
+      'charityTabs.details.address.country': 'charity.address.country',
+      'charityTabs.details.address.group1.region': 'charity.address.region',
+      'charityTabs.details.address.group1.postcode': 'charity.address.postcode',
+      'charityTabs.costs.heading': 'charityCosts.heading',
+      'charityTabs.costs.introText': 'charityCosts.introText',
+      'charityTabs.costs.outroText': 'charityCosts.outroText',
+      'charityTabs.costs.costs': 'charityCosts.costs',
+      'charityTabs.terms.mode': 'terms.settings.mode',
+      'charityTabs.terms.externalUrl': 'terms.settings.externalUrl',
+      'charityTabs.terms.richContent': 'terms.settings.richContent',
+      'charityTabs.terms.label': 'terms.settings.label',
+      'charityTabs.terms.description': 'terms.settings.description'
     }
   })
 
-  return { charitySettings, charityCosts: charityCostsSection, terms: termsSection }
+  return { charitySettings }
 })

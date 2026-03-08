@@ -11,7 +11,6 @@ import { defineForm } from '~/features/_library/form-builder/api'
 import { createTermsAcceptanceField } from '~/features/donation-form/features/terms/donor/forms/terms-acceptance-field'
 import { useBrandingCssVars } from '~/features/settings/admin/composables/useBrandingCssVars'
 import { useCharitySettingsStore } from '~/features/settings/admin/stores/charitySettings'
-import { charityOpenAccordionId } from '~/features/settings/admin/forms/charity-settings-form'
 import { HASH_TARGET_PASSIVE_KEY } from '~/features/_library/form-builder/composables/useHashTarget'
 import { usePreviewSync } from '~/features/_shared/composables/usePreviewSync'
 
@@ -29,11 +28,11 @@ const { brandingStyle } = useBrandingCssVars()
 const charityStore = useCharitySettingsStore()
 
 const { activePreviewTab: activeTab, syncToAccordion } = usePreviewSync({
-  accordionId: charityOpenAccordionId,
+  useHashTarget: true,
   mapping: {
-    'charitySettings.charitySettings': 'receipt',
-    'charitySettings.charityCosts': 'costs',
-    'charitySettings.terms': 'terms'
+    details: 'receipt',
+    costs: 'costs',
+    terms: 'terms'
   },
   defaultTab: 'receipt'
 })
@@ -41,19 +40,19 @@ const { activePreviewTab: activeTab, syncToAccordion } = usePreviewSync({
 // --- Receipt targets (flat charity paths) ---
 
 const charityReceiptTargets = {
-  charityNotice: 'charitySettings.charitySettings',
-  showPhone: 'charitySettings.charitySettings.phone',
-  showWebsite: 'charitySettings.charitySettings.website',
+  // charityNotice: 'charitySettings.charityTabs.details',
+  showPhone: 'charitySettings.charityTabs.details.phone',
+  showWebsite: 'charitySettings.charityTabs.details.website',
   showLogo: 'branding.logo'
 }
 
 // --- Costs targets ---
 
 const costsTargets = {
-  heading: 'charityCosts.heading',
-  introText: 'charityCosts.introText',
-  outroText: 'charityCosts.outroText',
-  costs: 'charityCosts.costs'
+  heading: 'costs.heading',
+  introText: 'costs.introText',
+  outroText: 'costs.outroText',
+  costs: 'costs.costs'
 } as const
 
 // --- Terms preview ---

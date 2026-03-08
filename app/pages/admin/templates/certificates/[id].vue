@@ -10,10 +10,7 @@ import { useCurrencySettingsStore } from '~/features/settings/admin/stores/curre
 import { useProducts } from '~/features/products/admin/composables/useProducts'
 import { useEditState } from '~/features/_shared/composables/useEditState'
 import { useGeneratePdf } from '~/features/templates/admin/composables/useGeneratePdf'
-import {
-  certificateOpenAccordionId,
-  certificatePreviewProductId
-} from '~/features/templates/admin/forms/certificate-template-form'
+import { certificatePreviewProductId } from '~/features/templates/admin/forms/certificate-template-form'
 import { Button } from '@/components/ui/button'
 import { ICON_DOWNLOAD, ICON_LOADING } from '~/lib/icons'
 
@@ -29,7 +26,6 @@ const { products } = useProducts()
 const template = computed(() => getTemplateById(route.params.id as string))
 
 // Reset shared UI state
-certificateOpenAccordionId.value = undefined
 certificatePreviewProductId.value = undefined
 
 // Initialize store synchronously
@@ -44,7 +40,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  certificateOpenAccordionId.value = undefined
   certificatePreviewProductId.value = undefined
 })
 
@@ -52,7 +47,6 @@ onUnmounted(() => {
 watch(
   () => route.params.id,
   (newId) => {
-    certificateOpenAccordionId.value = undefined
     certificatePreviewProductId.value = undefined
     const t = getTemplateById(newId as string)
     if (t) store.initialize(t)

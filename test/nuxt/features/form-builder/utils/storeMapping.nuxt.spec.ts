@@ -8,6 +8,7 @@ import {
   defineForm,
   fieldGroup,
   textField,
+  tabsField,
   componentField,
   alertField,
   readonlyField
@@ -205,6 +206,80 @@ describe('storeMapping', () => {
       // Display-only fields are excluded
       expect(mapping.paths.has('settings.notice')).toBe(false)
       expect(mapping.paths.has('settings.preview')).toBe(false)
+    })
+
+    it('recursively flattens fields inside tabs with $storePath: flatten', () => {
+      const form = defineForm('test', () => ({
+        certificate: fieldGroup('certificate', {
+          fields: {
+            certTabs: tabsField('certTabs', {
+              tabs: [
+                {
+                  value: 'logo',
+                  label: 'Logo',
+                  fields: {
+                    showLogo: textField('showLogo', { label: 'Show Logo' }),
+                    logoSize: textField('logoSize', { label: 'Logo Size' })
+                  }
+                },
+                {
+                  value: 'footer',
+                  label: 'Footer',
+                  fields: {
+                    footerText: textField('footerText', { label: 'Footer Text' }),
+                    notice: alertField('notice', { variant: 'info', description: 'Info' })
+                  }
+                }
+              ]
+            })
+          },
+          $storePath: 'flatten'
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+
+      // Leaf fields mapped to identity store paths through tab segments
+      expect(mapping.paths.get('certificate.certTabs.logo.showLogo')).toBe('showLogo')
+      expect(mapping.paths.get('certificate.certTabs.logo.logoSize')).toBe('logoSize')
+      expect(mapping.paths.get('certificate.certTabs.footer.footerText')).toBe('footerText')
+      // Display-only fields excluded even inside tabs
+      expect(mapping.paths.has('certificate.certTabs.footer.notice')).toBe(false)
+      // Tab container and tab values not mapped as entries
+      expect(mapping.paths.has('certificate.certTabs')).toBe(false)
+      expect(mapping.paths.has('certificate.certTabs.logo')).toBe(false)
+    })
+
+    it('recursively flattens nested field groups inside tabs', () => {
+      const form = defineForm('test', () => ({
+        settings: fieldGroup('settings', {
+          fields: {
+            tabs: tabsField('tabs', {
+              tabs: [
+                {
+                  value: 'details',
+                  label: 'Details',
+                  fields: {
+                    address: fieldGroup('address', {
+                      fields: {
+                        city: textField('city', { label: 'City' }),
+                        postcode: textField('postcode', { label: 'Postcode' })
+                      }
+                    })
+                  }
+                }
+              ]
+            })
+          },
+          $storePath: 'flatten'
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+
+      // Leaf fields inside nested fieldGroup inside tab → identity mapped
+      expect(mapping.paths.get('settings.tabs.details.address.city')).toBe('city')
+      expect(mapping.paths.get('settings.tabs.details.address.postcode')).toBe('postcode')
     })
 
     it('supports flatten alongside manual $storePath: Record', () => {
@@ -732,6 +807,68 @@ describe('storeMapping', () => {
 
       expect(store.name).toBe('Campaign')
       expect(store.status).toBe('active')
+    })
+
+    it('round-trips data with flatten through tabs', () => {
+      const form = defineForm('test', () => ({
+        certificate: fieldGroup('certificate', {
+          fields: {
+            certTabs: tabsField('certTabs', {
+              tabs: [
+                {
+                  value: 'logo',
+                  label: 'Logo',
+                  fields: {
+                    showLogo: textField('showLogo', { label: 'Show Logo' }),
+                    logoSize: textField('logoSize', { label: 'Logo Size' })
+                  }
+                },
+                {
+                  value: 'footer',
+                  label: 'Footer',
+                  fields: {
+                    footerText: textField('footerText', { label: 'Footer' })
+                  }
+                }
+              ]
+            })
+          },
+          $storePath: 'flatten'
+        })
+      }))
+
+      const mapping = generateStoreMapping(form)
+      const getData = generateGetData(mapping)
+      const setData = generateSetData(mapping)
+
+      const store = {
+        showLogo: true,
+        logoSize: 'large',
+        footerText: 'Original footer',
+        markDirty: vi.fn()
+      }
+
+      // Get data — flat store → nested form structure
+      const formData = getData(store)
+      expect(formData).toEqual({
+        certificate: {
+          certTabs: {
+            logo: { showLogo: true, logoSize: 'large' },
+            footer: { footerText: 'Original footer' }
+          }
+        }
+      })
+
+      // Modify nested form data
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(formData as any).certificate.certTabs.footer.footerText = 'Updated footer'
+
+      // Set data back — nested form → flat store
+      setData(store, formData)
+
+      expect(store.showLogo).toBe(true)
+      expect(store.logoSize).toBe('large')
+      expect(store.footerText).toBe('Updated footer')
     })
   })
 })

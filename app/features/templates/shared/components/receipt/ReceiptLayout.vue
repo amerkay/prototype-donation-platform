@@ -40,13 +40,25 @@ const showGiftAidSection = computed(
             Reg. No. {{ model.charity.registrationNumber }}
           </div>
           <div class="text-sm text-gray-400">{{ model.charity.address }}</div>
-          <div v-if="model.showPhone && model.charity.phone" class="text-sm text-gray-400">
+          <div
+            v-if="model.showPhone && model.charity.phone"
+            class="text-sm text-gray-400"
+            :data-field="targets?.showPhone"
+          >
             {{ model.charity.phone }}
           </div>
-          <div v-if="model.showEmail && model.charity.email" class="text-sm text-gray-400">
+          <div
+            v-if="model.showEmail && model.charity.email"
+            class="text-sm text-gray-400"
+            :data-field="targets?.showEmail"
+          >
             {{ model.charity.email }}
           </div>
-          <div v-if="model.showWebsite && model.charity.website" class="text-sm text-gray-400">
+          <div
+            v-if="model.showWebsite && model.charity.website"
+            class="text-sm text-gray-400"
+            :data-field="targets?.showWebsite"
+          >
             {{ model.charity.website }}
           </div>
         </div>

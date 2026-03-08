@@ -111,6 +111,10 @@ export interface CertificateTemplateTargets {
   productTitle?: string
   productText?: string
   footer: string
+  /** Fine-grained footer sub-targets (optional — falls back to `footer` when absent) */
+  footerShowDate?: string
+  footerShowSignature?: string
+  footerText?: string
   page: string
 }
 
